@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 申请退款</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/refund.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='order_detail.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">申请退款</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 订单信息 -->
+        <div class="order-info">
+            <div class="order-header">
+                <div class="order-id">订单号：2025032500001</div>
+                <div class="order-status">待退款</div>
+            </div>
+            <div class="order-content">
+                <div class="service-image">
+                    <img src="imgs/IMG20250308191357_20250326010856.jpg" alt="服务图片">
+                </div>
+                <div class="service-details">
+                    <div class="service-title">专业UI设计服务</div>
+                    <div class="service-type">标准版</div>
+                    <div class="service-price">¥499</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 退款信息 -->
+        <div class="refund-info">
+            <div class="section-title">退款信息</div>
+            
+            <!-- 退款金额 -->
+            <div class="form-group">
+                <div class="form-label">退款金额</div>
+                <div class="refund-amount">
+                    <div class="amount-prefix">¥</div>
+                    <input type="number" class="amount-input" value="499" readonly>
+                    <div class="amount-hint">最多¥499</div>
+                </div>
+            </div>
+            
+            <!-- 退款原因 -->
+            <div class="form-group">
+                <div class="form-label">退款原因</div>
+                <div class="reason-options">
+                    <div class="reason-option" onclick="selectReason(this)">
+                        <div class="option-radio"></div>
+                        <div class="option-text">服务质量不符合预期</div>
+                    </div>
+                    <div class="reason-option" onclick="selectReason(this)">
+                        <div class="option-radio"></div>
+                        <div class="option-text">卖家服务态度差</div>
+                    </div>
+                    <div class="reason-option" onclick="selectReason(this)">
+                        <div class="option-radio"></div>
+                        <div class="option-text">卖家无法按时交付</div>
+                    </div>
+                    <div class="reason-option" onclick="selectReason(this)">
+                        <div class="option-radio"></div>
+                        <div class="option-text">与卖家协商一致退款</div>
+                    </div>
+                    <div class="reason-option" onclick="selectReason(this)">
+                        <div class="option-radio"></div>
+                        <div class="option-text">其他原因</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 退款说明 -->
+            <div class="form-group">
+                <div class="form-label">退款说明</div>
+                <textarea class="form-textarea" placeholder="请详细描述退款原因，以便平台更好地处理您的退款申请"></textarea>
+            </div>
+            
+            <!-- 上传凭证 -->
+            <div class="form-group">
+                <div class="form-label">上传凭证（选填）</div>
+                <div class="upload-area" onclick="document.getElementById('evidenceUpload').click()">
+                    <i class="fas fa-camera"></i>
+                    <div class="upload-text">上传图片</div>
+                </div>
+                <input type="file" id="evidenceUpload" accept="image/*" style="display: none;" multiple onchange="handleFileUpload(this)">
+                <div class="evidence-list" id="evidenceList"></div>
+            </div>
+        </div>
+        
+        <!-- 退款须知 -->
+        <div class="refund-notice">
+            <div class="notice-title">
+                <i class="fas fa-info-circle"></i>
+                <span>退款须知</span>
+            </div>
+            <div class="notice-content">
+                <p>1. 退款申请提交后，卖家将在24小时内处理您的申请。</p>
+                <p>2. 如卖家同意退款，退款金额将在1-3个工作日内退回您的支付账户。</p>
+                <p>3. 如卖家拒绝退款，您可以申请平台介入处理。</p>
+                <p>4. 恶意退款行为可能会影响您的账户信用。</p>
+            </div>
+        </div>
+        
+        <!-- 提交按钮 -->
+        <div class="submit-container">
+            <button class="submit-button" onclick="submitRefund()">提交退款申请</button>
+        </div>
+    </div>
+
+    <script src="js/refund.js"></script>
+</body>
+</html>

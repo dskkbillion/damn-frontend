@@ -1,0 +1,327 @@
+/* 已取消订单详情页面样式 */
+
+/* 基础样式 */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+.mobile-container {
+    max-width: 414px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background-color: #f5f5f5;
+}
+
+/* 顶部标题栏 */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    padding: 0 16px;
+    background-color: white;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.back-button {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.header-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.header-right {
+    width: 24px;
+}
+
+/* 订单状态提示 */
+.status-banner {
+    padding: 12px 16px;
+    background-color: white;
+    font-size: 16px;
+    font-weight: 500;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* 订单基本信息 */
+.order-info {
+    background-color: white;
+    padding: 16px;
+    margin-bottom: 10px;
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.order-id {
+    font-size: 14px;
+    color: #666;
+}
+
+.order-time {
+    font-size: 14px;
+    color: #999;
+}
+
+.order-content {
+    display: flex;
+    margin-bottom: 12px;
+}
+
+.order-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-right: 12px;
+    background-color: #f8f8f8;
+}
+
+.order-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.order-details {
+    flex: 1;
+}
+
+.order-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.order-description {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.order-price {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.order-tags {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.tag {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-right: 8px;
+    background-color: #f0f0f0;
+    color: #666;
+}
+
+/* 取消原因 */
+.cancel-reason {
+    background-color: white;
+    padding: 16px;
+    margin-bottom: 10px;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 12px;
+}
+
+.reason-text {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.cancel-time {
+    font-size: 14px;
+    color: #999;
+}
+
+/* 我的提交 */
+.my-submission {
+    background-color: white;
+    margin-bottom: 10px;
+}
+
+.submission-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.view-full {
+    font-size: 14px;
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.tabs {
+    display: flex;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.tab {
+    flex: 1;
+    text-align: center;
+    padding: 12px 0;
+    font-size: 14px;
+    color: #666;
+    position: relative;
+    cursor: pointer;
+}
+
+.tab.active {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.tab.active::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 25%;
+    right: 25%;
+    height: 2px;
+    background-color: var(--primary-color);
+}
+
+.submission-content {
+    padding: 16px;
+}
+
+.text-content {
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* 交流记录 */
+.communication-history {
+    background-color: white;
+    margin-bottom: 10px;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    cursor: pointer;
+}
+
+.history-header span {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* 底部按钮 */
+.bottom-button {
+    padding: 16px;
+    margin-top: 20px;
+}
+
+.action-button {
+    width: 100%;
+    height: 44px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* 订单进度 */
+.order-timeline {
+    background-color: white;
+    padding: 16px;
+    margin-bottom: 80px; /* 为底部按钮留出空间 */
+}
+
+.timeline-item {
+    display: flex;
+    position: relative;
+    padding-bottom: 20px;
+}
+
+.timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+.timeline-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 30px;
+    bottom: 0;
+    width: 1px;
+    background-color: #e0e0e0;
+}
+
+.timeline-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    flex-shrink: 0;
+    background-color: #e0e0e0;
+    color: white;
+}
+
+.timeline-icon.completed {
+    background-color: #66BB6A;
+}
+
+.timeline-icon.cancelled {
+    background-color: #EF5350;
+}
+
+.timeline-content {
+    flex: 1;
+}
+
+.timeline-text {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.timeline-time {
+    font-size: 12px;
+    color: #999;
+}

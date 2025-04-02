@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 错误</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.history.back()">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">错误</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 错误内容 -->
+        <div class="error-container">
+            <div class="error-icon">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            
+            <div class="error-title" id="errorTitle">出错了</div>
+            
+            <div class="error-message" id="errorMessage">
+                抱歉，操作过程中发生了错误，请稍后重试。
+            </div>
+            
+            <div class="error-code" id="errorCode">
+                错误代码：E1001
+            </div>
+            
+            <div class="error-actions">
+                <button class="retry-button" onclick="retryAction()">
+                    重试
+                </button>
+                
+                <button class="back-home-button" onclick="window.location.href='index.html'">
+                    返回首页
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 错误页面特定样式 */
+        body {
+            background-color: #f8f9fa;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            padding: 0 16px;
+            background-color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .back-button {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .header-right {
+            width: 24px;
+        }
+        
+        .error-container {
+            padding: 48px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .error-icon {
+            font-size: 80px;
+            color: #e74c3c;
+            margin-bottom: 24px;
+        }
+        
+        .error-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .error-message {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            max-width: 300px;
+            line-height: 1.5;
+        }
+        
+        .error-code {
+            font-size: 14px;
+            color: var(--text-hint);
+            margin-bottom: 32px;
+        }
+        
+        .error-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .retry-button {
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .back-home-button {
+            padding: 12px;
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+
+    <script>
+        // 获取URL参数
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                title: params.get('title'),
+                message: params.get('message'),
+                code: params.get('code')
+            };
+        }
+        
+        // 设置错误信息
+        function setErrorInfo() {
+            const params = getUrlParams();
+            
+            if (params.title) {
+                document.getElementById('errorTitle').textContent = params.title;
+            }
+            
+            if (params.message) {
+                document.getElementById('errorMessage').textContent = params.message;
+            }
+            
+            if (params.code) {
+                document.getElementById('errorCode').textContent = `错误代码：${params.code}`;
+            } else {
+                document.getElementById('errorCode').style.display = 'none';
+            }
+        }
+        
+        // 重试操作
+        function retryAction() {
+            const referrer = document.referrer;
+            
+            if (referrer) {
+                window.location.href = referrer;
+            } else {
+                window.history.back();
+            }
+        }
+        
+        // 页面加载完成后执行
+        window.onload = function() {
+            setErrorInfo();
+        };
+    </script>
+</body>
+</html>

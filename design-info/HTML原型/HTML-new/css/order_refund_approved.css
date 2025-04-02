@@ -1,0 +1,256 @@
+/* 退款审核通过页面样式 */
+
+/* 基础样式 */
+:root {
+    --primary-color: #b66d0e;
+    --text-color: #333;
+    --border-color: #eee;
+    --background-color: #f5f5f5;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.mobile-container {
+    max-width: 414px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background-color: white;
+}
+
+/* 顶部导航栏 */
+.header {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background-color: var(--background-color);
+    position: relative;
+}
+
+.back-button {
+    position: absolute;
+    left: 15px;
+    font-size: 18px;
+    color: var(--text-color);
+}
+
+.header-title {
+    flex: 1;
+    margin-left: 30px;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+/* 产品卡片 */
+.product-card {
+    background-color: white;
+    border-radius: 10px;
+    margin: 10px;
+    overflow: hidden;
+}
+
+.product-header {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.seller-name {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.product-content {
+    display: flex;
+    padding: 15px;
+}
+
+.product-image {
+    width: 80px;
+    height: 80px;
+    background-color: #f0f0f0;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.product-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.product-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 3px;
+}
+
+.product-desc {
+    font-size: 14px;
+    color: #999;
+    margin-bottom: 5px;
+}
+
+.product-type {
+    font-size: 14px;
+    color: #999;
+    margin-bottom: 10px;
+}
+
+.product-meta {
+    font-size: 12px;
+    color: #999;
+    display: flex;
+}
+
+.product-meta span {
+    margin-right: 15px;
+}
+
+.product-meta span:last-child {
+    color: var(--primary-color);
+    margin-left: auto;
+}
+
+.product-price {
+    font-size: 16px;
+    font-weight: 500;
+    margin-left: 15px;
+    flex-shrink: 0;
+}
+
+/* 订单信息 */
+.order-info {
+    background-color: white;
+    border-radius: 10px;
+    margin: 10px;
+    padding: 15px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.info-label {
+    color: var(--text-color);
+}
+
+.info-value {
+    color: var(--text-color);
+    text-align: right;
+}
+
+/* 折叠区域 */
+.collapsible-section {
+    background-color: white;
+    border-radius: 10px;
+    margin: 10px;
+    overflow: hidden;
+}
+
+.collapsible-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.collapsible-title {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.collapsible-toggle {
+    color: #999;
+}
+
+.collapsible-content {
+    padding: 15px;
+}
+
+/* 退款详情 */
+.refund-details {
+    background-color: white;
+    border-radius: 10px;
+    margin: 10px;
+    overflow: hidden;
+}
+
+.refund-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.refund-title {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.refund-toggle {
+    color: #999;
+}
+
+.refund-content {
+    padding: 15px;
+}
+
+.refund-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.refund-label {
+    color: var(--text-color);
+}
+
+.refund-value {
+    color: var(--text-color);
+    text-align: right;
+}
+
+.refund-status {
+    color: var(--primary-color);
+}
+
+/* 问题区域 */
+.problem-section {
+    background-color: white;
+    border-radius: 10px;
+    margin: 10px;
+    padding: 15px;
+}
+
+.problem-title {
+    font-size: 16px;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.platform-button {
+    display: block;
+    width: 100%;
+    padding: 12px 0;
+    background-color: var(--primary-color);
+    color: white;
+    text-align: center;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+}

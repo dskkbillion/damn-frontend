@@ -1,0 +1,254 @@
+// coverage:ignore-file
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'related_service_model.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+T _$identity<T>(T value) => value;
+
+final _privateConstructorUsedError = UnsupportedError(
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+
+RelatedServiceModel _$RelatedServiceModelFromJson(Map<String, dynamic> json) {
+  return _RelatedServiceModel.fromJson(json);
+}
+
+/// @nodoc
+mixin _$RelatedServiceModel {
+// Assuming API returns these fields, adjust based on actual response
+  String get id => throw _privateConstructorUsedError;
+  String? get imageUrl =>
+      throw _privateConstructorUsedError; // Or maybe 'image_url' in JSON?
+  String? get title => throw _privateConstructorUsedError;
+  double? get rating => throw _privateConstructorUsedError;
+  String? get price => throw _privateConstructorUsedError;
+
+  /// Serializes this RelatedServiceModel to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of RelatedServiceModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $RelatedServiceModelCopyWith<RelatedServiceModel> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $RelatedServiceModelCopyWith<$Res> {
+  factory $RelatedServiceModelCopyWith(
+          RelatedServiceModel value, $Res Function(RelatedServiceModel) then) =
+      _$RelatedServiceModelCopyWithImpl<$Res, RelatedServiceModel>;
+  @useResult
+  $Res call(
+      {String id,
+      String? imageUrl,
+      String? title,
+      double? rating,
+      String? price});
+}
+
+/// @nodoc
+class _$RelatedServiceModelCopyWithImpl<$Res, $Val extends RelatedServiceModel>
+    implements $RelatedServiceModelCopyWith<$Res> {
+  _$RelatedServiceModelCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of RelatedServiceModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? imageUrl = freezed,
+    Object? title = freezed,
+    Object? rating = freezed,
+    Object? price = freezed,
+  }) {
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      imageUrl: freezed == imageUrl
+          ? _value.imageUrl
+          : imageUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+      title: freezed == title
+          ? _value.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String?,
+      rating: freezed == rating
+          ? _value.rating
+          : rating // ignore: cast_nullable_to_non_nullable
+              as double?,
+      price: freezed == price
+          ? _value.price
+          : price // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$RelatedServiceModelImplCopyWith<$Res>
+    implements $RelatedServiceModelCopyWith<$Res> {
+  factory _$$RelatedServiceModelImplCopyWith(_$RelatedServiceModelImpl value,
+          $Res Function(_$RelatedServiceModelImpl) then) =
+      __$$RelatedServiceModelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {String id,
+      String? imageUrl,
+      String? title,
+      double? rating,
+      String? price});
+}
+
+/// @nodoc
+class __$$RelatedServiceModelImplCopyWithImpl<$Res>
+    extends _$RelatedServiceModelCopyWithImpl<$Res, _$RelatedServiceModelImpl>
+    implements _$$RelatedServiceModelImplCopyWith<$Res> {
+  __$$RelatedServiceModelImplCopyWithImpl(_$RelatedServiceModelImpl _value,
+      $Res Function(_$RelatedServiceModelImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of RelatedServiceModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? imageUrl = freezed,
+    Object? title = freezed,
+    Object? rating = freezed,
+    Object? price = freezed,
+  }) {
+    return _then(_$RelatedServiceModelImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      imageUrl: freezed == imageUrl
+          ? _value.imageUrl
+          : imageUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+      title: freezed == title
+          ? _value.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String?,
+      rating: freezed == rating
+          ? _value.rating
+          : rating // ignore: cast_nullable_to_non_nullable
+              as double?,
+      price: freezed == price
+          ? _value.price
+          : price // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$RelatedServiceModelImpl extends _RelatedServiceModel {
+  const _$RelatedServiceModelImpl(
+      {required this.id, this.imageUrl, this.title, this.rating, this.price})
+      : super._();
+
+  factory _$RelatedServiceModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$RelatedServiceModelImplFromJson(json);
+
+// Assuming API returns these fields, adjust based on actual response
+  @override
+  final String id;
+  @override
+  final String? imageUrl;
+// Or maybe 'image_url' in JSON?
+  @override
+  final String? title;
+  @override
+  final double? rating;
+  @override
+  final String? price;
+
+  @override
+  String toString() {
+    return 'RelatedServiceModel(id: $id, imageUrl: $imageUrl, title: $title, rating: $rating, price: $price)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$RelatedServiceModelImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.imageUrl, imageUrl) ||
+                other.imageUrl == imageUrl) &&
+            (identical(other.title, title) || other.title == title) &&
+            (identical(other.rating, rating) || other.rating == rating) &&
+            (identical(other.price, price) || other.price == price));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, id, imageUrl, title, rating, price);
+
+  /// Create a copy of RelatedServiceModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$RelatedServiceModelImplCopyWith<_$RelatedServiceModelImpl> get copyWith =>
+      __$$RelatedServiceModelImplCopyWithImpl<_$RelatedServiceModelImpl>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$RelatedServiceModelImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _RelatedServiceModel extends RelatedServiceModel {
+  const factory _RelatedServiceModel(
+      {required final String id,
+      final String? imageUrl,
+      final String? title,
+      final double? rating,
+      final String? price}) = _$RelatedServiceModelImpl;
+  const _RelatedServiceModel._() : super._();
+
+  factory _RelatedServiceModel.fromJson(Map<String, dynamic> json) =
+      _$RelatedServiceModelImpl.fromJson;
+
+// Assuming API returns these fields, adjust based on actual response
+  @override
+  String get id;
+  @override
+  String? get imageUrl; // Or maybe 'image_url' in JSON?
+  @override
+  String? get title;
+  @override
+  double? get rating;
+  @override
+  String? get price;
+
+  /// Create a copy of RelatedServiceModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$RelatedServiceModelImplCopyWith<_$RelatedServiceModelImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}

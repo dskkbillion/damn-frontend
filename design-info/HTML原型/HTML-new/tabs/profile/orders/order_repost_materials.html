@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 买家材料重传</title>
+    <link rel="stylesheet" href="../../../styles.css">
+    <link rel="stylesheet" href="../../../css/order_repost_materials.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部导航栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='orders.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">买家材料重传</div>
+        </div>
+        
+        <!-- 订单商品卡片 -->
+        <div class="order-card">
+            <div class="order-product">
+                <div class="product-image">
+                    <img src="../../../assets/images/placeholder.png" alt="产品图片" onerror="this.src='https://via.placeholder.com/80/f0f0f0/999999?text=图片'">
+                </div>
+                <div class="product-info">
+                    <div class="product-title">产品188.7</div>
+                    <div class="product-desc">商品简介...</div>
+                    <div class="product-type">基础</div>
+                    <div class="product-meta">
+                        <span>交付时长3</span>
+                        <span>修改次数1</span>
+                        <span class="expand-btn" onclick="toggleExpand()">展开</span>
+                    </div>
+                </div>
+                <div class="product-price">¥10</div>
+            </div>
+            
+            <!-- 展开后的详细信息 -->
+            <div class="expanded-info" id="expandedInfo" style="display: none;">
+                <div class="expanded-row">
+                    <div class="expanded-label">学校数量</div>
+                    <div class="expanded-value">3</div>
+                </div>
+                <div class="expanded-row">
+                    <div class="expanded-label">提问</div>
+                    <div class="expanded-value"><i class="fas fa-check" style="color: green;"></i></div>
+                </div>
+                <div class="expanded-row">
+                    <div class="expanded-label">回答</div>
+                    <div class="expanded-value"><i class="fas fa-check" style="color: green;"></i></div>
+                </div>
+                <div class="expanded-row">
+                    <div class="expanded-label">交付次数</div>
+                    <div class="expanded-value">1</div>
+                </div>
+                <div class="expanded-row">
+                    <div class="expanded-label">交付周期</div>
+                    <div class="expanded-value">3</div>
+                </div>
+            </div>
+            
+            <!-- 订单信息 -->
+            <div class="order-info">
+                <div class="info-row">
+                    <div class="info-label">实付款</div>
+                    <div class="info-value">10</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">订单编号</div>
+                    <div class="info-value">588</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">付款方式</div>
+                    <div class="info-value">余额支付</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">付款时间</div>
+                    <div class="info-value">2025-03-17 18:09:09</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 买家提交区域 -->
+        <div class="buyer-submission">
+            <div class="submission-header" onclick="toggleSubmission()">
+                <div class="submission-title">买家提交#1</div>
+                <div class="submission-toggle">
+                    <i class="fas fa-chevron-up" id="submissionIcon"></i>
+                </div>
+            </div>
+            <div id="submissionContent" style="display: block;">
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab(this, 'text')">文本</div>
+                    <div class="tab" onclick="switchTab(this, 'attachment')">附件</div>
+                </div>
+                <div class="tab-content" id="textContent">
+                    <textarea class="text-input" placeholder="请输入您的文本内容...(字数上限200字)"></textarea>
+                </div>
+                <div class="tab-content" id="attachmentContent" style="display: none;">
+                    <div class="file-upload">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <div class="file-upload-text">点击或拖拽文件到此处上传</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 申请区域 -->
+        <div class="application-section">
+            <div class="application-header" onclick="toggleApplication()">
+                <div class="application-title">你的申请(1)</div>
+                <div class="application-toggle">
+                    <i class="fas fa-chevron-up" id="applicationIcon"></i>
+                </div>
+            </div>
+            <div id="applicationContent" style="display: block;">
+                <div class="application-content">
+                    <div class="application-row">
+                        <div class="application-label">申请类型</div>
+                        <div class="application-value">请求买家补充材料</div>
+                    </div>
+                    <div class="application-row">
+                        <div class="application-label">具体原因</div>
+                        <div class="application-value">材料缺失</div>
+                    </div>
+                    <div class="application-label">申请说明</div>
+                    <div class="application-description">申请说明 材料不充足</div>
+                    <div class="application-row">
+                        <div class="application-label">申请时间</div>
+                        <div class="application-value">2025-03-17 18:09:11</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 问题区域 -->
+        <div class="problem-section">
+            <div class="problem-title">遇到问题？</div>
+            <button class="platform-button" onclick="requestPlatformIntervention()">申请平台介入</button>
+        </div>
+    </div>
+
+    <script>
+        // 切换展开/收起详细信息
+        function toggleExpand() {
+            const expandedInfo = document.getElementById('expandedInfo');
+            const expandBtn = document.querySelector('.expand-btn');
+            
+            if (expandedInfo.style.display === 'none') {
+                expandedInfo.style.display = 'block';
+                expandBtn.textContent = '收起';
+                expandBtn.classList.remove('expand-btn');
+                expandBtn.classList.add('collapse-btn');
+            } else {
+                expandedInfo.style.display = 'none';
+                expandBtn.textContent = '展开';
+                expandBtn.classList.remove('collapse-btn');
+                expandBtn.classList.add('expand-btn');
+            }
+        }
+        
+        // 切换买家提交内容显示/隐藏
+        function toggleSubmission() {
+            const content = document.getElementById('submissionContent');
+            const icon = document.getElementById('submissionIcon');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                content.style.display = 'none';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        }
+        
+        // 切换申请内容显示/隐藏
+        function toggleApplication() {
+            const content = document.getElementById('applicationContent');
+            const icon = document.getElementById('applicationIcon');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                content.style.display = 'none';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        }
+        
+        // 切换标签页
+        function switchTab(tab, tabName) {
+            // 移除所有标签页的active类
+            document.querySelectorAll('.tab').forEach(t => {
+                t.classList.remove('active');
+            });
+            
+            // 添加active类到当前标签页
+            tab.classList.add('active');
+            
+            // 隐藏所有内容
+            document.getElementById('textContent').style.display = 'none';
+            document.getElementById('attachmentContent').style.display = 'none';
+            
+            // 显示选中的内容
+            if (tabName === 'text') {
+                document.getElementById('textContent').style.display = 'block';
+            } else if (tabName === 'attachment') {
+                document.getElementById('attachmentContent').style.display = 'block';
+            }
+        }
+        
+        // 申请平台介入
+        function requestPlatformIntervention() {
+            alert('已申请平台介入，客服将会尽快联系您');
+        }
+    </script>
+</body>
+</html>

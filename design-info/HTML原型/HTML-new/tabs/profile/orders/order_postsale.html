@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 售后服务</title>
+    <link rel="stylesheet" href="../../../styles.css">
+    <link rel="stylesheet" href="../../../css/order_postsale.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.history.back()">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">售后服务</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 售后类型选择 -->
+        <div class="tabs-container">
+            <div class="tab active" data-tab="refund" onclick="switchTab(this)">申请退款</div>
+            <div class="tab" data-tab="platform" onclick="switchTab(this)">申请平台介入</div>
+        </div>
+        
+        <!-- 申请退款表单 -->
+        <div class="tab-content active" id="refundContent">
+            <!-- 商品信息 -->
+            <div class="order-info">
+                <div class="order-image">
+                    <img src="https://via.placeholder.com/80" alt="商品图片">
+                </div>
+                <div class="order-details">
+                    <div class="order-title">商品名称</div>
+                    <div class="order-description">商品描述信息...</div>
+                    <div class="order-price">¥ <span id="orderPrice">108</span></div>
+                </div>
+            </div>
+            
+            <!-- 订单信息 -->
+            <div class="order-meta">
+                <div class="meta-item">
+                    <span class="meta-label">订单编号：</span>
+                    <span class="meta-value">11111111111</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">申请时间：</span>
+                    <span class="meta-value">2024-01-19 16:55</span>
+                </div>
+            </div>
+            
+            <!-- 申请类型 -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-title">申请类型</div>
+                </div>
+                <div class="section-content">
+                    <div class="radio-group">
+                        <label class="radio-item">
+                            <input type="radio" name="refundType" value="full" checked>
+                            <span class="radio-label">全额</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="refundType" value="partial">
+                            <span class="radio-label">部分</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 退款原因 -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-title">具体原因</div>
+                </div>
+                <div class="section-content">
+                    <div class="select-container" onclick="toggleDropdown('reasonDropdown')">
+                        <div class="select-value" id="selectedReason">原因一</div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu" id="reasonDropdown">
+                        <div class="dropdown-item" onclick="selectReason('原因一')">原因一</div>
+                        <div class="dropdown-item" onclick="selectReason('原因二')">原因二</div>
+                        <div class="dropdown-item" onclick="selectReason('原因三')">原因三</div>
+                        <div class="dropdown-item" onclick="selectReason('原因四')">原因四</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 详细说明 -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-title">申请说明</div>
+                </div>
+                <div class="section-content">
+                    <textarea placeholder="必填，请尽详细描述申请说明" rows="5"></textarea>
+                </div>
+            </div>
+            
+            <!-- 退款金额 -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-title">退款总金额</div>
+                    <div class="section-value">¥<span id="refundAmount">108</span></div>
+                </div>
+            </div>
+            
+            <!-- 提交按钮 -->
+            <div class="submit-container">
+                <button class="submit-button" onclick="submitRefund()">提交申请</button>
+            </div>
+        </div>
+        
+        <!-- 申请平台介入表单 -->
+        <div class="tab-content" id="platformContent">
+            <!-- 商品信息 -->
+            <div class="order-info">
+                <div class="order-image">
+                    <img src="https://via.placeholder.com/80" alt="商品图片">
+                </div>
+                <div class="order-details">
+                    <div class="order-title">商品名称</div>
+                    <div class="order-description">商品描述信息...</div>
+                    <div class="order-price">¥ <span>108</span></div>
+                </div>
+            </div>
+            
+            <!-- 订单信息 -->
+            <div class="order-meta">
+                <div class="meta-item">
+                    <span class="meta-label">订单编号：</span>
+                    <span class="meta-value">11111111111</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">申请时间：</span>
+                    <span class="meta-value">2024-01-19 16:55</span>
+                </div>
+            </div>
+            
+            <!-- 申请类型 -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-title">申请类型</div>
+                    <div class="section-value">平台介入</div>
+                </div>
+            </div>
+            
+            <!-- 介入原因 -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-title">具体原因</div>
+                </div>
+                <div class="section-content">
+                    <div class="select-container" onclick="toggleDropdown('platformReasonDropdown')">
+                        <div class="select-value" id="selectedPlatformReason">原因一</div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu" id="platformReasonDropdown">
+                        <div class="dropdown-item" onclick="selectPlatformReason('原因一')">原因一</div>
+                        <div class="dropdown-item" onclick="selectPlatformReason('原因二')">原因二</div>
+                        <div class="dropdown-item" onclick="selectPlatformReason('原因三')">原因三</div>
+                        <div class="dropdown-item" onclick="selectPlatformReason('原因四')">原因四</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 详细说明 -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-title">详细说明</div>
+                </div>
+                <div class="section-content">
+                    <textarea placeholder="必填，请尽详细描述申请说明" rows="5"></textarea>
+                </div>
+            </div>
+            
+            <!-- 提交按钮 -->
+            <div class="submit-container">
+                <button class="submit-button" onclick="submitPlatformIntervention()">提交申请</button>
+            </div>
+        </div>
+        
+        <!-- 退款详情页面（默认隐藏） -->
+        <div class="refund-detail" id="refundDetail" style="display: none;">
+            <!-- 退款进度 -->
+            <div class="refund-progress">
+                <div class="progress-step completed">
+                    <div class="step-dot"></div>
+                    <div class="step-label">申请退款</div>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step active">
+                    <div class="step-dot"></div>
+                    <div class="step-label">请等待商家处理</div>
+                    <div class="step-time">还剩1天19时58分</div>
+                </div>
+            </div>
+            
+            <!-- 提示信息 -->
+            <div class="refund-tip">
+                请耐心等待商家处理，如商家超时未处理，系统将自动退款给您。
+            </div>
+            
+            <!-- 处理记录 -->
+            <div class="refund-record">
+                <div class="record-time">2024-07-28 23:50:57</div>
+                <div class="record-content">[生华市] 快件已发往 合肥转运中心</div>
+                <i class="fas fa-chevron-right"></i>
+            </div>
+            
+            <!-- 退款状态 -->
+            <div class="refund-status">
+                <i class="fas fa-check-circle"></i>
+                <span>退款成功</span>
+            </div>
+            
+            <!-- 退款信息 -->
+            <div class="refund-info">
+                <div class="info-header">退款信息</div>
+                <div class="info-content">
+                    <div class="order-info">
+                        <div class="order-image">
+                            <img src="https://via.placeholder.com/80" alt="商品图片">
+                        </div>
+                        <div class="order-details">
+                            <div class="order-title">商品名称</div>
+                            <div class="order-description">商品描述信息...</div>
+                        </div>
+                    </div>
+                    <div class="view-all">查看全部</div>
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div class="action-buttons">
+                    <button class="action-button" onclick="contactSeller()">
+                        <i class="fas fa-comment"></i>
+                        <span>联系卖家</span>
+                    </button>
+                    <button class="action-button" onclick="viewLogistics()">
+                        <i class="fas fa-truck"></i>
+                        <span>查看物流</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 底部按钮 -->
+            <div class="bottom-buttons">
+                <button class="bottom-button" onclick="platformIntervention()">平台介入</button>
+                <button class="bottom-button" onclick="editApplication()">编辑申请</button>
+                <button class="bottom-button primary" onclick="cancelApplication()">撤销申请</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../../js/order_postsale.js"></script>
+</body>
+</html>

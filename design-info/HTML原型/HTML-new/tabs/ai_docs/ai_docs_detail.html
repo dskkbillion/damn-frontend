@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - AI对话详情</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/ai_docs_detail.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='ai_docs_history.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">对话详情</div>
+            <div class="header-actions">
+                <div class="action-button" onclick="shareConversation()">
+                    <i class="fas fa-share-alt"></i>
+                </div>
+                <div class="action-button" onclick="toggleFavorite()">
+                    <i class="far fa-star" id="favoriteIcon"></i>
+                </div>
+                <div class="action-button" onclick="showMoreOptions()">
+                    <i class="fas fa-ellipsis-v"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 对话信息 -->
+        <div class="conversation-info">
+            <div class="conversation-title">车钥匙丢了怎么办？</div>
+            <div class="conversation-meta">
+                <div class="conversation-date">2025年3月16日 14:30</div>
+                <div class="conversation-status">已完成</div>
+            </div>
+        </div>
+        
+        <!-- 聊天区域 -->
+        <div class="chat-container" id="chatContainer">
+            <!-- AI欢迎消息 -->
+            <div class="message ai-message">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <div class="message-text">
+                        你好，这里是小帮手，我将为你提供专属方案并配服务，你可以通过右上方的按钮随时查看可用实服务。你想问点什么呢？
+                    </div>
+                    <div class="message-time">14:30</div>
+                </div>
+            </div>
+            
+            <!-- 用户问题 -->
+            <div class="message user-message">
+                <div class="message-content">
+                    <div class="message-text">车钥匙丢了怎么办？</div>
+                    <div class="message-time">14:31</div>
+                </div>
+                <div class="message-avatar">
+                    <img src="https://via.placeholder.com/40" alt="用户头像">
+                </div>
+            </div>
+            
+            <!-- AI回答 -->
+            <div class="message ai-message">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <div class="message-text">
+                        车钥匙丢失是很常见的问题，以下是处理步骤：<br><br>
+                        1. 立即通知各相关部门，并尽快联系4S店或专业汽车锁汽修厂咨询。<br>
+                        2. 携带身份证、行驶证等证明材料，确保身份的验证与交接，避免安全隐患。<br>
+                        3. 如果是智能钥匙，可能需要重新编程，这通常需要专业设备。<br>
+                        4. 考虑更换车锁，特别是如果钥匙与个人信息一起丢失的情况。<br><br>
+                        需要注意的是，不同车型和钥匙类型的处理方法可能有所不同。您的车是什么品牌和型号？
+                    </div>
+                    <div class="message-time">14:32</div>
+                </div>
+            </div>
+            
+            <!-- 用户回复 -->
+            <div class="message user-message">
+                <div class="message-content">
+                    <div class="message-text">我的车是丰田卡罗拉，2023款</div>
+                    <div class="message-time">14:33</div>
+                </div>
+                <div class="message-avatar">
+                    <img src="https://via.placeholder.com/40" alt="用户头像">
+                </div>
+            </div>
+            
+            <!-- AI回答 -->
+            <div class="message ai-message">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <div class="message-text">
+                        对于2023款丰田卡罗拉，您需要：<br><br>
+                        1. 联系丰田授权经销商或4S店，他们可以根据您的车辆识别号(VIN)制作新钥匙。<br>
+                        2. 准备好您的车辆所有权证明、身份证和行驶证。<br>
+                        3. 2023款卡罗拉通常使用智能钥匙，需要专业设备进行编程，费用大约在500-1500元之间。<br>
+                        4. 如果您有丰田的道路救援服务，可以联系他们获取帮助。<br><br>
+                        您是否需要附近丰田4S店的联系方式？
+                    </div>
+                    <div class="message-time">14:35</div>
+                </div>
+            </div>
+            
+            <!-- 用户回复 -->
+            <div class="message user-message">
+                <div class="message-content">
+                    <div class="message-text">是的，请提供</div>
+                    <div class="message-time">14:36</div>
+                </div>
+                <div class="message-avatar">
+                    <img src="https://via.placeholder.com/40" alt="用户头像">
+                </div>
+            </div>
+            
+            <!-- AI回答 -->
+            <div class="message ai-message">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <div class="message-text">
+                        以下是几家丰田4S店的联系方式：<br><br>
+                        1. 广汽丰田4S店<br>
+                        电话：400-888-1234<br>
+                        地址：北京市朝阳区东三环中路39号<br><br>
+                        2. 一汽丰田4S店<br>
+                        电话：400-888-5678<br>
+                        地址：北京市海淀区西四环北路123号<br><br>
+                        3. 丰田汽车服务中心<br>
+                        电话：400-888-9012<br>
+                        地址：北京市丰台区南四环西路78号<br><br>
+                        建议您先电话咨询，了解具体费用和所需时间，再前往处理。
+                    </div>
+                    <div class="message-time">14:38</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 相关服务推荐 -->
+        <div class="related-services">
+            <div class="section-title">相关服务推荐</div>
+            <div class="services-container">
+                <!-- 服务项目1 -->
+                <div class="service-item" onclick="viewService('1')">
+                    <div class="service-image">
+                        <img src="https://via.placeholder.com/120" alt="汽车钥匙紧急服务">
+                    </div>
+                    <div class="service-info">
+                        <div class="service-title">汽车钥匙紧急服务</div>
+                        <div class="service-rating">
+                            <i class="fas fa-star"></i>
+                            <span>4.9 (128)</span>
+                        </div>
+                        <div class="service-price">¥299起</div>
+                    </div>
+                </div>
+                
+                <!-- 服务项目2 -->
+                <div class="service-item" onclick="viewService('2')">
+                    <div class="service-image">
+                        <img src="https://via.placeholder.com/120" alt="丰田车型专业咨询">
+                    </div>
+                    <div class="service-info">
+                        <div class="service-title">丰田车型专业咨询</div>
+                        <div class="service-rating">
+                            <i class="fas fa-star"></i>
+                            <span>4.8 (96)</span>
+                        </div>
+                        <div class="service-price">¥99起</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 相关对话 -->
+        <div class="related-conversations">
+            <div class="section-title">相关对话</div>
+            <div class="conversation-list">
+                <div class="conversation-item" onclick="viewConversation('1')">
+                    <div class="conversation-title">如何防止车钥匙丢失？</div>
+                    <div class="conversation-date">2025年3月10日</div>
+                </div>
+                <div class="conversation-item" onclick="viewConversation('2')">
+                    <div class="conversation-title">汽车保养小知识</div>
+                    <div class="conversation-date">2025年3月5日</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部操作栏 -->
+        <div class="bottom-actions">
+            <button class="action-button primary" onclick="continueConversation()">
+                <i class="fas fa-comment"></i>
+                <span>继续对话</span>
+            </button>
+            <button class="action-button secondary" onclick="createNewConversation()">
+                <i class="fas fa-plus"></i>
+                <span>新对话</span>
+            </button>
+        </div>
+        
+        <!-- 更多选项菜单 -->
+        <div class="options-menu" id="optionsMenu">
+            <div class="option-item" onclick="deleteConversation()">
+                <i class="fas fa-trash"></i>
+                <span>删除对话</span>
+            </div>
+            <div class="option-item" onclick="reportIssue()">
+                <i class="fas fa-flag"></i>
+                <span>报告问题</span>
+            </div>
+            <div class="option-item" onclick="hideOptionsMenu()">
+                <i class="fas fa-times"></i>
+                <span>取消</span>
+            </div>
+        </div>
+        
+        <!-- 遮罩层 -->
+        <div class="overlay" id="overlay" onclick="hideOptionsMenu()"></div>
+    </div>
+
+    <script src="js/ai_docs_detail.js"></script>
+</body>
+</html>

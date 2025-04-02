@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 交易记录</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='wallet.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">明细</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 交易记录列表 -->
+        <div class="record-list">
+            <!-- 交易记录1 -->
+            <div class="record-item">
+                <div class="record-icon bank">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <div class="record-info">
+                    <div class="record-title">未知提现</div>
+                    <div class="record-time">2024-10-23 03:10:16</div>
+                </div>
+                <div class="record-amount">
+                    <div class="amount negative">-600</div>
+                    <div class="status">未知</div>
+                </div>
+            </div>
+            
+            <!-- 交易记录2 -->
+            <div class="record-item">
+                <div class="record-icon user">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="record-info">
+                    <div class="record-title">未知提现</div>
+                    <div class="record-time">2024-09-25 10:59:08</div>
+                </div>
+                <div class="record-amount">
+                    <div class="amount negative">-600</div>
+                    <div class="status">未知</div>
+                </div>
+            </div>
+            
+            <!-- 交易记录3 -->
+            <div class="record-item">
+                <div class="record-icon wechat">
+                    <i class="fab fa-weixin"></i>
+                </div>
+                <div class="record-info">
+                    <div class="record-title">未知提现</div>
+                    <div class="record-time">2024-09-25 10:59:02</div>
+                </div>
+                <div class="record-amount">
+                    <div class="amount negative">-600</div>
+                    <div class="status">未知</div>
+                </div>
+            </div>
+            
+            <!-- 交易记录4 -->
+            <div class="record-item">
+                <div class="record-icon bank">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <div class="record-info">
+                    <div class="record-title">未知提现</div>
+                    <div class="record-time">2024-09-25 10:58:56</div>
+                </div>
+                <div class="record-amount">
+                    <div class="amount negative">-600</div>
+                    <div class="status">未知</div>
+                </div>
+            </div>
+            
+            <!-- 交易记录5 -->
+            <div class="record-item">
+                <div class="record-icon wechat">
+                    <i class="fab fa-weixin"></i>
+                </div>
+                <div class="record-info">
+                    <div class="record-title">未知提现</div>
+                    <div class="record-time">2024-06-03 20:53:40</div>
+                </div>
+                <div class="record-amount">
+                    <div class="amount negative">-12300</div>
+                    <div class="status">未知</div>
+                </div>
+            </div>
+            
+            <!-- 交易记录6 -->
+            <div class="record-item">
+                <div class="record-icon bank">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <div class="record-info">
+                    <div class="record-title">未知提现</div>
+                    <div class="record-time">2022-02-22 11:36:44</div>
+                </div>
+                <div class="record-amount">
+                    <div class="amount negative">-100</div>
+                    <div class="status">未知</div>
+                </div>
+            </div>
+            
+            <!-- 交易记录7 -->
+            <div class="record-item">
+                <div class="record-icon bank">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <div class="record-info">
+                    <div class="record-title">未知提现</div>
+                    <div class="record-time">2022-02-21 14:20:18</div>
+                </div>
+                <div class="record-amount">
+                    <div class="amount negative">-100</div>
+                    <div class="status">未知</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 交易记录页面特定样式 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            padding: 0 16px;
+            background-color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .back-button {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .header-right {
+            width: 24px;
+        }
+        
+        .record-list {
+            background-color: var(--bg-light);
+        }
+        
+        .record-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background-color: white;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .record-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            color: white;
+        }
+        
+        .record-icon.bank {
+            background-color: #3498db;
+        }
+        
+        .record-icon.user {
+            background-color: #9b59b6;
+        }
+        
+        .record-icon.wechat {
+            background-color: #2ecc71;
+        }
+        
+        .record-info {
+            flex: 1;
+        }
+        
+        .record-title {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        
+        .record-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .record-amount {
+            text-align: right;
+        }
+        
+        .amount {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .amount.negative {
+            color: var(--error);
+        }
+        
+        .amount.positive {
+            color: #2ecc71;
+        }
+        
+        .status {
+            font-size: 12px;
+            color: var(--error);
+        }
+    </style>
+</body>
+</html>

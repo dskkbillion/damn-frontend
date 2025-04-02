@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 卖家已交付订单</title>
+    <link rel="stylesheet" href="../../../styles.css">
+    <link rel="stylesheet" href="../../../css/seller_order_delivered.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部导航栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='seller_orders.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+        </div>
+        
+        <!-- 进度条 -->
+        <div class="progress-container">
+            <div class="progress-steps">
+                <div class="progress-line"></div>
+                <div class="step completed">
+                    <i class="fas fa-check step-icon"></i>
+                </div>
+                <div class="step completed">
+                    <i class="fas fa-check step-icon"></i>
+                </div>
+                <div class="step completed">
+                    <i class="fas fa-check step-icon"></i>
+                </div>
+                <div class="step completed">
+                    <i class="fas fa-check step-icon"></i>
+                </div>
+                <div class="step pending">
+                </div>
+                <div class="step pending">
+                </div>
+            </div>
+            <div class="step-labels">
+                <div class="step-label">已支付</div>
+                <div class="step-label">已提交</div>
+                <div class="step-label">已接单</div>
+                <div class="step-label">已交付</div>
+                <div class="step-label">待确认</div>
+                <div class="step-label">待评价</div>
+            </div>
+        </div>
+        
+        <!-- 内容区域 -->
+        <div class="content-container">
+            <!-- 状态卡片 -->
+            <div class="status-card">
+                <div class="status-title">等待买家确认收货</div>
+                <div class="status-description">
+                    您已完成交付，等待买家确认收货
+                </div>
+            </div>
+            
+            <!-- 买家申请部分 -->
+            <div class="buyer-request">
+                <div class="request-header" onclick="toggleBuyerRequest()">
+                    <div class="request-title">买家申请</div>
+                    <div class="request-info">(买家购买的服务包含2次交付次数)</div>
+                    <div class="request-toggle">
+                        <i class="fas fa-chevron-down" id="buyerRequestIcon"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 交付部分 -->
+            <div class="delivery-section">
+                <div class="delivery-header" onclick="toggleDelivery()">
+                    <div class="delivery-title">交付 #1</div>
+                    <div class="delivery-date">2025-01-06 23:52:16</div>
+                    <div class="delivery-toggle">
+                        <i class="fas fa-chevron-up" id="deliveryIcon"></i>
+                    </div>
+                </div>
+                <div class="delivery-content" id="deliveryContent">
+                    <!-- 退款按钮 -->
+                    <button class="refund-button" onclick="showRefundOptions()">测试退款</button>
+                    
+                    <!-- 文件部分 -->
+                    <div class="file-item">
+                        <a href="#" class="file-link">http://17-8187.proxy.product-demo.cn:8000/profile/orders/order_detail.html</a>
+                        <a href="#" class="download-button">下载</a>
+                    </div>
+                    <div class="file-count">1个文件</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 切换买家申请显示/隐藏
+        function toggleBuyerRequest() {
+            const icon = document.getElementById('buyerRequestIcon');
+            
+            if (icon.classList.contains('fa-chevron-down')) {
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        }
+        
+        // 切换交付内容显示/隐藏
+        function toggleDelivery() {
+            const content = document.getElementById('deliveryContent');
+            const icon = document.getElementById('deliveryIcon');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                content.style.display = 'none';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        }
+        
+        // 显示退款选项
+        function showRefundOptions() {
+            alert('确定要退款吗？');
+        }
+    </script>
+</body>
+</html>

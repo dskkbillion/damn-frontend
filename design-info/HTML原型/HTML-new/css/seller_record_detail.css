@@ -1,0 +1,164 @@
+/* 交易记录详情页面特定样式 */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    padding: 0 16px;
+    background-color: white;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.back-button {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.header-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.header-right {
+    width: 24px;
+}
+
+.record-amount-container {
+    padding: 32px 16px 24px;
+    text-align: center;
+    background-color: white;
+}
+
+.record-amount-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.record-amount {
+    font-size: 32px;
+    font-weight: 600;
+}
+
+.record-amount.income {
+    color: #2ecc71;
+}
+
+.record-amount.expense {
+    color: #e74c3c;
+}
+
+.record-amount.withdraw {
+    color: #3498db;
+}
+
+.record-status-container {
+    padding: 0 16px 24px;
+    text-align: center;
+    background-color: white;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.record-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 14px;
+}
+
+.record-status.success {
+    background-color: rgba(46, 204, 113, 0.1);
+    color: #2ecc71;
+}
+
+.record-status.pending {
+    background-color: rgba(241, 196, 15, 0.1);
+    color: #f1c40f;
+}
+
+.record-status.failed {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+}
+
+.record-details {
+    background-color: white;
+    margin-top: 12px;
+    padding: 0 16px;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.detail-value {
+    font-size: 14px;
+    color: var(--text-primary);
+    text-align: right;
+}
+
+.record-actions {
+    padding: 16px;
+    margin-top: 12px;
+    background-color: white;
+}
+
+.action-button {
+    width: 100%;
+    padding: 12px 0;
+    border-radius: 8px;
+    font-size: 16px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.action-button.primary {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+}
+
+.action-button.secondary {
+    background-color: white;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+
+.contact-support {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px 16px;
+    margin-top: 12px;
+}
+
+.contact-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.contact-link {
+    font-size: 14px;
+    color: var(--primary-color);
+    margin-left: 4px;
+    cursor: pointer;
+}

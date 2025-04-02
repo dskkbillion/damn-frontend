@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 登录错误</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='login_container.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">登录错误</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 错误内容 -->
+        <div class="error-container">
+            <div class="error-icon">
+                <i class="fas fa-user-lock"></i>
+            </div>
+            
+            <div class="error-title" id="errorTitle">登录失败</div>
+            
+            <div class="error-message" id="errorMessage">
+                用户名或密码错误，请重新输入。
+            </div>
+            
+            <div class="error-tips">
+                <div class="tip-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span>请确认您的账号和密码是否正确</span>
+                </div>
+                <div class="tip-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span>如果多次尝试失败，请尝试找回密码</span>
+                </div>
+            </div>
+            
+            <div class="error-actions">
+                <button class="retry-button" onclick="window.location.href='login.html'">
+                    重新登录
+                </button>
+                
+                <button class="forgot-password-button" onclick="window.location.href='forgot_password.html'">
+                    忘记密码
+                </button>
+                
+                <button class="back-home-button" onclick="window.location.href='index.html'">
+                    返回首页
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 登录错误页面特定样式 */
+        body {
+            background-color: #f8f9fa;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            padding: 0 16px;
+            background-color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .back-button {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .header-right {
+            width: 24px;
+        }
+        
+        .error-container {
+            padding: 48px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .error-icon {
+            font-size: 80px;
+            color: #e74c3c;
+            margin-bottom: 24px;
+        }
+        
+        .error-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .error-message {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            max-width: 300px;
+            line-height: 1.5;
+        }
+        
+        .error-tips {
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 32px;
+            text-align: left;
+        }
+        
+        .tip-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .tip-item i {
+            margin-right: 8px;
+            margin-top: 3px;
+            color: var(--primary-color);
+        }
+        
+        .error-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .retry-button {
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .forgot-password-button {
+            padding: 12px;
+            background-color: #f8f9fa;
+            color: var(--text-primary);
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .back-home-button {
+            padding: 12px;
+            background-color: transparent;
+            color: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+
+    <script>
+        // 获取URL参数
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                title: params.get('title'),
+                message: params.get('message'),
+                errorType: params.get('errorType')
+            };
+        }
+        
+        // 设置错误信息
+        function setErrorInfo() {
+            const params = getUrlParams();
+            
+            if (params.title) {
+                document.getElementById('errorTitle').textContent = params.title;
+            }
+            
+            if (params.message) {
+                document.getElementById('errorMessage').textContent = params.message;
+            }
+            
+            // 根据错误类型设置不同的图标和提示
+            if (params.errorType) {
+                const errorIcon = document.querySelector('.error-icon i');
+                
+                switch (params.errorType) {
+                    case 'password':
+                        errorIcon.className = 'fas fa-key';
+                        break;
+                    case 'account':
+                        errorIcon.className = 'fas fa-user-times';
+                        break;
+                    case 'locked':
+                        errorIcon.className = 'fas fa-user-lock';
+                        break;
+                    case 'network':
+                        errorIcon.className = 'fas fa-wifi';
+                        break;
+                    default:
+                        errorIcon.className = 'fas fa-exclamation-circle';
+                }
+            }
+        }
+        
+        // 页面加载完成后执行
+        window.onload = function() {
+            setErrorInfo();
+        };
+    </script>
+</body>
+</html>

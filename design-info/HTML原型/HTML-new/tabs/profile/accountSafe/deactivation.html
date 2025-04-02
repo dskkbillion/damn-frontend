@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 停用账号</title>
+    <link rel="stylesheet" href="../../../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='account_safe.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">账号注销</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 注销说明 -->
+        <div class="deactivation-container">
+            <div class="deactivation-title">注销账号?</div>
+            <div class="deactivation-description">
+                注销账号后，您的账号将无法使用，且账号内的信息将永久删除，请慎重操作。
+            </div>
+            
+            <!-- 确认按钮 -->
+            <button class="deactivation-button" onclick="showConfirmDialog()">确认注销</button>
+            
+            <!-- 注销协议 -->
+            <div class="deactivation-agreement">
+                <div class="agreement-title">注销协议</div>
+                <div class="agreement-content">
+                    <p>尊敬的用户，在您正式开始下一步有关本产品或服务的账号注销流程前，请仔细阅读如下内容：注销本产品或服务的账号意味着，除法律法规或本协议另有规定外，您在该账号下的个人信息将根据我们的隐私政策处理，且此账号将被终止对相关产品或服务的使用权限，请您一旦对我们的，将无法撤销，请您慎重操作。</p>
+                    <p>您在该账号项下使用的功能，通常会在我们的《隐私政策》（"本协议"），并同意本协议全部内容，不再单独以文本形式，您同意，您点击"同意"一旦点击按钮或式的确认操作（例如勾选、点击和/或类似的操作），即表示您同意本协议。如您不同意本协议的全部或部分内容，则不应使用本产品或服务或创建账号。如果您已经创建账号，本协议更新后的内容，仍按照最新的协议内容对我们和您产生约束力。</p>
+                    <p>您确认您已年满18周岁，或者您是在您的监护人的同意和指导下使用本产品或服务的，您的监护人同意您使用本产品或服务并同意受本协议约束。</p>
+                    <p>如您在使用我们的产品或服务的过程中，您可能会看到我们提供的第三方产品或服务（可能是第三方网站或移动应用程序），您可能会收到来自第三方的信息，请您注意，您使用该第三方产品或服务（包括您向第三方提供的任何个人信息），将受该第三方的服务条款及隐私政策约束，而非本协议。我们对第三方的产品或服务不承担任何责任。</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 确认对话框 -->
+        <div class="confirm-dialog" id="confirmDialog">
+            <div class="dialog-content">
+                <div class="dialog-title">确认注销账号</div>
+                <div class="dialog-message">
+                    注销后账号将无法恢复，所有数据将被永久删除。确定要注销吗？
+                </div>
+                <div class="dialog-buttons">
+                    <button class="dialog-button cancel" onclick="hideConfirmDialog()">取消</button>
+                    <button class="dialog-button confirm" onclick="deactivateAccount()">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 停用账号页面特定样式 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            padding: 0 16px;
+            background-color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .back-button {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .header-right {
+            width: 24px;
+        }
+        
+        .deactivation-container {
+            padding: 24px 16px;
+            background-color: white;
+        }
+        
+        .deactivation-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .deactivation-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+        
+        .deactivation-button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 32px;
+        }
+        
+        .deactivation-agreement {
+            margin-top: 16px;
+        }
+        
+        .agreement-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .agreement-content {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        
+        .agreement-content p {
+            margin-bottom: 12px;
+        }
+        
+        .confirm-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .dialog-content {
+            width: 80%;
+            max-width: 320px;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .dialog-title {
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .dialog-message {
+            padding: 24px 16px;
+            font-size: 14px;
+            line-height: 1.5;
+            text-align: center;
+        }
+        
+        .dialog-buttons {
+            display: flex;
+            border-top: 1px solid var(--border-light);
+        }
+        
+        .dialog-button {
+            flex: 1;
+            padding: 12px 0;
+            border: none;
+            background-color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .dialog-button.cancel {
+            color: var(--text-secondary);
+            border-right: 1px solid var(--border-light);
+        }
+        
+        .dialog-button.confirm {
+            color: var(--error);
+        }
+    </style>
+
+    <script>
+        // 显示确认对话框
+        function showConfirmDialog() {
+            document.getElementById('confirmDialog').style.display = 'flex';
+        }
+        
+        // 隐藏确认对话框
+        function hideConfirmDialog() {
+            document.getElementById('confirmDialog').style.display = 'none';
+        }
+        
+        // 注销账号
+        function deactivateAccount() {
+            // 这里应该有注销账号的逻辑
+            // 但在这个HTML原型中，我们只是模拟成功并返回登录页面
+            alert('账号已成功注销');
+            window.location.href = '../../../outer/login/login.html';
+        }
+    </script>
+</body>
+</html>

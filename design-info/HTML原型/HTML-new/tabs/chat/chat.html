@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 消息</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="chat-header">
+            <div class="chat-title">消息</div>
+        </div>
+        
+        <!-- 系统通知 -->
+        <div class="system-notifications">
+            <!-- 小粽子 -->
+            <div class="chat-item" onclick="window.location.href='chat_detail.html?id=ai'">
+                <div class="chat-avatar">
+                    <img src="../../imgs/IMG20250320164529_20250326010857.jpg" alt="小粽子" class="avatar-img">
+                </div>
+                <div class="chat-content">
+                    <div class="chat-name">小粽子</div>
+                    <div class="chat-message">关于多少看看买家</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 分隔线 -->
+        <div class="chat-divider"></div>
+        
+        <!-- 用户消息列表 -->
+        <div class="chat-list">
+            <!-- 172***7 -->
+            <div class="chat-item" onclick="window.location.href='chat_detail.html?id=172'">
+                <div class="chat-avatar">
+                    <img src="../../imgs/IMG20250310162729_20250326010856.jpg" alt="172***7" class="avatar-img">
+                </div>
+                <div class="chat-content">
+                    <div class="chat-name">172***7</div>
+                    <div class="chat-message">我现在不在线稍后回复您</div>
+                </div>
+            </div>
+            
+            <!-- 瑞 -->
+            <div class="chat-item" onclick="window.location.href='chat_detail.html?id=rui'">
+                <div class="chat-avatar">
+                    <img src="../../imgs/IMG20250317124302.jpg" alt="瑞" class="avatar-img">
+                </div>
+                <div class="chat-content">
+                    <div class="chat-name">瑞</div>
+                    <div class="chat-message">
+                        <i class="fas fa-volume-up"></i>
+                        <span>语音</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 188***9 -->
+            <div class="chat-item" onclick="window.location.href='chat_detail.html?id=188'">
+                <div class="chat-avatar">
+                    <img src="../../imgs/IMG20250314145624_20250326010857.jpg" alt="188***9" class="avatar-img">
+                </div>
+                <div class="chat-content">
+                    <div class="chat-name">188***9</div>
+                    <div class="chat-message">我现在不在线稍后回复您</div>
+                </div>
+            </div>
+            
+            <!-- Test -->
+            <div class="chat-item" onclick="window.location.href='chat_detail.html?id=test'">
+                <div class="chat-avatar">
+                    <img src="../../imgs/IMG20250322165106_20250326010857.jpg" alt="Test" class="avatar-img">
+                </div>
+                <div class="chat-content">
+                    <div class="chat-name">Test</div>
+                    <div class="chat-message">
+                        <i class="fas fa-image"></i>
+                        <span>图片</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 系统管理员 -->
+            <div class="chat-item" onclick="window.location.href='chat_detail.html?id=admin'">
+                <div class="chat-avatar">
+                    <img src="../../imgs/IMG20250322165107_20250326010857.jpg" alt="系统管理员" class="avatar-img">
+                </div>
+                <div class="chat-content">
+                    <div class="chat-name">系统管理员</div>
+                    <div class="chat-message">...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="window.location.href='../ai_docs/ai_docs.html'">
+                <i class="fas fa-robot nav-icon"></i>
+                <span class="nav-text">多少看看</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='../homepage/index.html'">
+                <i class="fas fa-home nav-icon"></i>
+                <span class="nav-text">首页</span>
+            </div>
+            <div class="nav-item active">
+                <i class="fas fa-comment nav-icon"></i>
+                <span class="nav-text">消息</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='../profile/profile.html'">
+                <i class="fas fa-user nav-icon"></i>
+                <span class="nav-text">我的</span>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 消息页面特定样式 */
+        .chat-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 56px;
+            background-color: white;
+            border-bottom: 1px solid var(--border-light);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 0 16px;
+        }
+        
+        .chat-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .system-notifications {
+            background-color: white;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .chat-divider {
+            height: 10px;
+            background-color: #f5f5f5;
+            border-top: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .chat-list {
+            padding-bottom: 56px;
+            background-color: white;
+        }
+        
+        .chat-item {
+            display: flex;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-light);
+            background-color: white;
+            cursor: pointer;
+        }
+        
+        .chat-avatar {
+            margin-right: 12px;
+        }
+        
+        .avatar-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .chat-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .chat-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .chat-message {
+            font-size: 14px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .chat-message i {
+            margin-right: 4px;
+        }
+    </style>
+</body>
+</html>

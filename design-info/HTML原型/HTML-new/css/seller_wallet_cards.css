@@ -1,0 +1,276 @@
+/* 银行卡管理页面特定样式 */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    padding: 0 16px;
+    background-color: white;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.back-button {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.header-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.header-right {
+    width: 24px;
+}
+
+.cards-list {
+    padding: 16px;
+}
+
+.card-item {
+    background-color: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.card-bank {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.bank-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+}
+
+.bank-logo i {
+    font-size: 16px;
+    color: var(--primary-color);
+}
+
+.bank-name {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.card-number {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+}
+
+.card-holder {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.card-branch {
+    font-size: 12px;
+    color: var(--text-hint);
+}
+
+.card-actions {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+}
+
+.card-action {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.card-action i {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.add-card-container {
+    padding: 16px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: white;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.add-card-button {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.add-card-button i {
+    margin-right: 8px;
+}
+
+.add-card-dialog,
+.confirm-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.dialog-content {
+    width: 80%;
+    max-width: 320px;
+    background-color: white;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.dialog-title {
+    padding: 16px;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.dialog-message {
+    padding: 24px 16px;
+    text-align: center;
+    font-size: 16px;
+    color: var(--text-primary);
+}
+
+.dialog-form {
+    padding: 16px;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.dialog-buttons {
+    display: flex;
+    border-top: 1px solid var(--border-light);
+}
+
+.dialog-button {
+    flex: 1;
+    padding: 12px 0;
+    border: none;
+    background-color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.dialog-button.cancel {
+    color: var(--text-secondary);
+    border-right: 1px solid var(--border-light);
+}
+
+.dialog-button.confirm {
+    color: var(--primary-color);
+}
+
+/* 银行卡颜色 */
+.card-item.ICBC {
+    background: linear-gradient(135deg, #e60012 0%, #f39800 100%);
+    color: white;
+}
+
+.card-item.CCB {
+    background: linear-gradient(135deg, #0066b3 0%, #009fe3 100%);
+    color: white;
+}
+
+.card-item.ABC {
+    background: linear-gradient(135deg, #009944 0%, #8fc31f 100%);
+    color: white;
+}
+
+.card-item.BOC {
+    background: linear-gradient(135deg, #c30d23 0%, #e60012 100%);
+    color: white;
+}
+
+.card-item.CMBC {
+    background: linear-gradient(135deg, #e60012 0%, #f8b62d 100%);
+    color: white;
+}
+
+.card-item.PSBC {
+    background: linear-gradient(135deg, #007940 0%, #00a33c 100%);
+    color: white;
+}
+
+.card-item.SPDB {
+    background: linear-gradient(135deg, #005bac 0%, #00a0e9 100%);
+    color: white;
+}
+
+.card-item.CIB {
+    background: linear-gradient(135deg, #0068b7 0%, #00a0e9 100%);
+    color: white;
+}
+
+.card-item.white-text .card-holder,
+.card-item.white-text .card-branch {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.card-item.white-text .card-action {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.card-item.white-text .card-action i {
+    color: white;
+}

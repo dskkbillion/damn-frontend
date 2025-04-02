@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 个人资料</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 用户信息区域 -->
+        <div class="profile-header">
+            <div class="user-info">
+                <div class="user-avatar" onclick="window.location.href='accountSafe/edit_avatar.html'">
+                    <img src="../../imgs/IMG20250317124302.jpg" alt="用户头像" class="avatar-img">
+                </div>
+                <div class="user-details">
+                    <div class="user-name" onclick="window.location.href='accountSafe/edit_nickname.html'">瑭</div>
+                    <div class="user-status">
+                        <span class="status-dot online"></span>
+                        <span class="status-text">在线</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 卖家模式开关 -->
+            <div class="seller-mode-switch">
+                <div class="switch-label">卖家模式</div>
+                <label class="switch">
+                    <input type="checkbox" id="sellerModeToggle">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </div>
+        
+        <!-- 我的订单 -->
+        <div class="profile-section">
+            <div class="section-title">我的订单</div>
+            <div class="order-status-list">
+                <div class="order-status-item" onclick="window.location.href='orders/orders.html?status=pending'">
+                    <div class="status-icon">
+                        <i class="far fa-clock"></i>
+                    </div>
+                    <div class="status-text">待付款</div>
+                </div>
+                <div class="order-status-item" onclick="window.location.href='orders/orders.html?status=processing'">
+                    <div class="status-icon">
+                        <i class="fas fa-spinner"></i>
+                    </div>
+                    <div class="status-text">进行中</div>
+                </div>
+                <div class="order-status-item" onclick="window.location.href='orders/orders.html?status=completed'">
+                    <div class="status-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="status-text">已完成</div>
+                </div>
+                <div class="order-status-item" onclick="window.location.href='orders/orders.html?status=refund'">
+                    <div class="status-icon">
+                        <i class="fas fa-undo"></i>
+                    </div>
+                    <div class="status-text">退款/售后</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 我的关看 -->
+        <div class="profile-section">
+            <div class="section-title">我的关看</div>
+            <div class="profile-menu">
+                <div class="menu-item" onclick="window.location.href='favorites.html'">
+                    <div class="menu-icon">
+                        <i class="far fa-star"></i>
+                    </div>
+                    <div class="menu-text">收藏</div>
+                    <div class="menu-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+                <div class="menu-item" onclick="window.location.href='likedStory/story_list.html'">
+                    <div class="menu-icon">
+                        <i class="far fa-heart"></i>
+                    </div>
+                    <div class="menu-text">点赞的故事</div>
+                    <div class="menu-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 我的钱包 -->
+        <div class="profile-section">
+            <div class="section-title">我的钱包</div>
+            <div class="profile-menu">
+                <div class="menu-item" onclick="window.location.href='wallet.html'">
+                    <div class="menu-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="menu-text">钱包</div>
+                    <div class="menu-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 设置 -->
+        <div class="profile-section">
+            <div class="section-title">设置</div>
+            <div class="profile-menu">
+                <div class="menu-item" onclick="window.location.href='accountSafe/account_safe.html'">
+                    <div class="menu-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="menu-text">账号与安全</div>
+                    <div class="menu-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 关于我们 -->
+        <div class="profile-section">
+            <div class="section-title">关于我们</div>
+            <div class="profile-menu">
+                <div class="menu-item" onclick="window.location.href='../../outer/about/about_us.html'">
+                    <div class="menu-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="menu-text">小帮手的使命</div>
+                    <div class="menu-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="window.location.href='../ai_docs/ai_docs.html'">
+                <i class="fas fa-robot nav-icon"></i>
+                <span class="nav-text">多少看看</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='../homepage/index.html'">
+                <i class="fas fa-home nav-icon"></i>
+                <span class="nav-text">首页</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='../chat/chat.html'">
+                <i class="fas fa-comment nav-icon"></i>
+                <span class="nav-text">消息</span>
+            </div>
+            <div class="nav-item active">
+                <i class="fas fa-user nav-icon"></i>
+                <span class="nav-text">我的</span>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 添加的样式 */
+        .user-avatar, .user-name {
+            cursor: pointer;
+        }
+        
+        .user-avatar:hover, .user-name:hover {
+            opacity: 0.8;
+        }
+        /* 个人资料页面特定样式 */
+        .profile-header {
+            background-color: var(--bg-light);
+            padding: 24px 20px;
+            color: white;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .user-avatar {
+            margin-right: 16px;
+        }
+        
+        .avatar-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 2px solid var(--bg-lighter);
+            object-fit: cover;
+        }
+        
+        .user-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+        
+        .user-status {
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        
+        .status-dot.online {
+            background-color: #2ecc71;
+        }
+        
+        .status-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .seller-mode-switch {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--bg-lighter);
+            padding: 12px 16px;
+            border-radius: 8px;
+        }
+        
+        .switch-label {
+            font-size: 16px;
+            color: var(--text-primary);
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg-dark);
+            transition: .4s;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 2px;
+            background-color: var(--bg-lighter);
+            transition: .4s;
+        }
+        
+        input:checked + .slider {
+            background-color: #2ecc71;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .slider.round {
+            border-radius: 24px;
+        }
+        
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        
+        .profile-section {
+            background-color: white;
+            margin-top: 16px;
+            padding: 20px;
+            border-radius: 12px;        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .order-status-list {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .order-status-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .status-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--bg-lighter);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+            font-size: 18px;
+        }
+        
+        .status-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .profile-menu {
+            background-color: white;
+        }
+        
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 18px 0;
+            border-bottom: 1px solid var(--border-light);
+            cursor: pointer;
+        }
+        
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+        
+        .menu-icon {
+            width: 24px;
+            margin-right: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .menu-text {
+            flex: 1;
+        }
+        
+        .menu-arrow {
+            color: var(--text-hint);
+        }
+    </style>
+
+    <script>
+        // 卖家模式切换
+        document.getElementById('sellerModeToggle').addEventListener('change', function() {
+            if (this.checked) {
+                window.location.href = '../sellerscreens/profile/index.html';
+            }
+        });
+    </script>
+</body>
+</html>

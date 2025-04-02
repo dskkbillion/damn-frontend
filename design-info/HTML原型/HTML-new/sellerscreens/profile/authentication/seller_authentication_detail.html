@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 认证申请</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='seller_authentication.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">公司认证</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 认证申请表单 -->
+        <div class="auth-form-container">
+            <div class="auth-form-intro">
+                <div class="intro-title">公司认证说明</div>
+                <div class="intro-content">
+                    <p>公司认证可以提高您的服务可信度，获得更多订单机会。请按照要求填写真实信息并上传相关证明材料。</p>
+                    <p>认证审核通常需要1-3个工作日，请耐心等待。</p>
+                </div>
+            </div>
+            
+            <form id="authForm" onsubmit="submitForm(event)">
+                <!-- 基本信息 -->
+                <div class="form-section">
+                    <div class="section-title">基本信息</div>
+                    
+                    <div class="form-group">
+                        <label for="companyName" class="form-label">公司名称 <span class="required">*</span></label>
+                        <input type="text" id="companyName" class="form-input" placeholder="请输入公司全称" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="creditCode" class="form-label">统一社会信用代码 <span class="required">*</span></label>
+                        <input type="text" id="creditCode" class="form-input" placeholder="请输入18位统一社会信用代码" required pattern="[0-9A-Z]{18}">
+                        <div class="form-hint">请输入营业执照上的18位统一社会信用代码</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="legalPerson" class="form-label">法人代表 <span class="required">*</span></label>
+                        <input type="text" id="legalPerson" class="form-input" placeholder="请输入法人代表姓名" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="registeredCapital" class="form-label">注册资本</label>
+                        <input type="text" id="registeredCapital" class="form-input" placeholder="请输入注册资本">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="foundingDate" class="form-label">成立日期</label>
+                        <input type="date" id="foundingDate" class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="businessScope" class="form-label">经营范围</label>
+                        <textarea id="businessScope" class="form-textarea" placeholder="请输入公司经营范围"></textarea>
+                    </div>
+                </div>
+                
+                <!-- 联系信息 -->
+                <div class="form-section">
+                    <div class="section-title">联系信息</div>
+                    
+                    <div class="form-group">
+                        <label for="contactName" class="form-label">联系人姓名 <span class="required">*</span></label>
+                        <input type="text" id="contactName" class="form-input" placeholder="请输入联系人姓名" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contactPhone" class="form-label">联系电话 <span class="required">*</span></label>
+                        <input type="tel" id="contactPhone" class="form-input" placeholder="请输入联系电话" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contactEmail" class="form-label">联系邮箱</label>
+                        <input type="email" id="contactEmail" class="form-input" placeholder="请输入联系邮箱">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="companyAddress" class="form-label">公司地址</label>
+                        <input type="text" id="companyAddress" class="form-input" placeholder="请输入公司地址">
+                    </div>
+                </div>
+                
+                <!-- 证明材料 -->
+                <div class="form-section">
+                    <div class="section-title">证明材料</div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">营业执照 <span class="required">*</span></label>
+                        <div class="upload-container">
+                            <div class="upload-item" id="licenseUpload">
+                                <input type="file" id="licenseFile" class="upload-input" accept="image/*" onchange="previewImage(this, 'licensePreview')" required>
+                                <div class="upload-placeholder" id="licenseUploadPlaceholder">
+                                    <i class="fas fa-plus"></i>
+                                    <div>上传营业执照</div>
+                                </div>
+                                <div class="upload-preview" id="licensePreview" style="display: none;">
+                                    <img src="" alt="营业执照预览" id="licensePreviewImg">
+                                    <div class="preview-overlay">
+                                        <i class="fas fa-times" onclick="removeImage('licenseFile', 'licensePreview', 'licenseUploadPlaceholder')"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="upload-hint">请上传清晰的营业执照照片或扫描件，确保所有信息清晰可见</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">公司LOGO</label>
+                        <div class="upload-container">
+                            <div class="upload-item" id="logoUpload">
+                                <input type="file" id="logoFile" class="upload-input" accept="image/*" onchange="previewImage(this, 'logoPreview')">
+                                <div class="upload-placeholder" id="logoUploadPlaceholder">
+                                    <i class="fas fa-plus"></i>
+                                    <div>上传公司LOGO</div>
+                                </div>
+                                <div class="upload-preview" id="logoPreview" style="display: none;">
+                                    <img src="" alt="公司LOGO预览" id="logoPreviewImg">
+                                    <div class="preview-overlay">
+                                        <i class="fas fa-times" onclick="removeImage('logoFile', 'logoPreview', 'logoUploadPlaceholder')"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="upload-hint">请上传公司LOGO，建议使用正方形图片，大小不超过2MB</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">其他证明材料</label>
+                        <div class="upload-container">
+                            <div class="upload-item" id="otherDocsUpload">
+                                <input type="file" id="otherDocsFile" class="upload-input" accept="image/*,.pdf" onchange="previewImage(this, 'otherDocsPreview')">
+                                <div class="upload-placeholder" id="otherDocsUploadPlaceholder">
+                                    <i class="fas fa-plus"></i>
+                                    <div>上传其他证明</div>
+                                </div>
+                                <div class="upload-preview" id="otherDocsPreview" style="display: none;">
+                                    <img src="" alt="其他证明预览" id="otherDocsPreviewImg">
+                                    <div class="preview-overlay">
+                                        <i class="fas fa-times" onclick="removeImage('otherDocsFile', 'otherDocsPreview', 'otherDocsUploadPlaceholder')"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="upload-hint">可上传其他相关证明材料，如资质证书、荣誉证书等</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 协议同意 -->
+                <div class="form-section">
+                    <div class="agreement-container">
+                        <label class="agreement-label">
+                            <input type="checkbox" id="agreementCheckbox" required>
+                            <span class="agreement-text">我已阅读并同意<a href="javascript:void(0)" onclick="showAgreement()">《认证服务协议》</a>，保证所提供的信息真实有效</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- 提交按钮 -->
+                <div class="form-submit">
+                    <button type="submit" class="submit-button">提交认证申请</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- 协议弹窗 -->
+        <div class="modal" id="agreementModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">认证服务协议</div>
+                    <div class="modal-close" onclick="closeModal('agreementModal')">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="agreement-content">
+                        <h3>认证服务协议</h3>
+                        <p>本协议是您与DSKK平台之间关于认证服务的法律协议。请您仔细阅读以下条款，确保完全理解本协议中的所有权利和义务。</p>
+                        
+                        <h4>一、服务内容</h4>
+                        <p>DSKK平台提供认证服务，旨在验证您提供的身份、资质等信息的真实性，提高您在平台上的可信度。</p>
+                        
+                        <h4>二、用户义务</h4>
+                        <p>1. 您应当提供真实、准确、完整的认证信息和材料。</p>
+                        <p>2. 您应当确保提供的认证材料不侵犯任何第三方的合法权益。</p>
+                        <p>3. 您应当遵守平台的各项规则和国家相关法律法规。</p>
+                        
+                        <h4>三、平台权利与义务</h4>
+                        <p>1. 平台有权对您提供的认证信息和材料进行审核。</p>
+                        <p>2. 平台将在合理的时间内完成审核，并告知您审核结果。</p>
+                        <p>3. 平台有权对虚假认证信息进行处理，包括但不限于撤销认证、限制账号功能等。</p>
+                        
+                        <h4>四、隐私保护</h4>
+                        <p>平台将严格保护您提供的认证信息和材料，不会将其用于认证以外的其他用途，除非法律法规另有规定。</p>
+                        
+                        <h4>五、免责声明</h4>
+                        <p>1. 平台不对因您提供虚假信息导致的任何损失承担责任。</p>
+                        <p>2. 平台不对因不可抗力导致的认证延迟或失败承担责任。</p>
+                        
+                        <h4>六、协议修改</h4>
+                        <p>平台有权根据业务需要修改本协议，修改后的协议将在平台上公布。</p>
+                        
+                        <h4>七、法律适用</h4>
+                        <p>本协议的订立、执行和解释及争议的解决均应适用中国法律。</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="agree-button" onclick="agreeToTerms()">同意并继续</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 提交成功弹窗 -->
+        <div class="modal" id="successModal">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="success-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="success-title">提交成功</div>
+                    <div class="success-message">您的认证申请已提交，我们将在1-3个工作日内完成审核，请耐心等待。</div>
+                </div>
+                <div class="modal-footer">
+                    <button class="confirm-button" onclick="goToAuthList()">返回认证列表</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 认证申请页面特定样式 */
+        .auth-form-container {
+            padding: 16px;
+            background-color: white;
+        }
+        
+        .auth-form-intro {
+            margin-bottom: 24px;
+            padding: 16px;
+            background-color: var(--bg-light);
+            border-radius: 8px;
+        }
+        
+        .intro-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .intro-content {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+        
+        .intro-content p {
+            margin-bottom: 8px;
+        }
+        
+        /* 表单部分样式 */
+        .form-section {
+            margin-bottom: 24px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .required {
+            color: #f44336;
+        }
+        
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        
+        /* 上传控件样式 */
+        .upload-container {
+            margin-bottom: 8px;
+        }
+        
+        .upload-item {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin-bottom: 8px;
+        }
+        
+        .upload-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 2;
+        }
+        
+        .upload-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 1px dashed var(--border-light);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-light);
+            z-index: 1;
+        }
+        
+        .upload-placeholder i {
+            font-size: 24px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .upload-placeholder div {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .upload-preview {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .upload-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .preview-overlay {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 24px;
+            height: 24px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 0 0 0 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .preview-overlay i {
+            color: white;
+            font-size: 14px;
+        }
+        
+        .upload-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        /* 协议同意样式 */
+        .agreement-container {
+            margin-bottom: 24px;
+        }
+        
+        .agreement-label {
+            display: flex;
+            align-items: flex-start;
+            cursor: pointer;
+        }
+        
+        .agreement-label input {
+            margin-top: 3px;
+            margin-right: 8px;
+        }
+        
+        .agreement-text {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .agreement-text a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        /* 提交按钮样式 */
+        .form-submit {
+            margin-top: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .submit-button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        /* 模态框样式 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            width: 90%;
+            max-width: 320px;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            padding: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .modal-footer {
+            padding: 16px;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            justify-content: center;
+        }
+        
+        .agree-button, .confirm-button {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        /* 协议内容样式 */
+        .agreement-content {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .agreement-content h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .agreement-content h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .agreement-content p {
+            margin-bottom: 8px;
+        }
+        
+        /* 成功提示样式 */
+        .success-icon {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        
+        .success-icon i {
+            font-size: 48px;
+            color: #4caf50;
+        }
+        
+        .success-title {
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        
+        .success-message {
+            font-size: 14px;
+            text-align: center;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+    </style>
+
+    <script>
+        // 预览上传图片
+        function previewImage(input, previewId) {
+            const preview = document.getElementById(previewId);
+            const previewImg = document.getElementById(previewId + 'Img');
+            const placeholder = document.getElementById(previewId.replace('Preview', 'UploadPlaceholder'));
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    preview.style.display = 'block';
+                    placeholder.style.display = 'none';
+                };
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        // 移除上传图片
+        function removeImage(inputId, previewId, placeholderId) {
+            document.getElementById(inputId).value = '';
+            document.getElementById(previewId).style.display = 'none';
+            document.getElementById(placeholderId).style.display = 'flex';
+        }
+        
+        // 显示协议弹窗
+        function showAgreement() {
+            document.getElementById('agreementModal').style.display = 'flex';
+        }
+        
+        // 关闭弹窗
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // 同意协议
+        function agreeToTerms() {
+            document.getElementById('agreementCheckbox').checked = true;
+            closeModal('agreementModal');
+        }
+        
+        // 提交表单
+        function submitForm(event) {
+            event.preventDefault();
+            
+            // 这里应该有表单验证和提交的逻辑
+            
+            // 显示提交成功弹窗
+            document.getElementById('successModal').style.display = 'flex';
+        }
+        
+        // 返回认证列表
+        function goToAuthList() {
+            window.location.href = 'seller_authentication.html';
+        }
+        
+        // 点击弹窗外部关闭弹窗
+        document.addEventListener('click', function(e) {
+            const modals = document.querySelectorAll('.modal');
+            
+            modals.forEach(modal => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

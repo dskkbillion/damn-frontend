@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 项目编辑</title>
+    <link rel="stylesheet" href="../../../../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="edit-header">
+            <div class="back-button" onclick="window.location.href='../seller_post.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">编辑服务</div>
+            <div class="publish-button" onclick="publishService()">
+                发布
+            </div>
+        </div>
+        
+        <!-- 编辑表单 -->
+        <div class="edit-form">
+            <!-- 服务名称 -->
+            <div class="form-group">
+                <div class="form-label">服务名称</div>
+                <input type="text" class="form-input" id="serviceName" placeholder="请输入服务名称">
+            </div>
+            
+            <!-- 服务描述 -->
+            <div class="form-group">
+                <div class="form-label">服务描述</div>
+                <textarea class="form-textarea" id="serviceDescription" placeholder="描述一下您的服务的具体信息..."></textarea>
+            </div>
+            
+            <!-- 上传图片 -->
+            <div class="form-group">
+                <div class="upload-images" id="uploadImages">
+                    <div class="upload-item" onclick="addImage()">
+                        <i class="fas fa-image"></i>
+                        <div class="upload-text">上传图片</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 套餐标签页 -->
+            <div class="package-tabs">
+                <div class="package-tab active" onclick="switchPackage('basic')">基础套餐</div>
+                <div class="package-tab" onclick="switchPackage('advanced')">进阶套餐</div>
+                <div class="package-tab" onclick="switchPackage('premium')">豪华套餐</div>
+                <div class="package-tab-indicator" style="width: 33.33%; left: 0;"></div>
+            </div>
+            
+            <!-- 套餐内容 -->
+            <div class="package-content" id="basicPackage">
+                <!-- 交付周期 -->
+                <div class="form-group">
+                    <div class="form-label">交付周期</div>
+                    <div class="form-select" onclick="showDeliveryTimeOptions()">
+                        <span id="deliveryTimeText">3天</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+                
+                <!-- 交付次数 -->
+                <div class="form-group">
+                    <div class="form-label">交付次数</div>
+                    <div class="form-select" onclick="showDeliveryCountOptions()">
+                        <span id="deliveryCountText">2次</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+                
+                <!-- 价格设置 -->
+                <div class="form-group">
+                    <div class="price-container">
+                        <div class="price-input">
+                            <div class="price-label">输入</div>
+                            <div class="price-field">
+                                <span class="currency">¥</span>
+                                <input type="number" id="priceInput" placeholder="0" onkeyup="updateDisplayPrice()">
+                            </div>
+                        </div>
+                        <div class="price-display">
+                            <div class="price-label">展示</div>
+                            <div class="price-field">
+                                <span class="currency">¥</span>
+                                <span id="priceDisplay">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 常见问题 -->
+            <div class="form-group">
+                <div class="form-header">
+                    <div class="form-label">常见问题编辑</div>
+                    <div class="add-button-small" onclick="addFaq()">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                </div>
+                
+                <div class="faq-list" id="faqList">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <input type="text" class="form-input" placeholder="问题">
+                            <i class="fas fa-times" onclick="removeFaq(this)"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <textarea class="form-textarea" placeholder="回答"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 需要客户提供 -->
+            <div class="form-group">
+                <div class="form-label">需要客户提供</div>
+                <textarea class="form-textarea" id="customerRequirements" placeholder="请填写您需要客户提供的信息或材料"></textarea>
+                <div class="form-hint">特殊信息需要客户提供（如个人信息、账号密码等）请在此说明！</div>
+            </div>
+        </div>
+        
+        <!-- 底部保存按钮 -->
+        <div class="bottom-button-container">
+            <button class="save-button" onclick="saveAsDraft()">保存为草稿</button>
+            <button class="publish-button-large" onclick="publishService()">发布</button>
+        </div>
+        
+        <!-- 交付周期选择弹窗 -->
+        <div class="option-modal" id="deliveryTimeModal">
+            <div class="option-modal-content">
+                <div class="option-modal-header">
+                    <div class="option-modal-title">选择交付周期</div>
+                    <div class="option-modal-close" onclick="closeModal('deliveryTimeModal')">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+                <div class="option-list">
+                    <div class="option-item" onclick="selectDeliveryTime(1)">1天</div>
+                    <div class="option-item" onclick="selectDeliveryTime(2)">2天</div>
+                    <div class="option-item active" onclick="selectDeliveryTime(3)">3天</div>
+                    <div class="option-item" onclick="selectDeliveryTime(5)">5天</div>
+                    <div class="option-item" onclick="selectDeliveryTime(7)">7天</div>
+                    <div class="option-item" onclick="selectDeliveryTime(14)">14天</div>
+                    <div class="option-item" onclick="selectDeliveryTime(30)">30天</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 交付次数选择弹窗 -->
+        <div class="option-modal" id="deliveryCountModal">
+            <div class="option-modal-content">
+                <div class="option-modal-header">
+                    <div class="option-modal-title">选择交付次数</div>
+                    <div class="option-modal-close" onclick="closeModal('deliveryCountModal')">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+                <div class="option-list">
+                    <div class="option-item" onclick="selectDeliveryCount(1)">1次</div>
+                    <div class="option-item active" onclick="selectDeliveryCount(2)">2次</div>
+                    <div class="option-item" onclick="selectDeliveryCount(3)">3次</div>
+                    <div class="option-item" onclick="selectDeliveryCount(4)">4次</div>
+                    <div class="option-item" onclick="selectDeliveryCount(5)">5次</div>
+                    <div class="option-item" onclick="selectDeliveryCount(10)">10次</div>
+                    <div class="option-item" onclick="selectDeliveryCount(0)">不限次数</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 项目编辑页面特定样式 */
+        .edit-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            padding: 0 16px;
+            background-color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .back-button {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .publish-button {
+            padding: 6px 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        /* 表单样式 */
+        .edit-form {
+            padding: 16px;
+            background-color: white;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .form-label {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .form-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+        
+        /* 上传图片样式 */
+        .upload-images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .upload-item {
+            width: 100px;
+            height: 100px;
+            border: 1px dashed #ddd;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .upload-item i {
+            font-size: 24px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .upload-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .uploaded-image {
+            width: 100px;
+            height: 100px;
+            border-radius: 4px;
+            position: relative;
+        }
+        
+        .uploaded-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        
+        .remove-image {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        /* 套餐标签页样式 */
+        .package-tabs {
+            display: flex;
+            position: relative;
+            background-color: white;
+            border-bottom: 1px solid var(--border-light);
+            margin-bottom: 16px;
+        }
+        
+        .package-tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            font-size: 14px;
+            cursor: pointer;
+            position: relative;
+            color: var(--text-secondary);
+        }
+        
+        .package-tab.active {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .package-tab-indicator {
+            position: absolute;
+            bottom: 0;
+            height: 2px;
+            background-color: var(--primary-color);
+            transition: left 0.3s ease;
+        }
+        
+        /* 价格设置样式 */
+        .price-container {
+            display: flex;
+            gap: 16px;
+        }
+        
+        .price-input, .price-display {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .price-label {
+            background-color: var(--bg-light);
+            padding: 8px;
+            text-align: center;
+            font-size: 14px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .price-field {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+        }
+        
+        .currency {
+            font-size: 16px;
+            margin-right: 4px;
+        }
+        
+        .price-field input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 16px;
+        }
+        
+        /* FAQ样式 */
+        .faq-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .faq-item {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .faq-question {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .faq-question input {
+            flex: 1;
+            border: none;
+            padding: 12px;
+        }
+        
+        .faq-question i {
+            padding: 0 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        
+        .faq-answer textarea {
+            border: none;
+            border-radius: 0;
+        }
+        
+        .add-button-small {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        /* 底部按钮样式 */
+        .bottom-button-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            padding: 16px;
+            background-color: white;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+            z-index: 100;
+        }
+        
+        .save-button {
+            flex: 1;
+            padding: 12px;
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+        
+        .publish-button-large {
+            flex: 1;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        /* 选项弹窗样式 */
+        .option-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .option-modal-content {
+            width: 80%;
+            max-width: 320px;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .option-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .option-modal-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .option-modal-close {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .option-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .option-item {
+            padding: 12px 16px;
+            cursor: pointer;
+        }
+        
+        .option-item:hover {
+            background-color: var(--bg-light);
+        }
+        
+        .option-item.active {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+    </style>
+
+    <script>
+        // 初始化
+        let currentPackage = 'basic';
+        let deliveryTime = 3;
+        let deliveryCount = 2;
+        let uploadedImages = [];
+        
+        // 切换套餐
+        function switchPackage(packageName) {
+            currentPackage = packageName;
+            
+            const tabs = document.querySelectorAll('.package-tab');
+            const indicator = document.querySelector('.package-tab-indicator');
+            
+            tabs.forEach((tab, index) => {
+                tab.classList.remove('active');
+            });
+            
+            if (packageName === 'basic') {
+                tabs[0].classList.add('active');
+                indicator.style.left = '0';
+            } else if (packageName === 'advanced') {
+                tabs[1].classList.add('active');
+                indicator.style.left = '33.33%';
+            } else if (packageName === 'premium') {
+                tabs[2].classList.add('active');
+                indicator.style.left = '66.66%';
+            }
+            
+            // 这里应该有加载对应套餐内容的逻辑
+            // 目前只实现了基础套餐
+        }
+        
+        // 显示交付周期选项
+        function showDeliveryTimeOptions() {
+            document.getElementById('deliveryTimeModal').style.display = 'flex';
+        }
+        
+        // 显示交付次数选项
+        function showDeliveryCountOptions() {
+            document.getElementById('deliveryCountModal').style.display = 'flex';
+        }
+        
+        // 关闭弹窗
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // 选择交付周期
+        function selectDeliveryTime(days) {
+            deliveryTime = days;
+            document.getElementById('deliveryTimeText').textContent = days + '天';
+            closeModal('deliveryTimeModal');
+        }
+        
+        // 选择交付次数
+        function selectDeliveryCount(count) {
+            deliveryCount = count;
+            document.getElementById('deliveryCountText').textContent = count === 0 ? '不限次数' : count + '次';
+            closeModal('deliveryCountModal');
+        }
+        
+        // 更新展示价格
+        function updateDisplayPrice() {
+            const input = document.getElementById('priceInput');
+            const display = document.getElementById('priceDisplay');
+            
+            // 简单的价格计算逻辑，实际可能更复杂
+            let price = parseFloat(input.value) || 0;
+            display.textContent = price.toFixed(2);
+        }
+        
+        // 添加图片
+        function addImage() {
+            // 模拟上传图片
+            const imageUrl = 'https://via.placeholder.com/100x100/f8f1e6/b66d0e?text=图片';
+            const imageId = Date.now();
+            
+            uploadedImages.push({
+                id: imageId,
+                url: imageUrl
+            });
+            
+            renderImages();
+        }
+        
+        // 渲染图片列表
+        function renderImages() {
+            const container = document.getElementById('uploadImages');
+            container.innerHTML = '';
+            
+            // 添加已上传的图片
+            uploadedImages.forEach(image => {
+                const imageElement = document.createElement('div');
+                imageElement.className = 'uploaded-image';
+                imageElement.innerHTML = `
+                    <img src="${image.url}" alt="上传的图片">
+                    <div class="remove-image" onclick="removeImage(${image.id})">
+                        <i class="fas fa-times"></i>
+                    </div>
+                `;
+                container.appendChild(imageElement);
+            });
+            
+            // 添加上传按钮
+            if (uploadedImages.length < 5) {
+                const uploadButton = document.createElement('div');
+                uploadButton.className = 'upload-item';
+                uploadButton.onclick = addImage;
+                uploadButton.innerHTML = `
+                    <i class="fas fa-image"></i>
+                    <div class="upload-text">上传图片</div>
+                `;
+                container.appendChild(uploadButton);
+            }
+        }
+        
+        // 移除图片
+        function removeImage(imageId) {
+            uploadedImages = uploadedImages.filter(image => image.id !== imageId);
+            renderImages();
+        }
+        
+        // 添加FAQ
+        function addFaq() {
+            const faqList = document.getElementById('faqList');
+            const faqItem = document.createElement('div');
+            faqItem.className = 'faq-item';
+            faqItem.innerHTML = `
+                <div class="faq-question">
+                    <input type="text" class="form-input" placeholder="问题">
+                    <i class="fas fa-times" onclick="removeFaq(this)"></i>
+                </div>
+                <div class="faq-answer">
+                    <textarea class="form-textarea" placeholder="回答"></textarea>
+                </div>
+            `;
+            faqList.appendChild(faqItem);
+        }
+        
+        // 移除FAQ
+        function removeFaq(element) {
+            const faqItem = element.closest('.faq-item');
+            faqItem.remove();
+        }
+        
+        // 保存为草稿
+        function saveAsDraft() {
+            // 收集表单数据
+            const formData = collectFormData();
+            
+            // 这里应该有保存草稿的逻辑
+            alert('已保存为草稿');
+            
+            // 返回列表页面
+            window.location.href = '../seller_post.html';
+        }
+        
+        // 发布服务
+        function publishService() {
+            // 收集表单数据
+            const formData = collectFormData();
+            
+            // 表单验证
+            if (!formData.name) {
+                alert('请输入服务名称');
+                return;
+            }
+            
+            if (!formData.description) {
+                alert('请输入服务描述');
+                return;
+            }
+            
+            if (uploadedImages.length === 0) {
+                alert('请上传至少一张图片');
+                return;
+            }
+            
+            // 这里应该有发布服务的逻辑
+            alert('服务已发布，等待审核');
+            
+            // 返回列表页面
+            window.location.href = '../seller_post.html';
+        }
+        
+        // 收集表单数据
+        function collectFormData() {
+            return {
+                name: document.getElementById('serviceName').value,
+                description: document.getElementById('serviceDescription').value,
+                images: uploadedImages,
+                package: currentPackage,
+                deliveryTime: deliveryTime,
+                deliveryCount: deliveryCount,
+                price: parseFloat(document.getElementById('priceInput').value) || 0,
+                faqs: collectFaqs(),
+                customerRequirements: document.getElementById('customerRequirements').value
+            };
+        }
+        
+        // 收集FAQ数据
+        function collectFaqs() {
+            const faqs = [];
+            const faqItems = document.querySelectorAll('.faq-item');
+            
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question input').value;
+                const answer = item.querySelector('.faq-answer textarea').value;
+                
+                if (question && answer) {
+                    faqs.push({
+                        question: question,
+                        answer: answer
+                    });
+                }
+            });
+            
+            return faqs;
+        }
+        
+        // 点击弹窗外部关闭弹窗
+        document.addEventListener('click', function(e) {
+            const deliveryTimeModal = document.getElementById('deliveryTimeModal');
+            const deliveryCountModal = document.getElementById('deliveryCountModal');
+            
+            if (e.target === deliveryTimeModal) {
+                deliveryTimeModal.style.display = 'none';
+            }
+            
+            if (e.target === deliveryCountModal) {
+                deliveryCountModal.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

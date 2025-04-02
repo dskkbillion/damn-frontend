@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 我的收藏</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='profile.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">我的收藏</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 标签页 -->
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('services')">服务</div>
+            <div class="tab" onclick="switchTab('stories')">故事</div>
+            <div class="tab-indicator"></div>
+        </div>
+        
+        <!-- 服务标签页内容 -->
+        <div class="tab-content" id="services-content">
+            <div class="service-list">
+                <!-- 服务项目1 -->
+                <div class="service-item" onclick="window.location.href='service_detail.html'">
+                    <div class="service-image">
+                        <img src="imgs/IMG20250308191357_20250326010856.jpg" alt="服务图片" class="item-image">
+                    </div>
+                    <div class="service-info">
+                        <div class="service-title">已发布（审核通过）改名</div>
+                        <div class="service-description">描述信息...</div>
+                    </div>
+                    <div class="service-price">¥100</div>
+                </div>
+                
+                <!-- 服务项目2 -->
+                <div class="service-item" onclick="window.location.href='service_detail.html'">
+                    <div class="service-image">
+                        <img src="imgs/IMG20250308211749_20250326010856.jpg" alt="服务图片" class="item-image">
+                    </div>
+                    <div class="service-info">
+                        <div class="service-title">测试名称</div>
+                        <div class="service-description">测试名称</div>
+                    </div>
+                    <div class="service-price">¥10</div>
+                </div>
+                
+                <!-- 服务项目3 -->
+                <div class="service-item" onclick="window.location.href='service_detail.html'">
+                    <div class="service-image">
+                        <img src="imgs/IMG20250309142054_20250326010856.jpg" alt="服务图片" class="item-image">
+                    </div>
+                    <div class="service-info">
+                        <div class="service-title">测试</div>
+                        <div class="service-description">测试服务描述</div>
+                    </div>
+                    <div class="service-price">¥1000</div>
+                </div>
+                
+                <!-- 服务项目4 -->
+                <div class="service-item" onclick="window.location.href='service_detail.html'">
+                    <div class="service-image">
+                        <img src="imgs/IMG20250310160956_20250326010856.jpg" alt="服务图片" class="item-image">
+                    </div>
+                    <div class="service-info">
+                        <div class="service-title">Test1</div>
+                        <div class="service-description">商品简介...</div>
+                    </div>
+                    <div class="service-price">¥100</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 故事标签页内容 -->
+        <div class="tab-content" id="stories-content" style="display: none;">
+            <div class="story-list">
+                <!-- 故事项目1 -->
+                <div class="story-item" onclick="window.location.href='story.html'">
+                    <div class="story-image">
+                        <img src="imgs/IMG20250308233845_20250326010856.jpg" alt="故事图片" class="item-image">
+                    </div>
+                    <div class="story-info">
+                        <div class="story-title">我的设计师之路</div>
+                        <div class="story-author">
+                            <img src="imgs/IMG20250317124302.jpg" alt="作者头像" class="author-avatar">
+                            <span>设计师小王</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 故事项目2 -->
+                <div class="story-item" onclick="window.location.href='story.html'">
+                    <div class="story-image">
+                        <img src="imgs/IMG20250308234545_20250326010856.jpg" alt="故事图片" class="item-image">
+                    </div>
+                    <div class="story-info">
+                        <div class="story-title">从零开始学编程</div>
+                        <div class="story-author">
+                            <img src="imgs/IMG20250320133528_20250326010857.jpg" alt="作者头像" class="author-avatar">
+                            <span>程序员小李</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="window.location.href='ai_docs.html'">
+                <i class="fas fa-robot nav-icon"></i>
+                <span class="nav-text">多少看看</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='index.html'">
+                <i class="fas fa-home nav-icon"></i>
+                <span class="nav-text">首页</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='chat.html'">
+                <i class="fas fa-comment nav-icon"></i>
+                <span class="nav-text">消息</span>
+            </div>
+            <div class="nav-item active" onclick="window.location.href='profile.html'">
+                <i class="fas fa-user nav-icon"></i>
+                <span class="nav-text">我的</span>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 收藏页面特定样式 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            padding: 0 16px;
+            background-color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .back-button {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .header-right {
+            width: 24px;
+        }
+        
+        .tabs {
+            display: flex;
+            position: relative;
+            background-color: white;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 16px 0;
+            font-size: 16px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .tab.active {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .tab-indicator {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50%;
+            height: 2px;
+            background-color: var(--primary-color);
+            transition: transform 0.3s ease;
+        }
+        
+        .tab-content {
+            padding-bottom: 56px;
+        }
+        
+        .service-list, .story-list {
+            background-color: var(--bg-light);
+        }
+        
+        .service-item, .story-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background-color: white;
+            border-bottom: 1px solid var(--border-light);
+            cursor: pointer;
+        }
+        
+        .service-image, .story-image {
+            margin-right: 12px;
+        }
+        
+        .item-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        
+        .service-info, .story-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .service-title, .story-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .service-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .service-price {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .story-author {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .author-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 4px;
+        }
+        
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 64px 16px;
+            text-align: center;
+            color: var(--text-hint);
+        }
+        
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .empty-text {
+            font-size: 16px;
+        }
+    </style>
+
+    <script>
+        // 切换标签页
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const tabIndicator = document.querySelector('.tab-indicator');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            tabContents.forEach(content => content.style.display = 'none');
+            
+            if (tabName === 'services') {
+                tabs[0].classList.add('active');
+                document.getElementById('services-content').style.display = 'block';
+                tabIndicator.style.transform = 'translateX(0)';
+            } else if (tabName === 'stories') {
+                tabs[1].classList.add('active');
+                document.getElementById('stories-content').style.display = 'block';
+                tabIndicator.style.transform = 'translateX(100%)';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 卖家发布</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="post-header">
+            <div class="header-title">发布</div>
+        </div>
+        
+        <!-- 主标签页 -->
+        <div class="main-tabs">
+            <div class="main-tab active" onclick="switchMainTab('products')">商品</div>
+            <div class="main-tab" onclick="switchMainTab('stories')">我的故事</div>
+            <div class="main-tab-indicator" style="width: 50%; left: 0;"></div>
+        </div>
+        
+        <!-- 子标签页 -->
+        <div class="sub-tabs">
+            <div class="sub-tab active" onclick="switchSubTab('selling')">在售</div>
+            <div class="sub-tab" onclick="switchSubTab('draft')">草稿</div>
+            <div class="sub-tab" onclick="switchSubTab('removed')">已下架</div>
+            <div class="sub-tab-indicator" style="width: 33.33%; left: 0;"></div>
+        </div>
+        
+        <!-- 商品列表 -->
+        <div class="product-list">
+            <!-- 商品项目1 -->
+            <div class="product-item">
+                <div class="product-image">
+                    <img src="../../imgs/IMG20250308191357_20250326010856.jpg" alt="商品图片">
+                </div>
+                <div class="product-info">
+                    <div class="product-title">传统待审核 T70</div>
+                    <div class="product-price">¥100</div>
+                    <div class="product-stats">
+                        <span>浏览 158</span>
+                        <span>收藏 0</span>
+                        <span>出售 0</span>
+                    </div>
+                </div>
+                <div class="product-status">
+                    <div class="status-tag review">审核通过</div>
+                </div>
+                <div class="product-actions">
+                    <button class="action-button edit" onclick="editProduct(1)">编辑</button>
+                    <button class="action-button remove" onclick="removeProduct(1)">下架</button>
+                </div>
+            </div>
+            
+            <!-- 商品项目2 -->
+            <div class="product-item">
+                <div class="product-image">
+                    <img src="../../imgs/IMG20250308211749_20250326010856.jpg" alt="商品图片">
+                </div>
+                <div class="product-info">
+                    <div class="product-title">已发布（审核通过）水乳 T73</div>
+                    <div class="product-price">¥100</div>
+                    <div class="product-stats">
+                        <span>浏览 4</span>
+                        <span>收藏 0</span>
+                        <span>出售 0</span>
+                    </div>
+                </div>
+                <div class="product-status">
+                    <div class="status-tag pending">待审核</div>
+                </div>
+                <div class="product-actions">
+                    <button class="action-button edit" onclick="editProduct(2)">编辑</button>
+                    <button class="action-button remove" onclick="removeProduct(2)">下架</button>
+                </div>
+            </div>
+            
+            <!-- 商品项目3 -->
+            <div class="product-item">
+                <div class="product-image">
+                    <img src="../../imgs/IMG20250309142054_20250326010856.jpg" alt="商品图片">
+                </div>
+                <div class="product-info">
+                    <div class="product-title">已发布（审核通过）水乳 T71</div>
+                    <div class="product-price">¥100</div>
+                    <div class="product-stats">
+                        <span>浏览 114</span>
+                        <span>收藏 1</span>
+                        <span>出售 2</span>
+                    </div>
+                </div>
+                <div class="product-status">
+                    <div class="status-tag pending">待审核</div>
+                </div>
+                <div class="product-actions">
+                    <button class="action-button edit" onclick="editProduct(3)">编辑</button>
+                    <button class="action-button remove" onclick="removeProduct(3)">下架</button>
+                </div>
+            </div>
+            
+            <!-- 没有更多商品提示 -->
+            <div class="no-more-products">
+                没有更多了~
+            </div>
+        </div>
+        
+        <!-- 添加按钮 -->
+        <div class="add-button" onclick="window.location.href='seller_item_edit.html'">
+            <i class="fas fa-plus"></i>
+        </div>
+        
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="window.location.href='index.html'">
+                <i class="fas fa-home nav-icon"></i>
+                <span class="nav-text">首页</span>
+            </div>
+            <div class="nav-item active">
+                <i class="fas fa-plus-square nav-icon"></i>
+                <span class="nav-text">发布</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='seller_chat.html'">
+                <i class="fas fa-comment nav-icon"></i>
+                <span class="nav-text">消息</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='seller_profile.html'">
+                <i class="fas fa-user nav-icon"></i>
+                <span class="nav-text">我的</span>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 卖家发布页面特定样式 */
+        .post-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 56px;
+            padding: 0 16px;
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        /* 主标签页样式 */
+        .main-tabs {
+            display: flex;
+            position: relative;
+            background-color: var(--primary-color);
+            color: white;
+            padding-bottom: 8px;
+        }
+        
+        .main-tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            font-size: 16px;
+            cursor: pointer;
+            position: relative;
+            opacity: 0.8;
+        }
+        
+        .main-tab.active {
+            opacity: 1;
+            font-weight: 600;
+        }
+        
+        .main-tab-indicator {
+            position: absolute;
+            bottom: 0;
+            height: 3px;
+            background-color: white;
+            transition: left 0.3s ease;
+        }
+        
+        /* 子标签页样式 */
+        .sub-tabs {
+            display: flex;
+            position: relative;
+            background-color: white;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .sub-tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            font-size: 14px;
+            cursor: pointer;
+            position: relative;
+            color: var(--text-secondary);
+        }
+        
+        .sub-tab.active {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .sub-tab-indicator {
+            position: absolute;
+            bottom: 0;
+            height: 2px;
+            background-color: var(--primary-color);
+            transition: left 0.3s ease;
+        }
+        
+        /* 商品列表样式 */
+        .product-list {
+            background-color: var(--bg-light);
+            padding-bottom: 72px;
+        }
+        
+        .product-item {
+            display: flex;
+            flex-wrap: wrap;
+            background-color: white;
+            padding: 16px;
+            margin-bottom: 1px;
+            position: relative;
+        }
+        
+        .product-image {
+            width: 80px;
+            height: 80px;
+            margin-right: 12px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .product-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .product-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .product-price {
+            font-size: 16px;
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .product-stats {
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 8px;
+        }
+        
+        .product-status {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+        }
+        
+        .status-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: white;
+        }
+        
+        .status-tag.review {
+            background-color: #4caf50;
+        }
+        
+        .status-tag.pending {
+            background-color: #ff9800;
+        }
+        
+        .product-actions {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 12px;
+            gap: 8px;
+        }
+        
+        .action-button {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .action-button.edit {
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+        }
+        
+        .action-button.remove {
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+        }
+        
+        .no-more-products {
+            text-align: center;
+            padding: 16px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        /* 添加按钮 */
+        .add-button {
+            position: fixed;
+            bottom: 72px;
+            right: 16px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 100;
+        }
+    </style>
+
+    <script>
+        // 切换主标签页
+        function switchMainTab(tabName) {
+            const tabs = document.querySelectorAll('.main-tab');
+            const indicator = document.querySelector('.main-tab-indicator');
+            
+            tabs.forEach((tab, index) => {
+                tab.classList.remove('active');
+            });
+            
+            if (tabName === 'products') {
+                tabs[0].classList.add('active');
+                indicator.style.left = '0';
+                // 已经在商品页面，不需要跳转
+            } else if (tabName === 'stories') {
+                tabs[1].classList.add('active');
+                indicator.style.left = '50%';
+                // 跳转到我的故事页面
+                window.location.href = 'mystory.html';
+            }
+        }
+        
+        // 切换子标签页
+        function switchSubTab(tabName) {
+            const tabs = document.querySelectorAll('.sub-tab');
+            const indicator = document.querySelector('.sub-tab-indicator');
+            
+            tabs.forEach((tab, index) => {
+                tab.classList.remove('active');
+            });
+            
+            if (tabName === 'selling') {
+                tabs[0].classList.add('active');
+                indicator.style.left = '0';
+                // 已经在在售页面，不需要跳转
+            } else if (tabName === 'draft') {
+                tabs[1].classList.add('active');
+                indicator.style.left = '33.33%';
+                // 这里应该有加载草稿列表的逻辑
+                alert('草稿功能尚未实现');
+            } else if (tabName === 'removed') {
+                tabs[2].classList.add('active');
+                indicator.style.left = '66.66%';
+                // 这里应该有加载已下架列表的逻辑
+                alert('已下架功能尚未实现');
+            }
+        }
+        
+        // 编辑商品
+        function editProduct(productId) {
+            event.stopPropagation(); // 阻止事件冒泡
+            window.location.href = `seller_item_edit.html?id=${productId}`;
+        }
+        
+        // 下架商品
+        function removeProduct(productId) {
+            event.stopPropagation(); // 阻止事件冒泡
+            
+            if (confirm('确定要下架该商品吗？')) {
+                // 这里应该有下架商品的逻辑
+                alert(`商品 ${productId} 已下架`);
+                // 刷新页面或更新列表
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

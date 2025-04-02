@@ -1,0 +1,216 @@
+/* 评价页面样式 */
+
+/* 进度条样式 */
+.progress-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 10px;
+    background-color: #C17A2C;
+    color: white;
+}
+
+.progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+}
+
+.step-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5px;
+}
+
+.progress-step.completed .step-icon {
+    background-color: white;
+    color: #C17A2C;
+}
+
+.progress-step.active .step-icon {
+    background-color: white;
+    color: #C17A2C;
+}
+
+.step-label {
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.progress-line {
+    flex: 1;
+    height: 2px;
+    background-color: rgba(255, 255, 255, 0.3);
+    position: relative;
+    z-index: 1;
+}
+
+.progress-line.completed {
+    background-color: white;
+}
+
+/* 评价标题样式 */
+.evaluation-title {
+    text-align: center;
+    padding: 20px 16px;
+    background-color: white;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.evaluation-title h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+}
+
+.evaluation-title p {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+/* 评分区域样式 */
+.rating-section {
+    padding: 20px 16px;
+    background-color: white;
+    text-align: center;
+    margin-top: 12px;
+}
+
+.rating-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 15px;
+}
+
+.rating-stars {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.rating-stars i {
+    font-size: 24px;
+    color: #ddd;
+    cursor: pointer;
+}
+
+.rating-stars i.fas {
+    color: #FFD700;
+}
+
+.rating-label {
+    font-size: 12px;
+    color: #999;
+}
+
+/* 评价内容样式 */
+.evaluation-content {
+    padding: 20px 16px;
+    background-color: white;
+    margin-top: 12px;
+}
+
+.content-label {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 15px;
+}
+
+.evaluation-content textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: none;
+    font-size: 14px;
+}
+
+/* 匿名选项样式 */
+.anonymous-option {
+    padding: 16px;
+    background-color: white;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+}
+
+.checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    height: 20px;
+    width: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+
+.checkbox-container input:checked ~ .checkmark {
+    background-color: #C17A2C;
+    border-color: #C17A2C;
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.checkbox-container .checkmark:after {
+    left: 7px;
+    top: 3px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.label-text {
+    font-size: 14px;
+}
+
+/* 提交按钮样式 */
+.submit-container {
+    padding: 20px 16px;
+    background-color: white;
+}
+
+.submit-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #C17A2C;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.submit-button:hover {
+    background-color: #A66A24;
+}

@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 卖家通知</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='seller_profile.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">通知</div>
+            <div class="header-right">
+                <div class="header-action" onclick="markAllAsRead()">
+                    <i class="fas fa-check-double"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 通知类型标签页 -->
+        <div class="notification-tabs">
+            <div class="notification-tab active" onclick="switchTab('all')">全部</div>
+            <div class="notification-tab" onclick="switchTab('order')">订单</div>
+            <div class="notification-tab" onclick="switchTab('review')">评价</div>
+            <div class="notification-tab" onclick="switchTab('system')">系统</div>
+            <div class="notification-tab-indicator" style="width: 25%; left: 0;"></div>
+        </div>
+        
+        <!-- 通知列表 -->
+        <div class="notification-list" id="allNotifications">
+            <!-- 订单通知 -->
+            <div class="notification-item unread" data-type="order" onclick="viewNotification('order', 1)">
+                <div class="notification-icon order-icon">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">新订单通知</div>
+                    <div class="notification-message">您有一个新的订单 #12345，请及时处理。</div>
+                    <div class="notification-time">10分钟前</div>
+                </div>
+                <div class="notification-status">
+                    <div class="unread-indicator"></div>
+                </div>
+            </div>
+            
+            <!-- 评价通知 -->
+            <div class="notification-item unread" data-type="review" onclick="viewNotification('review', 2)">
+                <div class="notification-icon review-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">新评价通知</div>
+                    <div class="notification-message">用户张三对您的服务"专业文案撰写"进行了评价，评分为5星。</div>
+                    <div class="notification-time">30分钟前</div>
+                </div>
+                <div class="notification-status">
+                    <div class="unread-indicator"></div>
+                </div>
+            </div>
+            
+            <!-- 系统通知 -->
+            <div class="notification-item" data-type="system" onclick="viewNotification('system', 3)">
+                <div class="notification-icon system-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">系统通知</div>
+                    <div class="notification-message">您的公司认证已通过审核，现在您可以享受认证商家的所有权益。</div>
+                    <div class="notification-time">2小时前</div>
+                </div>
+                <div class="notification-status"></div>
+            </div>
+            
+            <!-- 订单通知 -->
+            <div class="notification-item" data-type="order" onclick="viewNotification('order', 4)">
+                <div class="notification-icon order-icon">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">订单状态更新</div>
+                    <div class="notification-message">订单 #12344 已完成，买家已确认收货。</div>
+                    <div class="notification-time">3小时前</div>
+                </div>
+                <div class="notification-status"></div>
+            </div>
+            
+            <!-- 系统通知 -->
+            <div class="notification-item" data-type="system" onclick="viewNotification('system', 5)">
+                <div class="notification-icon system-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">系统通知</div>
+                    <div class="notification-message">平台将于2023年4月1日进行系统升级，届时部分功能可能暂时无法使用，请您提前做好准备。</div>
+                    <div class="notification-time">1天前</div>
+                </div>
+                <div class="notification-status"></div>
+            </div>
+            
+            <!-- 评价通知 -->
+            <div class="notification-item" data-type="review" onclick="viewNotification('review', 6)">
+                <div class="notification-icon review-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">评价回复提醒</div>
+                    <div class="notification-message">买家对您的评价回复表示感谢，并追加了好评。</div>
+                    <div class="notification-time">2天前</div>
+                </div>
+                <div class="notification-status"></div>
+            </div>
+        </div>
+        
+        <!-- 订单通知列表 -->
+        <div class="notification-list" id="orderNotifications" style="display: none;">
+            <!-- 订单通知 -->
+            <div class="notification-item unread" onclick="viewNotification('order', 1)">
+                <div class="notification-icon order-icon">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">新订单通知</div>
+                    <div class="notification-message">您有一个新的订单 #12345，请及时处理。</div>
+                    <div class="notification-time">10分钟前</div>
+                </div>
+                <div class="notification-status">
+                    <div class="unread-indicator"></div>
+                </div>
+            </div>
+            
+            <!-- 订单通知 -->
+            <div class="notification-item" onclick="viewNotification('order', 4)">
+                <div class="notification-icon order-icon">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">订单状态更新</div>
+                    <div class="notification-message">订单 #12344 已完成，买家已确认收货。</div>
+                    <div class="notification-time">3小时前</div>
+                </div>
+                <div class="notification-status"></div>
+            </div>
+            
+            <!-- 订单通知 -->
+            <div class="notification-item" onclick="viewNotification('order', 7)">
+                <div class="notification-icon order-icon">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">订单支付通知</div>
+                    <div class="notification-message">订单 #12343 已支付，请及时处理。</div>
+                    <div class="notification-time">3天前</div>
+                </div>
+                <div class="notification-status"></div>
+            </div>
+        </div>
+        
+        <!-- 评价通知列表 -->
+        <div class="notification-list" id="reviewNotifications" style="display: none;">
+            <!-- 评价通知 -->
+            <div class="notification-item unread" onclick="viewNotification('review', 2)">
+                <div class="notification-icon review-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">新评价通知</div>
+                    <div class="notification-message">用户张三对您的服务"专业文案撰写"进行了评价，评分为5星。</div>
+                    <div class="notification-time">30分钟前</div>
+                </div>
+                <div class="notification-status">
+                    <div class="unread-indicator"></div>
+                </div>
+            </div>
+            
+            <!-- 评价通知 -->
+            <div class="notification-item" onclick="viewNotification('review', 6)">
+                <div class="notification-icon review-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">评价回复提醒</div>
+                    <div class="notification-message">买家对您的评价回复表示感谢，并追加了好评。</div>
+                    <div class="notification-time">2天前</div>
+                </div>
+                <div class="notification-status"></div>
+            </div>
+            
+            <!-- 评价通知 -->
+            <div class="notification-item" onclick="viewNotification('review', 8)">
+                <div class="notification-icon review-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">评价提醒</div>
+                    <div class="notification-message">您有一个已完成的订单尚未评价，请及时评价。</div>
+                    <div class="notification-time">4天前</div>
+                </div>
+                <div class="notification-status"></div>
+            </div>
+        </div>
+        
+        <!-- 系统通知列表 -->
+        <div class="notification-list" id="systemNotifications" style="display: none;">
+            <!-- 系统通知 -->
+            <div class="notification-item" onclick="viewNotification('system', 3)">
+                <div class="notification-icon system-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">系统通知</div>
+                    <div class="notification-message">您的公司认证已通过审核，现在您可以享受认证商家的所有权益。</div>
+                    <div class="notification-time">2小时前</div>
+                </div>
+                <div class="notification-status"></div>
+            </div>
+            
+            <!-- 系统通知 -->
+            <div class="notification-item" onclick="viewNotification('system', 5)">
+                <div class="notification-icon system-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">系统通知</div>
+                    <div class="notification-message">平台将于2023年4月1日进行系统升级，届时部分功能可能暂时无法使用，请您提前做好准备。</div>
+                    <div class="notification-time">1天前</div>
+                </div>
+                <div class="notification-status"></div>
+            </div>
+            
+            <!-- 系统通知 -->
+            <div class="notification-item" onclick="viewNotification('system', 9)">
+                <div class="notification-icon system-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">活动通知</div>
+                    <div class="notification-message">平台即将举办"优质服务商评选"活动，欢迎您参与。</div>
+                    <div class="notification-time">5天前</div>
+                </div>
+                <div class="notification-status"></div>
+            </div>
+        </div>
+        
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="window.location.href='index.html'">
+                <i class="fas fa-home nav-icon"></i>
+                <span class="nav-text">首页</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='seller_post.html'">
+                <i class="fas fa-plus-square nav-icon"></i>
+                <span class="nav-text">发布</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='seller_chat.html'">
+                <i class="fas fa-comment nav-icon"></i>
+                <span class="nav-text">消息</span>
+            </div>
+            <div class="nav-item active">
+                <i class="fas fa-user nav-icon"></i>
+                <span class="nav-text">我的</span>
+            </div>
+        </div>
+        
+        <!-- 通知详情弹窗 -->
+        <div class="modal" id="notificationDetailModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title" id="notificationDetailTitle">通知详情</div>
+                    <div class="modal-close" onclick="closeModal('notificationDetailModal')">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="notification-detail">
+                        <div class="notification-detail-time" id="notificationDetailTime">2023-03-25 10:30</div>
+                        <div class="notification-detail-content" id="notificationDetailContent">
+                            通知内容将在这里显示。
+                        </div>
+                        <div class="notification-detail-actions" id="notificationDetailActions">
+                            <!-- 动态添加操作按钮 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 标记全部已读确认弹窗 -->
+        <div class="modal" id="markAllReadModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">标记全部已读</div>
+                    <div class="modal-close" onclick="closeModal('markAllReadModal')">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="confirm-message">
+                        确定要将所有未读通知标记为已读吗？
+                    </div>
+                    <div class="confirm-buttons">
+                        <button class="cancel-button" onclick="closeModal('markAllReadModal')">取消</button>
+                        <button class="confirm-button" onclick="confirmMarkAllAsRead()">确定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 通知页面特定样式 */
+        .notification-tabs {
+            display: flex;
+            position: relative;
+            background-color: white;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .notification-tab {
+            flex: 1;
+            text-align: center;
+            padding: 16px 0;
+            font-size: 14px;
+            cursor: pointer;
+            position: relative;
+            color: var(--text-secondary);
+        }
+        
+        .notification-tab.active {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .notification-tab-indicator {
+            position: absolute;
+            bottom: 0;
+            height: 2px;
+            background-color: var(--primary-color);
+            transition: left 0.3s ease;
+        }
+        
+        /* 通知列表样式 */
+        .notification-list {
+            background-color: var(--bg-light);
+            min-height: calc(100vh - 112px - 56px);
+            padding-bottom: 56px;
+        }
+        
+        .notification-item {
+            display: flex;
+            padding: 16px;
+            background-color: white;
+            border-bottom: 1px solid var(--border-light);
+            cursor: pointer;
+        }
+        
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+            color: white;
+        }
+        
+        .order-icon {
+            background-color: #2196f3;
+        }
+        
+        .review-icon {
+            background-color: #ff9800;
+        }
+        
+        .system-icon {
+            background-color: #4caf50;
+        }
+        
+        .notification-content {
+            flex: 1;
+        }
+        
+        .notification-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .notification-message {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .notification-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .notification-status {
+            display: flex;
+            align-items: center;
+            margin-left: 8px;
+        }
+        
+        .unread-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+        }
+        
+        /* 通知详情弹窗样式 */
+        .notification-detail {
+            padding: 16px;
+        }
+        
+        .notification-detail-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .notification-detail-content {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        
+        .notification-detail-actions {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+        
+        .action-button {
+            padding: 8px 16px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .secondary-action-button {
+            padding: 8px 16px;
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        /* 确认弹窗样式 */
+        .confirm-message {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .confirm-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        
+        .cancel-button, .confirm-button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .cancel-button {
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+        }
+        
+        .confirm-button {
+            background-color: var(--primary-color);
+            color: white;
+        }
+    </style>
+
+    <script>
+        // 切换标签页
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.notification-tab');
+            const indicator = document.querySelector('.notification-tab-indicator');
+            const lists = document.querySelectorAll('.notification-list');
+            
+            tabs.forEach((tab, index) => {
+                tab.classList.remove('active');
+            });
+            
+            lists.forEach(list => {
+                list.style.display = 'none';
+            });
+            
+            if (tabName === 'all') {
+                tabs[0].classList.add('active');
+                indicator.style.left = '0';
+                document.getElementById('allNotifications').style.display = 'block';
+            } else if (tabName === 'order') {
+                tabs[1].classList.add('active');
+                indicator.style.left = '25%';
+                document.getElementById('orderNotifications').style.display = 'block';
+            } else if (tabName === 'review') {
+                tabs[2].classList.add('active');
+                indicator.style.left = '50%';
+                document.getElementById('reviewNotifications').style.display = 'block';
+            } else if (tabName === 'system') {
+                tabs[3].classList.add('active');
+                indicator.style.left = '75%';
+                document.getElementById('systemNotifications').style.display = 'block';
+            }
+        }
+        
+        // 查看通知详情
+        function viewNotification(type, id) {
+            // 标记为已读
+            markAsRead(id);
+            
+            // 设置通知详情
+            let title = '';
+            let content = '';
+            let time = '';
+            let actions = [];
+            
+            if (type === 'order' && id === 1) {
+                title = '新订单通知';
+                content = '您有一个新的订单 #12345，买家张三购买了您的服务"专业文案撰写"，请及时处理。<br><br>订单金额：¥100<br>下单时间：2023-03-25 10:20<br>预计交付时间：2023-03-28';
+                time = '2023-03-25 10:30';
+                actions = [
+                    { text: '查看订单', primary: true, action: 'viewOrder(12345)' },
+                    { text: '联系买家', primary: false, action: 'contactBuyer("张三")' }
+                ];
+            } else if (type === 'review' && id === 2) {
+                title = '新评价通知';
+                content = '用户张三对您的服务"专业文案撰写"进行了评价，评分为5星。<br><br>评价内容：服务非常专业，文案质量很高，交付速度也很快，非常满意！<br>评价时间：2023-03-25 10:00';
+                time = '2023-03-25 10:30';
+                actions = [
+                    { text: '查看评价', primary: true, action: 'viewReview(2)' },
+                    { text: '回复评价', primary: false, action: 'replyReview(2)' }
+                ];
+            } else if (type === 'system' && id === 3) {
+                title = '系统通知';
+                content = '您的公司认证已通过审核，现在您可以享受认证商家的所有权益。<br><br>认证类型：公司认证<br>认证时间：2023-03-25 08:30<br>认证有效期：永久';
+                time = '2023-03-25 08:30';
+                actions = [
+                    { text: '查看认证', primary: true, action: 'viewAuthentication("company")' }
+                ];
+            } else {
+                title = '通知详情';
+                content = '通知内容将在这里显示。';
+                time = '2023-03-25 10:30';
+            }
+            
+            document.getElementById('notificationDetailTitle').textContent = title;
+            document.getElementById('notificationDetailContent').innerHTML = content;
+            document.getElementById('notificationDetailTime').textContent = time;
+            
+            // 添加操作按钮
+            const actionsContainer = document.getElementById('notificationDetailActions');
+            actionsContainer.innerHTML = '';
+            
+            actions.forEach(action => {
+                const button = document.createElement('button');
+                button.textContent = action.text;
+                button.className = action.primary ? 'action-button' : 'secondary-action-button';
+                button.setAttribute('onclick', action.action);
+                actionsContainer.appendChild(button);
+            });
+            
+            // 显示弹窗
+            document.getElementById('notificationDetailModal').style.display = 'flex';
+        }
+        
+        // 标记为已读
+        function markAsRead(id) {
+            // 查找所有包含该ID的通知项
+            const items = document.querySelectorAll(`.notification-item[onclick*="viewNotification('order', ${id})"], .notification-item[onclick*="viewNotification('review', ${id})"], .notification-item[onclick*="viewNotification('system', ${id})"]`);
+            
+            items.forEach(item => {
+                item.classList.remove('unread');
+                const indicator = item.querySelector('.unread-indicator');
+                if (indicator) {
+                    indicator.remove();
+                }
+            });
+        }
+        
+        // 标记全部已读
+        function markAllAsRead() {
+            document.getElementById('markAllReadModal').style.display = 'flex';
+        }
+        
+        // 确认标记全部已读
+        function confirmMarkAllAsRead() {
+            const unreadItems = document.querySelectorAll('.notification-item.unread');
+            
+            unreadItems.forEach(item => {
+                item.classList.remove('unread');
+                const indicator = item.querySelector('.unread-indicator');
+                if (indicator) {
+                    indicator.remove();
+                }
+            });
+            
+            closeModal('markAllReadModal');
+        }
+        
+        // 关闭弹窗
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // 查看订单
+        function viewOrder(orderId) {
+            closeModal('notificationDetailModal');
+            window.location.href = `seller_order_detail.html?id=${orderId}`;
+        }
+        
+        // 联系买家
+        function contactBuyer(buyerName) {
+            closeModal('notificationDetailModal');
+            window.location.href = `chatroom.html?user=${buyerName}`;
+        }
+        
+        // 查看评价
+        function viewReview(reviewId) {
+            closeModal('notificationDetailModal');
+            window.location.href = `seller_review.html?id=${reviewId}`;
+        }
+        
+        // 回复评价
+        function replyReview(reviewId) {
+            closeModal('notificationDetailModal');
+            window.location.href = `seller_review_reply.html?id=${reviewId}`;
+        }
+        
+        // 查看认证
+        function viewAuthentication(authType) {
+            closeModal('notificationDetailModal');
+            window.location.href = `seller_authentication_status.html?type=${authType}`;
+        }
+        
+        // 点击弹窗外部关闭弹窗
+        document.addEventListener('click', function(e) {
+            const modals = document.querySelectorAll('.modal');
+            
+            modals.forEach(modal => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

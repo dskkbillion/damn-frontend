@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 订单已支付</title>
+    <link rel="stylesheet" href="../../../styles.css">
+    <link rel="stylesheet" href="../../../css/order_detail.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='orders.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">订单进度</div>
+            <div class="header-right"></div>
+        </div>
+
+        <!-- 进度条 -->
+        <div class="progress-bar">
+            <div class="progress-steps" id="progressSteps">
+                <div class="progress-line" id="progressLine"></div>
+                <div class="progress-line-active" id="progressLineActive"></div>
+                
+                <div class="step completed" data-step="1">
+                    <i class="fas fa-check"></i>
+                    <span class="step-label">下单</span>
+                </div>
+                
+                <div class="step active" data-step="2">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span class="step-label">提交要求</span>
+                </div>
+                
+                <div class="step" data-step="3">
+                    <span class="step-label">卖家接单</span>
+                </div>
+                
+                <div class="step" data-step="4">
+                    <span class="step-label">交付</span>
+                </div>
+                
+                <div class="step" data-step="5">
+                    <span class="step-label">确认</span>
+                </div>
+                
+                <div class="step" data-step="6">
+                    <span class="step-label">评价</span>
+                </div>
+                
+                <div class="step" data-step="7">
+                    <span class="step-label">完成</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 状态提示 -->
+        <div class="status-tip" id="statusTip">
+            订单已支付，请提交您的具体要求
+        </div>
+        
+        <!-- 订单基本信息 -->
+        <div class="order-info">
+            <div class="order-header">
+                <div class="order-id">订单号：1001</div>
+                <div class="order-time">2024-03-23 16:45</div>
+            </div>
+            <div class="order-content">
+                <div class="order-image">
+                    <img src="https://via.placeholder.com/80/f8f1e6/b66d0e?text=文案" alt="订单图片">
+                </div>
+                <div class="order-details">
+                    <div class="order-title">产品文案撰写</div>
+                    <div class="order-description">为您的产品撰写吸引人的文案，包含关键词优化</div>
+                    <div class="order-price">¥149</div>
+                </div>
+            </div>
+            <div class="order-tags">
+                <span class="tag">标准版</span>
+                <span class="tag">300字</span>
+            </div>
+        </div>
+        
+        <!-- 提交要求表单 -->
+        <div class="requirement-form">
+            <div class="form-header">
+                <div class="form-title">提交您的要求</div>
+            </div>
+            <div class="form-body">
+                <div class="form-group">
+                    <label for="requirementText">详细描述您的需求</label>
+                    <textarea id="requirementText" rows="6" placeholder="请详细描述您的需求，包括目标受众、风格要求、关键词等..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>上传参考资料（可选）</label>
+                    <div class="upload-area" onclick="triggerFileUpload()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <span>点击上传文件</span>
+                        <input type="file" id="fileUpload" style="display: none;" multiple>
+                    </div>
+                </div>
+                <div class="uploaded-files" id="uploadedFiles">
+                    <!-- 上传的文件将显示在这里 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 交流记录 -->
+        <div class="communication-history">
+            <div class="history-header" onclick="toggleHistory()">
+                <span>交流记录</span>
+                <i class="fas fa-chevron-down" id="historyIcon"></i>
+            </div>
+            <div class="history-content" id="historyContent" style="display: none">
+                <div class="message-list" id="messageList">
+                    <!-- 消息将通过JS动态添加 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部操作按钮 -->
+        <div class="order-actions" id="orderActions">
+            <button class="action-button secondary" onclick="contactSeller()">联系卖家</button>
+            <button class="action-button secondary" onclick="cancelOrder()">取消订单</button>
+            <button class="action-button primary" onclick="submitRequirements()">提交要求</button>
+        </div>
+        
+        <!-- 订单进度指示器 -->
+        <div class="order-progress-indicator">
+            <div class="progress-step">
+                <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="step-text">下单成功</div>
+                <div class="step-time">2024-03-23 16:45</div>
+            </div>
+            <div class="progress-step">
+                <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="step-text">支付成功</div>
+                <div class="step-time">2024-03-23 16:47</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../../js/order_paid.js"></script>
+</body>
+</html>

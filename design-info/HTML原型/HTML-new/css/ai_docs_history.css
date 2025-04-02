@@ -1,0 +1,165 @@
+/* AI对话历史记录页面样式 */
+
+/* 顶部标题栏 */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.back-button {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.back-text {
+    color: #007aff;
+    font-size: 16px;
+}
+
+.header-title {
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.header-right {
+    width: 30px;
+}
+
+/* 搜索栏 */
+.search-container {
+    padding: 10px 15px;
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    background-color: #f5f5f5;
+    border-radius: 10px;
+    padding: 8px 15px;
+}
+
+.search-box i {
+    color: #999;
+    margin-right: 10px;
+}
+
+.search-box input {
+    flex: 1;
+    border: none;
+    background: none;
+    font-size: 14px;
+    color: #333;
+    outline: none;
+}
+
+.search-box input::placeholder {
+    color: #999;
+}
+
+/* 历史记录列表 */
+.history-list {
+    background-color: #fff;
+}
+
+.history-item {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+}
+
+.history-item:active {
+    background-color: #f9f9f9;
+}
+
+.history-content {
+    font-size: 15px;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.history-date {
+    font-size: 12px;
+    color: #999;
+}
+
+/* 底部导航栏 */
+.bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #fff;
+    border-top: 1px solid #eee;
+    padding: 10px 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #999;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.nav-item i {
+    font-size: 20px;
+    margin-bottom: 3px;
+}
+
+.nav-item.active {
+    color: #ff6b6b;
+}
+
+.nav-icon-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 24px;
+    height: 24px;
+    margin-bottom: 3px;
+    background-color: #ff6b6b;
+    border-radius: 50%;
+}
+
+.nav-icon-wrapper i {
+    font-size: 14px;
+    margin-bottom: 0;
+    color: #fff;
+}
+
+/* 适配底部导航栏的内容区域 */
+.mobile-container {
+    padding-bottom: 60px;
+}
+
+/* 响应式调整 */
+@media (max-width: 360px) {
+    .header {
+        padding: 12px;
+    }
+    
+    .search-container {
+        padding: 8px 12px;
+    }
+    
+    .history-item {
+        padding: 12px;
+    }
+}

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 卖家消息</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/seller_chat.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="chat-header">
+            <div class="chat-title">消息</div>
+            <div class="header-right">
+                <i class="fas fa-ellipsis-h" onclick="showOptions()"></i>
+            </div>
+        </div>
+        
+        <!-- 消息列表 -->
+        <div class="chat-list">
+            <!-- 系统通知 -->
+            <div class="chat-item" onclick="window.location.href='chatroom.html?id=system&seller=true'">
+                <div class="chat-avatar">
+                    <img src="imgs/IMG20250317124302.jpg" alt="系统通知" class="avatar-img">
+                </div>
+                <div class="chat-content">
+                    <div class="chat-name">系统通知</div>
+                    <div class="chat-message">您有一个新的订单需要处理</div>
+                    <div class="chat-time">10:30</div>
+                </div>
+                <div class="chat-badge">1</div>
+            </div>
+            
+            <!-- 张先生 -->
+            <div class="chat-item" onclick="window.location.href='chatroom.html?id=zhang&seller=true'">
+                <div class="chat-avatar">
+                    <img src="imgs/IMG20250320133528_20250326010857.jpg" alt="张先生" class="avatar-img">
+                </div>
+                <div class="chat-content">
+                    <div class="chat-name">张先生</div>
+                    <div class="chat-message">您好，请问这个服务包含哪些内容？</div>
+                    <div class="chat-time">昨天</div>
+                </div>
+            </div>
+            
+            <!-- 李女士 -->
+            <div class="chat-item unread" onclick="window.location.href='chatroom.html?id=li&seller=true'">
+                <div class="chat-avatar">
+                    <img src="imgs/IMG20250322165106_20250326010857.jpg" alt="李女士" class="avatar-img">
+                </div>
+                <div class="chat-content">
+                    <div class="chat-name">李女士</div>
+                    <div class="chat-message">
+                        <i class="fas fa-volume-up"></i>
+                        <span>语音</span>
+                    </div>
+                    <div class="chat-time">昨天</div>
+                </div>
+                <div class="chat-badge">2</div>
+            </div>
+            
+            <!-- 王先生 -->
+            <div class="chat-item" onclick="window.location.href='chatroom.html?id=wang&seller=true'">
+                <div class="chat-avatar">
+                    <img src="imgs/IMG20250324194152_20250326010857.jpg" alt="王先生" class="avatar-img">
+                </div>
+                <div class="chat-content">
+                    <div class="chat-name">王先生</div>
+                    <div class="chat-message">谢谢，我会考虑一下</div>
+                    <div class="chat-time">周一</div>
+                </div>
+            </div>
+            
+            <!-- 赵女士 -->
+            <div class="chat-item" onclick="window.location.href='chatroom.html?id=zhao&seller=true'">
+                <div class="chat-avatar">
+                    <img src="imgs/IMG20250308233845_20250326010856.jpg" alt="赵女士" class="avatar-img">
+                </div>
+                <div class="chat-content">
+                    <div class="chat-name">赵女士</div>
+                    <div class="chat-message">
+                        <i class="fas fa-image"></i>
+                        <span>图片</span>
+                    </div>
+                    <div class="chat-time">周日</div>
+                </div>
+            </div>
+            
+            <!-- 陈先生 -->
+            <div class="chat-item" onclick="window.location.href='chatroom.html?id=chen&seller=true'">
+                <div class="chat-avatar">
+                    <img src="imgs/IMG20250308211749_20250326010856.jpg" alt="陈先生" class="avatar-img">
+                </div>
+                <div class="chat-content">
+                    <div class="chat-name">陈先生</div>
+                    <div class="chat-message">订单已经完成，非常感谢</div>
+                    <div class="chat-time">上周</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="window.location.href='seller_post.html'">
+                <i class="fas fa-list-ul nav-icon"></i>
+                <span class="nav-text">服务</span>
+            </div>
+            <div class="nav-item active">
+                <i class="fas fa-comment nav-icon"></i>
+                <span class="nav-text">消息</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='seller_orders.html'">
+                <i class="fas fa-clipboard-list nav-icon"></i>
+                <span class="nav-text">订单</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='seller_profile.html'">
+                <i class="fas fa-user nav-icon"></i>
+                <span class="nav-text">我的</span>
+            </div>
+        </div>
+        
+        <!-- 选项菜单 -->
+        <div class="options-menu" id="optionsMenu">
+            <div class="option-item" onclick="markAllAsRead()">
+                <i class="fas fa-check-double"></i>
+                <span>全部已读</span>
+            </div>
+            <div class="option-item" onclick="setAutoReply()">
+                <i class="fas fa-reply-all"></i>
+                <span>自动回复设置</span>
+            </div>
+            <div class="option-item" onclick="hideOptionsMenu()">
+                <i class="fas fa-times"></i>
+                <span>取消</span>
+            </div>
+        </div>
+        
+        <!-- 遮罩层 -->
+        <div class="overlay" id="overlay" onclick="hideOptionsMenu()"></div>
+    </div>
+
+    <script src="js/seller_chat.js"></script>
+</body>
+</html>

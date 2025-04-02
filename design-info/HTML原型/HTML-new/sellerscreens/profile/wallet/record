@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 交易记录</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/seller_record.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='seller_wallet.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">交易记录</div>
+            <div class="header-right">
+                <div class="filter-button" onclick="showFilterDialog()">
+                    <i class="fas fa-filter"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 交易类型标签 -->
+        <div class="record-tabs">
+            <div class="tab-item active" data-type="all" onclick="switchTab(this)">全部</div>
+            <div class="tab-item" data-type="income" onclick="switchTab(this)">收入</div>
+            <div class="tab-item" data-type="expense" onclick="switchTab(this)">支出</div>
+            <div class="tab-item" data-type="withdraw" onclick="switchTab(this)">提现</div>
+        </div>
+        
+        <!-- 交易记录列表 -->
+        <div class="record-list" id="recordList">
+            <!-- 交易记录项目将通过JS动态添加 -->
+        </div>
+        
+        <!-- 无记录提示 -->
+        <div class="no-records" id="noRecords" style="display: none;">
+            <div class="no-records-icon">
+                <i class="fas fa-receipt"></i>
+            </div>
+            <div class="no-records-text">暂无交易记录</div>
+        </div>
+        
+        <!-- 筛选对话框 -->
+        <div class="filter-dialog" id="filterDialog">
+            <div class="dialog-content">
+                <div class="dialog-title">筛选</div>
+                <div class="dialog-form">
+                    <div class="form-group">
+                        <label>交易类型</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="typeAll" checked>
+                                <label for="typeAll">全部</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="typeIncome">
+                                <label for="typeIncome">收入</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="typeExpense">
+                                <label for="typeExpense">支出</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="typeWithdraw">
+                                <label for="typeWithdraw">提现</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>时间范围</label>
+                        <div class="date-range">
+                            <input type="date" id="startDate" placeholder="开始日期">
+                            <span class="date-separator">至</span>
+                            <input type="date" id="endDate" placeholder="结束日期">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>金额范围</label>
+                        <div class="amount-range">
+                            <input type="number" id="minAmount" placeholder="最小金额">
+                            <span class="amount-separator">至</span>
+                            <input type="number" id="maxAmount" placeholder="最大金额">
+                        </div>
+                    </div>
+                </div>
+                <div class="dialog-buttons">
+                    <button class="dialog-button reset" onclick="resetFilter()">重置</button>
+                    <button class="dialog-button cancel" onclick="hideFilterDialog()">取消</button>
+                    <button class="dialog-button confirm" onclick="applyFilter()">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/seller_record.js"></script>
+</body>
+</html>

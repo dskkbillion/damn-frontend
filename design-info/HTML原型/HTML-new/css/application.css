@@ -1,0 +1,297 @@
+/* 应用页面样式 */
+
+/* 顶部标题栏 */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    padding: 0 16px;
+    background-color: white;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.back-button {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.header-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.header-right {
+    width: 24px;
+}
+
+/* 服务信息 */
+.service-info {
+    background-color: white;
+    padding: 16px;
+    margin-bottom: 8px;
+}
+
+.service-header {
+    display: flex;
+    align-items: center;
+}
+
+.service-image {
+    margin-right: 12px;
+}
+
+.service-image img {
+    width: 80px;
+    height: 80px;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+.service-details {
+    flex: 1;
+}
+
+.service-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.service-price {
+    font-size: 16px;
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.service-seller {
+    display: flex;
+    align-items: center;
+}
+
+.seller-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.seller-name {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* 申请表单 */
+.application-form {
+    background-color: white;
+    padding: 16px;
+    margin-bottom: 8px;
+}
+
+.form-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.form-input {
+    width: 100%;
+    height: 44px;
+    padding: 0 12px;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.form-textarea {
+    width: 100%;
+    height: 120px;
+    padding: 12px;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    font-size: 14px;
+    resize: none;
+}
+
+/* 服务选项 */
+.service-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.service-option {
+    padding: 12px;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.service-option.active {
+    border-color: var(--primary-color);
+    background-color: rgba(var(--primary-color-rgb), 0.05);
+}
+
+.option-name {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.option-price {
+    font-size: 16px;
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.option-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* 上传区域 */
+.upload-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+    border: 1px dashed var(--border-light);
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 12px;
+}
+
+.upload-area i {
+    font-size: 32px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.upload-text {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.upload-hint {
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+.uploaded-files {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: var(--bg-light);
+    border-radius: 4px;
+}
+
+.file-name {
+    font-size: 14px;
+    margin-right: 8px;
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-remove {
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+/* 交付时间选项 */
+.delivery-options {
+    display: flex;
+    gap: 12px;
+}
+
+.delivery-option {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.delivery-option.active {
+    border-color: var(--primary-color);
+    background-color: rgba(var(--primary-color-rgb), 0.05);
+}
+
+.option-days {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+/* 订单金额 */
+.order-amount {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background-color: white;
+    margin-bottom: 80px;
+}
+
+.amount-label {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.amount-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* 提交按钮 */
+.submit-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px;
+    background-color: white;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.submit-button {
+    width: 100%;
+    height: 48px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+}

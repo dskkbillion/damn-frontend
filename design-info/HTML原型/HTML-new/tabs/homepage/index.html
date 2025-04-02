@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 首页</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部搜索栏 -->
+        <div class="header">
+            <div class="logo">
+                <img src="../../imgs/IMG20250320133505_20250326010857.jpg" alt="DSKK Logo" class="logo-img">
+            </div>
+            <div class="search-bar" onclick="window.location.href='search.html'">
+                <i class="fas fa-search"></i>
+                <span class="search-placeholder">搜索服务或技能...</span>
+            </div>
+        </div>
+        
+        <!-- 内容区域 -->
+        <div class="content">
+            <!-- 轮播图 -->
+            <div class="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img src="../../imgs/IMG20250310160953_20250326010856.jpg" alt="Banner 1" class="carousel-image">
+                    </div>
+                </div>
+                <div class="carousel-indicators">
+                    <span class="indicator active"></span>
+                    <span class="indicator"></span>
+                    <span class="indicator"></span>
+                </div>
+            </div>
+            <!-- 服务列表 -->
+            <div class="service-grid">
+                <div class="service-card">
+                    <div class="service-image" onclick="window.location.href='service_detail.html'">
+                        <img src="../../imgs/IMG20250308191357_20250326010856.jpg" alt="修改待审核" class="service-img">
+                    </div>
+                    <div class="service-info">
+                        <div class="service-rating" onclick="window.location.href='service_detail.html'">
+                            <i class="fas fa-star"></i>
+                            <span>5.0</span>
+                            <span class="service-orders">(0)</span>
+                        </div>
+                        <div class="service-title" onclick="window.location.href='service_detail.html'">修改待审核</div>
+                        <div class="service-price" onclick="window.location.href='service_detail.html'">¥1.00</div>
+                        <button class="match-button" onclick="showMatchModal(event, '修改待审核')">让ta看看</button>
+                    </div>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-image" onclick="window.location.href='service_detail.html'">
+                        <img src="../../imgs/IMG20250308211749_20250326010856.jpg" alt="已发布(审核通过)改名" class="service-img">
+                    </div>
+                    <div class="service-info">
+                        <div class="service-rating" onclick="window.location.href='service_detail.html'">
+                            <i class="fas fa-star"></i>
+                            <span>5.0</span>
+                            <span class="service-orders">(0)</span>
+                        </div>
+                        <div class="service-title" onclick="window.location.href='service_detail.html'">已发布(审核通过)改名</div>
+                        <div class="service-price" onclick="window.location.href='service_detail.html'">¥1.00</div>
+                        <button class="match-button" onclick="showMatchModal(event, '已发布(审核通过)改名')">让ta看看</button>
+                    </div>
+                </div>
+                
+                <!-- 添加更多服务卡片以测试瀑布流布局 -->
+                <div class="service-card">
+                    <div class="service-image" onclick="window.location.href='service_detail.html'">
+                        <img src="../../imgs/IMG20250308191357_20250326010856.jpg" alt="修改待审核" class="service-img">
+                    </div>
+                    <div class="service-info">
+                        <div class="service-rating" onclick="window.location.href='service_detail.html'">
+                            <i class="fas fa-star"></i>
+                            <span>5.0</span>
+                            <span class="service-orders">(0)</span>
+                        </div>
+                        <div class="service-title" onclick="window.location.href='service_detail.html'">修改待审核</div>
+                        <div class="service-price" onclick="window.location.href='service_detail.html'">¥1.00</div>
+                        <button class="match-button" onclick="showMatchModal(event, '修改待审核')">让ta看看</button>
+                    </div>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-image" onclick="window.location.href='service_detail.html'">
+                        <img src="../../imgs/IMG20250308211749_20250326010856.jpg" alt="已发布(审核通过)改名" class="service-img">
+                    </div>
+                    <div class="service-info">
+                        <div class="service-rating" onclick="window.location.href='service_detail.html'">
+                            <i class="fas fa-star"></i>
+                            <span>5.0</span>
+                            <span class="service-orders">(0)</span>
+                        </div>
+                        <div class="service-title" onclick="window.location.href='service_detail.html'">已发布(审核通过)改名</div>
+                        <div class="service-price" onclick="window.location.href='service_detail.html'">¥1.00</div>
+                        <button class="match-button" onclick="showMatchModal(event, '已发布(审核通过)改名')">让ta看看</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="window.location.href='../ai_docs/ai_docs.html'">
+                <i class="fas fa-robot nav-icon"></i>
+                <span class="nav-text">多少看看</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='index.html'">
+                <i class="fas fa-home nav-icon"></i>
+                <span class="nav-text">首页</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='../chat/chat.html'">
+                <i class="fas fa-comment nav-icon"></i>
+                <span class="nav-text">消息</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='../profile/profile.html'">
+                <i class="fas fa-user nav-icon"></i>
+                <span class="nav-text">我的</span>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 首页特定样式 */
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background-color: var(--bg-light);
+        }
+        
+        .logo {
+            margin-right: 12px;
+        }
+        
+        .logo-img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .search-bar {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background-color: var(--bg-lighter);
+            border-radius: 12px;
+            padding: 10px 16px;
+            cursor: pointer;
+        }
+        
+        .search-bar i {
+            color: var(--text-secondary);
+            margin-right: 8px;
+        }
+        
+        .search-placeholder {
+            color: var(--text-hint);
+            font-size: 15px;
+        }
+        
+        .carousel {
+            position: relative;
+            margin-bottom: 16px;
+        }
+        
+        .carousel-inner {
+            width: 100%;
+        }
+        
+        .carousel-item {
+            display: none;
+        }
+        
+        .carousel-item.active {
+            display: block;
+        }
+        
+        .carousel-image {
+            width: 100%;
+            border-radius: 12px;
+        }
+        
+        .carousel-indicators {
+            position: absolute;
+            bottom: 12px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .indicator.active {
+            background-color: white;
+        }
+        
+        /* 瀑布流布局 */
+        .service-grid {
+            column-count: 2;
+            column-gap: 8px;
+            margin-bottom: 24px;
+            padding: 0 8px;
+        }
+        
+        .service-card {
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            break-inside: avoid;
+            margin-bottom: 8px;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .service-image {
+            width: 100%;
+            position: relative;
+        }
+        
+        .service-img {
+            width: 100%;
+            aspect-ratio: 1/1;
+            object-fit: contain;
+        }
+        
+        .service-info {
+            padding: 8px;
+        }
+        
+        .service-rating {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        
+        .service-rating i {
+            color: #f39c12;
+            margin-right: 6px;
+        }
+        
+        .service-orders {
+            margin-left: 4px;
+            color: var(--text-hint);
+        }
+        
+        .service-title {
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .service-price {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .match-button {
+            background-color: #B66D0E;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: auto;
+            display: block;
+            margin-top: 4px;
+        }
+        
+        .bottom-nav {
+            display: flex;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 414px;
+            margin: 0 auto;
+            height: 56px;
+            background-color: white;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+            z-index: 100;
+        }
+        
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .nav-item.active {
+            color: var(--primary-color);
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+    </style>
+
+    <script>
+        // 轮播图
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.carousel-item');
+        const indicators = document.querySelectorAll('.indicator');
+        
+        function showSlide(index) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            indicators.forEach(indicator => indicator.classList.remove('active'));
+            
+            slides[index].classList.add('active');
+            indicators[index].classList.add('active');
+        }
+        
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % slides.length;
+            showSlide(currentSlide);
+        }
+        
+        // 自动轮播
+        setInterval(nextSlide, 3000);
+        
+        // 匹配按钮弹窗
+        function showMatchModal(event, serviceName) {
+            console.log("showMatchModal called with service:", serviceName);
+            event.stopPropagation(); // 阻止事件冒泡，防止触发卡片的点击事件
+            
+            // 创建弹窗元素
+            const modal = document.createElement('div');
+            modal.className = 'match-modal';
+            modal.innerHTML = `
+                <div class="match-modal-content">
+                    <div class="match-modal-header">
+                        <h3>匹配服务</h3>
+                        <span class="match-modal-close" onclick="closeMatchModal()">&times;</span>
+                    </div>
+                    <div class="match-modal-body">
+                        <p>您确定要将"${serviceName}"服务推荐给AI助手吗？</p>
+                    </div>
+                    <div class="match-modal-footer">
+                        <button class="match-modal-cancel" onclick="closeMatchModal()">取消</button>
+                        <button class="match-modal-confirm" onclick="confirmMatch('${serviceName}')">确认</button>
+                    </div>
+                </div>
+            `;
+            
+            // 添加弹窗样式
+            const style = document.createElement('style');
+            style.textContent = `
+                .match-modal {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1000;
+                }
+                
+                .match-modal-content {
+                    background-color: white;
+                    border-radius: 8px;
+                    width: 80%;
+                    max-width: 320px;
+                    overflow: hidden;
+                }
+                
+                .match-modal-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 16px;
+                    border-bottom: 1px solid #eee;
+                }
+                
+                .match-modal-header h3 {
+                    margin: 0;
+                    font-size: 18px;
+                }
+                
+                .match-modal-close {
+                    font-size: 24px;
+                    cursor: pointer;
+                }
+                
+                .match-modal-body {
+                    padding: 16px;
+                }
+                
+                .match-modal-footer {
+                    display: flex;
+                    justify-content: flex-end;
+                    padding: 16px;
+                    border-top: 1px solid #eee;
+                }
+                
+                .match-modal-cancel, .match-modal-confirm {
+                    padding: 8px 16px;
+                    border-radius: 4px;
+                    border: none;
+                    cursor: pointer;
+                    margin-left: 8px;
+                }
+                
+                .match-modal-cancel {
+                    background-color: #f5f5f5;
+                    color: #333;
+                }
+                
+                .match-modal-confirm {
+                    background-color: #B66D0E;
+                    color: white;
+                }
+            `;
+            
+            // 添加到页面
+            document.body.appendChild(style);
+            document.body.appendChild(modal);
+        }
+        
+        // 关闭弹窗
+        function closeMatchModal() {
+            const modal = document.querySelector('.match-modal');
+            if (modal) {
+                modal.remove();
+            }
+            
+            // 移除样式
+            const style = document.querySelector('style:last-child');
+            if (style) {
+                style.remove();
+            }
+        }
+        
+        // 确认匹配
+        function confirmMatch(serviceName) {
+            alert(`已将"${serviceName}"服务推荐给AI助手`);
+            closeMatchModal();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - AI对话历史记录</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../../css/ai_docs_history.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='ai_docs.html'">
+                <span class="back-text">返回</span>
+            </div>
+            <div class="header-title">历史记录</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 搜索栏 -->
+        <div class="search-container">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="搜索" />
+            </div>
+        </div>
+        
+        <!-- 历史记录列表 -->
+        <div class="history-list" id="historyList">
+            <div class="history-item" onclick="viewHistory('1')">
+                <div class="history-content">车钥匙丢了怎么办？</div>
+                <div class="history-date">3/16/2025</div>
+            </div>
+            
+            <div class="history-item" onclick="viewHistory('2')">
+                <div class="history-content">车钥匙丢了怎么办？</div>
+                <div class="history-date">3/16/2025</div>
+            </div>
+            
+            <div class="history-item" onclick="viewHistory('3')">
+                <div class="history-content">车钥匙丢了怎么办？</div>
+                <div class="history-date">3/16/2025</div>
+            </div>
+            
+            <div class="history-item" onclick="viewHistory('4')">
+                <div class="history-content">车钥匙丢了怎么办？</div>
+                <div class="history-date">3/16/2025</div>
+            </div>
+            
+            <div class="history-item" onclick="viewHistory('5')">
+                <div class="history-content">我想打官司，该做什么...</div>
+                <div class="history-date">3/16/2025</div>
+            </div>
+            
+            <div class="history-item" onclick="viewHistory('6')">
+                <div class="history-content">如何改造家里的一个角...</div>
+                <div class="history-date">3/16/2025</div>
+            </div>
+            
+            <div class="history-item" onclick="viewHistory('7')">
+                <div class="history-content">车钥匙丢了怎么办？</div>
+                <div class="history-date">3/16/2025</div>
+            </div>
+            
+            <div class="history-item" onclick="viewHistory('8')">
+                <div class="history-content">你好</div>
+                <div class="history-date">3/16/2025</div>
+            </div>
+        </div>
+        
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="window.location.href='../homepage/index.html'">
+                <i class="fas fa-home"></i>
+                <span>主页</span>
+            </div>
+            <div class="nav-item active" onclick="window.location.href='ai_docs.html'">
+                <div class="nav-icon-wrapper">
+                    <i class="fas fa-star"></i>
+                </div>
+                <span>多少看看</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='../chat/chat.html'">
+                <i class="fas fa-comment"></i>
+                <span>消息</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='../profile/profile.html'">
+                <i class="fas fa-user"></i>
+                <span>我的</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../js/ai_docs_history.js"></script>
+</body>
+</html>

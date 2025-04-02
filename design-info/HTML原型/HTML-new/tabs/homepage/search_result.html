@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 搜索结果</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../../css/search_result.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部搜索栏 -->
+        <div class="search-header">
+            <div class="back-button" onclick="window.location.href='search.html'">
+                <i class="fas fa-arrow-left"></i>
+            </div>
+            <div class="search-input-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" id="searchInput" placeholder="搜索服务...">
+                <i class="fas fa-times clear-icon" id="clearSearch" onclick="clearSearch()"></i>
+            </div>
+            <div class="search-button" onclick="searchAgain()">
+                搜索
+            </div>
+        </div>
+        
+        <!-- 筛选选项 -->
+        <div class="filter-options">
+            <div class="filter-scroll">
+                <div class="filter-item active" data-filter="all" onclick="filterResults('all')">全部</div>
+                <div class="filter-item" data-filter="design" onclick="filterResults('design')">设计</div>
+                <div class="filter-item" data-filter="writing" onclick="filterResults('writing')">文案</div>
+                <div class="filter-item" data-filter="translation" onclick="filterResults('translation')">翻译</div>
+                <div class="filter-item" data-filter="programming" onclick="filterResults('programming')">编程</div>
+                <div class="filter-item" data-filter="video" onclick="filterResults('video')">视频</div>
+                <div class="filter-item" data-filter="audio" onclick="filterResults('audio')">音频</div>
+            </div>
+        </div>
+        
+        <!-- 搜索结果统计 -->
+        <div class="result-stats">
+            找到 <span id="resultCount">24</span> 个结果
+        </div>
+        
+        <!-- 搜索结果列表 -->
+        <div class="search-results" id="searchResults">
+            <!-- 搜索结果项 -->
+            <div class="result-item" onclick="viewService('1001')">
+                <div class="result-image">
+                    <img src="https://via.placeholder.com/100" alt="服务图片">
+                </div>
+                <div class="result-details">
+                    <div class="result-title">专业Logo设计</div>
+                    <div class="result-description">提供3种方案，无限修改，包含源文件</div>
+                    <div class="result-seller">
+                        <span class="seller-name">设计师小明</span>
+                        <span class="seller-rating">
+                            <i class="fas fa-star"></i>
+                            <span>4.9</span>
+                        </span>
+                    </div>
+                    <div class="result-price">¥299起</div>
+                </div>
+            </div>
+            
+            <div class="result-item" onclick="viewService('1002')">
+                <div class="result-image">
+                    <img src="https://via.placeholder.com/100" alt="服务图片">
+                </div>
+                <div class="result-details">
+                    <div class="result-title">产品文案撰写</div>
+                    <div class="result-description">专业文案团队，提供产品描述、宣传文案等服务</div>
+                    <div class="result-seller">
+                        <span class="seller-name">文案大师</span>
+                        <span class="seller-rating">
+                            <i class="fas fa-star"></i>
+                            <span>4.8</span>
+                        </span>
+                    </div>
+                    <div class="result-price">¥199起</div>
+                </div>
+            </div>
+            
+            <div class="result-item" onclick="viewService('1003')">
+                <div class="result-image">
+                    <img src="https://via.placeholder.com/100" alt="服务图片">
+                </div>
+                <div class="result-details">
+                    <div class="result-title">英文文档翻译</div>
+                    <div class="result-description">专业英语翻译，支持各类文档、论文、合同等</div>
+                    <div class="result-seller">
+                        <span class="seller-name">翻译专家</span>
+                        <span class="seller-rating">
+                            <i class="fas fa-star"></i>
+                            <span>4.7</span>
+                        </span>
+                    </div>
+                    <div class="result-price">¥0.15/字</div>
+                </div>
+            </div>
+            
+            <div class="result-item" onclick="viewService('1004')">
+                <div class="result-image">
+                    <img src="https://via.placeholder.com/100" alt="服务图片">
+                </div>
+                <div class="result-details">
+                    <div class="result-title">网站前端开发</div>
+                    <div class="result-description">响应式网站开发，支持各种设备，包含源代码</div>
+                    <div class="result-seller">
+                        <span class="seller-name">程序员小张</span>
+                        <span class="seller-rating">
+                            <i class="fas fa-star"></i>
+                            <span>4.9</span>
+                        </span>
+                    </div>
+                    <div class="result-price">¥1999起</div>
+                </div>
+            </div>
+            
+            <div class="result-item" onclick="viewService('1005')">
+                <div class="result-image">
+                    <img src="https://via.placeholder.com/100" alt="服务图片">
+                </div>
+                <div class="result-details">
+                    <div class="result-title">短视频剪辑</div>
+                    <div class="result-description">专业视频剪辑，包含转场特效、字幕、配乐等</div>
+                    <div class="result-seller">
+                        <span class="seller-name">剪辑师小李</span>
+                        <span class="seller-rating">
+                            <i class="fas fa-star"></i>
+                            <span>4.8</span>
+                        </span>
+                    </div>
+                    <div class="result-price">¥299起</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 加载更多 -->
+        <div class="load-more" onclick="loadMore()">
+            <span>加载更多</span>
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="window.location.href='index.html'">
+                <i class="fas fa-home"></i>
+                <span>首页</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='../ai_docs/ai_docs.html'">
+                <i class="fas fa-robot"></i>
+                <span>多少看看</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='../chat/chat.html'">
+                <i class="fas fa-comment"></i>
+                <span>消息</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='../profile/profile.html'">
+                <i class="fas fa-user"></i>
+                <span>我的</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../js/search_result.js"></script>
+</body>
+</html>

@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 服务详情</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部导航栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.history.back()">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title"></div>
+            <div class="header-right">
+                <i class="far fa-heart" id="favoriteButton" onclick="toggleFavorite()"></i>
+            </div>
+        </div>
+        
+        <!-- 服务图片 -->
+        <div class="service-image-container">
+            <img src="../../imgs/IMG20250308191357_20250326010856.jpg" alt="服务图片" class="service-main-image">
+        </div>
+        
+        <!-- 卖家信息 -->
+        <div class="seller-info" onclick="viewSellerProfile()">
+            <div class="seller-avatar">
+                <img src="../../imgs/IMG20250317124302.jpg" alt="卖家头像">
+            </div>
+            <div class="seller-details">
+                <div class="seller-name">瑭</div>
+                <div class="seller-tag">多余数据soft格式传</div>
+            </div>
+            <button class="consult-button" onclick="event.stopPropagation(); consultSeller()">咨询</button>
+        </div>
+        
+        <!-- 服务信息 -->
+        <div class="service-info">
+            <div class="service-rating">
+                <i class="fas fa-star"></i>
+                <span>5.0</span>
+            </div>
+            <h1 class="service-title">修改待审核</h1>
+            <div class="service-price">¥1</div>
+            <div class="service-description">
+                <a href="#" class="more-link">修改待审核更多</a>
+            </div>
+        </div>
+        
+        <!-- 步骤指示器 -->
+        <div class="steps-indicator">
+            <div class="step active">
+                <div class="step-number">1</div>
+                <div class="step-line"></div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-line"></div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+            </div>
+        </div>
+        
+        <!-- 交付信息 -->
+        <div class="delivery-info">
+            <div class="info-item">
+                <div class="info-label">交付次数</div>
+                <div class="info-value">1</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">交付周期</div>
+                <div class="info-value">1</div>
+            </div>
+        </div>
+        
+        <!-- 购买按钮 -->
+        <div class="purchase-container">
+            <button class="purchase-button" onclick="purchase()">一键购买 (1)</button>
+        </div>
+        
+        <!-- 常见问题 -->
+        <div class="faq-section">
+            <div class="faq-header" onclick="toggleFAQ()">
+                <span>常见问题</span>
+                <i class="fas fa-chevron-down" id="faqIcon"></i>
+            </div>
+            <div class="faq-content" id="faqContent" style="display: none;">
+                <div class="faq-item">
+                    <div class="faq-question">这项服务包含哪些内容？</div>
+                    <div class="faq-answer">本服务提供修改待审核的相关服务，包括格式调整、内容优化等。</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">服务周期是多久？</div>
+                    <div class="faq-answer">一般情况下，服务周期为1天，具体可能根据工作量有所调整。</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">如何提交修改需求？</div>
+                    <div class="faq-answer">购买后，系统会引导您提交具体的修改需求和相关文件。</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 案例展示 -->
+        <div class="showcase-section">
+            <div class="section-title">案例展示</div>
+            <div class="showcase-content">
+                <img src="../../imgs/IMG20250325215057_20250326010857.jpg" alt="案例展示" class="showcase-image">
+            </div>
+        </div>
+        
+        <!-- 评论区 -->
+        <div class="review-section">
+            <div class="review-header">
+                <span>评论 (0)</span>
+                <a href="#" class="view-all">查看全部 <i class="fas fa-chevron-right"></i></a>
+            </div>
+            <div class="review-content">
+                <div class="no-review">暂无评论</div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 添加的样式 */
+        .seller-info {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .seller-info:hover {
+            background-color: var(--bg-lighter);
+        }
+        /* 服务详情页面特定样式 */
+        .service-image-container {
+            width: 100%;
+            height: 300px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        
+        .service-main-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .seller-info {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background-color: white;
+            border-radius: 12px;
+            margin: 0 16px 16px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .seller-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: 12px;
+        }
+        
+        .seller-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .seller-details {
+            flex: 1;
+        }
+        
+        .seller-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .seller-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            background-color: var(--bg-medium);
+            color: var(--text-secondary);
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        
+        .consult-button {
+            padding: 8px 16px;
+            background-color: var(--bg-lighter);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-medium);
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .service-info {
+            padding: 0 16px 16px;
+            background-color: white;
+            margin-bottom: 16px;
+        }
+        
+        .service-rating {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        .service-rating i {
+            color: #f39c12;
+            margin-right: 4px;
+        }
+        
+        .service-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+        
+        .service-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+        
+        .service-description {
+            margin-bottom: 16px;
+        }
+        
+        .more-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .steps-indicator {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 40px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            flex: 1;
+        }
+        
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--bg-medium);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .step.active .step-number {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .step-line {
+            position: absolute;
+            top: 16px;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background-color: var(--bg-medium);
+            z-index: 1;
+        }
+        
+        .step.active .step-line {
+            background-color: var(--primary-color);
+        }
+        
+        .delivery-info {
+            display: flex;
+            padding: 0 16px;
+            margin-bottom: 24px;
+        }
+        
+        .info-item {
+            flex: 1;
+        }
+        
+        .info-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        
+        .info-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .purchase-container {
+            padding: 0 16px;
+            margin-bottom: 24px;
+        }
+        
+        .purchase-button {
+            width: 100%;
+            padding: 14px 0;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .faq-section {
+            margin: 0 16px 24px;
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .faq-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .faq-content {
+            padding: 0 16px 16px;
+            border-top: 1px solid var(--divider);
+        }
+        
+        .faq-item {
+            margin-top: 16px;
+        }
+        
+        .faq-question {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+        
+        .faq-answer {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        
+        .showcase-section {
+            margin: 0 16px 24px;
+            background-color: var(--bg-lighter);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+        
+        .showcase-image {
+            width: 100%;
+            border-radius: 8px;
+        }
+        
+        .review-section {
+            margin: 0 16px 24px;
+            background-color: var(--bg-lighter);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .review-header span {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .view-all {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .view-all i {
+            font-size: 12px;
+            margin-left: 4px;
+        }
+        
+        .no-review {
+            text-align: center;
+            padding: 24px 0;
+            color: var(--text-hint);
+        }
+    </style>
+
+    <script>
+        // 切换收藏状态
+        function toggleFavorite() {
+            const favoriteButton = document.getElementById('favoriteButton');
+            if (favoriteButton.classList.contains('far')) {
+                favoriteButton.classList.remove('far');
+                favoriteButton.classList.add('fas');
+                favoriteButton.style.color = '#b66d0e';
+                showToast('已添加到收藏');
+            } else {
+                favoriteButton.classList.remove('fas');
+                favoriteButton.classList.add('far');
+                favoriteButton.style.color = '';
+                showToast('已取消收藏');
+            }
+        }
+        
+        // 查看卖家资料
+        function viewSellerProfile() {
+            window.location.href = '../../sellerscreens/profile/seller_profile.html';
+        }
+        
+        // 咨询卖家
+        function consultSeller() {
+            window.location.href = '../chat/chat_detail.html';
+        }
+        
+        // 购买服务
+        function purchase() {
+            window.location.href = '../../outer/order/order_application.html';
+        }
+        
+        // 切换常见问题显示状态
+        function toggleFAQ() {
+            const faqContent = document.getElementById('faqContent');
+            const faqIcon = document.getElementById('faqIcon');
+            
+            if (faqContent.style.display === 'none') {
+                faqContent.style.display = 'block';
+                faqIcon.classList.remove('fa-chevron-down');
+                faqIcon.classList.add('fa-chevron-up');
+            } else {
+                faqContent.style.display = 'none';
+                faqIcon.classList.remove('fa-chevron-up');
+                faqIcon.classList.add('fa-chevron-down');
+            }
+        }
+        
+        // 显示提示消息
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

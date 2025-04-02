@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 认证状态</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='seller_authentication.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">公司认证</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 认证状态内容 -->
+        <div class="auth-status-container">
+            <!-- 认证状态 -->
+            <div class="status-item">
+                <div class="status-label">认证状态：</div>
+                <div class="status-value approved">
+                    <i class="fas fa-check-circle"></i>
+                    <span>审核通过</span>
+                </div>
+            </div>
+            
+            <!-- 公司名称 -->
+            <div class="status-item">
+                <div class="status-label">公司名称：</div>
+                <div class="status-value">多多咨询box标准库</div>
+            </div>
+            
+            <!-- 营业执照 -->
+            <div class="status-item">
+                <div class="status-label">营业执照：</div>
+            </div>
+            
+            <!-- 营业执照图片 -->
+            <div class="license-image-container">
+                <div class="license-image-placeholder" id="licenseImagePlaceholder" onclick="viewLicenseImage()">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <div class="license-image" id="licenseImage" style="display: none;">
+                    <img src="" alt="营业执照" id="licenseImageSrc">
+                    <div class="image-overlay" onclick="viewLicenseImage()">
+                        <i class="fas fa-search-plus"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 认证信息 -->
+            <div class="auth-info-section">
+                <div class="section-title">认证信息</div>
+                
+                <div class="info-item">
+                    <div class="info-label">法人代表：</div>
+                    <div class="info-value">张三</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">统一社会信用代码：</div>
+                    <div class="info-value">91110105MA00B7F30G</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">注册资本：</div>
+                    <div class="info-value">1000万元</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">成立日期：</div>
+                    <div class="info-value">2020年01月01日</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">营业期限：</div>
+                    <div class="info-value">2020年01月01日至2050年01月01日</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">经营范围：</div>
+                    <div class="info-value">企业管理咨询；经济贸易咨询；教育咨询；技术开发、技术转让、技术咨询、技术服务；计算机系统服务；基础软件服务；应用软件服务；软件开发；软件咨询；产品设计；模型设计；包装装潢设计；教育培训；文化艺术交流活动策划；公共关系服务；会议服务；工艺美术设计；电脑动画设计；项目投资；投资管理；资产管理；投资咨询；企业策划、设计；设计、制作、代理、发布广告；市场调查；企业管理咨询；组织文化艺术交流活动（不含营业性演出）；文艺创作；承办展览展示活动；影视策划；翻译服务。</div>
+                </div>
+            </div>
+            
+            <!-- 认证历史 -->
+            <div class="auth-history-section">
+                <div class="section-title">认证历史</div>
+                
+                <div class="history-item">
+                    <div class="history-time">2023-03-15 14:30</div>
+                    <div class="history-content">
+                        <div class="history-title">认证申请通过</div>
+                        <div class="history-desc">您的公司认证申请已通过审核，现在您可以享受认证商家的所有权益。</div>
+                    </div>
+                </div>
+                
+                <div class="history-item">
+                    <div class="history-time">2023-03-12 10:15</div>
+                    <div class="history-content">
+                        <div class="history-title">提交认证申请</div>
+                        <div class="history-desc">您已成功提交公司认证申请，我们将在1-3个工作日内完成审核。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部按钮 -->
+        <div class="bottom-button-container">
+            <button class="primary-button" onclick="reapplyAuth()">重新认证</button>
+        </div>
+        
+        <!-- 图片查看弹窗 -->
+        <div class="modal" id="imageViewerModal">
+            <div class="modal-content image-viewer-content">
+                <div class="modal-header">
+                    <div class="modal-title">营业执照</div>
+                    <div class="modal-close" onclick="closeModal('imageViewerModal')">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+                <div class="modal-body image-viewer-body">
+                    <img src="imgs/IMG20250308191357_20250326010856.jpg" alt="营业执照大图" class="full-image">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 认证状态页面特定样式 */
+        .auth-status-container {
+            padding: 16px;
+            background-color: white;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .status-label {
+            font-size: 16px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        
+        .status-value {
+            font-size: 16px;
+        }
+        
+        .status-value.approved {
+            color: #4caf50;
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-value.approved i {
+            margin-right: 4px;
+        }
+        
+        .status-value.pending {
+            color: #ff9800;
+        }
+        
+        .status-value.rejected {
+            color: #f44336;
+        }
+        
+        /* 营业执照图片样式 */
+        .license-image-container {
+            margin-bottom: 24px;
+        }
+        
+        .license-image-placeholder {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            background-color: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .license-image-placeholder i {
+            font-size: 32px;
+            color: #9e9e9e;
+        }
+        
+        .license-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .license-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .license-image:hover .image-overlay {
+            opacity: 1;
+        }
+        
+        .image-overlay i {
+            color: white;
+            font-size: 24px;
+        }
+        
+        /* 认证信息样式 */
+        .auth-info-section, .auth-history-section {
+            margin-bottom: 24px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .info-item {
+            margin-bottom: 12px;
+        }
+        
+        .info-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .info-value {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+        
+        /* 认证历史样式 */
+        .history-item {
+            display: flex;
+            margin-bottom: 16px;
+            position: relative;
+        }
+        
+        .history-item:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            top: 24px;
+            left: 7px;
+            bottom: -8px;
+            width: 2px;
+            background-color: var(--border-light);
+        }
+        
+        .history-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+            width: 120px;
+            position: relative;
+            padding-left: 20px;
+            flex-shrink: 0;
+        }
+        
+        .history-time::before {
+            content: '';
+            position: absolute;
+            top: 6px;
+            left: 0;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+        }
+        
+        .history-content {
+            flex: 1;
+        }
+        
+        .history-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .history-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        
+        /* 底部按钮样式 */
+        .bottom-button-container {
+            padding: 16px;
+            position: sticky;
+            bottom: 0;
+            background-color: white;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .primary-button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        /* 图片查看弹窗样式 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .image-viewer-content {
+            width: 90%;
+            max-width: 90%;
+            height: 90%;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .image-viewer-body {
+            flex: 1;
+            overflow: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        
+        .full-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+    </style>
+
+    <script>
+        // 查看营业执照大图
+        function viewLicenseImage() {
+            document.getElementById('imageViewerModal').style.display = 'flex';
+        }
+        
+        // 关闭弹窗
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // 重新认证
+        function reapplyAuth() {
+            window.location.href = 'seller_authentication_detail.html?type=company&reapply=true';
+        }
+        
+        // 加载营业执照图片
+        window.onload = function() {
+            // 模拟已上传的营业执照图片
+            const licenseImageSrc = 'imgs/IMG20250308191357_20250326010856.jpg';
+            
+            if (licenseImageSrc) {
+                document.getElementById('licenseImageSrc').src = licenseImageSrc;
+                document.getElementById('licenseImage').style.display = 'block';
+                document.getElementById('licenseImagePlaceholder').style.display = 'none';
+            }
+        };
+        
+        // 点击弹窗外部关闭弹窗
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('imageViewerModal');
+            
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

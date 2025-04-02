@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 卖家我的</title>
+    <link rel="stylesheet" href="../../../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部个人资料区域 -->
+        <div class="profile-header">
+            <div class="user-info">
+                <div class="user-avatar">
+                    <img src="../../../imgs/IMG20250317124302.jpg" alt="用户头像" class="avatar-img">
+                </div>
+                <div class="user-details">
+                    <div class="user-name">瑞</div>
+                    <div class="user-status">
+                        <span class="status-dot online"></span>
+                        <span class="status-text">卖家模式：在线</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 卖家模式切换 -->
+            <div class="seller-mode-switch">
+                <div class="switch-label">卖家模式</div>
+                <label class="switch">
+                    <input type="checkbox" id="modeToggle" checked onchange="toggleMode()">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </div>
+        
+        <!-- 我的订单 -->
+        <div class="section-container">
+            <div class="section-title">我的订单</div>
+            <div class="order-types">
+                <div class="order-type" onclick="goToOrders(1)">
+                    <div class="order-icon">
+                        <i class="fas fa-yen-sign"></i>
+                    </div>
+                    <span>待确认</span>
+                </div>
+                <div class="order-type" onclick="goToOrders(2)">
+                    <div class="order-icon">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <span>进行中</span>
+                </div>
+                <div class="order-type" onclick="goToOrders(3)">
+                    <div class="order-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <span>已交付</span>
+                </div>
+                <div class="order-type" onclick="goToOrders(4)">
+                    <div class="order-icon">
+                        <i class="fas fa-times"></i>
+                    </div>
+                    <span>退款/售后</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 认证管理 -->
+        <div class="function-item" onclick="window.location.href='authentication/seller_authentication.html'">
+            <div class="function-icon document-icon">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <div class="function-name">认证管理</div>
+            <div class="function-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </div>
+        
+        <!-- 我的钱包 -->
+        <div class="function-item" onclick="window.location.href='wallet/seller_wallet.html'">
+            <div class="function-icon user-icon">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            <div class="function-name">我的钱包</div>
+            <div class="function-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </div>
+        
+        <!-- 时间管理 -->
+        <div class="function-item" onclick="window.location.href='seller_time_manage.html'">
+            <div class="function-icon calendar-icon">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="function-name">时间管理</div>
+            <div class="function-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </div>
+        
+        <!-- 设置标题 -->
+        <div class="section-title settings-title">设置</div>
+        
+        <!-- 消息通知 -->
+        <div class="function-item" onclick="window.location.href='notification/index.html'">
+            <div class="function-icon notification-icon">
+                <i class="fas fa-bell"></i>
+            </div>
+            <div class="function-name">消息通知</div>
+            <div class="function-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </div>
+        
+        <!-- 关于我们标题 -->
+        <div class="section-title about-title">关于我们</div>
+        
+        <!-- 小粽子的使命 -->
+        <div class="function-item" onclick="window.location.href='../../../outer/about/about_us.html'">
+            <div class="function-icon mission-icon">
+                <i class="fas fa-heart"></i>
+            </div>
+            <div class="function-name">小粽子的使命</div>
+            <div class="function-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </div>
+        
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="window.location.href='../../homepage/index.html'">
+                <i class="fas fa-home nav-icon"></i>
+                <span class="nav-text">主页</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='../post/seller_post.html'">
+                <i class="fas fa-file-alt nav-icon"></i>
+                <span class="nav-text">发布</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='../chat/seller_chat.html'">
+                <i class="fas fa-comment nav-icon"></i>
+                <span class="nav-text">消息</span>
+            </div>
+            <div class="nav-item active">
+                <i class="fas fa-user nav-icon"></i>
+                <span class="nav-text">我的</span>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 卖家我的页面特定样式 */
+        .profile-header {
+            background-color: #B66D0E;
+            padding: 24px 20px;
+            color: white;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .user-avatar {
+            margin-right: 16px;
+        }
+        
+        .avatar-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 2px solid white;
+            object-fit: cover;
+        }
+        
+        .user-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: white;
+        }
+        
+        .user-status {
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        
+        .status-dot.online {
+            background-color: #4caf50;
+        }
+        
+        .status-dot.offline {
+            background-color: #9e9e9e;
+        }
+        
+        .status-text {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        /* 卖家模式切换 */
+        .seller-mode-switch {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 12px 16px;
+            border-radius: 8px;
+        }
+        
+        .switch-label {
+            font-size: 16px;
+            color: white;
+        }
+        
+        /* 开关样式 */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.3);
+            transition: .4s;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+        }
+        
+        input:checked + .slider {
+            background-color: #4caf50;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .slider.round {
+            border-radius: 24px;
+        }
+        
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        
+        /* 我的订单 */
+        .section-container {
+            background-color: white;
+            margin: 16px;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            margin-left: 16px;
+        }
+        
+        .settings-title, .about-title {
+            margin-top: 20px;
+            margin-bottom: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .order-types {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .order-type {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 25%;
+            cursor: pointer;
+        }
+        
+        .order-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #000;
+            margin-bottom: 8px;
+        }
+        
+        .order-type span {
+            font-size: 14px;
+        }
+        
+        /* 功能项样式 */
+        .function-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background-color: white;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+        
+        .function-icon {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+        }
+        
+        .document-icon, .user-icon, .calendar-icon, .notification-icon, .mission-icon {
+            font-size: 20px;
+        }
+        
+        .function-name {
+            flex: 1;
+            font-size: 16px;
+        }
+        
+        .function-arrow {
+            color: #999;
+            font-size: 14px;
+        }
+        
+        /* 删除不需要的样式 */
+    </style>
+
+    <script>
+        // 切换卖家/买家模式
+        function toggleMode() {
+            const modeToggle = document.getElementById('modeToggle');
+            const statusDot = document.querySelector('.status-dot');
+            const statusText = document.querySelector('.status-text');
+            
+            if (modeToggle.checked) {
+                statusDot.classList.add('online');
+                statusDot.classList.remove('offline');
+                statusText.textContent = '卖家模式：在线';
+            } else {
+                // 切换到买家模式
+                window.location.href = '../../../tabs/profile/profile.html';
+            }
+        }
+        
+        // 跳转到订单页面
+        function goToOrders(typeId) {
+            window.location.href = `orders/seller_orders.html?type_id=${typeId}`;
+        }
+    </script>
+</body>
+</html>

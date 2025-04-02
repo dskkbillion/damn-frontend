@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>消息通知</title>
+    <link rel="stylesheet" href="../../../../styles.css">
+    <style>
+        .container {
+            padding: 20px;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        .section-title {
+            font-size: 15px;
+            color: #666;
+            margin-left: 4%;
+            margin-bottom: 10px;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            padding: 15px;
+            margin: 10px 4%;
+            border-radius: 10px;
+        }
+        
+        .setting-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .setting-title {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .setting-desc {
+            font-size: 14px;
+            color: gray;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #B66D0E;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .arrow-right {
+            font-size: 24px;
+            color: #666;
+        }
+        
+        .back-button {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .back-button i {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        
+        .back-button span {
+            font-size: 18px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #fff;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="back-button" onclick="history.back()">
+            <i>←</i>
+            <span>返回</span>
+        </div>
+        <div class="header-title">消息通知</div>
+        <div style="width: 24px;"></div> <!-- 占位元素，保持标题居中 -->
+    </div>
+    
+    <div class="container">
+        <h2 class="section-title">聊天回复设置</h2>
+        
+        <!-- 自动回复 -->
+        <div class="setting-item" onclick="location.href='auto_reply.html'">
+            <div class="setting-title">自动回复</div>
+            <div class="arrow-right">›</div>
+        </div>
+        
+        <h2 class="section-title">消息提示音</h2>
+        
+        <!-- 声音 -->
+        <div class="setting-item">
+            <div class="setting-title">声音</div>
+            <label class="switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+        
+        <!-- 震动 -->
+        <div class="setting-item">
+            <div class="setting-title">震动</div>
+            <label class="switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+        
+        <h2 class="section-title">消息通知设置</h2>
+        
+        <!-- 一键免打扰 -->
+        <div class="setting-item">
+            <div class="setting-info">
+                <div class="setting-title">一键免打扰</div>
+                <div class="setting-desc">只接受'交易聊天消息'，方便交易</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+        
+        <!-- 通知消息 -->
+        <div class="setting-item">
+            <div class="setting-info">
+                <div class="setting-title">通知消息</div>
+                <div class="setting-desc">后台接收平台通知</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+    
+    <script>
+        // 可以添加JavaScript代码来处理开关状态变化
+        document.querySelectorAll('.switch input').forEach(function(checkbox) {
+            checkbox.addEventListener('change', function() {
+                console.log(this.checked ? '开启' : '关闭');
+                // 这里可以添加AJAX请求来保存设置
+            });
+        });
+    </script>
+</body>
+</html>

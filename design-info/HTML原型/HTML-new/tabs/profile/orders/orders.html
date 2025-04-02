@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 我的订单</title>
+    <link rel="stylesheet" href="../../../styles.css">
+    <link rel="stylesheet" href="../../../css/orders.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='../profile.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">我的订单</div>
+            <div class="header-right" onclick="window.location.href='order_search.html'">
+                <i class="fas fa-search"></i>
+            </div>
+        </div>
+        
+        <!-- 订单状态标签 -->
+        <div class="order-tabs">
+            <div class="tab-item active" data-status="all" onclick="switchTab(this)">全部</div>
+            <div class="tab-item" data-status="awaitingConfirmation" onclick="switchTab(this)">待确认</div>
+            <div class="tab-item" data-status="inProgress" onclick="switchTab(this)">进行中</div>
+            <div class="tab-item" data-status="paid" onclick="switchTab(this)">已支付</div>
+            <div class="tab-item" data-status="completed" onclick="switchTab(this)">已完成</div>
+            <div class="tab-item" data-status="afterSale" onclick="switchTab(this)">售后</div>
+        </div>
+        
+        <!-- 订单列表 -->
+        <div class="order-list" id="orderList">
+            <!-- 订单项将通过JS动态添加 -->
+        </div>
+        
+        <!-- 无订单提示 -->
+        <div class="no-orders" id="noOrders" style="display: none;">
+            <div class="no-orders-icon">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <div class="no-orders-text">暂无订单</div>
+        </div>
+        </div>
+    </div>
+
+    <!-- 订单项模板 -->
+    <template id="orderItemTemplate">
+        <div class="order-item" onclick="goToOrderDetail('{orderId}')">
+            <div class="order-header">
+                <div class="seller-info">
+                    <span class="seller-name">{sellerName}</span>
+                    <span class="seller-id">{sellerId}</span>
+                </div>
+                <div class="order-status">{orderStatus}</div>
+            </div>
+            <div class="order-content">
+                <div class="order-image">
+                    <img src="{orderImage}" alt="订单图片">
+                </div>
+                <div class="order-details">
+                    <div class="order-title">{orderTitle}</div>
+                    <div class="order-description">{orderDescription}</div>
+                    <div class="order-price">¥{orderPrice}</div>
+                </div>
+            </div>
+            <div class="order-footer">
+                <div class="order-time">{orderTime}</div>
+                <div class="order-actions">
+                    {orderActions}
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src="../../../js/orders.js"></script>
+</body>
+</html>

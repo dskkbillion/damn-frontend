@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 登录</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.history.back()">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">登录</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 登录容器 -->
+        <div class="login-container-wrapper">
+            <!-- 应用logo和名称 -->
+            <div class="app-info">
+                <div class="app-logo">
+                    <img src="https://via.placeholder.com/100x100/b66d0e/ffffff?text=DSKK" alt="应用图标">
+                </div>
+                <div class="app-name">多少电台</div>
+                <div class="app-slogan">连接你的世界</div>
+            </div>
+            
+            <!-- 登录方式 -->
+            <div class="login-methods">
+                <button class="login-method-button phone" onclick="window.location.href='login.html'">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>手机号登录</span>
+                </button>
+                
+                <button class="login-method-button wechat" onclick="loginWithWechat()">
+                    <i class="fab fa-weixin"></i>
+                    <span>微信登录</span>
+                </button>
+                
+                <button class="login-method-button qq" onclick="loginWithQQ()">
+                    <i class="fab fa-qq"></i>
+                    <span>QQ登录</span>
+                </button>
+                
+                <button class="login-method-button weibo" onclick="loginWithWeibo()">
+                    <i class="fab fa-weibo"></i>
+                    <span>微博登录</span>
+                </button>
+            </div>
+            
+            <!-- 游客模式 -->
+            <div class="guest-login">
+                <button class="guest-button" onclick="loginAsGuest()">
+                    <span>游客模式</span>
+                </button>
+            </div>
+            
+            <!-- 用户协议 -->
+            <div class="agreement-text">
+                登录即表示您同意 <a href="privacy.html">隐私政策</a> 和 <a href="terms.html">用户协议</a>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 登录容器页面特定样式 */
+        body {
+            background-color: #f8f9fa;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            padding: 0 16px;
+            background-color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .back-button {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .header-right {
+            width: 24px;
+        }
+        
+        .login-container-wrapper {
+            padding: 32px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .app-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 48px;
+        }
+        
+        .app-logo {
+            margin-bottom: 16px;
+        }
+        
+        .app-logo img {
+            width: 100px;
+            height: 100px;
+            border-radius: 20px;
+            object-fit: cover;
+        }
+        
+        .app-name {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .app-slogan {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .login-methods {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .login-method-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .login-method-button i {
+            margin-right: 8px;
+            font-size: 20px;
+        }
+        
+        .login-method-button.phone {
+            background-color: var(--primary-color);
+        }
+        
+        .login-method-button.wechat {
+            background-color: #07C160;
+        }
+        
+        .login-method-button.qq {
+            background-color: #12B7F5;
+        }
+        
+        .login-method-button.weibo {
+            background-color: #E6162D;
+        }
+        
+        .guest-login {
+            margin-bottom: 24px;
+        }
+        
+        .guest-button {
+            background: none;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        
+        .agreement-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+        
+        .agreement-text a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+    </style>
+
+    <script>
+        // 微信登录
+        function loginWithWechat() {
+            alert('微信登录功能尚未实现');
+        }
+        
+        // QQ登录
+        function loginWithQQ() {
+            alert('QQ登录功能尚未实现');
+        }
+        
+        // 微博登录
+        function loginWithWeibo() {
+            alert('微博登录功能尚未实现');
+        }
+        
+        // 游客模式
+        function loginAsGuest() {
+            alert('游客模式尚未实现');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

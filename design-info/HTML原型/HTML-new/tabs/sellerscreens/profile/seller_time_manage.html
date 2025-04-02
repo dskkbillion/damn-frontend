@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 时间管理</title>
+    <link rel="stylesheet" href="../../../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='index.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">时间管理</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 时间管理设置 -->
+        <div class="time-manage-container">
+            <!-- 当前状态 -->
+            <div class="setting-item">
+                <div class="setting-label">当前状态</div>
+                <div class="setting-control">
+                    <div class="status-text" id="statusText">在线</div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="statusToggle" checked onchange="toggleStatus()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- 状态说明 -->
+            <div class="status-description">
+                <div class="status-description-title">状态说明：</div>
+                <div class="status-description-content">
+                    <p><strong style="color: #666;">在线状态：</strong>您可以接收新的订单和消息通知，买家可以看到您的在线状态，系统会主动推荐您的服务。</p>
+                    <p><strong style="color: #666;">离线状态：</strong>系统不会主动推荐您的服务，但买家通过搜索仍可以找到并下单。您仍然可以接收消息通知，买家将看到您处于离线状态。</p>
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- 保存按钮 -->
+        <div class="save-button-container">
+            <button class="save-button" onclick="saveSettings()">保存设置</button>
+        </div>
+    </div>
+
+    <style>
+        /* 时间管理页面特定样式 */
+        .time-manage-container {
+            padding: 16px;
+            background-color: white;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .setting-label {
+            font-size: 16px;
+        }
+        
+        .setting-control {
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-text {
+            margin-right: 8px;
+            font-size: 14px;
+            color: #4caf50;
+        }
+        
+        .status-text.offline {
+            color: var(--text-secondary);
+        }
+        
+        /* 开关样式 */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #4caf50;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        /* 状态说明样式 */
+        .status-description {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: var(--bg-light);
+            border-radius: 8px;
+        }
+        
+        .status-description-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #666;
+        }
+        
+        .status-description-content p {
+            font-size: 14px;
+            margin-bottom: 8px;
+            line-height: 1.5;
+            color: #888;
+        }
+        
+        
+        /* 保存按钮样式 */
+        .save-button-container {
+            padding: 16px;
+            position: sticky;
+            bottom: 0;
+            background-color: white;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .save-button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+
+    <script>
+        // 切换在线/离线状态
+        function toggleStatus() {
+            const statusToggle = document.getElementById('statusToggle');
+            const statusText = document.getElementById('statusText');
+            
+            if (statusToggle.checked) {
+                statusText.textContent = '在线';
+                statusText.classList.remove('offline');
+            } else {
+                statusText.textContent = '离线';
+                statusText.classList.add('offline');
+            }
+        }
+        
+        
+        // 保存设置
+        function saveSettings() {
+            // 收集设置数据
+            const settings = {
+                status: document.getElementById('statusToggle').checked ? 'online' : 'offline'
+            };
+            
+            // 这里应该有保存设置的逻辑
+            console.log('保存设置:', settings);
+            
+            // 显示保存成功提示
+            alert('设置已保存');
+            
+            // 返回上一页
+            window.location.href = 'index.html';
+        }
+        
+    </script>
+</body>
+</html>

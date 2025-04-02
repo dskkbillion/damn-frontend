@@ -1,0 +1,433 @@
+/* 页面容器 */
+.mobile-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #f5f5f5;
+    min-height: 100vh;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+}
+
+/* 顶部标题栏 */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    padding: 0 16px;
+    background-color: white;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.back-button {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.header-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.header-right {
+    width: 24px;
+}
+
+/* 进度条容器 */
+.progress-bar {
+    background-color: #C17A2C;
+    padding: 20px 16px;
+    position: relative;
+    margin-bottom: 8px;
+}
+
+.progress-steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+/* 进度线 */
+.progress-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+.progress-line-active {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    height: 1px;
+    background-color: #fff;
+    transform: translateY(-50%);
+    z-index: 2;
+    transition: width 0.3s ease;
+}
+
+/* 步骤点 */
+.step {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 3;
+}
+
+.step.active {
+    background-color: #2196F3;
+}
+
+.step.completed {
+    background-color: #fff;
+}
+
+.step.completed i {
+    color: #C17A2C;
+    font-size: 12px;
+}
+
+/* 步骤标签 */
+.step-label {
+    position: absolute;
+    top: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.step.active .step-label,
+.step.completed .step-label {
+    color: #fff;
+}
+
+/* 状态提示框 */
+.status-tip {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.status-tip.warning {
+    color: #f44336;
+}
+
+.status-tip.info {
+    color: #666;
+}
+
+/* 订单信息 */
+.order-info {
+    background-color: white;
+    margin-top: 8px;
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.order-id {
+    font-size: 12px;
+    color: #666;
+}
+
+.order-time {
+    font-size: 12px;
+    color: #999;
+}
+
+.order-content {
+    display: flex;
+    padding: 16px;
+}
+
+.order-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-right: 12px;
+}
+
+.order-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.order-details {
+    flex: 1;
+}
+
+.order-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.order-description {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.order-price {
+    font-size: 18px;
+    color: #C17A2C;
+    font-weight: 600;
+}
+
+/* 标签样式 */
+.order-tags {
+    padding: 8px 16px;
+    display: flex;
+    gap: 8px;
+}
+
+.tag {
+    padding: 4px 8px;
+    background-color: #FFF8E7;
+    color: #C17A2C;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* 买家提交内容样式 */
+.buyer-content {
+    background-color: #fff;
+    margin-top: 8px;
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.content-title {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.view-full {
+    color: #2196F3;
+    font-size: 14px;
+    font-weight: normal;
+    text-decoration: none;
+    padding: 4px 12px;
+    border-radius: 4px;
+    background-color: rgba(33, 150, 243, 0.1);
+    transition: all 0.3s;
+}
+
+.view-full:hover {
+    background-color: rgba(33, 150, 243, 0.15);
+}
+
+.content-tabs {
+    display: flex;
+    border-bottom: 1px solid #f5f5f5;
+    background-color: #fafafa;
+}
+
+.tab {
+    flex: 1;
+    text-align: center;
+    padding: 14px 12px;
+    font-size: 14px;
+    color: #666;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.tab.active {
+    color: #C17A2C;
+    font-weight: 500;
+    background-color: #fff;
+}
+
+.tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50%;
+    height: 2px;
+    background-color: #C17A2C;
+    transition: transform 0.3s;
+    transform: translateX(0);
+}
+
+.content-body {
+    padding: 16px;
+}
+
+.text-content {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #333;
+}
+
+.text-content p {
+    margin-bottom: 16px;
+    min-height: 100px;
+}
+
+.text-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 16px;
+    border-top: 1px solid #f5f5f5;
+}
+
+.text-actions .action-button {
+    width: auto;
+    height: 36px;
+    padding: 0 16px;
+    font-size: 14px;
+}
+
+/* 文件列表样式 */
+.file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background-color: #fafafa;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.file-item:hover {
+    background-color: #f5f5f5;
+}
+
+.file-item i:first-child {
+    font-size: 20px;
+    color: #666;
+    margin-right: 12px;
+}
+
+.file-item span {
+    flex: 1;
+    font-size: 14px;
+    color: #333;
+}
+
+.file-item .fa-download {
+    font-size: 16px;
+    color: #999;
+    margin-left: 12px;
+}
+
+.file-item:hover .fa-download {
+    color: #2196F3;
+}
+
+/* 交付历史样式 */
+.delivery-history {
+    background-color: #fff;
+    margin-top: 8px;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+}
+
+.history-header span {
+    font-size: 14px;
+    color: #333;
+}
+
+.history-header i {
+    color: #999;
+    transition: transform 0.3s;
+}
+
+.history-header i.fa-chevron-up {
+    transform: rotate(180deg);
+}
+
+.history-content {
+    padding: 16px;
+    border-top: 1px solid #f5f5f5;
+}
+
+/* 底部操作按钮 */
+.order-actions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    background-color: white;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+    display: flex;
+    gap: 12px;
+    z-index: 100;
+}
+
+.action-button {
+    flex: 1;
+    height: 48px;
+    border-radius: 24px;
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.action-button:active {
+    opacity: 0.8;
+}
+
+.action-button.primary {
+    background-color: #C17A2C;
+    color: white;
+}
+
+.action-button.secondary {
+    background-color: white;
+    color: #333;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}

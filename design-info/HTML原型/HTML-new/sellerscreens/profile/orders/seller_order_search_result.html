@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 订单搜索结果</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/seller_order_search_result.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='seller_order_search.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">搜索结果</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 搜索条件摘要 -->
+        <div class="search-summary">
+            <div class="summary-title">搜索条件</div>
+            <div class="summary-content" id="searchSummary">
+                <!-- 这里将通过JS动态填充搜索条件 -->
+            </div>
+        </div>
+        
+        <!-- 搜索结果列表 -->
+        <div class="search-results" id="searchResults">
+            <!-- 这里将通过JS动态填充搜索结果 -->
+        </div>
+        
+        <!-- 无结果提示 -->
+        <div class="no-results" id="noResults" style="display: none;">
+            <div class="no-results-icon">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="no-results-text">没有找到符合条件的订单</div>
+            <button class="back-to-search" onclick="window.location.href='seller_order_search.html'">返回搜索</button>
+        </div>
+        
+        <!-- 加载更多 -->
+        <div class="load-more" id="loadMore" style="display: none;">
+            <button class="load-more-button" onclick="loadMoreResults()">加载更多</button>
+        </div>
+    </div>
+
+    <!-- 订单项模板 -->
+    <template id="orderItemTemplate">
+        <div class="order-item" onclick="goToOrderDetail('{orderId}')">
+            <div class="order-header">
+                <div class="buyer-info">
+                    <span class="buyer-name">{buyerName}</span>
+                    <span class="buyer-id">{buyerId}</span>
+                </div>
+                <div class="order-status">{orderStatus}</div>
+            </div>
+            <div class="order-content">
+                <div class="order-image">
+                    <img src="{orderImage}" alt="订单图片">
+                </div>
+                <div class="order-details">
+                    <div class="order-title">{orderTitle}</div>
+                    <div class="order-description">{orderDescription}</div>
+                    <div class="order-price">¥{orderPrice}</div>
+                </div>
+            </div>
+            <div class="order-footer">
+                <div class="order-time">{orderTime}</div>
+                <div class="order-actions">
+                    {orderActions}
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src="js/seller_order_search_result.js"></script>
+</body>
+</html>

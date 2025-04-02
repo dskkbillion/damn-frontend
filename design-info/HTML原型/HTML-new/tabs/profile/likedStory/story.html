@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 故事详情</title>
+    <link rel="stylesheet" href="../../../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部用户信息 -->
+        <div class="user-profile-header">
+            <div class="back-button" onclick="window.location.href='story_list.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar">
+                    <img src="../../../imgs/IMG20250317124302.jpg" alt="用户头像" class="avatar-img">
+                </div>
+                <div class="user-details">
+                    <div class="user-name">瑭</div>
+                    <div class="user-stats">2粉丝</div>
+                </div>
+            </div>
+            <div class="follow-button" id="followButton" onclick="toggleFollow()">
+                关注
+            </div>
+            <div class="message-button" onclick="window.location.href='../../../outer/chatroom.html?id=tang'">
+                <i class="far fa-comment-dots"></i>
+            </div>
+        </div>
+        
+        <!-- 标签页 -->
+        <div class="tabs">
+            <div class="tab" onclick="switchTab('about')">关于商家</div>
+            <div class="tab active" onclick="switchTab('stories')">我的故事</div>
+            <div class="tab" onclick="switchTab('services')">我的服务</div>
+            <div class="tab-indicator" style="transform: translateX(33.33%);"></div>
+        </div>
+        
+        <!-- 故事内容 -->
+        <div class="story-content-container">
+            <div class="story-item">
+                <div class="story-header">
+                    <div class="story-author">
+                        <img src="../../../imgs/IMG20250317124302.jpg" alt="用户头像" class="author-avatar">
+                    </div>
+                    <div class="story-time">2025-01-26 11:42:51</div>
+                </div>
+                <div class="story-content">
+                    <p>这是一个关于我如何开始学习编程的故事。从最初的困惑到现在的熟练，这段旅程充满了挑战和收获。</p>
+                    <p>记得刚开始的时候，我连基本的HTML标签都记不住，更不用说复杂的JavaScript和后端开发了。但通过不断的学习和实践，我逐渐掌握了各种编程技能。</p>
+                    <p>在这个过程中，我遇到了很多困难，比如调试代码时的挫折感，理解复杂概念时的困惑，以及项目截止日期带来的压力。但每次克服这些困难后，我都会感到一种成就感。</p>
+                    <p>现在，我已经能够独立开发各种应用程序，并且享受编程带来的乐趣。我希望通过分享我的经历，能够鼓励更多的人开始学习编程，不要害怕困难，坚持下去，你一定会有所收获。</p>
+                </div>
+                <div class="story-image">
+                    <img src="../../../imgs/IMG20250308233845_20250326010856.jpg" alt="故事图片">
+                </div>
+                <div class="story-actions">
+                    <div class="action-like" id="likeButton" onclick="toggleLike()">
+                        <i class="far fa-heart"></i>
+                        <span class="like-count">12</span>
+                    </div>
+                    <div class="action-comment" onclick="focusCommentInput()">
+                        <i class="far fa-comment"></i>
+                        <span class="comment-count">5</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 评论区 -->
+        <div class="comments-container">
+            <div class="comments-header">
+                <div class="comments-title">评论区</div>
+                <div class="comments-count">5条评论</div>
+            </div>
+            
+            <!-- 评论列表 -->
+            <div class="comments-list">
+                <!-- 评论1 -->
+                <div class="comment-item">
+                    <div class="comment-avatar">
+                        <img src="../../../imgs/IMG20250320133528_20250326010857.jpg" alt="评论者头像" class="avatar-img">
+                    </div>
+                    <div class="comment-content">
+                        <div class="comment-info">
+                            <div class="comment-author">用户1</div>
+                            <div class="comment-time">2024-12-31 15:42:52</div>
+                        </div>
+                        <div class="comment-text">
+                            非常感人的故事，我也有类似的经历，谢谢分享！
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 评论2 -->
+                <div class="comment-item">
+                    <div class="comment-avatar">
+                        <img src="../../../imgs/IMG20250322165106_20250326010857.jpg" alt="评论者头像" class="avatar-img">
+                    </div>
+                    <div class="comment-content">
+                        <div class="comment-info">
+                            <div class="comment-author">用户2</div>
+                            <div class="comment-time">2024-12-30 09:15:30</div>
+                        </div>
+                        <div class="comment-text">
+                            学习编程确实不容易，但坚持下去一定会有收获。加油！
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 评论3 -->
+                <div class="comment-item">
+                    <div class="comment-avatar">
+                        <img src="../../../imgs/IMG20250324194152_20250326010857.jpg" alt="评论者头像" class="avatar-img">
+                    </div>
+                    <div class="comment-content">
+                        <div class="comment-info">
+                            <div class="comment-author">用户3</div>
+                            <div class="comment-time">2024-12-29 18:30:15</div>
+                        </div>
+                        <div class="comment-text">
+                            请问有什么推荐的学习资源吗？我也想开始学习编程。
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 评论输入框 -->
+            <div class="comment-input-container">
+                <div class="comment-input-wrapper">
+                    <input type="text" id="commentInput" class="comment-input" placeholder="写评论...">
+                    <button class="send-button" onclick="sendComment()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 故事详情页面特定样式 */
+        .user-profile-header {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3));
+            color: white;
+            position: relative;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-left: 24px;
+        }
+        
+        .user-avatar {
+            margin-right: 12px;
+        }
+        
+        .avatar-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid white;
+            object-fit: cover;
+        }
+        
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .user-stats {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .follow-button {
+            margin-left: auto;
+            padding: 8px 16px;
+            background-color: white;
+            color: var(--primary-color);
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .follow-button.following {
+            background-color: transparent;
+            border: 1px solid white;
+            color: white;
+        }
+        
+        .message-button {
+            margin-left: 12px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: white;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .tabs {
+            display: flex;
+            position: relative;
+            background-color: white;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 16px 0;
+            font-size: 14px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .tab.active {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .tab-indicator {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 33.33%;
+            height: 2px;
+            background-color: var(--primary-color);
+            transition: transform 0.3s ease;
+        }
+        
+        .story-content-container {
+            background-color: white;
+            padding: 16px;
+        }
+        
+        .story-item {
+            margin-bottom: 16px;
+        }
+        
+        .story-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .story-author {
+            display: flex;
+            align-items: center;
+        }
+        
+        .author-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .story-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .story-content {
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+        
+        .story-content p {
+            margin-bottom: 12px;
+        }
+        
+        .story-image {
+            margin-bottom: 16px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .story-image img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+        
+        .story-actions {
+            display: flex;
+            gap: 24px;
+        }
+        
+        .action-like, .action-comment {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        
+        .action-like.liked {
+            color: #e74c3c;
+        }
+        
+        .comments-container {
+            background-color: var(--bg-light);
+            padding: 16px;
+            padding-bottom: 72px;
+        }
+        
+        .comments-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        
+        .comments-title {
+            font-weight: 600;
+        }
+        
+        .comments-count {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        .comments-list {
+            margin-bottom: 16px;
+        }
+        
+        .comment-item {
+            display: flex;
+            margin-bottom: 16px;
+        }
+        
+        .comment-avatar {
+            margin-right: 12px;
+        }
+        
+        .comment-content {
+            flex: 1;
+        }
+        
+        .comment-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        
+        .comment-author {
+            font-weight: 500;
+        }
+        
+        .comment-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .comment-text {
+            line-height: 1.5;
+        }
+        
+        .comment-input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 414px;
+            margin: 0 auto;
+            padding: 12px 16px;
+            background-color: white;
+            border-top: 1px solid var(--border-light);
+        }
+        
+        .comment-input-wrapper {
+            display: flex;
+            align-items: center;
+        }
+        
+        .comment-input {
+            flex: 1;
+            border: 1px solid var(--border-medium);
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        
+        .send-button {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 8px;
+            cursor: pointer;
+        }
+    </style>
+
+    <script>
+        // 切换标签页
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const tabIndicator = document.querySelector('.tab-indicator');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            if (tabName === 'about') {
+                tabs[0].classList.add('active');
+                tabIndicator.style.transform = 'translateX(0)';
+                // 这里应该有跳转到关于商家页面的逻辑
+                window.location.href = '../../../outer/home/user_profile.html';
+            } else if (tabName === 'stories') {
+                tabs[1].classList.add('active');
+                tabIndicator.style.transform = 'translateX(33.33%)';
+                // 已经在故事页面，不需要跳转
+            } else if (tabName === 'services') {
+                tabs[2].classList.add('active');
+                tabIndicator.style.transform = 'translateX(66.66%)';
+                // 这里应该有跳转到服务页面的逻辑
+                window.location.href = '../../../sellerscreens/post/seller_post.html';
+            }
+        }
+        
+        // 切换关注状态
+        function toggleFollow() {
+            const followButton = document.getElementById('followButton');
+            
+            if (followButton.classList.contains('following')) {
+                followButton.classList.remove('following');
+                followButton.textContent = '关注';
+            } else {
+                followButton.classList.add('following');
+                followButton.textContent = '已关注';
+            }
+        }
+        
+        // 切换点赞状态
+        function toggleLike() {
+            const likeButton = document.getElementById('likeButton');
+            const likeIcon = likeButton.querySelector('i');
+            const likeCount = likeButton.querySelector('.like-count');
+            
+            if (likeButton.classList.contains('liked')) {
+                // 取消点赞
+                likeButton.classList.remove('liked');
+                likeIcon.className = 'far fa-heart';
+                likeCount.textContent = parseInt(likeCount.textContent) - 1;
+            } else {
+                // 点赞
+                likeButton.classList.add('liked');
+                likeIcon.className = 'fas fa-heart';
+                likeCount.textContent = parseInt(likeCount.textContent) + 1;
+            }
+        }
+        
+        // 聚焦评论输入框
+        function focusCommentInput() {
+            document.getElementById('commentInput').focus();
+        }
+        
+        // 发送评论
+        function sendComment() {
+            const commentInput = document.getElementById('commentInput');
+            const commentText = commentInput.value.trim();
+            
+            if (commentText) {
+                const commentsList = document.querySelector('.comments-list');
+                const commentCount = document.querySelector('.comment-count');
+                const commentsCount = document.querySelector('.comments-count');
+                
+                // 创建新评论元素
+                const newComment = document.createElement('div');
+                newComment.className = 'comment-item';
+                newComment.innerHTML = `
+                    <div class="comment-avatar">
+                        <img src="https://via.placeholder.com/40x40/e9ecef/6c757d?text=我" alt="评论者头像" class="avatar-img">
+                    </div>
+                    <div class="comment-content">
+                        <div class="comment-info">
+                            <div class="comment-author">我</div>
+                            <div class="comment-time">刚刚</div>
+                        </div>
+                        <div class="comment-text">
+                            ${commentText}
+                        </div>
+                    </div>
+                `;
+                
+                // 添加新评论到列表顶部
+                commentsList.insertBefore(newComment, commentsList.firstChild);
+                
+                // 更新评论数量
+                const currentCount = parseInt(commentCount.textContent) + 1;
+                commentCount.textContent = currentCount;
+                commentsCount.textContent = `${currentCount}条评论`;
+                
+                // 清空输入框
+                commentInput.value = '';
+            }
+        }
+        
+        // 监听评论输入框回车事件
+        document.getElementById('commentInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendComment();
+            }
+        });
+    </script>
+</body>
+</html>

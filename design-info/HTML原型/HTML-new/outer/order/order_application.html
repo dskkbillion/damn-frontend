@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 订单申请</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/application.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='service_detail.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">订单申请</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 服务信息 -->
+        <div class="service-info">
+            <div class="service-header">
+                <div class="service-image">
+                    <img src="imgs/IMG20250308191357_20250326010856.jpg" alt="服务图片">
+                </div>
+                <div class="service-details">
+                    <div class="service-title">专业UI设计服务</div>
+                    <div class="service-price">¥299起</div>
+                    <div class="service-seller">
+                        <img src="imgs/IMG20250317124302.jpg" alt="卖家头像" class="seller-avatar">
+                        <span class="seller-name">设计师小王</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 申请表单 -->
+        <div class="application-form">
+            <div class="form-title">填写申请信息</div>
+            
+            <!-- 服务类型选择 -->
+            <div class="form-group">
+                <div class="form-label">服务类型</div>
+                <div class="service-options">
+                    <div class="service-option active" onclick="selectServiceOption(this)">
+                        <div class="option-name">基础版</div>
+                        <div class="option-price">¥299</div>
+                        <div class="option-desc">包含3页UI设计，2次修改机会</div>
+                    </div>
+                    <div class="service-option" onclick="selectServiceOption(this)">
+                        <div class="option-name">标准版</div>
+                        <div class="option-price">¥499</div>
+                        <div class="option-desc">包含5页UI设计，3次修改机会</div>
+                    </div>
+                    <div class="service-option" onclick="selectServiceOption(this)">
+                        <div class="option-name">高级版</div>
+                        <div class="option-price">¥799</div>
+                        <div class="option-desc">包含8页UI设计，无限修改机会</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 需求描述 -->
+            <div class="form-group">
+                <div class="form-label">需求描述</div>
+                <textarea class="form-textarea" placeholder="请详细描述您的需求，包括设计风格、参考案例等"></textarea>
+            </div>
+            
+            <!-- 附件上传 -->
+            <div class="form-group">
+                <div class="form-label">参考资料（选填）</div>
+                <div class="upload-area" onclick="document.getElementById('fileUpload').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <div class="upload-text">点击上传文件</div>
+                    <div class="upload-hint">支持JPG、PNG、PDF等格式，最大10MB</div>
+                </div>
+                <input type="file" id="fileUpload" style="display: none;" multiple>
+                <div class="uploaded-files" id="uploadedFiles"></div>
+            </div>
+            
+            <!-- 交付时间 -->
+            <div class="form-group">
+                <div class="form-label">期望交付时间</div>
+                <div class="delivery-options">
+                    <div class="delivery-option active" onclick="selectDeliveryOption(this)">
+                        <div class="option-days">3天内</div>
+                        <div class="option-price">+¥0</div>
+                    </div>
+                    <div class="delivery-option" onclick="selectDeliveryOption(this)">
+                        <div class="option-days">48小时内</div>
+                        <div class="option-price">+¥50</div>
+                    </div>
+                    <div class="delivery-option" onclick="selectDeliveryOption(this)">
+                        <div class="option-days">24小时内</div>
+                        <div class="option-price">+¥100</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 联系方式 -->
+            <div class="form-group">
+                <div class="form-label">联系方式</div>
+                <input type="text" class="form-input" placeholder="请输入您的手机号码">
+            </div>
+        </div>
+        
+        <!-- 订单金额 -->
+        <div class="order-amount">
+            <div class="amount-label">订单金额</div>
+            <div class="amount-value">¥299</div>
+        </div>
+        
+        <!-- 提交按钮 -->
+        <div class="submit-container">
+            <button class="submit-button" onclick="submitApplication()">提交申请</button>
+        </div>
+    </div>
+
+    <script>
+        // 选择服务选项
+        function selectServiceOption(option) {
+            // 移除所有选项的active类
+            const options = document.querySelectorAll('.service-option');
+            options.forEach(opt => opt.classList.remove('active'));
+            
+            // 为当前选项添加active类
+            option.classList.add('active');
+            
+            // 更新订单金额
+            const price = option.querySelector('.option-price').textContent;
+            document.querySelector('.amount-value').textContent = price;
+        }
+        
+        // 选择交付时间选项
+        function selectDeliveryOption(option) {
+            // 移除所有选项的active类
+            const options = document.querySelectorAll('.delivery-option');
+            options.forEach(opt => opt.classList.remove('active'));
+            
+            // 为当前选项添加active类
+            option.classList.add('active');
+            
+            // 更新订单金额（这里简化处理，实际应该计算总价）
+            const activeServiceOption = document.querySelector('.service-option.active');
+            const servicePrice = activeServiceOption.querySelector('.option-price').textContent;
+            const deliveryPrice = option.querySelector('.option-price').textContent;
+            
+            // 提取价格数字并计算总价
+            const serviceValue = parseInt(servicePrice.replace(/[^\d]/g, ''));
+            const deliveryValue = parseInt(deliveryPrice.replace(/[^\d]/g, '')) || 0;
+            const totalValue = serviceValue + deliveryValue;
+            
+            document.querySelector('.amount-value').textContent = `¥${totalValue}`;
+        }
+        
+        // 提交申请
+        function submitApplication() {
+            // 这里应该有表单验证逻辑
+            
+            // 跳转到支付提醒页面
+            window.location.href = 'payment_reminder.html';
+        }
+        
+        // 处理文件上传
+        document.getElementById('fileUpload').addEventListener('change', function(e) {
+            const files = e.target.files;
+            const uploadedFilesContainer = document.getElementById('uploadedFiles');
+            
+            // 清空已上传文件列表
+            uploadedFilesContainer.innerHTML = '';
+            
+            // 添加新上传的文件
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileItem = document.createElement('div');
+                fileItem.className = 'uploaded-file';
+                fileItem.innerHTML = `
+                    <div class="file-icon"><i class="fas fa-file"></i></div>
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-remove" onclick="removeFile(this)"><i class="fas fa-times"></i></div>
+                `;
+                uploadedFilesContainer.appendChild(fileItem);
+            }
+        });
+        
+        // 移除上传的文件
+        function removeFile(element) {
+            element.parentElement.remove();
+        }
+    </script>
+</body>
+</html>

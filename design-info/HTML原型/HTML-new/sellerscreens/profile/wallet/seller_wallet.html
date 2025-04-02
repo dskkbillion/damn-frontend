@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 卖家钱包</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/seller_wallet.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='seller_profile.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">我的钱包</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 钱包余额 -->
+        <div class="wallet-balance-container">
+            <div class="balance-label">账户余额</div>
+            <div class="balance-amount">¥7037.97</div>
+        </div>
+        
+        <!-- 收支明细 -->
+        <div class="wallet-summary">
+            <div class="summary-item">
+                <div class="summary-label">总收入</div>
+                <div class="summary-amount income">660105</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">总支出</div>
+                <div class="summary-amount expense">660105</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">可用余额</div>
+                <div class="summary-amount available">3890.97</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">在途余额</div>
+                <div class="summary-amount pending">3147</div>
+            </div>
+        </div>
+        
+        <!-- 钱包功能 -->
+        <div class="wallet-functions">
+            <div class="function-item" onclick="window.location.href='seller_record.html'">
+                <div class="function-label">交易记录</div>
+                <div class="function-arrow">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            <div class="function-item" onclick="window.location.href='seller_wallet_cards.html'">
+                <div class="function-label">银行卡</div>
+                <div class="function-arrow">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            <div class="function-item" onclick="showTaxInfoDialog()">
+                <div class="function-label">税务信息</div>
+                <div class="function-arrow">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 提现按钮 -->
+        <div class="withdraw-container">
+            <button class="withdraw-button" onclick="showWithdrawDialog()">提现</button>
+        </div>
+        
+        <!-- 提现对话框 -->
+        <div class="withdraw-dialog" id="withdrawDialog">
+            <div class="dialog-content">
+                <div class="dialog-title">提现</div>
+                <div class="dialog-form">
+                    <div class="form-group">
+                        <label for="withdrawAmount">提现金额</label>
+                        <input type="number" id="withdrawAmount" placeholder="请输入提现金额">
+                    </div>
+                    <div class="form-group">
+                        <label for="withdrawBank">提现银行卡</label>
+                        <select id="withdrawBank">
+                            <option value="1">招商银行 (尾号1234)</option>
+                            <option value="2">工商银行 (尾号5678)</option>
+                            <option value="3">+ 添加新银行卡</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="dialog-buttons">
+                    <button class="dialog-button cancel" onclick="hideWithdrawDialog()">取消</button>
+                    <button class="dialog-button confirm" onclick="processWithdraw()">确认</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 税务信息对话框 -->
+        <div class="tax-info-dialog" id="taxInfoDialog">
+            <div class="dialog-content">
+                <div class="dialog-title">税务信息</div>
+                <div class="dialog-form">
+                    <div class="form-group">
+                        <label for="taxId">税号</label>
+                        <input type="text" id="taxId" placeholder="请输入税号">
+                    </div>
+                    <div class="form-group">
+                        <label for="taxName">纳税人名称</label>
+                        <input type="text" id="taxName" placeholder="请输入纳税人名称">
+                    </div>
+                    <div class="form-group">
+                        <label for="taxAddress">纳税人地址</label>
+                        <input type="text" id="taxAddress" placeholder="请输入纳税人地址">
+                    </div>
+                </div>
+                <div class="dialog-buttons">
+                    <button class="dialog-button cancel" onclick="hideTaxInfoDialog()">取消</button>
+                    <button class="dialog-button confirm" onclick="saveTaxInfo()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/seller_wallet.js"></script>
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>卖家主页</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: white;
+        }
+        
+        .time {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .icons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 50px;
+            font-size: 18px;
+            font-weight: normal;
+            border-bottom: 1px solid #e0e0e0;
+            background-color: white;
+        }
+        
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px 10px;
+            background-color: white;
+        }
+        
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .stat-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .stat-circle.brown {
+            border: 2px solid #B66D0E;
+            color: #000;
+        }
+        
+        .stat-circle.gray {
+            border: 2px solid #999;
+            color: #000;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+        }
+        
+        .section-title {
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .section-container {
+            margin: 0 20px 20px;
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .upgrade-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .upgrade-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .upgrade-label {
+            font-size: 16px;
+        }
+        
+        .upgrade-value {
+            font-size: 16px;
+            color: #B66D0E;
+            font-weight: bold;
+        }
+        
+        .upgrade-value .denominator {
+            color: #000;
+            font-weight: normal;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 15px;
+        }
+        
+        .metric-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .metric-label {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .metric-value {
+            font-size: 20px;
+            color: #B66D0E;
+            font-weight: bold;
+        }
+        
+        .pending-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .pending-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .pending-label {
+            font-size: 16px;
+        }
+        
+        .pending-value {
+            font-size: 16px;
+        }
+        
+        .pending-value .highlight {
+            color: #B66D0E;
+            font-weight: bold;
+        }
+        
+        .bottom-nav {
+            display: flex;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border-top: 1px solid #e0e0e0;
+            height: 60px;
+        }
+        
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #999;
+        }
+        
+        .nav-item.active {
+            color: #B66D0E;
+        }
+        
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        
+        .nav-text {
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="status-bar">
+        <div class="time">10:59</div>
+        <div class="icons">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-three-quarters"></i>
+        </div>
+    </div>
+    
+    <div class="header">
+        主页
+    </div>
+    
+    <div class="stats-container">
+        <div class="stat-item">
+            <div class="stat-circle brown">0%</div>
+            <div class="stat-label">热度值</div>
+        </div>
+        
+        <div class="stat-item">
+            <div class="stat-circle brown">0%</div>
+            <div class="stat-label">回复率</div>
+        </div>
+        
+        <div class="stat-item">
+            <div class="stat-circle gray">100%</div>
+            <div class="stat-label">完成率</div>
+        </div>
+        
+        <div class="stat-item">
+            <div class="stat-circle gray">80%</div>
+            <div class="stat-label">好评率</div>
+        </div>
+    </div>
+    
+    <div class="section-title">升到下一级</div>
+    
+    <div class="section-container">
+        <div class="upgrade-item">
+            <div class="upgrade-label">成为三级会员卖家100天</div>
+            <div class="upgrade-value">211<span class="denominator">/100</span></div>
+        </div>
+        
+        <div class="upgrade-item">
+            <div class="upgrade-label">完成订单1000笔</div>
+            <div class="upgrade-value">17<span class="denominator">/1000</span></div>
+        </div>
+        
+        <div class="upgrade-item">
+            <div class="upgrade-label">盈利1000.00元</div>
+            <div class="upgrade-value">228<span class="denominator">/1000</span></div>
+        </div>
+    </div>
+    
+    <div class="section-title">指标</div>
+    
+    <div class="section-container">
+        <div class="metrics-grid">
+            <div class="metric-item">
+                <div class="metric-label">总盈利</div>
+                <div class="metric-value">228</div>
+            </div>
+            
+            <div class="metric-item">
+                <div class="metric-label">本月盈利</div>
+                <div class="metric-value">188</div>
+            </div>
+            
+            <div class="metric-item">
+                <div class="metric-label">总订单数</div>
+                <div class="metric-value">17</div>
+            </div>
+            
+            <div class="metric-item">
+                <div class="metric-label">活跃订单数</div>
+                <div class="metric-value">41</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section-title">待处理</div>
+    
+    <div class="section-container">
+        <div class="pending-item">
+            <div class="pending-label">未完成订单数</div>
+            <div class="pending-value">
+                <span class="highlight">24</span>(待完成) / <span class="highlight">17</span>(回单)
+            </div>
+        </div>
+        
+        <div class="pending-item">
+            <div class="pending-label">距离下次递交日</div>
+            <div class="pending-value">
+                <span class="highlight">0</span>(最早) / <span class="highlight">0</span>(最晚)
+            </div>
+        </div>
+    </div>
+    
+    <!-- 底部导航栏 -->
+    <div class="bottom-nav">
+        <a href="#" class="nav-item active">
+            <i class="fas fa-home nav-icon"></i>
+            <span class="nav-text">主页</span>
+        </a>
+        <a href="post/seller_post.html" class="nav-item">
+            <i class="fas fa-file-alt nav-icon"></i>
+            <span class="nav-text">发布</span>
+        </a>
+        <a href="chat/seller_chat.html" class="nav-item">
+            <i class="fas fa-comment nav-icon"></i>
+            <span class="nav-text">消息</span>
+        </a>
+        <a href="profile/index.html" class="nav-item">
+            <i class="fas fa-user nav-icon"></i>
+            <span class="nav-text">我的</span>
+        </a>
+    </div>
+</body>
+</html>

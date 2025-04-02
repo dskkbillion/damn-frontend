@@ -1,0 +1,260 @@
+/* 订单申请退款页面样式 */
+
+/* 基础样式 */
+:root {
+    --primary-color: #b66d0e;
+    --text-color: #333;
+    --border-color: #eee;
+    --placeholder-color: #999;
+    --background-color: #f5f5f5;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.mobile-container {
+    max-width: 414px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background-color: white;
+}
+
+/* 顶部导航栏 */
+.header {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background-color: white;
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+}
+
+.back-button {
+    position: absolute;
+    left: 15px;
+    font-size: 18px;
+    color: var(--text-color);
+}
+
+.header-title {
+    flex: 1;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+/* 分隔线 */
+.divider {
+    height: 10px;
+    background-color: var(--background-color);
+}
+
+/* 产品卡片 */
+.product-card {
+    padding: 15px;
+    background-color: white;
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.product-image {
+    width: 80px;
+    height: 80px;
+    background-color: #f0f0f0;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.product-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.product-title {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 3px;
+}
+
+.product-desc {
+    font-size: 14px;
+    color: #999;
+    margin-bottom: 5px;
+}
+
+.product-type {
+    font-size: 14px;
+    color: #999;
+    margin-bottom: 10px;
+}
+
+.product-meta {
+    font-size: 12px;
+    color: #999;
+    display: flex;
+}
+
+.product-meta span {
+    margin-right: 15px;
+}
+
+.product-meta span:last-child {
+    color: var(--primary-color);
+    margin-left: auto;
+}
+
+.product-price {
+    font-size: 18px;
+    font-weight: 500;
+    margin-left: 15px;
+    flex-shrink: 0;
+}
+
+/* 订单信息 */
+.order-info {
+    padding: 15px;
+    background-color: white;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.info-label {
+    color: var(--text-color);
+}
+
+.info-value {
+    color: var(--text-color);
+}
+
+/* 申请表单 */
+.form-section {
+    background-color: white;
+}
+
+.form-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.form-label {
+    font-size: 16px;
+    color: var(--text-color);
+}
+
+.form-value {
+    font-size: 16px;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+}
+
+.form-value i {
+    margin-left: 5px;
+    color: #999;
+}
+
+.form-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: transparent;
+    border: none;
+    padding-right: 20px;
+    font-size: 16px;
+    color: var(--text-color);
+    text-align: right;
+    width: 200px;
+}
+
+.form-textarea-label {
+    font-size: 16px;
+    color: var(--text-color);
+    padding: 15px 15px 5px 15px;
+}
+
+.form-textarea {
+    width: calc(100% - 30px);
+    margin: 0 15px 15px;
+    padding: 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+    font-size: 14px;
+    color: var(--text-color);
+    min-height: 150px;
+    resize: none;
+}
+
+.form-textarea::placeholder {
+    color: var(--placeholder-color);
+}
+
+/* 退款金额 */
+.refund-amount {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.refund-amount-label {
+    font-size: 16px;
+    color: var(--text-color);
+}
+
+.refund-amount-value {
+    font-size: 16px;
+    color: #999;
+    background-color: #f0f0f0;
+    padding: 8px 15px;
+    border-radius: 5px;
+}
+
+/* 提交按钮 */
+.submit-button-container {
+    padding: 20px 15px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: white;
+    max-width: 414px;
+    margin: 0 auto;
+    border-top: 1px solid var(--border-color);
+}
+
+.submit-button {
+    display: block;
+    width: 100%;
+    padding: 12px 0;
+    background-color: var(--primary-color);
+    color: white;
+    text-align: center;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+}
+
+/* 内容区域，确保底部有足够空间不被固定按钮遮挡 */
+.content-container {
+    padding-bottom: 80px;
+}

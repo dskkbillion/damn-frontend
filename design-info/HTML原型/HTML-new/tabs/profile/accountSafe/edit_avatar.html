@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 编辑头像</title>
+    <link rel="stylesheet" href="../../../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='account_safe.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">编辑头像</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 头像编辑区域 -->
+        <div class="avatar-edit-container">
+            <div class="avatar-preview" onclick="document.getElementById('avatarUpload').click()">
+                <img src="https://via.placeholder.com/200x200/e9ecef/6c757d?text=猫" alt="用户头像" class="avatar-img">
+            </div>
+            <div class="avatar-hint">点击照片更换</div>
+            <input type="file" id="avatarUpload" accept="image/*" style="display: none;" onchange="previewImage(this)">
+        </div>
+        
+        <!-- 提交按钮 -->
+        <div class="submit-container">
+            <button class="submit-button" onclick="saveAvatar()">提交更改</button>
+        </div>
+    </div>
+
+    <style>
+        /* 编辑头像页面特定样式 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            padding: 0 16px;
+            background-color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .back-button {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .header-right {
+            width: 24px;
+        }
+        
+        .avatar-edit-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 16px;
+            background-color: white;
+        }
+        
+        .avatar-preview {
+            margin-bottom: 16px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .avatar-img {
+            width: 200px;
+            height: 200px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        
+        .avatar-hint {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+        }
+        
+        .submit-container {
+            padding: 0 16px;
+        }
+        
+        .submit-button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+
+    <script>
+        // 预览选择的图片
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    document.querySelector('.avatar-img').src = e.target.result;
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        // 保存头像
+        function saveAvatar() {
+            // 这里应该有上传头像到服务器的逻辑
+            // 但在这个HTML原型中，我们只是模拟成功并返回上一页
+            alert('头像更新成功');
+            window.location.href = 'account_safe.html';
+        }
+    </script>
+</body>
+</html>

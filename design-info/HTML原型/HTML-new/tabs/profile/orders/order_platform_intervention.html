@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 平台介入</title>
+    <link rel="stylesheet" href="../../../styles.css">
+    <link rel="stylesheet" href="../../../css/order_platform_intervention.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部导航栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='orders.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">平台介入</div>
+        </div>
+        
+        <div class="content-container">
+            <!-- 产品信息卡片 -->
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="../../../assets/images/placeholder.png" alt="产品图片" onerror="this.src='https://via.placeholder.com/80/f0f0f0/999999?text=图片'">
+                </div>
+                <div class="product-info">
+                    <div class="product-title">产品188.7</div>
+                    <div class="product-desc">商品简介...</div>
+                    <div class="product-type">基础</div>
+                    <div class="product-meta">
+                        <span>交付时长3</span>
+                        <span>修改次数1</span>
+                        <span onclick="toggleExpand()">展开</span>
+                    </div>
+                </div>
+                <div class="product-price">¥10</div>
+            </div>
+            
+            <!-- 订单信息 -->
+            <div class="order-info">
+                <div class="info-row">
+                    <div class="info-label">订单编号:</div>
+                    <div class="info-value">202503181107417987312</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">申请时间:</div>
+                    <div class="info-value">3/26/2025, 10:37:39PM</div>
+                </div>
+            </div>
+            
+            <!-- 分隔线 -->
+            <div class="divider"></div>
+            
+            <!-- 申请表单 -->
+            <div class="form-section">
+                <div class="form-row">
+                    <div class="form-label">申请类型</div>
+                    <div class="form-value">平台介入</div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-label">申请原因</div>
+                    <div class="form-value">
+                        <select class="form-select" id="reasonSelect">
+                            <option value="" selected disabled>请选择具体原因</option>
+                            <option value="1">卖家延迟交付</option>
+                            <option value="2">卖家未交付</option>
+                            <option value="3">卖家承诺不履行</option>
+                            <option value="4">卖家服务态度（傲慢、骚扰）</option>
+                            <option value="5">卖家服务质量（不符合要求）</option>
+                            <option value="6">其他</option>
+                        </select>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-textarea-label">请在此处输入补充说明</div>
+            <textarea class="form-textarea" placeholder="有助于帮助平台更好的理解问题..."></textarea>
+        </div>
+        
+        <!-- 提交按钮 -->
+        <div class="submit-button-container">
+            <button class="submit-button" onclick="submitForm()">提交</button>
+        </div>
+    </div>
+
+    <script>
+        // 展开/收起产品详情
+        function toggleExpand() {
+            // 实现展开/收起功能
+            alert('展开产品详情');
+        }
+        
+        // 提交表单
+        function submitForm() {
+            const reason = document.getElementById('reasonSelect').value;
+            const description = document.querySelector('.form-textarea').value;
+            
+            if (!reason) {
+                alert('请选择申请原因');
+                return;
+            }
+            
+            if (!description.trim()) {
+                alert('请输入补充说明');
+                return;
+            }
+            
+            alert('申请已提交，平台将尽快处理');
+            // 这里可以添加提交后的跳转逻辑
+        }
+    </script>
+</body>
+</html>

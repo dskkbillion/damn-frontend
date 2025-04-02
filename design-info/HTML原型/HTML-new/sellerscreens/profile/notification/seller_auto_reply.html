@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 自动回复设置</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='seller_profile.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">设置</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 自动回复设置内容 -->
+        <div class="auto-reply-container">
+            <!-- 自动回复开关 -->
+            <div class="setting-item">
+                <div class="setting-label">自动回复</div>
+                <div class="setting-control">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoReplyToggle" checked onchange="toggleAutoReply()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- 自动回复内容 -->
+            <div class="auto-reply-content" id="autoReplyContentSection">
+                <div class="reply-input-container">
+                    <textarea id="replyContent" class="reply-input" placeholder="请输入自动回复内容">你好，我是Exalted</textarea>
+                </div>
+                
+                <div class="reply-hint">
+                    当客户发送消息时，系统会自动回复此内容
+                </div>
+            </div>
+            
+            <!-- 提交按钮 -->
+            <div class="submit-button-container">
+                <button class="submit-button" onclick="saveSettings()">提交保存</button>
+            </div>
+        </div>
+        
+        <!-- 保存成功提示 -->
+        <div class="toast" id="saveSuccessToast">
+            <div class="toast-content">
+                <i class="fas fa-check-circle"></i>
+                <span>设置已保存</span>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 自动回复设置页面特定样式 */
+        .auto-reply-container {
+            padding: 16px;
+            background-color: var(--bg-light);
+            min-height: calc(100vh - 56px);
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background-color: white;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .setting-label {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .setting-control {
+            display: flex;
+            align-items: center;
+        }
+        
+        /* 开关样式 */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #4caf50;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        /* 自动回复内容样式 */
+        .auto-reply-content {
+            background-color: white;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .reply-input-container {
+            margin-bottom: 16px;
+        }
+        
+        .reply-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            font-size: 14px;
+            resize: vertical;
+        }
+        
+        .reply-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        
+        /* 提交按钮样式 */
+        .submit-button-container {
+            margin-top: 24px;
+        }
+        
+        .submit-button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        /* 提示框样式 */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 24px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .toast-content {
+            display: flex;
+            align-items: center;
+        }
+        
+        .toast-content i {
+            margin-right: 8px;
+        }
+    </style>
+
+    <script>
+        // 切换自动回复
+        function toggleAutoReply() {
+            const autoReplyToggle = document.getElementById('autoReplyToggle');
+            const autoReplyContentSection = document.getElementById('autoReplyContentSection');
+            
+            if (autoReplyToggle.checked) {
+                autoReplyContentSection.style.display = 'block';
+            } else {
+                autoReplyContentSection.style.display = 'none';
+            }
+        }
+        
+        // 保存设置
+        function saveSettings() {
+            const autoReplyToggle = document.getElementById('autoReplyToggle');
+            const replyContent = document.getElementById('replyContent').value;
+            
+            // 这里应该有保存设置的逻辑
+            console.log('保存设置:', {
+                autoReplyEnabled: autoReplyToggle.checked,
+                replyContent: replyContent
+            });
+            
+            // 显示保存成功提示
+            const toast = document.getElementById('saveSuccessToast');
+            toast.style.display = 'flex';
+            
+            // 3秒后隐藏提示
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 页面加载时检查自动回复状态
+        window.onload = function() {
+            toggleAutoReply();
+        };
+    </script>
+</body>
+</html>

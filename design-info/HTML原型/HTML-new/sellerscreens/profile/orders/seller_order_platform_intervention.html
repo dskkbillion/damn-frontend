@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 平台介入</title>
+    <link rel="stylesheet" href="../../../styles.css">
+    <link rel="stylesheet" href="../../../css/seller_order_detail.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='seller_orders.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">平台介入</div>
+            <div class="header-right"></div>
+        </div>
+
+        <!-- 进度条 -->
+        <div class="progress-bar">
+            <div class="progress-steps" id="progressSteps">
+                <div class="progress-line" id="progressLine"></div>
+                <div class="progress-line-active" id="progressLineActive"></div>
+                
+                <div class="step completed" data-step="1">
+                    <i class="fas fa-check"></i>
+                    <span class="step-label">下单</span>
+                </div>
+                
+                <div class="step completed" data-step="2">
+                    <i class="fas fa-check"></i>
+                    <span class="step-label">提交要求</span>
+                </div>
+                
+                <div class="step completed" data-step="3">
+                    <i class="fas fa-check"></i>
+                    <span class="step-label">卖家接单</span>
+                </div>
+                
+                <div class="step completed" data-step="4">
+                    <i class="fas fa-check"></i>
+                    <span class="step-label">交付</span>
+                </div>
+                
+                <div class="step active" data-step="5">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span class="step-label">确认</span>
+                </div>
+                
+                <div class="step" data-step="6">
+                    <span class="step-label">评价</span>
+                </div>
+                
+                <div class="step" data-step="7">
+                    <span class="step-label">完成</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 状态提示 -->
+        <div class="status-tip warning" id="statusTip">
+            平台客服正在处理买家的申诉，请耐心等待
+        </div>
+        
+        <!-- 订单基本信息 -->
+        <div class="order-info">
+            <div class="order-header">
+                <div class="order-id">订单号：1003</div>
+                <div class="order-time">2024-03-23 16:45</div>
+            </div>
+            <div class="order-content">
+                <div class="order-image">
+                    <img src="https://via.placeholder.com/80/f8f1e6/b66d0e?text=文案" alt="订单图片">
+                </div>
+                <div class="order-details">
+                    <div class="order-title">产品文案撰写</div>
+                    <div class="order-description">为客户的产品撰写吸引人的文案，包含关键词优化</div>
+                    <div class="order-price">¥149</div>
+                </div>
+            </div>
+            <div class="order-tags">
+                <span class="tag">标准版</span>
+                <span class="tag">300字</span>
+            </div>
+        </div>
+        
+        <!-- 申诉信息 -->
+        <div class="appeal-info">
+            <div class="content-header">
+                <div class="content-title">申诉信息</div>
+            </div>
+            <div class="content-body">
+                <div class="appeal-details">
+                    <div class="appeal-item">
+                        <div class="appeal-label">申诉类型</div>
+                        <div class="appeal-value">交付内容与需求不符</div>
+                    </div>
+                    <div class="appeal-item">
+                        <div class="appeal-label">申诉人</div>
+                        <div class="appeal-value">买家</div>
+                    </div>
+                    <div class="appeal-item">
+                        <div class="appeal-label">申诉时间</div>
+                        <div class="appeal-value">2024-03-24 15:30</div>
+                    </div>
+                    <div class="appeal-item">
+                        <div class="appeal-label">处理状态</div>
+                        <div class="appeal-value">处理中</div>
+                    </div>
+                    <div class="appeal-item">
+                        <div class="appeal-label">预计完成时间</div>
+                        <div class="appeal-value">24小时内</div>
+                    </div>
+                </div>
+                <div class="appeal-description">
+                    <div class="appeal-label">买家申诉描述</div>
+                    <div class="appeal-text">
+                        <p>卖家提供的文案与我的需求不符，我要求的是智能家居产品的宣传文案，但卖家提供的内容更像是通用的产品介绍，没有突出我要求的智能控制和远程操作等关键特性。</p>
+                    </div>
+                </div>
+                <div class="appeal-evidence">
+                    <div class="appeal-label">买家提供的证据材料</div>
+                    <div class="file-list">
+                        <div class="file-item">
+                            <i class="fas fa-file-alt"></i>
+                            <span>需求对比说明.docx</span>
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <div class="file-item">
+                            <i class="fas fa-image"></i>
+                            <span>聊天记录截图.jpg</span>
+                            <i class="fas fa-download"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 买家提交内容 -->
+        <div class="buyer-content">
+            <div class="content-header">
+                <div class="content-title">买家提交</div>
+                <a href="javascript:void(0)" class="view-full" onclick="viewFullSubmission()">查看完整</a>
+            </div>
+            <div class="content-tabs">
+                <div class="tab active" onclick="switchSubmissionTab(this, 'text')">文本</div>
+                <div class="tab" onclick="switchSubmissionTab(this, 'attachment')">附件</div>
+            </div>
+            <div class="content-body">
+                <div class="text-content" id="textContent">
+                    <p>我需要一份关于智能家居产品的宣传文案，重点突出产品的便捷性和智能化特点。目标受众是25-40岁的年轻家庭。文案长度约300字，需要包含以下关键词：智能控制、远程操作、节能环保。</p>
+                    <div class="text-actions">
+                        <button class="action-button secondary" onclick="copyText()">复制文本</button>
+                    </div>
+                </div>
+                <div class="attachment-content" id="attachmentContent" style="display: none;">
+                    <div class="file-list">
+                        <div class="file-item">
+                            <i class="fas fa-file-alt"></i>
+                            <span>需求详情.docx</span>
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <div class="file-item">
+                            <i class="fas fa-image"></i>
+                            <span>参考图片.jpg</span>
+                            <i class="fas fa-download"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 我的交付内容 -->
+        <div class="my-delivery">
+            <div class="content-header">
+                <div class="content-title">我的交付</div>
+                <a href="javascript:void(0)" class="view-full" onclick="viewFullDelivery()">查看完整</a>
+            </div>
+            <div class="content-tabs">
+                <div class="tab active" onclick="switchDeliveryTab(this, 'text')">文本</div>
+                <div class="tab" onclick="switchDeliveryTab(this, 'attachment')">附件</div>
+            </div>
+            <div class="content-body">
+                <div class="text-content" id="deliveryTextContent">
+                    <p>家居产品是现代家庭生活的重要组成部分，能够提升生活品质和居住体验。我们的产品采用高品质材料制造，确保耐用性和安全性。产品设计简约时尚，适合各种家居风格。</p>
+                    <p>我们注重产品的实用性和功能性，让您的家居生活更加便捷舒适。同时，我们的产品也考虑到了环保因素，使用环保材料，减少对环境的影响。</p>
+                    <p>选择我们的产品，为您的家居生活增添更多便利和舒适。</p>
+                </div>
+                <div class="attachment-content" id="deliveryAttachmentContent" style="display: none;">
+                    <div class="file-list">
+                        <div class="file-item">
+                            <i class="fas fa-file-alt"></i>
+                            <span>文案成品.docx</span>
+                            <i class="fas fa-download"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 我的申辩 -->
+        <div class="my-defense">
+            <div class="content-header">
+                <div class="content-title">我的申辩</div>
+            </div>
+            <div class="content-body">
+                <div class="defense-text">
+                    <p>我认为我提供的文案已经满足了买家的基本需求，文案中提到了产品的便捷性和舒适性，以及环保因素。虽然没有直接使用"智能控制"和"远程操作"这些词语，但文案中提到了"便捷舒适"的概念，这与智能家居的核心价值是一致的。</p>
+                    <p>如果买家对文案有具体的修改意见，我很乐意进行调整，但买家没有提供具体的修改建议就直接申请平台介入，我认为这不太合理。</p>
+                </div>
+                <div class="defense-evidence">
+                    <div class="defense-label">我的证据材料</div>
+                    <div class="file-list">
+                        <div class="file-item">
+                            <i class="fas fa-file-alt"></i>
+                            <span>交付说明.docx</span>
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <div class="file-item">
+                            <i class="fas fa-image"></i>
+                            <span>聊天记录截图.jpg</span>
+                            <i class="fas fa-download"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 交流记录 -->
+        <div class="communication-history">
+            <div class="history-header" onclick="toggleHistory()">
+                <span>交流记录</span>
+                <i class="fas fa-chevron-down" id="historyIcon"></i>
+            </div>
+            <div class="history-content" id="historyContent" style="display: none">
+                <div class="message-list" id="messageList">
+                    <!-- 消息将通过JS动态添加 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部操作按钮 -->
+        <div class="order-actions" id="orderActions">
+            <button class="action-button secondary" onclick="contactPlatform()">联系客服</button>
+            <button class="action-button secondary" onclick="offerCompromise()">提出和解</button>
+            <button class="action-button primary" onclick="addEvidence()">补充证据</button>
+        </div>
+        
+        <!-- 订单进度指示器 -->
+        <div class="order-progress-indicator">
+            <div class="progress-step">
+                <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="step-text">下单成功</div>
+                <div class="step-time">2024-03-23 16:45</div>
+            </div>
+            <div class="progress-step">
+                <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="step-text">买家提交要求</div>
+                <div class="step-time">2024-03-23 16:50</div>
+            </div>
+            <div class="progress-step">
+                <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="step-text">接单成功</div>
+                <div class="step-time">2024-03-23 17:30</div>
+            </div>
+            <div class="progress-step">
+                <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="step-text">交付完成</div>
+                <div class="step-time">2024-03-24 10:15</div>
+            </div>
+            <div class="progress-step">
+                <div class="step-icon warning"><i class="fas fa-exclamation-circle"></i></div>
+                <div class="step-text warning">买家申请平台介入</div>
+                <div class="step-time">2024-03-24 15:30</div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 平台介入页面特定样式 */
+        .status-tip.warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+        
+        .step-icon.warning {
+            color: #ffc107;
+        }
+        
+        .step-text.warning {
+            color: #ffc107;
+        }
+        
+        .appeal-info {
+            margin: 0 16px 16px;
+            padding: 20px;
+            background-color: var(--bg-light);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .appeal-details {
+            margin-bottom: 16px;
+        }
+        
+        .appeal-item {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        
+        .appeal-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            width: 100px;
+            flex-shrink: 0;
+        }
+        
+        .appeal-value {
+            font-size: 14px;
+            color: var(--text-primary);
+            flex: 1;
+        }
+        
+        .appeal-description {
+            margin-bottom: 16px;
+        }
+        
+        .appeal-text {
+            font-size: 14px;
+            color: var(--text-primary);
+            background-color: var(--bg-lighter);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+        
+        .appeal-text p {
+            margin: 0 0 8px;
+        }
+        
+        .appeal-text p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .appeal-evidence {
+            margin-top: 16px;
+        }
+        
+        .file-list {
+            margin-top: 8px;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background-color: var(--bg-lighter);
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+        
+        .file-item i:first-child {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-right: 8px;
+        }
+        
+        .file-item span {
+            flex: 1;
+            font-size: 14px;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .file-item i:last-child {
+            font-size: 16px;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            padding: 4px;
+        }
+        
+        .my-defense {
+            margin: 0 16px 16px;
+            padding: 20px;
+            background-color: var(--bg-light);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .defense-text {
+            font-size: 14px;
+            color: var(--text-primary);
+            background-color: var(--bg-lighter);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .defense-text p {
+            margin: 0 0 8px;
+        }
+        
+        .defense-text p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .defense-evidence {
+            margin-top: 16px;
+        }
+        
+        .defense-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .my-delivery {
+            margin: 0 16px 16px;
+            padding: 20px;
+            background-color: var(--bg-light);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+    </style>
+
+    <script src="../../../js/seller_order_platform_intervention.js"></script>
+</body>
+</html>

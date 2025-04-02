@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 登录</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部返回按钮 -->
+        <div class="login-header">
+            <div class="back-button" onclick="window.history.back()">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+        </div>
+        
+        <!-- 登录表单 -->
+        <div class="login-container">
+            <div class="login-title">手机号登陆</div>
+            
+            <div class="phone-input-container">
+                <div class="country-code">+86</div>
+                <input type="tel" id="phoneNumber" class="phone-input" placeholder="请输入手机号码" maxlength="11">
+            </div>
+            
+            <div class="login-tip">
+                未注册的手机号登陆成功后将自动注册（仅支持中国手机号）
+            </div>
+            
+            <button class="login-button" onclick="verifyAndLogin()">
+                验证并登陆
+            </button>
+            
+            <!-- 其他登录方式 -->
+            <div class="other-login-methods">
+                <div class="divider">
+                    <span>其他登录方式</span>
+                </div>
+                <div class="social-login">
+                    <div class="social-icon wechat" onclick="loginWithWechat()">
+                        <i class="fab fa-weixin"></i>
+                    </div>
+                    <div class="social-icon qq" onclick="loginWithQQ()">
+                        <i class="fab fa-qq"></i>
+                    </div>
+                    <div class="social-icon weibo" onclick="loginWithWeibo()">
+                        <i class="fab fa-weibo"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 用户协议 -->
+            <div class="agreement-text">
+                登录即表示您同意 <a href="privacy.html">隐私政策</a> 和 <a href="terms.html">用户协议</a>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 登录页面特定样式 */
+        body {
+            background-color: #f8f9fa;
+        }
+        
+        .login-header {
+            padding: 16px;
+        }
+        
+        .back-button {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .login-container {
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .login-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 32px;
+            align-self: center;
+        }
+        
+        .phone-input-container {
+            display: flex;
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        
+        .country-code {
+            padding: 12px 16px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #ddd;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .phone-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            font-size: 16px;
+        }
+        
+        .phone-input:focus {
+            outline: none;
+        }
+        
+        .login-tip {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            align-self: flex-start;
+        }
+        
+        .login-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #222;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 32px;
+        }
+        
+        .other-login-methods {
+            width: 100%;
+            margin-bottom: 24px;
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .divider span {
+            padding: 0 16px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .social-login {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+        }
+        
+        .social-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .social-icon.wechat {
+            background-color: #07C160;
+        }
+        
+        .social-icon.qq {
+            background-color: #12B7F5;
+        }
+        
+        .social-icon.weibo {
+            background-color: #E6162D;
+        }
+        
+        .agreement-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+        
+        .agreement-text a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+    </style>
+
+    <script>
+        // 验证并登录
+        function verifyAndLogin() {
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            
+            if (!phoneNumber) {
+                alert('请输入手机号码');
+                return;
+            }
+            
+            if (!/^1\d{10}$/.test(phoneNumber)) {
+                alert('请输入有效的手机号码');
+                return;
+            }
+            
+            // 这里应该有发送验证码的逻辑
+            // 但在这个HTML原型中，我们只是模拟跳转到验证码页面
+            window.location.href = 'verify_code.html?phone=' + phoneNumber;
+        }
+        
+        // 微信登录
+        function loginWithWechat() {
+            alert('微信登录功能尚未实现');
+        }
+        
+        // QQ登录
+        function loginWithQQ() {
+            alert('QQ登录功能尚未实现');
+        }
+        
+        // 微博登录
+        function loginWithWeibo() {
+            alert('微博登录功能尚未实现');
+        }
+    </script>
+</body>
+</html>

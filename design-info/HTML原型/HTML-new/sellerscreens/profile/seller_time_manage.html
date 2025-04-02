@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 时间管理</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='seller_profile.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">时间管理</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 时间管理设置 -->
+        <div class="time-manage-container">
+            <!-- 当前状态 -->
+            <div class="setting-item">
+                <div class="setting-label">当前状态</div>
+                <div class="setting-control">
+                    <div class="status-text" id="statusText">在线</div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="statusToggle" checked onchange="toggleStatus()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- 状态说明 -->
+            <div class="status-description">
+                <div class="status-description-title">状态说明：</div>
+                <div class="status-description-content">
+                    <p><strong>在线状态：</strong>您可以接收新的订单和消息通知，买家可以看到您的在线状态。</p>
+                    <p><strong>离线状态：</strong>您将暂停接收新的订单，但仍然可以接收消息通知，买家将看到您处于离线状态。</p>
+                </div>
+            </div>
+            
+            <!-- 自动离线设置 -->
+            <div class="auto-offline-section">
+                <div class="section-title">自动离线设置</div>
+                
+                <div class="setting-item">
+                    <div class="setting-label">每日自动离线</div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autoOfflineToggle" onchange="toggleAutoOffline()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="auto-offline-time" id="autoOfflineTimeSection" style="display: none;">
+                    <div class="time-picker">
+                        <div class="time-label">开始时间</div>
+                        <select id="startHour" class="time-select">
+                            <option value="0">00</option>
+                            <option value="1">01</option>
+                            <option value="2">02</option>
+                            <option value="3">03</option>
+                            <option value="4">04</option>
+                            <option value="5">05</option>
+                            <option value="6">06</option>
+                            <option value="7">07</option>
+                            <option value="8">08</option>
+                            <option value="9">09</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                            <option value="13">13</option>
+                            <option value="14">14</option>
+                            <option value="15">15</option>
+                            <option value="16">16</option>
+                            <option value="17">17</option>
+                            <option value="18">18</option>
+                            <option value="19">19</option>
+                            <option value="20">20</option>
+                            <option value="21">21</option>
+                            <option value="22" selected>22</option>
+                            <option value="23">23</option>
+                        </select>
+                        <span class="time-separator">:</span>
+                        <select id="startMinute" class="time-select">
+                            <option value="0" selected>00</option>
+                            <option value="15">15</option>
+                            <option value="30">30</option>
+                            <option value="45">45</option>
+                        </select>
+                    </div>
+                    
+                    <div class="time-picker">
+                        <div class="time-label">结束时间</div>
+                        <select id="endHour" class="time-select">
+                            <option value="0">00</option>
+                            <option value="1">01</option>
+                            <option value="2">02</option>
+                            <option value="3">03</option>
+                            <option value="4">04</option>
+                            <option value="5">05</option>
+                            <option value="6">06</option>
+                            <option value="7" selected>07</option>
+                            <option value="8">08</option>
+                            <option value="9">09</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                            <option value="13">13</option>
+                            <option value="14">14</option>
+                            <option value="15">15</option>
+                            <option value="16">16</option>
+                            <option value="17">17</option>
+                            <option value="18">18</option>
+                            <option value="19">19</option>
+                            <option value="20">20</option>
+                            <option value="21">21</option>
+                            <option value="22">22</option>
+                            <option value="23">23</option>
+                        </select>
+                        <span class="time-separator">:</span>
+                        <select id="endMinute" class="time-select">
+                            <option value="0" selected>00</option>
+                            <option value="15">15</option>
+                            <option value="30">30</option>
+                            <option value="45">45</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 休假模式 -->
+            <div class="vacation-mode-section">
+                <div class="section-title">休假模式</div>
+                
+                <div class="setting-item">
+                    <div class="setting-label">启用休假模式</div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="vacationModeToggle" onchange="toggleVacationMode()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="vacation-mode-dates" id="vacationModeDatesSection" style="display: none;">
+                    <div class="date-picker">
+                        <div class="date-label">开始日期</div>
+                        <input type="date" id="startDate" class="date-input">
+                    </div>
+                    
+                    <div class="date-picker">
+                        <div class="date-label">结束日期</div>
+                        <input type="date" id="endDate" class="date-input">
+                    </div>
+                    
+                    <div class="vacation-message">
+                        <div class="message-label">休假提示消息</div>
+                        <textarea id="vacationMessage" class="message-input" placeholder="例如：我正在休假，将于XX日恢复服务，感谢您的理解。"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 保存按钮 -->
+        <div class="save-button-container">
+            <button class="save-button" onclick="saveSettings()">保存设置</button>
+        </div>
+    </div>
+
+    <style>
+        /* 时间管理页面特定样式 */
+        .time-manage-container {
+            padding: 16px;
+            background-color: white;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .setting-label {
+            font-size: 16px;
+        }
+        
+        .setting-control {
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-text {
+            margin-right: 8px;
+            font-size: 14px;
+            color: #4caf50;
+        }
+        
+        .status-text.offline {
+            color: var(--text-secondary);
+        }
+        
+        /* 开关样式 */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #4caf50;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        /* 状态说明样式 */
+        .status-description {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: var(--bg-light);
+            border-radius: 8px;
+        }
+        
+        .status-description-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .status-description-content p {
+            font-size: 14px;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        /* 自动离线设置样式 */
+        .auto-offline-section, .vacation-mode-section {
+            margin-top: 24px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .auto-offline-time, .vacation-mode-dates {
+            padding: 16px;
+            background-color: var(--bg-light);
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+        
+        .time-picker, .date-picker {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .time-label, .date-label, .message-label {
+            width: 80px;
+            font-size: 14px;
+        }
+        
+        .time-select {
+            width: 60px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+        }
+        
+        .time-separator {
+            margin: 0 8px;
+        }
+        
+        .date-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+        }
+        
+        .vacation-message {
+            display: flex;
+            margin-top: 16px;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        /* 保存按钮样式 */
+        .save-button-container {
+            padding: 16px;
+            position: sticky;
+            bottom: 0;
+            background-color: white;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .save-button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+
+    <script>
+        // 切换在线/离线状态
+        function toggleStatus() {
+            const statusToggle = document.getElementById('statusToggle');
+            const statusText = document.getElementById('statusText');
+            
+            if (statusToggle.checked) {
+                statusText.textContent = '在线';
+                statusText.classList.remove('offline');
+            } else {
+                statusText.textContent = '离线';
+                statusText.classList.add('offline');
+            }
+        }
+        
+        // 切换自动离线设置
+        function toggleAutoOffline() {
+            const autoOfflineToggle = document.getElementById('autoOfflineToggle');
+            const autoOfflineTimeSection = document.getElementById('autoOfflineTimeSection');
+            
+            if (autoOfflineToggle.checked) {
+                autoOfflineTimeSection.style.display = 'block';
+            } else {
+                autoOfflineTimeSection.style.display = 'none';
+            }
+        }
+        
+        // 切换休假模式
+        function toggleVacationMode() {
+            const vacationModeToggle = document.getElementById('vacationModeToggle');
+            const vacationModeDatesSection = document.getElementById('vacationModeDatesSection');
+            
+            if (vacationModeToggle.checked) {
+                vacationModeDatesSection.style.display = 'block';
+            } else {
+                vacationModeDatesSection.style.display = 'none';
+            }
+        }
+        
+        // 保存设置
+        function saveSettings() {
+            // 收集设置数据
+            const settings = {
+                status: document.getElementById('statusToggle').checked ? 'online' : 'offline',
+                autoOffline: {
+                    enabled: document.getElementById('autoOfflineToggle').checked,
+                    startTime: document.getElementById('startHour').value + ':' + document.getElementById('startMinute').value,
+                    endTime: document.getElementById('endHour').value + ':' + document.getElementById('endMinute').value
+                },
+                vacationMode: {
+                    enabled: document.getElementById('vacationModeToggle').checked,
+                    startDate: document.getElementById('startDate').value,
+                    endDate: document.getElementById('endDate').value,
+                    message: document.getElementById('vacationMessage').value
+                }
+            };
+            
+            // 这里应该有保存设置的逻辑
+            console.log('保存设置:', settings);
+            
+            // 显示保存成功提示
+            alert('设置已保存');
+            
+            // 返回上一页
+            window.location.href = 'seller_profile.html';
+        }
+        
+        // 设置当前日期为默认值
+        window.onload = function() {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            const nextWeek = new Date(today);
+            nextWeek.setDate(nextWeek.getDate() + 7);
+            
+            // 格式化日期为YYYY-MM-DD
+            const formatDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+            
+            document.getElementById('startDate').value = formatDate(tomorrow);
+            document.getElementById('endDate').value = formatDate(nextWeek);
+        };
+    </script>
+</body>
+</html>

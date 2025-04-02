@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 移动端登录</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='login_container.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">登录</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 登录表单 -->
+        <div class="mobile-login-container">
+            <!-- 应用logo和名称 -->
+            <div class="app-info">
+                <div class="app-logo">
+                    <img src="https://via.placeholder.com/80x80/b66d0e/ffffff?text=DSKK" alt="应用图标">
+                </div>
+                <div class="app-name">多少电台</div>
+            </div>
+            
+            <!-- 登录表单 -->
+            <div class="login-form">
+                <div class="input-group">
+                    <div class="input-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <input type="tel" id="phoneNumber" class="form-input" placeholder="手机号" maxlength="11">
+                </div>
+                
+                <div class="input-group">
+                    <div class="input-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <input type="password" id="password" class="form-input" placeholder="密码">
+                    <div class="input-action" onclick="togglePasswordVisibility()">
+                        <i class="fas fa-eye-slash" id="passwordToggle"></i>
+                    </div>
+                </div>
+                
+                <button class="login-button" onclick="login()">
+                    登录
+                </button>
+                
+                <div class="login-actions">
+                    <a href="forgot_password.html" class="action-link">忘记密码</a>
+                    <span class="action-divider">|</span>
+                    <a href="register.html" class="action-link">注册账号</a>
+                </div>
+            </div>
+            
+            <!-- 其他登录方式 -->
+            <div class="other-login-methods">
+                <div class="divider">
+                    <span>其他登录方式</span>
+                </div>
+                <div class="social-login">
+                    <div class="social-icon wechat" onclick="loginWithWechat()">
+                        <i class="fab fa-weixin"></i>
+                    </div>
+                    <div class="social-icon qq" onclick="loginWithQQ()">
+                        <i class="fab fa-qq"></i>
+                    </div>
+                    <div class="social-icon weibo" onclick="loginWithWeibo()">
+                        <i class="fab fa-weibo"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 验证码登录 -->
+            <div class="code-login">
+                <button class="code-login-button" onclick="window.location.href='login.html'">
+                    验证码登录
+                </button>
+            </div>
+            
+            <!-- 用户协议 -->
+            <div class="agreement-text">
+                登录即表示您同意 <a href="privacy.html">隐私政策</a> 和 <a href="terms.html">用户协议</a>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 移动端登录页面特定样式 */
+        body {
+            background-color: #f8f9fa;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            padding: 0 16px;
+            background-color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .back-button {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .header-right {
+            width: 24px;
+        }
+        
+        .mobile-login-container {
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .app-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        
+        .app-logo {
+            margin-bottom: 12px;
+        }
+        
+        .app-logo img {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            object-fit: cover;
+        }
+        
+        .app-name {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .login-form {
+            width: 100%;
+            margin-bottom: 24px;
+        }
+        
+        .input-group {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            background-color: white;
+            overflow: hidden;
+        }
+        
+        .input-icon {
+            padding: 0 12px;
+            color: var(--text-secondary);
+        }
+        
+        .form-input {
+            flex: 1;
+            padding: 12px 0;
+            border: none;
+            font-size: 16px;
+        }
+        
+        .form-input:focus {
+            outline: none;
+        }
+        
+        .input-action {
+            padding: 0 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        
+        .login-button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 16px;
+        }
+        
+        .login-actions {
+            display: flex;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .action-link {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .action-divider {
+            margin: 0 8px;
+            color: var(--text-hint);
+        }
+        
+        .other-login-methods {
+            width: 100%;
+            margin-bottom: 24px;
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .divider span {
+            padding: 0 16px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .social-login {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+        }
+        
+        .social-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .social-icon.wechat {
+            background-color: #07C160;
+        }
+        
+        .social-icon.qq {
+            background-color: #12B7F5;
+        }
+        
+        .social-icon.weibo {
+            background-color: #E6162D;
+        }
+        
+        .code-login {
+            margin-bottom: 24px;
+        }
+        
+        .code-login-button {
+            background: none;
+            border: 1px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 14px;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+        
+        .agreement-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+        
+        .agreement-text a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+    </style>
+
+    <script>
+        // 切换密码可见性
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const passwordToggle = document.getElementById('passwordToggle');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordToggle.className = 'fas fa-eye';
+            } else {
+                passwordInput.type = 'password';
+                passwordToggle.className = 'fas fa-eye-slash';
+            }
+        }
+        
+        // 登录
+        function login() {
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const password = document.getElementById('password').value;
+            
+            if (!phoneNumber) {
+                alert('请输入手机号');
+                return;
+            }
+            
+            if (!password) {
+                alert('请输入密码');
+                return;
+            }
+            
+            // 这里应该有登录验证的逻辑
+            // 但在这个HTML原型中，我们只是模拟成功并跳转到首页
+            alert('登录成功');
+            window.location.href = 'index.html';
+        }
+        
+        // 微信登录
+        function loginWithWechat() {
+            alert('微信登录功能尚未实现');
+        }
+        
+        // QQ登录
+        function loginWithQQ() {
+            alert('QQ登录功能尚未实现');
+        }
+        
+        // 微博登录
+        function loginWithWeibo() {
+            alert('微博登录功能尚未实现');
+        }
+    </script>
+</body>
+</html>

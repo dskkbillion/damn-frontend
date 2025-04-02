@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 评论</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.history.back()">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">评论</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 评论内容 -->
+        <div class="review-container">
+            <!-- 评论项目 -->
+            <div class="review-item">
+                <div class="review-header">
+                    <div class="review-user">
+                        <img src="imgs/IMG20250324194152_20250326010857.jpg" alt="用户头像" class="user-avatar">
+                        <div class="user-info">
+                            <div class="user-name">张三</div>
+                            <div class="review-time">2025-01-26 11:42:51</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                <div class="review-content">
+                    <p>服务非常好，卖家很专业，解答了我所有的问题。交付的内容质量也很高，完全符合我的期望。强烈推荐！</p>
+                </div>
+                <div class="review-images">
+                    <img src="imgs/IMG20250308191357_20250326010856.jpg" alt="评论图片">
+                    <img src="imgs/IMG20250308211749_20250326010856.jpg" alt="评论图片">
+                </div>
+                <div class="review-actions">
+                    <div class="action-like" onclick="toggleLike(event, 1)">
+                        <i class="far fa-heart"></i>
+                        <span class="like-count">12</span>
+                    </div>
+                    <div class="action-reply" onclick="replyToReview(1)">
+                        <i class="far fa-comment"></i>
+                        <span>回复</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 评论项目2 -->
+            <div class="review-item">
+                <div class="review-header">
+                    <div class="review-user">
+                        <img src="imgs/IMG20250320133528_20250326010857.jpg" alt="用户头像" class="user-avatar">
+                        <div class="user-info">
+                            <div class="user-name">李四</div>
+                            <div class="review-time">2025-01-20 09:15:30</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="far fa-star"></i>
+                    </div>
+                </div>
+                <div class="review-content">
+                    <p>整体体验不错，服务态度很好，但是交付时间比预期晚了一天，希望下次能更准时一些。</p>
+                </div>
+                <div class="review-actions">
+                    <div class="action-like" onclick="toggleLike(event, 2)">
+                        <i class="far fa-heart"></i>
+                        <span class="like-count">8</span>
+                    </div>
+                    <div class="action-reply" onclick="replyToReview(2)">
+                        <i class="far fa-comment"></i>
+                        <span>回复</span>
+                    </div>
+                </div>
+                
+                <!-- 卖家回复 -->
+                <div class="seller-reply">
+                    <div class="reply-header">
+                        <div class="reply-user">
+                            <img src="imgs/IMG20250317124302.jpg" alt="卖家头像" class="user-avatar small">
+                            <div class="user-info">
+                                <div class="user-name">卖家回复</div>
+                                <div class="review-time">2025-01-20 10:30:15</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="reply-content">
+                        <p>非常抱歉延迟了交付时间，我们会在今后的工作中更加注重时间管理，感谢您的理解和反馈！</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 评论项目3 -->
+            <div class="review-item">
+                <div class="review-header">
+                    <div class="review-user">
+                        <img src="imgs/IMG20250322165106_20250326010857.jpg" alt="用户头像" class="user-avatar">
+                        <div class="user-info">
+                            <div class="user-name">王五</div>
+                            <div class="review-time">2025-01-15 16:30:22</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="far fa-star"></i>
+                        <i class="far fa-star"></i>
+                    </div>
+                </div>
+                <div class="review-content">
+                    <p>服务质量一般，有些地方需要多次修改才达到要求，沟通过程中也有些不顺畅。希望能改进服务质量。</p>
+                </div>
+                <div class="review-actions">
+                    <div class="action-like liked" onclick="toggleLike(event, 3)">
+                        <i class="fas fa-heart"></i>
+                        <span class="like-count">5</span>
+                    </div>
+                    <div class="action-reply" onclick="replyToReview(3)">
+                        <i class="far fa-comment"></i>
+                        <span>回复</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 评论输入框 -->
+        <div class="review-input-container">
+            <input type="text" id="reviewInput" class="review-input" placeholder="写下你的评论...">
+            <button class="send-button" onclick="sendReview()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <style>
+        /* 评论页面特定样式 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            padding: 0 16px;
+            background-color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .back-button {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .header-right {
+            width: 24px;
+        }
+        
+        .review-container {
+            background-color: var(--bg-light);
+            padding-bottom: 72px;
+        }
+        
+        .review-item {
+            background-color: white;
+            margin-bottom: 12px;
+            padding: 16px;
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .review-user {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 12px;
+        }
+        
+        .user-avatar.small {
+            width: 30px;
+            height: 30px;
+        }
+        
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .review-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .review-rating {
+            color: #f1c40f;
+            font-size: 14px;
+        }
+        
+        .review-content {
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+        
+        .review-images {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+        
+        .review-images img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        .review-actions {
+            display: flex;
+            gap: 24px;
+        }
+        
+        .action-like, .action-reply {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        
+        .action-like.liked {
+            color: #e74c3c;
+        }
+        
+        .seller-reply {
+            margin-top: 12px;
+            padding: 12px;
+            background-color: var(--bg-light);
+            border-radius: 8px;
+        }
+        
+        .reply-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        
+        .reply-user {
+            display: flex;
+            align-items: center;
+        }
+        
+        .reply-content {
+            line-height: 1.5;
+            font-size: 14px;
+        }
+        
+        .review-input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background-color: white;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+            z-index: 100;
+        }
+        
+        .review-input {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-right: 12px;
+        }
+        
+        .review-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .send-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+    </style>
+
+    <script>
+        // 点赞功能
+        function toggleLike(event, reviewId) {
+            const likeButton = event.currentTarget;
+            const likeIcon = likeButton.querySelector('i');
+            const likeCount = likeButton.querySelector('.like-count');
+            
+            if (likeButton.classList.contains('liked')) {
+                // 取消点赞
+                likeButton.classList.remove('liked');
+                likeIcon.className = 'far fa-heart';
+                likeCount.textContent = parseInt(likeCount.textContent) - 1;
+            } else {
+                // 点赞
+                likeButton.classList.add('liked');
+                likeIcon.className = 'fas fa-heart';
+                likeCount.textContent = parseInt(likeCount.textContent) + 1;
+            }
+        }
+        
+        // 回复评论
+        function replyToReview(reviewId) {
+            const reviewInput = document.getElementById('reviewInput');
+            reviewInput.placeholder = `回复评论 #${reviewId}...`;
+            reviewInput.focus();
+            reviewInput.dataset.replyTo = reviewId;
+        }
+        
+        // 发送评论
+        function sendReview() {
+            const reviewInput = document.getElementById('reviewInput');
+            const content = reviewInput.value.trim();
+            
+            if (!content) {
+                return;
+            }
+            
+            const replyTo = reviewInput.dataset.replyTo;
+            
+            if (replyTo) {
+                // 回复评论
+                alert(`回复评论 #${replyTo}: ${content}`);
+                reviewInput.dataset.replyTo = '';
+                reviewInput.placeholder = '写下你的评论...';
+            } else {
+                // 新评论
+                alert(`发送新评论: ${content}`);
+            }
+            
+            reviewInput.value = '';
+        }
+        
+        // 监听回车键发送评论
+        document.getElementById('reviewInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendReview();
+            }
+        });
+    </script>
+</body>
+</html>

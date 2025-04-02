@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - AI对话</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="ai-header">
+            <div class="ai-header-left">
+                <div class="ai-header-icon" onclick="window.location.href='ai_docs_history.html'">
+                    <i class="far fa-clock"></i>
+                </div>
+                <div class="ai-header-icon">
+                    <i class="fas fa-plus"></i>
+                </div>
+            </div>
+            <div class="ai-header-right">
+                <div class="ai-header-dropdown" onclick="showMatchServicesModal()">
+                    <span>匹配</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 聊天内容区域 -->
+        <div class="chat-container">
+            <!-- AI欢迎消息 -->
+            <div class="message ai-message">
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <p>你好，这里是小帮手。我将为你提供专业方案并配服务。你可以通过右上方的按钮随时查看可用服务。你想问点什么呢？</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 预设问题选项 -->
+            <div class="preset-questions">
+                <div class="preset-question" onclick="window.location.href='ai_docs_question.html'">
+                    如何改造家里的一个角落？
+                </div>
+                <div class="preset-question" onclick="window.location.href='ai_docs_question.html'">
+                    我想打官司，该怎么做？
+                </div>
+                <div class="preset-question" onclick="window.location.href='ai_docs_question.html'">
+                    车钥匙丢了怎么办？
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- 底部输入区域 -->
+        <div class="input-container">
+            <div class="voice-input" onclick="toggleVoiceInput()">
+                <i class="fas fa-microphone"></i>
+            </div>
+            <input type="text" class="text-input" placeholder="在此输入" id="messageInput" onclick="window.location.href='ai_docs_input.html'">
+            <div class="add-attachment" onclick="showAttachmentOptions()">
+                <i class="fas fa-plus-circle" style="color: var(--light-primary-color);"></i>
+            </div>
+        </div>
+        
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item active">
+                <i class="fas fa-robot nav-icon"></i>
+                <span class="nav-text">多少看看</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='../homepage/index.html'">
+                <i class="fas fa-home nav-icon"></i>
+                <span class="nav-text">首页</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='../chat/chat.html'">
+                <i class="fas fa-comment nav-icon"></i>
+                <span class="nav-text">消息</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='../profile/profile.html'">
+                <i class="fas fa-user nav-icon"></i>
+                <span class="nav-text">我的</span>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 定义浅色主题色变量 */
+        :root {
+            --light-primary-color: #d8a95b; /* 浅棕色/金色，基于b66d0e */
+        }
+        /* AI对话页面特定样式 */
+        .ai-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background-color: var(--bg-light);
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .ai-header-left {
+            display: flex;
+            gap: 16px;
+        }
+        
+        .ai-header-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .ai-header-dropdown {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+        
+        .chat-container {
+            padding: 16px;
+            padding-bottom: 80px;
+            overflow-y: auto;
+            height: calc(100vh - 56px - 60px);
+        }
+        
+        .message {
+            display: flex;
+            margin-bottom: 16px;
+        }
+        
+        .ai-message {
+            align-items: flex-start;
+        }
+        
+        .user-message {
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: 12px;
+        }
+        
+        .user-message .message-avatar {
+            margin-right: 0;
+            margin-left: 12px;
+        }
+        
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .message-content {
+            max-width: 70%;
+        }
+        
+        .message-bubble {
+            padding: 12px;
+            border-radius: 16px;
+            background-color: var(--bg-medium);
+            position: relative;
+        }
+        
+        .ai-message .message-bubble {
+            border-top-left-radius: 4px;
+        }
+        
+        .user-message .message-bubble {
+            background-color: var(--light-primary-color);
+            color: white;
+            border-top-right-radius: 4px;
+        }
+        
+        .message-bubble p {
+            margin: 0;
+            line-height: 1.5;
+        }
+        
+        .preset-questions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        
+        .preset-question {
+            padding: 12px;
+            background-color: var(--bg-light);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .preset-question:hover {
+            background-color: var(--bg-medium);
+        }
+        
+        .input-container {
+            position: fixed;
+            bottom: 56px;
+            left: 0;
+            right: 0;
+            max-width: 414px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background-color: white;
+            border-top: 1px solid var(--border-light);
+            z-index: 100;
+        }
+        
+        .voice-input {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        
+        .text-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            background-color: var(--bg-light);
+            margin: 0 12px;
+        }
+        
+        .add-attachment {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--light-primary-color);
+            font-size: 24px;
+        }
+    </style>
+
+    <script>
+        // 选择预设问题 - 已修改为直接跳转
+        function selectQuestion(question) {
+            // 保留此函数以防其他地方调用
+            window.location.href = 'ai_docs_question.html';
+        }
+        
+        // 发送消息
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                // 添加用户消息
+                const chatContainer = document.querySelector('.chat-container');
+                const userMessageElement = document.createElement('div');
+                userMessageElement.className = 'message user-message';
+                userMessageElement.innerHTML = `
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            <p>${message}</p>
+                        </div>
+                    </div>
+                `;
+                chatContainer.appendChild(userMessageElement);
+                
+                // 清空输入框
+                input.value = '';
+                
+                // 滚动到底部
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                
+                // 模拟AI回复
+                setTimeout(() => {
+                    const aiMessageElement = document.createElement('div');
+                    aiMessageElement.className = 'message ai-message';
+                    aiMessageElement.innerHTML = `
+                        <div class="message-content">
+                            <div class="message-bubble">
+                                <p>我正在思考关于"${message}"的回答，请稍等...</p>
+                            </div>
+                        </div>
+                    `;
+                    chatContainer.appendChild(aiMessageElement);
+                    
+                    // 滚动到底部
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }, 500);
+            }
+        }
+        
+        // 语音输入
+        function toggleVoiceInput() {
+            alert('语音输入功能尚未实现');
+        }
+        
+        // 显示附件选项
+        function showAttachmentOptions() {
+            alert('附件功能尚未实现');
+        }
+        
+        // 监听输入框回车事件
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // 显示匹配服务弹窗
+        function showMatchServicesModal() {
+            // 创建弹窗元素
+            const modal = document.createElement('div');
+            modal.className = 'match-services-modal';
+            modal.innerHTML = `
+                <div class="match-services-content">
+                    <div class="match-services-header">
+                        <div class="match-services-title">推荐服务</div>
+                    </div>
+                    <div class="match-services-body">
+                        <div class="match-services-list">
+                            <div class="service-row">
+                                <div class="match-service-card">
+                                    <div class="match-service-image">
+                                        <img src="../../imgs/IMG20250308191357_20250326010856.jpg" alt="修改待审核">
+                                    </div>
+                                    <div class="match-service-rating">
+                                        <span class="rating-star">★</span>
+                                        <span class="rating-value">5.0</span>
+                                        <span class="rating-count">(0)</span>
+                                    </div>
+                                    <div class="match-service-title">修改待审核</div>
+                                    <div class="match-service-price">¥1.00</div>
+                                    <button class="match-service-button" onclick="selectService('修改待审核')">让ta看看</button>
+                                </div>
+                                
+                                <div class="match-service-card">
+                                    <div class="match-service-image">
+                                        <img src="../../imgs/IMG20250308211749_20250326010856.jpg" alt="已发布(审核通过)改名">
+                                    </div>
+                                    <div class="match-service-rating">
+                                        <span class="rating-star">★</span>
+                                        <span class="rating-value">5.0</span>
+                                        <span class="rating-count">(0)</span>
+                                    </div>
+                                    <div class="match-service-title">已发布(审核通过)改名</div>
+                                    <div class="match-service-price">¥1.00</div>
+                                    <button class="match-service-button" onclick="selectService('已发布(审核通过)改名')">让ta看看</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bottom-indicator"></div>
+                </div>
+            `;
+            
+            // 添加弹窗样式
+            const style = document.createElement('style');
+            style.textContent = `
+                .match-services-modal {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    z-index: 1000;
+                    display: flex;
+                    align-items: flex-end;
+                }
+                
+                .match-services-content {
+                    background-color: white;
+                    width: 100%;
+                    max-height: 80vh;
+                    border-top-left-radius: 16px;
+                    border-top-right-radius: 16px;
+                    overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
+                    animation: slideUp 0.3s ease-out;
+                }
+                
+                @keyframes slideUp {
+                    from {
+                        transform: translateY(100%);
+                    }
+                    to {
+                        transform: translateY(0);
+                    }
+                }
+                
+                .match-services-header {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    padding: 16px;
+                    border-bottom: 1px solid #eee;
+                }
+                
+                .match-services-title {
+                    font-size: 18px;
+                    font-weight: 600;
+                    text-align: center;
+                }
+                
+                .match-services-body {
+                    padding: 16px;
+                    overflow-y: auto;
+                }
+                
+                .match-services-list {
+                    padding: 0 8px;
+                }
+                
+                .service-row {
+                    display: flex;
+                    justify-content: space-between;
+                    gap: 12px;
+                    margin-bottom: 16px;
+                }
+                
+                .match-service-card {
+                    width: calc(50% - 6px);
+                    display: flex;
+                    flex-direction: column;
+                }
+                
+                .match-service-image {
+                    width: 100%;
+                    height: auto;
+                    margin-bottom: 8px;
+                }
+                
+                .match-service-image img {
+                    width: 100%;
+                    aspect-ratio: 1/1;
+                    object-fit: cover;
+                }
+                
+                .match-service-rating {
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 4px;
+                    font-size: 14px;
+                }
+                
+                .rating-star {
+                    color: #f39c12;
+                    margin-right: 4px;
+                }
+                
+                .rating-count {
+                    color: #999;
+                    margin-left: 4px;
+                }
+                
+                .match-service-title {
+                    font-weight: 500;
+                    margin-bottom: 4px;
+                    font-size: 14px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                
+                .match-service-price {
+                    color: #B66D0E;
+                    font-weight: 600;
+                    margin-bottom: 8px;
+                    font-size: 14px;
+                }
+                
+                .match-service-button {
+                    background-color: #B66D0E;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    padding: 6px 0;
+                    font-size: 14px;
+                    cursor: pointer;
+                    width: 100%;
+                    margin-top: auto;
+                }
+                
+                .bottom-indicator {
+                    width: 40px;
+                    height: 5px;
+                    background-color: #ccc;
+                    border-radius: 3px;
+                    margin: 8px auto 16px;
+                }
+            `;
+            
+            // 添加到页面
+            document.body.appendChild(style);
+            document.body.appendChild(modal);
+        }
+        
+        // 关闭匹配服务弹窗
+        function closeMatchServicesModal() {
+            const modal = document.querySelector('.match-services-modal');
+            if (modal) {
+                // 添加退出动画
+                const content = modal.querySelector('.match-services-content');
+                content.style.animation = 'slideDown 0.3s ease-out';
+                
+                // 动画结束后移除元素
+                setTimeout(() => {
+                    modal.remove();
+                    
+                    // 移除样式
+                    const style = document.querySelector('style:last-child');
+                    if (style) {
+                        style.remove();
+                    }
+                }, 300);
+            }
+            
+            // 添加退出动画样式
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideDown {
+                    from {
+                        transform: translateY(0);
+                    }
+                    to {
+                        transform: translateY(100%);
+                    }
+                }
+            `;
+            document.body.appendChild(style);
+        }
+        
+        // 选择服务
+        function selectService(serviceName) {
+            alert(`已选择"${serviceName}"服务`);
+            closeMatchServicesModal();
+        }
+        
+        // 匹配按钮弹窗
+        function showMatchModal(event, serviceName) {
+            console.log("showMatchModal called with service:", serviceName);
+            event.stopPropagation(); // 阻止事件冒泡，防止触发卡片的点击事件
+            
+            // 创建弹窗元素
+            const modal = document.createElement('div');
+            modal.className = 'match-modal';
+            modal.innerHTML = `
+                <div class="match-modal-content">
+                    <div class="match-modal-header">
+                        <h3>匹配服务</h3>
+                        <span class="match-modal-close" onclick="closeMatchModal()">&times;</span>
+                    </div>
+                    <div class="match-modal-body">
+                        <p>您确定要将"${serviceName}"服务推荐给用户吗？</p>
+                    </div>
+                    <div class="match-modal-footer">
+                        <button class="match-modal-cancel" onclick="closeMatchModal()">取消</button>
+                        <button class="match-modal-confirm" onclick="confirmMatch('${serviceName}')">确认</button>
+                    </div>
+                </div>
+            `;
+            
+            // 添加弹窗样式
+            const style = document.createElement('style');
+            style.textContent = `
+                .match-modal {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1000;
+                }
+                
+                .match-modal-content {
+                    background-color: white;
+                    border-radius: 8px;
+                    width: 80%;
+                    max-width: 320px;
+                    overflow: hidden;
+                }
+                
+                .match-modal-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 16px;
+                    border-bottom: 1px solid #eee;
+                }
+                
+                .match-modal-header h3 {
+                    margin: 0;
+                    font-size: 18px;
+                }
+                
+                .match-modal-close {
+                    font-size: 24px;
+                    cursor: pointer;
+                }
+                
+                .match-modal-body {
+                    padding: 16px;
+                }
+                
+                .match-modal-footer {
+                    display: flex;
+                    justify-content: flex-end;
+                    padding: 16px;
+                    border-top: 1px solid #eee;
+                }
+                
+                .match-modal-cancel, .match-modal-confirm {
+                    padding: 8px 16px;
+                    border-radius: 4px;
+                    border: none;
+                    cursor: pointer;
+                    margin-left: 8px;
+                }
+                
+                .match-modal-cancel {
+                    background-color: #f5f5f5;
+                    color: #333;
+                }
+                
+                .match-modal-confirm {
+                    background-color: var(--light-primary-color);
+                    color: white;
+                }
+            `;
+            
+            // 添加到页面
+            document.body.appendChild(style);
+            document.body.appendChild(modal);
+        }
+        
+        // 关闭弹窗
+        function closeMatchModal() {
+            const modal = document.querySelector('.match-modal');
+            if (modal) {
+                modal.remove();
+            }
+            
+            // 移除样式
+            const style = document.querySelector('style:last-child');
+            if (style) {
+                style.remove();
+            }
+        }
+        
+        // 确认匹配
+        function confirmMatch(serviceName) {
+            alert(`已将"${serviceName}"服务推荐给用户`);
+            closeMatchModal();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 通知</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='profile.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">通知</div>
+            <div class="header-right">
+                <div class="clear-all" onclick="clearAllNotifications()">
+                    <i class="fas fa-trash-alt"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 通知列表 -->
+        <div class="notification-list">
+            <!-- 系统通知 -->
+            <div class="notification-item unread">
+                <div class="notification-icon system">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">系统通知</div>
+                    <div class="notification-message">您的账号已成功注册，欢迎使用DSKK平台！</div>
+                    <div class="notification-time">2025-03-25 14:30</div>
+                </div>
+                <div class="notification-status">
+                    <div class="unread-dot"></div>
+                </div>
+            </div>
+            
+            <!-- 订单通知 -->
+            <div class="notification-item unread">
+                <div class="notification-icon order">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">订单通知</div>
+                    <div class="notification-message">您的订单#12345已完成，请及时评价！</div>
+                    <div class="notification-time">2025-03-24 09:15</div>
+                </div>
+                <div class="notification-status">
+                    <div class="unread-dot"></div>
+                </div>
+            </div>
+            
+            <!-- 消息通知 -->
+            <div class="notification-item">
+                <div class="notification-icon message">
+                    <i class="fas fa-comment"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">消息通知</div>
+                    <div class="notification-message">您有一条新消息，请查看</div>
+                    <div class="notification-time">2025-03-23 16:45</div>
+                </div>
+                <div class="notification-status">
+                    <!-- 已读，无标记 -->
+                </div>
+            </div>
+            
+            <!-- 活动通知 -->
+            <div class="notification-item">
+                <div class="notification-icon activity">
+                    <i class="fas fa-gift"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">活动通知</div>
+                    <div class="notification-message">新用户专享优惠活动开始了，点击查看详情</div>
+                    <div class="notification-time">2025-03-22 10:30</div>
+                </div>
+                <div class="notification-status">
+                    <!-- 已读，无标记 -->
+                </div>
+            </div>
+            
+            <!-- 系统通知 -->
+            <div class="notification-item">
+                <div class="notification-icon system">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">系统通知</div>
+                    <div class="notification-message">系统将于2025-03-20进行维护，请提前做好准备</div>
+                    <div class="notification-time">2025-03-19 18:00</div>
+                </div>
+                <div class="notification-status">
+                    <!-- 已读，无标记 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 空状态（默认隐藏） -->
+        <div class="empty-state" style="display: none;">
+            <div class="empty-icon">
+                <i class="far fa-bell"></i>
+            </div>
+            <div class="empty-text">暂无通知</div>
+        </div>
+        
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="window.location.href='index.html'">
+                <i class="fas fa-home nav-icon"></i>
+                <span class="nav-text">首页</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='ai_docs.html'">
+                <i class="fas fa-robot nav-icon"></i>
+                <span class="nav-text">AI对话</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='chat.html'">
+                <i class="fas fa-comment nav-icon"></i>
+                <span class="nav-text">消息</span>
+            </div>
+            <div class="nav-item active" onclick="window.location.href='profile.html'">
+                <i class="fas fa-user nav-icon"></i>
+                <span class="nav-text">我的</span>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 通知页面特定样式 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            padding: 0 16px;
+            background-color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .back-button {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .header-right {
+            width: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .notification-list {
+            background-color: var(--bg-light);
+            padding-bottom: 56px;
+        }
+        
+        .notification-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 16px;
+            background-color: white;
+            border-bottom: 1px solid var(--border-light);
+            cursor: pointer;
+        }
+        
+        .notification-item.unread {
+            background-color: #f8f9fa;
+        }
+        
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            color: white;
+        }
+        
+        .notification-icon.system {
+            background-color: var(--primary-color);
+        }
+        
+        .notification-icon.order {
+            background-color: #3498db;
+        }
+        
+        .notification-icon.message {
+            background-color: #2ecc71;
+        }
+        
+        .notification-icon.activity {
+            background-color: #e74c3c;
+        }
+        
+        .notification-content {
+            flex: 1;
+        }
+        
+        .notification-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .notification-message {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+        
+        .notification-time {
+            font-size: 12px;
+            color: var(--text-hint);
+        }
+        
+        .notification-status {
+            width: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 8px;
+        }
+        
+        .unread-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+        }
+        
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 64px 16px;
+            text-align: center;
+            color: var(--text-hint);
+        }
+        
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .empty-text {
+            font-size: 16px;
+        }
+    </style>
+
+    <script>
+        // 清除所有通知
+        function clearAllNotifications() {
+            if (confirm('确定要清除所有通知吗？')) {
+                const notificationList = document.querySelector('.notification-list');
+                const emptyState = document.querySelector('.empty-state');
+                
+                notificationList.innerHTML = '';
+                notificationList.style.display = 'none';
+                emptyState.style.display = 'flex';
+            }
+        }
+        
+        // 点击通知项
+        document.querySelectorAll('.notification-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // 标记为已读
+                this.classList.remove('unread');
+                const unreadDot = this.querySelector('.unread-dot');
+                if (unreadDot) {
+                    unreadDot.remove();
+                }
+                
+                // 这里可以添加跳转到相应页面的逻辑
+                // 例如，根据通知类型跳转到不同页面
+                const notificationType = this.querySelector('.notification-title').textContent;
+                
+                if (notificationType.includes('订单')) {
+                    // window.location.href = 'orders.html';
+                    alert('跳转到订单页面');
+                } else if (notificationType.includes('消息')) {
+                    // window.location.href = 'chat.html';
+                    alert('跳转到消息页面');
+                } else if (notificationType.includes('活动')) {
+                    // window.location.href = 'activity.html';
+                    alert('跳转到活动页面');
+                } else {
+                    // 系统通知或其他类型
+                    alert('查看通知详情');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

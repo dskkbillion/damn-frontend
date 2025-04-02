@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 退款：审核通过</title>
+    <link rel="stylesheet" href="../../../styles.css">
+    <link rel="stylesheet" href="../../../css/order_refund_approved.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部导航栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='orders.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">退款：审核通过</div>
+        </div>
+        
+        <!-- 产品卡片 -->
+        <div class="product-card">
+            <div class="product-header">
+                <div class="seller-name">瑞</div>
+            </div>
+            <div class="product-content">
+                <div class="product-image">
+                    <img src="../../../assets/images/placeholder.png" alt="产品图片" onerror="this.src='https://via.placeholder.com/80/f0f0f0/999999?text=图片'">
+                </div>
+                <div class="product-info">
+                    <div class="product-title">已发布（审核通过）改名</div>
+                    <div class="product-desc">描述修改...</div>
+                    <div class="product-type">基础</div>
+                    <div class="product-meta">
+                        <span>交付时长3</span>
+                        <span>修改次数3</span>
+                        <span onclick="toggleExpand()">展开</span>
+                    </div>
+                </div>
+                <div class="product-price">¥1</div>
+            </div>
+        </div>
+        
+        <!-- 订单信息 -->
+        <div class="order-info">
+            <div class="info-row">
+                <div class="info-label">实付款</div>
+                <div class="info-value">1</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">订单编号</div>
+                <div class="info-value">570</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">付款方式</div>
+                <div class="info-value">余额支付</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">付款时间</div>
+                <div class="info-value">2025-03-12 10:58:50</div>
+            </div>
+        </div>
+        
+        <!-- 卖家提交 -->
+        <div class="collapsible-section">
+            <div class="collapsible-header" onclick="toggleSection('sellerSubmission')">
+                <div class="collapsible-title">卖家提交#1</div>
+                <div class="collapsible-toggle">
+                    <i class="fas fa-chevron-down" id="sellerSubmissionIcon"></i>
+                </div>
+            </div>
+            <div class="collapsible-content" id="sellerSubmissionContent" style="display: none;">
+                <!-- 卖家提交内容 -->
+                <p>卖家提交的内容将显示在这里...</p>
+            </div>
+        </div>
+        
+        <!-- 交付 -->
+        <div class="collapsible-section">
+            <div class="collapsible-header" onclick="toggleSection('delivery')">
+                <div class="collapsible-title">交付 #1</div>
+                <div class="collapsible-toggle">
+                    <i class="fas fa-chevron-down" id="deliveryIcon"></i>
+                </div>
+            </div>
+            <div class="collapsible-content" id="deliveryContent" style="display: none;">
+                <!-- 交付内容 -->
+                <p>交付的内容将显示在这里...</p>
+            </div>
+        </div>
+        
+        <!-- 退款详情 -->
+        <div class="refund-details">
+            <div class="refund-header" onclick="toggleSection('refundDetails')">
+                <div class="refund-title">退款详情</div>
+                <div class="refund-toggle">
+                    <i class="fas fa-chevron-up" id="refundDetailsIcon"></i>
+                </div>
+            </div>
+            <div class="refund-content" id="refundDetailsContent">
+                <div class="refund-row">
+                    <div class="refund-label">退款状态</div>
+                    <div class="refund-value refund-status">审核通过</div>
+                </div>
+                <div class="refund-row">
+                    <div class="refund-label">退款原因</div>
+                    <div class="refund-value">无</div>
+                </div>
+                <div class="refund-row">
+                    <div class="refund-label">退款金额</div>
+                    <div class="refund-value">¥1</div>
+                </div>
+                <div class="refund-row">
+                    <div class="refund-label">申请时间</div>
+                    <div class="refund-value">2025-03-12 11:08:47</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 问题区域 -->
+        <div class="problem-section">
+            <div class="problem-title">遇到问题？</div>
+            <button class="platform-button" onclick="requestPlatformIntervention()">申请平台介入</button>
+        </div>
+    </div>
+
+    <script>
+        // 展开/收起产品详情
+        function toggleExpand() {
+            // 实现展开/收起功能
+            alert('展开产品详情');
+        }
+        
+        // 切换区域显示/隐藏
+        function toggleSection(sectionId) {
+            const content = document.getElementById(sectionId + 'Content');
+            const icon = document.getElementById(sectionId + 'Icon');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                content.style.display = 'none';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        }
+        
+        // 申请平台介入
+        function requestPlatformIntervention() {
+            window.location.href = 'order_platform_intervention.html';
+        }
+    </script>
+</body>
+</html>

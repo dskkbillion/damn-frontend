@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - AI对话</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../../css/ai_docs_input.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="header-left">
+                <div class="history-button" onclick="showHistory()">
+                    <i class="far fa-clock"></i>
+                </div>
+                <div class="new-chat-button" onclick="newChat()">
+                    <i class="fas fa-plus"></i>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="match-dropdown">
+                    <span>匹配</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 聊天区域 -->
+        <div class="chat-container" id="chatContainer">
+            <!-- AI欢迎消息 -->
+            <div class="message ai-message">
+                <div class="message-content">
+                    <div class="message-text">
+                        你好，这里是小帮手，我将为你提供专属方案并配服务，你可以通过右上方的按钮随时查看可用实服务。你想问点什么呢？
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 快捷问题选项 -->
+            <div class="quick-questions">
+                <div class="quick-question" onclick="askQuestion('如何改造家里的一个角落？')">
+                    如何改造家里的一个角落？
+                </div>
+                <div class="quick-question" onclick="askQuestion('我想打官司，该做什么？')">
+                    我想打官司，该做什么？
+                </div>
+                <div class="quick-question" onclick="askQuestion('车钥匙丢了怎么办？')">
+                    车钥匙丢了怎么办？
+                </div>
+            </div>
+            
+            <!-- 用户问题 -->
+            <div class="message user-message" style="display: none;" id="userQuestion">
+                <div class="message-content">
+                    <div class="message-text" id="userQuestionText"></div>
+                </div>
+            </div>
+            
+            <!-- AI回答 -->
+            <div class="message ai-message" style="display: none;" id="aiAnswer">
+                <div class="message-content">
+                    <div class="message-text" id="aiAnswerText"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 媒体输入选项 -->
+        <div class="media-options">
+            <div class="media-option" onclick="openCamera()">
+                <i class="fas fa-camera" style="color: var(--light-primary-color);"></i>
+                <span>拍照</span>
+            </div>
+            <div class="media-option" onclick="openGallery()">
+                <i class="far fa-images" style="color: var(--light-primary-color);"></i>
+                <span>相册</span>
+            </div>
+        </div>
+        
+        <!-- 底部输入区域 -->
+        <div class="input-container">
+            <div class="voice-button" onclick="toggleVoiceInput()">
+                <i class="fas fa-microphone"></i>
+            </div>
+            <div class="text-input">
+                <input type="text" id="messageInput" placeholder="在此输入" />
+            </div>
+            <div class="send-button" onclick="sendMessage()">
+                <i class="fas fa-paper-plane" style="color: var(--light-primary-color);"></i>
+            </div>
+        </div>
+        
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="window.location.href='ai_docs.html'">
+                <i class="fas fa-robot nav-icon"></i>
+                <span class="nav-text">多少看看</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='../homepage/index.html'">
+                <i class="fas fa-home nav-icon"></i>
+                <span class="nav-text">首页</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='../chat/chat.html'">
+                <i class="fas fa-comment nav-icon"></i>
+                <span class="nav-text">消息</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='../profile/profile.html'">
+                <i class="fas fa-user nav-icon"></i>
+                <span class="nav-text">我的</span>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 定义浅色主题色变量 */
+        :root {
+            --light-primary-color: #d8a95b; /* 浅棕色/金色，基于b66d0e */
+        }
+        /* 修改样式以匹配ai_docs.html页面 */
+        /* 消息样式 */
+        .message {
+            display: flex;
+            margin-bottom: 16px;
+        }
+        
+        .ai-message {
+            align-items: flex-start;
+        }
+        
+        .user-message {
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+        
+        .message-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .message-content {
+            max-width: 70%;
+        }
+        
+        .message-text {
+            padding: 12px;
+            border-radius: 16px;
+            background-color: var(--bg-medium);
+            position: relative;
+            line-height: 1.5;
+        }
+        
+        .ai-message .message-text {
+            border-top-left-radius: 4px;
+        }
+        
+        .user-message .message-text {
+            background-color: var(--light-primary-color);
+            color: white;
+            border-top-right-radius: 4px;
+        }
+        
+        /* 输入栏样式 */
+        .input-container {
+            position: fixed;
+            bottom: 56px;
+            left: 0;
+            right: 0;
+            max-width: 414px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background-color: white;
+            border-top: 1px solid var(--border-light);
+            z-index: 100;
+        }
+        
+        .voice-button {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        
+        .text-input {
+            flex: 1;
+            margin: 0 12px;
+        }
+        
+        .text-input input {
+            width: 100%;
+            border: none;
+            outline: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            background-color: var(--bg-light);
+        }
+        
+        .send-button {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--light-primary-color);
+        }
+        
+        /* 底部导航栏样式 */
+        .bottom-nav {
+            display: flex;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 414px;
+            margin: 0 auto;
+            height: 56px;
+            background-color: white;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+            z-index: 100;
+        }
+        
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .nav-item.active {
+            color: var(--primary-color);
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        
+        .nav-text {
+            font-size: 12px;
+        }
+        
+        /* 媒体选项样式 */
+        .media-options {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            padding: 16px;
+            background-color: white;
+            border-top: 1px solid var(--border-light);
+            position: fixed;
+            bottom: 112px;
+            left: 0;
+            right: 0;
+            max-width: 414px;
+            margin: 0 auto;
+            z-index: 100;
+        }
+        
+        .media-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        
+        .media-option i {
+            font-size: 24px;
+            color: var(--primary-color);
+        }
+        
+        .media-option span {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+    </style>
+    
+    <script src="../../js/ai_docs_input.js"></script>
+</body>
+</html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 我的故事</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="post-header">
+            <div class="header-title">发布</div>
+        </div>
+        
+        <!-- 标签页 -->
+        <div class="tabs">
+            <div class="tab" onclick="switchTab('products')">商品</div>
+            <div class="tab active" onclick="switchTab('stories')">我的故事</div>
+            <div class="tab-indicator" style="transform: translateX(50%);"></div>
+        </div>
+        
+        <!-- 故事列表 -->
+        <div class="story-list">
+            <!-- 故事项目1 -->
+            <div class="story-item" onclick="window.location.href='story.html?id=1'">
+                <div class="story-header">
+                    <div class="story-author">
+                        <img src="imgs/IMG20250317124302.jpg" alt="用户头像" class="author-avatar">
+                    </div>
+                    <div class="story-time">2025-01-26 11:42:51</div>
+                </div>
+                <div class="story-content">
+                    <p>这是一个关于我如何开始学习编程的故事。从最初的困惑到现在的熟练，这段旅程充满了挑战和收获...</p>
+                </div>
+                <div class="story-image">
+                    <img src="imgs/IMG20250308233845_20250326010856.jpg" alt="故事图片">
+                </div>
+                <div class="story-actions">
+                    <div class="action-like" onclick="toggleLike(event, 1)">
+                        <i class="far fa-heart"></i>
+                        <span class="like-count">12</span>
+                    </div>
+                    <div class="action-comment" onclick="goToComments(event, 1)">
+                        <i class="far fa-comment"></i>
+                        <span class="comment-count">5</span>
+                    </div>
+                    <div class="action-edit" onclick="editStory(event, 1)">
+                        <i class="far fa-edit"></i>
+                    </div>
+                    <div class="action-delete" onclick="deleteStory(event, 1)">
+                        <i class="far fa-trash-alt"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 故事项目2 -->
+            <div class="story-item" onclick="window.location.href='story.html?id=2'">
+                <div class="story-header">
+                    <div class="story-author">
+                        <img src="imgs/IMG20250317124302.jpg" alt="用户头像" class="author-avatar">
+                    </div>
+                    <div class="story-time">2025-01-20 09:15:30</div>
+                </div>
+                <div class="story-content">
+                    <p>分享一下我最近完成的一个项目经验，希望能对大家有所帮助...</p>
+                </div>
+                <div class="story-actions">
+                    <div class="action-like" onclick="toggleLike(event, 2)">
+                        <i class="far fa-heart"></i>
+                        <span class="like-count">8</span>
+                    </div>
+                    <div class="action-comment" onclick="goToComments(event, 2)">
+                        <i class="far fa-comment"></i>
+                        <span class="comment-count">3</span>
+                    </div>
+                    <div class="action-edit" onclick="editStory(event, 2)">
+                        <i class="far fa-edit"></i>
+                    </div>
+                    <div class="action-delete" onclick="deleteStory(event, 2)">
+                        <i class="far fa-trash-alt"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 故事项目3 -->
+            <div class="story-item" onclick="window.location.href='story.html?id=3'">
+                <div class="story-header">
+                    <div class="story-author">
+                        <img src="imgs/IMG20250317124302.jpg" alt="用户头像" class="author-avatar">
+                    </div>
+                    <div class="story-time">2025-01-15 16:30:22</div>
+                </div>
+                <div class="story-content">
+                    <p>今天想和大家分享一些关于时间管理的心得，作为一名自由职业者，如何高效安排时间是非常重要的...</p>
+                </div>
+                <div class="story-image">
+                    <img src="imgs/IMG20250310160953_20250326010856.jpg" alt="故事图片">
+                </div>
+                <div class="story-actions">
+                    <div class="action-like liked" onclick="toggleLike(event, 3)">
+                        <i class="fas fa-heart"></i>
+                        <span class="like-count">24</span>
+                    </div>
+                    <div class="action-comment" onclick="goToComments(event, 3)">
+                        <i class="far fa-comment"></i>
+                        <span class="comment-count">11</span>
+                    </div>
+                    <div class="action-edit" onclick="editStory(event, 3)">
+                        <i class="far fa-edit"></i>
+                    </div>
+                    <div class="action-delete" onclick="deleteStory(event, 3)">
+                        <i class="far fa-trash-alt"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 添加按钮 -->
+        <div class="add-button" onclick="window.location.href='story_edit.html'">
+            <i class="fas fa-plus"></i>
+        </div>
+        
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="window.location.href='index.html'">
+                <i class="fas fa-home nav-icon"></i>
+                <span class="nav-text">首页</span>
+            </div>
+            <div class="nav-item active">
+                <i class="fas fa-plus-square nav-icon"></i>
+                <span class="nav-text">发布</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='chat.html'">
+                <i class="fas fa-comment nav-icon"></i>
+                <span class="nav-text">消息</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='profile.html'">
+                <i class="fas fa-user nav-icon"></i>
+                <span class="nav-text">我的</span>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 故事列表页面特定样式 */
+        .post-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 56px;
+            padding: 0 16px;
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .tabs {
+            display: flex;
+            position: relative;
+            background-color: var(--primary-color);
+            color: white;
+            padding-bottom: 8px;
+        }
+        
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            font-size: 16px;
+            cursor: pointer;
+            position: relative;
+            opacity: 0.8;
+        }
+        
+        .tab.active {
+            opacity: 1;
+            font-weight: 600;
+        }
+        
+        .tab-indicator {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50%;
+            height: 3px;
+            background-color: white;
+            transition: transform 0.3s ease;
+        }
+        
+        .story-list {
+            background-color: var(--bg-light);
+            padding-bottom: 72px;
+        }
+        
+        .story-item {
+            background-color: white;
+            margin-bottom: 12px;
+            padding: 16px;
+            cursor: pointer;
+        }
+        
+        .story-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            background-color: white;
+            color: var(--text-primary);
+            height: auto;
+            padding: 0;
+        }
+        
+        .story-author {
+            display: flex;
+            align-items: center;
+        }
+        
+        .author-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .story-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .story-content {
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+        
+        .story-image {
+            margin-bottom: 12px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .story-image img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+        
+        .story-actions {
+            display: flex;
+            gap: 16px;
+        }
+        
+        .action-like, .action-comment, .action-edit, .action-delete {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+        }
+        
+        .action-like.liked {
+            color: #e74c3c;
+        }
+        
+        .action-edit:hover, .action-delete:hover {
+            color: var(--primary-color);
+        }
+        
+        .add-button {
+            position: fixed;
+            bottom: 72px;
+            right: 16px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 100;
+        }
+    </style>
+
+    <script>
+        // 切换标签页
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const tabIndicator = document.querySelector('.tab-indicator');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            if (tabName === 'products') {
+                tabs[0].classList.add('active');
+                tabIndicator.style.transform = 'translateX(0)';
+                // 这里应该有跳转到商品页面的逻辑
+                window.location.href = 'seller_post.html';
+            } else if (tabName === 'stories') {
+                tabs[1].classList.add('active');
+                tabIndicator.style.transform = 'translateX(50%)';
+                // 已经在故事页面，不需要跳转
+            }
+        }
+        
+        // 点赞功能
+        function toggleLike(event, storyId) {
+            event.stopPropagation(); // 阻止事件冒泡
+            
+            const likeButton = event.currentTarget;
+            const likeIcon = likeButton.querySelector('i');
+            const likeCount = likeButton.querySelector('.like-count');
+            
+            if (likeButton.classList.contains('liked')) {
+                // 取消点赞
+                likeButton.classList.remove('liked');
+                likeIcon.className = 'far fa-heart';
+                likeCount.textContent = parseInt(likeCount.textContent) - 1;
+            } else {
+                // 点赞
+                likeButton.classList.add('liked');
+                likeIcon.className = 'fas fa-heart';
+                likeCount.textContent = parseInt(likeCount.textContent) + 1;
+            }
+        }
+        
+        // 跳转到评论
+        function goToComments(event, storyId) {
+            event.stopPropagation(); // 阻止事件冒泡
+            window.location.href = `story.html?id=${storyId}&comments=true`;
+        }
+        
+        // 编辑故事
+        function editStory(event, storyId) {
+            event.stopPropagation(); // 阻止事件冒泡
+            window.location.href = `story_edit.html?id=${storyId}`;
+        }
+        
+        // 删除故事
+        function deleteStory(event, storyId) {
+            event.stopPropagation(); // 阻止事件冒泡
+            
+            if (confirm('确定要删除这个故事吗？')) {
+                // 这里应该有删除故事的逻辑
+                // 但在这个HTML原型中，我们只是模拟删除
+                const storyItem = event.currentTarget.closest('.story-item');
+                storyItem.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

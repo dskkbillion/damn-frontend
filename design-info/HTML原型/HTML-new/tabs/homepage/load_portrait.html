@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 上传头像</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../../css/load_portrait.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='index.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">上传头像</div>
+            <div class="header-right">
+                <div class="skip-button" onclick="skipUpload()">跳过</div>
+            </div>
+        </div>
+        
+        <!-- 头像上传区域 -->
+        <div class="portrait-container">
+            <div class="portrait-preview-wrapper">
+                <div class="portrait-preview" id="portraitPreview">
+                    <i class="fas fa-user-circle default-avatar"></i>
+                    <div class="upload-icon">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="portrait-hint">添加一个能代表你的头像</div>
+            <div class="portrait-desc">一个好的头像可以帮助其他用户更容易地认出你</div>
+            
+            <!-- 上传选项 -->
+            <div class="upload-options">
+                <div class="upload-option" onclick="openCamera()">
+                    <div class="option-icon">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <div class="option-text">拍照</div>
+                </div>
+                
+                <div class="upload-option" onclick="openGallery()">
+                    <div class="option-icon">
+                        <i class="fas fa-images"></i>
+                    </div>
+                    <div class="option-text">从相册选择</div>
+                </div>
+            </div>
+            
+            <input type="file" id="portraitUpload" accept="image/*" style="display: none;" onchange="previewImage(this)">
+        </div>
+        
+        <!-- 提交按钮 -->
+        <div class="submit-container">
+            <button class="submit-button" id="submitButton" onclick="savePortrait()" disabled>确认使用</button>
+        </div>
+    </div>
+
+    <script src="../../js/load_portrait.js"></script>
+</body>
+</html>

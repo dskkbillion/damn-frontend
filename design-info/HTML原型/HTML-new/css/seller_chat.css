@@ -1,0 +1,145 @@
+/* 卖家聊天页面样式 */
+
+/* 顶部标题栏 */
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 56px;
+    background-color: white;
+    border-bottom: 1px solid var(--border-light);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 0 16px;
+}
+
+.chat-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.header-right {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* 消息列表 */
+.chat-list {
+    padding-bottom: 56px;
+}
+
+.chat-item {
+    display: flex;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-light);
+    background-color: white;
+    cursor: pointer;
+    position: relative;
+}
+
+.chat-item.unread {
+    background-color: rgba(var(--primary-color-rgb), 0.05);
+}
+
+.chat-avatar {
+    margin-right: 12px;
+}
+
+.avatar-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.chat-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.chat-name {
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.chat-message {
+    font-size: 14px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-message i {
+    margin-right: 4px;
+}
+
+.chat-time {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-top: 4px;
+}
+
+.chat-badge {
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+}
+
+/* 选项菜单 */
+.options-menu {
+    position: fixed;
+    top: 56px;
+    right: 16px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 200;
+    display: none;
+}
+
+.option-item {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.option-item:hover {
+    background-color: var(--bg-light);
+}
+
+.option-item i {
+    margin-right: 8px;
+    width: 20px;
+    text-align: center;
+}
+
+/* 遮罩层 */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 150;
+    display: none;
+}

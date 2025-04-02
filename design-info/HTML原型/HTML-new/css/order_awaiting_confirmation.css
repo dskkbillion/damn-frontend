@@ -1,0 +1,471 @@
+/* 订单待确认页面样式 */
+
+/* 状态提示样式 */
+.status-tip {
+    margin: 16px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+}
+
+.status-tip.info {
+    background-color: rgba(33, 150, 243, 0.1);
+    color: #2196f3;
+}
+
+.status-tip.warning {
+    background-color: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+}
+
+.status-tip.success {
+    background-color: rgba(76, 175, 80, 0.1);
+    color: #4caf50;
+}
+
+.status-tip.error {
+    background-color: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+}
+
+.status-tip i {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+/* 订单信息样式 */
+.order-info {
+    margin: 0 16px 16px;
+    padding: 20px;
+    background-color: var(--bg-light);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.order-id {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.order-time {
+    font-size: 14px;
+    color: var(--text-tertiary);
+}
+
+.order-content {
+    display: flex;
+    margin-bottom: 12px;
+}
+
+.order-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-right: 16px;
+    flex-shrink: 0;
+}
+
+.order-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.order-details {
+    flex: 1;
+}
+
+.order-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.order-description {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.order-price {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.order-tags {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.tag {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    background-color: var(--bg-lighter);
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+
+/* 买家提交内容样式 */
+.my-submission {
+    margin: 0 16px 16px;
+    padding: 20px;
+    background-color: var(--bg-light);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.content-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.view-full {
+    font-size: 14px;
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.content-tabs {
+    display: flex;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--divider);
+}
+
+.tab {
+    font-size: 14px;
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    cursor: pointer;
+    position: relative;
+}
+
+.tab.active {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--primary-color);
+}
+
+.content-body {
+    padding: 0;
+}
+
+.text-content {
+    font-size: 14px;
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+.text-content p {
+    margin: 0 0 12px;
+}
+
+.text-content p:last-child {
+    margin-bottom: 0;
+}
+
+.attachment-content {
+    padding: 0;
+}
+
+.file-list {
+    margin-top: 8px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: var(--bg-lighter);
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+
+.file-item i:first-child {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin-right: 8px;
+}
+
+.file-item span {
+    flex: 1;
+    font-size: 14px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-item i:last-child {
+    font-size: 16px;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    padding: 4px;
+}
+
+/* 交流记录样式 */
+.communication-history {
+    margin: 0 16px 16px;
+    background-color: var(--bg-light);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    cursor: pointer;
+}
+
+.history-header span {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.history-header i {
+    font-size: 16px;
+    color: var(--text-tertiary);
+}
+
+.history-content {
+    padding: 0 20px 20px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.message-list {
+    padding: 0;
+}
+
+.message-item {
+    margin-bottom: 16px;
+}
+
+.message-time {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+}
+
+.message-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.message-sender {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.message-text {
+    font-size: 14px;
+    color: var(--text-primary);
+    background-color: var(--bg-lighter);
+    padding: 12px;
+    border-radius: 8px;
+}
+
+/* 底部操作按钮样式 */
+.order-actions {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 16px;
+    background-color: var(--bg-base);
+    box-shadow: var(--shadow-md);
+    z-index: 10;
+}
+
+.action-button {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.action-button.primary {
+    background-color: var(--primary-color);
+    color: white;
+    margin-left: 8px;
+}
+
+.action-button.secondary {
+    background-color: var(--bg-lighter);
+    color: var(--text-primary);
+    margin-right: 8px;
+}
+
+.action-button.primary:hover {
+    background-color: var(--primary-dark);
+}
+
+.action-button.secondary:hover {
+    background-color: var(--divider);
+}
+
+/* 订单进度指示器样式 */
+.order-progress-indicator {
+    margin: 0 16px 80px;
+    padding: 20px;
+    background-color: var(--bg-light);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+}
+
+.progress-step {
+    display: flex;
+    align-items: flex-start;
+    position: relative;
+    padding-bottom: 24px;
+}
+
+.progress-step:last-child {
+    padding-bottom: 0;
+}
+
+.progress-step:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    top: 24px;
+    left: 10px;
+    width: 1px;
+    height: calc(100% - 24px);
+    background-color: var(--divider);
+}
+
+.step-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: var(--bg-lighter);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 12px;
+    position: relative;
+    z-index: 1;
+}
+
+.step-icon i {
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+.step-icon.completed {
+    background-color: var(--primary-color);
+}
+
+.step-icon.completed i {
+    color: white;
+}
+
+.step-icon.active {
+    background-color: var(--primary-color);
+}
+
+.step-icon.active i {
+    color: white;
+}
+
+.step-icon.warning {
+    background-color: #ffc107;
+}
+
+.step-icon.warning i {
+    color: white;
+}
+
+.step-icon.error {
+    background-color: #f44336;
+}
+
+.step-icon.error i {
+    color: white;
+}
+
+.step-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.step-text.warning {
+    color: #ffc107;
+}
+
+.step-text.error {
+    color: #f44336;
+}
+
+.step-time {
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+/* 响应式调整 */
+@media (max-width: 360px) {
+    .order-actions {
+        flex-direction: column;
+    }
+    
+    .action-button {
+        margin: 4px 0;
+    }
+    
+    .action-button.primary {
+        margin-left: 0;
+    }
+    
+    .action-button.secondary {
+        margin-right: 0;
+    }
+}

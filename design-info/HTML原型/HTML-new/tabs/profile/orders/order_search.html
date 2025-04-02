@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 订单搜索</title>
+    <link rel="stylesheet" href="../../../styles.css">
+    <link rel="stylesheet" href="../../../css/order_search.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='orders.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">订单搜索</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 搜索栏 -->
+        <div class="search-container">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="输入订单号、商品名称或卖家名称" autofocus>
+                <i class="fas fa-times" id="clearSearch" onclick="clearSearch()"></i>
+            </div>
+            <button class="search-button" onclick="searchOrders()">搜索</button>
+        </div>
+        
+        <!-- 搜索历史 -->
+        <div class="search-history">
+            <div class="history-header">
+                <div class="history-title">搜索历史</div>
+                <div class="clear-history" onclick="clearHistory()">
+                    <i class="fas fa-trash-alt"></i>
+                    <span>清空</span>
+                </div>
+            </div>
+            <div class="history-list" id="historyList">
+                <!-- 历史记录将通过JS动态添加 -->
+            </div>
+        </div>
+        
+        <!-- 热门搜索 -->
+        <div class="hot-search">
+            <div class="hot-title">热门搜索</div>
+            <div class="hot-tags">
+                <div class="hot-tag" onclick="setSearch('设计')">设计</div>
+                <div class="hot-tag" onclick="setSearch('插画')">插画</div>
+                <div class="hot-tag" onclick="setSearch('文案')">文案</div>
+                <div class="hot-tag" onclick="setSearch('Logo')">Logo</div>
+                <div class="hot-tag" onclick="setSearch('海报')">海报</div>
+                <div class="hot-tag" onclick="setSearch('视频剪辑')">视频剪辑</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 历史记录项模板 -->
+    <template id="historyItemTemplate">
+        <div class="history-item" onclick="setSearch('{keyword}')">
+            <div class="history-keyword">
+                <i class="fas fa-history"></i>
+                <span>{keyword}</span>
+            </div>
+            <div class="delete-history" onclick="deleteHistory(event, '{keyword}')">
+                <i class="fas fa-times"></i>
+            </div>
+        </div>
+    </template>
+
+    <script src="../../../js/order_search.js"></script>
+</body>
+</html>

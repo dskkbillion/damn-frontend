@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 账号与安全</title>
+    <link rel="stylesheet" href="../../../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='../profile.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">账户</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 用户信息 -->
+        <div class="account-user">
+            <div class="user-avatar">
+                <img src="../../../imgs/IMG20250317124302.jpg" alt="用户头像" class="avatar-img">
+            </div>
+            <div class="user-name">瑭</div>
+        </div>
+        
+        <!-- 账号设置列表 -->
+        <div class="account-settings">
+            <!-- 昵称 -->
+            <div class="setting-item" onclick="window.location.href='edit_nickname.html'">
+                <div class="setting-label">昵称</div>
+                <div class="setting-value">
+                    <span>瑭</span>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            
+            <!-- 第三方账号绑定 -->
+            <div class="setting-item">
+                <div class="setting-label">第三方账号绑定</div>
+                <div class="setting-value">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            
+            <!-- 已绑定手机号 -->
+            <div class="setting-item">
+                <div class="setting-label">已绑定手机号</div>
+                <div class="setting-value">
+                    <span>188****8888</span>
+                </div>
+            </div>
+            
+            <!-- 隐私设置 -->
+            <div class="setting-item" onclick="window.location.href='privacy_settings.html'">
+                <div class="setting-label">隐私设置</div>
+                <div class="setting-value">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 退出登录按钮 -->
+        <div class="logout-container">
+            <button class="logout-button" onclick="logout()">退出登录</button>
+        </div>
+        
+        <!-- 停用账号链接 -->
+        <div class="deactivate-container">
+            <a href="deactivation.html" class="deactivate-link">停用账号</a>
+        </div>
+    </div>
+
+    <style>
+        /* 账号安全页面特定样式 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            padding: 0 16px;
+            background-color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .back-button {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .header-right {
+            width: 24px;
+        }
+        
+        .account-user {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px;
+            background-color: white;
+            margin-bottom: 12px;
+        }
+        
+        .user-avatar {
+            margin-bottom: 12px;
+        }
+        
+        .avatar-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .user-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .account-settings {
+            background-color: white;
+            margin-bottom: 24px;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-light);
+            cursor: pointer;
+        }
+        
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        
+        .setting-label {
+            font-size: 16px;
+        }
+        
+        .setting-value {
+            display: flex;
+            align-items: center;
+            color: var(--text-secondary);
+        }
+        
+        .setting-value span {
+            margin-right: 8px;
+        }
+        
+        .logout-container {
+            padding: 0 16px;
+            margin-bottom: 16px;
+        }
+        
+        .logout-button {
+            width: 100%;
+            padding: 12px;
+            background-color: white;
+            border: 1px solid var(--border-medium);
+            border-radius: 8px;
+            font-size: 16px;
+            color: var(--error);
+            cursor: pointer;
+        }
+        
+        .deactivate-container {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .deactivate-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+        }
+    </style>
+
+    <script>
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                window.location.href = '../../../outer/login/login.html';
+            }
+        }
+    </script>
+</body>
+</html>

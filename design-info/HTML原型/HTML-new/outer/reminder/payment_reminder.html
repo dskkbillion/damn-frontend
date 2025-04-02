@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 支付提醒</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 支付提醒弹窗 -->
+        <div class="payment-reminder-container">
+            <!-- 商品信息 -->
+            <div class="product-info">
+                <div class="product-image">
+                    <img src="https://via.placeholder.com/80x80/f8f1e6/b66d0e?text=修改" alt="商品图片">
+                </div>
+                <div class="product-details">
+                    <div class="product-name">修改待审核</div>
+                    <div class="product-quantity">×1</div>
+                </div>
+                <div class="close-button" onclick="window.history.back()">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            
+            <!-- 提供信息提示 -->
+            <div class="info-required">
+                <div class="info-text">此订单需要提供</div>
+            </div>
+            
+            <!-- 支付方式 -->
+            <div class="payment-methods">
+                <div class="section-title">支付方式</div>
+                <div class="payment-options">
+                    <div class="payment-option selected" onclick="selectPaymentMethod('alipay')">
+                        <div class="option-radio">
+                            <div class="radio-outer">
+                                <div class="radio-inner"></div>
+                            </div>
+                        </div>
+                        <div class="option-icon alipay">
+                            <i class="fab fa-alipay"></i>
+                        </div>
+                        <div class="option-name">支付宝支付</div>
+                    </div>
+                    <div class="payment-option" onclick="selectPaymentMethod('balance')">
+                        <div class="option-radio">
+                            <div class="radio-outer">
+                                <div class="radio-inner"></div>
+                            </div>
+                        </div>
+                        <div class="option-icon balance">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div class="option-name">余额支付</div>
+                    </div>
+                </div>
+                <div class="payment-warning">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>警惕站外交易，平台全天候监管，交易更安全</span>
+                </div>
+            </div>
+            
+            <!-- 订单详情 -->
+            <div class="order-details">
+                <div class="section-title">订单详情</div>
+                <div class="order-item">
+                    <div class="item-name">修改待审核-基础</div>
+                    <div class="item-details">
+                        <div class="detail-row">
+                            <div class="detail-label">交付次数</div>
+                            <div class="detail-value">1</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">交付周期</div>
+                            <div class="detail-value">1</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="order-summary">
+                    <div class="summary-row">
+                        <div class="summary-label">总计</div>
+                        <div class="summary-value">1</div>
+                    </div>
+                    <div class="summary-row">
+                        <div class="summary-label">交付可修改次数</div>
+                        <div class="summary-value">1</div>
+                    </div>
+                    <div class="summary-row">
+                        <div class="summary-label">交付时长</div>
+                        <div class="summary-value">1天</div>
+                    </div>
+                    <div class="summary-row">
+                        <div class="summary-label">折扣</div>
+                        <div class="summary-value">总计</div>
+                        <div class="summary-value">交付日期</div>
+                    </div>
+                    <div class="summary-row">
+                        <div class="summary-label">优惠券</div>
+                        <div class="summary-value coupon-select">
+                            <select id="couponSelect">
+                                <option value="">选择优惠券</option>
+                                <option value="coupon1">满10减1优惠券</option>
+                                <option value="coupon2">满50减5优惠券</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="order-total">
+                    <div class="total-price">¥1</div>
+                </div>
+            </div>
+            
+            <!-- 支付按钮 -->
+            <div class="payment-button-container">
+                <button class="payment-button" onclick="processPayment()">立即支付</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 支付提醒页面特定样式 */
+        body {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .payment-reminder-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 400px;
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .product-info {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background-color: #f8f9fa;
+            position: relative;
+        }
+        
+        .product-image {
+            margin-right: 12px;
+        }
+        
+        .product-image img {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        
+        .product-details {
+            flex: 1;
+        }
+        
+        .product-name {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .product-quantity {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .close-button {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .info-required {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .info-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .payment-methods {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+        
+        .payment-options {
+            margin-bottom: 12px;
+        }
+        
+        .payment-option {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            cursor: pointer;
+        }
+        
+        .option-radio {
+            margin-right: 12px;
+        }
+        
+        .radio-outer {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .radio-inner {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            display: none;
+        }
+        
+        .payment-option.selected .radio-outer {
+            border-color: var(--primary-color);
+        }
+        
+        .payment-option.selected .radio-inner {
+            display: block;
+        }
+        
+        .option-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            color: white;
+            font-size: 18px;
+        }
+        
+        .option-icon.alipay {
+            background-color: #1677ff;
+        }
+        
+        .option-icon.balance {
+            background-color: #ff9500;
+        }
+        
+        .option-name {
+            font-size: 14px;
+        }
+        
+        .payment-warning {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+        
+        .payment-warning i {
+            margin-right: 4px;
+            color: #ff9500;
+        }
+        
+        .order-details {
+            padding: 16px;
+        }
+        
+        .order-item {
+            margin-bottom: 16px;
+        }
+        
+        .item-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .item-details {
+            font-size: 14px;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        
+        .detail-label {
+            color: var(--text-secondary);
+        }
+        
+        .order-summary {
+            border-top: 1px solid var(--border-light);
+            padding-top: 12px;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .summary-label {
+            color: var(--text-secondary);
+        }
+        
+        .coupon-select select {
+            border: none;
+            background-color: transparent;
+            color: var(--primary-color);
+            font-size: 14px;
+            padding: 0;
+            cursor: pointer;
+        }
+        
+        .order-total {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 12px;
+        }
+        
+        .total-price {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .payment-button-container {
+            padding: 16px;
+        }
+        
+        .payment-button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+
+    <script>
+        // 选择支付方式
+        function selectPaymentMethod(method) {
+            const options = document.querySelectorAll('.payment-option');
+            options.forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            if (method === 'alipay') {
+                options[0].classList.add('selected');
+            } else if (method === 'balance') {
+                options[1].classList.add('selected');
+            }
+        }
+        
+        // 处理支付
+        function processPayment() {
+            const selectedMethod = document.querySelector('.payment-option.selected');
+            const methodName = selectedMethod.querySelector('.option-name').textContent;
+            
+            alert(`您选择了${methodName}，即将跳转到支付页面`);
+            
+            // 这里应该有跳转到支付页面的逻辑
+            // 但在这个HTML原型中，我们只是模拟成功并返回上一页
+            setTimeout(() => {
+                window.history.back();
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

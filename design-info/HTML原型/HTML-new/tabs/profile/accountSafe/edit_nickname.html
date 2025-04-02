@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 编辑昵称</title>
+    <link rel="stylesheet" href="../../../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='account_safe.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">编辑昵称</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 昵称编辑区域 -->
+        <div class="nickname-edit-container">
+            <div class="nickname-input-wrapper">
+                <input type="text" id="nicknameInput" class="nickname-input" placeholder="请输入昵称" value="瑭" maxlength="20">
+            </div>
+            <div class="nickname-hint">请设置2-20个字符，不包括特殊无效字符</div>
+        </div>
+        
+        <!-- 提交按钮 -->
+        <div class="submit-container">
+            <button class="submit-button" onclick="saveNickname()">提交保存</button>
+        </div>
+    </div>
+
+    <style>
+        /* 编辑昵称页面特定样式 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            padding: 0 16px;
+            background-color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .back-button {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .header-right {
+            width: 24px;
+        }
+        
+        .nickname-edit-container {
+            padding: 24px 16px;
+            background-color: white;
+        }
+        
+        .nickname-input-wrapper {
+            margin-bottom: 8px;
+        }
+        
+        .nickname-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-medium);
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .nickname-input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        
+        .nickname-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+        
+        .submit-container {
+            padding: 0 16px;
+        }
+        
+        .submit-button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .submit-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+
+    <script>
+        const nicknameInput = document.getElementById('nicknameInput');
+        const submitButton = document.querySelector('.submit-button');
+        
+        // 监听输入变化，验证昵称
+        nicknameInput.addEventListener('input', validateNickname);
+        
+        // 初始验证
+        validateNickname();
+        
+        // 验证昵称
+        function validateNickname() {
+            const nickname = nicknameInput.value.trim();
+            
+            if (nickname.length < 2) {
+                submitButton.disabled = true;
+            } else {
+                submitButton.disabled = false;
+            }
+        }
+        
+        // 保存昵称
+        function saveNickname() {
+            const nickname = nicknameInput.value.trim();
+            
+            if (nickname.length < 2) {
+                alert('昵称长度不能少于2个字符');
+                return;
+            }
+            
+            // 这里应该有保存昵称到服务器的逻辑
+            // 但在这个HTML原型中，我们只是模拟成功并返回上一页
+            alert('昵称更新成功');
+            window.location.href = 'account_safe.html';
+        }
+    </script>
+</body>
+</html>

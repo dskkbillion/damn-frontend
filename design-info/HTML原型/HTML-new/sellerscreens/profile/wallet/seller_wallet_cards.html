@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 银行卡管理</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/seller_wallet_cards.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='seller_wallet.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">银行卡管理</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 银行卡列表 -->
+        <div class="cards-list" id="cardsList">
+            <!-- 银行卡项目将通过JS动态添加 -->
+        </div>
+        
+        <!-- 添加银行卡按钮 -->
+        <div class="add-card-container">
+            <button class="add-card-button" onclick="showAddCardDialog()">
+                <i class="fas fa-plus"></i>
+                添加银行卡
+            </button>
+        </div>
+        
+        <!-- 添加银行卡对话框 -->
+        <div class="add-card-dialog" id="addCardDialog">
+            <div class="dialog-content">
+                <div class="dialog-title">添加银行卡</div>
+                <div class="dialog-form">
+                    <div class="form-group">
+                        <label for="cardHolder">持卡人</label>
+                        <input type="text" id="cardHolder" placeholder="请输入持卡人姓名">
+                    </div>
+                    <div class="form-group">
+                        <label for="cardNumber">卡号</label>
+                        <input type="text" id="cardNumber" placeholder="请输入银行卡号">
+                    </div>
+                    <div class="form-group">
+                        <label for="bankName">开户银行</label>
+                        <select id="bankName">
+                            <option value="">请选择开户银行</option>
+                            <option value="ICBC">工商银行</option>
+                            <option value="CCB">建设银行</option>
+                            <option value="ABC">农业银行</option>
+                            <option value="BOC">中国银行</option>
+                            <option value="CMBC">招商银行</option>
+                            <option value="PSBC">邮政储蓄银行</option>
+                            <option value="SPDB">浦发银行</option>
+                            <option value="CIB">兴业银行</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="bankBranch">开户支行</label>
+                        <input type="text" id="bankBranch" placeholder="请输入开户支行">
+                    </div>
+                    <div class="form-group">
+                        <label for="phoneNumber">预留手机号</label>
+                        <input type="tel" id="phoneNumber" placeholder="请输入银行预留手机号">
+                    </div>
+                </div>
+                <div class="dialog-buttons">
+                    <button class="dialog-button cancel" onclick="hideAddCardDialog()">取消</button>
+                    <button class="dialog-button confirm" onclick="addCard()">确认</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 删除银行卡确认对话框 -->
+        <div class="confirm-dialog" id="deleteConfirmDialog">
+            <div class="dialog-content">
+                <div class="dialog-title">删除银行卡</div>
+                <div class="dialog-message">确定要删除这张银行卡吗？</div>
+                <div class="dialog-buttons">
+                    <button class="dialog-button cancel" onclick="hideDeleteConfirmDialog()">取消</button>
+                    <button class="dialog-button confirm" onclick="confirmDeleteCard()">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/seller_wallet_cards.js"></script>
+</body>
+</html>

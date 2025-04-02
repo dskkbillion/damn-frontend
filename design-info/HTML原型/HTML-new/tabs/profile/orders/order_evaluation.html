@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 评价订单</title>
+    <link rel="stylesheet" href="../../../styles.css">
+    <link rel="stylesheet" href="../../../css/order_evaluation.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部进度条 -->
+        <div class="progress-container">
+            <div class="progress-step completed">
+                <div class="step-icon"><i class="fas fa-check"></i></div>
+                <div class="step-label">下单</div>
+            </div>
+            <div class="progress-line completed"></div>
+            <div class="progress-step completed">
+                <div class="step-icon"><i class="fas fa-check"></i></div>
+                <div class="step-label">接单</div>
+            </div>
+            <div class="progress-line completed"></div>
+            <div class="progress-step completed">
+                <div class="step-icon"><i class="fas fa-check"></i></div>
+                <div class="step-label">交付</div>
+            </div>
+            <div class="progress-line completed"></div>
+            <div class="progress-step completed">
+                <div class="step-icon"><i class="fas fa-check"></i></div>
+                <div class="step-label">确认</div>
+            </div>
+            <div class="progress-line completed"></div>
+            <div class="progress-step active">
+                <div class="step-icon"><i class="fas fa-star"></i></div>
+                <div class="step-label">评价</div>
+            </div>
+            <div class="progress-line"></div>
+            <div class="progress-step">
+                <div class="step-icon"><i class="fas fa-check"></i></div>
+                <div class="step-label">完成</div>
+            </div>
+        </div>
+
+        <!-- 评价标题 -->
+        <div class="evaluation-title">
+            <h2>等待你的评价</h2>
+            <p>请分享您的服务体验</p>
+        </div>
+
+        <!-- 评分区域 -->
+        <div class="rating-section">
+            <div class="rating-title">您对本次服务的评价</div>
+            <div class="rating-stars">
+                <i class="far fa-star"></i>
+                <i class="far fa-star"></i>
+                <i class="far fa-star"></i>
+                <i class="far fa-star"></i>
+                <i class="far fa-star"></i>
+            </div>
+            <div class="rating-label">点击</div>
+        </div>
+
+        <!-- 评价内容 -->
+        <div class="evaluation-content">
+            <div class="content-label">评论</div>
+            <textarea placeholder="分享您的体验和建议..." rows="5"></textarea>
+        </div>
+
+        <!-- 匿名选项 -->
+        <div class="anonymous-option">
+            <label class="checkbox-container">
+                <input type="checkbox">
+                <span class="checkmark"></span>
+                <span class="label-text">匿名发布评论</span>
+            </label>
+        </div>
+
+        <!-- 提交按钮 -->
+        <div class="submit-container">
+            <button class="submit-button">提交</button>
+        </div>
+    </div>
+
+    <script src="../../../js/order_evaluation.js"></script>
+</body>
+</html>

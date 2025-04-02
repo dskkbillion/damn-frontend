@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 验证码</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='login.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">验证码</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 验证码内容 -->
+        <div class="verify-container">
+            <div class="phone-number" id="phoneDisplay">
+                验证码已发送至：+86 <span id="phoneNumber">138****8888</span>
+            </div>
+            
+            <div class="code-input-container">
+                <input type="text" class="code-input" maxlength="1" autofocus>
+                <input type="text" class="code-input" maxlength="1">
+                <input type="text" class="code-input" maxlength="1">
+                <input type="text" class="code-input" maxlength="1">
+                <input type="text" class="code-input" maxlength="1">
+                <input type="text" class="code-input" maxlength="1">
+            </div>
+            
+            <div class="resend-container">
+                <button class="resend-button" id="resendButton" onclick="resendCode()">
+                    重新发送 (<span id="countdown">60</span>s)
+                </button>
+            </div>
+            
+            <div class="verify-tip">
+                未收到验证码？请检查手机是否开启了短信拦截功能，或尝试使用其他手机号。
+            </div>
+            
+            <button class="verify-button" onclick="verifyCode()">
+                确认
+            </button>
+        </div>
+    </div>
+
+    <style>
+        /* 验证码页面特定样式 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            padding: 0 16px;
+            background-color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .back-button {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .header-right {
+            width: 24px;
+        }
+        
+        .verify-container {
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .phone-number {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            align-self: center;
+        }
+        
+        .code-input-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 24px;
+        }
+        
+        .code-input {
+            width: 48px;
+            height: 48px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .code-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .resend-container {
+            margin-bottom: 16px;
+        }
+        
+        .resend-button {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .resend-button:disabled {
+            color: var(--text-hint);
+            cursor: not-allowed;
+        }
+        
+        .verify-tip {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            text-align: center;
+            max-width: 300px;
+        }
+        
+        .verify-button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .verify-button:disabled {
+            background-color: #ddd;
+            cursor: not-allowed;
+        }
+    </style>
+
+    <script>
+        // 获取URL参数中的手机号
+        function getPhoneFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const phone = urlParams.get('phone');
+            return phone || '13800138000'; // 默认手机号
+        }
+        
+        // 显示手机号（中间4位用*代替）
+        function displayPhone() {
+            const phone = getPhoneFromUrl();
+            const maskedPhone = phone.substring(0, 3) + '****' + phone.substring(7);
+            document.getElementById('phoneNumber').textContent = maskedPhone;
+        }
+        
+        // 自动跳转到下一个输入框
+        function setupCodeInputs() {
+            const inputs = document.querySelectorAll('.code-input');
+            
+            inputs.forEach((input, index) => {
+                input.addEventListener('keyup', function(e) {
+                    // 如果输入了内容，跳转到下一个输入框
+                    if (this.value.length === 1 && index < inputs.length - 1) {
+                        inputs[index + 1].focus();
+                    }
+                    
+                    // 如果按了退格键，跳转到上一个输入框
+                    if (e.key === 'Backspace' && index > 0 && this.value.length === 0) {
+                        inputs[index - 1].focus();
+                    }
+                    
+                    // 检查是否所有输入框都已填写
+                    checkAllInputsFilled();
+                });
+            });
+        }
+        
+        // 检查是否所有输入框都已填写
+        function checkAllInputsFilled() {
+            const inputs = document.querySelectorAll('.code-input');
+            const verifyButton = document.querySelector('.verify-button');
+            
+            let allFilled = true;
+            inputs.forEach(input => {
+                if (input.value.length === 0) {
+                    allFilled = false;
+                }
+            });
+            
+            verifyButton.disabled = !allFilled;
+        }
+        
+        // 倒计时
+        function startCountdown() {
+            const countdownElement = document.getElementById('countdown');
+            const resendButton = document.getElementById('resendButton');
+            let seconds = 60;
+            
+            resendButton.disabled = true;
+            
+            const interval = setInterval(() => {
+                seconds--;
+                countdownElement.textContent = seconds;
+                
+                if (seconds <= 0) {
+                    clearInterval(interval);
+                    resendButton.disabled = false;
+                    countdownElement.textContent = '60';
+                }
+            }, 1000);
+        }
+        
+        // 重新发送验证码
+        function resendCode() {
+            // 这里应该有重新发送验证码的逻辑
+            // 但在这个HTML原型中，我们只是重新开始倒计时
+            startCountdown();
+            
+            // 清空输入框
+            const inputs = document.querySelectorAll('.code-input');
+            inputs.forEach(input => {
+                input.value = '';
+            });
+            inputs[0].focus();
+        }
+        
+        // 验证验证码
+        function verifyCode() {
+            const inputs = document.querySelectorAll('.code-input');
+            let code = '';
+            
+            inputs.forEach(input => {
+                code += input.value;
+            });
+            
+            // 这里应该有验证验证码的逻辑
+            // 但在这个HTML原型中，我们只是模拟成功并跳转到首页
+            alert('验证成功，即将跳转到首页');
+            window.location.href = 'index.html';
+        }
+        
+        // 页面加载完成后执行
+        window.onload = function() {
+            displayPhone();
+            setupCodeInputs();
+            startCountdown();
+            
+            // 禁用确认按钮，直到所有输入框都已填写
+            document.querySelector('.verify-button').disabled = true;
+        };
+    </script>
+</body>
+</html>

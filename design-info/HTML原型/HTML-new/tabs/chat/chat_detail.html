@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 聊天详情</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="chat-header">
+            <div class="back-button" onclick="window.location.href='chat.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="chat-user">
+                <div class="user-name">瑭</div>
+            </div>
+        </div>
+        
+        <!-- 聊天消息区域 -->
+        <div class="chat-messages" id="chatMessages">
+            <!-- 时间分割线 -->
+            <div class="time-divider">
+                <span>03-10 15:44</span>
+            </div>
+            
+            <!-- 买家消息 - 拍下待付款 -->
+            <div class="message-item sent order-message">
+                <div class="message-content">
+                    <div class="message-bubble">
+                        我已拍下，待付款
+                    </div>
+                    <div class="message-detail">
+                        请双方沟通及时确认价格
+                    </div>
+                    <div class="message-time">已读</div>
+                </div>
+                <div class="message-avatar">
+                    <img src="../../imgs/IMG20250324194152_20250326010857.jpg" alt="买家头像">
+                </div>
+            </div>
+            
+            <!-- 卖家消息 - 修改价格 -->
+            <div class="message-item received order-message">
+                <div class="message-avatar">
+                    <img src="../../imgs/IMG20250317124302.jpg" alt="卖家头像">
+                </div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        我已修改价格，等待你付款
+                    </div>
+                    <div class="message-detail">
+                        请确认价格与协商一致，并在24小时内付款
+                    </div>
+                    <button class="pay-button" onclick="viewOrderDetails()">去付款</button>
+                </div>
+            </div>
+            
+            <!-- 买家消息 - 已付款 -->
+            <div class="message-item sent order-message">
+                <div class="message-content">
+                    <div class="message-bubble">
+                        我已付款，等待你发货
+                    </div>
+                    <div class="message-detail">
+                        该笔订单无需邮寄，为避免交易纠纷，请提供相关交易凭证
+                    </div>
+                    <div class="message-time">已读</div>
+                </div>
+                <div class="message-avatar">
+                    <img src="../../imgs/IMG20250324194152_20250326010857.jpg" alt="买家头像">
+                </div>
+            </div>
+            
+            <!-- 时间分割线 -->
+            <div class="time-divider">
+                <span>今天 9:15</span>
+            </div>
+            
+            <!-- 对方发送的消息 -->
+            <div class="message-item received">
+                <div class="message-avatar">
+                    <img src="../../imgs/IMG20250317124302.jpg" alt="对方头像">
+                </div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        你好，请问有什么可以帮到你的吗？
+                    </div>
+                    <div class="message-time">9:15</div>
+                </div>
+            </div>
+            
+            <!-- 用户发送的消息 -->
+            <div class="message-item sent">
+                <div class="message-content">
+                    <div class="message-bubble">
+                        你好，我想咨询一下关于文案服务的事情
+                    </div>
+                    <div class="message-time">9:16</div>
+                </div>
+                <div class="message-avatar">
+                    <img src="../../imgs/IMG20250324194152_20250326010857.jpg" alt="用户头像">
+                </div>
+            </div>
+            
+            <!-- 对方发送的消息 -->
+            <div class="message-item received">
+                <div class="message-avatar">
+                    <img src="../../imgs/IMG20250317124302.jpg" alt="对方头像">
+                </div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        好的，我们提供各种类型的文案服务，包括品牌故事、产品描述、社交媒体内容等。您需要哪种类型的文案呢？
+                    </div>
+                    <div class="message-time">9:18</div>
+                </div>
+            </div>
+            
+            <!-- 用户发送的消息（带图片） -->
+            <div class="message-item sent">
+                <div class="message-content">
+                    <div class="message-bubble image-message">
+                        <img src="../../imgs/IMG20250310160953_20250326010856.jpg" alt="产品图片">
+                    </div>
+                    <div class="message-time">9:20</div>
+                </div>
+                <div class="message-avatar">
+                    <img src="../../imgs/IMG20250324194152_20250326010857.jpg" alt="用户头像">
+                </div>
+            </div>
+            
+            <!-- 用户发送的消息 -->
+            <div class="message-item sent">
+                <div class="message-content">
+                    <div class="message-bubble">
+                        我需要为这个产品写一段描述文案
+                    </div>
+                    <div class="message-time">9:20</div>
+                </div>
+                <div class="message-avatar">
+                    <img src="../../imgs/IMG20250324194152_20250326010857.jpg" alt="用户头像">
+                </div>
+            </div>
+            
+            <!-- 对方发送的消息 -->
+            <div class="message-item received">
+                <div class="message-avatar">
+                    <img src="../../imgs/IMG20250317124302.jpg" alt="对方头像">
+                </div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        好的，我看到了。这是一个木质砧板产品，对吗？我可以为您撰写一段突出其自然材质、实用性和设计美感的文案。
+                    </div>
+                    <div class="message-time">9:22</div>
+                </div>
+            </div>
+            
+            <!-- 对方发送的消息 -->
+            <div class="message-item received">
+                <div class="message-avatar">
+                    <img src="../../imgs/IMG20250317124302.jpg" alt="对方头像">
+                </div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        您希望文案的风格是怎样的？简洁专业还是生活化温馨？
+                    </div>
+                    <div class="message-time">9:23</div>
+                </div>
+            </div>
+            
+            <!-- 用户发送的消息 -->
+            <div class="message-item sent">
+                <div class="message-content">
+                    <div class="message-bubble">
+                        希望是生活化温馨的风格，突出产品的实用性和环保特点
+                    </div>
+                    <div class="message-time">9:25</div>
+                </div>
+                <div class="message-avatar">
+                    <img src="../../imgs/IMG20250324194152_20250326010857.jpg" alt="用户头像">
+                </div>
+            </div>
+        </div>
+        
+        <!-- 消息输入区域 -->
+        <div class="chat-input-container">
+            <div class="voice-button" onclick="toggleVoiceInput()">
+                <i class="fas fa-microphone"></i>
+            </div>
+            
+            <div class="input-wrapper">
+                <input type="text" id="messageInput" class="message-input" placeholder="在此输入消息...">
+                <div class="input-actions">
+                    <i class="fas fa-smile emoji-button" onclick="showEmojiPicker()"></i>
+                    <i class="fas fa-plus-circle more-button" onclick="showMoreActions()"></i>
+                </div>
+            </div>
+            
+            <div class="send-button" onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </div>
+        </div>
+        
+        <!-- 更多操作菜单（默认隐藏） -->
+        <div class="more-actions-menu" id="moreActionsMenu">
+            <div class="action-item" onclick="sendImage()">
+                <div class="action-icon">
+                    <i class="fas fa-image"></i>
+                </div>
+                <div class="action-text">图片</div>
+            </div>
+            
+            <div class="action-item" onclick="sendFile()">
+                <div class="action-icon">
+                    <i class="fas fa-file"></i>
+                </div>
+                <div class="action-text">文件</div>
+            </div>
+            
+            <div class="action-item" onclick="sendLocation()">
+                <div class="action-icon">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="action-text">位置</div>
+            </div>
+        </div>
+        
+        <!-- 语音输入界面（默认隐藏） -->
+        <div class="voice-input-interface" id="voiceInputInterface">
+            <div class="voice-wave">
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+            </div>
+            
+            <div class="voice-hint">按住说话，松开发送</div>
+            
+            <div class="voice-cancel-button" onclick="cancelVoiceInput()">
+                <i class="fas fa-times"></i>
+                <span>取消</span>
+            </div>
+        </div>
+        
+        <!-- 聊天选项菜单（默认隐藏） -->
+        <div class="chat-options-menu" id="chatOptionsMenu">
+            <div class="option-item" onclick="viewUserProfile()">
+                <i class="fas fa-user"></i>
+                <span>查看资料</span>
+            </div>
+            
+            <div class="option-item" onclick="clearChatHistory()">
+                <i class="fas fa-trash"></i>
+                <span>清空聊天记录</span>
+            </div>
+            
+            <div class="option-item" onclick="blockUser()">
+                <i class="fas fa-ban"></i>
+                <span>屏蔽用户</span>
+            </div>
+            
+            <div class="option-item" onclick="reportUser()">
+                <i class="fas fa-flag"></i>
+                <span>举报</span>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 聊天室页面特定样式 */
+        body {
+            background-color: #f5f5f5;
+        }
+        
+        .chat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            padding: 0 16px;
+            background-color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .back-button {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .chat-user {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .user-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .chat-messages {
+            padding: 16px;
+            padding-bottom: 72px;
+            overflow-y: auto;
+            height: calc(100vh - 56px - 56px);
+        }
+        
+        .time-divider {
+            text-align: center;
+            margin: 16px 0;
+        }
+        
+        .time-divider span {
+            background-color: rgba(0, 0, 0, 0.1);
+            color: var(--text-secondary);
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        .message-item {
+            display: flex;
+            margin-bottom: 16px;
+        }
+        
+        .message-item.received {
+            justify-content: flex-start;
+        }
+        
+        .message-item.sent {
+            justify-content: flex-end;
+        }
+        
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+        
+        .message-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message-item.received .message-content {
+            margin-left: 12px;
+            align-items: flex-start;
+        }
+        
+        .message-item.sent .message-content {
+            margin-right: 12px;
+            align-items: flex-end;
+        }
+        
+        .message-bubble {
+            padding: 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+        
+        .message-item.received .message-bubble {
+            background-color: #f5f5f5;
+            border-top-left-radius: 4px;
+        }
+        
+        .message-item.sent .message-bubble {
+            background-color: var(--primary-color);
+            color: white;
+            border-top-right-radius: 4px;
+        }
+        
+        /* 订单消息特殊样式 */
+        .message-item.order-message.sent .message-bubble {
+            background-color: #FFD000;
+            color: #333;
+        }
+        
+        .message-item.order-message.received .message-bubble {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .message-detail {
+            font-size: 12px;
+            color: #666;
+            padding: 4px 0;
+        }
+        
+        .pay-button {
+            margin-top: 8px;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            border: none;
+            background-color: #FF5722;
+            color: white;
+            cursor: pointer;
+            align-self: flex-start;
+        }
+        
+        .image-message {
+            padding: 4px;
+        }
+        
+        .image-message img {
+            max-width: 100%;
+            border-radius: 12px;
+        }
+        
+        .message-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        
+        .chat-input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            background-color: white;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+            z-index: 100;
+        }
+        
+        .voice-button, .send-button {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+            margin: 0 8px;
+        }
+        
+        .message-input {
+            width: 100%;
+            padding: 10px 40px 10px 16px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .message-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .input-actions {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 8px;
+        }
+        
+        .emoji-button, .more-button {
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        
+        .more-actions-menu {
+            position: fixed;
+            bottom: 64px;
+            left: 16px;
+            right: 16px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 16px;
+            display: none;
+            z-index: 101;
+        }
+        
+        .action-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            cursor: pointer;
+        }
+        
+        .action-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--bg-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+        
+        .voice-input-interface {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            top: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 102;
+            display: none;
+        }
+        
+        .voice-wave {
+            display: flex;
+            align-items: flex-end;
+            height: 100px;
+            margin-bottom: 24px;
+        }
+        
+        .wave-bar {
+            width: 6px;
+            height: 20px;
+            background-color: white;
+            margin: 0 3px;
+            border-radius: 3px;
+            animation: wave 1s infinite ease-in-out;
+        }
+        
+        .wave-bar:nth-child(2) {
+            animation-delay: 0.2s;
+            height: 40px;
+        }
+        
+        .wave-bar:nth-child(3) {
+            animation-delay: 0.4s;
+            height: 60px;
+        }
+        
+        .wave-bar:nth-child(4) {
+            animation-delay: 0.6s;
+            height: 40px;
+        }
+        
+        .wave-bar:nth-child(5) {
+            animation-delay: 0.8s;
+            height: 20px;
+        }
+        
+        @keyframes wave {
+            0%, 100% {
+                transform: scaleY(1);
+            }
+            50% {
+                transform: scaleY(1.5);
+            }
+        }
+        
+        .voice-hint {
+            color: white;
+            font-size: 16px;
+            margin-bottom: 48px;
+        }
+        
+        .voice-cancel-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .chat-options-menu {
+            position: fixed;
+            top: 56px;
+            right: 16px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 8px 0;
+            display: none;
+            z-index: 101;
+        }
+        
+        .option-item {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .option-item i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .option-item:hover {
+            background-color: var(--bg-light);
+        }
+    </style>
+
+    <script>
+        // 滚动到最新消息
+        function scrollToBottom() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // 发送消息
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) {
+                return;
+            }
+            
+            // 创建新消息元素
+            const messageItem = document.createElement('div');
+            messageItem.className = 'message-item sent';
+            
+            const currentTime = new Date();
+            const hours = currentTime.getHours().toString().padStart(2, '0');
+            const minutes = currentTime.getMinutes().toString().padStart(2, '0');
+            const timeString = `${hours}:${minutes}`;
+            
+            messageItem.innerHTML = `
+                <div class="message-content">
+                    <div class="message-bubble">
+                        ${message}
+                    </div>
+                    <div class="message-time">${timeString}</div>
+                </div>
+                <div class="message-avatar">
+                    <img src="https://via.placeholder.com/40x40/e9ecef/6c757d?text=我" alt="用户头像">
+                </div>
+            `;
+            
+            // 添加到聊天区域
+            document.getElementById('chatMessages').appendChild(messageItem);
+            
+            // 清空输入框
+            messageInput.value = '';
+            
+            // 滚动到底部
+            scrollToBottom();
+            
+            // 模拟对方回复
+            setTimeout(() => {
+                simulateReply();
+            }, 1000);
+        }
+        
+        // 模拟对方回复
+        function simulateReply() {
+            const replies = [
+                "好的，我明白了。",
+                "这个需求我可以帮您完成。",
+                "您还有其他问题吗？",
+                "我会尽快为您处理这个事情。",
+                "需要更多的细节吗？"
+            ];
+            
+            const randomReply = replies[Math.floor(Math.random() * replies.length)];
+            
+            // 创建新消息元素
+            const messageItem = document.createElement('div');
+            messageItem.className = 'message-item received';
+            
+            const currentTime = new Date();
+            const hours = currentTime.getHours().toString().padStart(2, '0');
+            const minutes = currentTime.getMinutes().toString().padStart(2, '0');
+            const timeString = `${hours}:${minutes}`;
+            
+            messageItem.innerHTML = `
+                <div class="message-avatar">
+                    <img src="https://via.placeholder.com/40x40/e9ecef/6c757d?text=瑭" alt="对方头像">
+                </div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        ${randomReply}
+                    </div>
+                    <div class="message-time">${timeString}</div>
+                </div>
+            `;
+            
+            // 添加到聊天区域
+            document.getElementById('chatMessages').appendChild(messageItem);
+            
+            // 滚动到底部
+            scrollToBottom();
+        }
+        
+        // 显示更多操作菜单
+        function showMoreActions() {
+            const moreActionsMenu = document.getElementById('moreActionsMenu');
+            moreActionsMenu.style.display = moreActionsMenu.style.display === 'block' ? 'none' : 'block';
+        }
+        
+        // 切换语音输入
+        function toggleVoiceInput() {
+            const voiceInputInterface = document.getElementById('voiceInputInterface');
+            voiceInputInterface.style.display = 'flex';
+        }
+        
+        // 取消语音输入
+        function cancelVoiceInput() {
+            const voiceInputInterface = document.getElementById('voiceInputInterface');
+            voiceInputInterface.style.display = 'none';
+        }
+        
+        // 显示聊天选项
+        function showChatOptions() {
+            const chatOptionsMenu = document.getElementById('chatOptionsMenu');
+            chatOptionsMenu.style.display = chatOptionsMenu.style.display === 'block' ? 'none' : 'block';
+        }
+        
+        // 查看用户资料
+        function viewUserProfile() {
+            window.location.href = '../../sellerscreens/profile/seller_profile.html?userId=123';
+        }
+        
+        // 清空聊天记录
+        function clearChatHistory() {
+            if (confirm('确定要清空聊天记录吗？')) {
+                const chatMessages = document.getElementById('chatMessages');
+                chatMessages.innerHTML = '';
+                
+                // 添加时间分割线
+                const timeDivider = document.createElement('div');
+                timeDivider.className = 'time-divider';
+                timeDivider.innerHTML = '<span>今天 ' + new Date().getHours() + ':' + new Date().getMinutes() + '</span>';
+                chatMessages.appendChild(timeDivider);
+            }
+            
+            // 隐藏选项菜单
+            document.getElementById('chatOptionsMenu').style.display = 'none';
+        }
+        
+        // 屏蔽用户
+        function blockUser() {
+            if (confirm('确定要屏蔽该用户吗？')) {
+                alert('用户已被屏蔽');
+                window.location.href = 'chat.html';
+            }
+            
+            // 隐藏选项菜单
+            document.getElementById('chatOptionsMenu').style.display = 'none';
+        }
+        
+        // 举报用户
+        function reportUser() {
+            alert('举报功能尚未实现');
+            
+            // 隐藏选项菜单
+            document.getElementById('chatOptionsMenu').style.display = 'none';
+        }
+
+        // 查看订单详情
+        function viewOrderDetails() {
+            // 跳转到订单详情页面
+            window.location.href = '../profile/orders/order_detail.html';
+        }
+        
+        // 发送图片
+        function sendImage() {
+            alert('发送图片功能尚未实现');
+            
+            // 隐藏更多操作菜单
+            document.getElementById('moreActionsMenu').style.display = 'none';
+        }
+        
+        // 发送文件
+        function sendFile() {
+            alert('发送文件功能尚未实现');
+            
+            // 隐藏更多操作菜单
+            document.getElementById('moreActionsMenu').style.display = 'none';
+        }
+        
+        // 发送位置
+        function sendLocation() {
+            alert('发送位置功能尚未实现');
+            
+            // 隐藏更多操作菜单
+            document.getElementById('moreActionsMenu').style.display = 'none';
+        }
+        
+        // 显示表情选择器
+        function showEmojiPicker() {
+            alert('表情选择器功能尚未实现');
+        }
+        
+        // 监听回车键发送消息
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // 点击空白区域隐藏菜单
+        document.addEventListener('click', function(e) {
+            const moreActionsMenu = document.getElementById('moreActionsMenu');
+            const chatOptionsMenu = document.getElementById('chatOptionsMenu');
+            const moreButton = document.querySelector('.more-button');
+            
+            if (!moreActionsMenu.contains(e.target) && e.target !== moreButton) {
+                moreActionsMenu.style.display = 'none';
+            }
+            
+            if (!chatOptionsMenu.contains(e.target) && !e.target.closest('.header-right')) {
+                chatOptionsMenu.style.display = 'none';
+            }
+        });
+        
+        // 页面加载完成后执行
+        window.onload = function() {
+            // 不自动滚动到底部，保持在页面顶部，以便用户可以看到订单流程消息
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.scrollTop = 0;
+        };
+    </script>
+</body>
+</html>

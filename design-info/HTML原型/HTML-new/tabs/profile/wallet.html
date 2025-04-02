@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 我的钱包</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='profile.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">我的钱包</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 钱包余额 -->
+        <div class="wallet-balance-container">
+            <div class="balance-label">账户余额</div>
+            <div class="balance-amount">¥7037.97</div>
+        </div>
+        
+        <!-- 收支明细 -->
+        <div class="wallet-summary">
+            <div class="summary-item">
+                <div class="summary-label">收收入</div>
+                <div class="summary-amount income">660105</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">总支出</div>
+                <div class="summary-amount expense">660105</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">可用余额</div>
+                <div class="summary-amount available">3890.97</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">在途余额</div>
+                <div class="summary-amount pending">3147</div>
+            </div>
+        </div>
+        
+        <!-- 钱包功能 -->
+        <div class="wallet-functions">
+            <div class="function-item" onclick="window.location.href='wallet_record.html'">
+                <div class="function-label">交易记录</div>
+                <div class="function-arrow">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            <div class="function-item" onclick="window.location.href='wallet_cards.html'">
+                <div class="function-label">银行卡</div>
+                <div class="function-arrow">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 提现按钮 -->
+        <div class="withdraw-container">
+            <button class="withdraw-button" onclick="showWithdrawDialog()">提现</button>
+        </div>
+        
+        <!-- 提现对话框 -->
+        <div class="withdraw-dialog" id="withdrawDialog">
+            <div class="dialog-content">
+                <div class="dialog-title">提现</div>
+                <div class="dialog-form">
+                    <div class="form-group">
+                        <label for="withdrawAmount">提现金额</label>
+                        <input type="number" id="withdrawAmount" placeholder="请输入提现金额">
+                    </div>
+                    <div class="form-group">
+                        <label for="withdrawBank">提现银行卡</label>
+                        <select id="withdrawBank">
+                            <option value="1">招商银行 (尾号1234)</option>
+                            <option value="2">工商银行 (尾号5678)</option>
+                            <option value="3">+ 添加新银行卡</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="dialog-buttons">
+                    <button class="dialog-button cancel" onclick="hideWithdrawDialog()">取消</button>
+                    <button class="dialog-button confirm" onclick="processWithdraw()">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 钱包页面特定样式 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            padding: 0 16px;
+            background-color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .back-button {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .header-right {
+            width: 24px;
+        }
+        
+        .wallet-balance-container {
+            padding: 24px 16px;
+            background-color: white;
+            text-align: center;
+        }
+        
+        .balance-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .balance-amount {
+            font-size: 32px;
+            font-weight: 600;
+        }
+        
+        .wallet-summary {
+            display: flex;
+            background-color: white;
+            padding: 0 16px 24px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .summary-item {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .summary-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        
+        .summary-amount {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .summary-amount.income {
+            color: #2ecc71;
+        }
+        
+        .summary-amount.expense {
+            color: var(--error);
+        }
+        
+        .summary-amount.available {
+            color: var(--primary-color);
+        }
+        
+        .summary-amount.pending {
+            color: var(--text-secondary);
+        }
+        
+        .wallet-functions {
+            background-color: white;
+            margin-top: 12px;
+        }
+        
+        .function-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-light);
+            cursor: pointer;
+        }
+        
+        .function-label {
+            font-size: 16px;
+        }
+        
+        .function-arrow {
+            color: var(--text-hint);
+        }
+        
+        .withdraw-container {
+            padding: 24px 16px;
+        }
+        
+        .withdraw-button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .withdraw-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .dialog-content {
+            width: 80%;
+            max-width: 320px;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .dialog-title {
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .dialog-form {
+            padding: 16px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-medium);
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .dialog-buttons {
+            display: flex;
+            border-top: 1px solid var(--border-light);
+        }
+        
+        .dialog-button {
+            flex: 1;
+            padding: 12px 0;
+            border: none;
+            background-color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .dialog-button.cancel {
+            color: var(--text-secondary);
+            border-right: 1px solid var(--border-light);
+        }
+        
+        .dialog-button.confirm {
+            color: var(--primary-color);
+        }
+    </style>
+
+    <script>
+        // 显示提现对话框
+        function showWithdrawDialog() {
+            document.getElementById('withdrawDialog').style.display = 'flex';
+        }
+        
+        // 隐藏提现对话框
+        function hideWithdrawDialog() {
+            document.getElementById('withdrawDialog').style.display = 'none';
+        }
+        
+        // 处理提现
+        function processWithdraw() {
+            const amount = document.getElementById('withdrawAmount').value;
+            const bankId = document.getElementById('withdrawBank').value;
+            
+            if (!amount || amount <= 0) {
+                alert('请输入有效的提现金额');
+                return;
+            }
+            
+            if (bankId === '3') {
+                // 添加新银行卡
+                window.location.href = 'wallet_cards.html?add=true';
+                return;
+            }
+            
+            // 这里应该有提现的逻辑
+            // 但在这个HTML原型中，我们只是模拟成功并返回上一页
+            alert('提现申请已提交，请等待处理');
+            hideWithdrawDialog();
+        }
+    </script>
+</body>
+</html>

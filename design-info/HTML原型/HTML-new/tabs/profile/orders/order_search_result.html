@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 搜索结果</title>
+    <link rel="stylesheet" href="../../../styles.css">
+    <link rel="stylesheet" href="../../../css/order_search_result.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部搜索栏 -->
+        <div class="search-header">
+            <div class="back-button" onclick="window.location.href='order_search.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="输入订单号、商品名称或卖家名称">
+                <i class="fas fa-times" id="clearSearch" onclick="clearSearch()"></i>
+            </div>
+            <div class="search-button" onclick="searchOrders()">搜索</div>
+        </div>
+        
+        <!-- 筛选选项 -->
+        <div class="filter-options">
+            <div class="filter-item active" data-filter="all" onclick="filterResults(this)">全部</div>
+            <div class="filter-item" data-filter="awaitingPayment" onclick="filterResults(this)">待付款</div>
+            <div class="filter-item" data-filter="inProgress" onclick="filterResults(this)">进行中</div>
+            <div class="filter-item" data-filter="awaitingEvaluation" onclick="filterResults(this)">待评价</div>
+            <div class="filter-item" data-filter="completed" onclick="filterResults(this)">已完成</div>
+            <div class="filter-item" data-filter="afterSale" onclick="filterResults(this)">售后</div>
+        </div>
+        
+        <!-- 搜索结果 -->
+        <div class="search-results" id="searchResults">
+            <!-- 搜索结果将通过JS动态添加 -->
+        </div>
+        
+        <!-- 无结果提示 -->
+        <div class="no-results" id="noResults" style="display: none;">
+            <div class="no-results-icon">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="no-results-text">未找到相关订单</div>
+            <div class="no-results-tips">
+                <p>建议您：</p>
+                <ul>
+                    <li>检查输入的关键词是否正确</li>
+                    <li>尝试使用其他关键词</li>
+                    <li>尝试使用订单号进行精确搜索</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- 加载更多 -->
+        <div class="load-more" id="loadMore" style="display: none;">
+            <div class="load-more-text">加载更多</div>
+        </div>
+    </div>
+
+    <!-- 订单项模板 -->
+    <template id="orderItemTemplate">
+        <div class="order-item" onclick="goToOrderDetail('{orderId}')">
+            <div class="order-header">
+                <div class="seller-info">
+                    <span class="seller-name">{sellerName}</span>
+                    <span class="seller-id">{sellerId}</span>
+                </div>
+                <div class="order-status">{orderStatus}</div>
+            </div>
+            <div class="order-content">
+                <div class="order-image">
+                    <img src="{orderImage}" alt="订单图片">
+                </div>
+                <div class="order-details">
+                    <div class="order-title">{orderTitle}</div>
+                    <div class="order-description">{orderDescription}</div>
+                    <div class="order-price">¥{orderPrice}</div>
+                </div>
+            </div>
+            <div class="order-footer">
+                <div class="order-time">{orderTime}</div>
+                <div class="order-actions">
+                    {orderActions}
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src="../../../js/order_search_result.js"></script>
+</body>
+</html>

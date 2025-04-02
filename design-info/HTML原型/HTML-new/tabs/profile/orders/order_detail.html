@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 订单详情</title>
+    <link rel="stylesheet" href="../../../styles.css">
+    <link rel="stylesheet" href="../../../css/order_detail.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.location.href='orders.html'">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">订单进度</div>
+            <div class="header-right"></div>
+        </div>
+        
+        <!-- 进度条 -->
+        <div class="progress-bar">
+            <div class="progress-steps" id="progressSteps">
+                <div class="progress-line" id="progressLine"></div>
+                <div class="progress-line-active" id="progressLineActive"></div>
+                
+                <div class="step completed" data-step="1">
+                    <i class="fas fa-check"></i>
+                    <span class="step-label">下单</span>
+                </div>
+                
+                <div class="step completed" data-step="2">
+                    <i class="fas fa-check"></i>
+                    <span class="step-label">提交要求</span>
+                </div>
+                
+                <div class="step active" data-step="3">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span class="step-label">卖家接单</span>
+                </div>
+                
+                <div class="step" data-step="4">
+                    <span class="step-label">交付</span>
+                </div>
+                
+                <div class="step" data-step="5">
+                    <span class="step-label">确认</span>
+                </div>
+                
+                <div class="step" data-step="6">
+                    <span class="step-label">评价</span>
+                </div>
+                
+                <div class="step" data-step="7">
+                    <span class="step-label">完成</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 状态提示 -->
+        <div class="status-tip" id="statusTip">
+            等待卖家接单，预计24小时内完成
+        </div>
+        
+        <!-- 订单基本信息 -->
+        <div class="order-info">
+            <div class="order-header">
+                <div class="order-id">订单号：1003</div>
+                <div class="order-time">2024-03-23 16:45</div>
+            </div>
+            <div class="order-content">
+                <div class="order-image">
+                    <img src="https://via.placeholder.com/80/f8f1e6/b66d0e?text=文案" alt="订单图片">
+                </div>
+                <div class="order-details">
+                    <div class="order-title">产品文案撰写</div>
+                    <div class="order-description">为您的产品撰写吸引人的文案，包含关键词优化</div>
+                    <div class="order-price">¥149</div>
+                </div>
+            </div>
+            <div class="order-tags">
+                <span class="tag">标准版</span>
+                <span class="tag">300字</span>
+            </div>
+        </div>
+        
+        <!-- 我的提交内容 -->
+        <div class="my-submission">
+            <div class="content-header">
+                <div class="content-title">我的提交</div>
+                <a href="javascript:void(0)" class="view-full" onclick="viewFullSubmission()">查看完整</a>
+            </div>
+            <div class="content-tabs">
+                <div class="tab active" onclick="switchSubmissionTab(this, 'text')">文本</div>
+                <div class="tab" onclick="switchSubmissionTab(this, 'attachment')">附件</div>
+            </div>
+            <div class="content-body">
+                <div class="text-content" id="textContent">
+                    <p>我需要一份关于智能家居产品的宣传文案，重点突出产品的便捷性和智能化特点。目标受众是25-40岁的年轻家庭。文案长度约300字，需要包含以下关键词：智能控制、远程操作、节能环保。</p>
+                </div>
+                <div class="attachment-content" id="attachmentContent" style="display: none;">
+                    <div class="file-list">
+                        <div class="file-item">
+                            <i class="fas fa-file-alt"></i>
+                            <span>需求详情.docx</span>
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <div class="file-item">
+                            <i class="fas fa-image"></i>
+                            <span>参考图片.jpg</span>
+                            <i class="fas fa-download"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 卖家交付内容 -->
+        <div class="seller-delivery" id="sellerDelivery" style="display: none;">
+            <div class="content-header">
+                <div class="content-title">卖家交付</div>
+                <a href="javascript:void(0)" class="view-full" onclick="viewFullDelivery()">查看完整</a>
+            </div>
+            <div class="content-tabs">
+                <div class="tab active" onclick="switchDeliveryTab(this, 'text')">文本</div>
+                <div class="tab" onclick="switchDeliveryTab(this, 'attachment')">附件</div>
+            </div>
+            <div class="content-body">
+                <div class="text-content" id="deliveryTextContent">
+                    <p>智能家居，让生活更简单。通过智能控制系统，您可以轻松管理家中的各种设备，无论是灯光、温度还是安防系统，都能实现一键操控。远程操作功能让您随时随地掌握家中状况，即使不在家也能及时调整设备状态，确保家居环境的舒适与安全。</p>
+                    <p>我们的产品不仅便捷智能，还注重节能环保，通过智能算法优化设备运行，有效降低能源消耗，为您节省电费的同时也为环保事业贡献一份力量。</p>
+                    <p>选择我们的智能家居产品，让科技为您的生活增添便利，让家成为真正放松身心的港湾。</p>
+                </div>
+                <div class="attachment-content" id="deliveryAttachmentContent" style="display: none;">
+                    <div class="file-list">
+                        <div class="file-item">
+                            <i class="fas fa-file-alt"></i>
+                            <span>文案成品.docx</span>
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <div class="file-item">
+                            <i class="fas fa-file-pdf"></i>
+                            <span>排版效果.pdf</span>
+                            <i class="fas fa-download"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 交流记录 -->
+        <div class="communication-history">
+            <div class="history-header" onclick="toggleHistory()">
+                <span>交流记录</span>
+                <i class="fas fa-chevron-down" id="historyIcon"></i>
+            </div>
+            <div class="history-content" id="historyContent" style="display: none">
+                <div class="message-list" id="messageList">
+                    <!-- 消息将通过JS动态添加 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部操作按钮 -->
+        <div class="order-actions" id="orderActions">
+            <button class="action-button secondary" onclick="contactSeller()">联系卖家</button>
+            <button class="action-button secondary" onclick="applyAfterSale()">申请售后</button>
+            <button class="action-button primary" onclick="confirmOrder()">确认订单</button>
+        </div>
+        
+        <!-- 订单进度指示器 -->
+        <div class="order-progress-indicator">
+            <div class="progress-step">
+                <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="step-text">下单成功</div>
+                <div class="step-time">2024-03-23 16:45</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 消息项模板 -->
+    <template id="messageTemplate">
+        <div class="message-item">
+            <div class="message-time">{messageTime}</div>
+            <div class="message-content">
+                <div class="message-sender">{sender}</div>
+                <div class="message-text">{messageText}</div>
+            </div>
+        </div>
+    </template>
+
+    <style>
+        /* 订单详情页面特定样式 */
+        .progress-bar {
+            padding: 24px 16px;
+            background-color: var(--bg-light);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 16px;
+            border-radius: 0 0 12px 12px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .progress-steps {
+            display: flex;
+            position: relative;
+            min-width: 700px;
+        }
+
+        .progress-line {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            right: 16px;
+            height: 2px;
+            background-color: var(--bg-medium);
+            z-index: 1;
+        }
+
+        .progress-line-active {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            width: 30%; /* 由JS控制 */
+            height: 2px;
+            background-color: var(--primary-color);
+            z-index: 2;
+            transition: width 0.3s ease;
+        }
+
+        .step {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 3;
+        }
+
+        .step::before {
+            content: "";
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--bg-light);
+            border: 2px solid var(--bg-medium);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            font-size: 16px;
+            color: var(--text-secondary);
+        }
+
+        .step.completed::before {
+            content: "";
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .step.completed i, .step.active i {
+            position: absolute;
+            top: 8px;
+            font-size: 16px;
+            color: white;
+        }
+
+        .step.active::before {
+            content: "";
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .step-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+            max-width: 60px;
+        }
+
+        .step.completed .step-label, .step.active .step-label {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        /* 状态提示 */
+        .status-tip {
+            margin: 0 16px 16px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            background-color: rgba(182, 109, 14, 0.1);
+            color: var(--primary-color);
+        }
+
+        /* 订单基本信息 */
+        .order-info {
+            margin: 0 16px 16px;
+            padding: 20px;
+            background-color: var(--bg-light);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--divider);
+        }
+
+        .order-id {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .order-time {
+            font-size: 14px;
+            color: var(--text-tertiary);
+        }
+
+        .order-content {
+            display: flex;
+            margin-bottom: 16px;
+        }
+
+        .order-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-right: 16px;
+            background-color: var(--bg-lighter);
+        }
+
+        .order-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .order-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .order-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .order-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .order-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+    </style>
+
+    <script src="../../../js/order_detail.js"></script>
+</body>
+</html>

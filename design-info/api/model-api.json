@@ -1,0 +1,888 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "模型端API",
+    "description": "模型端服务API文档，包含聊天和向量搜索功能",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "主服务器"
+    }
+  ],
+  "components": {
+    "parameters": {
+      "X-Request-ID": {
+        "name": "X-Request-ID",
+        "in": "header",
+        "description": "用于请求跟踪的唯一标识符，建议为每个请求设置唯一值，用于日志关联和调试",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "example": "request-123456"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "detail": {
+            "type": "string",
+            "description": "错误详情"
+          }
+        }
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "example": "操作成功"
+          },
+          "data": {
+            "type": "object",
+            "description": "响应数据"
+          }
+        }
+      },
+      "CreateChatRequest": {
+        "type": "object",
+        "required": ["user_id"],
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "description": "用户ID"
+          },
+          "title": {
+            "type": "string",
+            "description": "会话标题",
+            "nullable": true
+          }
+        }
+      },
+      "CreateChatResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "example": "创建成功"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "conversation_id": {
+                "type": "integer",
+                "description": "新创建的会话ID"
+              }
+            }
+          }
+        }
+      },
+      "ChatListRequest": {
+        "type": "object",
+        "required": ["user_id"],
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "description": "用户ID"
+          }
+        }
+      },
+      "ChatListResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "example": "获取成功"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "description": "会话总数"
+              },
+              "conversations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "description": "会话ID"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "会话标题"
+                    },
+                    "user_id": {
+                      "type": "integer",
+                      "description": "用户ID"
+                    },
+                    "created_at": {
+                      "type": "integer",
+                      "description": "创建时间戳"
+                    },
+                    "updated_at": {
+                      "type": "integer",
+                      "description": "更新时间戳"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "DeleteChatRequest": {
+        "type": "object",
+        "required": ["user_id", "conversation_id"],
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "description": "用户ID"
+          },
+          "conversation_id": {
+            "type": "integer",
+            "description": "会话ID"
+          }
+        }
+      },
+      "DeleteChatResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "example": "删除成功"
+          }
+        }
+      },
+      "ChatMessageRequest": {
+        "type": "object",
+        "required": ["user_id", "conversation_id"],
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "description": "用户ID"
+          },
+          "conversation_id": {
+            "type": "integer",
+            "description": "会话ID"
+          }
+        }
+      },
+      "ChatMessageResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "example": "获取成功"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "message_id": {
+                  "type": "integer",
+                  "description": "消息ID"
+                },
+                "parent_message_id": {
+                  "type": "integer",
+                  "description": "父消息ID"
+                },
+                "content": {
+                  "type": "string",
+                  "description": "消息内容"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "消息类型，如text"
+                },
+                "role": {
+                  "type": "string",
+                  "description": "角色，如user、assistant或system",
+                  "enum": ["user", "assistant", "system"]
+                },
+                "files": {
+                  "type": "array",
+                  "description": "文件URL列表",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "timestamp": {
+                  "type": "integer",
+                  "description": "消息时间戳"
+                }
+              }
+            }
+          }
+        }
+      },
+      "AudioRecognitionRequest": {
+        "type": "object",
+        "required": ["user_id", "url"],
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "description": "用户ID"
+          },
+          "url": {
+            "type": "string",
+            "description": "语音文件URL"
+          }
+        }
+      },
+      "AudioRecognitionResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "example": "识别成功"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string",
+                "description": "识别出的文本内容"
+              }
+            }
+          }
+        }
+      },
+      "SendMessageRequest": {
+        "type": "object",
+        "required": ["message", "conversation_id", "user_id"],
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "消息内容"
+          },
+          "conversation_id": {
+            "type": "integer",
+            "description": "会话ID"
+          },
+          "user_id": {
+            "type": "integer",
+            "description": "用户ID"
+          },
+          "files_id": {
+            "type": "array",
+            "description": "文件ID列表",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "files": {
+            "type": "array",
+            "description": "文件URL列表",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "stream": {
+            "type": "boolean",
+            "description": "是否流式输出",
+            "default": true
+          },
+          "enable_web_search": {
+            "type": "boolean",
+            "description": "是否启用网络搜索",
+            "default": false
+          },
+          "web_search_max_results": {
+            "type": "integer",
+            "description": "最大搜索结果数量（默认5）",
+            "minimum": 1,
+            "maximum": 10,
+            "nullable": true
+          },
+          "web_search_prompt": {
+            "type": "string",
+            "description": "自定义搜索提示模板（支持{date}占位符）",
+            "nullable": true
+          }
+        }
+      },
+      "CancelGenerationRequest": {
+        "type": "object",
+        "required": ["conversation_id", "user_id"],
+        "properties": {
+          "conversation_id": {
+            "type": "integer",
+            "description": "会话ID"
+          },
+          "user_id": {
+            "type": "integer",
+            "description": "用户ID"
+          }
+        }
+      },
+      "CancelGenerationResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "success"
+          },
+          "message": {
+            "type": "string",
+            "example": "生成过程已中断"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/model/chat/create": {
+      "post": {
+        "summary": "创建新的聊天会话",
+        "operationId": "create_chat",
+        "tags": ["聊天"],
+        "parameters": [
+          { "$ref": "#/components/parameters/X-Request-ID" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateChatRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功创建会话",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateChatResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/model/chat/list": {
+      "post": {
+        "summary": "获取用户的聊天会话列表",
+        "operationId": "chat_list",
+        "tags": ["聊天"],
+        "parameters": [
+          { "$ref": "#/components/parameters/X-Request-ID" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatListRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功获取会话列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/model/chat/delete": {
+      "post": {
+        "summary": "删除聊天会话",
+        "operationId": "delete_chat",
+        "tags": ["聊天"],
+        "parameters": [
+          { "$ref": "#/components/parameters/X-Request-ID" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteChatRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功删除会话",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteChatResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "会话不存在或无权限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/model/chat/messages": {
+      "post": {
+        "summary": "获取聊天历史消息",
+        "operationId": "chat_message",
+        "tags": ["聊天"],
+        "parameters": [
+          { "$ref": "#/components/parameters/X-Request-ID" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功获取历史消息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatMessageResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "会话不存在或无权限访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/model/chat/audio": {
+      "post": {
+        "summary": "语音识别",
+        "operationId": "recognize_audio",
+        "tags": ["聊天"],
+        "parameters": [
+          { "$ref": "#/components/parameters/X-Request-ID" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AudioRecognitionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功识别语音",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioRecognitionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/model/chat": {
+      "post": {
+        "summary": "发送消息",
+        "description": "发送消息并获取AI回复，支持文本和图像输入，以及流式输出",
+        "operationId": "chat",
+        "tags": ["聊天"],
+        "parameters": [
+          { "$ref": "#/components/parameters/X-Request-ID" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "非流式响应：成功发送消息并获取回复",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "choices": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "message": {
+                            "type": "object",
+                            "properties": {
+                              "content": {
+                                "type": "string",
+                                "description": "AI回复内容"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "流式响应：返回SSE流",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "description": "SSE格式的流式响应"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "会话不存在或无权限访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/model/chat/cancel": {
+      "post": {
+        "summary": "中断生成过程",
+        "operationId": "cancel_generation",
+        "tags": ["聊天"],
+        "parameters": [
+          { "$ref": "#/components/parameters/X-Request-ID" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelGenerationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功中断生成过程",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancelGenerationResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "会话不存在或无权限访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/model/milvus/search": {
+      "post": {
+        "summary": "搜索相似内容",
+        "operationId": "search_similar",
+        "tags": ["向量搜索"],
+        "parameters": [
+          { "$ref": "#/components/parameters/X-Request-ID" },
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "搜索查询"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功搜索",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      },
+                      "description": "搜索结果列表"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "错误信息"
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      },
+                      "description": "空结果列表"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

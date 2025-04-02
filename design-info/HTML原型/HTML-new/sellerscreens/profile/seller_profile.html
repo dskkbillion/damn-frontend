@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 卖家个人资料</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部个人资料区域 -->
+        <div class="seller-profile-header">
+            <div class="back-button" onclick="window.history.back()">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="seller-info">
+                <div class="seller-avatar">
+                    <img src="imgs/IMG20250317124302.jpg" alt="卖家头像">
+                </div>
+                <div class="seller-name">璟</div>
+                <div class="seller-followers">2粉丝</div>
+            </div>
+            <div class="seller-actions">
+                <button class="follow-button" onclick="toggleFollow()">关注</button>
+                <button class="message-button" onclick="sendMessage()">
+                    <i class="fas fa-comment"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 标签页 -->
+        <div class="seller-tabs">
+            <div class="seller-tab active" onclick="switchTab('about')">关于商家</div>
+            <div class="seller-tab" onclick="switchTab('stories')">我的故事</div>
+            <div class="seller-tab" onclick="switchTab('services')">我的服务</div>
+            <div class="seller-tab-indicator" style="width: 33.33%; left: 0;"></div>
+        </div>
+        
+        <!-- 关于商家内容 -->
+        <div class="seller-tab-content" id="aboutContent">
+            <!-- 会员信息 -->
+            <div class="seller-info-item">
+                <div class="info-icon">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <div class="info-content">
+                    <div class="info-label">会员等级</div>
+                    <div class="info-value">二级会员</div>
+                </div>
+            </div>
+            
+            <!-- 评分信息 -->
+            <div class="seller-info-item">
+                <div class="info-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="info-content">
+                    <div class="info-label">卖家评分</div>
+                    <div class="info-value">4</div>
+                </div>
+            </div>
+            
+            <!-- 回应时间 -->
+            <div class="seller-info-item">
+                <div class="info-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="info-content">
+                    <div class="info-label">评价消息回应时间</div>
+                    <div class="info-value">3小时</div>
+                </div>
+            </div>
+            
+            <!-- 认证信息 -->
+            <div class="seller-certifications">
+                <div class="certification-title">实名认证</div>
+                
+                <!-- 实名认证 -->
+                <div class="certification-item">
+                    <div class="certification-name">实名认证</div>
+                    <div class="certification-status verified">已认证</div>
+                </div>
+                
+                <!-- 学校认证 -->
+                <div class="certification-item">
+                    <div class="certification-name">学校认证</div>
+                    <div class="certification-status unverified">未认证</div>
+                </div>
+                
+                <!-- 公司认证 -->
+                <div class="certification-item">
+                    <div class="certification-name">公司认证</div>
+                    <div class="certification-status unverified">未认证</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 我的服务内容 -->
+        <div class="seller-tab-content" id="servicesContent" style="display: none;">
+            <!-- 服务列表 -->
+            <div class="seller-services">
+                <!-- 服务项目1 -->
+                <div class="service-item" onclick="viewService(1)">
+                    <div class="service-image">
+                        <img src="imgs/IMG20250308191357_20250326010856.jpg" alt="服务图片">
+                    </div>
+                    <div class="service-content">
+                        <div class="service-title">专业文案撰写</div>
+                        <div class="service-price">¥100起</div>
+                        <div class="service-stats">
+                            <span>销量: 10</span>
+                            <span>评分: 4.8</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 服务项目2 -->
+                <div class="service-item" onclick="viewService(2)">
+                    <div class="service-image">
+                        <img src="imgs/IMG20250308211749_20250326010856.jpg" alt="服务图片">
+                    </div>
+                    <div class="service-content">
+                        <div class="service-title">简历优化服务</div>
+                        <div class="service-price">¥200起</div>
+                        <div class="service-stats">
+                            <span>销量: 5</span>
+                            <span>评分: 4.5</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 服务项目3 -->
+                <div class="service-item" onclick="viewService(3)">
+                    <div class="service-image">
+                        <img src="imgs/IMG20250309142054_20250326010856.jpg" alt="服务图片">
+                    </div>
+                    <div class="service-content">
+                        <div class="service-title">论文修改服务</div>
+                        <div class="service-price">¥300起</div>
+                        <div class="service-stats">
+                            <span>销量: 3</span>
+                            <span>评分: 5.0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="window.location.href='index.html'">
+                <i class="fas fa-home nav-icon"></i>
+                <span class="nav-text">首页</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='seller_post.html'">
+                <i class="fas fa-plus-square nav-icon"></i>
+                <span class="nav-text">发布</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='seller_chat.html'">
+                <i class="fas fa-comment nav-icon"></i>
+                <span class="nav-text">消息</span>
+            </div>
+            <div class="nav-item active">
+                <i class="fas fa-user nav-icon"></i>
+                <span class="nav-text">我的</span>
+            </div>
+        </div>
+        
+        <!-- 模式切换按钮 -->
+        <div class="mode-switch">
+            <button class="mode-switch-button" onclick="window.location.href='profile.html'">
+                <i class="fas fa-exchange-alt"></i>
+                <span>切换到买家模式</span>
+            </button>
+        </div>
+    </div>
+
+    <style>
+        /* 卖家个人资料页面特定样式 */
+        .seller-profile-header {
+            position: relative;
+            height: 200px;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3));
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+        }
+        
+        .seller-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .seller-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid white;
+            margin-bottom: 8px;
+        }
+        
+        .seller-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .seller-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .seller-followers {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .seller-actions {
+            display: flex;
+            gap: 16px;
+        }
+        
+        .follow-button {
+            padding: 8px 24px;
+            background-color: white;
+            color: var(--primary-color);
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .message-button {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: white;
+            color: var(--primary-color);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        /* 标签页样式 */
+        .seller-tabs {
+            display: flex;
+            position: relative;
+            background-color: white;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .seller-tab {
+            flex: 1;
+            text-align: center;
+            padding: 16px 0;
+            font-size: 14px;
+            cursor: pointer;
+            position: relative;
+            color: var(--text-secondary);
+        }
+        
+        .seller-tab.active {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .seller-tab-indicator {
+            position: absolute;
+            bottom: 0;
+            height: 2px;
+            background-color: var(--primary-color);
+            transition: left 0.3s ease;
+        }
+        
+        /* 标签页内容样式 */
+        .seller-tab-content {
+            background-color: white;
+            padding: 16px;
+        }
+        
+        /* 卖家信息项目样式 */
+        .seller-info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .info-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--bg-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            color: var(--primary-color);
+        }
+        
+        .info-content {
+            flex: 1;
+        }
+        
+        .info-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        
+        .info-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        /* 认证信息样式 */
+        .seller-certifications {
+            margin-top: 24px;
+        }
+        
+        .certification-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .certification-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .certification-name {
+            font-size: 14px;
+        }
+        
+        .certification-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .certification-status.verified {
+            background-color: #e8f5e9;
+            color: #4caf50;
+        }
+        
+        .certification-status.unverified {
+            background-color: #f5f5f5;
+            color: #9e9e9e;
+        }
+        
+        /* 故事列表样式 */
+        .seller-stories {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .story-item {
+            display: flex;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 16px;
+            cursor: pointer;
+        }
+        
+        .story-image {
+            width: 120px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .story-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .story-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .story-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .story-preview {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .story-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        /* 服务列表样式 */
+        .seller-services {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .service-item {
+            display: flex;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 16px;
+            cursor: pointer;
+        }
+        
+        .service-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .service-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .service-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .service-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .service-price {
+            font-size: 16px;
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .service-stats {
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 16px;
+        }
+        
+        /* 模式切换按钮样式 */
+        .mode-switch {
+            position: fixed;
+            bottom: 80px;
+            right: 16px;
+            z-index: 99;
+        }
+        
+        .mode-switch-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+    </style>
+
+    <script>
+        // 切换标签页
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.seller-tab');
+            const indicator = document.querySelector('.seller-tab-indicator');
+            const contents = document.querySelectorAll('.seller-tab-content');
+            
+            tabs.forEach((tab, index) => {
+                tab.classList.remove('active');
+            });
+            
+            contents.forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            if (tabName === 'about') {
+                tabs[0].classList.add('active');
+                indicator.style.left = '0';
+                document.getElementById('aboutContent').style.display = 'block';
+            } else if (tabName === 'stories') {
+                tabs[1].classList.add('active');
+                indicator.style.left = '33.33%';
+                document.getElementById('storiesContent').style.display = 'block';
+            } else if (tabName === 'services') {
+                tabs[2].classList.add('active');
+                indicator.style.left = '66.66%';
+                document.getElementById('servicesContent').style.display = 'block';
+            }
+        }
+        
+        // 关注/取消关注
+        function toggleFollow() {
+            const followButton = document.querySelector('.follow-button');
+            
+            if (followButton.textContent === '关注') {
+                followButton.textContent = '已关注';
+                followButton.style.backgroundColor = 'var(--bg-light)';
+                followButton.style.color = 'var(--text-secondary)';
+            } else {
+                followButton.textContent = '关注';
+                followButton.style.backgroundColor = 'white';
+                followButton.style.color = 'var(--primary-color)';
+            }
+        }
+        
+        // 发送消息
+        function sendMessage() {
+            window.location.href = 'chatroom.html?seller=1';
+        }
+        
+        // 查看故事
+        function viewStory(storyId) {
+            window.location.href = `seller_story_view.html?id=${storyId}`;
+        }
+        
+        // 查看服务
+        function viewService(serviceId) {
+            window.location.href = `item_homepage.html?id=${serviceId}`;
+        }
+    </script>
+</body>
+</html>
+        
+        <!-- 我的故事内容 -->
+        <div class="seller-tab-content" id="storiesContent" style="display: none;">
+            <!-- 故事列表 -->
+            <div class="seller-stories">
+                <!-- 故事项目1 -->
+                <div class="story-item" onclick="viewStory(1)">
+                    <div class="story-image">
+                        <img src="imgs/IMG20250308233845_20250326010856.jpg" alt="故事图片">
+                    </div>
+                    <div class="story-content">
+                        <div class="story-title">我的第一个故事</div>
+                        <div class="story-preview">这是我的第一个故事，分享我的经历和感受...</div>
+                        <div class="story-time">2小时前</div>
+                    </div>
+                </div>
+                
+                <!-- 故事项目2 -->
+                <div class="story-item" onclick="viewStory(2)">
+                    <div class="story-image">
+                        <img src="imgs/IMG20250308234545_20250326010856.jpg" alt="故事图片">
+                    </div>
+                    <div class="story-content">
+                        <div class="story-title">我的第二个故事</div>
+                        <div class="story-preview">这是我的第二个故事，分享我的经历和感受...</div>
+                        <div class="story-time">1天前</div>
+                    </div>
+                </div>
+                
+                <!-- 故事项目3 -->
+                <div class="story-item" onclick="viewStory(3)">
+                    <div class="story-image">
+                        <img src="imgs/IMG20250310160953_20250326010856.jpg" alt="故事图片">
+                    </div>
+                    <div class="story-content">
+                        <div class="story-title">我的第三个故事</div>
+                        <div class="story-preview">这是我的第三个故事，分享我的经历和感受...</div>
+                        <div class="story-time">3天前</div>
+                    </div>
+                </div>
+            </div>
+        </div>

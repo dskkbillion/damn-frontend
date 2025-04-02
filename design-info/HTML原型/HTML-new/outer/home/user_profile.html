@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSKK - 用户资料</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="back-button" onclick="window.history.back()">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="header-title">用户资料</div>
+            <div class="header-right">
+                <i class="fas fa-share-alt" onclick="shareProfile()"></i>
+            </div>
+        </div>
+        
+        <!-- 用户基本信息 -->
+        <div class="user-profile-header">
+            <div class="user-avatar-container">
+                <img src="imgs/IMG20250317124302.jpg" alt="用户头像" class="user-avatar-large">
+                <div class="user-level">Lv.5</div>
+            </div>
+            
+            <div class="user-basic-info">
+                <div class="user-name-container">
+                    <h2 class="user-name">张三</h2>
+                    <div class="user-badges">
+                        <span class="badge verified"><i class="fas fa-check-circle"></i></span>
+                        <span class="badge premium"><i class="fas fa-crown"></i></span>
+                    </div>
+                </div>
+                
+                <div class="user-id">ID: 10086</div>
+                
+                <div class="user-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">128</div>
+                        <div class="stat-label">关注</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">256</div>
+                        <div class="stat-label">粉丝</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">64</div>
+                        <div class="stat-label">作品</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 用户详细信息 -->
+        <div class="user-detail-section">
+            <div class="section-title">个人简介</div>
+            <div class="user-bio">
+                资深文案策划，拥有5年行业经验。擅长品牌故事、产品文案、社交媒体内容创作。曾服务过多家知名企业，帮助客户提升品牌形象和产品销量。热爱创意写作，注重细节，追求完美。
+            </div>
+            
+            <div class="user-tags">
+                <span class="tag">文案策划</span>
+                <span class="tag">品牌故事</span>
+                <span class="tag">社交媒体</span>
+                <span class="tag">创意写作</span>
+            </div>
+        </div>
+        
+        <!-- 用户评分 -->
+        <div class="user-rating-section">
+            <div class="section-title">评分与评价</div>
+            <div class="rating-overview">
+                <div class="rating-score">
+                    <div class="score">4.8</div>
+                    <div class="rating-stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                    <div class="rating-count">128个评价</div>
+                </div>
+                
+                <div class="rating-bars">
+                    <div class="rating-bar-item">
+                        <div class="rating-label">5星</div>
+                        <div class="rating-bar-container">
+                            <div class="rating-bar-fill" style="width: 85%;"></div>
+                        </div>
+                        <div class="rating-percentage">85%</div>
+                    </div>
+                    <div class="rating-bar-item">
+                        <div class="rating-label">4星</div>
+                        <div class="rating-bar-container">
+                            <div class="rating-bar-fill" style="width: 10%;"></div>
+                        </div>
+                        <div class="rating-percentage">10%</div>
+                    </div>
+                    <div class="rating-bar-item">
+                        <div class="rating-label">3星</div>
+                        <div class="rating-bar-container">
+                            <div class="rating-bar-fill" style="width: 5%;"></div>
+                        </div>
+                        <div class="rating-percentage">5%</div>
+                    </div>
+                    <div class="rating-bar-item">
+                        <div class="rating-label">2星</div>
+                        <div class="rating-bar-container">
+                            <div class="rating-bar-fill" style="width: 0%;"></div>
+                        </div>
+                        <div class="rating-percentage">0%</div>
+                    </div>
+                    <div class="rating-bar-item">
+                        <div class="rating-label">1星</div>
+                        <div class="rating-bar-container">
+                            <div class="rating-bar-fill" style="width: 0%;"></div>
+                        </div>
+                        <div class="rating-percentage">0%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="view-all-reviews" onclick="window.location.href='review.html?userId=10086'">
+                查看全部评价 <i class="fas fa-chevron-right"></i>
+            </div>
+        </div>
+        
+        <!-- 用户作品 -->
+        <div class="user-works-section">
+            <div class="section-header">
+                <div class="section-title">作品展示</div>
+                <div class="section-more" onclick="window.location.href='user_works.html?userId=10086'">
+                    查看全部 <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            
+            <div class="works-grid">
+                <div class="work-item" onclick="window.location.href='service_detail.html?id=1'">
+                    <div class="work-image">
+                        <img src="imgs/IMG20250308191357_20250326010856.jpg" alt="作品图片">
+                    </div>
+                    <div class="work-title">品牌故事策划</div>
+                    <div class="work-price">¥500起</div>
+                </div>
+                
+                <div class="work-item" onclick="window.location.href='service_detail.html?id=2'">
+                    <div class="work-image">
+                        <img src="imgs/IMG20250308211749_20250326010856.jpg" alt="作品图片">
+                    </div>
+                    <div class="work-title">产品文案撰写</div>
+                    <div class="work-price">¥300起</div>
+                </div>
+                
+                <div class="work-item" onclick="window.location.href='service_detail.html?id=3'">
+                    <div class="work-image">
+                        <img src="imgs/IMG20250309142054_20250326010856.jpg" alt="作品图片">
+                    </div>
+                    <div class="work-title">社交媒体内容创作</div>
+                    <div class="work-price">¥200起</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 联系按钮 -->
+        <div class="contact-buttons">
+            <button class="follow-button" onclick="toggleFollow()">
+                <i class="fas fa-plus"></i> 关注
+            </button>
+            
+            <button class="message-button" onclick="window.location.href='chatroom.html?userId=10086'">
+                <i class="fas fa-comment"></i> 私信
+            </button>
+        </div>
+    </div>
+
+    <style>
+        /* 用户资料页面特定样式 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            padding: 0 16px;
+            background-color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .back-button, .header-right {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .user-profile-header {
+            display: flex;
+            padding: 24px 16px;
+            background-color: white;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .user-avatar-container {
+            position: relative;
+            margin-right: 16px;
+        }
+        
+        .user-avatar-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .user-level {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+        
+        .user-basic-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .user-name-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        
+        .user-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0;
+            margin-right: 8px;
+        }
+        
+        .user-badges {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .badge {
+            font-size: 14px;
+        }
+        
+        .badge.verified {
+            color: #3498db;
+        }
+        
+        .badge.premium {
+            color: #f1c40f;
+        }
+        
+        .user-id {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+        
+        .user-stats {
+            display: flex;
+            gap: 16px;
+        }
+        
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .stat-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .user-detail-section, .user-rating-section, .user-works-section {
+            padding: 16px;
+            background-color: white;
+            margin-bottom: 12px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .user-bio {
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+        
+        .user-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .tag {
+            background-color: var(--bg-light);
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+        }
+        
+        .rating-overview {
+            display: flex;
+            margin-bottom: 16px;
+        }
+        
+        .rating-score {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-right: 16px;
+            border-right: 1px solid var(--border-light);
+            margin-right: 16px;
+            min-width: 100px;
+        }
+        
+        .score {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .rating-stars {
+            color: #f1c40f;
+            margin-bottom: 4px;
+        }
+        
+        .rating-count {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .rating-bars {
+            flex: 1;
+        }
+        
+        .rating-bar-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .rating-label {
+            width: 30px;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+        
+        .rating-bar-container {
+            flex: 1;
+            height: 6px;
+            background-color: var(--bg-light);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-right: 8px;
+        }
+        
+        .rating-bar-fill {
+            height: 100%;
+            background-color: #f1c40f;
+        }
+        
+        .rating-percentage {
+            width: 30px;
+            font-size: 12px;
+            text-align: right;
+        }
+        
+        .view-all-reviews {
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .section-more {
+            font-size: 14px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        
+        .works-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        
+        .work-item {
+            cursor: pointer;
+        }
+        
+        .work-image {
+            margin-bottom: 8px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .work-image img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+        
+        .work-title {
+            font-size: 12px;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .work-price {
+            font-size: 12px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .contact-buttons {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            padding: 12px 16px;
+            background-color: white;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+            z-index: 100;
+        }
+        
+        .follow-button, .message-button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .follow-button {
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+            margin-right: 12px;
+        }
+        
+        .follow-button.following {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+        }
+        
+        .message-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+        }
+        
+        .follow-button i, .message-button i {
+            margin-right: 8px;
+        }
+    </style>
+
+    <script>
+        // 分享用户资料
+        function shareProfile() {
+            // 这里应该有分享功能的逻辑
+            alert('分享功能尚未实现');
+        }
+        
+        // 关注/取消关注
+        function toggleFollow() {
+            const followButton = document.querySelector('.follow-button');
+            
+            if (followButton.classList.contains('following')) {
+                // 取消关注
+                followButton.classList.remove('following');
+                followButton.innerHTML = '<i class="fas fa-plus"></i> 关注';
+            } else {
+                // 关注
+                followButton.classList.add('following');
+                followButton.innerHTML = '<i class="fas fa-check"></i> 已关注';
+            }
+        }
+    </script>
+</body>
+</html>
