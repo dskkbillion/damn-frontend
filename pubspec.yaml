@@ -33,19 +33,34 @@ dependencies:
   flutter_localizations: # Often needed for internationalization
     sdk: flutter
   cupertino_icons: ^1.0.6 # Keep default icons
+  image_picker: ^1.1.2
+  flutter_image_compress: ^2.3.0
+  # 存储压缩后的临时文件
+  path_provider: ^2.1.3 # 或者最新版本
+  path: ^1.9.0 # 或者最新版本
 
   # Core Libraries - Tech Stack Selection
-  flutter_riverpod: ^2.5.1 # State Management (Riverpod)
-  riverpod_annotation: ^2.3.5 # Riverpod Annotations for generator
+  # flutter_riverpod: ^2.5.1 # State Management (Riverpod)
+  # riverpod_annotation: ^2.3.5 # Riverpod Annotations for generator
   get_it: ^7.7.0 # Dependency Injection (Service Locator)
   injectable: ^2.4.1 # DI Code Generator Helper
   go_router: ^14.1.0 # Navigation
+
+  bloc: ^8.1.4
+  flutter_bloc: ^8.1.5
 
   # Added for Domain Layer & Data Models
   dartz: ^0.10.1
   equatable: ^2.0.5
   freezed_annotation: ^2.4.1
   json_annotation: ^4.8.1
+
+  # --- Add audioplayers here ---
+  audioplayers: ^6.0.0 # For audio playback
+
+  # --- Add record and permission_handler ---
+  record: ^5.0.5  # Or latest version
+  permission_handler: ^11.3.1 # Or latest version
 
 dev_dependencies:
   flutter_test:

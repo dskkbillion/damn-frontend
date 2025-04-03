@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_chat_message.dart'; // Adjust import path if needed
+import '../../domain/entities/ai_chat_message_entity.dart';
 
 part 'ai_chat_message_model.freezed.dart';
 part 'ai_chat_message_model.g.dart';
@@ -31,20 +31,20 @@ class AiChatMessageModel with _$AiChatMessageModel {
   factory AiChatMessageModel.fromJson(Map<String, dynamic> json) =>
       _$AiChatMessageModelFromJson(json);
 
-  /// Converts this [AiChatMessageModel] to its corresponding Domain [AIChatMessage] entity.
-  AIChatMessage toEntity() {
-    MessageRole domainRole;
+  /// Converts this [AiChatMessageModel] to its corresponding Domain [AiChatMessageEntity].
+  AiChatMessageEntity toEntity() {
+    MessageSender domainSender;
     switch (role.toLowerCase()) {
       case 'user':
-        domainRole = MessageRole.user;
+        domainSender = MessageSender.user;
         break;
       case 'assistant':
-        domainRole = MessageRole.assistant;
+        domainSender = MessageSender.ai;
         break;
       default:
-        // Handle unexpected role string, e.g., default to assistant or throw error
-        print('Warning: Unknown message role "$role", defaulting to assistant.');
-        domainRole = MessageRole.assistant;
+        // Handle unexpected role string
+        print('Warning: Unknown message role "$role", defaulting to system.');
+        domainSender = MessageSender.system;
     }
 
     DateTime? dateTime;
@@ -54,16 +54,16 @@ class AiChatMessageModel with _$AiChatMessageModel {
         dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp! * 1000);
       } catch (e) {
         print('Error parsing timestamp in AiChatMessageModel: $e');
+        // Keep dateTime as null if parsing fails
       }
     }
 
-    return AIChatMessage(
-      id: id,
+    return AiChatMessageEntity(
       messageId: messageId,
       conversationId: conversationId,
-      role: domainRole,
+      sender: domainSender,
       content: content,
-      files: files,
+      fileUrls: files.isNotEmpty ? files : null,
       timestamp: dateTime,
     );
   }

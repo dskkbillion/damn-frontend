@@ -1,116 +1,90 @@
 import 'package:dartz/dartz.dart';
 
-import '../entities/ai_chat_message.dart';
-import '../entities/ai_conversation.dart';
-import '../entities/failure.dart';
-import '../entities/related_service.dart';
+import '../../../../core/error/failures.dart';
+import '../entities/ai_chat_message_entity.dart';
+import '../entities/ai_conversation_entity.dart';
+import '../entities/chat_allocation_result_entity.dart';
+import '../entities/related_service_entity.dart';
 
 /// {@template i_ai_chat_repository}
-/// Defines the interface for interacting with AI chat data.
+/// Interface for the AI Chat repository.
 ///
-/// This repository handles fetching conversations, messages, sending messages,
-/// and interacting with related services or features.
+/// Defines the contract for data operations related to AI chat functionality,
+/// abstracting the data source details from the domain layer (UseCases).
+/// Methods return Either<Failure, SuccessType> to handle potential errors.
 /// {@endtemplate}
 abstract class IAiChatRepository {
-  /// Fetches the list of AI conversations for the current user.
+  /// Fetches the list of AI conversations for a given user.
   ///
-  /// Returns a list of [AIConversation] on success (Right),
-  /// or a [Failure] on error (Left).
-  Future<Either<Failure, List<AIConversation>>> listConversations();
+  /// Returns [Either<Failure, List<AiConversationEntity>>].
+  Future<Either<Failure, List<AiConversationEntity>>> fetchConversations(
+      {required int userId});
 
   /// Loads the message history for a specific conversation.
   ///
-  /// [conversationId] The ID of the conversation to load.
-  /// [offset] Optional offset for pagination.
-  /// [limit] Optional limit for pagination.
-  ///
-  /// Returns a list of [AIChatMessage] on success (Right),
-  /// or a [Failure] on error (Left).
-  Future<Either<Failure, List<AIChatMessage>>> loadHistory(
-    int conversationId,
-   {int? offset, int? limit}
-  );
-
-  /// Starts a new conversation.
-  ///
-  /// [userId] The ID of the current user (required by API).
-  /// [title] Optional initial title for the conversation.
-  ///
-  /// Returns the new [conversationId] on success (Right),
-  /// or a [Failure] on error (Left).
-  /// API Endpoint: `/model/chat/create`
-  /// Request Body: `{ "user_id": userId, "title": title }`
-  Future<Either<Failure, int>> startNewConversation({
+  /// Supports pagination using [offset] and [limit].
+  /// Returns [Either<Failure, List<AiChatMessageEntity>>].
+  Future<Either<Failure, List<AiChatMessageEntity>>> loadHistory({
+    required int conversationId,
     required int userId,
-    String? title,
+    int? offset,
+    int? limit,
   });
+
+  /// Creates a new AI conversation.
+  ///
+  /// Returns [Either<Failure, int>] where int is the new conversation ID.
+  Future<Either<Failure, int>> createConversation(
+      {required int userId, String? title});
 
   /// Deletes a specific conversation.
   ///
-  /// [conversationId] The ID of the conversation to delete.
-  ///
-  /// Returns `void` on success (Right), or a [Failure] on error (Left).
-  /// API Endpoint: `/model/chat/delete`
-  Future<Either<Failure, void>> deleteConversation(int conversationId);
+  /// Returns [Either<Failure, void>].
+  Future<Either<Failure, void>> deleteConversation(
+      {required int conversationId, required int userId});
 
-  /// Sends a message to a specific conversation and streams the AI response.
+  /// Sends a message and streams the AI's response using SSE.
   ///
-  /// [conversationId] The target conversation ID.
-  /// [userId] The current user ID.
-  /// [message] The text message content.
-  /// [fileUrls] List of file URLs (should be OSS URLs) associated with the message.
-  ///
-  /// Returns a [Stream] of AI response chunks (String) on success (Right),
-  /// or a [Failure] on error (Left).
-  /// API Endpoint: `/model/chat` (via SSE)
-  /// Request Body: `{ "model": "dify", "user_id": userId, "message": message, "conversation_id": conversationId, "files": fileUrls, "stream": true }`
-  /// **Warning:** Ensure `fileUrls` only contains valid OSS URLs before calling.
-  Stream<Either<Failure, String>> sendMessage({
+  /// Returns [Either<Failure, Stream<String>>] where the Stream emits
+  /// chunks of the AI's response text.
+  /// Note: The stream itself might emit errors if the connection drops.
+  Future<Either<Failure, Stream<String>>> streamChatCompletion({
     required int conversationId,
     required int userId,
     required String message,
-    required List<String> fileUrls,
+    required List<String> fileUrls, // URLs of uploaded files
   });
 
-  /// Streams the AI's reasoning process for a given conversation (if available).
+  /// Fetches related service recommendations for a conversation.
   ///
-  /// [conversationId] The target conversation ID.
-  ///
-  /// Returns a [Stream] of reasoning chunks (String) on success (Right),
-  /// or a [Failure] on error (Left).
-  /// Note: This might be part of the same SSE stream as `sendMessage`.
-  Stream<Either<Failure, String>> streamReasoning(int conversationId);
-
-  /// Fetches related services for a specific conversation.
-  ///
-  /// [conversationId] The ID of the conversation.
-  ///
-  /// Returns a list of [RelatedService] on success (Right),
-  /// or a [Failure] on error (Left).
-  /// API Endpoint: `/recsys/conversation/recommend`
-  Future<Either<Failure, List<RelatedService>>> getRelatedServices(
-      int conversationId);
-
-  /// Triggers a matching action (e.g., "one-click dispatch") related to a
-  /// conversation and potentially a selected item/service.
-  ///
-  /// This corresponds to the `/model/chat/package` API.
-  /// The exact parameters and return type need further clarification by
-  /// analyzing the RN code and backend behavior.
-  ///
-  /// Returns a success indicator or relevant data (Right), or a [Failure] (Left).
-  Future<Either<Failure, dynamic>> triggerMatchingAction({
+  /// Returns [Either<Failure, List<RelatedServiceEntity>>].
+  Future<Either<Failure, List<RelatedServiceEntity>>> getRelatedServices({
     required int conversationId,
-    required int userId, // From API spec
-    required Map<String, dynamic> item, // From API spec {name, description}
-    required int limit, // From API spec
-    required double similarityThreshold, // From API spec
-    // Add other potential parameters based on RN code analysis
+    required int userId,
+    int? limit,
   });
 
-  // --- Features marked as abandoned or API missing ---
-  // Future<Either<Failure, void>> toggleFavorite(int conversationId, bool isFavorite); // Abandoned
-  // Future<Either<Failure, List<PresetQuestion>>> getPresetQuestions(); // Abandoned
-  // Future<Either<Failure, void>> reportIssue(...); // Abandoned
-  // Future<Either<Failure, List<AIConversation>>> getRelatedConversations(...); // Abandoned
+  /// Triggers a chat allocation action (e.g., one-click dispatch).
+  /// Corresponds to the /chat/allocate endpoint.
+  ///
+  /// Returns [Either<Failure, ChatAllocationResultEntity>].
+  Future<Either<Failure, ChatAllocationResultEntity>> allocateChatResource({
+    required int conversationId,
+    required int userId,
+    // TODO: Confirm actual request parameters
+    required Map<String, dynamic> item, 
+    required int limit,
+    required double similarityThreshold,
+    // Add/remove parameters once confirmed
+  });
+
+  /// Transcribes audio from a given URL.
+  /// (Corresponds to /model/chat/audio endpoint).
+  ///
+  /// Returns [Either<Failure, String>] where String is the transcribed text.
+  Future<Either<Failure, String>> transcribeAudio(
+      {required String audioOssUrl, int? userId});
+
+  // TODO: Consider adding methods for uploading files if that logic belongs here
+  // Future<Either<Failure, String>> uploadFile(File file);
 } 

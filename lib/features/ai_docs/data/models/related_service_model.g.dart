@@ -9,19 +9,17 @@ part of 'related_service_model.dart';
 _$RelatedServiceModelImpl _$$RelatedServiceModelImplFromJson(
         Map<String, dynamic> json) =>
     _$RelatedServiceModelImpl(
-      id: json['id'] as String,
-      imageUrl: json['imageUrl'] as String?,
-      title: json['title'] as String?,
-      rating: (json['rating'] as num?)?.toDouble(),
-      price: json['price'] as String?,
+      id: (json['id'] as num).toInt(),
+      imageUrl: json['mainImage'] as String,
+      title: json['name'] as String,
+      price: (json['sellingPrice'] as num).toDouble(),
     );
 
 Map<String, dynamic> _$$RelatedServiceModelImplToJson(
         _$RelatedServiceModelImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'imageUrl': instance.imageUrl,
-      'title': instance.title,
-      'rating': instance.rating,
-      'price': instance.price,
+      'mainImage': instance.imageUrl,
+      'name': instance.title,
+      'sellingPrice': instance.price,
     };

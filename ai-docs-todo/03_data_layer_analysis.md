@@ -75,3 +75,32 @@ lib/
 *   **`models/`**: 定义与 API JSON 精确匹配的 Dart 类，包含 `fromJson`, `toJson`, `toEntity` 方法。
 *   **`datasources/`**: 定义接口 (`IAiChatRemoteDataSource`) 描述每一次独立的网络调用。实现类 (`AiChatRemoteDataSourceImpl`) 依赖 `Core` HTTP Client，负责发起 API 请求、处理响应、返回 `Models` 或抛出具体网络异常。
 *   **`repositories/`**: 实现类 (`AiChatRepositoryImpl`) 依赖 `DataSource` 接口。负责调用 `DataSource`，使用 `try-catch` 处理异常并映射为 Domain `Failure`，调用 `Model` 的 `toEntity()` 将数据转换为 Domain `Entity`，最终返回 `Either<Failure, Entity>`。 
+
+## 1. 核心 API 端点分析状态
+
+| API 端点                          | 描述                     | 状态与问题                                                                                                                                                              |
+| :-------------------------------- | :----------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/model/chat/list`                | 获取对话列表             | ✅ API 文档存在，参数 (`user_id`) 明确。响应结构需通过实际调用确认。                                                                                                        |
+| `/model/chat/messages`            | 加载对话历史             | ✅ API 文档存在，参数 (`conversation_id`, `user_id`, `offset`, `limit`) 明确。响应结构需通过实际调用确认。                                                                      |
+| `/model/chat/create`              | 创建新对话               | ✅ API 文档存在，参数 (`user_id`, `title`?) 明确。响应结构 (`conversation_id`) 明确。                                                                                    |
+| `/model/chat/delete`              | 删除对话                 | ✅ API 文档存在，参数 (`conversation_id`, `user_id`) 明确。响应结构 (成功时为空或简单状态) 明确。                                                                        |
+| `/model/chat` (SSE)             | 发送消息/流式响应        | ✅ API 文档存在 (POST)。参数 (`conversation_id`, `user_id`, `message`, `file_urls`, `stream=true`) 基于 RN 代码分析。 **✅ SSE 事件格式已确认。**                               |
+| `/model/chat/cancel`            | **中断流式生成**         | ✅ **API 定义存在 (`model-api.json`)**: POST 方法，需要 `conversation_id`, `user_id`。 **但 RN 代码的 `terminateCurrentConnection` 似乎并未调用此 API**，仅关闭客户端连接。待确认后端是否依赖此 API。 |
+| `/recsys/conversation/recommend`  | 获取相关服务推荐         | ✅ API 文档存在，参数 (`conversation_id`, `user_id`, `limit`?) 明确。 **✅ 响应结构已通过截图确认。**                                                                        |
+| `/model/chat/package`           | ~~触发匹配操作~~         | ⚠️ **已废弃/替换。** 请使用 `/chat/allocate`。                                                                                                                            |
+| `/chat/allocate`                | 触发资源分配/匹配操作    | ✅ **新端点。✅ 响应结构已通过截图确认。** **待确认:** 请求参数结构。                                                                                                      |
+| `/model/chat/audio`             | 语音转文字               | ✅ API 文档存在，参数 (`url`, `user_id`?) 明确。响应结构 (`content`) 明确。                                                                                            |
+| `/api/common/public/upload`     | 文件上传 (后端代理)      | ✅ **API 通过 RN 代码确认。** 前端将文件 `FormData` POST 到此接口，后端负责上传到 OSS。**待确认:** 成功响应的具体结构 (包含 OSS URL?)。                                         |
+
+**结论:** 大部分 API 已确认或有明确分析路径。文件上传流程明确。关键阻塞点在于新 `/chat/allocate` 端点的**请求参数** 和 `/api/common/public/upload` **成功响应的具体格式**。`/model/chat/cancel` API 的实际必要性待确认。
+
+## 2. 关键待办与问题
+
+1.  **确认 `/chat/allocate` 的请求参数:** 这个新端点需要哪些参数？
+2.  **确认 `/api/common/public/upload` 的成功响应结构:** 上传成功后，此接口返回的具体 JSON 格式是什么（需要从中提取 OSS URL）？
+3.  **确认 `/model/chat/cancel` API 的必要性:** 后端模型是否依赖此 API 来正确处理中断并保存部分生成的消息？如果仅关闭 SSE 连接是否足够？（当前 Flutter 实现暂不调用此 API）
+4.  **验证 API 实际响应:** 在实现 DataSource 时，通过实际调用或 Mock 数据验证所有 API 的请求参数和响应结构是否与预期一致。
+5.  **(已解决)** ~~确认 `/recsys/conversation/recommend` 的响应结构。~~
+6.  **(已解决)** ~~确认 `/model/chat` SSE 流事件格式。~~
+7.  **(已解决)** ~~确认 `/model/chat/package` 的具体行为和响应。~~ (已被 `/chat/allocate` 替换)
+8.  **(已解决)** ~~确认文件上传流程与前端 STS API。~~ (确认为后端代理上传) 
