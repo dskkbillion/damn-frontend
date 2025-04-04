@@ -47,7 +47,6 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   final TextEditingController _textController = TextEditingController();
-  final ImagePicker _picker = ImagePicker();
 
   @override
   void dispose() {
@@ -155,10 +154,6 @@ class _ChatPageState extends State<ChatPage> {
            ChatInputField(
              textController: _textController,
              onSendMessage: _sendMessage,
-             onPickImage: _pickImage,
-             // onSendVoice: (filePath) { // TODO: Connect voice sending
-             //   context.read<AiChatBloc>().add(SendVoiceMessage(audioFilePath: filePath));
-             // },
            ),
          ],
        ),
@@ -166,21 +161,22 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _sendMessage(String message) {
-    if (message.trim().isNotEmpty) {
-      context.read<AiChatBloc>().add(SendMessage(message: message.trim()));
-      _textController.clear();
-    }
-  }
+    // Check if there's text OR pending images in the Bloc state
+    // final hasPendingImages = context.read<AiChatBloc>().state.pendingImageFiles?.isNotEmpty ?? false;
 
-  Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null && mounted) { 
-      // Show confirmation or preview (optional)
-      // For now, directly send with a placeholder message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Sending image: ${image.name}')),
-      );
-      context.read<AiChatBloc>().add(SendMessage(message: "Image attached", imageFile: File(image.path)));
+    // --- Updated Logic: Require text to send --- 
+    if (message.trim().isNotEmpty) {
+       // Dispatch SendMessage event with ONLY the message text
+       // The Bloc will handle merging with any uploadedImageUrls from the state.
+       context.read<AiChatBloc>().add(SendMessage(message: message.trim()));
+      _textController.clear(); 
+    } else {
+       // If message is empty, do not send, even if there are pending images.
+       // Optionally provide feedback to the user.
+       print("Send button pressed, but message text is empty. Not sending.");
+       ScaffoldMessenger.of(context).showSnackBar(
+         const SnackBar(content: Text('Please enter a message to send with the image(s).')),
+       );
     }
   }
 

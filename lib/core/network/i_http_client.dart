@@ -43,6 +43,14 @@ abstract class IHttpClient {
     Map<String, String>? fields}
   );
 
+  /// Sends a POST request and returns the response body as a stream of strings.
+  /// 
+  /// Suitable for Server-Sent Events (SSE) or other streaming endpoints.
+  /// The returned stream emits raw string data chunks from the response body.
+  /// Error handling for the stream itself (connection issues during streaming)
+  /// should be handled by the consumer of the stream.
+  Stream<String> postAndStream(String path, {Map<String, dynamic>? data});
+
   // TODO: Add methods for PUT, DELETE, and potentially streaming requests (SSE)
   // How SSE is handled might depend on the chosen HTTP client library.
   // For Dio, libraries like 'dio_sse' exist, or custom adapters are needed.

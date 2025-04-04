@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:io'; // Needed for File type if using local file upload later
 
 import 'package:http/http.dart' as http; // Assuming we might need this for SSE later, keep for context
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // Import dotenv
 
 import '../../../../core/network/i_http_client.dart';
 import '../../../../core/error/failures.dart';
@@ -23,10 +24,16 @@ import 'exceptions.dart' as ds_exceptions;
 @LazySingleton(as: IAiChatRemoteDataSource)
 class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
   final IHttpClient _httpClient;
-  http.Client? _sseClient;
-  StreamSubscription? _sseSubscription;
+  // Remove unused http client and subscription from here, handled in HttpClient layer
+  // http.Client? _sseClient;
+  // StreamSubscription? _sseSubscription;
 
   AiChatRemoteDataSourceImpl(this._httpClient);
+
+  // Helper to get base URL, providing a fallback
+  String _getModelBaseUrl() {
+     return dotenv.env['MODEL_BASE_URL'] ?? 'http://default-model-url/api';
+  }
 
   // Helper to extract data or throw ServerException
   dynamic _handleResponse(Map<String, dynamic> responseData) {
@@ -41,19 +48,21 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
 
   @override
   Future<List<AiConversationModel>> fetchConversations({required int userId}) async {
-    const path = '/model/chat/list';
+    const String path = '/model/chat/list';
+    final String fullUrl = _getModelBaseUrl() + path;
+    print("Fetching conversations from: $fullUrl");
     try {
-      final responseData = await _httpClient.get(
-        path, 
-        queryParameters: {'user_id': userId.toString()}
+      final responseData = await _httpClient.post(
+        fullUrl, // Use full URL
+        data: {'user_id': userId}
       );
       final data = _handleResponse(responseData);
-      if (data != null && data['items'] is List) {
-        return (data['items'] as List)
+      if (data != null && data['conversations'] is List) {
+        return (data['conversations'] as List)
             .map((convJson) => AiConversationModel.fromJson(convJson))
             .toList();
       } else {
-        print('Warning: fetchConversations received unexpected format for GET. Data: $data');
+        print('Warning: fetchConversations (POST) received unexpected format. Data: $data');
         return [];
       }
     } on ds_exceptions.ServerException {
@@ -61,7 +70,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      print('Unexpected error in fetchConversations: $e');
+      print('Unexpected error in fetchConversations at $fullUrl: $e');
       throw ds_exceptions.DataSourceException(message: 'Failed to fetch conversations: ${e.toString()}');
     }
   }
@@ -73,29 +82,64 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     int? offset,
     int? limit,
   }) async {
-    const path = '/model/chat/messages';
-    // Use queryParameters for GET request
-    final Map<String, String> queryParams = {
-      'conversation_id': conversationId.toString(),
-      'user_id': userId.toString(),
+    const String path = '/model/chat/messages';
+    final String fullUrl = _getModelBaseUrl() + path;
+    print("Loading history from: $fullUrl for conv $conversationId");
+    final Map<String, dynamic> requestData = {
+      'conversation_id': conversationId,
+      'user_id': userId,
     };
-    if (offset != null) queryParams['offset'] = offset.toString();
-    if (limit != null) queryParams['limit'] = limit.toString();
+    if (offset != null) requestData['offset'] = offset;
+    if (limit != null) requestData['limit'] = limit;
 
     try {
-      // Change from POST to GET
-      final responseData = await _httpClient.get(path, queryParameters: queryParams);
+      final responseData = await _httpClient.post(fullUrl, data: requestData);
       final data = _handleResponse(responseData);
-      // API might return list directly in 'data' or nested under 'messages'
-      // Keep checking both based on previous comments, but prefer 'messages' if specified by API doc
-      if (data != null && data['messages'] is List) { 
-        return (data['messages'] as List)
-            .map((msgJson) => AiChatMessageModel.fromJson(msgJson))
-            .toList();
-      } else if (data != null && data is List) { // Fallback if data itself is the list
-         return (data as List)
-            .map((msgJson) => AiChatMessageModel.fromJson(msgJson))
-            .toList();
+      
+      if (data != null && data is List) { 
+        print("[DATASOURCE DEBUG] Parsing ${data.length} messages from root data list.");
+        return (data as List).map((msgJson) {
+          print("[DATASOURCE DEBUG] Parsing msgJson: ${jsonEncode(msgJson)}");
+           if (msgJson is Map<String, dynamic>) { 
+             print("[DATASOURCE DEBUG]  -> id type: ${msgJson['id']?.runtimeType}");
+             print("[DATASOURCE DEBUG]  -> message_id type: ${msgJson['message_id']?.runtimeType}");
+             print("[DATASOURCE DEBUG]  -> conversation_id type: ${msgJson['conversation_id']?.runtimeType}");
+             print("[DATASOURCE DEBUG]  -> role type: ${msgJson['role']?.runtimeType}");
+             print("[DATASOURCE DEBUG]  -> content type: ${msgJson['content']?.runtimeType}");
+             print("[DATASOURCE DEBUG]  -> files type: ${msgJson['files']?.runtimeType}");
+             print("[DATASOURCE DEBUG]  -> timestamp type: ${msgJson['timestamp']?.runtimeType}");
+           }
+           try {
+              return AiChatMessageModel.fromJson(msgJson as Map<String, dynamic>);
+           } catch (e, stacktrace) {
+              print("[DATASOURCE ERROR] Failed to parse msgJson: $e");
+              print("[DATASOURCE ERROR] Stacktrace: $stacktrace");
+              print("[DATASOURCE ERROR] Failing msgJson: ${jsonEncode(msgJson)}");
+              rethrow;
+           }
+        }).toList();
+      } else if (data != null && data['messages'] is List) {
+        print("[DATASOURCE DEBUG] Parsing ${ (data['messages'] as List).length} messages from nested 'messages' key.");
+        return (data['messages'] as List).map((msgJson) {
+           print("[DATASOURCE DEBUG] Parsing msgJson: ${jsonEncode(msgJson)}"); 
+          if (msgJson is Map<String, dynamic>) { 
+             print("[DATASOURCE DEBUG]  -> id type: ${msgJson['id']?.runtimeType}");
+             print("[DATASOURCE DEBUG]  -> message_id type: ${msgJson['message_id']?.runtimeType}");
+             print("[DATASOURCE DEBUG]  -> conversation_id type: ${msgJson['conversation_id']?.runtimeType}");
+             print("[DATASOURCE DEBUG]  -> role type: ${msgJson['role']?.runtimeType}");
+             print("[DATASOURCE DEBUG]  -> content type: ${msgJson['content']?.runtimeType}");
+             print("[DATASOURCE DEBUG]  -> files type: ${msgJson['files']?.runtimeType}");
+             print("[DATASOURCE DEBUG]  -> timestamp type: ${msgJson['timestamp']?.runtimeType}");
+          }
+          try {
+            return AiChatMessageModel.fromJson(msgJson as Map<String, dynamic>); 
+          } catch (e, stacktrace) {
+            print("[DATASOURCE ERROR] Failed to parse msgJson: $e");
+            print("[DATASOURCE ERROR] Stacktrace: $stacktrace");
+            print("[DATASOURCE ERROR] Failing msgJson: ${jsonEncode(msgJson)}");
+            rethrow; 
+          }
+        }).toList();
       } else {
         print('Warning: loadHistory received unexpected format for $conversationId. Data: $data');
         return [];
@@ -105,7 +149,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      print('Unexpected error in loadHistory for $conversationId: $e');
+      print('Unexpected error in loadHistory for $conversationId at $fullUrl: $e');
       throw ds_exceptions.DataSourceException(message: 'Failed to load history for $conversationId: ${e.toString()}');
     }
   }
@@ -115,11 +159,13 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     required int userId,
     String? title,
   }) async {
-    const path = '/model/chat/create';
+    const String path = '/model/chat/create';
+    final String fullUrl = _getModelBaseUrl() + path;
+    print("Creating conversation at: $fullUrl");
     final Map<String, dynamic> requestData = {'user_id': userId};
     if (title != null) requestData['title'] = title;
     try {
-      final responseData = await _httpClient.post(path, data: requestData);
+      final responseData = await _httpClient.post(fullUrl, data: requestData);
       final data = _handleResponse(responseData);
       if (data != null && data['conversation_id'] is int) {
         return data['conversation_id'];
@@ -131,7 +177,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      print('Unexpected error in createConversation: $e');
+      print('Unexpected error in createConversation at $fullUrl: $e');
       throw ds_exceptions.DataSourceException(message: 'Failed to create conversation: ${e.toString()}');
     }
   }
@@ -141,20 +187,22 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     required int conversationId,
     required int userId,
   }) async {
-    const path = '/model/chat/delete';
+    const String path = '/model/chat/delete';
+    final String fullUrl = _getModelBaseUrl() + path;
+    print("Deleting conversation $conversationId at: $fullUrl");
     final Map<String, dynamic> requestData = {
       'conversation_id': conversationId,
       'user_id': userId,
     };
     try {
-      final responseData = await _httpClient.post(path, data: requestData);
+      final responseData = await _httpClient.post(fullUrl, data: requestData);
       _handleResponse(responseData); // Throws if code != 200
     } on ds_exceptions.ServerException {
       rethrow;
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      print('Unexpected error in deleteConversation for $conversationId: $e');
+      print('Unexpected error in deleteConversation for $conversationId at $fullUrl: $e');
       throw ds_exceptions.DataSourceException(message: 'Failed to delete conversation $conversationId: ${e.toString()}');
     }
   }
@@ -166,20 +214,87 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     required String message,
     required List<String> fileUrls,
   }) {
-    // TODO: Implement actual SSE streaming via IHttpClient
-    const path = '/model/chat';
+    const String path = '/model/chat';
+    final String fullUrl = _getModelBaseUrl() + path;
+    print("Streaming chat completion from: $fullUrl");
     final Map<String, dynamic> requestData = {
       'conversation_id': conversationId,
       'user_id': userId,
       'message': message,
-      'file_urls': fileUrls,
+      // Only include 'files' if not empty, assuming API expects this
+      if (fileUrls.isNotEmpty) 'files': fileUrls, 
     };
-    print('streamChatCompletion called (mock stream): path=$path, data=$requestData');
-    // Return a mock stream for now
-    return Stream.periodic(const Duration(milliseconds: 300), (i) => ' Mock Event $i')
-               .take(5)
-               .map((s) => jsonEncode({"chunk": s})) // Simulate JSON string event
-               .asBroadcastStream();
+    print('[DataSource] Calling streamChatCompletion with data: $requestData to $fullUrl');
+
+    try {
+      // Call the HttpClient method that returns the raw SSE stream
+      final rawSseStream = _httpClient.postAndStream(fullUrl, data: requestData);
+
+      // Transform the raw stream to extract relevant data chunks
+      // Using StreamTransformer for cleaner separation of parsing logic
+      return rawSseStream.transform(StreamTransformer.fromHandlers(
+        handleData: (rawData, sink) {
+          // Process raw SSE data which might contain multiple events
+          final lines = rawData.split('\n');
+          String? currentEvent;
+          String currentData = '';
+
+          for (final line in lines) {
+            if (line.startsWith('event:')) {
+              currentEvent = line.substring(6).trim();
+            } else if (line.startsWith('data:')) {
+              // Append data, removing the 'data:' prefix
+              // Handle potential multi-line data if needed (though unlikely here)
+              currentData += line.substring(5).trim(); 
+            } else if (line.trim().isEmpty) {
+              // Empty line signifies end of an event
+              if (currentEvent == 'conversation.reasoning.delta' && currentData.isNotEmpty) {
+                try {
+                  final jsonData = jsonDecode(currentData);
+                  if (jsonData is Map<String, dynamic> && jsonData.containsKey('reason_content')) {
+                    final contentChunk = jsonData['reason_content'] as String?;
+                    if (contentChunk != null && contentChunk.isNotEmpty) {
+                      print('[DataSource - SSE Parser] Yielding chunk: $contentChunk');
+                      sink.add(contentChunk); // Add the extracted content chunk to the output stream
+                    }
+                  }
+                } catch (e) {
+                  print('[DataSource - SSE Parser] Error decoding data JSON: $e. Data: $currentData');
+                  // Decide how to handle JSON decode error (e.g., addError to sink)
+                   sink.addError(ds_exceptions.DataSourceException(message: "Failed to parse SSE data chunk: $e"));
+                }
+              }
+              // Reset for the next event
+              currentEvent = null;
+              currentData = '';
+            }
+             // Ignore other lines (like comments starting with ':')
+          }
+        },
+        handleError: (error, stackTrace, sink) {
+          print('[DataSource - SSE Stream] Error from HttpClient stream: $error');
+          // Forward the error to the output stream
+           if (error is ds_exceptions.ServerException) {
+              sink.addError(error); // Forward ServerException
+           } else {
+              sink.addError(ds_exceptions.NetworkException(message: "Network error during stream: ${error.toString()}"));
+           }
+        },
+        handleDone: (sink) {
+          print('[DataSource - SSE Stream] HttpClient stream done.');
+          sink.close(); // Close the output stream when the input stream is done
+        },
+      ));
+    } catch (e) {
+       // Catch errors during the initial call to postAndStream (e.g., network unavailable before request)
+       print("Error initiating streamChatCompletion to $fullUrl: $e");
+       // Return a stream that immediately emits an error
+        if (e is ds_exceptions.ServerException || e is ds_exceptions.NetworkException) {
+          return Stream.error(e);
+        } else {
+           return Stream.error(ds_exceptions.DataSourceException(message: "Failed to initiate SSE stream: ${e.toString()}"));
+        }
+    }
   }
 
   @override
@@ -188,23 +303,22 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     required int userId,
     int? limit,
   }) async {
-    const path = '/recsys/conversation/recommend';
-    final Map<String, String> requestData = {
-      'conversation_id': conversationId.toString(),
-      'user_id': userId.toString(),
+    const String path = '/model/chat/related_services';
+    final String fullUrl = _getModelBaseUrl() + path;
+    print("Fetching related services from: $fullUrl");
+    final Map<String, dynamic> requestData = {
+      'conversation_id': conversationId,
+      'user_id': userId,
     };
-    if (limit != null) requestData['limit'] = limit.toString();
+    if (limit != null) requestData['limit'] = limit;
     try {
-      // Use GET request for recommendations
-      final responseData = await _httpClient.get(path, queryParameters: requestData);
+      final responseData = await _httpClient.post(fullUrl, data: requestData);
       final data = _handleResponse(responseData);
-      if (data != null && data['items'] is List) {
-        // Log the JSON object before parsing
-        print('[DataSource] Parsing RelatedServiceModel items:');
-        return (data['items'] as List).map((svcJson) {
-           print('[DataSource] Item JSON: ${jsonEncode(svcJson)}'); // Log each item
+      if (data != null && data['services'] is List) {
+        return (data['services'] as List).map((serviceJson) {
+           print('[DataSource] Item JSON: ${jsonEncode(serviceJson)}'); // Log each item
            try {
-             return RelatedServiceModel.fromJson(svcJson);
+             return RelatedServiceModel.fromJson(serviceJson);
            } catch (e, stacktrace) {
               print('[DataSource] Error parsing item JSON: $e');
               print(stacktrace); 
@@ -221,8 +335,8 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       rethrow;
     } on ds_exceptions.NetworkException {
       rethrow;
-    } catch (e, stacktrace) {
-      print('Unexpected error in getRelatedServices: $e\n$stacktrace');
+    } catch (e) {
+      print('Unexpected error in getRelatedServices at $fullUrl: $e');
       throw ds_exceptions.DataSourceException(message: 'Failed to get related services: ${e.toString()}');
     }
   }
@@ -235,7 +349,9 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     required int limit,
     required double similarityThreshold,
   }) async {
-    const path = '/chat/allocate';
+    const String path = '/model/chat/allocate';
+    final String fullUrl = _getModelBaseUrl() + path;
+    print("Allocating resource at: $fullUrl");
     final Map<String, dynamic> requestData = {
       'conversation_id': conversationId,
       'user_id': userId,
@@ -244,16 +360,15 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       'similarity_threshold': similarityThreshold,
     };
     try {
-      final responseData = await _httpClient.post(path, data: requestData);
-      // Interface expects Map<String, dynamic>, so return the handled data directly
+      final responseData = await _httpClient.post(fullUrl, data: requestData);
       return _handleResponse(responseData) as Map<String, dynamic>;
     } on ds_exceptions.ServerException {
       rethrow;
     } on ds_exceptions.NetworkException {
       rethrow;
-    } catch (e, stacktrace) {
-      print('Unexpected error in allocateChatResource: $e\n$stacktrace');
-      throw ds_exceptions.DataSourceException(message: 'Failed to allocate chat resource: ${e.toString()}');
+    } catch (e) {
+      print('Unexpected error in allocateChatResource at $fullUrl: $e');
+      throw ds_exceptions.DataSourceException(message: 'Failed to allocate resource: ${e.toString()}');
     }
   }
 
@@ -288,8 +403,8 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
 
   // Dispose method if needed (e.g., to close SSE client)
   void dispose() {
-    _sseSubscription?.cancel();
-    _sseClient?.close();
+    // _sseSubscription?.cancel();
+    // _sseClient?.close();
     print("AiChatRemoteDataSource disposed.");
   }
 } 

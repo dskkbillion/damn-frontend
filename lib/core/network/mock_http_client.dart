@@ -5,7 +5,7 @@ import 'i_http_client.dart';
 /// A mock implementation of IHttpClient for testing and development.
 ///
 /// Returns predefined successful responses or throws exceptions based on the URL path.
-@Injectable(as: IHttpClient)
+// @Injectable(as: IHttpClient)
 class MockHttpClient implements IHttpClient {
 
   @override

@@ -12,8 +12,8 @@
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 
+import '../../core/network/dio_http_client.dart' as _i962;
 import '../../core/network/i_http_client.dart' as _i493;
-import '../../core/network/mock_http_client.dart' as _i417;
 import '../../features/ai_docs/data/datasources/ai_chat_remote_data_source_impl.dart'
     as _i404;
 import '../../features/ai_docs/data/datasources/file_upload_data_source_impl.dart'
@@ -62,16 +62,9 @@ _i174.GetIt init(
     environment,
     environmentFilter,
   );
-  gh.factory<_i493.IHttpClient>(() => _i417.MockHttpClient());
-  gh.lazySingleton<_i436.IFileUploadDataSource>(
-      () => _i478.FileUploadDataSourceImpl(gh<_i493.IHttpClient>()));
+  gh.lazySingleton<_i493.IHttpClient>(() => _i962.DioHttpClient());
   gh.lazySingleton<_i607.IAiChatRemoteDataSource>(
       () => _i404.AiChatRemoteDataSourceImpl(gh<_i493.IHttpClient>()));
-  gh.lazySingleton<_i569.IFileUploadRepository>(() =>
-      _i43.FileUploadRepositoryImpl(
-          dataSource: gh<_i436.IFileUploadDataSource>()));
-  gh.lazySingleton<_i798.UploadFileUseCase>(
-      () => _i798.UploadFileUseCase(gh<_i569.IFileUploadRepository>()));
   gh.lazySingleton<_i319.IAiChatRepository>(
       () => _i1012.AiChatRepositoryImpl(gh<_i607.IAiChatRemoteDataSource>()));
   gh.lazySingleton<_i234.AllocateChatResourceUseCase>(
@@ -90,6 +83,13 @@ _i174.GetIt init(
       () => _i558.StreamChatCompletionUseCase(gh<_i319.IAiChatRepository>()));
   gh.lazySingleton<_i309.TranscribeAudioUseCase>(
       () => _i309.TranscribeAudioUseCase(gh<_i319.IAiChatRepository>()));
+  gh.lazySingleton<_i436.IFileUploadDataSource>(
+      () => _i478.FileUploadDataSourceImpl(gh<_i493.IHttpClient>()));
+  gh.lazySingleton<_i569.IFileUploadRepository>(() =>
+      _i43.FileUploadRepositoryImpl(
+          dataSource: gh<_i436.IFileUploadDataSource>()));
+  gh.lazySingleton<_i798.UploadFileUseCase>(
+      () => _i798.UploadFileUseCase(gh<_i569.IFileUploadRepository>()));
   gh.factory<_i1040.AiChatBloc>(() => _i1040.AiChatBloc(
         gh<_i257.GetConversationsUseCase>(),
         gh<_i830.LoadHistoryUseCase>(),

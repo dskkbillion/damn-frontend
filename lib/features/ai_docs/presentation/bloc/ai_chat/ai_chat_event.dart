@@ -130,10 +130,47 @@ class _HandleStreamError extends AiChatEvent {
   List<Object?> get props => [errorMessage];
 }
 
-/// Event triggered to send a text message (potentially with an image).
+/// (Internal) Event triggered when the AI stream finishes successfully.
+class _HandleStreamDone extends AiChatEvent {
+  const _HandleStreamDone();
+  // No props needed for a simple completion signal
+}
+
+/// Event triggered to send a text message.
+/// Uploaded image URLs will be fetched from the state.
 class SendMessage extends AiChatEvent {
   final String message;
-  final File? imageFile; 
-  const SendMessage({required this.message, this.imageFile});
-  @override List<Object?> get props => [message, imageFile];
+  // Removed imageFile field
+  const SendMessage({required this.message});
+  @override List<Object?> get props => [message];
+}
+
+/// Event triggered by the UI when the user picks an image.
+class PickImage extends AiChatEvent {
+  final File imageFile;
+  const PickImage({required this.imageFile});
+  @override List<Object?> get props => [imageFile];
+}
+
+/// (Internal) Event triggered when a background image upload succeeds.
+class _ImageUploadSuccess extends AiChatEvent {
+  final String originalFilePath; // Use file path as identifier
+  final String uploadedUrl;
+  const _ImageUploadSuccess({required this.originalFilePath, required this.uploadedUrl});
+  @override List<Object?> get props => [originalFilePath, uploadedUrl];
+}
+
+/// (Internal) Event triggered when a background image upload fails.
+class _ImageUploadFailure extends AiChatEvent {
+  final String originalFilePath; // Use file path as identifier
+  final String error;
+  const _ImageUploadFailure({required this.originalFilePath, required this.error});
+  @override List<Object?> get props => [originalFilePath, error];
+}
+
+/// Event triggered by the UI to remove a pending image before sending.
+class RemovePendingImage extends AiChatEvent {
+  final String imagePathToRemove; // Use file path as identifier
+  const RemovePendingImage({required this.imagePathToRemove});
+  @override List<Object?> get props => [imagePathToRemove];
 } 

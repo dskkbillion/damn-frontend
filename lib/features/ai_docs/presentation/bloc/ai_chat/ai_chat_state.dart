@@ -7,6 +7,7 @@ enum AiChatStatus {
   historyLoadSuccess, // Successfully loaded history
   historyLoadFailure, // Failed to load history
   sendingMessage, // Uploading files (if any) and sending message
+  waitingForResponse, // <-- Add this status
   streamingResponse, // AI is generating and streaming response
   messageSendSuccess, // AI finished responding successfully
   messageSendFailure, // Failed to send message or stream response
@@ -37,6 +38,41 @@ enum RecommendationsStatus {
   error,
 }
 
+// --- Define Image Upload State --- 
+enum ImageUploadStatus { uploading, success, failure }
+
+/// Represents the state of a single image upload.
+class ImageUploadState extends Equatable {
+  final ImageUploadStatus status;
+  final String? url; // Only present on success
+  final String? error; // Only present on failure
+
+  const ImageUploadState._({
+    required this.status,
+    this.url,
+    this.error,
+  });
+
+  // Factory constructors for convenience
+  const factory ImageUploadState.uploading() = _Uploading;
+  const factory ImageUploadState.success(String url) = _Success;
+  const factory ImageUploadState.failure(String error) = _Failure;
+  
+  @override
+  List<Object?> get props => [status, url, error];
+}
+
+// Private classes implementing the states
+class _Uploading extends ImageUploadState {
+  const _Uploading() : super._(status: ImageUploadStatus.uploading);
+}
+class _Success extends ImageUploadState {
+  const _Success(String url) : super._(status: ImageUploadStatus.success, url: url);
+}
+class _Failure extends ImageUploadState {
+  const _Failure(String error) : super._(status: ImageUploadStatus.failure, error: error);
+}
+
 /// {@template ai_chat_state}
 /// Represents the state of the AI chat feature.
 /// {@endtemplate}
@@ -65,11 +101,19 @@ class AiChatState extends Equatable {
   final RecommendationsStatus recommendationsStatus;
   final String? recommendationsErrorMessage;
 
+  // --- Fields for image handling (Updated) ---
+  /// Locally selected image files for preview before sending.
+  final List<File>? pendingImageFiles;
+  /// Tracks the upload state for each pending image file (path -> state).
+  final Map<String, ImageUploadState>? imageUploadStates;
+  // Removed uploadedImageUrls
+  // final List<String>? uploadedImageUrls;
+
   /// {@macro ai_chat_state}
   const AiChatState({
     this.status = AiChatStatus.initial,
     this.messages = const [],
-    this.hasMoreHistory = true, // Assume more history initially
+    this.hasMoreHistory = true,
     this.streamingResponseText = '',
     this.errorMessage,
     this.conversationsStatus = ConversationsStatus.initial,
@@ -79,6 +123,9 @@ class AiChatState extends Equatable {
     this.recommendationsStatus = RecommendationsStatus.initial,
     this.recommendations = const [],
     this.recommendationsErrorMessage,
+    this.pendingImageFiles = const [],
+    this.imageUploadStates = const {}, // Default to empty map
+    // this.uploadedImageUrls = const [], // Removed
   });
 
   /// Creates a copy of the current state with updated values.
@@ -96,12 +143,18 @@ class AiChatState extends Equatable {
     RecommendationsStatus? recommendationsStatus,
     List<RelatedServiceEntity>? recommendations,
     String? recommendationsErrorMessage,
+    List<File>? pendingImageFiles,
+    Map<String, ImageUploadState>? imageUploadStates,
+    // List<String>? uploadedImageUrls, // Removed
     bool clearErrorMessage = false,
     bool clearConversationListErrorMessage = false,
     bool clearRecommendationsErrorMessage = false,
+    // Flags to specifically clear image lists/maps
+    bool clearPendingImages = false,
+    bool clearImageUploadStates = false, // Renamed from clearUploadedUrls
   }) {
-    final newSelectedId = selectedConversationIdOrNull == const Object() 
-                              ? this.selectedConversationId 
+    final newSelectedId = selectedConversationIdOrNull == const Object()
+                              ? this.selectedConversationId
                               : selectedConversationIdOrNull as int?;
     return AiChatState(
       status: status ?? this.status,
@@ -112,14 +165,17 @@ class AiChatState extends Equatable {
       conversationsStatus: conversationsStatus ?? this.conversationsStatus,
       conversations: conversations ?? this.conversations,
       selectedConversationId: newSelectedId,
-      conversationListErrorMessage: clearConversationListErrorMessage 
-                                        ? null 
+      conversationListErrorMessage: clearConversationListErrorMessage
+                                        ? null
                                         : conversationListErrorMessage ?? this.conversationListErrorMessage,
       recommendationsStatus: recommendationsStatus ?? this.recommendationsStatus,
       recommendations: recommendations ?? this.recommendations,
-      recommendationsErrorMessage: clearRecommendationsErrorMessage 
-                                        ? null 
+      recommendationsErrorMessage: clearRecommendationsErrorMessage
+                                        ? null
                                         : recommendationsErrorMessage ?? this.recommendationsErrorMessage,
+      pendingImageFiles: clearPendingImages ? [] : pendingImageFiles ?? this.pendingImageFiles,
+      imageUploadStates: clearImageUploadStates ? {} : imageUploadStates ?? this.imageUploadStates,
+      // uploadedImageUrls: clearUploadedUrls ? [] : uploadedImageUrls ?? this.uploadedImageUrls, // Removed
     );
   }
 
@@ -137,5 +193,8 @@ class AiChatState extends Equatable {
         recommendationsStatus,
         recommendations,
         recommendationsErrorMessage,
+        pendingImageFiles,
+        imageUploadStates, // Add new map to props
+        // uploadedImageUrls, // Removed
       ];
 } 

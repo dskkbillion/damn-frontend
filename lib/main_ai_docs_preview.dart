@@ -1,18 +1,42 @@
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/bloc/ai_chat/ai_chat_bloc.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/pages/chat_page.dart';
-import 'package:dskk_flutter_refactor/injection.dart' as di;
+import 'package:dskk_flutter_refactor/app/di/injection_container.dart' as di;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:io'; // Import dart:io for FileSystemException
 // No need to import injectable here if not using Environment constants directly
 // import 'package:injectable/injectable.dart'; 
 
 // Temporary entry point for previewing the AI Docs Chat module.
-// Run this file directly to see the ChatPage with mock data.
 void main() async {
+  // 1. Ensure WidgetsBinding initialized
   WidgetsFlutterBinding.ensureInitialized();
-  // Remove the environment parameter, injectable handles this during build
+
+  // 2. Load .env file BEFORE configuring dependencies
+  try {
+    // Try explicitly using the default filename again
+    await dotenv.load(fileName: ".env"); 
+    print(".env file loaded successfully.");
+    print("MODEL_BASE_URL from env: ${dotenv.env['MODEL_BASE_URL']}");
+    print("BACKEND_BASE_URL from env: ${dotenv.env['BACKEND_BASE_URL']}");
+  } catch (e) {
+      print("Error loading .env file: $e");
+      // Add more details about the error type
+      print("Error type: ${e.runtimeType}");
+      if (e is FileSystemException) {
+        print("FileSystemException Path: ${e.path}");
+        print("FileSystemException OS Error: ${e.osError}");
+      }
+  }
+
+  // 3. Configure dependencies AFTER loading .env
   await di.configureDependencies(); 
+  print("Dependencies configured.");
+
+  // 4. Run the app
   runApp(const AiDocsPreviewApp());
+  print("App running.");
 }
 
 class AiDocsPreviewApp extends StatelessWidget {

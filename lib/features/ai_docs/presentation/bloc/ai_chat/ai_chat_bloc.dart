@@ -52,7 +52,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
 
   // Internal state - Replace with state properties where possible
   // int? _currentConversationId; // REMOVE - Use state.selectedConversationId instead
-  final int _currentUserId = 123; // TODO: Replace with actual user ID from auth service
+  final int _currentUserId = 1; // Set test userId to 1
   StreamSubscription<String>? _chatStreamSubscription;
 
   AiChatBloc(
@@ -73,6 +73,10 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     on<SelectConversation>(_onSelectConversation);
     on<CreateNewConversation>(_onCreateNewConversation);
     on<DeleteSelectedConversation>(_onDeleteSelectedConversation);
+    // Image Handling
+    on<PickImage>(_onPickImage);
+    on<_ImageUploadSuccess>(_onImageUploadSuccess);
+    on<_ImageUploadFailure>(_onImageUploadFailure);
     // Chat Interactions
     on<SendMessage>(_onSendMessage);
     on<SendVoiceMessage>(_onSendVoiceMessage); 
@@ -82,6 +86,9 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     // Internal Stream Handling
     on<_ReceiveStreamChunk>(_onReceiveStreamChunk); 
     on<_HandleStreamError>(_onHandleStreamError); 
+    on<_HandleStreamDone>(_onHandleStreamDone); 
+    // Image Handling - Add handler for removal
+    on<RemovePendingImage>(_onRemovePendingImage);
   }
 
   // --- Conversation List Handlers ---
@@ -208,6 +215,105 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     );
   }
 
+  // --- Image Handling Handlers ---
+
+  Future<void> _onPickImage(
+    PickImage event,
+    Emitter<AiChatState> emit,
+  ) async {
+    final imageFile = event.imageFile;
+    final imagePath = imageFile.path;
+
+    // 1. Add image to pending list & set state to uploading
+    final currentPending = List<File>.from(state.pendingImageFiles ?? []);
+    // Avoid adding duplicates if user picks the same file again
+    if (!currentPending.any((file) => file.path == imagePath)) {
+      currentPending.add(imageFile);
+    }
+    // Create a mutable copy of the map
+    final currentUploadStates = Map<String, ImageUploadState>.from(state.imageUploadStates ?? {}); 
+    currentUploadStates[imagePath] = const ImageUploadState.uploading();
+
+    emit(state.copyWith(
+      pendingImageFiles: currentPending,
+      imageUploadStates: currentUploadStates,
+    ));
+
+    // 2. Start background upload
+    print("[Bloc] Starting upload for: $imagePath");
+    try {
+      final uploadResult = await _uploadFile(UploadFileParams(file: imageFile));
+      uploadResult.fold(
+        (failure) {
+          print("[Bloc] Upload failed for $imagePath: $failure");
+          // Dispatch internal failure event using path
+          add(_ImageUploadFailure(originalFilePath: imagePath, error: failure.toString()));
+        },
+        (url) {
+          print("[Bloc] Upload success for $imagePath: $url");
+          // Dispatch internal success event using path
+          add(_ImageUploadSuccess(originalFilePath: imagePath, uploadedUrl: url));
+        },
+      );
+    } catch (e) {
+       print("[Bloc] Exception during upload for $imagePath: $e");
+       add(_ImageUploadFailure(originalFilePath: imagePath, error: 'Upload exception: ${e.toString()}'));
+    }
+  }
+
+  void _onImageUploadSuccess(
+    _ImageUploadSuccess event,
+    Emitter<AiChatState> emit,
+  ) {
+    // Update the state for the specific image path
+    final currentUploadStates = Map<String, ImageUploadState>.from(state.imageUploadStates ?? {});
+    // Check if the key exists before updating (it should, but good practice)
+    if (currentUploadStates.containsKey(event.originalFilePath)) {
+        currentUploadStates[event.originalFilePath] = ImageUploadState.success(event.uploadedUrl);
+        emit(state.copyWith(imageUploadStates: currentUploadStates));
+    } else {
+        print("[Bloc] Warning: Received upload success for path not in state: ${event.originalFilePath}");
+    }
+  }
+
+  void _onImageUploadFailure(
+    _ImageUploadFailure event,
+    Emitter<AiChatState> emit,
+  ) {
+    // Update the state for the specific image path
+     final currentUploadStates = Map<String, ImageUploadState>.from(state.imageUploadStates ?? {});
+     if (currentUploadStates.containsKey(event.originalFilePath)) {
+        currentUploadStates[event.originalFilePath] = ImageUploadState.failure(event.error);
+        emit(state.copyWith(imageUploadStates: currentUploadStates));
+     } else {
+        print("[Bloc] Warning: Received upload failure for path not in state: ${event.originalFilePath}");
+     }
+     print("Image upload failed for ${event.originalFilePath}: ${event.error}");
+  }
+
+  // Updated handler for removing a pending image using path
+  void _onRemovePendingImage(
+    RemovePendingImage event,
+    Emitter<AiChatState> emit,
+  ) {
+    final imagePathToRemove = event.imagePathToRemove;
+    
+    // Remove from pending files list
+    final currentPending = List<File>.from(state.pendingImageFiles ?? []);
+    currentPending.removeWhere((file) => file.path == imagePathToRemove);
+    
+    // Remove from upload states map
+    final currentUploadStates = Map<String, ImageUploadState>.from(state.imageUploadStates ?? {});
+    currentUploadStates.remove(imagePathToRemove);
+
+    emit(state.copyWith(
+      pendingImageFiles: currentPending,
+      imageUploadStates: currentUploadStates,
+    ));
+
+    print("[Bloc] Removed pending image: $imagePathToRemove");
+    // TODO: Consider cancelling ongoing upload task if needed
+  }
 
   // --- Chat Interaction Handlers (Updated) ---
 
@@ -215,86 +321,111 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     SendMessage event,
     Emitter<AiChatState> emit,
   ) async {
-     final currentConversationId = state.selectedConversationId;
-     if (currentConversationId == null) {
-       emit(state.copyWith(status: AiChatStatus.messageSendFailure, errorMessage: "No conversation selected"));
-       return;
-     }
-      if (state.status == AiChatStatus.streamingResponse) {
-       print("Cannot send message while streaming");
-       // Optionally emit a temporary state or just ignore
-       return;
-     }
+    final currentConversationId = state.selectedConversationId;
+    if (currentConversationId == null) {
+      emit(state.copyWith(status: AiChatStatus.messageSendFailure, errorMessage: "No conversation selected"));
+      return;
+    }
+    if (state.status == AiChatStatus.streamingResponse) {
+      print("Cannot send message while streaming");
+      return;
+    }
+    // --- Require non-empty text message --- 
+    if (event.message.trim().isEmpty) {
+        print("Cannot send empty message text.");
+        // Optionally show snackbar feedback from here or rely on UI logic
+        return; 
+    }
 
     emit(state.copyWith(status: AiChatStatus.sendingMessage, clearErrorMessage: true));
 
-    String? uploadedImageUrl;
-    if (event.imageFile != null) {
-      final uploadResult = await _uploadFile(UploadFileParams(file: event.imageFile!));
-      bool uploadOk = false;
-      uploadResult.fold(
-        (failure) {
-          emit(state.copyWith(status: AiChatStatus.messageSendFailure, errorMessage: 'File upload failed: ${failure.toString()}'));
-        },
-        (url) {
-          uploadedImageUrl = url;
-          uploadOk = true;
-          print("File uploaded successfully: $url");
-        },
-      );
-      if (!uploadOk) return; // Stop if upload failed
+    // --- Collect successfully uploaded image URLs for the CURRENT pending images ---
+    final List<String> urlsToSend = [];
+    final currentPendingPaths = state.pendingImageFiles?.map((f) => f.path).toList() ?? [];
+    final currentUploadStates = state.imageUploadStates ?? {};
+
+    for (final path in currentPendingPaths) {
+      final uploadState = currentUploadStates[path];
+      if (uploadState != null && uploadState.status == ImageUploadStatus.success) {
+          // Ensure url is not null, though factory guarantees it for success state
+          if (uploadState.url != null) { 
+             urlsToSend.add(uploadState.url!); 
+          } else {
+             print("[Bloc] Warning: ImageUploadState.success for $path has null URL.");
+          }
+      } 
+      // Ignore images that are uploading or failed
+      else if (uploadState?.status == ImageUploadStatus.uploading) {
+           print("[Bloc] Image still uploading, not included in message: $path");
+      } else if (uploadState?.status == ImageUploadStatus.failure) {
+           print("[Bloc] Image upload failed, not included in message: $path");
+      }
     }
 
-    // Optimistic UI update for user message
+    // --- Add user message optimistically --- 
     final userMessage = AiChatMessageEntity(
-        messageId: 'local_user_${DateTime.now().millisecondsSinceEpoch}',
-        content: event.message,
-        sender: MessageSender.user,
-        timestamp: DateTime.now(),
-        conversationId: currentConversationId,
-        fileUrls: uploadedImageUrl == null ? null : [uploadedImageUrl!], 
+      messageId: 'local_user_${DateTime.now().millisecondsSinceEpoch}',
+      conversationId: currentConversationId,
+      sender: MessageSender.user,
+      content: event.message, // Use the text from the event
+      timestamp: DateTime.now(),
+      fileUrls: urlsToSend.isNotEmpty ? urlsToSend : null, 
+      messageType: urlsToSend.isNotEmpty ? MessageType.image : MessageType.text,
     );
-    emit(state.copyWith(
-      messages: [...state.messages, userMessage],
-      status: AiChatStatus.streamingResponse, 
-      streamingResponseText: '...',
-    ));
 
-    // Call streaming use case
+    // Emit state with user message added, waiting for response,
+    // AND clear all pending image states as they've been processed for this message.
+    emit(state.copyWith(
+      status: AiChatStatus.waitingForResponse,
+      messages: List.from(state.messages)..add(userMessage),
+      streamingResponseText: '',
+      clearPendingImages: true, // Clear the list of files
+      clearImageUploadStates: true, // Clear the map of upload states
+    ));
+    // --- End of optimistic UI update & state cleanup ---
+
+    // --- Cancel previous stream subscription if any ---
     await _chatStreamSubscription?.cancel();
+    _chatStreamSubscription = null;
+    // Note: streamingResponseText is already cleared above
+    // --- End of cancellation ---
+
+    // --- Initiate the actual streaming call --- 
     final streamResult = await _streamChatCompletion(StreamChatCompletionParams(
       conversationId: currentConversationId,
       userId: _currentUserId,
       message: event.message,
-      fileUrls: uploadedImageUrl == null ? [] : [uploadedImageUrl!], 
+      fileUrls: urlsToSend, // Pass ONLY the successfully uploaded URLs
     ));
 
     streamResult.fold(
       (failure) {
-         add(_HandleStreamError('Error initiating stream: ${failure.toString()}'));
+        // Handle error initiating the stream
+        print("[Bloc] Error initiating stream: $failure");
+        emit(state.copyWith(status: AiChatStatus.messageSendFailure, errorMessage: failure.toString()));
+        // Note: Image state was already cleared optimistically. Consider if rollback is needed.
       },
-      (stream) {
-        _chatStreamSubscription = stream.listen(
+      (contentStream) {
+        // Successfully initiated stream, start listening
+        print("[Bloc] Stream initiated successfully. Listening...");
+        emit(state.copyWith(status: AiChatStatus.streamingResponse)); // Update status
+        
+        _chatStreamSubscription = contentStream.listen(
           (chunk) {
-              try {
-                 final decoded = jsonDecode(chunk);
-                 final content = decoded['chunk'] ?? ''; 
-                 add(_ReceiveStreamChunk(content));
-              } catch (e) {
-                 print("Error decoding stream chunk: $e. Chunk: $chunk");
-                 add(_HandleStreamError("Error processing stream data.")); 
-              }
+            add(_ReceiveStreamChunk(chunk)); 
           },
           onError: (error) {
-             add(_HandleStreamError(error.toString()));
+            add(_HandleStreamError(error.toString()));
+            _chatStreamSubscription = null; 
           },
           onDone: () {
-             add(const _ReceiveStreamChunk('', isDone: true)); 
+            add(const _HandleStreamDone()); 
+             _chatStreamSubscription = null; 
           },
-          cancelOnError: true,
         );
       },
     );
+     // --- End of stream initiation --- 
   }
 
   Future<void> _onSendVoiceMessage(
@@ -384,14 +515,14 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   }
 
   void _onHandleStreamError(_HandleStreamError event, Emitter<AiChatState> emit) {
-     // Reset streaming state and show error
+     // Add the partially streamed message (if any) before showing error
+     _addFinalAiMessageFromStream(emit);
+     // Set error state
      emit(state.copyWith(
-        status: AiChatStatus.messageSendFailure,
-        streamingResponseText: '', 
-        errorMessage: 'Streaming error: ${event.errorMessage}',
-      ));
-     _chatStreamSubscription?.cancel(); 
-     _chatStreamSubscription = null;
+       status: AiChatStatus.messageSendFailure,
+       errorMessage: "Error during streaming: ${event.errorMessage ?? 'Unknown error'}", 
+       streamingResponseText: '', // Clear stream text on error
+     ));
   }
 
    // --- Other Action Handlers (Updated) ---
@@ -507,12 +638,46 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
      );
    }
 
+  // --- Internal Event Handlers for Stream ---
+
+  void _onHandleStreamDone(_HandleStreamDone event, Emitter<AiChatState> emit) {
+      // Add the complete streamed message as a final AI message
+     _addFinalAiMessageFromStream(emit);
+     // Set success state (or idle if preferred)
+     emit(state.copyWith(
+         status: AiChatStatus.messageSendSuccess, // Or AiChatStatus.idle
+         streamingResponseText: '', // Clear stream text on completion
+     ));
+  }
+
+  // Helper to add the final AI message from the accumulated stream text
+  void _addFinalAiMessageFromStream(Emitter<AiChatState> emit) {
+     if (state.streamingResponseText.isNotEmpty && state.selectedConversationId != null) {
+       final aiMessage = AiChatMessageEntity(
+         messageId: 'local_ai_${DateTime.now().millisecondsSinceEpoch}',
+         conversationId: state.selectedConversationId!,
+         sender: MessageSender.ai,
+         content: state.streamingResponseText,
+         timestamp: DateTime.now(),
+         messageType: MessageType.text, // Assuming stream is always text
+       );
+       // Emit state with the final AI message added
+       // Avoid changing the 'status' here, let the calling handler set the final status
+       emit(state.copyWith(
+         messages: List.from(state.messages)..add(aiMessage),
+         streamingResponseText: '', // Clear stream text after adding message
+       ));
+     } else {
+        // If stream was empty or cancelled immediately, just clear the text
+        emit(state.copyWith(streamingResponseText: ''));
+     }
+  }
 
   // --- Cleanup ---
   @override
   Future<void> close() {
     _chatStreamSubscription?.cancel();
-    print("AiChatBloc closed");
+    print("AiChatBloc closed, stream subscription cancelled.");
     return super.close();
   }
 } 

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart'; // Import the record package
 import 'package:permission_handler/permission_handler.dart'; // Import permission_handler
+import 'package:image_picker/image_picker.dart';
 
 import '../bloc/ai_chat/ai_chat_bloc.dart';
 // Remove direct imports of part files
@@ -13,7 +14,6 @@ import '../bloc/ai_chat/ai_chat_bloc.dart';
 // Convert to StatefulWidget to manage local recording state for UI feedback
 class ChatInputField extends StatefulWidget {
   final TextEditingController textController;
-  final VoidCallback onPickImage;
   final Function(String) onSendMessage;
   // TODO: Add a callback for when voice recording finishes
   // final Function(String filePath) onSendVoice; 
@@ -21,7 +21,6 @@ class ChatInputField extends StatefulWidget {
   const ChatInputField({
     super.key,
     required this.textController,
-    required this.onPickImage,
     required this.onSendMessage,
     // required this.onSendVoice,
   });
@@ -43,19 +42,37 @@ class _ChatInputFieldState extends State<ChatInputField> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<AiChatBloc, AiChatState, AiChatStatus>(
-      selector: (state) => state.status,
-      builder: (context, status) {
-        final bool isStreaming = status == AiChatStatus.streamingResponse;
-        final bool isBusy = status == AiChatStatus.sendingMessage ||
-                           status == AiChatStatus.transcribingAudio ||
-                           status == AiChatStatus.allocatingResource ||
-                           isStreaming; 
+    // Use BlocBuilder to access the full state, including pendingImageFiles & imageUploadStates
+    return BlocBuilder<AiChatBloc, AiChatState>(
+      buildWhen: (previous, current) => 
+          previous.status != current.status || 
+          previous.pendingImageFiles != current.pendingImageFiles ||
+          previous.imageUploadStates != current.imageUploadStates, // Also rebuild on upload state changes
+      builder: (context, state) {
+        final bool isStreaming = state.status == AiChatStatus.streamingResponse;
+        final bool isBusy = state.status == AiChatStatus.sendingMessage ||
+                           state.status == AiChatStatus.transcribingAudio ||
+                           state.status == AiChatStatus.allocatingResource ||
+                           isStreaming;
+        final List<File> pendingImages = state.pendingImageFiles ?? [];
+        // Get the upload states map
+        final Map<String, ImageUploadState> uploadStates = state.imageUploadStates ?? {}; 
         
+        // --- Check if any image is currently uploading --- 
+        bool isAnyImageUploading = false;
+        if (pendingImages.isNotEmpty) {
+          isAnyImageUploading = pendingImages.any((file) {
+            final status = uploadStates[file.path]?.status;
+            return status == ImageUploadStatus.uploading;
+          });
+        }
+        // --- End check --- 
+
         return ValueListenableBuilder<TextEditingValue>(
-          valueListenable: widget.textController, // Access controller via widget
+          valueListenable: widget.textController,
           builder: (context, textValue, child) {
-             final bool canSendMessage = !isBusy && textValue.text.trim().isNotEmpty;
+             // Base condition: Not busy/recording AND text is not empty
+             final bool baseCanSendMessage = !isBusy && !(_isRecording ?? false) && textValue.text.trim().isNotEmpty;
 
              return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
@@ -69,59 +86,83 @@ class _ChatInputFieldState extends State<ChatInputField> {
                     )
                  ]
                ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+              child: Column( // Use Column to stack preview above input row
+                mainAxisSize: MainAxisSize.min, // Take minimum vertical space
                 children: [
-                  // Attach Image Button
-                  IconButton(
-                    icon: const Icon(Icons.add_photo_alternate_outlined),
-                    onPressed: isBusy || _isRecording ? null : widget.onPickImage, // Disable if busy or recording 
-                    tooltip: 'Attach Image',
-                  ),
-                  // Attach Voice Button (Stateful)
-                  IconButton(
-                     // Change icon based on recording state
-                     icon: Icon(_isRecording ? Icons.stop_circle_outlined : Icons.mic_none_outlined, 
-                                color: _isRecording ? Colors.red : null),
-                     onPressed: isBusy ? null : _handleVoiceButtonPress, // Disable if busy
-                     tooltip: _isRecording ? 'Stop Recording' : 'Record Voice', // Updated tooltip
-                   ),
-                  // Text Input Field
-                  Expanded(
-                    child: TextField(
-                      controller: widget.textController,
-                      enabled: !isBusy && !_isRecording, // Disable if busy or recording
-                      decoration: InputDecoration(
-                        hintText: _isRecording ? 'Recording... Tap stop to send' : 'Type a message...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24.0),
-                          borderSide: BorderSide.none,
+                  // --- Image Preview Row --- 
+                  if (pendingImages.isNotEmpty)
+                    // Pass uploadStates to the preview row builder
+                    _buildImagePreviewRow(context, pendingImages, uploadStates),
+                  
+                  // --- Input Row --- 
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Attach Image Button
+                      IconButton(
+                        icon: const Icon(Icons.add_photo_alternate_outlined),
+                        // Use internal method _pickAndDispatchImage
+                        onPressed: isBusy || _isRecording ? null : _pickAndDispatchImage, 
+                        tooltip: 'Attach Image',
+                      ),
+                      // Attach Voice Button (Stateful)
+                      IconButton(
+                         icon: Icon(_isRecording ? Icons.stop_circle_outlined : Icons.mic_none_outlined, 
+                                    color: _isRecording ? Colors.red : null),
+                         onPressed: isBusy ? null : _handleVoiceButtonPress, 
+                         tooltip: _isRecording ? 'Stop Recording' : 'Record Voice',
+                       ),
+                      // Text Input Field
+                      Expanded(
+                        child: TextField(
+                          controller: widget.textController,
+                          enabled: !isBusy && !_isRecording, 
+                          decoration: InputDecoration(
+                            hintText: _isRecording ? 'Recording... Tap stop to send' : 'Type a message...',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(24.0),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[100],
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                          ),
+                          // Send button logic moved solely to IconButton
+                          onSubmitted: baseCanSendMessage 
+                                         ? (_) => widget.onSendMessage(widget.textController.text) 
+                                         : null, 
+                          textInputAction: TextInputAction.send, 
                         ),
-                        filled: true,
-                        fillColor: Colors.grey[100],
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
                       ),
-                      onSubmitted: canSendMessage ? (_) => widget.onSendMessage(widget.textController.text) : null, 
-                      textInputAction: TextInputAction.send, 
-                    ),
+                      // Send / Stop Generation Button
+                       if (isStreaming)
+                          IconButton(
+                            icon: const Icon(Icons.stop_circle, color: Colors.red),
+                            tooltip: 'Stop Generation',
+                            onPressed: () => context.read<AiChatBloc>().add(CancelStreaming()),
+                          )
+                       else
+                          IconButton(
+                            icon: const Icon(Icons.send),
+                            // Enable based on base conditions, logic inside onPressed
+                            onPressed: baseCanSendMessage 
+                                         ? () {
+                                             // --- Check for uploading images before sending --- 
+                                             if (isAnyImageUploading) {
+                                                // Show feedback and DO NOT send
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                   const SnackBar(content: Text('图片正在上传中，请稍候...')),
+                                                 );
+                                             } else {
+                                                // No uploads in progress, proceed to send
+                                                widget.onSendMessage(widget.textController.text);
+                                             }
+                                           }
+                                         : null,
+                            tooltip: 'Send Message',
+                          ),
+                    ],
                   ),
-                  // Send / Stop Generation Button
-                   if (isStreaming)
-                      IconButton(
-                        icon: const Icon(Icons.stop_circle, color: Colors.red),
-                        tooltip: 'Stop Generation',
-                        // Use correct event: CancelStreaming
-                        onPressed: () => context.read<AiChatBloc>().add(CancelStreaming()),
-                      )
-                   else
-                      IconButton(
-                        icon: const Icon(Icons.send),
-                        // Disable if busy, recording, or no text
-                        onPressed: canSendMessage && !_isRecording
-                                     ? () => widget.onSendMessage(widget.textController.text)
-                                     : null,
-                        tooltip: 'Send Message',
-                      ),
                 ],
               ),
             );
@@ -129,6 +170,127 @@ class _ChatInputFieldState extends State<ChatInputField> {
         );
       },
     );
+  }
+
+  // --- Helper Widget for Image Preview Row (Updated) ---
+  Widget _buildImagePreviewRow(
+    BuildContext context, 
+    List<File> images, 
+    Map<String, ImageUploadState> uploadStates // Receive upload states
+  ) {
+    return Container(
+      height: 80, // Adjust height as needed
+      padding: const EdgeInsets.only(bottom: 8.0), 
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: images.length,
+        itemBuilder: (context, index) {
+          final file = images[index];
+          final filePath = file.path;
+          // Get the upload state for this specific file
+          final uploadState = uploadStates[filePath]; 
+
+          return Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Stack(
+              clipBehavior: Clip.none, 
+              alignment: Alignment.center, // Center potential overlay icons
+              children: [
+                // Image Preview
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: Image.file(
+                    file,
+                    width: 70, // Adjust size
+                    height: 70,
+                    fit: BoxFit.cover,
+                    // Add error builder for robustness
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 70,
+                      height: 70,
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.broken_image, color: Colors.grey, size: 30),
+                    ),
+                  ),
+                ),
+
+                // --- Upload Status Overlay --- 
+                if (uploadState != null)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                         borderRadius: BorderRadius.circular(8.0),
+                         // Semi-transparent overlay based on status
+                         color: uploadState.status == ImageUploadStatus.uploading 
+                                ? Colors.black.withOpacity(0.5) 
+                                : uploadState.status == ImageUploadStatus.failure
+                                  ? Colors.red.withOpacity(0.6)
+                                  : Colors.transparent, // No overlay for success
+                      ),
+                      child: Center(
+                        child: switch (uploadState.status) {
+                           ImageUploadStatus.uploading => const SizedBox(
+                               width: 24, 
+                               height: 24, 
+                               child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            ),
+                           ImageUploadStatus.failure => const Icon(
+                               Icons.error_outline,
+                               color: Colors.white,
+                               size: 30,
+                            ),
+                           ImageUploadStatus.success => null, // No icon needed for success
+                        },
+                      ),
+                    ),
+                  ),
+
+                // Delete Button (Always visible if image exists)
+                Positioned(
+                  top: -5,
+                  right: -5,
+                  child: Material(
+                    color: Colors.black54,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: () {
+                        // Dispatch event using file path
+                        context.read<AiChatBloc>().add(RemovePendingImage(imagePathToRemove: filePath));
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.all(2.0),
+                        child: Icon(Icons.close, size: 14, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // --- Method to handle picking image and dispatching event ---
+  Future<void> _pickAndDispatchImage() async {
+     // Use ImagePicker (you might need to import 'package:image_picker/image_picker.dart')
+     final ImagePicker picker = ImagePicker(); 
+    try {
+        final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+        if (image != null && mounted) {
+          // Dispatch PickImage event
+          context.read<AiChatBloc>().add(PickImage(imageFile: File(image.path)));
+        } 
+    } catch (e) {
+        print("Error picking image: $e");
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error picking image: $e')),
+          );
+        }
+    }
   }
 
   // Handle voice button logic with actual recording

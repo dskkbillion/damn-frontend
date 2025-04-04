@@ -23,12 +23,13 @@ mixin _$AiChatMessageModel {
   int? get id =>
       throw _privateConstructorUsedError; // Optional database ID from API?
   @JsonKey(name: 'message_id')
-  String get messageId => throw _privateConstructorUsedError;
+  int get messageId => throw _privateConstructorUsedError;
   @JsonKey(name: 'conversation_id')
   int get conversationId => throw _privateConstructorUsedError;
   String get role =>
       throw _privateConstructorUsedError; // API likely uses 'user' or 'assistant' strings
   String get content => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _filesFromJson)
   List<String> get files =>
       throw _privateConstructorUsedError; // List of OSS URLs
   int? get timestamp => throw _privateConstructorUsedError;
@@ -51,11 +52,11 @@ abstract class $AiChatMessageModelCopyWith<$Res> {
   @useResult
   $Res call(
       {int? id,
-      @JsonKey(name: 'message_id') String messageId,
+      @JsonKey(name: 'message_id') int messageId,
       @JsonKey(name: 'conversation_id') int conversationId,
       String role,
       String content,
-      List<String> files,
+      @JsonKey(fromJson: _filesFromJson) List<String> files,
       int? timestamp});
 }
 
@@ -90,7 +91,7 @@ class _$AiChatMessageModelCopyWithImpl<$Res, $Val extends AiChatMessageModel>
       messageId: null == messageId
           ? _value.messageId
           : messageId // ignore: cast_nullable_to_non_nullable
-              as String,
+              as int,
       conversationId: null == conversationId
           ? _value.conversationId
           : conversationId // ignore: cast_nullable_to_non_nullable
@@ -125,11 +126,11 @@ abstract class _$$AiChatMessageModelImplCopyWith<$Res>
   @useResult
   $Res call(
       {int? id,
-      @JsonKey(name: 'message_id') String messageId,
+      @JsonKey(name: 'message_id') int messageId,
       @JsonKey(name: 'conversation_id') int conversationId,
       String role,
       String content,
-      List<String> files,
+      @JsonKey(fromJson: _filesFromJson) List<String> files,
       int? timestamp});
 }
 
@@ -162,7 +163,7 @@ class __$$AiChatMessageModelImplCopyWithImpl<$Res>
       messageId: null == messageId
           ? _value.messageId
           : messageId // ignore: cast_nullable_to_non_nullable
-              as String,
+              as int,
       conversationId: null == conversationId
           ? _value.conversationId
           : conversationId // ignore: cast_nullable_to_non_nullable
@@ -196,7 +197,7 @@ class _$AiChatMessageModelImpl extends _AiChatMessageModel {
       @JsonKey(name: 'conversation_id') required this.conversationId,
       required this.role,
       required this.content,
-      final List<String> files = const [],
+      @JsonKey(fromJson: _filesFromJson) final List<String> files = const [],
       this.timestamp})
       : _files = files,
         super._();
@@ -209,7 +210,7 @@ class _$AiChatMessageModelImpl extends _AiChatMessageModel {
 // Optional database ID from API?
   @override
   @JsonKey(name: 'message_id')
-  final String messageId;
+  final int messageId;
   @override
   @JsonKey(name: 'conversation_id')
   final int conversationId;
@@ -220,7 +221,7 @@ class _$AiChatMessageModelImpl extends _AiChatMessageModel {
   final String content;
   final List<String> _files;
   @override
-  @JsonKey()
+  @JsonKey(fromJson: _filesFromJson)
   List<String> get files {
     if (_files is EqualUnmodifiableListView) return _files;
     // ignore: implicit_dynamic_type
@@ -278,11 +279,11 @@ class _$AiChatMessageModelImpl extends _AiChatMessageModel {
 abstract class _AiChatMessageModel extends AiChatMessageModel {
   const factory _AiChatMessageModel(
       {final int? id,
-      @JsonKey(name: 'message_id') required final String messageId,
+      @JsonKey(name: 'message_id') required final int messageId,
       @JsonKey(name: 'conversation_id') required final int conversationId,
       required final String role,
       required final String content,
-      final List<String> files,
+      @JsonKey(fromJson: _filesFromJson) final List<String> files,
       final int? timestamp}) = _$AiChatMessageModelImpl;
   const _AiChatMessageModel._() : super._();
 
@@ -293,7 +294,7 @@ abstract class _AiChatMessageModel extends AiChatMessageModel {
   int? get id; // Optional database ID from API?
   @override
   @JsonKey(name: 'message_id')
-  String get messageId;
+  int get messageId;
   @override
   @JsonKey(name: 'conversation_id')
   int get conversationId;
@@ -302,6 +303,7 @@ abstract class _AiChatMessageModel extends AiChatMessageModel {
   @override
   String get content;
   @override
+  @JsonKey(fromJson: _filesFromJson)
   List<String> get files; // List of OSS URLs
   @override
   int? get timestamp;

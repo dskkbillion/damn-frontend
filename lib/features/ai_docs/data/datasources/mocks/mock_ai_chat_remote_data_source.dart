@@ -75,7 +75,7 @@ class MockAiChatRemoteDataSource implements IAiChatRemoteDataSource {
         final messageTimestamp = DateTime.now().subtract(Duration(hours: totalMessages - messageIndex));
 
         return AiChatMessageModel(
-          messageId: 'msg_${conversationId}_${messageIndex + 1}',
+          messageId: (conversationId * 1000) + (messageIndex + 1),
           conversationId: conversationId,
           role: roleString, 
           content: 'This is mock message ${messageIndex + 1} for conversation $conversationId. ' +
