@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../domain/entities/ai_conversation.dart';
+import '../../domain/entities/ai_conversation_entity.dart';
 
 part 'ai_conversation_model.freezed.dart';
 part 'ai_conversation_model.g.dart';
@@ -34,10 +34,10 @@ class AiConversationModel with _$AiConversationModel {
   factory AiConversationModel.fromJson(Map<String, dynamic> json) =>
       _$AiConversationModelFromJson(json);
 
-  /// Converts this [AiConversationModel] to its corresponding Domain [AIConversation] entity.
+  /// Converts this [AiConversationModel] to its corresponding Domain [AiConversationEntity].
   ///
   /// Handles potential `DateTime` parsing errors.
-  AIConversation toEntity() {
+  AiConversationEntity toEntity() {
     DateTime? createdAtDt;
     DateTime? updatedAtDt;
     try {
@@ -53,13 +53,11 @@ class AiConversationModel with _$AiConversationModel {
       // Keep dates as null if parsing fails
     }
 
-    return AIConversation(
-      conversationId: conversationId,
+    return AiConversationEntity(
+      id: conversationId,
       title: title,
       createdAt: createdAtDt,
       updatedAt: updatedAtDt,
-      firstMessage: firstMessage,
-      messageCount: messageCount,
     );
   }
 } 

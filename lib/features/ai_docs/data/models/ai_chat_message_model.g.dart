@@ -10,13 +10,11 @@ _$AiChatMessageModelImpl _$$AiChatMessageModelImplFromJson(
         Map<String, dynamic> json) =>
     _$AiChatMessageModelImpl(
       id: (json['id'] as num?)?.toInt(),
-      messageId: json['message_id'] as String,
+      messageId: (json['message_id'] as num).toInt(),
       conversationId: (json['conversation_id'] as num).toInt(),
       role: json['role'] as String,
       content: json['content'] as String,
-      files:
-          (json['files'] as List<dynamic>?)?.map((e) => e as String).toList() ??
-              const [],
+      files: json['files'] == null ? const [] : _filesFromJson(json['files']),
       timestamp: (json['timestamp'] as num?)?.toInt(),
     );
 

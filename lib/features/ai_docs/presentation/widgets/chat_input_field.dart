@@ -1,0 +1,395 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart'; // Import the record package
+import 'package:permission_handler/permission_handler.dart'; // Import permission_handler
+import 'package:image_picker/image_picker.dart';
+
+import '../bloc/ai_chat/ai_chat_bloc.dart';
+// Remove direct imports of part files
+// import '../bloc/ai_chat/ai_chat_state.dart';
+// import '../bloc/ai_chat/ai_chat_event.dart';
+
+// Convert to StatefulWidget to manage local recording state for UI feedback
+class ChatInputField extends StatefulWidget {
+  final TextEditingController textController;
+  final Function(String) onSendMessage;
+  // TODO: Add a callback for when voice recording finishes
+  // final Function(String filePath) onSendVoice; 
+
+  const ChatInputField({
+    super.key,
+    required this.textController,
+    required this.onSendMessage,
+    // required this.onSendVoice,
+  });
+
+  @override
+  State<ChatInputField> createState() => _ChatInputFieldState();
+}
+
+class _ChatInputFieldState extends State<ChatInputField> {
+  bool _isRecording = false; // Local state to track recording status
+  final AudioRecorder _audioRecorder = AudioRecorder(); // Instance of the recorder
+  String? _recordingPath; // To store the path of the recording
+
+  @override
+  void dispose() {
+    _audioRecorder.dispose(); // Dispose the recorder when widget is removed
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Use BlocBuilder to access the full state, including pendingImageFiles & imageUploadStates
+    return BlocBuilder<AiChatBloc, AiChatState>(
+      buildWhen: (previous, current) => 
+          previous.status != current.status || 
+          previous.pendingImageFiles != current.pendingImageFiles ||
+          previous.imageUploadStates != current.imageUploadStates, // Also rebuild on upload state changes
+      builder: (context, state) {
+        final bool isStreaming = state.status == AiChatStatus.streamingResponse;
+        final bool isBusy = state.status == AiChatStatus.sendingMessage ||
+                           state.status == AiChatStatus.transcribingAudio ||
+                           state.status == AiChatStatus.allocatingResource ||
+                           isStreaming;
+        final List<File> pendingImages = state.pendingImageFiles ?? [];
+        // Get the upload states map
+        final Map<String, ImageUploadState> uploadStates = state.imageUploadStates ?? {}; 
+        
+        // --- Check if any image is currently uploading --- 
+        bool isAnyImageUploading = false;
+        if (pendingImages.isNotEmpty) {
+          isAnyImageUploading = pendingImages.any((file) {
+            final status = uploadStates[file.path]?.status;
+            return status == ImageUploadStatus.uploading;
+          });
+        }
+        // --- End check --- 
+
+        return ValueListenableBuilder<TextEditingValue>(
+          valueListenable: widget.textController,
+          builder: (context, textValue, child) {
+             // Base condition: Not busy/recording AND text is not empty
+             final bool baseCanSendMessage = !isBusy && !(_isRecording ?? false) && textValue.text.trim().isNotEmpty;
+
+             return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                decoration: BoxDecoration(
+                 color: Theme.of(context).cardColor,
+                 boxShadow: [
+                    BoxShadow(
+                      offset: const Offset(0, -1),
+                      blurRadius: 4,
+                      color: Colors.black.withOpacity(0.05),
+                    )
+                 ]
+               ),
+              child: Column( // Use Column to stack preview above input row
+                mainAxisSize: MainAxisSize.min, // Take minimum vertical space
+                children: [
+                  // --- Image Preview Row --- 
+                  if (pendingImages.isNotEmpty)
+                    // Pass uploadStates to the preview row builder
+                    _buildImagePreviewRow(context, pendingImages, uploadStates),
+                  
+                  // --- Input Row --- 
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Attach Image Button
+                      IconButton(
+                        icon: const Icon(Icons.add_photo_alternate_outlined),
+                        // Use internal method _pickAndDispatchImage
+                        onPressed: isBusy || _isRecording ? null : _pickAndDispatchImage, 
+                        tooltip: 'Attach Image',
+                      ),
+                      // Attach Voice Button (Stateful)
+                      IconButton(
+                         icon: Icon(_isRecording ? Icons.stop_circle_outlined : Icons.mic_none_outlined, 
+                                    color: _isRecording ? Colors.red : null),
+                         onPressed: isBusy ? null : _handleVoiceButtonPress, 
+                         tooltip: _isRecording ? 'Stop Recording' : 'Record Voice',
+                       ),
+                      // Text Input Field
+                      Expanded(
+                        child: TextField(
+                          controller: widget.textController,
+                          enabled: !isBusy && !_isRecording, 
+                          decoration: InputDecoration(
+                            hintText: _isRecording ? 'Recording... Tap stop to send' : 'Type a message...',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(24.0),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[100],
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                          ),
+                          // Send button logic moved solely to IconButton
+                          onSubmitted: baseCanSendMessage 
+                                         ? (_) => widget.onSendMessage(widget.textController.text) 
+                                         : null, 
+                          textInputAction: TextInputAction.send, 
+                        ),
+                      ),
+                      // Send / Stop Generation Button
+                       if (isStreaming)
+                          IconButton(
+                            icon: const Icon(Icons.stop_circle, color: Colors.red),
+                            tooltip: 'Stop Generation',
+                            onPressed: () => context.read<AiChatBloc>().add(CancelStreaming()),
+                          )
+                       else
+                          IconButton(
+                            icon: const Icon(Icons.send),
+                            // Enable based on base conditions, logic inside onPressed
+                            onPressed: baseCanSendMessage 
+                                         ? () {
+                                             // --- Check for uploading images before sending --- 
+                                             if (isAnyImageUploading) {
+                                                // Show feedback and DO NOT send
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                   const SnackBar(content: Text('图片正在上传中，请稍候...')),
+                                                 );
+                                             } else {
+                                                // No uploads in progress, proceed to send
+                                                widget.onSendMessage(widget.textController.text);
+                                             }
+                                           }
+                                         : null,
+                            tooltip: 'Send Message',
+                          ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          }
+        );
+      },
+    );
+  }
+
+  // --- Helper Widget for Image Preview Row (Updated) ---
+  Widget _buildImagePreviewRow(
+    BuildContext context, 
+    List<File> images, 
+    Map<String, ImageUploadState> uploadStates // Receive upload states
+  ) {
+    return Container(
+      height: 80, // Adjust height as needed
+      padding: const EdgeInsets.only(bottom: 8.0), 
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: images.length,
+        itemBuilder: (context, index) {
+          final file = images[index];
+          final filePath = file.path;
+          // Get the upload state for this specific file
+          final uploadState = uploadStates[filePath]; 
+
+          return Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Stack(
+              clipBehavior: Clip.none, 
+              alignment: Alignment.center, // Center potential overlay icons
+              children: [
+                // Image Preview
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: Image.file(
+                    file,
+                    width: 70, // Adjust size
+                    height: 70,
+                    fit: BoxFit.cover,
+                    // Add error builder for robustness
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 70,
+                      height: 70,
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.broken_image, color: Colors.grey, size: 30),
+                    ),
+                  ),
+                ),
+
+                // --- Upload Status Overlay --- 
+                if (uploadState != null)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                         borderRadius: BorderRadius.circular(8.0),
+                         // Semi-transparent overlay based on status
+                         color: uploadState.status == ImageUploadStatus.uploading 
+                                ? Colors.black.withOpacity(0.5) 
+                                : uploadState.status == ImageUploadStatus.failure
+                                  ? Colors.red.withOpacity(0.6)
+                                  : Colors.transparent, // No overlay for success
+                      ),
+                      child: Center(
+                        child: switch (uploadState.status) {
+                           ImageUploadStatus.uploading => const SizedBox(
+                               width: 24, 
+                               height: 24, 
+                               child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            ),
+                           ImageUploadStatus.failure => const Icon(
+                               Icons.error_outline,
+                               color: Colors.white,
+                               size: 30,
+                            ),
+                           ImageUploadStatus.success => null, // No icon needed for success
+                        },
+                      ),
+                    ),
+                  ),
+
+                // Delete Button (Always visible if image exists)
+                Positioned(
+                  top: -5,
+                  right: -5,
+                  child: Material(
+                    color: Colors.black54,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: () {
+                        // Dispatch event using file path
+                        context.read<AiChatBloc>().add(RemovePendingImage(imagePathToRemove: filePath));
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.all(2.0),
+                        child: Icon(Icons.close, size: 14, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // --- Method to handle picking image and dispatching event ---
+  Future<void> _pickAndDispatchImage() async {
+     // Use ImagePicker (you might need to import 'package:image_picker/image_picker.dart')
+     final ImagePicker picker = ImagePicker(); 
+    try {
+        final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+        if (image != null && mounted) {
+          // Dispatch PickImage event
+          context.read<AiChatBloc>().add(PickImage(imageFile: File(image.path)));
+        } 
+    } catch (e) {
+        print("Error picking image: $e");
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error picking image: $e')),
+          );
+        }
+    }
+  }
+
+  // Handle voice button logic with actual recording
+  void _handleVoiceButtonPress() async {
+    if (!_isRecording) {
+      // --- Start Recording ---
+      // 1. Check for microphone permission
+      if (!await _audioRecorder.hasPermission()) {
+         // Request permission (consider using permission_handler for better flow)
+         // For simplicity, show a snackbar if permission denied.
+         // You might want a more robust permission handling flow.
+         final status = await Permission.microphone.request();
+         if (!status.isGranted) {
+            if (mounted) {
+               ScaffoldMessenger.of(context).showSnackBar(
+                 const SnackBar(content: Text('Microphone permission denied.')),
+               );
+            }
+            return; // Stop if permission is not granted
+         }
+      }
+
+       // 2. Start recording to a temporary path
+      final Directory tempDir = await getTemporaryDirectory();
+      final String filePath = '${tempDir.path}/audio_${DateTime.now().millisecondsSinceEpoch}.aac'; // Unique filename, AAC format
+      
+      // Prepare recorder config (AAC-LC is a common choice, check backend requirements)
+      // TODO: Revisit encoder and bitrate settings based on final requirements
+       const recordConfig = RecordConfig(
+         encoder: AudioEncoder.aacLc, // Example: AAC-LC
+         // bitRate: 16000, // TODO: Confirm if record package allows this directly
+         // sampleRate: 16000, // Sample rate often related to quality/bitrate
+       );
+
+      try {
+          await _audioRecorder.start(recordConfig, path: filePath);
+          print("Recording started: $filePath");
+          setState(() {
+             _isRecording = true;
+             _recordingPath = filePath; // Store the path
+             widget.textController.clear(); // Clear text field
+           });
+      } catch (e) {
+         print("Error starting recording: $e");
+         if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error starting recording: $e')),
+            );
+         }
+      }
+
+    } else {
+      // --- Stop Recording ---
+      try {
+         final String? path = await _audioRecorder.stop();
+         print("Recording stopped: $path");
+
+         setState(() {
+           _isRecording = false;
+         });
+
+         if (path != null) {
+            final recordedFile = File(path);
+            if (await recordedFile.exists()) {
+                // TODO: Add encoding/compression step here if needed to meet 16kbps
+                print("Recorded file size: ${await recordedFile.length()} bytes");
+
+               // Dispatch the event with the **actual recorded file**
+                if (mounted) { 
+                   context.read<AiChatBloc>().add(SendVoiceMessage(audioFile: recordedFile));
+                } 
+             } else {
+               print("Error: Recorded file not found at path: $path");
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Error: Recorded file not found.')),
+                  );
+               }
+             }
+         } else {
+            print("Error: Stopping recording failed, path is null.");
+            if (mounted) {
+               ScaffoldMessenger.of(context).showSnackBar(
+                 const SnackBar(content: Text('Error stopping recording.')),
+               );
+            }
+         }
+      } catch (e) {
+         print("Error stopping recording: $e");
+         if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error stopping recording: $e')),
+            );
+         }
+          // Ensure recording state is reset even if stopping fails
+         if (mounted && _isRecording) {
+           setState(() => _isRecording = false);
+         }
+      }
+    }
+  }
+} 

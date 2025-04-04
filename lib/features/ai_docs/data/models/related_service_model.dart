@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/related_service.dart'; // Adjust import path if needed
+import '../../domain/entities/related_service_entity.dart';
 
 part 'related_service_model.freezed.dart';
 part 'related_service_model.g.dart';
@@ -18,12 +18,15 @@ class RelatedServiceModel with _$RelatedServiceModel {
 
   /// Factory constructor for creating a [RelatedServiceModel].
   const factory RelatedServiceModel({
-    // Assuming API returns these fields, adjust based on actual response
-    required String id,
-    String? imageUrl, // Or maybe 'image_url' in JSON?
-    String? title,
-    double? rating,
-    String? price, // Or double? Or maybe 'price_string'?
+    // Updated fields and types based on actual API response.
+    // Added @JsonKey annotations for mapping.
+    required int id, // Changed to int
+    @JsonKey(name: 'mainImage') required String imageUrl, 
+    @JsonKey(name: 'name') required String title,
+    // rating field removed
+    @JsonKey(name: 'sellingPrice') required double price, // Changed to double
+    // Add other fields from API if needed (e.g., originalPrice, tenantId, etc.)
+    // Consider adding them as optional if not used by the domain.
   }) = _RelatedServiceModel;
 
   /// Creates a [RelatedServiceModel] from a JSON map.
@@ -31,14 +34,14 @@ class RelatedServiceModel with _$RelatedServiceModel {
       _$RelatedServiceModelFromJson(json);
 
   /// Converts this [RelatedServiceModel] to its corresponding Domain [RelatedService] entity.
-  RelatedService toEntity() {
-    // Direct mapping assuming field names match or are handled by JsonKey
-    return RelatedService(
+  RelatedServiceEntity toEntity() {
+    // Updated mapping based on new entity structure.
+    return RelatedServiceEntity(
       id: id,
       imageUrl: imageUrl,
       title: title,
-      rating: rating,
       price: price,
+      // rating is removed
     );
   }
 } 

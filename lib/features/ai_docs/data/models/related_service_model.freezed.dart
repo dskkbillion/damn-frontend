@@ -20,13 +20,16 @@ RelatedServiceModel _$RelatedServiceModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$RelatedServiceModel {
-// Assuming API returns these fields, adjust based on actual response
-  String get id => throw _privateConstructorUsedError;
-  String? get imageUrl =>
-      throw _privateConstructorUsedError; // Or maybe 'image_url' in JSON?
-  String? get title => throw _privateConstructorUsedError;
-  double? get rating => throw _privateConstructorUsedError;
-  String? get price => throw _privateConstructorUsedError;
+// Updated fields and types based on actual API response.
+// Added @JsonKey annotations for mapping.
+  int get id => throw _privateConstructorUsedError; // Changed to int
+  @JsonKey(name: 'mainImage')
+  String get imageUrl => throw _privateConstructorUsedError;
+  @JsonKey(name: 'name')
+  String get title =>
+      throw _privateConstructorUsedError; // rating field removed
+  @JsonKey(name: 'sellingPrice')
+  double get price => throw _privateConstructorUsedError;
 
   /// Serializes this RelatedServiceModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -45,11 +48,10 @@ abstract class $RelatedServiceModelCopyWith<$Res> {
       _$RelatedServiceModelCopyWithImpl<$Res, RelatedServiceModel>;
   @useResult
   $Res call(
-      {String id,
-      String? imageUrl,
-      String? title,
-      double? rating,
-      String? price});
+      {int id,
+      @JsonKey(name: 'mainImage') String imageUrl,
+      @JsonKey(name: 'name') String title,
+      @JsonKey(name: 'sellingPrice') double price});
 }
 
 /// @nodoc
@@ -68,32 +70,27 @@ class _$RelatedServiceModelCopyWithImpl<$Res, $Val extends RelatedServiceModel>
   @override
   $Res call({
     Object? id = null,
-    Object? imageUrl = freezed,
-    Object? title = freezed,
-    Object? rating = freezed,
-    Object? price = freezed,
+    Object? imageUrl = null,
+    Object? title = null,
+    Object? price = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      imageUrl: freezed == imageUrl
+              as int,
+      imageUrl: null == imageUrl
           ? _value.imageUrl
           : imageUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      title: freezed == title
+              as String,
+      title: null == title
           ? _value.title
           : title // ignore: cast_nullable_to_non_nullable
-              as String?,
-      rating: freezed == rating
-          ? _value.rating
-          : rating // ignore: cast_nullable_to_non_nullable
-              as double?,
-      price: freezed == price
+              as String,
+      price: null == price
           ? _value.price
           : price // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as double,
     ) as $Val);
   }
 }
@@ -107,11 +104,10 @@ abstract class _$$RelatedServiceModelImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String id,
-      String? imageUrl,
-      String? title,
-      double? rating,
-      String? price});
+      {int id,
+      @JsonKey(name: 'mainImage') String imageUrl,
+      @JsonKey(name: 'name') String title,
+      @JsonKey(name: 'sellingPrice') double price});
 }
 
 /// @nodoc
@@ -128,32 +124,27 @@ class __$$RelatedServiceModelImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = null,
-    Object? imageUrl = freezed,
-    Object? title = freezed,
-    Object? rating = freezed,
-    Object? price = freezed,
+    Object? imageUrl = null,
+    Object? title = null,
+    Object? price = null,
   }) {
     return _then(_$RelatedServiceModelImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      imageUrl: freezed == imageUrl
+              as int,
+      imageUrl: null == imageUrl
           ? _value.imageUrl
           : imageUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      title: freezed == title
+              as String,
+      title: null == title
           ? _value.title
           : title // ignore: cast_nullable_to_non_nullable
-              as String?,
-      rating: freezed == rating
-          ? _value.rating
-          : rating // ignore: cast_nullable_to_non_nullable
-              as double?,
-      price: freezed == price
+              as String,
+      price: null == price
           ? _value.price
           : price // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as double,
     ));
   }
 }
@@ -162,28 +153,34 @@ class __$$RelatedServiceModelImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$RelatedServiceModelImpl extends _RelatedServiceModel {
   const _$RelatedServiceModelImpl(
-      {required this.id, this.imageUrl, this.title, this.rating, this.price})
+      {required this.id,
+      @JsonKey(name: 'mainImage') required this.imageUrl,
+      @JsonKey(name: 'name') required this.title,
+      @JsonKey(name: 'sellingPrice') required this.price})
       : super._();
 
   factory _$RelatedServiceModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$RelatedServiceModelImplFromJson(json);
 
-// Assuming API returns these fields, adjust based on actual response
+// Updated fields and types based on actual API response.
+// Added @JsonKey annotations for mapping.
   @override
-  final String id;
+  final int id;
+// Changed to int
   @override
-  final String? imageUrl;
-// Or maybe 'image_url' in JSON?
+  @JsonKey(name: 'mainImage')
+  final String imageUrl;
   @override
-  final String? title;
+  @JsonKey(name: 'name')
+  final String title;
+// rating field removed
   @override
-  final double? rating;
-  @override
-  final String? price;
+  @JsonKey(name: 'sellingPrice')
+  final double price;
 
   @override
   String toString() {
-    return 'RelatedServiceModel(id: $id, imageUrl: $imageUrl, title: $title, rating: $rating, price: $price)';
+    return 'RelatedServiceModel(id: $id, imageUrl: $imageUrl, title: $title, price: $price)';
   }
 
   @override
@@ -195,14 +192,12 @@ class _$RelatedServiceModelImpl extends _RelatedServiceModel {
             (identical(other.imageUrl, imageUrl) ||
                 other.imageUrl == imageUrl) &&
             (identical(other.title, title) || other.title == title) &&
-            (identical(other.rating, rating) || other.rating == rating) &&
             (identical(other.price, price) || other.price == price));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, imageUrl, title, rating, price);
+  int get hashCode => Object.hash(runtimeType, id, imageUrl, title, price);
 
   /// Create a copy of RelatedServiceModel
   /// with the given fields replaced by the non-null parameter values.
@@ -223,27 +218,29 @@ class _$RelatedServiceModelImpl extends _RelatedServiceModel {
 
 abstract class _RelatedServiceModel extends RelatedServiceModel {
   const factory _RelatedServiceModel(
-      {required final String id,
-      final String? imageUrl,
-      final String? title,
-      final double? rating,
-      final String? price}) = _$RelatedServiceModelImpl;
+          {required final int id,
+          @JsonKey(name: 'mainImage') required final String imageUrl,
+          @JsonKey(name: 'name') required final String title,
+          @JsonKey(name: 'sellingPrice') required final double price}) =
+      _$RelatedServiceModelImpl;
   const _RelatedServiceModel._() : super._();
 
   factory _RelatedServiceModel.fromJson(Map<String, dynamic> json) =
       _$RelatedServiceModelImpl.fromJson;
 
-// Assuming API returns these fields, adjust based on actual response
+// Updated fields and types based on actual API response.
+// Added @JsonKey annotations for mapping.
   @override
-  String get id;
+  int get id; // Changed to int
   @override
-  String? get imageUrl; // Or maybe 'image_url' in JSON?
+  @JsonKey(name: 'mainImage')
+  String get imageUrl;
   @override
-  String? get title;
+  @JsonKey(name: 'name')
+  String get title; // rating field removed
   @override
-  double? get rating;
-  @override
-  String? get price;
+  @JsonKey(name: 'sellingPrice')
+  double get price;
 
   /// Create a copy of RelatedServiceModel
   /// with the given fields replaced by the non-null parameter values.

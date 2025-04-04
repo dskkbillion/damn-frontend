@@ -89,19 +89,19 @@ abstract class IAiChatRemoteDataSource {
     int? limit,
   });
 
-  /// Calls the `/model/chat/package` endpoint (matching/packaging action).
-  ///
-  /// Parameters are based on the API spec, but might need refinement based on RN code.
-  ///
-  /// Throws specific exceptions on failure.
-  /// Returns the raw dynamic response data on success (structure TBD).
-  Future<dynamic> triggerMatchingAction({
+  /// Triggers a chat allocation action (e.g., one-click dispatch).
+  /// Corresponds to the /chat/allocate endpoint.
+  /// 
+  /// Returns the allocation result details on success.
+  /// Throws [ServerException], [NetworkException], or [DataSourceException] on failure.
+  Future<Map<String, dynamic>> allocateChatResource({
     required int conversationId,
     required int userId,
-    required Map<String, dynamic> item, // { name, description }
+    // Request parameters are still TBD, using placeholders based on old endpoint
+    required Map<String, dynamic> item, 
     required int limit,
     required double similarityThreshold,
-    // Add other potential parameters based on RN code analysis
+    // Add/remove parameters once the actual API request is confirmed
   });
 
   /// Calls the `/model/chat/audio` endpoint for speech-to-text.
