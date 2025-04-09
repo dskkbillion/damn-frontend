@@ -7,23 +7,23 @@ import 'package:equatable/equatable.dart';
 /// to represent operations that can fail.
 /// {@endtemplate}
 abstract class Failure extends Equatable {
+  final String message;
+
   /// {@macro failure}
-  // If you want Failures to have a default message or properties, define them here.
-  // const Failure([List properties = const <dynamic>[]]);
-  const Failure();
+  const Failure({required this.message});
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [message];
 }
 
 // General failures
 
 /// Represents a failure originating from the server (e.g., API error responses).
 class ServerFailure extends Failure {
-  final String message;
   final int? statusCode;
 
-  const ServerFailure({this.message = 'Server Failure', this.statusCode});
+  const ServerFailure({required String message, this.statusCode})
+      : super(message: message);
 
   @override
   List<Object?> get props => [message, statusCode];
@@ -31,30 +31,30 @@ class ServerFailure extends Failure {
 
 /// Represents a failure related to network connectivity.
 class NetworkFailure extends Failure {
-    final String message;
-
-    const NetworkFailure({this.message = 'Network Failure'});
-
-    @override
-    List<Object?> get props => [message];
+    const NetworkFailure({String message = 'Network connection failed'})
+      : super(message: message);
 }
 
 /// Represents a failure originating from local cache operations.
 class CacheFailure extends Failure {
-  final String message;
-
-  const CacheFailure({this.message = 'Cache Failure'});
-
-   @override
-  List<Object?> get props => [message];
+  const CacheFailure({required String message})
+      : super(message: message);
 }
 
-/// Represents an unexpected failure during data processing or other operations.
-class GeneralFailure extends Failure {
-  final String message;
+/// Represents a failure during input validation.
+class ValidationFailure extends Failure {
+  const ValidationFailure({required String message})
+      : super(message: message);
+}
 
-  const GeneralFailure({this.message = 'An unexpected error occurred'});
+/// Represents an authentication-specific failure (e.g., invalid credentials, expired token).
+class AuthenticationFailure extends Failure {
+  const AuthenticationFailure({required String message})
+      : super(message: message);
+}
 
-  @override
-  List<Object?> get props => [message];
-} 
+/// Represents an unexpected failure.
+class UnknownFailure extends Failure {
+  const UnknownFailure({String message = 'An unknown error occurred'})
+      : super(message: message);
+}

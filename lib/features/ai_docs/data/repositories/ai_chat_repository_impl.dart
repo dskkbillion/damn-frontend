@@ -4,7 +4,7 @@ import 'dart:async';
 
 import '../../../../core/error/failures.dart';
 // Ensure core network exceptions are importable if needed, though handled by datasource exceptions here
-// import '../../../../core/error/exceptions.dart'; 
+// import '../../../../core/error/exceptions.dart';
 import '../../domain/entities/ai_chat_message_entity.dart';
 import '../../domain/entities/ai_conversation_entity.dart';
 import '../../domain/entities/chat_allocation_result_entity.dart';
@@ -50,11 +50,11 @@ class AiChatRepositoryImpl implements IAiChatRepository {
     } on ds_exceptions.DataSourceException catch (e) {
       // Map generic DataSourceException to a GeneralFailure
       print('DataSourceException in Repository: ${e.message}');
-      return Left(GeneralFailure(message: 'Data source error: ${e.message}'));
+      return Left(UnknownFailure(message: 'Data source error: ${e.message}'));
     } catch (e, stacktrace) {
       // Catch any other unexpected errors
       print('Unexpected error in Repository: $e\n$stacktrace');
-      return Left(GeneralFailure(message: 'An unexpected error occurred: ${e.toString()}'));
+      return Left(UnknownFailure(message: 'An unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -137,10 +137,10 @@ class AiChatRepositoryImpl implements IAiChatRepository {
       return Left(NetworkFailure(message: e.message));
     } on ds_exceptions.DataSourceException catch (e) {
       print('DataSourceException initiating stream: ${e.message}');
-      return Left(GeneralFailure(message: 'Data source error initiating stream: ${e.message}'));
+      return Left(UnknownFailure(message: 'Data source error initiating stream: ${e.message}'));
     } catch (e, stacktrace) {
        print('Unexpected error initiating streamChatCompletion: $e\n$stacktrace');
-      return Left(GeneralFailure(message: 'An unexpected error occurred initiating stream: ${e.toString()}'));
+      return Left(UnknownFailure(message: 'An unexpected error occurred initiating stream: ${e.toString()}'));
     }
   }
 
@@ -182,7 +182,7 @@ class AiChatRepositoryImpl implements IAiChatRepository {
        // Manual parsing of the Map into the Entity
        // Add error handling for potentially missing keys if needed
        return ChatAllocationResultEntity(
-         summary: resultMap['summary'] as String? ?? 'No summary provided', 
+         summary: resultMap['summary'] as String? ?? 'No summary provided',
          merchantId: resultMap['merchant_id'] as int? ?? 0, // Provide default or handle error
          item: resultMap['item'] as Map<String, dynamic>?, // Allow null item
        );
@@ -200,4 +200,4 @@ class AiChatRepositoryImpl implements IAiChatRepository {
        );
      });
   }
-} 
+}

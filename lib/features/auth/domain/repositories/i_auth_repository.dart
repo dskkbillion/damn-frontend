@@ -1,32 +1,31 @@
 import 'package:dartz/dartz.dart';
-import 'package:damn_frontend/core/error/failures.dart';
-import '../entities/auth_credentials.dart';
-import '../entities/auth_status.dart';
-import '../entities/authenticated_user.dart';
-import '../entities/registration_details.dart';
-// import 'package:damn_frontend/core/domain/entities/user_info.dart'; // 假设 UserInfo 在 Core 中
+import 'package:dskk_flutter_refactor/core/error/failures.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/authenticated_user.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_credentials.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_status.dart';
+// import 'package:dskk_flutter_refactor/features/auth/domain/entities/registration_details.dart'; // 移除
 
-/// 定义 Auth 模块的数据交互接口
+/// 定义 Auth 模块的核心数据操作接口
 abstract class IAuthRepository {
-  /// 提供认证状态的流。
+  /// 提供认证状态变化的流
   Stream<AuthStatus> get authStatus;
 
-  /// 执行登录，获取 token，然后获取 userId，存储并返回 AuthenticatedUser。
+  /// 使用验证码进行登录
   Future<Either<Failure, AuthenticatedUser>> loginWithVerificationCode(
       VerificationCodeCredentials credentials);
 
-  /// 执行注册 API 调用。
-  Future<Either<Failure, void>> register(RegistrationDetails details);
+  // /// 注册新用户 (已移除)
+  // Future<Either<Failure, void>> register(RegistrationDetails details);
 
-  /// 执行本地登出逻辑 (清除存储)。
+  /// 执行登出操作 (主要是本地状态清理)
   Future<Either<Failure, void>> logout();
 
-  /// 调用发送验证码 API (/api/common/send-code/register)。
+  /// 发送验证码到指定手机号
   Future<Either<Failure, void>> sendVerificationCode({
     required String phone,
   });
 
-  /// 同步获取当前内存中的用户（如果存在且有效）。
+  /// 同步获取当前缓存的登录用户 (可能为 null)
   Either<Failure, AuthenticatedUser?> getLoggedInUserSync();
 
   // fetchUserId 移至 IUserInfoRepository

@@ -1,0 +1,34 @@
+name: auth_example
+description: 一个用于预览和测试 Auth 功能模块的示例应用。
+publish_to: 'none' # 防止意外发布
+
+environment:
+  # 与你的主项目 SDK 版本保持一致，假设为 >=3.0.0
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # 1. 依赖 Auth 模块本身 (使用相对路径)
+  dskk_flutter_refactor: # 使用正确的项目包名
+    path: ../../../.. # 指向项目根目录下的 pubspec.yaml
+
+  # 2. 添加 Auth 模块及其示例应用直接使用的其他核心依赖
+  # 请确保版本号与你的主项目一致
+  flutter_bloc: ^8.1.3
+  dartz: ^0.10.1
+  equatable: ^2.0.5
+  dio: ^5.3.3 # 假设 Auth 模块使用 Dio
+  get_it: ^7.6.4 # 使用 GetIt 进行依赖注入
+
+  # 添加 Riverpod 依赖 (版本号请与主项目保持一致)
+  flutter_riverpod: ^2.5.1 # 假设主项目用的是这个版本
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0 # 与主项目一致
+
+flutter:
+  uses-material-design: true

@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:damn_frontend/features/auth/domain/entities/auth_credentials.dart';
-import 'package:damn_frontend/features/auth/domain/usecases/login_with_verification_code.dart';
-import 'package:damn_frontend/features/auth/domain/usecases/send_verification_code.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_credentials.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/usecases/login_with_verification_code.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/usecases/send_verification_code.dart';
 
 import 'sms_login_state.dart';
 
@@ -20,7 +20,7 @@ class SmsLoginCubit extends Cubit<SmsLoginState> {
     final result = await sendVerificationCodeUseCase(params);
     result.fold(
       (failure) => emit(SmsLoginCodeSendFailure(failure)),
-      (_) => emit(const SmsLoginCodeSentSuccess()),
+      (_) => emit(SmsLoginCodeSentSuccess()),
     );
   }
 

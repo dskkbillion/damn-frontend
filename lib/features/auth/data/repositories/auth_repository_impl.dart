@@ -1,30 +1,25 @@
 import 'package:dartz/dartz.dart';
 import 'dart:async';
 
-import 'package:damn_frontend/core/error/exceptions.dart';
-import 'package:damn_frontend/core/error/failures.dart';
-import 'package:damn_frontend/core/network/network_info.dart'; // 假设有网络状态检查
-import 'package:damn_frontend/core/storage/secure_storage_repository.dart'; // 引入安全存储接口
+// 尝试导入主项目的 main.dart
+import 'package:dskk_flutter_refactor/main.dart'; // 假设主文件是 lib/main.dart
 
-import 'package:damn_frontend/features/auth/domain/entities/auth_credentials.dart';
-import 'package:damn_frontend/features/auth/domain/entities/auth_status.dart';
-import 'package:damn_frontend/features/auth/domain/entities/authenticated_user.dart';
-import 'package:damn_frontend/features/auth/domain/entities/registration_details.dart';
-import 'package:damn_frontend/features/auth/domain/entities/verification_purpose.dart';
-import 'package:damn_frontend/features/auth/domain/repositories/i_auth_repository.dart';
+import 'package:dskk_flutter_refactor/core/error/exceptions.dart';
+import 'package:dskk_flutter_refactor/core/error/failures.dart';
+import 'package:dskk_flutter_refactor/core/platform/network_info.dart';
+import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
+
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_credentials.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_status.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/authenticated_user.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/user_info.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_info_repository.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
 import '../datasources/auth_remote_data_source.dart';
-import '../models/user_info_model.dart'; // Import the new UserInfoModel
 
-// TODO: Remove this placeholder if UserInfo is defined in Core/Profile
-class UserInfo {
-  final String userId;
-  final String mobile;
-  const UserInfo({required this.userId, required this.mobile});
-}
-abstract class IUserInfoRepository {
-  Future<Either<Failure, UserInfo>> fetchUserInfo(String token);
-}
-// End placeholder
+// Placeholder definitions removed as they should be imported
+// class UserInfo { ... }
+// abstract class IUserInfoRepository { ... }
 
 class AuthRepositoryImpl implements IAuthRepository {
   final AuthRemoteDataSource remoteDataSource;
@@ -49,28 +44,24 @@ class AuthRepositoryImpl implements IAuthRepository {
   Future<void> _initializeAuthStatus() async {
     _statusController.add(const AuthUnknown()); // 初始为未知
     try {
-      // 同时获取 userId 和 token
-      final userId = await secureStorage.getUserId();
-      final token = await secureStorage.getToken();
+      // 同时获取 id (int) 和 token (String)
+      // 假设 secureStorage 有 getInt 和 getString 方法
+      final id = await secureStorage.getInt('user_id'); // 使用约定的 key
+      final token = await secureStorage.getString('auth_token'); // 使用约定的 key
 
-      if (userId != null && token != null) {
-        // TODO: Token 有效性校验逻辑仍需考虑
-        print('Found existing token and userId in secure storage.');
-        _currentUser = AuthenticatedUser(userId: userId, token: token);
+      if (id != null && token != null) {
+        // TODO: Token 有效性校验逻辑 (在 core 中实现)
+        print('Found existing token ($token) and id ($id) in secure storage.');
+        _currentUser = AuthenticatedUser(id: id, token: token);
         _statusController.add(Authenticated(_currentUser!));
       } else {
-        print('No existing token/userId found, or only partial data found.');
-        // 只要有一个不存在，就清理掉另一个，确保状态一致性
-        await secureStorage.clearAllAuthData();
+        print('No existing token/id found, or only partial data found.');
+        await _clearLocalAuthData(); // 清理本地数据
         _statusController.add(const Unauthenticated());
       }
     } catch (e) {
       print('Error initializing auth status: $e. Clearing storage.');
-      try {
-        await secureStorage.clearAllAuthData();
-      } catch (clearError) {
-         print('Failed to clear storage during init error: $clearError');
-      }
+      await _clearLocalAuthData();
       _statusController.add(const Unauthenticated());
     }
   }
@@ -109,38 +100,37 @@ class AuthRepositoryImpl implements IAuthRepository {
   @override
   Future<Either<Failure, AuthenticatedUser>> loginWithVerificationCode(
       VerificationCodeCredentials credentials) async {
-    // Step 1: Call login API to get the token
+    // Step 1: Call login API to get the token model
     final loginResult = await _networkedOperation(() =>
         remoteDataSource.loginWithVerificationCode(credentials));
 
     return loginResult.fold(
       (failure) => Left(failure),
-      (loginResponse) async {
-        // Step 2: Use the token to fetch UserInfo (which contains userId)
-        // Now uses the injected userInfoRepository
-        final userFetchResult = await userInfoRepository.fetchUserInfo(loginResponse.token);
+      (authenticatedUserModel) async {
+        // Step 2: Use the token to fetch UserInfo (contains id)
+        final userFetchResult =
+            await userInfoRepository.fetchUserInfo(authenticatedUserModel.token);
 
         return userFetchResult.fold(
           (failure) {
-             // If fetching user info fails (e.g., token invalid immediately after login?)
-             // Treat this as a login failure overall.
              print('Failed to fetch user info after successful token acquisition: $failure');
-             // We might want to clear the potentially invalid token we just got?
-             // await secureStorage.deleteToken();
-             return Left(failure); // Forward the failure (could be ServerFailure, AuthFailure etc.)
+             // 不清除 token，让 core 的 token 校验逻辑来处理
+             return Left(failure);
           },
           (userInfo) async {
-            // Step 3: Combine userId and token, save, and update status
-            final authenticatedUser = AuthenticatedUser(userId: userInfo.userId, token: loginResponse.token);
+            // Step 3: Combine id and token, save, and update status
+            final authenticatedUser = AuthenticatedUser(id: userInfo.id, token: authenticatedUserModel.token);
             try {
-              await secureStorage.saveUserId(userInfo.userId);
-              await secureStorage.saveToken(loginResponse.token);
+              // 假设 secureStorage 有 saveInt 和 saveString
+              await secureStorage.saveInt('user_id', userInfo.id); // 使用约定 key
+              await secureStorage.saveString('auth_token', authenticatedUserModel.token); // 使用约定 key
               _currentUser = authenticatedUser;
               _statusController.add(Authenticated(authenticatedUser));
-              print('Login successful and user info fetched. UserID: ${userInfo.userId}');
+              print('Login successful. UserID: ${userInfo.id}, Token: ${authenticatedUserModel.token}');
               return Right(authenticatedUser);
             } on CacheException catch (e) {
               print('Failed to save credentials after login: ${e.message}');
+              // 即使存储失败，也更新内存状态，但返回错误
               _currentUser = authenticatedUser;
               _statusController.add(Authenticated(authenticatedUser));
               return Left(CacheFailure(message: 'Login succeeded but failed to save credentials.'));
@@ -151,26 +141,23 @@ class AuthRepositoryImpl implements IAuthRepository {
     );
   }
 
-  @override
-  Future<Either<Failure, void>> register(
-      RegistrationDetails details) async {
-    // Just call the remote data source method. Registration doesn't log in.
-    return _networkedOperation<void>(() async {
-      await remoteDataSource.register(details);
-    });
+  // 清理本地认证数据
+  Future<void> _clearLocalAuthData() async {
+    try {
+       // 假设 secureStorage 有 delete 方法
+       await secureStorage.delete('user_id');
+       await secureStorage.delete('auth_token');
+       print('Cleared local auth data (id, token).');
+    } catch (e) {
+        print('Error clearing local auth data: $e');
+    }
   }
 
-  // Helper to handle local logout state changes
+  // 处理本地登出状态变更
   Future<void> _handleLogoutLocally() async {
      _currentUser = null;
      _statusController.add(const Unauthenticated());
-     try {
-       await secureStorage.clearAllAuthData();
-       print('Cleared local secure storage during local logout handler.');
-     } catch (e) {
-        print('Error clearing secure storage during local logout handler: $e');
-        // Log this, but don't block logout state change
-     }
+     await _clearLocalAuthData();
   }
 
   @override

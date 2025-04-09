@@ -95,27 +95,22 @@
 
 ## 5. 交互点 (Interaction Points)
 
-### 5.1. 对外依赖 (Dependencies)
-
-*   **`Core/Shared` 模块** (提供 `ISecureStorageRepository`, `Failure`, 网络客户端, `IUserInfoRepository`?)。
-*   **(无直接业务逻辑依赖于其他业务模块)**
-
-### 5.2. 导航需求 (Navigation Needs)
-
-(同前)
+*   **依赖项**: `Auth` 模块依赖 `Core/Shared` 模块提供的基础服务 (如 `HttpClient`, `ISecureStorageRepository`) 以及可能的 `Core/Profile` 提供的 `IUserInfoRepository`。
+*   **被依赖项**: 应用的导航/路由层会依赖 `Auth` 模块获取 `AuthStatus` 来实现登录拦截 (Navigation Guards)。UI 层 (Pages/Widgets) 依赖 `Auth` 模块的 Blocs/Cubits 来展示认证状态和用户信息。
+*   **导航需求**: 需要应用提供导航能力，如 `navigateToHome`, `navigateToLogin`, `navigateToPreviousScreen`。
 
 ## 6. 安全考虑 (Security Considerations)
 
-(同前)
+*   Token 必须通过安全存储 (`ISecureStorageRepository`) 保存。
+*   API 请求应使用 HTTPS。
+*   防止验证码被滥用 (频率限制等由后端负责)。
 
 ## 7. 结论与待办事项
 
-边界定义以 API 文档为准，但识别出与 RN 实现的关键冲突 (尤其是登录响应)。Auth 核心是获取 Token 和管理状态。
+边界已根据 API 文档和最新确认为准。Auth 核心是获取/管理 Token 和 `id`，并对外提供认证状态。**应用启动时的 Token 有效性检查逻辑应放在 `core` 或 App 初始化部分，而导航拦截逻辑应放在应用的路由层，并依赖本模块提供的 `AuthStatus`。**
 
 **关键待办事项:**
 
-1.  **【最高优先级 - 阻塞性】确认 `/api/auth/login` 成功响应**: 与后端确认实际响应是否包含 `token`，并**必须更新 API 文档**以反映真实情况。否则登录无法实现。
-2.  **【高优先级】确认 `/api/auth/register` 请求体与状态**: 与后端确认此接口是否仍在使用 (即使 deprecated)？是否真的需要 `password`, `scene`, `inviterId`？`inviterId` 的确切类型和可选性？
-3.  **确认 `/api/member/info` 响应**: 与后端确认准确 JSON 结构，定义统一 `UserInfo` 实体/模型，明确 `id` 类型。
-4.  **(次要) 确认 `/api/auth/login` 响应 `code` 字段**: 含义及是否需要检查？
-5.  **Token 校验策略实现**: 确认实现位置。
+1.  **【中优先级】更新 API 文档**: **必须**更新 `/api/auth/login` 的文档以反映返回 `token`，**必须**更新 `/api/member/info` 的文档以反映其 `data` 结构。
+2.  **(最低优先级/可能不需要) 确认 `/api/auth/login` 响应 `code` 字段**: 如果响应中除了 `token` 还有 `code` 字段，其含义是什么？
+3.  **Token 校验策略实现**: 具体实现在 `core` 文件夹 (应用启动检查) 和导航层 (路由守卫)。

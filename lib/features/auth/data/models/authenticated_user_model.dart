@@ -3,28 +3,30 @@
 // TODO: 此 Model 用于解析 /api/auth/login 的响应
 // 它不再需要继承 AuthenticatedUser，只包含 token 和 code
 
-/// `/api/auth/login` 成功响应的 DTO
-class LoginResponseModel {
-  final int code; // API 返回的 code 字段，含义待确认
+/// `/api/auth/login` 成功响应的 DTO (Data Transfer Object)
+/// 主要包含 token，可能包含 code。
+class AuthenticatedUserModel {
+  // API 返回的 code 字段，含义和类型 (int?) 待确认，暂时保留
+  final int? code;
   final String token;
 
-  const LoginResponseModel({
-    required this.code,
+  const AuthenticatedUserModel({
+    this.code,
     required this.token,
   });
 
-  factory LoginResponseModel.fromJson(Map<String, dynamic> json) {
-    // 基于 RN 代码确认的响应结构
-    if (json.containsKey('code') && json.containsKey('token')) {
-      return LoginResponseModel(
-        // TODO: 确认 code 字段的类型是 int 还是 String
-        code: json['code'] as int, // 假设是 int
+  factory AuthenticatedUserModel.fromJson(Map<String, dynamic> json) {
+    // 确认响应中必须包含 token
+    if (json.containsKey('token')) {
+      return AuthenticatedUserModel(
+        // code 字段可选，如果不存在或类型不匹配，则为 null
+        code: json['code'] is int ? json['code'] as int : null,
         token: json['token'] as String,
       );
     } else {
-      // 如果 API 响应与预期不符
+      // 如果 API 响应缺少 token
       throw FormatException(
-          'Failed to parse LoginResponseModel from JSON. Expected "code" and "token" fields.');
+          'Failed to parse AuthenticatedUserModel from JSON. Expected "token" field.');
     }
   }
 }

@@ -36,10 +36,10 @@ class FileUploadRepositoryImpl implements IFileUploadRepository {
       return Left(NetworkFailure(message: e.message));
     } on DataSourceException catch (e) {
       print('DataSourceException in FileUploadRepository: ${e.message}');
-      return Left(GeneralFailure(message: 'File upload data source error: ${e.message}'));
+      return Left(UnknownFailure(message: 'File upload data source error: ${e.message}'));
     } catch (e, stacktrace) {
       print('Unexpected error in FileUploadRepository: $e\n$stacktrace');
-      return Left(GeneralFailure(message: 'An unexpected error occurred during file upload: ${e.toString()}'));
+      return Left(UnknownFailure(message: 'An unexpected error occurred during file upload: ${e.toString()}'));
     }
   }
 
@@ -47,11 +47,11 @@ class FileUploadRepositoryImpl implements IFileUploadRepository {
   Future<Either<Failure, String>> uploadFile(File file) async {
     // Basic validation (e.g., check if file exists)
     if (!await file.exists()) {
-      return Left(GeneralFailure(message: 'File does not exist: ${file.path}'));
+      return Left(ValidationFailure(message: 'File does not exist: ${file.path}'));
     }
-    
+
     return _tryCatch<String>(() async {
       return await dataSource.uploadFile(file);
     });
   }
-} 
+}

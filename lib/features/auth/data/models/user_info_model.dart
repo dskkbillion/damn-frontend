@@ -1,51 +1,44 @@
 import 'package:equatable/equatable.dart';
 
-/// 用于解析 /api/member/info 响应的 DTO
-/// 字段基于 RN 代码中 User 类型和 createFetchUserProfileThunk 的推断
-class UserInfoModel extends Equatable {
-  final String userId; // 假设后端返回的是 user_id 或 id
-  final String? nickname;
-  final String? avatar;
-  final String mobile; // 手机号应该包含
-  // ... 其他可能的字段 (gender, birthday, etc.)
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/user_info.dart';
+
+/// 用于解析 /api/member/info 响应中 `data` 部分的 DTO
+class UserInfoModel extends UserInfo {
 
   const UserInfoModel({
-    required this.userId,
-    required this.mobile,
-    this.nickname,
-    this.avatar,
-    // ... 其他字段
+    required super.id,
+    super.mobile,
+    super.nickName,
+    super.avatar,
+    // 可以添加更多来自实际响应的字段作为模型的属性，如果需要的话
+    // 例如： final String? createTime;
   });
 
-  factory UserInfoModel.fromJson(Map<String, dynamic> json) {
-    // API 响应结构可能是在 'data' 字段下
-    final data = json.containsKey('data') && json['data'] is Map<String, dynamic>
-                 ? json['data'] as Map<String, dynamic>
-                 : json; // 如果没有 data 嵌套，直接使用顶层 json
-
-    // 确定 userId 的字段名 (可能是 id, user_id, memberId 等)
-    final userIdField = data.containsKey('id') ? 'id'
-                      : data.containsKey('user_id') ? 'user_id'
-                      : data.containsKey('memberId') ? 'memberId'
-                      : null;
-
-    if (userIdField == null) {
-      throw FormatException('Failed to find userId field (id, user_id, or memberId) in user info response.');
-    }
-    if (!data.containsKey('mobile')) {
-        throw FormatException('User info response missing required field: mobile');
+  /// 从 /api/member/info 响应的 `data` 部分创建模型
+  factory UserInfoModel.fromJson(Map<String, dynamic> jsonData) {
+    // 确保必要的字段存在且类型正确
+    if (!jsonData.containsKey('id') || jsonData['id'] is! int) {
+       throw FormatException('UserInfoModel: Missing or invalid type for "id" field.');
     }
 
     return UserInfoModel(
-      // TODO: 确认 userId 的实际类型 (int or String?)
-      userId: data[userIdField].toString(), // 转换为 String 以兼容
-      mobile: data['mobile'] as String,
-      nickname: data['nickname'] as String?,
-      avatar: data['avatar'] as String?,
-      // ... 解析其他字段
+      id: jsonData['id'] as int,
+      // 使用 ?. 和类型检查来安全地解析可选字段
+      mobile: jsonData['mobile'] as String?,
+      nickName: jsonData['nickName'] as String?,
+      avatar: jsonData['avatar'] as String?,
+      // 解析其他需要的字段...
+      // createTime: jsonData['createTime'] as String?,
     );
   }
 
-  @override
-  List<Object?> get props => [userId, mobile, nickname, avatar];
+  /// 可选：如果需要将模型转换为 Entity (如果模型和实体结构不同)
+  // UserInfo toEntity() {
+  //   return UserInfo(
+  //     id: id,
+  //     mobile: mobile,
+  //     nickName: nickName,
+  //     avatar: avatar,
+  //   );
+  // }
 }

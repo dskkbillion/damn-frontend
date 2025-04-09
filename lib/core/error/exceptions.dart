@@ -10,6 +10,23 @@ class ServerException implements Exception {
   }
 }
 
+/// Exception indicating a failure during cache operations.
+class CacheException implements Exception {
+    final String message;
+    CacheException({this.message = "Cache Error"});
+
+     @override
+    String toString() => 'CacheException: $message';
+}
+
+/// Exception indicating an authentication failure (e.g., 401 Unauthorized).
+class UnauthenticatedException implements Exception {
+    final String message;
+    UnauthenticatedException({this.message = "Authentication Required"});
+
+     @override
+    String toString() => 'UnauthenticatedException: $message';
+}
+
 // You can add other custom exception types here if needed, e.g.:
-// class CacheException implements Exception {}
-// class NetworkException implements Exception {} 
+// class NetworkException implements Exception {}

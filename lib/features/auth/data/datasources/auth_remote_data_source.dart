@@ -1,20 +1,16 @@
-import 'package:damn_frontend/features/auth/domain/entities/auth_credentials.dart';
-import 'package:damn_frontend/features/auth/domain/entities/registration_details.dart';
-// import 'package:damn_frontend/features/auth/domain/entities/verification_purpose.dart'; // 不再需要
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_credentials.dart';
+// import 'package:dskk_flutter_refactor/features/auth/domain/entities/registration_details.dart'; // 不再需要
+// import 'package:dskk_flutter_refactor/features/auth/domain/entities/verification_purpose.dart'; // 不再需要
 
 import '../models/authenticated_user_model.dart'; // 重命名为 LoginResponseModel
-// import 'package:damn_frontend/core/data/models/user_info_model.dart'; // 假设 UserInfoModel 在 Core 中
+// import 'package:dskk_flutter_refactor/core/data/models/user_info_model.dart'; // 假设 UserInfoModel 在 Core 中
 
 /// 定义 Auth 模块的远程数据源接口
 abstract class AuthRemoteDataSource {
   /// 调用 API 执行验证码登录
   /// 返回包含 token 的响应模型
-  Future<LoginResponseModel> loginWithVerificationCode(
+  Future<AuthenticatedUserModel> loginWithVerificationCode(
       VerificationCodeCredentials credentials);
-
-  /// 调用 API 执行注册
-  /// 返回包含 token 的响应模型
-  Future<void> register(RegistrationDetails details);
 
   /// 调用 API 发送验证码 (/api/common/send-code/register)
   Future<void> sendVerificationCode({

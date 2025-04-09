@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:damn_frontend/features/auth/presentation/bloc/sms_login/sms_login_cubit.dart';
-import 'package:damn_frontend/features/auth/presentation/bloc/sms_login/sms_login_state.dart';
-import 'package:damn_frontend/features/auth/presentation/widgets/phone_input_field.dart';
-import 'package:damn_frontend/features/auth/presentation/widgets/verification_code_input_field.dart';
-import 'package:damn_frontend/features/auth/presentation/widgets/verification_code_button.dart';
+import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_cubit.dart';
+import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_state.dart';
+import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/phone_input_field.dart';
+import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_input_field.dart';
+import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_button.dart';
 
 // TODO: 需要根据 design-info/HTML原型/HTML-new/outer/login/login.html 和 RN 代码实现具体 UI
 
@@ -46,9 +46,9 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
               SnackBar(content: Text('验证码发送失败: ${state.failure.message}')),
             );
           } else if (state is SmsLoginSuccess) {
-            // TODO: 登录成功后的导航逻辑，通常由全局 AuthStatus 监听处理
+            // 导航将由全局 AuthStatus 监听器处理
             // Navigator.of(context).pushReplacementNamed('/home');
-            print('Login Success! User: ${state.user.userId}');
+            print('Login Success! User ID: ${state.user.id}');
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('登录成功!')),
             );
@@ -79,7 +79,7 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                       const SizedBox(width: 8),
                       VerificationCodeButton(
                         phoneController: _phoneController, // 传递手机号控制器给按钮
-                        onSendCode: (phone) {
+                        onSendCode: (phone) async {
                            // TODO: 调用 cubit.sendCode(phone);
                            print('Requesting code for $phone');
                            context.read<SmsLoginCubit>().sendCode(phone);
@@ -109,16 +109,6 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                     child: isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
                         : const Text('登录'),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // TODO: 添加其他链接，如"遇到问题？"、"注册"（如果需要的话）
-                  TextButton(
-                    onPressed: () {
-                      // TODO: 导航到注册页面（如果注册是独立页面）
-                      // Navigator.of(context).pushNamed('/register');
-                    },
-                    child: const Text('还没有账号？去注册'), // 示例
                   ),
                 ],
               ),
