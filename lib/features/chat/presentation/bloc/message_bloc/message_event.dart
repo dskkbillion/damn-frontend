@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../domain/entities/chat_enums.dart';
 import '../../../domain/entities/message.dart';
+import '../../../domain/entities/chat_enums.dart';
 
 /// 消息事件基类
 abstract class MessageEvent extends Equatable {
@@ -164,4 +164,15 @@ class MessageStatusChanged extends MessageEvent {
 
   @override
   List<Object> get props => [messageId, status];
+}
+
+/// 标记消息已读事件
+class MarkAsRead extends MessageEvent {
+  /// 会话ID
+  final String sessionId;
+
+  const MarkAsRead({required this.sessionId});
+
+  @override
+  List<Object> get props => [sessionId];
 } 

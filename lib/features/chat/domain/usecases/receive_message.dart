@@ -26,9 +26,8 @@ class ReceiveMessageUseCase implements UseCase<Stream<Message>, NoParams> {
     _ensureConnected();
     
     // 处理接收到的消息数据
-    return _realtimeService.incomingMessages
-      .where((incomingMessage) => incomingMessage.type == 'message')
-      .asyncMap((incomingMessage) => _processIncomingMessage(incomingMessage));
+    return _realtimeService.messageStream
+      .asyncMap((message) => _processIncomingMessage(message));
   }
 
   /// 确保已连接到实时服务
@@ -47,34 +46,23 @@ class ReceiveMessageUseCase implements UseCase<Stream<Message>, NoParams> {
   }
 
   /// 处理接收到的消息
-  Future<Message> _processIncomingMessage(IncomingMessageDto incomingMessage) async {
-    // 解析消息数据
-    final messageData = incomingMessage.data;
-    
-    // 创建Message对象
-    // 实际应用中应该从DTO转换
-    final message = Message.fromJson(messageData);
-    
-    // 确认消息接收
+  Future<Message> _processIncomingMessage(Message message) async {
     try {
-      await _realtimeService.acknowledgeMessage(message.id);
+      // 将消息保存到本地存储
+      final result = await _chatRepository.sendMessage(message);
+      
+      return result.fold(
+        (failure) {
+          // 如果保存失败，仍返回原始消息
+          print('保存接收的消息失败: $failure');
+          return message;
+        },
+        (savedMessage) => savedMessage,
+      );
     } catch (e) {
-      print('消息确认失败: $e');
-      // 继续处理消息，即使确认失败
+      print('处理接收消息时出错: $e');
+      return message;
     }
-    
-    // 将消息保存到本地存储
-    // 这里我们假设sendMessage会同时处理存储逻辑
-    final result = await _chatRepository.sendMessage(message);
-    
-    return result.fold(
-      (failure) {
-        // 如果保存失败，仍返回原始消息
-        print('保存接收的消息失败: $failure');
-        return message;
-      },
-      (savedMessage) => savedMessage,
-    );
   }
 }
 

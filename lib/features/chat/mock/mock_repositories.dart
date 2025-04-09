@@ -9,7 +9,6 @@ import '../domain/entities/message.dart';
 import '../domain/entities/user.dart';
 import '../domain/failures/chat_failure.dart';
 import '../domain/repositories/i_chat_repository.dart';
-import '../domain/services/i_chat_realtime_service.dart';
 import 'mock_data.dart';
 
 /// 聊天仓库的Mock实现
@@ -18,6 +17,8 @@ import 'mock_data.dart';
 class MockChatRepository implements IChatRepository {
   final _mockData = MockChatData();
   final _sessionController = StreamController<List<ChatSession>>.broadcast();
+  final _messageController = StreamController<Message>.broadcast();
+  final _statusUpdateController = StreamController<MessageStatusUpdate>.broadcast();
 
   MockChatRepository() {
     // 初始化会话数据
@@ -27,7 +28,7 @@ class MockChatRepository implements IChatRepository {
   @override
   Future<Either<ChatFailure, ChatSession>> createSession({
     required String targetUserId,
-    String? initialMessage,
+    Message? initialMessage,
   }) async {
     try {
       // 检查是否已存在会话
@@ -61,18 +62,7 @@ class MockChatRepository implements IChatRepository {
         unreadCount: 0,
         pinned: false,
         muted: false,
-        lastMessage: initialMessage != null
-            ? Message(
-                id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
-                sessionId: 'session_${DateTime.now().millisecondsSinceEpoch}',
-                senderId: 'current_user',
-                content: initialMessage,
-                timestamp: DateTime.now(),
-                status: MessageStatus.sent,
-                type: MessageType.text,
-                currentUserId: 'current_user',
-              )
-            : null,
+        lastMessage: initialMessage,
       );
 
       _mockData.sessions.add(newSession);
@@ -80,18 +70,12 @@ class MockChatRepository implements IChatRepository {
 
       // 如果有初始消息，添加到消息列表
       if (initialMessage != null) {
-        final message = Message(
-          id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
-          sessionId: newSession.id,
-          senderId: 'current_user',
-          content: initialMessage,
-          timestamp: DateTime.now(),
-          status: MessageStatus.sent,
-          type: MessageType.text,
-          currentUserId: 'current_user',
-        );
+        // 确保消息有正确的会话ID
+        final messageWithSessionId = initialMessage.sessionId.isEmpty
+            ? initialMessage.copyWith(sessionId: newSession.id)
+            : initialMessage;
         
-        _mockData.messages[newSession.id] = [message];
+        _mockData.messages[newSession.id] = [messageWithSessionId];
       }
 
       return Right(newSession);
@@ -118,11 +102,11 @@ class MockChatRepository implements IChatRepository {
   }
 
   @override
-  Future<Either<ChatFailure, List<Message>>> getMessages({
-    required String sessionId,
+  Future<Either<ChatFailure, List<Message>>> getMessages(
+    String sessionId,
     String? beforeMessageId,
-    int limit = 20,
-  }) async {
+    int limit,
+  ) async {
     try {
       final messages = _mockData.messages[sessionId] ?? [];
       if (messages.isEmpty) {
@@ -232,10 +216,10 @@ class MockChatRepository implements IChatRepository {
   }
 
   @override
-  Future<Either<ChatFailure, void>> updateSessionStatus({
-    required String sessionId,
-    required SessionStatus status,
-  }) async {
+  Future<Either<ChatFailure, void>> updateSessionStatus(
+    String sessionId,
+    SessionStatus status,
+  ) async {
     try {
       final sessionIndex = _mockData.sessions.indexWhere((session) => session.id == sessionId);
       if (sessionIndex != -1) {
@@ -249,23 +233,19 @@ class MockChatRepository implements IChatRepository {
   }
 
   @override
-  Future<Either<ChatFailure, List<Message>>> batchLoadMessages({
-    required String sessionId, 
-    DateTime? lastSyncTime, 
-    int limit = 100,
-  }) async {
+  Future<Either<ChatFailure, List<Message>>> batchLoadMessages(
+    String sessionId,
+    DateTime fromTimestamp,
+    int limit,
+  ) async {
     try {
       final messages = _mockData.messages[sessionId] ?? [];
       if (messages.isEmpty) {
         return const Right([]);
       }
 
-      if (lastSyncTime == null) {
-        return Right(messages.take(limit).toList());
-      }
-
       final filteredMessages = messages
-          .where((message) => message.timestamp.isAfter(lastSyncTime))
+          .where((message) => message.timestamp.isAfter(fromTimestamp))
           .take(limit)
           .toList();
       
@@ -289,6 +269,203 @@ class MockChatRepository implements IChatRepository {
       return Right(user);
     } catch (e) {
       return Left(ChatFailure(message: '获取用户信息失败: $e'));
+    }
+  }
+
+  @override
+  Future<Either<ChatFailure, void>> revokeMessage(String messageId) async {
+    try {
+      // 在所有会话的消息中查找此消息
+      for (final sessionId in _mockData.messages.keys) {
+        final messages = _mockData.messages[sessionId]!;
+        final index = messages.indexWhere((m) => m.id == messageId);
+        
+        if (index != -1) {
+          // 标记消息为已撤回
+          final message = messages[index];
+          final updatedMessage = message.copyWith(
+            content: '此消息已被撤回',
+            type: MessageType.revoked,
+          );
+          
+          messages[index] = updatedMessage;
+          
+          // 如果是会话的最后一条消息，更新会话
+          final sessionIndex = _mockData.sessions.indexWhere((s) => s.id == sessionId);
+          if (sessionIndex != -1) {
+            final session = _mockData.sessions[sessionIndex];
+            if (session.lastMessage?.id == messageId) {
+              final updatedSession = session.copyWith(lastMessage: updatedMessage);
+              _mockData.sessions[sessionIndex] = updatedSession;
+              _sessionController.add(_mockData.sessions);
+            }
+          }
+          
+          return const Right(null);
+        }
+      }
+      
+      return Left(ChatFailure(message: '消息不存在'));
+    } catch (e) {
+      return Left(ChatFailure(message: '撤回消息失败: $e'));
+    }
+  }
+
+  @override
+  Future<Either<ChatFailure, void>> deleteMessage(String messageId) async {
+    try {
+      // 在所有会话的消息中查找此消息
+      for (final sessionId in _mockData.messages.keys) {
+        final messages = _mockData.messages[sessionId]!;
+        final index = messages.indexWhere((m) => m.id == messageId);
+        
+        if (index != -1) {
+          // 删除消息
+          messages.removeAt(index);
+          
+          // 如果是会话的最后一条消息，更新会话
+          final sessionIndex = _mockData.sessions.indexWhere((s) => s.id == sessionId);
+          if (sessionIndex != -1) {
+            final session = _mockData.sessions[sessionIndex];
+            if (session.lastMessage?.id == messageId) {
+              final updatedSession = session.copyWith(
+                lastMessage: messages.isNotEmpty ? messages.first : null,
+              );
+              _mockData.sessions[sessionIndex] = updatedSession;
+              _sessionController.add(_mockData.sessions);
+            }
+          }
+          
+          return const Right(null);
+        }
+      }
+      
+      return Left(ChatFailure(message: '消息不存在'));
+    } catch (e) {
+      return Left(ChatFailure(message: '删除消息失败: $e'));
+    }
+  }
+
+  @override
+  Stream<Message> observeMessages() {
+    return _messageController.stream;
+  }
+
+  @override
+  Stream<MessageStatusUpdate> observeMessageStatusUpdates() {
+    return _statusUpdateController.stream;
+  }
+
+  @override
+  Future<Either<ChatFailure, T>> retryOperation<T>(
+    Future<Either<ChatFailure, T>> Function() operation,
+    int maxRetries,
+  ) async {
+    int attempts = 0;
+    ChatFailure? lastFailure;
+    
+    while (attempts < maxRetries) {
+      final result = await operation();
+      
+      if (result.isRight()) {
+        return result;
+      } else {
+        lastFailure = result.fold((l) => l, (r) => null);
+        attempts++;
+        await Future.delayed(Duration(milliseconds: 500 * attempts)); // 指数退避
+      }
+    }
+    
+    return Left(lastFailure ?? ChatFailure(message: '操作失败'));
+  }
+
+  @override
+  Future<Either<ChatFailure, void>> clearError(String messageId) async {
+    try {
+      // 在所有会话的消息中查找此消息
+      for (final sessionId in _mockData.messages.keys) {
+        final messages = _mockData.messages[sessionId]!;
+        final index = messages.indexWhere((m) => m.id == messageId);
+        
+        if (index != -1 && messages[index].status == MessageStatus.failed) {
+          // 重置消息状态
+          messages[index] = messages[index].copyWith(status: MessageStatus.pending);
+          return const Right(null);
+        }
+      }
+      
+      return Left(ChatFailure(message: '消息不存在或状态正常'));
+    } catch (e) {
+      return Left(ChatFailure(message: '清除错误失败: $e'));
+    }
+  }
+
+  @override
+  Future<Either<ChatFailure, ChatSession>> getSessionDetail(String sessionId) async {
+    try {
+      final session = _mockData.sessions.firstWhere(
+        (s) => s.id == sessionId,
+        orElse: () => throw Exception('会话不存在'),
+      );
+      return Right(session);
+    } catch (e) {
+      return Left(ChatFailure(message: '获取会话详情失败: $e'));
+    }
+  }
+
+  @override
+  Future<Either<ChatFailure, List<Message>>> searchMessages(
+    String query, {
+    String? sessionId,
+  }) async {
+    try {
+      final results = <Message>[];
+      
+      if (sessionId != null) {
+        // 在特定会话中搜索
+        final messages = _mockData.messages[sessionId] ?? [];
+        results.addAll(messages.where(
+          (m) => m.content.toLowerCase().contains(query.toLowerCase())
+        ));
+      } else {
+        // 在所有会话中搜索
+        for (final messages in _mockData.messages.values) {
+          results.addAll(messages.where(
+            (m) => m.content.toLowerCase().contains(query.toLowerCase())
+          ));
+        }
+      }
+      
+      return Right(results);
+    } catch (e) {
+      return Left(ChatFailure(message: '搜索消息失败: $e'));
+    }
+  }
+
+  @override
+  Future<Either<ChatFailure, ChatSession>> updateLocalSessionState(
+    String sessionId, {
+    bool? isPinned,
+    bool? isMuted,
+  }) async {
+    try {
+      final sessionIndex = _mockData.sessions.indexWhere((s) => s.id == sessionId);
+      if (sessionIndex == -1) {
+        return Left(ChatFailure(message: '会话不存在'));
+      }
+      
+      final session = _mockData.sessions[sessionIndex];
+      final updatedSession = session.copyWith(
+        pinned: isPinned ?? session.pinned,
+        muted: isMuted ?? session.muted,
+      );
+      
+      _mockData.sessions[sessionIndex] = updatedSession;
+      _sessionController.add(_mockData.sessions);
+      
+      return Right(updatedSession);
+    } catch (e) {
+      return Left(ChatFailure(message: '更新会话本地状态失败: $e'));
     }
   }
 
@@ -328,77 +505,8 @@ class MockChatRepository implements IChatRepository {
     
     _mockData.sessions[sessionIndex] = updatedSession;
     _sessionController.add(_mockData.sessions);
-  }
-}
-
-/// 聊天实时服务的Mock实现
-class MockChatRealtimeService implements IChatRealtimeService {
-  final _messageController = StreamController<Message>.broadcast();
-  final _messageStatusController = StreamController<MessageStatusUpdate>.broadcast();
-  final MockChatRepository _repository;
-
-  MockChatRealtimeService(this._repository) {
-    // 每隔一段时间模拟接收一条随机消息
-    Timer.periodic(const Duration(seconds: 30), (timer) {
-      _simulateRandomMessage();
-    });
-  }
-
-  @override
-  Stream<Message> get messageStream => _messageController.stream;
-
-  @override
-  Stream<MessageStatusUpdate> get messageStatusStream => _messageStatusController.stream;
-
-  /// 模拟接收随机消息
-  void _simulateRandomMessage() {
-    if (_repository._mockData.sessions.isEmpty) return;
     
-    // 随机选择一个会话
-    final random = Random();
-    final session = _repository._mockData.sessions[random.nextInt(_repository._mockData.sessions.length)];
-    
-    // 随机消息内容
-    final messages = [
-      '你好！',
-      '最近在忙什么呢？',
-      '周末有空一起出去玩吗？',
-      '我刚看了一部很不错的电影，推荐给你',
-      '项目进展如何了？',
-      '需要我帮忙吗？',
-      '明天下午有个会议，记得准备一下',
-      '今天天气真好啊！',
-      '午饭吃了什么？',
-      '新商品上架了，记得去看看',
-    ];
-    
-    final content = messages[random.nextInt(messages.length)];
-    
-    // 创建并发送消息
-    _repository.simulateIncomingMessage(session.id, content).then((_) {
-      final newMessages = _repository._mockData.messages[session.id];
-      if (newMessages != null && newMessages.isNotEmpty) {
-        _messageController.add(newMessages.first);
-      }
-    });
+    // 发送消息到流
+    _messageController.add(newMessage);
   }
-
-  /// 模拟发送消息状态更新
-  void simulateMessageStatusUpdate(String messageId, MessageStatus status) {
-    _messageStatusController.add(MessageStatusUpdate(
-      messageId: messageId,
-      status: status,
-    ));
-  }
-}
-
-/// 消息状态更新数据类
-class MessageStatusUpdate {
-  final String messageId;
-  final MessageStatus status;
-
-  MessageStatusUpdate({
-    required this.messageId,
-    required this.status,
-  });
 } 

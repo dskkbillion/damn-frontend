@@ -74,7 +74,7 @@ class ChatModule {
     
     // 接收消息用例
     getIt.registerLazySingleton<ReceiveMessageUseCase>(
-      () => ReceiveMessageUseCase(getIt<IChatRealtimeService>()),
+      () => ReceiveMessageUseCase(getIt<IChatRealtimeService>(), getIt<IChatRepository>()),
     );
     
     // 创建会话用例
@@ -90,6 +90,11 @@ class ChatModule {
     // 同步消息用例
     getIt.registerLazySingleton<SyncMessagesUseCase>(
       () => SyncMessagesUseCase(getIt<IChatRepository>()),
+    );
+    
+    // 标记消息已读用例
+    getIt.registerLazySingleton<MarkMessagesReadUseCase>(
+      () => MarkMessagesReadUseCase(getIt<IChatRepository>()),
     );
     
     // 获取消息用例
@@ -131,6 +136,7 @@ class ChatModule {
         deleteMessageUseCase: getIt<DeleteMessageUseCase>(),
         revokeMessageUseCase: getIt<RevokeMessageUseCase>(),
         chatRealtimeService: getIt<IChatRealtimeService>(),
+        markMessagesReadUseCase: getIt<MarkMessagesReadUseCase>(),
       ),
     );
   }

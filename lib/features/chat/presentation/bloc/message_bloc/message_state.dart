@@ -91,6 +91,44 @@ class MessagesLoaded extends MessageState {
       ];
 }
 
+/// 消息操作中状态
+class MessageActionInProgress extends MessageState {
+  /// 正在执行的操作描述
+  final String action;
+  
+  /// 操作的消息ID
+  final String messageId;
+
+  const MessageActionInProgress({
+    required this.action,
+    required this.messageId,
+  });
+
+  @override
+  List<Object> get props => [action, messageId];
+}
+
+/// 消息操作失败状态
+class MessageActionFailed extends MessageState {
+  /// 错误消息
+  final String message;
+  
+  /// 失败的消息ID
+  final String? messageId;
+  
+  /// 失败的操作
+  final String? action;
+
+  const MessageActionFailed({
+    required this.message,
+    this.messageId,
+    this.action,
+  });
+
+  @override
+  List<Object?> get props => [message, messageId, action];
+}
+
 /// 消息加载失败状态
 class MessagesLoadFailure extends MessageState {
   /// 错误消息
@@ -106,6 +144,17 @@ class MessagesLoadFailure extends MessageState {
 
   @override
   List<Object> get props => [message, sessionId];
+}
+
+/// 消息发送成功状态
+class MessageSent extends MessageState {
+  /// 发送成功的消息
+  final Message message;
+
+  const MessageSent({required this.message});
+
+  @override
+  List<Object> get props => [message];
 }
 
 /// 消息发送失败状态

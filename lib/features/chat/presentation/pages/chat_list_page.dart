@@ -132,13 +132,9 @@ class _ChatListPageState extends State<ChatListPage> {
     final sortedSessions = List<ChatSession>.from(sessions);
     
     sortedSessions.sort((a, b) {
-      // 先按置顶状态排序
-      if (a.pinned && !b.pinned) return -1;
-      if (!a.pinned && b.pinned) return 1;
-      
       // 然后按最后消息时间排序
-      final aTime = a.lastMessage?.timestamp ?? a.updatedAt;
-      final bTime = b.lastMessage?.timestamp ?? b.updatedAt;
+      final aTime = a.lastMessage?.timestamp ?? DateTime.now();
+      final bTime = b.lastMessage?.timestamp ?? DateTime.now();
       return bTime.compareTo(aTime); // 降序排列（最新的在前面）
     });
     

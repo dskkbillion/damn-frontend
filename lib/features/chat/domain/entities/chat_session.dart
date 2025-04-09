@@ -62,6 +62,9 @@ class ChatSession extends Equatable {
     );
   }
   
+  /// 获取pinned状态，兼容旧代码
+  bool get pinned => isPinned;
+  
   /// 创建此会话的副本，但部分字段替换为新值
   ChatSession copyWith({
     String? id,

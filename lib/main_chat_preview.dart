@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import 'features/chat/injection/chat_module.dart';
 import 'features/chat/presentation/bloc/chat_bloc/chat_bloc.dart';
+import 'features/chat/presentation/bloc/chat_bloc/chat_event.dart';
 import 'features/chat/presentation/bloc/message_bloc/message_bloc.dart';
 import 'features/chat/presentation/pages/chat_detail_page.dart';
 import 'features/chat/presentation/pages/chat_list_page.dart';

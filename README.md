@@ -1,8 +1,8 @@
-# Chat 模块开发记录
+# Chat 重构核心工作流步骤
 
-## 开发进度
+### 1. **选择模块：Chat Module** ✅
 
-### 1. 分支创建 (2024-04-07) ✅
+#### 分支创建 (2024-04-07)
 
 - 从 develop 分支创建新分支：`refactor/chat-module`
 - 分支创建命令：
@@ -12,7 +12,7 @@
   git checkout -b refactor/chat-module
   ```
 
-### 2. 模块边界定义 (2024-04-07) ✅
+### 2. **定义模块边界** ✅
 
 #### 2.1 核心业务能力
 
@@ -28,7 +28,7 @@
   - 消息历史记录
   - 消息撤回
 
-#### 2.2 核心要素（Domain 层）
+#### 2.2 识别核心要素 (`Domain` 层)
 
 ##### 2.2.1 Use Cases
 
@@ -207,661 +207,423 @@
   - 支持返回到来源页面
   - 支持在聊天中查看来源信息（如商品、订单(暂不实现)）
 
-### 3. 技术实现要点 📋
-
-- 状态管理：Bloc
-- 依赖注入：get_it + injectable
-- 实时通信：WebSocket
-- 本地持久化：SQLite 或 Hive
-- 导航：go_router
-
-### 4. 目录结构规划 📁
-
-```
-lib/
-  ├── features/
-  │   └── chat/
-  │       ├── data/
-  │       │   ├── datasources/
-  │       │   │   ├── chat_remote_data_source.dart
-  │       │   │   └── chat_local_data_source.dart
-  │       │   ├── models/
-  │       │   │   ├── message_model.dart
-  │       │   │   └── session_model.dart
-  │       │   └── repositories/
-  │       │       ├── chat_repository_impl.dart
-  │       │       └── message_repository_impl.dart
-  │       ├── domain/
-  │       │   ├── entities/
-  │       │   │   ├── message.dart
-  │       │   │   └── chat_session.dart
-  │       │   ├── repositories/
-  │       │   │   ├── i_chat_repository.dart
-  │       │   │   └── i_message_repository.dart
-  │       │   └── usecases/
-  │       │       ├── send_message.dart
-  │       │       ├── receive_message.dart
-  │       │       └── manage_session.dart
-  │       └── presentation/
-  │           ├── bloc/
-  │           │   ├── chat_bloc.dart
-  │           │   ├── chat_event.dart
-  │           │   └── chat_state.dart
-  │           ├── pages/
-  │           │   ├── chat_list_page.dart
-  │           │   └── chat_detail_page.dart
-  │           └── widgets/
-  │               ├── message_bubble.dart
-  │               └── chat_input.dart
-```
-
-### 5. 开发顺序 📝
-
-1. 实现 Domain 层接口定义
-2. 实现 Data 层的 Repository 和 DataSource
-3. 实现 Domain 层的 Use Cases
-4. 实现 Presentation 层的 Bloc
-5. 实现 UI 组件
-
-### 6. 测试策略 🧪
-
-- Domain 层：单元测试 Use Cases
-- Data 层：单元测试 Repository 和 DataSource
-- Presentation 层：单元测试 Bloc 和 Widget 测试
-
-### 7. 注意事项 ⚠️
-
-- 使用 Mock 进行隔离开发
-- 确保 WebSocket 连接的生命周期管理
-- 处理离线消息和消息同步
-- 实现消息状态追踪（发送中、已发送、已读等）
-- 考虑消息持久化和缓存策略
-
-### 4. 精化 Domain 层接口 (2024-04-14) ✅
-
-在完成了模块边界定义和 API 分析后，我们需要精化 Domain 层接口，使其成为整个实现的"真理之源"。
-
-#### 4.1 工作步骤
-
-1. **创建核心实体类**：
-
-   - 根据 3.3 节的字段映射，实现核心实体类
-   - 添加详细的文档注释
-   - 确保实体类具有适当的不可变性和方法
-
-2. **定义枚举类型**：
-
-   - 实现消息类型枚举 `MessageType`
-   - 实现发送者类型枚举 `MessageSenderType`
-   - 实现消息状态枚举 `MessageStatus`
-   - 实现消息同步状态枚举 `MessageSyncStatus`
-
-3. **完善仓库接口**：
-
-   - 更新 `IChatRepository` 接口，添加详细文档
-   - 更新 `IChatRealtimeService` 接口，添加详细文档
-   - 更新 `IChatLocalCache` 接口，添加详细文档
-
-4. **实现用例类**：
-   - 创建并实现 `SendMessageUseCase`
-   - 创建并实现 `ReceiveMessageUseCase`
-   - 创建并实现 `CreateSessionUseCase`
-   - 创建并实现 `ManageSessionUseCase`
-   - 创建并实现 `SyncMessagesUseCase`
-
-#### 4.2 代码示例
-
-以下是各类型的示例实现：
-
-##### 4.2.1 实体类示例
-
-```dart
-/// 表示一条聊天消息
-///
-/// 消息包含发送者、接收者、内容和各种状态信息
-/// 与后端API的消息数据结构相匹配
-class Message extends Equatable {
-  /// 消息唯一标识符
-  final String id;
-
-  /// 消息所属的会话ID
-  final String sessionId;
-
-  /// 消息内容
-  final String content;
-
-  /// 发送者ID
-  final String senderId;
-
-  /// 发送者类型 (用户、系统等)
-  final MessageSenderType senderType;
-
-  /// 消息来源
-  final MessageSourceType messageSource;
-
-  /// 接收者ID
-  final String receiverId;
-
-  /// 接收者类型
-  final MessageReceiverType receiverType;
-
-  /// 消息发送/接收时间
-  final DateTime timestamp;
-
-  /// 消息当前状态
-  final MessageStatus status;
-
-  /// 消息类型 (文本、图片等)
-  final MessageType type;
-
-  /// 消息同步状态
-  final MessageSyncStatus syncStatus;
-
-  /// 重试次数 (用于发送失败的消息)
-  final int retryCount;
-
-  /// 错误信息 (如果发送失败)
-  final ChatError? error;
-
-  const Message({
-    required this.id,
-    required this.sessionId,
-    required this.content,
-    required this.senderId,
-    required this.senderType,
-    required this.messageSource,
-    required this.receiverId,
-    required this.receiverType,
-    required this.timestamp,
-    required this.status,
-    required this.type,
-    required this.syncStatus,
-    this.retryCount = 0,
-    this.error,
-  });
-
-  /// 创建此消息的副本，但部分字段替换为新值
-  Message copyWith({
-    // 字段参数...
-  }) {
-    // 实现...
-  }
-
-  /// 判断消息是否是本地用户发送的
-  bool get isFromLocalUser => senderType == MessageSenderType.USER;
-
-  /// 判断消息是否已发送成功
-  bool get isDelivered => status == MessageStatus.DELIVERED || status == MessageStatus.READ;
-
-  /// 判断消息是否已被读取
-  bool get isRead => status == MessageStatus.READ;
-
-  @override
-  List<Object?> get props => [
-    id, sessionId, content, senderId, senderType, messageSource,
-    receiverId, receiverType, timestamp, status, type, syncStatus,
-    retryCount, error
-  ];
-}
-```
-
-##### 4.2.2 仓库接口示例
-
-```dart
-/// 聊天仓库接口
-///
-/// 负责聊天会话和消息的数据操作，包括获取、发送、更新等
-abstract class IChatRepository {
-  /// 获取用户的会话列表流
-  ///
-  /// 返回会话列表的流，当有新会话或会话更新时，流会发出新的会话列表
-  Stream<List<ChatSession>> getChatSessions();
-
-  /// 获取指定会话的消息历史
-  ///
-  /// [sessionId] 聊天会话ID
-  /// [beforeMessageId] 可选，指定获取此消息ID之前的消息
-  /// [limit] 返回的消息数量上限
-  ///
-  /// 返回消息列表或失败信息
-  Future<Either<Failure, List<Message>>> getMessages(
-    String sessionId,
-    String? beforeMessageId,
-    int limit,
-  );
-
-  /// 发送消息
-  ///
-  /// [message] 要发送的消息对象
-  ///
-  /// 返回发送成功的消息对象(可能包含服务器分配的ID)或失败信息
-  Future<Either<Failure, Message>> sendMessage(Message message);
-
-  // 更多方法...
-}
-```
-
-#### 4.3 创建目录结构
-
-已创建以下目录结构：
-
-```
-lib/
-  ├── features/
-  │   └── chat/
-  │       ├── domain/
-  │       │   ├── entities/
-  │       │   │   ├── chat_session.dart
-  │       │   │   ├── message.dart
-  │       │   │   └── user.dart
-  │       │   ├── repositories/
-  │       │   │   ├── i_chat_repository.dart
-  │       │   │   └── i_chat_realtime_service.dart
-  │       │   ├── usecases/
-  │       │   │   ├── send_message.dart
-  │       │   │   ├── receive_message.dart
-  │       │   │   └── manage_session.dart
-  │       │   └── failures/
-  │       │       └── chat_failure.dart
-```
-
-## 下一步计划 📅
-
-1. 完成 Domain 层实体和接口的详细文档注释
-2. 在 Data 层实现仓库接口
-3. 开始实现 Presentation 层组件
-
-## 图标说明
-
-- ✅ 已完成
-- 🚧 进行中
-- 📋 技术要点
-- 📁 目录结构
-- 📝 开发顺序
-- 🧪 测试相关
-- ⚠️ 注意事项
-- 📅 计划
-
-### 5. 实现 Data 层 (2024-04-14) ✅
-
-在完成了 Domain 层的精化工作后，下一步是实现 Data 层，它负责具体的数据获取和存储逻辑。
-
-#### 5.1 工作步骤
-
-1. **创建数据模型**：
-
-   - 实现与后端 API 对应的数据传输对象（DTO）
-   - 创建实体映射方法（toEntity, fromEntity）
-   - 添加 JSON 序列化/反序列化支持
-
-2. **实现数据源**：
-
-   - 创建远程数据源（`ChatRemoteDataSource`）
-   - 创建本地数据源（`ChatLocalDataSource`）
-   - 实现 WebSocket 连接管理
-
-3. **实现仓库**：
-
-   - 实现 `ChatRepositoryImpl`
-   - 实现 `ChatRealtimeServiceImpl`
-   - 实现错误处理和转换逻辑
-
-4. **创建测试数据**：
-   - 创建 Mock 数据源
-   - 实现假数据生成器
-   - 准备测试用例
-
-#### 5.2 目录结构
-
-```
-lib/
-  ├── features/
-  │   └── chat/
-  │       ├── data/
-  │       │   ├── datasources/
-  │       │   │   ├── chat_remote_data_source.dart
-  │       │   │   ├── chat_local_data_source.dart
-  │       │   │   └── chat_websocket_data_source.dart
-  │       │   ├── models/
-  │       │   │   ├── message_dto.dart
-  │       │   │   ├── chat_session_dto.dart
-  │       │   │   └── user_dto.dart
-  │       │   └── repositories/
-  │       │       ├── chat_repository_impl.dart
-  │       │       └── chat_realtime_service_impl.dart
-```
-
-#### 5.3 实现要点
-
-- 使用 `dio` 进行 HTTP 请求
-- 使用 `web_socket_channel` 处理 WebSocket 通信
-- 使用 `sqflite` 或 `hive` 进行本地存储
-- 实现完整的离线支持和错误恢复
-- 处理网络状态监听和自动重连
-
-### 6. 实现 Domain 逻辑 (2024-04-14) ✅
-
-在 Data 层实现完成后，需要实现 Domain 层的核心业务逻辑，主要通过用例（Use Cases）来封装。
-
-#### 6.1 工作步骤
-
-1. **完善现有用例类**：
-
-   - 完善 `SendMessageUseCase` 的业务逻辑
-   - 完善 `ReceiveMessageUseCase` 的业务逻辑
-   - 完善 `CreateSessionUseCase` 的业务逻辑
-   - 完善 `ManageSessionUseCase` 的业务逻辑
-   - 完善 `SyncMessagesUseCase` 的业务逻辑
-
-2. **添加新的用例类**：
-
-   - 创建 `GetChatSessionsUseCase` 获取会话列表
-   - 创建 `GetMessagesUseCase` 获取历史消息
-   - 创建 `SearchMessagesUseCase` 搜索消息
-   - 创建 `RetryFailedMessageUseCase` 重试失败消息
-   - 创建 `ObserveMessageStatusUseCase` 监听消息状态变更
-
-3. **实现业务规则**：
-   - 消息排序和分组逻辑
-   - 会话排序逻辑（最新消息优先，置顶优先）
-   - 消息发送前的验证规则
-   - 会话状态自动更新规则
-
-#### 6.2 实现示例
-
-以下是 `GetChatSessionsUseCase` 的实现示例：
-
-```dart
-/// 获取聊天会话列表用例
-///
-/// 提供会话列表的实时流，当会话更新时会自动推送新数据
-class GetChatSessionsUseCase implements UseCase<Stream<List<ChatSession>>, NoParams> {
-  final IChatRepository _chatRepository;
-
-  /// 创建获取聊天会话列表用例
-  ///
-  /// [chatRepository] 聊天仓库接口
-  const GetChatSessionsUseCase(this._chatRepository);
+### 3. **分析参考代码** (2024-04-07) ✅
 
-  @override
-  Stream<List<ChatSession>> call(NoParams params) {
-    return _chatRepository.getChatSessions();
-  }
-}
-```
+#### 3.1 验证边界
 
-#### 6.3 关键点实现
+通过分析参考的 HTML 原型和 API 定义，验证了我们的模块边界定义，发现以下几点：
 
-1. **流式数据处理**：
+##### 3.1.1 功能验证
 
-   - 使用 Streams 处理实时数据变化
-   - 处理会话和消息的实时更新
-
-2. **错误处理策略**：
+- **消息类型**：
 
-   - 使用 Either 类型封装操作结果
-   - 在异常场景下提供明确的 Failure 类型
-
-3. **业务规则封装**：
-   - 在用例层处理复杂的业务规则
-   - 保持领域模型的纯净和无状态
-
-### 7. 实现 Presentation 层 (2024-04-XX) 🚧
-
-在完成 Domain 逻辑后，我们需要实现 Presentation 层，构建用户界面并处理 UI 状态。
-
-#### 7.1 工作步骤
-
-1. **创建 Bloc 状态管理**：
-
-   - 创建 `ChatBloc` 处理会话列表状态
-   - 创建 `MessageBloc` 处理消息交互
-   - 创建相应的事件（Event）和状态（State）类
-
-2. **实现页面**：
-
-   - 创建 `ChatListPage` 显示会话列表
-   - 创建 `ChatDetailPage` 显示会话详情和消息历史
-   - 创建 `ChatSearchPage` 实现消息搜索功能
-
-3. **开发组件**：
-   - 创建 `MessageBubble` 显示消息气泡
-   - 创建 `ChatInput` 实现消息输入框
-   - 创建 `SessionTile` 实现会话列表项
-   - 创建各种状态指示器和加载组件
-
-#### 7.2 状态管理设计
-
-- **ChatBloc**：
-
-  - 管理会话列表状态
-  - 处理会话置顶、标记已读、删除等操作
-  - 监听新消息更新会话列表
-
-- **MessageBloc**：
-  - 管理单个会话的消息列表
-  - 处理消息发送、接收、加载历史消息
-  - 管理消息状态（发送中、已发送、已读等）
-
-#### 7.3 页面交互流程
-
-1. **聊天列表交互**：
+  - ✅ 文本消息 - 已覆盖在我们的定义中
+  - ✅ 图片消息 - 已覆盖在我们的定义中
+  - ✅ 语音消息 - 已覆盖在我们的定义中
+  - ✅ 系统消息 - 已覆盖在我们的定义中
+  - ❌ 富文本消息 - 未在 HTML 原型中发现，但考虑未来扩展性已添加
+  - ❓ 位置消息 - 在 HTML 原型中存在但未纳入当前设计，需考虑是否添加
 
-   - 进入应用 -> 加载会话列表
-   - 点击会话 -> 进入会话详情
-   - 长按会话 -> 显示操作菜单（置顶、标记已读、删除等）
-   - 下拉刷新 -> 同步最新会话
+- **会话管理**：
 
-2. **聊天详情交互**：
-   - 进入会话 -> 加载最近消息 + 标记已读
-   - 上滑加载更多 -> 获取历史消息
-   - 发送消息 -> 显示发送状态 -> 更新 UI
-   - 接收新消息 -> 自动滚动到底部
+  - ✅ 会话列表 - 与 HTML 原型匹配
+  - ✅ 会话状态管理 - 与 HTML 原型匹配
+  - ✅ 未读消息计数 - 与 HTML 原型匹配
+  - ❌ 会话置顶功能 - HTML 原型中存在但未完全覆盖
+  - ❌ 会话静音功能 - HTML 原型中存在但未完全覆盖
 
-### 8. 识别并配置外部依赖 (2024-04-XX) ✅
+- **消息交互**：
+  - ✅ 消息发送 - 与 API 定义匹配
+  - ✅ 消息接收 - 与 API 定义匹配
+  - ✅ 消息历史获取 - 与 API 定义匹配
+  - ✅ 消息状态更新 - 与 API 定义匹配
+  - ❌ 消息检索功能 - 未在 API 中发现，但为常见功能
 
-#### 8.1 工作内容
+##### 3.1.2 接口验证
 
-在这一步中，我们需要识别 Chat 模块的外部依赖，创建 Mock 实现以便于在开发和测试阶段隔离使用。
+API 接口与我们定义的 Repository 接口对比：
 
-1. **识别外部服务调用**:
+| API 端点                                                  | 方法 | 功能           | 我们的接口方法                     | 状态                |
+| --------------------------------------------------------- | ---- | -------------- | ---------------------------------- | ------------------- |
+| `/api/chat/addChat`                                       | POST | 添加聊天室     | `IChatRepository.createSession`    | ✅ 已覆盖(但需改名) |
+| `/api/chat/list`                                          | POST | 查询聊天室列表 | `IChatRepository.getChatSessions`  | ✅ 已覆盖           |
+| `/api/chat/message/list`                                  | POST | 消息列表       | `IChatRepository.getMessages`      | ✅ 已覆盖           |
+| `/api/chat/message/delete`                                | POST | 删除聊天记录   | `IChatRepository.deleteMessage`    | ✅ 已覆盖           |
+| `/api/chat/message/withdraw`                              | POST | 撤回消息       | `IChatRepository.revokeMessage`    | ✅ 已覆盖           |
+| `/common/chat/message/add`                                | POST | 发送消息       | `IChatRepository.sendMessage`      | ✅ 已覆盖           |
+| `/api/chat/get`                                           | GET  | 聊天室详情     | `IChatRepository.getSessionDetail` | ✅ 已覆盖           |
+| `/api/member/info`                                        | GET  | 获取用户资料   | `IUserRepository.getUserInfo`      | ✅ 需外部依赖       |
+| `${WS_BASE_URL}/websocket/message/S{commonUserId}/member` | -    | 实时消息通信   | `IChatRealtimeService` 相关方法    | ✅ 已覆盖           |
 
-   - 确定聊天模块需要与哪些外部服务交互
-   - 这些服务通常包括 API 客户端、本地存储、实时通信服务等
+**需要补充的接口方法**：
 
-2. **创建 Mock 实现**:
+1. `Future<Either<Failure, ChatSession>> getSessionDetail(String sessionId)`：获取会话详情 ✅ 已补充
 
-   - 实现了`IChatRepository`接口的`MockChatRepository`类
-   - 实现了`IChatRealtimeService`接口的`MockChatRealtimeService`类
-   - 创建`MockChatData`类提供模拟数据
+##### 3.1.3 实体验证
 
-3. **配置 Mock 依赖**:
-   - 使用依赖注入框架(GetIt)注册 Mock 实现
-   - 在模块预览环境中使用 Mock 依赖
+数据模型与我们定义的实体类对比：
 
-#### 8.2 实现示例
+- **ChatSession**：
 
-以下是`MockChatRepository`的部分实现代码，用于模拟聊天仓库的行为：
+  - ✅ id, title - 与 API 响应匹配
+  - ✅ lastMessage - 与 API 响应匹配
+  - ✅ timestamp - 与 API 响应匹配
+  - ❌ pinned 状态 - API 中未明确
+  - ❌ muted 状态 - API 中未明确
 
-```dart
-class MockChatRepository implements IChatRepository {
-  final _data = MockChatData();
-  final _sessionStreamController = StreamController<List<ChatSession>>.broadcast();
+- **Message**：
+  - ✅ id, content, type - 与 API 响应匹配
+  - ✅ senderId, timestamp - 与 API 响应匹配
+  - ✅ status - 与前端需求匹配
+  - ❌ parentMessageId - API 中存在但未完全覆盖
 
-  MockChatRepository() {
-    // 初始化时发送会话列表
-    _sessionStreamController.add(_data.chatSessions);
-  }
-
-  @override
-  Stream<List<ChatSession>> getChatSessions() {
-    return _sessionStreamController.stream;
-  }
+#### 3.2 提取实现细节
 
-  @override
-  Future<Either<ChatFailure, Message>> sendMessage({
-    required String sessionId,
-    required String content,
-    required MessageType type,
-  }) async {
-    // 模拟实现发送消息的业务逻辑
-    // ...
-  }
+##### 3.2.1 业务逻辑细节（Domain 层）
 
-  // 其他接口实现...
-}
-```
+1. **消息发送流程**：
 
-此外，我们还创建了模块的依赖注入配置：
+   - 用户输入消息内容 → 本地生成临时消息 ID → 添加到本地列表（状态：发送中）
+   - 通过 REST API（`/common/chat/message/add`）发送消息 → 服务器确认接收（状态：已发送）
+   - 消息发送失败时 → 标记状态，提供重试机制
 
-```dart
-class ChatModule {
-  static void registerMockDependencies(GetIt getIt) {
-    // 注册Mock仓库和服务
-    getIt.registerLazySingleton<IChatRepository>(
-      () => MockChatRepository(),
-    );
+2. **消息同步机制**：
 
-    getIt.registerLazySingleton<IChatRealtimeService>(
-      () => MockChatRealtimeService(),
-    );
+   - 应用启动时 → 加载本地缓存会话和消息 → 连接 WebSocket
+   - 连接成功后 → 同步最新消息（获取本地最后消息 ID 之后的消息）
+   - 本地发送失败的消息 → 重新发送
+   - 处理自动回复场景 → 通过 WebSocket 接收到自动回复消息时 → 执行刷新逻辑更新已读状态
 
-    // 注册用例和Bloc
-    // ...
-  }
-}
-```
+3. **已读状态处理**：
+   - 进入聊天室 → 标记当前会话所有消息为已读
+   - 服务器自动处理已读状态 → 无需客户端发送已读回执
+   - 同步更新本地存储的已读状态
+   - 对于自动回复的消息 → 检测到自动回复时主动刷新状态 → 更新未读消息计数
 
-#### 8.3 关键点说明
+##### 3.2.2 数据交互细节（Data 层）
 
-- **模块隔离**: 通过 Mock 实现，使得聊天模块可以独立开发和测试，不依赖后端 API
-- **真实体验**: Mock 实现模拟了真实的数据流和业务规则，提供接近真实的体验
-- **易于切换**: 使用依赖注入模式，可以在不改变业务代码的情况下轻松切换实现
+1. **WebSocket 接口定义**：
 
-### 9. 编写单元测试/Widget 测试 (2024-04-XX) 🚧
+   通过分析现有代码，WebSocket 接口需要支持以下功能：
 
-#### 9.1 工作内容
+   - **连接管理接口**：
 
-这一步中，我们为 Chat 模块的各个层次编写测试用例，确保功能正确性和质量。
+     - `connect(String token)` - 建立 WebSocket 连接并进行认证
+     - `disconnect()` - 主动断开连接并清理资源
+     - `reconnect()` - 尝试重新连接 WebSocket
+     - `isConnected()` - 检查当前连接状态
 
-1. **Domain 层测试**:
+   - **WebSocket URL 获取**：
 
-   - 为 UseCase 编写单元测试，验证业务规则
-   - 测试各种错误情况和边界条件
+     - 使用格式：`${WS_BASE_URL}/websocket/message/S{commonUserId}/member`
+     - `commonUserId` 需从用户资料接口 `/api/member/info` 中获取
+     - 应用启动时获取用户资料，保存 `commonUserId` 用于 WebSocket 连接
 
-2. **Data 层测试**:
+   - **心跳机制**：
 
-   - 为 Repository 实现编写单元测试
-   - 模拟网络请求和数据库操作
+     - 每 20 秒发送一次心跳包：`{ type: "heartbeat" }`
+     - 需要在收到服务器任何消息后重置心跳计时器
+     - 心跳失败应触发重连机制
 
-3. **Presentation 层测试**:
-   - 为 Bloc 编写单元测试，验证状态转换
-   - 为 Widget 编写集成测试，验证 UI 行为
+   - **认证流程**：
 
-#### 9.2 测试示例
+     - 连接成功后立即发送认证消息：`{ type: "auth", token: "用户令牌" }`
+     - 监听认证结果，认证失败需要处理重连或错误提示
 
-以下是`GetChatSessionsUseCase`的单元测试示例：
+   - **消息接收**：
 
-```dart
-void main() {
-  late GetChatSessionsUseCase useCase;
-  late MockChatRepository mockRepository;
+     - 通过 `Stream<IncomingMessageDto> get incomingMessages` 监听服务器推送的新消息
+     - 接收到消息后将其分发到相应的状态管理器
+     - 注意：WebSocket 仅用于接收消息，发送消息通过 REST API 实现
 
-  setUp(() {
-    mockRepository = MockChatRepository();
-    useCase = GetChatSessionsUseCase(mockRepository);
-  });
+   - **错误处理策略**：
+     - 实现指数退避重连（2^n 秒，最大 10 秒）
+     - 设置最大重连次数（2 次），超过后需通知 UI 显示错误
+     - 提供连接状态监听机制，允许 UI 响应状态变化
 
-  test('应该从仓库获取聊天会话流', () async {
-    // 准备测试数据
-    final sessions = [
-      ChatSession(id: '1', title: 'Test 1', ...),
-      ChatSession(id: '2', title: 'Test 2', ...),
-    ];
+2. **本地存储结构**：
+   - 会话表：`id`, `title`, `user_id`, `last_message_id`, `unread_count`, `timestamp`, `is_pinned`, `is_muted`
+   - 消息表：`id`, `conversation_id`, `content`, `type`, `sender_id`, `status`, `timestamp`, `local_status`, `retry_count`
+
+##### 3.2.3 UI 流程与交互（Presentation 层）
 
-    // 设置Mock行为
-    when(mockRepository.getChatSessions())
-        .thenAnswer((_) => Stream.value(sessions));
+1. **关键页面流程**：
 
-    // 执行用例
-    final result = useCase();
+   - 会话列表页 → 点击会话 → 聊天详情页
+   - 用户资料页 → 点击"发送消息" → 创建会话 → 聊天详情页
+   - 聊天详情页 → 点击头像 → 用户资料页
+   - 聊天详情页 → 点击订单图标 → 订单详情页 (暂不实现)
 
-    // 验证结果
-    expect(result, emits(sessions));
-    verify(mockRepository.getChatSessions()).called(1);
-  });
-}
-```
+2. **UI 交互事件**：
 
-#### 9.3 关键点说明
+   - 长按消息 → 显示操作菜单（复制、删除、撤回）
+   - 点击图片消息 → 全屏预览
+   - 点击语音消息 → 播放语音
+   - 输入框右侧"+" → 显示更多操作（图片、文件）
+
+3. **UI 状态反馈**：
+
+   - 消息发送中 → 显示加载图标
+   - 消息发送成功 → 显示单个对勾
+   - 消息已读 → 显示双对勾（如果服务端支持）
+   - 消息发送失败 → 显示红色感叹号，点击重试
 
-- **测试覆盖率**: 尽量达到高测试覆盖率，特别是核心业务逻辑
-- **测试隔离**: 使用 Mock 对象隔离测试单元，避免外部依赖
-- **持续集成**: 将测试集成到 CI 流程中，确保代码质量
-
-### 10. 在预览环境中调试和验证 (2024-04-XX) 🚧
-
-#### 10.1 工作内容
-
-在这一步中，我们创建一个独立的预览环境，用于验证聊天模块的功能和 UI。
-
-1. **创建预览入口**:
-
-   - 实现`main_chat_preview.dart`作为独立入口
-   - 配置路由和依赖注入
-
-2. **调试功能**:
-
-   - 验证聊天列表的显示和排序
-   - 测试发送和接收消息
-   - 验证会话状态管理的正确性
-
-3. **验收标准**:
-   - UI 与设计规范一致
-   - 功能按预期工作
-   - 性能满足要求
-
-#### 10.2 预览入口示例
-
-以下是聊天模块预览入口的实现:
-
-```dart
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  // 注册依赖
-  final getIt = GetIt.instance;
-  ChatModule.registerMockDependencies(getIt);
-
-  runApp(const ChatPreviewApp());
-}
-
-class ChatPreviewApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<ChatBloc>(
-          create: (_) => getIt<ChatBloc>()..add(const LoadChats()),
-        ),
-        BlocProvider<MessageBloc>(
-          create: (_) => getIt<MessageBloc>(),
-        ),
-      ],
-      child: MaterialApp.router(
-        title: '聊天模块预览',
-        theme: ThemeData(...),
-        routerConfig: _router,
-      ),
-    );
-  }
-
-  // 路由配置...
-}
-```
-
-#### 10.3 关键点说明
-
-- **独立性**: 预览环境可以独立于主应用运行，便于开发和测试
-- **真实数据**: 使用模拟数据，但反映真实的数据结构和业务逻辑
-- **快速迭代**: 便于快速验证和迭代功能实现
+4. **消息操作分析**：
+
+   参考 React Native 代码中的 `chatroom.tsx` 和 `msgSlice.ts`，消息操作的关键实现包括：
+
+   - **消息撤回流程**：
+
+     - 长按消息 → 显示上下文菜单 → 选择"撤回"
+     - 调用 `/api/chat/message/withdraw` API 端点
+     - 成功后从本地消息列表中移除该消息
+     - 通知 UI 更新，显示成功提示
+
+   - **消息类型处理**：
+
+     - 支持的消息类型：`text`（文本）、`image`（图片）、`audio`（语音）
+     - 每种类型有专门的渲染组件和交互逻辑
+     - 图片消息支持全屏预览
+     - 语音消息支持播放控制
+
+##### 3.2.4 技术实现关键点
+
+1. **WebSocket 连接管理**：
+
+   - 使用心跳机制（每 20 秒发送一次）保持连接活跃
+   - 监听网络状态变化，自动重连
+   - 连接断开后实现指数退避重连策略（最大尝试 2 次）
+   - 使用 Redux 存储连接状态和错误状态
+
+2. **消息持久化与状态管理**：
+
+   - 使用 Redux 管理消息和会话状态
+   - 消息获取模式：
+     - 应用启动或进入会话时通过 API 加载历史消息
+     - 通过 WebSocket 实时接收新消息
+     - 通过 REST API（`/common/chat/message/add`）发送消息，发送前先添加到本地状态
+   - 关键 Redux Action：
+     - `createRoom` - 创建聊天室
+     - `sendMsg` - 发送消息（通过 REST API）
+     - `getMsgList` - 获取消息列表
+     - `getChatRoomList` - 获取会话列表
+     - `revokeMessage` - 撤回消息
+     - `deleteMessage` - 删除消息
+     - `receiveMessage` - 接收 WebSocket 消息
+
+3. **多媒体消息处理**：
+
+   - 文件上传通用流程：
+
+     - 所有文件（图片、语音等）统一调用公共接口 `/api/common/public/upload` 上传到 OSS
+     - 接口参数为 `multipart/form-data` 格式，包含 `file` 字段
+     - 接口返回格式：`{ "msg": string, "code": number, "data": { "fileName": string, "url": string } }`
+     - 上传成功后获取返回的 `data.url` 用于后续操作
+
+   - 图片发送流程：
+     - 拍照或从相册选择 → 预处理（可能包括压缩）→ 调用 `/api/common/public/upload` 上传到 OSS
+     - 获取到图片 URL 后，作为图片类型消息发送
+   - 图片接收与保存：
+     - 接收图片消息 → 显示图片预览
+     - 长按图片 → 提供保存选项 → 保存至设备相册
+     - 实现图片缓存，减少重复下载
+     - 支持图片本地保存功能，用户可将聊天中的图片保存到本地相册
+     - 实现图片保存权限请求与结果反馈
+   - 语音发送流程：
+     - 录制语音 → 保存为本地文件 → 调用 `/api/common/public/upload` 上传到 OSS
+     - 获取到语音 URL 后，作为语音类型消息发送
+   - 消息类型按不同方式渲染：
+     - 文本：显示文本消息气泡
+     - 图片：显示图片预览，支持点击放大
+     - 语音：显示语音播放控件
+
+4. **用户交互优化**：
+   - 实现消息长按操作菜单（复制、撤回、删除）
+   - 图片消息支持全屏预览和缩放
+   - 语音消息支持播放和暂停
+   - 聊天室高度自适应键盘显示/隐藏
+   - 切换到其他页面后返回，保持聊天历史记录
+   - 消息发送时增加本地反馈，减少感知延迟
+
+#### 3.3 接口字段与实体映射
+
+通过分析后端 API 响应和我们的实体类定义，整理出以下字段映射关系：
+
+##### 3.3.1 ChatSession 字段映射
+
+| API 字段名                  | 实体字段名     | 类型     | 说明                                 |
+| --------------------------- | -------------- | -------- | ------------------------------------ |
+| `id`                        | `id`           | String   | 会话唯一标识                         |
+| `title`                     | `title`        | String   | 会话名称（通常是对方用户名）         |
+| `user_id`                   | `userId`       | String   | 当前用户 ID                          |
+| `updated_at`                | `updatedAt`    | DateTime | 会话更新时间                         |
+| `created_at`                | `createdAt`    | DateTime | 会话创建时间                         |
+| _来自最后一条消息_          | `lastMessage`  | Message? | 最后一条消息                         |
+| _来自返回数据的 total 属性_ | `unreadCount`  | int      | 未读消息数                           |
+| _本地维护_                  | `targetUserId` | String   | 对方用户 ID (通过分析会话参与者得到) |
+| _本地维护_                  | `pinned`       | bool     | 是否置顶(本地状态)                   |
+| _本地维护_                  | `muted`        | bool     | 是否静音(本地状态)                   |
+
+##### 3.3.2 Message 字段映射
+
+| API 字段名                 | 实体字段名      | 类型       | 说明                        |
+| -------------------------- | --------------- | ---------- | --------------------------- |
+| `id`                       | `id`            | String     | 消息唯一标识                |
+| `conversation_id`          | `sessionId`     | String     | 聊天室 ID(对应会话 ID)      |
+| `content`/`context`        | `content`       | String     | 消息内容                    |
+| `role` 或 发送者标识       | `senderId`      | String     | 发送者 ID                   |
+| _根据 role 字段判断_       | `senderType`    | enum       | 发送者类型 (user/assistant) |
+| `messageType`              | `messageSource` | enum       | 消息来源                    |
+| `recipientId`/`receiverId` | `receiverId`    | String     | 接收者 ID                   |
+| _根据角色判断_             | `receiverType`  | enum       | 接收者类型                  |
+| `timestamp`/`createTime`   | `timestamp`     | DateTime   | 消息发送时间                |
+| `type`                     | `type`          | enum       | 消息类型(text/image/audio)  |
+| `readTime`                 | _用于状态判断_  | DateTime?  | 读取时间 (判断已读状态)     |
+| `message_id`               | _备用 ID_       | String     | 消息 ID (部分 API 返回)     |
+| `parent_message_id`        | _父消息 ID_     | String     | 父消息 ID (对于回复类消息)  |
+| _本地维护_                 | `syncStatus`    | enum       | 同步状态                    |
+| _本地维护_                 | `retryCount`    | int        | 重试次数                    |
+| _本地维护_                 | `error`         | ChatError? | 错误信息                    |
+
+##### 3.3.3 数据转换逻辑
+
+1. **DTO 到实体转换**：
+
+   - `ChatSessionDto` → `ChatSession`：
+
+     - 将 `id` 直接映射为会话 ID
+     - 将 `title` 映射为会话标题
+     - 将 `user_id` 映射到 `userId`
+     - 将 `updated_at` 转换后映射到 `updatedAt`
+     - 将 `created_at` 转换后映射到 `createdAt`
+     - 从会话列表或消息历史中提取最后一条消息作为 `lastMessage`
+     - 将未读计数映射到 `unreadCount`
+     - 分析会话参与者后设置 `targetUserId`
+     - 为本地状态字段 `pinned` 和 `muted` 设置默认值为 false
+
+   - `MessageDto` → `Message`：
+     - 将消息 `id` 直接映射
+     - 将 `conversation_id` 映射到 `sessionId`
+     - 将消息内容映射到 `content`
+     - 根据 `role` 或发送者信息设置 `senderId` 和 `senderType`
+     - 根据 `type` 字段设置消息类型
+     - 将接收者 ID 映射到 `receiverId`
+     - 将时间戳转换后映射到 `timestamp`
+     - 根据 `readTime` 等信息设置消息状态
+     - 设置初始 `syncStatus` 为 SYNCED（对于从服务器获取的消息）
+     - 本地新消息设置 `syncStatus` 为 PENDING 或 SYNCING
+
+2. **实体到 DTO 转换**：
+
+   - `ChatSession` → `ChatSessionDto`：
+
+     - 将会话 ID 和用户 ID 映射到相应字段
+     - 只包含服务器需要的字段
+     - 省略本地状态字段 `pinned` 和 `muted`
+
+   - `Message` → `MessageDto`：
+     - 将 `content` 映射到适当的内容字段
+     - 将 `sessionId` 映射到 `conversation_id`
+     - 根据 `senderType` 设置正确的发送者字段
+     - 将 `receiverId` 映射到接收者 ID 字段
+     - 将消息类型 `type` 正确映射为 API 期望的类型字符串
+     - 省略本地状态相关字段
+
+这些映射关系将指导我们在数据层实现中正确转换 API 响应数据和实体对象，确保数据流在整个应用中的一致性。
+
+### 4. **精化 `Domain` 层接口**
+
+    - **目标**: 最终确定 `Domain` 层的接口及其详细契约，使其成为代码实现的"真理之源"。
+    - **细节与说明**:
+      - 在模块的 `domain/` 目录下创建或完善 `.dart` 文件。
+      - **编写代码**: 定义 `Entities`, `Use Cases` (通常是抽象类或接口), `Repository Interfaces`。
+      - **添加详细文档注释 (Doc Comments `///`)**: 对每个接口、方法、参数、返回值进行清晰说明，包括其目的、类型、约束（是否可空）、可能的错误/异常类型。这是最重要的"契约"文档。
+
+5.  **实现 Flutter `Data` 层**
+
+    - **目标**: 实现 `Domain` 层定义的数据仓库接口，负责具体的数据获取和存储。
+    - **细节与说明**:
+      - 在 `data/repositories/` 下创建仓库实现类 (`XxxRepositoryImpl`)，实现 `Domain` 层对应的 `IXxxRepository` 接口。
+      - 在 `data/datasources/` 下创建数据源类 (如 `XxxRemoteDataSource`, `XxxLocalDataSource`)，负责与具体的 API 或数据库交互。
+      - 在 `data/models/` 下定义 `DTOs` (Data Transfer Objects)，通常匹配 API 或数据库结构，并实现与 `Domain Entities` 之间的映射逻辑（可以在 Model 或 Repository 实现中完成）。
+      - 处理数据层的错误（如网络异常），并可能将其转换为 `Domain` 层定义的特定 `Failure` 类型。
+      - **创建 Mock `DataSource`**: 为 `Repository` 实现提供 Mock 数据源，用于单元测试。
+      - **创建 Mock `Repository` 实现**: (可选，但通常在步骤 8 配置) 为模块预览或测试提供 Mock 仓库。
+
+6.  **实现 Flutter `Domain` 逻辑**
+
+    - **目标**: 实现 `Use Cases`，封装核心业务规则。
+    - **细节与说明**:
+      - 在 `domain/usecases/` 下创建 `Use Case` 实现类。
+      - `Use Case` 应依赖 `Repository` 接口（通过构造函数注入）。
+      - 实现 `Use Case` 的执行逻辑，编排对一个或多个 `Repository` 方法的调用。
+      - 包含纯粹的业务规则、计算和决策逻辑。
+      - 确保 `Use Case` 是可测试的（因为它只依赖接口）。
+
+7.  **实现 Flutter `Presentation` 层**
+
+    - **目标**: 构建用户界面和处理 UI 状态。
+    - **细节与说明**:
+      - 在 `presentation/pages/` (或 `screens/`) 下创建页面 `Widgets`。
+      - 在 `presentation/widgets/` 下创建该模块内可复用的 UI 组件。
+      - 在 `presentation/bloc/` (或 `cubit/`, `riverpod/` 等) 下创建状态管理类。
+      - 状态管理类 (`Bloc`/`Cubit`/`Provider`) 应依赖 `Domain` 层的 `Use Case` 接口（通过构造函数注入）。
+      - 实现状态管理逻辑：接收 UI 事件 -> 调用 `Use Cases` -> 根据结果发出新状态。
+      - UI `Widgets` 监听状态管理类的状态并据此更新界面。
+      - UI 元素触发事件发送给状态管理类。
+      - 布局实现时参考 HTML 原型或 UI 设计稿。
+
+8.  **识别并配置外部依赖 (隔离开发)**
+
+    - **目标**: 为模块的独立开发、测试和预览配置 Mock 依赖。
+    - **细节与说明**:
+      - **识别外部调用**: 确定该模块需要调用哪些外部服务：
+        - 导航服务的方法 (用于页面跳转)。
+        - 其他模块的 `Domain` 接口 (用于跨模块业务调用)。
+      - **配置 Mock 注入**: 在测试环境或模块预览环境的依赖注入配置中：
+        - 为需要依赖的其他模块接口提供 Mock 实现（如 `MockUserRepository`）。
+        - 可能需要提供 Mock 的导航服务，模拟导航行为或返回结果。
+
+9.  **编写单元/Widget 测试**
+
+    - **目标**: 确保模块内部代码的质量和正确性。
+    - **细节与说明**:
+      - **`Domain` 层**: 为 `Use Cases` 编写单元测试，注入 Mock `Repository`，验证业务逻辑。为 `Entities` 中复杂的逻辑（如果有）编写测试。
+      - **`Data` 层**: 为 `Repository` 实现类编写单元测试，注入 Mock `DataSources`，验证其逻辑和映射。为 `DataSource` 编写测试（可能需要 Mock HTTP 客户端或数据库连接）。
+      - **`Presentation` 层**: 为 `Blocs/Cubits/Providers` 编写单元测试（使用 `bloc_test` 或类似工具），注入 Mock `Use Cases`，验证状态转换逻辑。为重要的 `Widgets` 或页面编写 Widget 测试，验证 UI 渲染和基本交互。
+      - 力求达到预设的测试覆盖率目标。
+
+10. **在模块预览环境中调试和验证**
+
+    - **目标**: 在隔离状态下，通过实际交互来验证模块的功能和 UI。
+    - **细节与说明**:
+      - 运行为该模块配置的独立预览入口（如 `main_xxx_preview.dart`）。
+      - 确保预览环境正确注入了 Mock 依赖。
+      - 手动操作模块的关键页面和流程，检查 UI 显示是否符合预期，交互是否流畅，状态变化是否正确。
+      - 利用 Flutter DevTools 进行调试。
+
+11. **(模块完成后) 集成准备**
+
+    - **目标**: 准备将验证通过的模块代码合并到主工程。
+    - **细节与说明**:
+      - **最终检查**: 确认模块满足所有"完成"定义 (`DoD`)。
+      - **代码评审**: 确保代码已通过 PR/MR 评审。
+      - **准备合并**: 确保本地主开发分支是最新状态，准备执行合并操作。
+      - 参考方法论文档第 5.1 节。
+
+12. **执行集成与测试**
+
+    - **目标**: 将模块安全地合并到主工程，并验证其在真实环境中的协作。
+    - **细节与说明**:
+      - **合并代码**: 执行 `git merge` 或类似操作。
+      - **更新主工程配置**: 在主工程的 DI 配置中替换 Mock 为真实实现，在导航配置中注册真实路由。
+      - **执行集成测试**: 运行模块间交互测试、E2E 测试、回归测试。
+      - 参考方法论文档第 5.2 - 5.5 节。
+
+13. **重复**
+    - **目标**: 开始下一个模块的重构循环。
+    - **细节与说明**:
+      - （可选）合并完成后，可以删除特性分支。
+      - 返回步骤 1，选择下一个要重构的模块。
+
+希望这个更详细的工作流文档能更好地指导你进行每个模块的重构工作！

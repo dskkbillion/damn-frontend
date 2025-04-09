@@ -1,8 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:bloc/bloc.dart';
+import 'package:dartz/dartz.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../domain/entities/message.dart';
+import '../../../domain/entities/chat_enums.dart';
 import '../../../domain/repositories/i_chat_repository.dart';
 import '../../../domain/services/i_chat_realtime_service.dart';
 import '../../../domain/usecases/delete_message.dart';
@@ -10,6 +14,7 @@ import '../../../domain/usecases/get_messages.dart';
 import '../../../domain/usecases/revoke_message.dart';
 import '../../../domain/usecases/send_message.dart';
 import '../../../domain/usecases/sync_messages.dart';
+import '../../../domain/usecases/mark_messages_read.dart';
 import './message_event.dart';
 import './message_state.dart';
 
@@ -21,6 +26,7 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
   final RevokeMessageUseCase _revokeMessageUseCase;
   final SyncMessagesUseCase _syncMessagesUseCase;
   final IChatRealtimeService _chatRealtimeService;
+  final MarkMessagesReadUseCase _markMessagesReadUseCase;
   
   /// 消息更新订阅
   StreamSubscription? _messageUpdateSubscription;
@@ -35,12 +41,14 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
     required RevokeMessageUseCase revokeMessageUseCase,
     required SyncMessagesUseCase syncMessagesUseCase,
     required IChatRealtimeService chatRealtimeService,
+    required MarkMessagesReadUseCase markMessagesReadUseCase,
   }) : _getMessagesUseCase = getMessagesUseCase,
        _sendMessageUseCase = sendMessageUseCase,
        _deleteMessageUseCase = deleteMessageUseCase,
        _revokeMessageUseCase = revokeMessageUseCase,
        _syncMessagesUseCase = syncMessagesUseCase,
        _chatRealtimeService = chatRealtimeService,
+       _markMessagesReadUseCase = markMessagesReadUseCase,
        super(MessageInitial()) {
     // 注册事件处理函数
     on<LoadMessages>(_onLoadMessages);
@@ -52,6 +60,7 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
     on<RevokeMessage>(_onRevokeMessage);
     on<ReceiveMessage>(_onReceiveMessage);
     on<MessageStatusChanged>(_onMessageStatusChanged);
+    on<MarkAsRead>(_onMarkAsRead);
     
     // 订阅实时消息更新
     _messageUpdateSubscription = _chatRealtimeService.messageStream.listen((message) {
@@ -186,8 +195,7 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
         timestamp: DateTime.now(),
         status: MessageStatus.sending,
         type: _determineMessageType(event.content),
-        metadata: event.metadata,
-        currentUserId: '', // 从认证服务获取
+        currentUserId: currentState.currentUserId,
       );
       
       // 更新UI，显示发送中的消息
@@ -202,10 +210,7 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
         final result = await _sendMessageUseCase(SendMessageParams(
           sessionId: event.sessionId,
           content: event.content,
-          receiverId: event.receiverId,
-          type: _determineMessageType(event.content),
-          metadata: event.metadata,
-          localMessageId: temporaryMessage.id,
+          type: event.type,
         ));
         
         result.fold(
@@ -292,10 +297,7 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
         final result = await _sendMessageUseCase(SendMessageParams(
           sessionId: failedMessage.sessionId,
           content: failedMessage.content,
-          receiverId: '', // 从会话中获取接收者ID
           type: failedMessage.type,
-          metadata: failedMessage.metadata,
-          localMessageId: failedMessage.id,
         ));
         
         result.fold(
@@ -491,6 +493,20 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
     }
   }
   
+  /// 处理标记为已读事件
+  Future<void> _onMarkAsRead(MarkAsRead event, Emitter<MessageState> emit) async {
+    try {
+      // 调用标记消息已读用例
+      await _markMessagesReadUseCase(MarkMessagesReadParams(
+        sessionId: event.sessionId,
+      ));
+      // 不需要更新UI状态，已读状态会通过会话列表更新
+    } catch (e) {
+      // 标记已读失败，但不影响用户体验，可以忽略
+      print('标记消息已读失败: $e');
+    }
+  }
+  
   @override
   Future<void> close() {
     _messageUpdateSubscription?.cancel();
@@ -502,7 +518,7 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
   MessageType _determineMessageType(String content) {
     // 在实际应用中，可能需要根据内容格式或元数据判断消息类型
     // 这里简化处理，默认为文本消息
-    return MessageType.text;
+    return MessageType.TEXT;
   }
   
   /// 在消息列表中更新指定消息

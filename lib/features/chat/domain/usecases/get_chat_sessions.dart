@@ -5,13 +5,6 @@ import '../failures/chat_failure.dart';
 import '../repositories/i_chat_repository.dart';
 import 'usecase.dart';
 
-/// 无参数对象
-///
-/// 用于无需参数的用例
-class NoParams {
-  const NoParams();
-}
-
 /// 获取聊天会话列表用例
 ///
 /// 提供会话列表的实时流，当会话更新时会自动推送新数据
