@@ -1,143 +1,108 @@
 import 'package:get_it/get_it.dart';
+import 'package:injectable/injectable.dart';
+import 'package:http/http.dart' as http;
 
-import '../domain/repositories/i_chat_repository.dart';
-import '../domain/services/i_chat_realtime_service.dart';
-import '../domain/usecases/create_session.dart';
-import '../domain/usecases/delete_message.dart';
-import '../domain/usecases/get_chat_sessions.dart';
-import '../domain/usecases/get_messages.dart';
-import '../domain/usecases/manage_session.dart';
-import '../domain/usecases/receive_message.dart';
-import '../domain/usecases/revoke_message.dart';
-import '../domain/usecases/send_message.dart';
-import '../domain/usecases/sync_messages.dart';
-import '../mock/mock_repositories.dart';
-import '../mock/mock_services.dart';
-import '../presentation/bloc/chat_bloc/chat_bloc.dart';
-import '../presentation/bloc/message_bloc/message_bloc.dart';
+import '../../../core/network/i_http_client.dart';
+import '../../../core/network/mock_http_client.dart';
+import '../../../core/network/network_info.dart';
+import '../data/datasources/chat_remote_datasource.dart';
+import '../data/datasources/chat_local_datasource.dart';
+import '../data/datasources/chat_websocket_service.dart';
+import '../data/repositories/chat_repository_impl.dart';
+import '../domain/repositories/chat_repository.dart';
+import '../domain/usecases/get_chat_sessions_usecase.dart';
+import '../domain/usecases/get_messages_usecase.dart';
+import '../domain/usecases/get_message_history_usecase.dart';
+import '../domain/usecases/send_message_usecase.dart';
+import '../domain/usecases/receive_message_usecase.dart';
+import '../presentation/bloc/chat_sessions/chat_sessions_bloc.dart';
+import '../presentation/bloc/chat_messages/chat_messages_bloc.dart';
 
-/// 聊天模块依赖注入配置
+/// 聊天模块依赖注入
 ///
-/// 负责注册聊天模块的依赖
-class ChatModule {
-  /// 注册Mock依赖
-  ///
-  /// 用于隔离开发和测试
-  static void registerMockDependencies(GetIt getIt) {
-    // 注册Mock仓库
-    getIt.registerLazySingleton<IChatRepository>(
-      () => MockChatRepository(),
-    );
-    
-    // 注册Mock实时服务
-    getIt.registerLazySingleton<IChatRealtimeService>(
-      () => MockChatRealtimeService(),
-    );
-    
-    // 注册用例
-    _registerUseCases(getIt);
-    
-    // 注册Bloc
-    _registerBlocs(getIt);
-  }
-  
-  /// 注册依赖
-  ///
-  /// 用于生产环境
+/// 用于注册聊天模块的所有依赖项
+@module
+abstract class ChatModule {
+  /// 注册真实依赖
   static void registerDependencies(GetIt getIt) {
-    // 目前使用Mock实现，后续替换为真实实现
-    registerMockDependencies(getIt);
+    // 网络状态
+    getIt.registerLazySingleton<NetworkInfo>(
+      () => NetworkInfoImpl(),
+    );
     
-    // TODO: 在生产环境中注册真实实现
-    // getIt.registerLazySingleton<IChatRepository>(
-    //   () => ChatRepository(),
-    // );
-    // 
-    // getIt.registerLazySingleton<IChatRealtimeService>(
-    //   () => ChatRealtimeService(),
-    // );
-  }
-  
-  /// 注册用例
-  ///
-  /// 注册聊天模块的所有用例
-  static void _registerUseCases(GetIt getIt) {
-    // 获取会话用例
+    // 数据源
+    getIt.registerLazySingleton<ChatRemoteDataSource>(
+      () => ChatRemoteDataSourceImpl(client: getIt<IHttpClient>()),
+    );
+    
+    getIt.registerLazySingleton<ChatLocalDataSource>(
+      () => ChatLocalDataSourceImpl(),
+    );
+    
+    getIt.registerLazySingleton<ChatWebSocketServiceImpl>(
+      () => ChatWebSocketServiceImpl(client: getIt<IHttpClient>()),
+    );
+
+    // 仓库
+    getIt.registerLazySingleton<IChatRepository>(
+      () => ChatRepositoryImpl(
+        remoteDataSource: getIt<ChatRemoteDataSource>(),
+        localDataSource: getIt<ChatLocalDataSource>(),
+        webSocketService: getIt<ChatWebSocketServiceImpl>(),
+        networkInfo: getIt<NetworkInfo>(),
+      ),
+    );
+
+    // 用例
     getIt.registerLazySingleton<GetChatSessionsUseCase>(
       () => GetChatSessionsUseCase(getIt<IChatRepository>()),
     );
     
-    // 发送消息用例
-    getIt.registerLazySingleton<SendMessageUseCase>(
-      () => SendMessageUseCase(getIt<IChatRepository>()),
-    );
-    
-    // 接收消息用例
-    getIt.registerLazySingleton<ReceiveMessageUseCase>(
-      () => ReceiveMessageUseCase(getIt<IChatRealtimeService>(), getIt<IChatRepository>()),
-    );
-    
-    // 创建会话用例
-    getIt.registerLazySingleton<CreateSessionUseCase>(
-      () => CreateSessionUseCase(getIt<IChatRepository>()),
-    );
-    
-    // 管理会话用例
-    getIt.registerLazySingleton<ManageSessionUseCase>(
-      () => ManageSessionUseCase(getIt<IChatRepository>()),
-    );
-    
-    // 同步消息用例
-    getIt.registerLazySingleton<SyncMessagesUseCase>(
-      () => SyncMessagesUseCase(getIt<IChatRepository>()),
-    );
-    
-    // 标记消息已读用例
-    getIt.registerLazySingleton<MarkMessagesReadUseCase>(
-      () => MarkMessagesReadUseCase(getIt<IChatRepository>()),
-    );
-    
-    // 获取消息用例
     getIt.registerLazySingleton<GetMessagesUseCase>(
       () => GetMessagesUseCase(getIt<IChatRepository>()),
     );
     
-    // 删除消息用例
-    getIt.registerLazySingleton<DeleteMessageUseCase>(
-      () => DeleteMessageUseCase(getIt<IChatRepository>()),
+    getIt.registerLazySingleton<GetMessageHistoryUseCase>(
+      () => GetMessageHistoryUseCase(getIt<IChatRepository>()),
     );
     
-    // 撤回消息用例
-    getIt.registerLazySingleton<RevokeMessageUseCase>(
-      () => RevokeMessageUseCase(getIt<IChatRepository>()),
-    );
-  }
-  
-  /// 注册Bloc
-  ///
-  /// 注册聊天模块的所有Bloc
-  static void _registerBlocs(GetIt getIt) {
-    // 聊天Bloc
-    getIt.registerFactory<ChatBloc>(
-      () => ChatBloc(
-        getChatSessionsUseCase: getIt<GetChatSessionsUseCase>(),
-        createSessionUseCase: getIt<CreateSessionUseCase>(),
-        manageSessionUseCase: getIt<ManageSessionUseCase>(),
-      ),
+    getIt.registerLazySingleton<SendMessageUseCase>(
+      () => SendMessageUseCase(getIt<IChatRepository>()),
     );
     
-    // 消息Bloc
-    getIt.registerFactory<MessageBloc>(
-      () => MessageBloc(
+    getIt.registerLazySingleton<ReceiveMessageUseCase>(
+      () => ReceiveMessageUseCase(getIt<IChatRepository>()),
+    );
+
+    // Bloc
+    getIt.registerFactory<ChatSessionsBloc>(
+      () => ChatSessionsBloc(getIt<GetChatSessionsUseCase>()),
+    );
+    
+    getIt.registerFactory<ChatMessagesBloc>(
+      () => ChatMessagesBloc(
         getMessagesUseCase: getIt<GetMessagesUseCase>(),
         sendMessageUseCase: getIt<SendMessageUseCase>(),
+        getMessageHistoryUseCase: getIt<GetMessageHistoryUseCase>(),
         receiveMessageUseCase: getIt<ReceiveMessageUseCase>(),
-        syncMessagesUseCase: getIt<SyncMessagesUseCase>(),
-        deleteMessageUseCase: getIt<DeleteMessageUseCase>(),
-        revokeMessageUseCase: getIt<RevokeMessageUseCase>(),
-        chatRealtimeService: getIt<IChatRealtimeService>(),
-        markMessagesReadUseCase: getIt<MarkMessagesReadUseCase>(),
       ),
     );
+  }
+
+  /// 注册Mock依赖，用于隔离开发和测试
+  static void registerMockDependencies(GetIt getIt) {
+    // 注册Mock的HTTP客户端
+    getIt.registerLazySingleton<IHttpClient>(() => MockHttpClient());
+    
+    // 注册HTTP客户端，这将使用我们的MockHttpClient来处理所有HTTP请求
+    getIt.registerLazySingleton<http.Client>(
+      () => http.Client(),
+    );
+    
+    // 注册Mock的网络信息
+    getIt.registerLazySingleton<NetworkInfo>(() => MockNetworkInfo());
+    
+    // 然后注册其他依赖，复用真实依赖的注册逻辑
+    registerDependencies(getIt);
   }
 } 

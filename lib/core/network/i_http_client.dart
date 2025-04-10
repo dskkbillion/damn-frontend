@@ -9,24 +9,36 @@ import 'dart:io'; // For File type
 /// potentially common error handling/wrapping.
 /// {@endtemplate}
 abstract class IHttpClient {
-  /// Performs a POST request.
+  /// 执行GET请求
   ///
-  /// [path] The endpoint path (relative to the base URL).
-  /// [data] The request body (typically a Map<String, dynamic>).
+  /// [endpoint] 接口路径
+  /// [queryParams] 可选的查询参数
   ///
-  /// Returns the JSON response body as a Map<String, dynamic>.
-  /// Throws specific exceptions (e.g., from `exceptions.dart` or underlying
-  /// client like DioException) on network or server errors.
-  Future<Map<String, dynamic>> post(String path, {Map<String, dynamic>? data});
+  /// 返回响应数据
+  Future<dynamic> get(String endpoint, {Map<String, dynamic>? queryParams});
 
-  /// Performs a GET request.
+  /// 执行POST请求
   ///
-  /// [path] The endpoint path.
-  /// [queryParameters] Optional query parameters.
+  /// [endpoint] 接口路径
+  /// [body] 请求体数据
   ///
-  /// Returns the JSON response body as a Map<String, dynamic>.
-  /// Throws specific exceptions on errors.
-  Future<Map<String, dynamic>> get(String path, {Map<String, dynamic>? queryParameters});
+  /// 返回响应数据
+  Future<dynamic> post(String endpoint, {required Map<String, dynamic> body});
+  
+  /// 执行PUT请求
+  ///
+  /// [endpoint] 接口路径
+  /// [body] 请求体数据
+  ///
+  /// 返回响应数据
+  Future<dynamic> put(String endpoint, {required Map<String, dynamic> body});
+  
+  /// 执行DELETE请求
+  ///
+  /// [endpoint] 接口路径
+  ///
+  /// 返回响应数据
+  Future<dynamic> delete(String endpoint);
 
   /// Performs a POST request with multipart/form-data, typically for file uploads.
   ///

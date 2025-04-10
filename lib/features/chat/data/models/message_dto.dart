@@ -1,20 +1,12 @@
-import 'package:json_annotation/json_annotation.dart';
-
-import '../../domain/entities/chat_enums.dart';
-import '../../domain/entities/chat_error.dart';
-import '../../domain/entities/message.dart';
-
-part 'message_dto.g.dart';
+import 'package:equatable/equatable.dart';
+import '../../domain/entities/entities.dart';
 
 /// 消息数据传输对象
-///
-/// 用于在API和应用之间传输消息数据
-@JsonSerializable()
-class MessageDto {
-  /// 消息唯一标识符
+class MessageDto extends Equatable {
+  /// 消息ID
   final String id;
   
-  /// 消息所属的会话ID
+  /// 会话ID
   final String sessionId;
   
   /// 消息内容
@@ -23,234 +15,200 @@ class MessageDto {
   /// 发送者ID
   final String senderId;
   
-  /// 发送者类型
-  @JsonKey(name: 'sender_type')
-  final String senderType;
-  
-  /// 消息来源
-  @JsonKey(name: 'message_source')
-  final String messageSource;
-  
   /// 接收者ID
   final String receiverId;
-  
-  /// 接收者类型
-  @JsonKey(name: 'receiver_type')
-  final String receiverType;
-  
-  /// 消息发送/接收时间
-  final String timestamp;
-  
-  /// 消息当前状态
-  final String status;
   
   /// 消息类型
   final String type;
   
-  /// 父消息ID (对于回复类消息)
-  @JsonKey(name: 'parent_message_id')
+  /// 时间戳（毫秒）
+  final int timestamp;
+  
+  /// 读取时间（毫秒）
+  final int? readTime;
+  
+  /// 消息角色（user/assistant/system）
+  final String? role;
+  
+  /// 消息来源类型
+  final String? messageType;
+  
+  /// 父消息ID
   final String? parentMessageId;
   
-  /// 其他元数据，如附件URL等
-  final Map<String, dynamic>? metadata;
+  /// 附加数据
+  final Map<String, dynamic>? additionalData;
 
-  /// 创建一个消息DTO
   const MessageDto({
     required this.id,
     required this.sessionId,
     required this.content,
     required this.senderId,
-    required this.senderType,
-    required this.messageSource,
     required this.receiverId,
-    required this.receiverType,
-    required this.timestamp,
-    required this.status,
     required this.type,
+    required this.timestamp,
+    this.readTime,
+    this.role,
+    this.messageType,
     this.parentMessageId,
-    this.metadata,
+    this.additionalData,
   });
 
-  /// 从JSON创建消息DTO
-  factory MessageDto.fromJson(Map<String, dynamic> json) => 
-      _$MessageDtoFromJson(json);
+  /// 从JSON映射创建DTO
+  factory MessageDto.fromJson(Map<String, dynamic> json) {
+    return MessageDto(
+      id: json['id'] ?? '',
+      sessionId: json['conversation_id'] ?? '',
+      content: json['content'] ?? json['context'] ?? '',
+      senderId: json['sender_id'] ?? json['role'] ?? '',
+      receiverId: json['recipient_id'] ?? json['receiver_id'] ?? '',
+      type: json['type'] ?? 'text',
+      timestamp: json['timestamp'] ?? json['create_time'] ?? DateTime.now().millisecondsSinceEpoch,
+      readTime: json['read_time'],
+      role: json['role'],
+      messageType: json['message_type'],
+      parentMessageId: json['parent_message_id'],
+      additionalData: json['additional_data'],
+    );
+  }
 
-  /// 转换为JSON
-  Map<String, dynamic> toJson() => _$MessageDtoToJson(this);
+  /// 转换为JSON映射
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'conversation_id': sessionId,
+      'content': content,
+      'sender_id': senderId,
+      'receiver_id': receiverId,
+      'type': type,
+      'timestamp': timestamp,
+      if (readTime != null) 'read_time': readTime,
+      if (role != null) 'role': role,
+      if (messageType != null) 'message_type': messageType,
+      if (parentMessageId != null) 'parent_message_id': parentMessageId,
+      if (additionalData != null) ...additionalData!,
+    };
+  }
 
-  /// 从实体创建DTO
-  factory MessageDto.fromEntity(Message message) {
+  /// 转换为领域实体
+  Message toDomain() {
+    // 根据角色或其他字段确定发送者类型
+    final senderType = role == 'system' || senderId == 'system' 
+        ? MessageSenderType.SYSTEM 
+        : MessageSenderType.USER;
+    
+    // 确定消息来源
+    MessageSourceType messageSource;
+    if (messageType == 'AI_DISTRIBUTION') {
+      messageSource = MessageSourceType.AI_DISTRIBUTION;
+    } else if (senderType == MessageSenderType.SYSTEM) {
+      messageSource = MessageSourceType.SYSTEM_NOTIFICATION;
+    } else {
+      messageSource = MessageSourceType.USER;
+    }
+    
+    // 确定接收者类型
+    final receiverType = receiverId == 'system'
+        ? MessageReceiverType.SYSTEM
+        : MessageReceiverType.USER;
+    
+    // 确定消息类型
+    MessageType messageTypeEnum;
+    switch (type.toLowerCase()) {
+      case 'audio':
+        messageTypeEnum = MessageType.AUDIO;
+        break;
+      case 'image':
+        messageTypeEnum = MessageType.IMAGE;
+        break;
+      case 'order_notification':
+        messageTypeEnum = MessageType.ORDER_NOTIFICATION;
+        break;
+      case 'system':
+        messageTypeEnum = MessageType.SYSTEM;
+        break;
+      default:
+        messageTypeEnum = MessageType.TEXT;
+    }
+    
+    // 确定消息状态
+    MessageStatus status;
+    if (readTime != null && readTime! > 0) {
+      status = MessageStatus.READ;
+    } else {
+      status = MessageStatus.SENT;
+    }
+    
+    return Message(
+      id: id,
+      content: content,
+      senderId: senderId,
+      senderType: senderType,
+      messageSource: messageSource,
+      receiverId: receiverId,
+      receiverType: receiverType,
+      timestamp: DateTime.fromMillisecondsSinceEpoch(timestamp),
+      status: status,
+      type: messageTypeEnum,
+      syncStatus: MessageSyncStatus.SYNCED,
+      sessionId: sessionId,
+    );
+  }
+
+  /// 从领域实体创建DTO
+  factory MessageDto.fromDomain(Message message) {
+    // 确定消息类型字符串
+    String typeStr;
+    switch (message.type) {
+      case MessageType.AUDIO:
+        typeStr = 'audio';
+        break;
+      case MessageType.IMAGE:
+        typeStr = 'image';
+        break;
+      case MessageType.ORDER_NOTIFICATION:
+        typeStr = 'order_notification';
+        break;
+      case MessageType.SYSTEM:
+        typeStr = 'system';
+        break;
+      default:
+        typeStr = 'text';
+    }
+    
+    // 确定消息来源字符串
+    String? messageTypeStr;
+    if (message.messageSource == MessageSourceType.AI_DISTRIBUTION) {
+      messageTypeStr = 'AI_DISTRIBUTION';
+    } else if (message.messageSource == MessageSourceType.SYSTEM_NOTIFICATION) {
+      messageTypeStr = 'SYSTEM_NOTIFICATION';
+    }
+    
     return MessageDto(
       id: message.id,
       sessionId: message.sessionId,
       content: message.content,
       senderId: message.senderId,
-      senderType: _senderTypeToString(message.senderType),
-      messageSource: _messageSourceToString(message.messageSource),
       receiverId: message.receiverId,
-      receiverType: _receiverTypeToString(message.receiverType),
-      timestamp: message.timestamp.toIso8601String(),
-      status: _messageStatusToString(message.status),
-      type: _messageTypeToString(message.type),
-      parentMessageId: message.parentMessageId,
-      metadata: message.metadata,
+      type: typeStr,
+      timestamp: message.timestamp.millisecondsSinceEpoch,
+      role: message.senderType == MessageSenderType.SYSTEM ? 'system' : 'user',
+      messageType: messageTypeStr,
     );
   }
 
-  /// 转换为实体
-  Message toEntity() {
-    return Message(
-      id: id,
-      sessionId: sessionId,
-      content: content,
-      senderId: senderId,
-      senderType: _stringToSenderType(senderType),
-      messageSource: _stringToMessageSource(messageSource),
-      receiverId: receiverId,
-      receiverType: _stringToReceiverType(receiverType),
-      timestamp: DateTime.parse(timestamp),
-      status: _stringToMessageStatus(status),
-      type: _stringToMessageType(type),
-      syncStatus: MessageSyncStatus.SYNCED, // 从服务器获取的消息默认已同步
-      parentMessageId: parentMessageId,
-      metadata: metadata,
-    );
-  }
-
-  // 枚举转换工具方法
-  static String _senderTypeToString(MessageSenderType type) {
-    switch (type) {
-      case MessageSenderType.USER:
-        return 'user';
-      case MessageSenderType.SYSTEM:
-        return 'system';
-    }
-  }
-
-  static MessageSenderType _stringToSenderType(String type) {
-    switch (type.toLowerCase()) {
-      case 'user':
-        return MessageSenderType.USER;
-      case 'system':
-        return MessageSenderType.SYSTEM;
-      default:
-        return MessageSenderType.USER; // 默认为用户
-    }
-  }
-
-  static String _receiverTypeToString(MessageReceiverType type) {
-    switch (type) {
-      case MessageReceiverType.USER:
-        return 'user';
-      case MessageReceiverType.SYSTEM:
-        return 'system';
-    }
-  }
-
-  static MessageReceiverType _stringToReceiverType(String type) {
-    switch (type.toLowerCase()) {
-      case 'user':
-        return MessageReceiverType.USER;
-      case 'system':
-        return MessageReceiverType.SYSTEM;
-      default:
-        return MessageReceiverType.USER; // 默认为用户
-    }
-  }
-
-  static String _messageSourceToString(MessageSourceType type) {
-    switch (type) {
-      case MessageSourceType.USER:
-        return 'user';
-      case MessageSourceType.AI_DISTRIBUTION:
-        return 'ai_distribution';
-      case MessageSourceType.SYSTEM_NOTIFICATION:
-        return 'system_notification';
-    }
-  }
-
-  static MessageSourceType _stringToMessageSource(String type) {
-    switch (type.toLowerCase()) {
-      case 'user':
-        return MessageSourceType.USER;
-      case 'ai_distribution':
-        return MessageSourceType.AI_DISTRIBUTION;
-      case 'system_notification':
-        return MessageSourceType.SYSTEM_NOTIFICATION;
-      default:
-        return MessageSourceType.USER; // 默认为用户
-    }
-  }
-
-  static String _messageStatusToString(MessageStatus status) {
-    switch (status) {
-      case MessageStatus.SENDING:
-        return 'sending';
-      case MessageStatus.SENT:
-        return 'sent';
-      case MessageStatus.DELIVERED:
-        return 'delivered';
-      case MessageStatus.READ:
-        return 'read';
-      case MessageStatus.REVOKED:
-        return 'revoked';
-      case MessageStatus.DELETED:
-        return 'deleted';
-      case MessageStatus.FAILED:
-        return 'failed';
-    }
-  }
-
-  static MessageStatus _stringToMessageStatus(String status) {
-    switch (status.toLowerCase()) {
-      case 'sending':
-        return MessageStatus.SENDING;
-      case 'sent':
-        return MessageStatus.SENT;
-      case 'delivered':
-        return MessageStatus.DELIVERED;
-      case 'read':
-        return MessageStatus.READ;
-      case 'revoked':
-        return MessageStatus.REVOKED;
-      case 'deleted':
-        return MessageStatus.DELETED;
-      case 'failed':
-        return MessageStatus.FAILED;
-      default:
-        return MessageStatus.SENT; // 默认为已发送
-    }
-  }
-
-  static String _messageTypeToString(MessageType type) {
-    switch (type) {
-      case MessageType.TEXT:
-        return 'text';
-      case MessageType.IMAGE:
-        return 'image';
-      case MessageType.AUDIO:
-        return 'audio';
-      case MessageType.SYSTEM:
-        return 'system';
-      case MessageType.ORDER_NOTIFICATION:
-        return 'order_notification';
-    }
-  }
-
-  static MessageType _stringToMessageType(String type) {
-    switch (type.toLowerCase()) {
-      case 'text':
-        return MessageType.TEXT;
-      case 'image':
-        return MessageType.IMAGE;
-      case 'audio':
-        return MessageType.AUDIO;
-      case 'system':
-        return MessageType.SYSTEM;
-      case 'order_notification':
-        return MessageType.ORDER_NOTIFICATION;
-      default:
-        return MessageType.TEXT; // 默认为文本
-    }
-  }
+  @override
+  List<Object?> get props => [
+    id,
+    sessionId,
+    content,
+    senderId,
+    receiverId,
+    type,
+    timestamp,
+    readTime,
+    role,
+    messageType,
+    parentMessageId,
+  ];
 } 

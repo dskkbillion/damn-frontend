@@ -4,11 +4,11 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
 import 'features/chat/injection/chat_module.dart';
-import 'features/chat/presentation/bloc/chat_bloc/chat_bloc.dart';
-import 'features/chat/presentation/bloc/chat_bloc/chat_event.dart';
-import 'features/chat/presentation/bloc/message_bloc/message_bloc.dart';
+import 'features/chat/presentation/bloc/chat_sessions/chat_sessions_bloc.dart';
+import 'features/chat/presentation/bloc/chat_sessions/chat_sessions_event.dart';
+import 'features/chat/presentation/bloc/chat_messages/chat_messages_bloc.dart';
 import 'features/chat/presentation/pages/chat_detail_page.dart';
-import 'features/chat/presentation/pages/chat_list_page.dart';
+import 'features/chat/presentation/pages/chat_sessions_page.dart';
 
 /// 全局依赖注入容器
 final getIt = GetIt.instance;
@@ -36,11 +36,11 @@ class ChatPreviewApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<ChatBloc>(
-          create: (_) => getIt<ChatBloc>()..add(const LoadChats()),
+        BlocProvider<ChatSessionsBloc>(
+          create: (_) => getIt<ChatSessionsBloc>()..add(const LoadChatSessions()),
         ),
-        BlocProvider<MessageBloc>(
-          create: (_) => getIt<MessageBloc>(),
+        BlocProvider<ChatMessagesBloc>(
+          create: (_) => getIt<ChatMessagesBloc>(),
         ),
       ],
       child: MaterialApp.router(
@@ -60,7 +60,7 @@ class ChatPreviewApp extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => const ChatListPage(),
+        builder: (context, state) => const ChatSessionsPage(),
         routes: [
           GoRoute(
             path: 'chat/:sessionId',
