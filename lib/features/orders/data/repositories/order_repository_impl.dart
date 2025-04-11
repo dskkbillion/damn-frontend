@@ -110,37 +110,19 @@ class OrderRepositoryImpl implements IOrderRepository {
   // --- Implement new repository methods ---
 
   @override
-  Future<Either<Failure, void>> saveRequirementDraft({
-    required String orderId,
-    required Map<String, String> requirementsData,
-    required List<String> attachmentPaths,
-  }) async {
-    // TODO: Add network check if required
-    try {
-      print('[OrderRepositoryImpl] Calling remoteDataSource.saveRequirementDraft (placeholder)');
-      await remoteDataSource.saveRequirementDraft(
-          orderId: orderId,
-          requirementsData: requirementsData,
-          attachmentPaths: attachmentPaths
-      );
-      return const Right(null);
-    } on Exception catch (e) { // Catch generic Exception
-       return Left(ServerFailure(message: '保存草稿失败: ${e.toString()}')); // Use ServerFailure
-    }
-  }
-
-  @override
   Future<Either<Failure, void>> submitRequirements({
     required String orderId,
-    required Map<String, String> requirementsData,
+    required int productId,
+    required List<Map<String, String>> feature,
     required List<String> attachmentPaths,
   }) async {
     // TODO: Add network check if required
     try {
-      print('[OrderRepositoryImpl] Calling remoteDataSource.submitRequirements (placeholder)');
+      print('[OrderRepositoryImpl] Calling remoteDataSource.submitRequirements');
       await remoteDataSource.submitRequirements(
           orderId: orderId,
-          requirementsData: requirementsData,
+          productId: productId,
+          feature: feature,
           attachmentPaths: attachmentPaths
       );
       return const Right(null);

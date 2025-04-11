@@ -15,7 +15,7 @@ import 'package:dskk_flutter_refactor/features/orders/domain/usecases/confirm_or
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/delete_order_use_case.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/get_order_detail_use_case.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_evaluation_use_case.dart';
-import 'package:dskk_flutter_refactor/features/orders/domain/usecases/save_requirement_draft_use_case.dart';
+// import 'package:dskk_flutter_refactor/features/orders/domain/usecases/save_requirement_draft_use_case.dart'; // REMOVED
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_requirements_use_case.dart';
 import 'package:equatable/equatable.dart';
 import 'package:dartz/dartz.dart' hide Order;
@@ -36,7 +36,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
   // final INavigationService _navigationService;
   final IPaymentService _paymentService;
   final SubmitEvaluationUseCase _submitEvaluationUseCase;
-  final SaveRequirementDraftUseCase _saveRequirementDraftUseCase;
+  // final SaveRequirementDraftUseCase _saveRequirementDraftUseCase; // REMOVED
   final SubmitRequirementsUseCase _submitRequirementsUseCase;
   // Add other dependencies as needed
   // final IAfterSaleRepository _afterSaleRepository;
@@ -53,7 +53,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     // required INavigationService navigationService,
     required IPaymentService paymentService,
     required SubmitEvaluationUseCase submitEvaluationUseCase,
-    required SaveRequirementDraftUseCase saveRequirementDraftUseCase,
+    // required SaveRequirementDraftUseCase saveRequirementDraftUseCase, // REMOVED
     required SubmitRequirementsUseCase submitRequirementsUseCase,
     // required IAfterSaleRepository afterSaleRepository,
     // required IRatingRepository ratingRepository,
@@ -67,7 +67,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         // _navigationService = navigationService,
         _paymentService = paymentService,
         _submitEvaluationUseCase = submitEvaluationUseCase,
-        _saveRequirementDraftUseCase = saveRequirementDraftUseCase,
+        // _saveRequirementDraftUseCase = saveRequirementDraftUseCase, // REMOVED
         _submitRequirementsUseCase = submitRequirementsUseCase,
         // _afterSaleRepository = afterSaleRepository,
         // _ratingRepository = ratingRepository,
@@ -77,7 +77,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     on<LoadOrderDetail>(_onLoadOrderDetail);
     on<OrderActionRequested>(_onOrderActionRequested);
     on<SubmitRequirementsSubmitted>(_onSubmitRequirementsSubmitted);
-    on<SaveRequirementDraftRequested>(_onSaveRequirementDraftRequested);
+    // on<SaveRequirementDraftRequested>(_onSaveRequirementDraftRequested); // REMOVED Handler Registration
     on<SubmitEvaluationRequested>(_onSubmitEvaluationRequested);
     // Add more event handlers as needed
   }
@@ -232,11 +232,9 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
       final result = await _submitRequirementsUseCase(
         SubmitRequirementsParams(
           orderId: event.orderId,
-          // Use requirementText1 and requirementText2 from event
-          requirementsData: {
-             'req1': event.requirementText1,
-             'req2': event.requirementText2,
-           },
+          // Use feature and attachmentPaths from the updated event
+          productId: event.productId, // Use event.productId
+          feature: event.feature, // Use event.feature
           attachmentPaths: event.attachmentPaths,
         ),
       );
@@ -259,53 +257,6 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
             ));
             // Optionally trigger reload if needed
             // add(LoadOrderDetail(orderId: int.parse(event.orderId)));
-         }
-      );
-  }
-
-  Future<void> _onSaveRequirementDraftRequested(
-    SaveRequirementDraftRequested event,
-    Emitter<OrderDetailState> emit,
-  ) async {
-     if (state is! OrderDetailLoaded) {
-        print('[OrderDetailBloc] Cannot save draft: State is not OrderDetailLoaded.');
-        emit(const OrderDetailError(message: '无法保存草稿：订单数据未加载'));
-        return;
-     }
-      final currentState = state as OrderDetailLoaded;
-      print('[OrderDetailBloc] Received SaveRequirementDraftRequested event...');
-      emit(currentState.copyWith(isSavingDraft: true));
-
-      // Call SaveRequirementDraftUseCase with correct event properties
-      final result = await _saveRequirementDraftUseCase(
-        SaveRequirementDraftParams(
-          orderId: event.orderId,
-           // Use requirementText1 and requirementText2 from event
-          requirementsData: {
-             'req1': event.requirementText1,
-             'req2': event.requirementText2,
-           },
-          attachmentPaths: event.attachmentPaths,
-        ),
-      );
-
-      result.fold(
-         (failure) {
-           print('[OrderDetailBloc] SaveRequirementDraftUseCase failed: ${failure.toString()}');
-           emit(OrderDetailActionFailure(
-             message: '保存草稿失败: ${failure.toString()}',
-             previousState: currentState.copyWith(isSavingDraft: false),
-           ));
-         },
-         (_) {
-          print('[OrderDetailBloc] SaveRequirementDraftUseCase succeeded.');
-          // Emit success state with the correct action type
-          emit(OrderDetailActionSuccess(
-              message: '草稿已保存',
-              actionType: OrderAction.saveDraft,
-              updatedState: currentState.copyWith(isSavingDraft: false)
-              ));
-          // Maybe show a temporary confirmation, but don't necessarily reload
          }
       );
   }
@@ -483,7 +434,7 @@ enum OrderAction {
   goToPayment,
   // Add new actions for other event handlers
   submitRequirements,
-  saveDraft,
+  // saveDraft, // REMOVED
   submitEvaluation,
   goToTracking // Assuming this is still needed for some UI logic
 }
@@ -497,37 +448,22 @@ class OrderActionRequested extends OrderDetailEvent {
 }
 
 class SubmitRequirementsSubmitted extends OrderDetailEvent {
-  final String orderId;
-  final String requirementText1;
-  final String requirementText2;
-  final List<String> attachmentPaths;
+   final String orderId;
+   // Add new fields based on API
+   final int productId;
+   final List<Map<String, String>> feature;
+   final List<String> attachmentPaths;
 
-  const SubmitRequirementsSubmitted({
+   const SubmitRequirementsSubmitted({
      required this.orderId,
-     required this.requirementText1,
-     required this.requirementText2,
+     required this.productId,
+     required this.feature,
      required this.attachmentPaths,
    });
 
   @override
-  List<Object?> get props => [orderId, requirementText1, requirementText2, attachmentPaths];
-}
-
-class SaveRequirementDraftRequested extends OrderDetailEvent {
-   final String orderId;
-   final String requirementText1;
-   final String requirementText2;
-   final List<String> attachmentPaths;
-
-   const SaveRequirementDraftRequested({
-      required this.orderId,
-      required this.requirementText1,
-      required this.requirementText2,
-      required this.attachmentPaths,
-    });
-
-   @override
-   List<Object?> get props => [orderId, requirementText1, requirementText2, attachmentPaths];
+  // Update props
+  List<Object?> get props => [orderId, productId, feature, attachmentPaths];
 }
 
 // Remove other specific event classes like CancelOrder, ConfirmReceipt if they are handled by OrderActionRequested

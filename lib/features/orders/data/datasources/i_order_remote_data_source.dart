@@ -64,13 +64,6 @@ abstract class IOrderRemoteDataSource {
     required List<String> pictures,
   });
 
-  /// Saves a draft of the order requirements.
-  Future<void> saveRequirementDraft({
-    required String orderId,
-    required Map<String, String> requirementsData,
-    required List<String> attachmentPaths,
-  });
-
   /// Submits the final order requirements/materials.
   Future<void> submitRequirements({
     required String orderId,

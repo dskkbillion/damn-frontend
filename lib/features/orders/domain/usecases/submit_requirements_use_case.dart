@@ -13,27 +13,30 @@ class SubmitRequirementsUseCase implements UseCase<void, SubmitRequirementsParam
 
   @override
   Future<Either<Failure, void>> call(SubmitRequirementsParams params) async {
-    // Call the actual repository method
-    print('[SubmitRequirementsUseCase] Calling repository.submitRequirements...');
+    // Delegate the call to the repository
     return await repository.submitRequirements(
       orderId: params.orderId,
-      requirementsData: params.requirementsData,
+      productId: params.productId,
+      feature: params.feature,
       attachmentPaths: params.attachmentPaths,
     );
   }
 }
 
+/// Parameters for submitting requirements.
 class SubmitRequirementsParams extends Equatable {
   final String orderId;
-  final Map<String, String> requirementsData;
+  final int productId;
+  final List<Map<String, String>> feature;
   final List<String> attachmentPaths;
 
   const SubmitRequirementsParams({
     required this.orderId,
-    required this.requirementsData,
+    required this.productId,
+    required this.feature,
     required this.attachmentPaths,
   });
 
   @override
-  List<Object?> get props => [orderId, requirementsData, attachmentPaths];
+  List<Object?> get props => [orderId, productId, feature, attachmentPaths];
 } 

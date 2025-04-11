@@ -135,30 +135,8 @@ class _OrderRequirementSubmissionFormState
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                 // --- Save Draft Button ---
-                 BlocSelector<OrderDetailBloc, OrderDetailState, bool>(
-                   selector: (state) => state is OrderDetailLoaded && state.isSavingDraft,
-                   builder: (context, isSaving) {
-                     return OutlinedButton(
-                        onPressed: isSaving ? null : () {
-                          // Dispatch SaveRequirementDraftRequested event with correct parameters
-                          context.read<OrderDetailBloc>().add(
-                                SaveRequirementDraftRequested(
-                                  orderId: widget.order.id.toString(),
-                                  requirementText1: _requirementController1.text, // Correct parameter
-                                  requirementText2: _requirementController2.text, // Correct parameter
-                                  attachmentPaths: _selectedAttachmentPaths, // Pass the correct list
-                                ),
-                              );
-                          print('Save Draft Tapped');
-                        },
-                        child: isSaving
-                           ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                           : const Text('保存'),
-                     );
-                   },
-                 ),
-                 const SizedBox(width: 16),
+                 // REMOVED: Save Draft Button and associated BlocSelector
+                 // const SizedBox(width: 16), // Keep spacing if needed
                  // --- Submit Requirements Button ---
                  BlocSelector<OrderDetailBloc, OrderDetailState, bool>(
                     selector: (state) => state is OrderDetailLoaded && state.isSubmittingRequirements,
@@ -166,11 +144,35 @@ class _OrderRequirementSubmissionFormState
                        return ElevatedButton(
                           onPressed: isSubmitting ? null : () {
                             // Dispatch SubmitRequirementsSubmitted event with correct parameters
-                             context.read<OrderDetailBloc>().add(
+                            // --- Construct feature data --- 
+                            // TODO: This assumes a fixed structure based on current UI.
+                            // Replace with logic to get actual questions/answers if dynamic.
+                            final featureData = [
+                              {
+                                'question': '1. 您订购的是基本服务 (30¥/150字)...', // Placeholder, get actual question
+                                'answer': _requirementController1.text
+                              },
+                              {
+                                'question': '2. 对于额外需求...', // Placeholder, get actual question
+                                'answer': _requirementController2.text
+                              },
+                              // Add more question/answer pairs if needed
+                            ];
+                            // --- Get productId --- 
+                            final productId = item?.productId ?? -1;
+                            if (productId == -1) {
+                               ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('错误：无法获取商品 ID')),
+                              );
+                              return;
+                            }
+
+                            // --- Dispatch Event --- 
+                            context.read<OrderDetailBloc>().add(
                                 SubmitRequirementsSubmitted(
                                   orderId: widget.order.id.toString(),
-                                  requirementText1: _requirementController1.text, // Correct parameter
-                                  requirementText2: _requirementController2.text, // Correct parameter
+                                  productId: productId, // Pass productId
+                                  feature: featureData, // Pass structured feature data
                                   attachmentPaths: _selectedAttachmentPaths, // Pass the correct list
                                 ),
                               );

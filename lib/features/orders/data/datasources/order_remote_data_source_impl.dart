@@ -307,22 +307,6 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
   // --- Implement new data source methods (placeholders) ---
 
   @override
-  Future<void> saveRequirementDraft({
-    required String orderId,
-    required Map<String, String> requirementsData,
-    required List<String> attachmentPaths,
-  }) async {
-    // TODO: Implement API call to save requirement draft
-    print('[OrderRemoteDataSourceImpl] saveRequirementDraft called (API call placeholder)');
-    print('  Order ID: $orderId');
-    print('  Requirements: $requirementsData');
-    print('  Attachments: ${attachmentPaths.length}');
-    await Future.delayed(const Duration(milliseconds: 500)); // Simulate API delay
-    // Simulate potential API error
-    // if (requirementsData.isEmpty) throw ServerException(message: "API Error: No data to save!");
-  }
-
-  @override
   Future<void> submitRequirements({
     required String orderId,
     required int productId,

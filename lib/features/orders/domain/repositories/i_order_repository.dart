@@ -41,27 +41,21 @@ abstract class IOrderRepository {
   /// 返回一个空的 [Either] 表示成功，或者一个 [Failure]。
   Future<Either<Failure, void>> deleteOrder(int orderId);
 
-  /// Adds an evaluation for an order item.
+  /// Submits an evaluation for a specific order item.
   Future<Either<Failure, void>> addEvaluation({
     required int orderItemId,
     required double score,
     required String content,
     required bool isAnonymous,
-    required List<String> pictures,
+    required List<String> pictures, // Expecting URLs
   });
 
-  /// Saves the buyer's requirements as a draft.
-  Future<Either<Failure, void>> saveRequirementDraft({
-    required String orderId, // Assuming orderId is string based on events
-    required Map<String, String> requirementsData,
-    required List<String> attachmentPaths,
-  });
-
-  /// Submits the buyer's final requirements.
+  /// Submits the final order requirements/materials.
   Future<Either<Failure, void>> submitRequirements({
-    required String orderId, // Assuming orderId is string based on events
-    required Map<String, String> requirementsData,
-    required List<String> attachmentPaths,
+    required String orderId,
+    required int productId,
+    required List<Map<String, String>> feature, // Use structured feature data
+    required List<String> attachmentPaths, // Expecting URLs
   });
 
   // 可选：根据需要添加其他接口方法，例如：
