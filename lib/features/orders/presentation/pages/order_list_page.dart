@@ -25,6 +25,7 @@ class OrderListPage extends StatefulWidget {
 
 class _OrderListPageState extends State<OrderListPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final _scrollController = ScrollController();
 
   // Define the statuses corresponding to each tab index
   // IMPORTANT: Ensure this list order matches the TabBar tabs order
@@ -44,6 +45,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
     // Initialize TabController with the new length
     _tabController = TabController(length: _tabStatuses.length, vsync: this);
     _tabController.addListener(_onTabChanged);
+    _scrollController.addListener(_onScroll);
 
     // Initial load for the first tab (All)
     _loadOrdersForCurrentTab();
@@ -69,7 +71,25 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
   void dispose() {
     _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  /// Scroll listener to trigger loading more orders
+  void _onScroll() {
+    if (_isBottom) {
+      context.read<OrderListBloc>().add(OrderListLoadMore());
+    }
+  }
+
+  /// Helper to check if scrolled near the bottom
+  bool get _isBottom {
+    if (!_scrollController.hasClients) return false;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+    // Trigger loading when reaching 80% of the scroll extent
+    return currentScroll >= (maxScroll * 0.8);
   }
 
   @override
@@ -110,9 +130,16 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                      return const Center(child: Text('暂无相关订单'));
                    }
                    return ListView.builder(
+                      controller: _scrollController,
                       padding: const EdgeInsets.all(8.0),
-                      itemCount: state.orders.length,
+                      itemCount: state.hasReachedMax ? state.orders.length : state.orders.length + 1,
                       itemBuilder: (context, index) {
+                         if (index >= state.orders.length) {
+                           return const Padding(
+                             padding: EdgeInsets.symmetric(vertical: 16.0),
+                             child: Center(child: CircularProgressIndicator()),
+                           );
+                         }
                          final order = state.orders[index];
 
                          // Define the set of after-sales statuses

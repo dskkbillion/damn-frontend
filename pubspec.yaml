@@ -53,6 +53,10 @@ dependencies:
   file_picker: ^8.0.5
   bloc_concurrency: ^0.2.5
   stream_transform: ^2.1.0
+  shared_preferences: ^2.2.3 # Added for draft saving
+  flutter_secure_storage: ^9.2.2 # CORRECTED version constraint
+  pretty_dio_logger: ^1.4.0
+  package_info_plus: ^8.3.0 # For getting app version/package name
 
 dev_dependencies:
   flutter_test:
@@ -66,15 +70,15 @@ dev_dependencies:
   flutter_lints: ^3.0.0
 
   # Code Generators
-  build_runner: ^2.4.8
-  injectable_generator: ^2.6.1 # DI Code Generator
-  riverpod_generator: ^2.4.0 # Riverpod Code Generator
+  build_runner: ^2.4.10
+  injectable_generator: ^2.6.1
+  riverpod_generator: ^2.4.0
   # custom_lint: # Consider adding for custom lint rules later
   # riverpod_lint: # Consider adding specific Riverpod lint rules later
 
   # Added for Code Generation (Freezed & JSON Serializable)
   freezed: ^2.4.7
-  json_serializable: ^6.7.1
+  json_serializable: ^6.8.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -93,6 +97,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
+    - .env
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

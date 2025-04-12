@@ -47,7 +47,7 @@ abstract class IOrderRepository {
     required double score,
     required String content,
     required bool isAnonymous,
-    required List<String> pictures, // Expecting URLs
+    required List<String> pictures,
   });
 
   /// Submits the final order requirements/materials.

@@ -21,15 +21,13 @@ Future<void> configureDependencies() async => init(getIt);
 // --- Register Module for Third Party Libs and Core Services ---
 @module
 abstract class RegisterModule {
-  // Provide Dio instance
-  @lazySingleton
-  Dio get dio => Dio(BaseOptions(
-        // TODO: Configure Base URL and other options
-        baseUrl: 'https://your.api.base.url/api', // Replace with your actual API base URL
-        connectTimeout: const Duration(seconds: 5),
-        receiveTimeout: const Duration(seconds: 3),
-        // Add headers or interceptors if needed
-      ));
+  // Provide Dio instance - REMOVED/COMMENTED OUT as CoreDioClient manages its own Dio instance
+  // @lazySingleton
+  // Dio get dio => Dio(BaseOptions(
+  //       baseUrl: 'https://your.api.base.url/api', // Placeholder!
+  //       connectTimeout: const Duration(seconds: 5),
+  //       receiveTimeout: const Duration(seconds: 3),
+  //     ));
 
   // Provide Navigation Service implementation (using Mock)
   @lazySingleton

@@ -102,9 +102,8 @@ class OrderRepositoryImpl implements IOrderRepository {
           pictures: pictures);
       return const Right(null);
     } on Exception catch (e) { // Catch generic Exception
-      // Consider logging the specific exception type e.runtimeType
       return Left(ServerFailure(message: '评价失败: ${e.toString()}')); // Use ServerFailure
-    } // Removed generic catch block as Exception covers most cases here
+    }
   }
 
   // --- Implement new repository methods ---

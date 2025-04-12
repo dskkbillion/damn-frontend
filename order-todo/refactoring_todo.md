@@ -129,7 +129,7 @@
     *   [ ] (**CoreDioClient - 推迟**) 配置 `CoreDioClient` (`lib/core/network/core_dio_client.dart`) 中的真实 `_baseUrl` 和认证拦截器。
         *   [x] (**初步配置**) 使用 `.env` 读取 Base URL。
         *   [x] (**初步配置**) 添加认证拦截器 (使用硬编码测试 Token)。
-        *   [ ] (**完善配置**) 实现从本地存储读取真实 Token 的逻辑。
+        *   [x] (**完善配置**) 实现从本地存储读取真实 Token 的逻辑。
 
 **步骤 6: 实现 Flutter `Domain` 逻辑 (Use Cases)**
 
@@ -316,14 +316,10 @@
 
 **下一步重点:**
 
-1.  **实现其他 Bloc 事件处理器:** 处理确认收货, 取消订单等事件，并连接相应的 Use Case。
-2.  **真实附件逻辑:** 在 `OrderRequirementSubmissionForm` 和 `OrderEvaluationForm` 中实现真正的文件/图片选择逻辑。
-3.  **售后流程:**
-    *   定义售后实体和 Use Case。
-    *   实现 Repository/DataSource 层方法 (Mock/Placeholder)。
-    *   实现 Bloc 事件处理。
-    *   细化 `AfterSaleInfoArea` UI。
-4.  **真实数据对接:** (后续) 替换 Use Case 和 DataSource 中的 placeholder，实现与后端 API 的真实交互。
+1.  **进行真实 API 对接测试** (见第 7 节待办)。
+2.  实现评价相关的 UseCase、Bloc 事件/状态和 UI。
+3.  完善草稿清除逻辑。
+4.  实现其他待办任务。
 
 **步骤 11: (进行中) 图片/文件上传**
 *   [x] (**文件选择**) 使用 `file_picker` 实现本地文件选择。
@@ -335,4 +331,28 @@
 **步骤 12: (进行中) 买家视角交互完善**
 *   [ ] (**核心订单操作 - Bloc 处理**) 在 `OrderDetailBloc` 中完整实现 `ConfirmReceiptRequested`, `CancelOrderRequested`, `DeleteOrderRequested` 事件处理器，包括调用 UseCase、更新状态和处理错误/成功反馈。
 *   [ ] (**售后流程深化 - UI**) 完善 `AfterSaleInfoArea`，根据 `AfterSalesBloc` 状态动态显示售后详情和操作按钮。
-*   [ ] (**售后流程深化 - Bloc 连接**) 连接 `AfterSaleInfoArea` 中的操作按钮 (取消申请、申请介入等) 到 `
+*   [ ] (**售后流程深化 - Bloc 连接**) 连接 `AfterSaleInfoArea` 中的操作按钮 (取消申请、申请介入等) 到 `AfterSaleApplyRequested` 事件。
+
+**步骤 13: (进行中) 真实 API 对接测试**
+*   [ ] 登录获取 Token 并存入 `flutter_secure_storage`。
+*   [ ] 测试订单列表加载 (`getOrderList`)。
+*   [ ] 测试订单详情加载 (`getOrderDetail`)。
+*   [ ] 测试提交需求 (`submitRequirements`)。
+*   [ ] 测试评价提交 (`addEvaluation`) (需要在 UI/Bloc 中触发)。
+*   [ ] 测试取消、确认收货、删除订单。
+
+**步骤 14: 添加缓存与本地存储策略文档**
+*   [x] 添加缓存与本地存储策略文档 (`docs/caching_and_local_storage_strategy_cn.md`)。
+
+**关键决策点:**
+
+*   `saveRequirementDraft` 功能转为本地存储。
+*   `submitRequirements` API 参数结构已变更。
+*   `addEvaluation` API 确认使用 `orderItemId`。
+*   Token 存储使用 `flutter_secure_storage`。
+
+**后续计划 (已调整):**
+
+1.  实现评价相关的 UseCase、Bloc 事件/状态和 UI。
+2.  完善草稿清除逻辑。
+3.  实现其他待办任务。

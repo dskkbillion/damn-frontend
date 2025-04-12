@@ -1,51 +1,66 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart'; // Import dotenv
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import secure storage
+import 'package:pretty_dio_logger/pretty_dio_logger.dart'; // Remove alias
+import 'interceptors/app_info_interceptor.dart'; // Import the new interceptor
+
+// import 'interceptors/auth_interceptor.dart';
+// import 'interceptors/pretty_log_interceptor.dart';
 
 // REMOVED: const String _baseUrl = 'YOUR_API_BASE_URL';
 
-@lazySingleton
+@injectable
 class CoreDioClient {
-  late final Dio _dio;
+  late final Dio dio;
+  final FlutterSecureStorage _secureStorage;
+  final AppInfoInterceptor _appInfoInterceptor; // Add AppInfoInterceptor dependency
 
-  CoreDioClient() {
-    // Retrieve Base URL from environment variables
-    final baseUrl = dotenv.env['BACKEND_BASE_URL'];
-    if (baseUrl == null || baseUrl.isEmpty) {
-      // Handle error: Base URL not found or empty in .env
-      // You might want to throw an error or use a default fallback
-      print('Error: BACKEND_BASE_URL not found or empty in .env file.');
-      // For now, let's throw an error to make it obvious during development
-      throw Exception('BACKEND_BASE_URL must be set in the .env file');
+  CoreDioClient(
+    @Named('baseUrl') String baseUrl,
+    this._secureStorage,
+    this._appInfoInterceptor, // Inject AppInfoInterceptor
+  ) {
+    print('[CoreDioClient] Initializing with baseUrl: $baseUrl');
+    try {
+      if (baseUrl.isEmpty) {
+        throw Exception('[CoreDioClient] BACKEND_BASE_URL is null or empty. Cannot initialize Dio.');
+      }
+      
+      final options = BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 15),
+      );
+      dio = Dio(options);
+
+      // Add interceptors
+      final authInterceptor = AuthInterceptor();
+      // Comment out PrettyLogInterceptor due to persistent Linter issues
+      // final logInterceptor = PrettyLogInterceptor(
+      //     requestHeader: true,
+      //     requestBody: true,
+      //     responseBody: true,
+      //     responseHeader: false,
+      //     error: true,
+      //     compact: true,
+      //     maxWidth: 90);
+      
+      // Add Dio's built-in LogInterceptor instead
+      final basicLogInterceptor = LogInterceptor(
+          requestBody: true, 
+          responseBody: true
+      );
+
+      dio.interceptors.add(_appInfoInterceptor); // Add AppInfoInterceptor FIRST (or adjust order as needed)
+      dio.interceptors.add(authInterceptor);
+      // dio.interceptors.add(logInterceptor); // Keep commented out
+      dio.interceptors.add(basicLogInterceptor); // Add the built-in logger
+      
+      print('[CoreDioClient] Dio initialized successfully.');
+    } catch (e) {
+      print('[CoreDioClient] Error initializing Dio: $e');
+      throw Exception('[CoreDioClient] Failed to initialize Dio due to error: $e'); 
     }
-
-    final options = BaseOptions(
-      baseUrl: baseUrl, // Use retrieved baseUrl
-      connectTimeout: const Duration(milliseconds: 15000), // 15 seconds
-      receiveTimeout: const Duration(milliseconds: 15000), // 15 seconds
-      // Default Headers (can be overridden per request)
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        // Add other common headers if needed (e.g., platform info)
-      },
-      // Allow handling responses with status codes outside 2xx range without throwing DioException
-      // This allows us to parse custom error structures from the response body in the DataSource
-      validateStatus: (status) {
-        return status != null; // Allow all non-null status codes
-      },
-    );
-    _dio = Dio(options);
-
-    // Add interceptors (e.g., for logging, auth token)
-    _dio.interceptors.add(LogInterceptor(
-      responseBody: true,
-      requestBody: true,
-      requestHeader: true,
-      responseHeader: false, // Optional: avoid verbose headers in log
-    ));
-    // Add Auth Interceptor
-    _dio.interceptors.add(_AuthInterceptor());
   }
 
   // Provide helper methods to make requests using the configured Dio instance
@@ -57,7 +72,7 @@ class CoreDioClient {
     CancelToken? cancelToken,
     ProgressCallback? onReceiveProgress,
   }) {
-    return _dio.get(
+    return dio.get(
       path,
       queryParameters: queryParameters,
       options: options,
@@ -75,7 +90,7 @@ class CoreDioClient {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) {
-     return _dio.post(
+     return dio.post(
       path,
       data: data,
       queryParameters: queryParameters,
@@ -95,7 +110,7 @@ class CoreDioClient {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) {
-     return _dio.put(
+     return dio.put(
       path,
       data: data,
       queryParameters: queryParameters,
@@ -113,7 +128,7 @@ class CoreDioClient {
     Options? options,
     CancelToken? cancelToken,
   }) {
-     return _dio.delete(
+     return dio.delete(
       path,
       data: data,
       queryParameters: queryParameters,
@@ -132,7 +147,7 @@ class CoreDioClient {
      ProgressCallback? onSendProgress,
      ProgressCallback? onReceiveProgress,
    }) {
-      return _dio.post(
+      return dio.post(
         path,
         data: formData,
         queryParameters: queryParameters,
@@ -144,27 +159,51 @@ class CoreDioClient {
    }
 }
 
-// Example Auth Interceptor (Uncommented and implemented with hardcoded test token)
-class _AuthInterceptor extends Interceptor {
+// Auth Interceptor using FlutterSecureStorage
+class AuthInterceptor extends Interceptor {
+  // Create storage instance - potentially make this static or pass via constructor if DI is tricky here
+  final _storage = const FlutterSecureStorage();
+
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
-    String? token = await _getAuthToken(); // Retrieve the token
+    // Skip adding token for auth endpoints
+    if (options.path.contains('/api/auth/login') || 
+        options.path.contains('/api/auth/register') ||
+        options.path.contains('/api/auth/sms')) {
+      print('[AuthInterceptor] Skipping token for auth path: ${options.path}');
+      return handler.next(options);
+    }
+
+    String? token = await _getAuthToken();
     if (token != null && token.isNotEmpty) {
-      // Use the 'Authorization' header as specified in the example,
-      // often backends expect this specific header.
-      // Adjust 'Authorization' and the 'Bearer ' prefix if your backend expects something different.
-      options.headers['Authorization'] = token; // Directly use the token from user
-      // options.headers['Authorization'] = 'Bearer $token'; // Common Bearer token format
-       print('[AuthInterceptor] Added token to header.');
+      // REVERTED: Send raw token as per API doc example
+      options.headers['Authorization'] = token; 
+      print('[AuthInterceptor] Added raw token to Authorization header.'); // Updated log
+    } else {
+       print('[AuthInterceptor] No token found. Request proceeding without Authorization header.');
     }
     super.onRequest(options, handler);
   }
 
   Future<String?> _getAuthToken() async {
-     // TODO: Implement actual logic to retrieve the stored auth token
-     // e.g., from SharedPreferences, FlutterSecureStorage, etc. when available.
-     // For now, return the hardcoded test token.
-     print("[AuthInterceptor] Using hardcoded test token.");
-     return "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6ImQ1NzgyZDRjLTMwMmQtNGNjZS1iNzY0LTc0YmVhYmMwOTI4MCJ9.Pq9zB0Pc_cByYzuzogVeSJt6f0h-lXhEa7TXY8UuXkVogGi2eEJZBA6f9QjLzgFNB-ge1-aqH-mMj7fFLotS-w";
+    // Read the token from secure storage
+    // Ensure the key matches the key used when saving the token
+    try {
+      const storageKey = 'user_token'; // Make sure this key is consistent
+      final token = await _storage.read(key: storageKey);
+      if (token != null) {
+        print('[AuthInterceptor] Token retrieved from secure storage.');
+      } else {
+        print('[AuthInterceptor] Token not found in secure storage (key: $storageKey).');
+      }
+      return token;
+    } catch (e) {
+      print('[AuthInterceptor] Error reading token from secure storage: $e');
+      return null; // Return null on error
+    }
+
+    // REMOVED Hardcoded token logic
+    // print("[AuthInterceptor] Using hardcoded test token.");
+    // return "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6ImQ1NzgyZDRjLTMwMmQtNGNjZS1iNzY0LTc0YmVhYmMwOTI4MCJ9.Pq9zB0Pc_cByYzuzogVeSJt6f0h-lXhEa7TXY8UuXkVogGi2eEJZBA6f9QjLzgFNB-ge1-aqH-mMj7fFLotS-w";
   }
 } 

@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
 import 'package:file_picker/file_picker.dart'; // Import file_picker
 import 'dart:io'; // Import dart:io for File (potentially needed for display later, though path is String)
+import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
+import 'dart:convert'; // Import dart:convert for json handling
 
 /// Widget for submitting order requirements (text and attachments).
 class OrderRequirementSubmissionForm extends StatefulWidget {
@@ -24,6 +26,10 @@ class _OrderRequirementSubmissionFormState
   late TextEditingController _requirementController2;
   // Add state for attached files
   List<String> _selectedAttachmentPaths = []; // List to hold selected attachment paths
+  bool _isLoadingDraft = true; // Flag to indicate draft loading
+
+  // Helper to generate SharedPreferences key for the draft
+  String _getDraftKey(String orderId) => 'order_draft_$orderId';
 
   @override
   void initState() {
@@ -31,11 +37,98 @@ class _OrderRequirementSubmissionFormState
     // Initialize controllers
     _requirementController1 = TextEditingController();
     _requirementController2 = TextEditingController();
-    // TODO: Initialize with existing draft data if available from order object
+    // Asynchronously load the draft
+    _loadDraft();
+  }
+
+  Future<void> _loadDraft() async {
+    setState(() {
+      _isLoadingDraft = true;
+    });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final draftKey = _getDraftKey(widget.order.id.toString());
+      final String? draftJson = prefs.getString(draftKey);
+
+      if (draftJson != null) {
+        final draftData = jsonDecode(draftJson) as Map<String, dynamic>;
+        // Safely extract data
+        final req1 = draftData['requirement1'] as String? ?? '';
+        final req2 = draftData['requirement2'] as String? ?? '';
+        final attachments = (draftData['attachments'] as List<dynamic>? ?? []).cast<String>();
+
+        // Update controllers and attachment list
+        _requirementController1.text = req1;
+        _requirementController2.text = req2;
+        // Need setState here to update the UI with loaded attachments
+        setState(() {
+          _selectedAttachmentPaths = attachments;
+        });
+         print('Draft loaded successfully for order ${widget.order.id}');
+      } else {
+         print('No draft found for order ${widget.order.id}');
+      }
+    } catch (e) {
+      print('Error loading draft: $e');
+      // Optionally show an error message to the user
+      if (mounted) { // Check if widget is still in the tree
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('加载草稿失败')), // Localize this
+        );
+      }
+    } finally {
+      // Ensure loading indicator is turned off even if errors occur
+      if (mounted) {
+         setState(() {
+           _isLoadingDraft = false;
+         });
+      }
+    }
+  }
+
+  // --- Draft Saving Logic ---
+  Future<void> _saveDraft() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final draftKey = _getDraftKey(widget.order.id.toString());
+
+      final draftData = {
+        'requirement1': _requirementController1.text,
+        'requirement2': _requirementController2.text,
+        'attachments': _selectedAttachmentPaths,
+      };
+
+      final String draftJson = jsonEncode(draftData);
+      await prefs.setString(draftKey, draftJson);
+      print('Draft saved for order ${widget.order.id}');
+    } catch (e) {
+      print('Error saving draft: $e');
+      // Optionally show an error message to the user
+      if (mounted) { // Check if widget is still in the tree
+         ScaffoldMessenger.of(context).showSnackBar(
+           const SnackBar(content: Text('保存草稿失败')), // Localize this
+         );
+      }
+    }
+  }
+
+  // --- Draft Clearing Logic (called externally, e.g., after successful submission) ---
+  Future<void> _clearDraft() async {
+     try {
+       final prefs = await SharedPreferences.getInstance();
+       final draftKey = _getDraftKey(widget.order.id.toString());
+       await prefs.remove(draftKey);
+       print('Draft cleared for order ${widget.order.id}');
+     } catch (e) {
+        print('Error clearing draft: $e');
+        // Optionally inform the user
+     }
   }
 
   @override
   void dispose() {
+    // Save draft one last time before disposing
+    _saveDraft();
     // Dispose controllers
     _requirementController1.dispose();
     _requirementController2.dispose();
@@ -48,6 +141,11 @@ class _OrderRequirementSubmissionFormState
     final colorScheme = Theme.of(context).colorScheme;
     // Assuming only one item per order for requirement submission view, adjust if needed
     final item = widget.order.items.isNotEmpty ? widget.order.items.first : null;
+
+    // Show loading indicator while draft is loading
+    if (_isLoadingDraft) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     return Card(
       elevation: 0, // Use elevation from outer card or none

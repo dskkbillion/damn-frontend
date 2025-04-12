@@ -9,12 +9,14 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:dio/dio.dart' as _i361;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart' as _i558;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
+import 'package:package_info_plus/package_info_plus.dart' as _i655;
 
 import '../../core/navigation/services/i_navigation_service.dart' as _i625;
 import '../../core/network/core_dio_client.dart' as _i412;
+import '../../core/network/interceptors/app_info_interceptor.dart' as _i405;
 import '../../core/payment/services/i_payment_service.dart' as _i395;
 import '../../features/after_sales/data/datasources/after_sales_remote_data_source.dart'
     as _i519;
@@ -54,8 +56,6 @@ import '../../features/orders/domain/usecases/get_order_detail_use_case.dart'
     as _i691;
 import '../../features/orders/domain/usecases/get_order_list_use_case.dart'
     as _i1015;
-import '../../features/orders/domain/usecases/save_requirement_draft_use_case.dart'
-    as _i822;
 import '../../features/orders/domain/usecases/submit_evaluation_use_case.dart'
     as _i40;
 import '../../features/orders/domain/usecases/submit_requirements_use_case.dart'
@@ -77,11 +77,9 @@ _i174.GetIt init(
     environmentFilter,
   );
   final registerModule = _$RegisterModule();
-  gh.lazySingleton<_i361.Dio>(() => registerModule.dio);
   gh.lazySingleton<_i625.INavigationService>(
       () => registerModule.navigationService);
   gh.lazySingleton<_i395.IPaymentService>(() => registerModule.paymentService);
-  gh.lazySingleton<_i412.CoreDioClient>(() => _i412.CoreDioClient());
   gh.factory<_i441.IAfterSalesRepository>(
       () => _i889.MockAfterSalesRepository());
   gh.lazySingleton<_i1057.GetAfterSalesDetailUseCase>(() =>
@@ -94,10 +92,6 @@ _i174.GetIt init(
       () => _i88.DeleteAfterSalesUseCase(gh<_i441.IAfterSalesRepository>()));
   gh.factory<_i953.GetAfterSalesListUseCase>(
       () => _i953.GetAfterSalesListUseCase(gh<_i441.IAfterSalesRepository>()));
-  gh.lazySingleton<_i346.IOrderRemoteDataSource>(
-      () => _i230.OrderRemoteDataSourceImpl(dio: gh<_i361.Dio>()));
-  gh.lazySingleton<_i253.IAfterSalesRemoteDataSource>(
-      () => _i519.AfterSalesRemoteDataSource(gh<_i412.CoreDioClient>()));
   gh.factory<_i59.AfterSalesBloc>(() => _i59.AfterSalesBloc(
         gh<_i953.GetAfterSalesListUseCase>(),
         gh<_i1057.GetAfterSalesDetailUseCase>(),
@@ -105,8 +99,20 @@ _i174.GetIt init(
         gh<_i773.CancelAfterSalesUseCase>(),
         gh<_i88.DeleteAfterSalesUseCase>(),
       ));
+  gh.factory<_i405.AppInfoInterceptor>(
+      () => _i405.AppInfoInterceptor(gh<_i655.PackageInfo>()));
+  gh.factory<_i412.CoreDioClient>(() => _i412.CoreDioClient(
+        gh<String>(instanceName: 'baseUrl'),
+        gh<_i558.FlutterSecureStorage>(),
+        gh<_i405.AppInfoInterceptor>(),
+      ));
+  gh.lazySingleton<_i346.IOrderRemoteDataSource>(() =>
+      _i230.OrderRemoteDataSourceImpl(
+          coreDioClient: gh<_i412.CoreDioClient>()));
   gh.lazySingleton<_i724.IOrderRepository>(() => _i376.OrderRepositoryImpl(
       remoteDataSource: gh<_i346.IOrderRemoteDataSource>()));
+  gh.lazySingleton<_i253.IAfterSalesRemoteDataSource>(
+      () => _i519.AfterSalesRemoteDataSource(gh<_i412.CoreDioClient>()));
   gh.factory<_i1.CancelOrderUseCase>(
       () => _i1.CancelOrderUseCase(gh<_i724.IOrderRepository>()));
   gh.factory<_i708.ConfirmOrderReceiptUseCase>(
@@ -117,14 +123,10 @@ _i174.GetIt init(
       () => _i691.GetOrderDetailUseCase(gh<_i724.IOrderRepository>()));
   gh.factory<_i1015.GetOrderListUseCase>(
       () => _i1015.GetOrderListUseCase(gh<_i724.IOrderRepository>()));
-  gh.factory<_i822.SaveRequirementDraftUseCase>(
-      () => _i822.SaveRequirementDraftUseCase(gh<_i724.IOrderRepository>()));
   gh.factory<_i40.SubmitEvaluationUseCase>(
       () => _i40.SubmitEvaluationUseCase(gh<_i724.IOrderRepository>()));
   gh.factory<_i51.SubmitRequirementsUseCase>(
       () => _i51.SubmitRequirementsUseCase(gh<_i724.IOrderRepository>()));
-  gh.factory<_i176.OrderListBloc>(() => _i176.OrderListBloc(
-      getOrderListUseCase: gh<_i1015.GetOrderListUseCase>()));
   gh.factory<_i549.OrderDetailBloc>(() => _i549.OrderDetailBloc(
         getOrderDetailUseCase: gh<_i691.GetOrderDetailUseCase>(),
         cancelOrderUseCase: gh<_i1.CancelOrderUseCase>(),
@@ -132,9 +134,10 @@ _i174.GetIt init(
         deleteOrderUseCase: gh<_i577.DeleteOrderUseCase>(),
         paymentService: gh<_i395.IPaymentService>(),
         submitEvaluationUseCase: gh<_i40.SubmitEvaluationUseCase>(),
-        saveRequirementDraftUseCase: gh<_i822.SaveRequirementDraftUseCase>(),
         submitRequirementsUseCase: gh<_i51.SubmitRequirementsUseCase>(),
       ));
+  gh.factory<_i176.OrderListBloc>(() => _i176.OrderListBloc(
+      getOrderListUseCase: gh<_i1015.GetOrderListUseCase>()));
   return getIt;
 }
 

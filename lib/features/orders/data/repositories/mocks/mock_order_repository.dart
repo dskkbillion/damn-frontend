@@ -212,16 +212,14 @@ class MockOrderRepository implements IOrderRepository {
     required List<String> pictures,
   }) async {
     print(
-        '[MockOrderRepository] addEvaluation called for item $orderItemId with score $score');
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 500));
-    // In a real scenario, you might update the mock order's state here
-    print('Evaluation details:');
-    print('  Score: $score');
-    print('  Content: $content');
-    print('  Anonymous: $isAnonymous');
+        '[MockOrderRepository] addEvaluation called for orderItemId: $orderItemId');
+    print('  Score: $score, Content: $content, Anonymous: $isAnonymous');
     print('  Pictures: ${pictures.length}');
-    return const Right(null); // Simulate success
+    // Simulate success
+    await Future.delayed(const Duration(milliseconds: 500));
+    return const Right(null);
+    // Simulate failure:
+    // return Left(ServerFailure('Mock evaluation submission failed'));
   }
 
   // --- Implement new mock methods ---
@@ -244,25 +242,16 @@ class MockOrderRepository implements IOrderRepository {
   @override
   Future<Either<Failure, void>> submitRequirements({
     required String orderId,
-    required Map<String, String> requirementsData,
+    required int productId,
+    required List<Map<String, String>> feature,
     required List<String> attachmentPaths,
   }) async {
-    print(
-        '[MockOrderRepository] submitRequirements called for order $orderId');
     await Future.delayed(const Duration(seconds: 1));
-     print('  Requirements Data: $requirementsData');
-    print('  Attachment Paths: ${attachmentPaths.length}');
-    // Find the order and update its state
-    final index = _mockOrders.indexWhere((o) => o.id.toString() == orderId);
-    if (index != -1) {
-      final currentOrder = _mockOrders[index];
-      // Simulate moving to the next state, e.g., awaiting seller action
-      _mockOrders[index] = currentOrder.copyWith(state: OrderStatus.awaitingStart);
-      print('  Order $orderId state updated to ${OrderStatus.awaitingStart}');
-    } else {
-       print('  Order $orderId not found in mock data.');
-    }
+    print(
+        'MockOrderRepository: Simulating submitting requirements for order $orderId...');
     // Simulate success
     return const Right(null);
+    // Simulate failure
+    // return Left(ServerFailure('Mock submit failed'));
   }
 }

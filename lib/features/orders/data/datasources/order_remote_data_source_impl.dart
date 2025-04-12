@@ -1,5 +1,7 @@
+import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart'; // Import injectable
+import 'dart:convert'; // Import jsonDecode
 
 import '../../../../core/error/failures.dart'; // 使用 failures.dart
 import '../../domain/entities/order_status.dart';
@@ -9,17 +11,20 @@ import 'i_order_remote_data_source.dart';
 /// 订单远程数据源的实现类。
 @LazySingleton(as: IOrderRemoteDataSource) // Add injectable annotation
 class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
-  final Dio dio; // 注入 Dio 实例
+  // final Dio dio; // REMOVED: Direct Dio dependency
+  final CoreDioClient coreDioClient; // CHANGED: Depend on CoreDioClient
 
-  OrderRemoteDataSourceImpl({required this.dio});
+  // OrderRemoteDataSourceImpl({required this.dio}); // REMOVED
+  OrderRemoteDataSourceImpl({required this.coreDioClient}); // CHANGED
 
   // --- API Endpoints --- (根据 RN 代码分析确定)
   final String _listEndpoint = '/api/shop/order/list';
   final String _detailEndpoint = '/api/shop/order/detail';
   final String _cancelEndpoint = '/api/shop/order/cancel';
-  final String _receiptEndpoint = '/api/shop/order/receipt'; // 确认收货 (API Doc)
+  final String _receiptEndpoint = '/api/shop/order/complete'; // Corrected path
   final String _deleteEndpoint = '/api/shop/order/delete';
   final String _addEvaluationEndpoint = '/api/shop/evaluate/add'; // 新增
+  final String _submitRequirementsEndpoint = '/api/project/orderMaterials/add'; // Added endpoint
 
   @override
   Future<List<OrderModel>> getOrderList({
@@ -34,113 +39,128 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
       'type': 'buyer', // 假设总是查询买家订单
     };
 
-    // 映射 OrderStatus 枚举到 API 需要的字符串状态
-    // (基于 RN `orderActions.ts` 中的逻辑)
+    // (基于 RN `orderActions.ts` 中的逻辑) - SIMPLIFIED AND CORRECTED MAPPING
     if (status != null) {
       switch (status) {
         case OrderStatus.awaitingPayment:
           params['state'] = 'awaitingPayment';
           break;
         case OrderStatus.awaitingSubmission:
-        case OrderStatus.buyAwaitingSubmission:
-        case OrderStatus.awaitingStart:
-        case OrderStatus.awaitingDelivery:
-        case OrderStatus.awaitingConfirmation:
-        case OrderStatus.sellerSupplementaryMaterials:
-        case OrderStatus.applyForRefuse:
-        case OrderStatus.canceled: // 假设处理中包含取消？需要确认
-          // RN 代码中处理中状态的逻辑较复杂，这里简化处理，具体实现需细化
-          if (status == OrderStatus.awaitingSubmission ||
-              status == OrderStatus.buyAwaitingSubmission ||
-              status == OrderStatus.awaitingStart ||
-              status == OrderStatus.awaitingDelivery ||
-              status == OrderStatus.awaitingConfirmation ||
-              status == OrderStatus.sellerSupplementaryMaterials ||
-              status == OrderStatus.applyForRefuse ||
-              status == OrderStatus.canceled) {
-            params['states'] = [
-              "awaitingSubmission",
-              "buyAwaitingSubmission",
-              "awaitingStart",
-              "awaitingDelivery",
-              "awaitingConfirmation",
-              "sellerSupplementaryMaterials",
-              "applyForRefuse",
-              "canceled",
-            ]; // "处理中" 状态对应的数组
-          } else {
-            // 对于其他状态，如果 API 支持，可以单独传递
-             params['state'] = status.toJsonString();
-          }
+          params['state'] = 'awaitingSubmission'; // Direct mapping
           break;
-        case OrderStatus.awaitingEvaluation:
-        case OrderStatus.orderCompleted:
-          params['states'] = ['awaitingEvaluation', 'orderCompleted']; // 已完成/待评价
+        case OrderStatus.buyAwaitingSubmission: // Should this be separate? Assuming part of awaitingSubmission for now
+          params['state'] = 'buyAwaitingSubmission'; 
+          break;
+        case OrderStatus.awaitingStart:
+           params['state'] = 'awaitingStart'; // Direct mapping
+           break; 
+        case OrderStatus.awaitingDelivery:
+          params['state'] = 'awaitingDelivery'; // Direct mapping
+          break;
+        case OrderStatus.awaitingConfirmation:
+          params['state'] = 'awaitingConfirmation'; // Direct mapping
+          break;
+        case OrderStatus.sellerSupplementaryMaterials:
+           params['state'] = 'sellerSupplementaryMaterials'; // Direct mapping
+           break;
+        case OrderStatus.applyForRefuse:
+           params['state'] = 'applyForRefuse'; // Direct mapping
+           break;   
+        case OrderStatus.canceled:
+           params['state'] = 'canceled'; // Direct mapping
+           break;              
+        case OrderStatus.awaitingEvaluation: 
+        case OrderStatus.orderCompleted: // Keep grouping for '待评价' tab
+          params['states'] = ['awaitingEvaluation', 'orderCompleted'];
           break;
         case OrderStatus.afterSale:
         case OrderStatus.AfterSaleRejection:
-        case OrderStatus.applyingForMediation:
+        case OrderStatus.applyingForMediation: // Keep grouping for '售后中' tab
           params['states'] = [
             "afterSale",
             "AfterSaleRejection",
             "applyingForMediation"
-          ]; // 售后
+          ];
           break;
-        case OrderStatus.unknown:
-          // 查询全部时，不传递 state/states 参数
-          if (keyword != null && keyword.isNotEmpty) {
-            params['keyword'] = keyword;
-          }
+        case OrderStatus.unknown: // Represents '全部' tab
+          // No state or states parameter needed for 'All'
           break;
+        // REMOVED the complex 'Processing' grouping logic
       }
-    } else {
-      // status 为 null, 查询全部
-      if (keyword != null && keyword.isNotEmpty) {
-        params['keyword'] = keyword;
-      }
+    }
+    // Keyword handling remains the same
+    if (keyword != null && keyword.isNotEmpty) {
+      params['keyword'] = keyword;
+    }
+    
+    // Ensure 'state' and 'states' are not sent together if status maps to states
+    if (params.containsKey('states') && params.containsKey('state')) {
+        params.remove('state'); // Prefer 'states' if both derived
     }
 
     try {
-      final response = await dio.post(
+      // CHANGED: Use coreDioClient.post
+      final response = await coreDioClient.post(
         _listEndpoint,
         data: params,
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        final responseData = response.data['data'];
-        // Use null-aware operators for safer access and type checking
-        final List<dynamic>? orderListJson = responseData?['list'] as List<dynamic>?;
+        // **DEBUG: Print response.data type and value**
+        print('[OrderRemoteDataSource] DEBUG: response.data Type: ${response.data.runtimeType}');
+        print('[OrderRemoteDataSource] DEBUG: response.data Value: ${response.data}');
 
-        if (orderListJson != null) {
-          // If list is present and is a list, map it
-          return orderListJson
-              .map((json) => OrderModel.fromJson(json as Map<String, dynamic>))
-              .toList();
+        Map<String, dynamic>? dataMap;
+        
+        // Try to ensure we have a Map<String, dynamic>
+        if (response.data is Map<String, dynamic>) {
+            dataMap = response.data as Map<String, dynamic>;
+        } else if (response.data is String) {
+            try {
+                dataMap = jsonDecode(response.data as String) as Map<String, dynamic>?;
+                print('[OrderRemoteDataSource] INFO: response.data was a String, successfully decoded to Map.');
+            } catch (e) {
+                 print('[OrderRemoteDataSource] ERROR: response.data was a String, but failed to decode as JSON Map: $e');
+            }
+        }
+
+        if (dataMap != null) {
+            final List<dynamic>? orderListJson = dataMap['rows'] as List<dynamic>?; // Access rows from the ensured map
+
+            if (orderListJson != null) {
+              return orderListJson
+                  .map((json) => OrderModel.fromJson(json as Map<String, dynamic>))
+                  .toList();
+            } else {
+              // Use double quotes for the outer string to allow inner single quotes
+              print("[OrderRemoteDataSource] Successfully decoded/obtained Map, but 'rows' field is null or not a list. Returning empty list."); 
+              return [];
+            }
         } else {
-          // If 'data' is null, 'list' is missing, or 'list' is not a List, return empty.
-          print('[OrderRemoteDataSource] Response format issue or empty list. Returning empty list.');
-          return [];
+            print('[OrderRemoteDataSource] ERROR: Could not obtain a valid Map<String, dynamic> from response.data. Returning empty list.');
+            return [];
         }
       } else {
         throw ServerFailure(
-            message: response.data?['msg'] ?? 'Failed to load order list',
-            // statusCode: response.statusCode // ServerFailure 当前定义不含 statusCode
-            );
+            message: response.data?['msg'] ?? 'Failed to load order list');
       }
     } on DioException catch (e) {
+      // CoreDioClient already handles DioException logging/wrapping via interceptors?
+      // Consider if specific handling is still needed here or rely on interceptor/Repository level.
+      // For now, keep similar handling but message might be redundant if interceptor logs.
       throw ServerFailure(
-          message: e.message ?? 'Network error',
-          // statusCode: e.response?.statusCode
-          );
+          message: e.response?.data?['msg'] ?? e.message ?? 'Network error');
     } catch (e) {
-      throw ServerFailure(message: 'An unexpected error occurred: ${e.toString()}');
+      // Catching other exceptions that might occur before/after the Dio call within this method
+      throw ServerFailure(message: 'An unexpected error occurred in getOrderList: ${e.toString()}');
     }
   }
 
   @override
   Future<OrderModel> getOrderDetail(int orderId) async {
     try {
-      final response = await dio.get(
+      // CHANGED: Use coreDioClient.get
+      final response = await coreDioClient.get(
         _detailEndpoint,
         queryParameters: {'id': orderId},
       );
@@ -154,153 +174,161 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
         }
       } else {
         throw ServerFailure(
-            message: response.data?['msg'] ?? 'Failed to load order detail',
-            // statusCode: response.statusCode
-            );
+            message: response.data?['msg'] ?? 'Failed to load order detail');
       }
     } on DioException catch (e) {
       throw ServerFailure(
-          message: e.message ?? 'Network error',
-          // statusCode: e.response?.statusCode
-          );
+          message: e.response?.data?['msg'] ?? e.message ?? 'Network error');
     } catch (e) {
-      throw ServerFailure(message: 'An unexpected error occurred: ${e.toString()}');
+      throw ServerFailure(message: 'An unexpected error occurred in getOrderDetail: ${e.toString()}');
     }
   }
 
   @override
   Future<void> cancelOrder(int orderId) async {
-    // API Doc says GET, query parameter is 'orderId'
-    const String _cancelEndpoint = '/api/shop/order/cancel'; // Corrected path
+    // API Doc says GET, query parameter is 'orderId' (string?)
+    const String _cancelEndpoint = '/api/shop/order/cancel';
     try {
-      final response = await dio.get(
+      final response = await coreDioClient.get(
         _cancelEndpoint,
-        queryParameters: {'orderId': orderId}, // Use correct query parameter name
+        queryParameters: {'orderId': orderId.toString()}, // Send as string to be safe?
       );
-      if (response.statusCode != 200 && response.statusCode != 204) {
-        throw ServerFailure(
-            message: response.data?['msg'] ?? 'Failed to cancel order',
-            // statusCode: response.statusCode // Removed if not supported
-            );
+      
+      // Check BUSINESS code from response body
+      if (response.statusCode == 200 && response.data != null && response.data['code'] == 200) {
+         print('[OrderRemoteDataSourceImpl] cancelOrder successful (Code: ${response.data['code']}).');
+         return;
+      } else {
+        final errorMsg = response.data?['msg'] ?? 'Failed to cancel order (Unknown error)';
+        final errorCode = response.data?['code'] ?? response.statusCode;
+        print('[OrderRemoteDataSourceImpl] cancelOrder failed. Code: $errorCode, Msg: $errorMsg');
+        throw ServerFailure(message: errorMsg);
       }
     } on DioException catch (e) {
+      print('[OrderRemoteDataSourceImpl] cancelOrder DioException: ${e.toString()}');
       throw ServerFailure(
-          message: e.response?.data?['msg'] ?? e.message ?? 'Network error',
-          // statusCode: e.response?.statusCode // Removed if not supported
-          );
+          message: e.response?.data?['msg'] ?? e.message ?? 'Network error');
     } catch (e) {
-      throw ServerFailure(message: 'An unexpected error occurred: ${e.toString()}');
+      print('[OrderRemoteDataSourceImpl] cancelOrder unexpected error: ${e.toString()}');
+       if (e is ServerFailure) { rethrow; }
+      throw ServerFailure(message: 'An unexpected error occurred in cancelOrder: ${e.toString()}');
     }
   }
 
   @override
   Future<void> confirmOrderReceipt(int orderId) async {
-    // API Doc says GET, query parameter is 'orderId'
-    const String _receiptEndpoint = '/api/shop/order/complete'; // Corrected path
+    // API Doc says GET, query parameter is 'orderId' (string?)
+    const String _receiptEndpoint = '/api/shop/order/complete'; // Correct path
     try {
-      final response = await dio.get(
-        _receiptEndpoint, // Use correct endpoint
-        queryParameters: {'orderId': orderId}, // Use correct query parameter name
+      final response = await coreDioClient.get(
+        _receiptEndpoint, 
+        queryParameters: {'orderId': orderId.toString()}, // Send as string to be safe?
       );
-      // Check for 200 or 204 No Content
-      if (response.statusCode != 200 && response.statusCode != 204) {
-        throw ServerFailure(
-            message: response.data?['msg'] ?? 'Failed to confirm order receipt',
-            // statusCode: response.statusCode // Removed if not supported
-            );
+      
+      // Check BUSINESS code from response body
+      if (response.statusCode == 200 && response.data != null && response.data['code'] == 200) {
+         print('[OrderRemoteDataSourceImpl] confirmOrderReceipt successful (Code: ${response.data['code']}).');
+         return;
+      } else {
+        final errorMsg = response.data?['msg'] ?? 'Failed to confirm order receipt (Unknown error)';
+        final errorCode = response.data?['code'] ?? response.statusCode;
+        print('[OrderRemoteDataSourceImpl] confirmOrderReceipt failed. Code: $errorCode, Msg: $errorMsg');
+        throw ServerFailure(message: errorMsg);
       }
     } on DioException catch (e) {
+      print('[OrderRemoteDataSourceImpl] confirmOrderReceipt DioException: ${e.toString()}');
       throw ServerFailure(
-          message: e.response?.data?['msg'] ?? e.message ?? 'Network error',
-          // statusCode: e.response?.statusCode // Removed if not supported
-          );
+          message: e.response?.data?['msg'] ?? e.message ?? 'Network error');
     } catch (e) {
-      throw ServerFailure(message: 'An unexpected error occurred: ${e.toString()}');
+       print('[OrderRemoteDataSourceImpl] confirmOrderReceipt unexpected error: ${e.toString()}');
+        if (e is ServerFailure) { rethrow; }
+      throw ServerFailure(message: 'An unexpected error occurred in confirmOrderReceipt: ${e.toString()}');
     }
   }
 
   @override
   Future<void> deleteOrder(int orderId) async {
-    // API Doc says POST, query parameter is 'orderId'
-     const String _deleteEndpoint = '/api/shop/order/delete'; // Corrected path
+    // API Doc says POST, query parameter is 'orderId' (string?)
+     const String _deleteEndpoint = '/api/shop/order/delete';
     try {
-      final response = await dio.post(
+      final response = await coreDioClient.post(
         _deleteEndpoint,
-        queryParameters: {'orderId': orderId}, // Use correct query parameter name
-        // POST usually requires a body, but API doc doesn't specify one for delete.
-        // Send empty body if required, or adjust if backend needs specific body.
+        queryParameters: {'orderId': orderId.toString()}, // Send as string to be safe?
         data: {}, // Sending empty data as body might be needed for POST
       );
-      if (response.statusCode != 200 && response.statusCode != 204) {
-         throw ServerFailure(
-            message: response.data?['msg'] ?? 'Failed to delete order',
-            // statusCode: response.statusCode // Removed if not supported
-            );
+      
+      // Check BUSINESS code from response body
+      if (response.statusCode == 200 && response.data != null && response.data['code'] == 200) {
+         print('[OrderRemoteDataSourceImpl] deleteOrder successful (Code: ${response.data['code']}).');
+         return;
+      } else {
+        final errorMsg = response.data?['msg'] ?? 'Failed to delete order (Unknown error)';
+        final errorCode = response.data?['code'] ?? response.statusCode;
+        print('[OrderRemoteDataSourceImpl] deleteOrder failed. Code: $errorCode, Msg: $errorMsg');
+        throw ServerFailure(message: errorMsg);
       }
     } on DioException catch (e) {
+      print('[OrderRemoteDataSourceImpl] deleteOrder DioException: ${e.toString()}');
        throw ServerFailure(
-          message: e.response?.data?['msg'] ?? e.message ?? 'Network error',
-          // statusCode: e.response?.statusCode // Removed if not supported
-          );
+          message: e.response?.data?['msg'] ?? e.message ?? 'Network error');
     } catch (e) {
-      throw ServerFailure(message: 'An unexpected error occurred: ${e.toString()}');
+      print('[OrderRemoteDataSourceImpl] deleteOrder unexpected error: ${e.toString()}');
+       if (e is ServerFailure) { rethrow; }
+      throw ServerFailure(message: 'An unexpected error occurred in deleteOrder: ${e.toString()}');
     }
   }
 
   // --- Add Evaluation Method ---
   @override
   Future<void> addEvaluation({
-    required String orderId,
     required int orderItemId,
     required double score,
     required String content,
     required bool isAnonymous,
-    required List<String> pictures, // Expecting URLs from upload service
+    required List<String> pictures,
   }) async {
-    const String _addEvaluationEndpoint = '/api/shop/evaluate/add';
     try {
-      // Construct the request body based on API/RN code analysis
       final data = {
-        'orderId': int.tryParse(orderId) ?? 0, // API might expect int
-        // API/RN doesn't seem to use orderItemId directly in the body
-        // The evaluation might be linked via orderId and potentially the first item implicitly
-        // Or it might evaluate multiple items in a list structure (doc was unclear)
-        // Let's assume for now it's linked via orderId and the structure matches RN:
+        'orderItemId': orderItemId, 
         'score': score,
         'remark': content,
-        'images': pictures, // Pass the image URLs
-        'anonumityFlag': isAnonymous, // Match RN naming 'anonumityFlag'
-        // TODO: Clarify with backend if orderItemId or a list structure is needed
+        'images': pictures,
+        'anonumityFlag': isAnonymous,
       };
+      print('[OrderRemoteDataSourceImpl] addEvaluation called with data: $data');
 
-      print('[OrderRemoteDataSourceImpl] addEvaluation called:');
-      print('  Endpoint: $_addEvaluationEndpoint');
-      print('  Data: $data');
-
-      final response = await dio.post(
+      final response = await coreDioClient.post(
         _addEvaluationEndpoint,
-        data: data, // Send data in the request body
+        data: data, // Sending single object, assuming doc 'array' type is incorrect
       );
 
-      // Check for successful response (e.g., 200 OK)
-      // The API doc doesn't specify success payload, assume 200/204 is success
-      if (response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 204) {
+      // Check BUSINESS code from response body, not just HTTP status
+      if (response.statusCode == 200 && response.data != null && response.data['code'] == 200) {
+         print('[OrderRemoteDataSourceImpl] addEvaluation successful (Code: ${response.data['code']}).');
+         // Success, return void
+         return;
+      } else {
+        // Handle business error or unexpected format
+        final errorMsg = response.data?['msg'] ?? 'Failed to submit evaluation (Unknown error)';
+        final errorCode = response.data?['code'] ?? response.statusCode; // Use business code if available
+        print('[OrderRemoteDataSourceImpl] addEvaluation failed. Code: $errorCode, Msg: $errorMsg');
         throw ServerFailure(
-          message: response.data?['msg'] ?? 'Failed to submit evaluation',
-          // statusCode: response.statusCode // Removed
+          message: errorMsg,
+          // Consider adding code to ServerFailure if needed
         );
       }
-      print('[OrderRemoteDataSourceImpl] addEvaluation successful.');
-
     } on DioException catch (e) {
-      print('[OrderRemoteDataSourceImpl] addEvaluation failed: ${e.toString()}');
+      // Handle network/Dio specific errors
+      print('[OrderRemoteDataSourceImpl] addEvaluation DioException: ${e.toString()}');
       throw ServerFailure(
-        message: e.response?.data?['msg'] ?? e.message ?? 'Network error',
-        // statusCode: e.response?.statusCode // Removed
-      );
+        message: e.response?.data?['msg'] ?? e.message ?? 'Network error');
     } catch (e) {
-       print('[OrderRemoteDataSourceImpl] addEvaluation unexpected error: ${e.toString()}');
-      throw ServerFailure(message: 'An unexpected error occurred: ${e.toString()}');
+      // Handle other unexpected errors
+      print('[OrderRemoteDataSourceImpl] addEvaluation unexpected error: ${e.toString()}');
+      if (e is ServerFailure) { // Avoid wrapping ServerFailure again
+         rethrow;
+      }
+      throw ServerFailure(message: 'An unexpected error occurred in addEvaluation: ${e.toString()}');
     }
   }
 
@@ -311,45 +339,45 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
     required String orderId,
     required int productId,
     required List<Map<String, String>> feature,
-    required List<String> attachmentPaths, // Expecting URLs
+    required List<String> attachmentPaths,
   }) async {
     const String _submitRequirementsEndpoint = '/api/project/orderMaterials/add';
     try {
       // Construct the request body based on API/RN code analysis
       final data = {
-        'orderId': int.tryParse(orderId) ?? 0, // API might expect int
+        'orderId': int.tryParse(orderId) ?? 0,
         'productId': productId,
-        'feature': feature, // Pass the list of question/answer maps
-        'files': attachmentPaths, // Pass the file URLs
+        'feature': feature,
+        'files': attachmentPaths,
       };
 
       print('[OrderRemoteDataSourceImpl] submitRequirements called:');
       print('  Endpoint: $_submitRequirementsEndpoint');
       print('  Data: $data');
 
-      final response = await dio.post(
+      // CHANGED: Use coreDioClient.post
+      final response = await coreDioClient.post(
         _submitRequirementsEndpoint,
         data: data,
       );
 
-      // Check for successful response
-       if (response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 204) {
-        throw ServerFailure(
-          message: response.data?['msg'] ?? 'Failed to submit requirements',
-          // statusCode: response.statusCode // Removed
-        );
+      // CORRECTED: Check BUSINESS code from response body
+      if (response.statusCode == 200 && response.data != null && response.data['code'] == 200) {
+         print('[OrderRemoteDataSourceImpl] submitRequirements successful (Code: ${response.data['code']}).');
+         return;
+      } else {
+        final errorMsg = response.data?['msg'] ?? 'Failed to submit requirements (Unknown error)';
+        final errorCode = response.data?['code'] ?? response.statusCode;
+        print('[OrderRemoteDataSourceImpl] submitRequirements failed. Code: $errorCode, Msg: $errorMsg');
+        throw ServerFailure(message: errorMsg);
       }
-       print('[OrderRemoteDataSourceImpl] submitRequirements successful.');
-
     } on DioException catch (e) {
        print('[OrderRemoteDataSourceImpl] submitRequirements failed: ${e.toString()}');
       throw ServerFailure(
-        message: e.response?.data?['msg'] ?? e.message ?? 'Network error',
-        // statusCode: e.response?.statusCode // Removed
-      );
+        message: e.response?.data?['msg'] ?? e.message ?? 'Network error');
     } catch (e) {
        print('[OrderRemoteDataSourceImpl] submitRequirements unexpected error: ${e.toString()}');
-      throw ServerFailure(message: 'An unexpected error occurred: ${e.toString()}');
+      throw ServerFailure(message: 'An unexpected error occurred in submitRequirements: ${e.toString()}');
     }
   }
 } 
