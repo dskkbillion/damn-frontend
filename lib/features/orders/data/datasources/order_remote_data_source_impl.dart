@@ -39,35 +39,44 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
       'type': 'buyer', // 假设总是查询买家订单
     };
 
-    // (基于 RN `orderActions.ts` 中的逻辑) - SIMPLIFIED AND CORRECTED MAPPING
+    // (Based on API doc/example provided by user) - CORRECTED MAPPING using 'states' array
     if (status != null) {
       switch (status) {
         case OrderStatus.awaitingPayment:
-          params['state'] = 'awaitingPayment';
+          // params['state'] = 'awaitingPayment';
+          params['states'] = ['awaitingPayment']; // Use states array
           break;
         case OrderStatus.awaitingSubmission:
-          params['state'] = 'awaitingSubmission'; // Direct mapping
+          // params['state'] = 'awaitingSubmission'; 
+          params['states'] = ['awaitingSubmission']; // Use states array
           break;
-        case OrderStatus.buyAwaitingSubmission: // Should this be separate? Assuming part of awaitingSubmission for now
-          params['state'] = 'buyAwaitingSubmission'; 
+        case OrderStatus.buyAwaitingSubmission:
+          // params['state'] = 'buyAwaitingSubmission'; 
+          params['states'] = ['buyAwaitingSubmission']; // Use states array
           break;
         case OrderStatus.awaitingStart:
-           params['state'] = 'awaitingStart'; // Direct mapping
+          // params['state'] = 'awaitingStart'; 
+          params['states'] = ['awaitingStart']; // Use states array
            break; 
         case OrderStatus.awaitingDelivery:
-          params['state'] = 'awaitingDelivery'; // Direct mapping
+          // params['state'] = 'awaitingDelivery'; 
+          params['states'] = ['awaitingDelivery']; // Use states array
           break;
         case OrderStatus.awaitingConfirmation:
-          params['state'] = 'awaitingConfirmation'; // Direct mapping
+          // params['state'] = 'awaitingConfirmation'; 
+          params['states'] = ['awaitingConfirmation']; // Use states array
           break;
         case OrderStatus.sellerSupplementaryMaterials:
-           params['state'] = 'sellerSupplementaryMaterials'; // Direct mapping
+          // params['state'] = 'sellerSupplementaryMaterials'; 
+          params['states'] = ['sellerSupplementaryMaterials']; // Use states array
            break;
         case OrderStatus.applyForRefuse:
-           params['state'] = 'applyForRefuse'; // Direct mapping
+          // params['state'] = 'applyForRefuse'; 
+          params['states'] = ['applyForRefuse']; // Use states array
            break;   
         case OrderStatus.canceled:
-           params['state'] = 'canceled'; // Direct mapping
+          // params['state'] = 'canceled'; 
+          params['states'] = ['canceled']; // Use states array
            break;              
         case OrderStatus.awaitingEvaluation: 
         case OrderStatus.orderCompleted: // Keep grouping for '待评价' tab
@@ -85,7 +94,6 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
         case OrderStatus.unknown: // Represents '全部' tab
           // No state or states parameter needed for 'All'
           break;
-        // REMOVED the complex 'Processing' grouping logic
       }
     }
     // Keyword handling remains the same
@@ -93,10 +101,8 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
       params['keyword'] = keyword;
     }
     
-    // Ensure 'state' and 'states' are not sent together if status maps to states
-    if (params.containsKey('states') && params.containsKey('state')) {
-        params.remove('state'); // Prefer 'states' if both derived
-    }
+    // REMOVED check for conflicting state/states as we now only use states
+    // if (params.containsKey('states') && params.containsKey('state')) { ... }
 
     try {
       // CHANGED: Use coreDioClient.post
