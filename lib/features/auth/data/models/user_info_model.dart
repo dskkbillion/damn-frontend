@@ -1,44 +1,33 @@
-import 'package:equatable/equatable.dart';
-
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/user_info.dart';
 
-/// 用于解析 /api/member/info 响应中 `data` 部分的 DTO
-class UserInfoModel extends UserInfo {
+part 'user_info_model.freezed.dart';
+part 'user_info_model.g.dart';
 
-  const UserInfoModel({
-    required super.id,
-    super.mobile,
-    super.nickName,
-    super.avatar,
-    // 可以添加更多来自实际响应的字段作为模型的属性，如果需要的话
-    // 例如： final String? createTime;
-  });
+@freezed
+class UserInfoModel with _$UserInfoModel {
+  const UserInfoModel._(); // Private constructor for entity conversion method
 
-  /// 从 /api/member/info 响应的 `data` 部分创建模型
-  factory UserInfoModel.fromJson(Map<String, dynamic> jsonData) {
-    // 确保必要的字段存在且类型正确
-    if (!jsonData.containsKey('id') || jsonData['id'] is! int) {
-       throw FormatException('UserInfoModel: Missing or invalid type for "id" field.');
-    }
+  const factory UserInfoModel({
+    // Match fields from UserInfo entity and potential API response structure
+    required int id,
+    String? mobile,
+    @JsonKey(name: 'nickname') // Example: if API uses 'nickname' instead of 'nickName'
+    String? nickName,
+    String? avatar,
+    // Add other fields based on the actual /api/member/info response
+  }) = _UserInfoModel;
 
-    return UserInfoModel(
-      id: jsonData['id'] as int,
-      // 使用 ?. 和类型检查来安全地解析可选字段
-      mobile: jsonData['mobile'] as String?,
-      nickName: jsonData['nickName'] as String?,
-      avatar: jsonData['avatar'] as String?,
-      // 解析其他需要的字段...
-      // createTime: jsonData['createTime'] as String?,
+  factory UserInfoModel.fromJson(Map<String, dynamic> json) =>
+      _$UserInfoModelFromJson(json);
+
+  // Convert Data Transfer Object (Model) to Domain Entity
+  UserInfo toEntity() {
+    return UserInfo(
+      id: id,
+      mobile: mobile,
+      nickName: nickName,
+      avatar: avatar,
     );
   }
-
-  /// 可选：如果需要将模型转换为 Entity (如果模型和实体结构不同)
-  // UserInfo toEntity() {
-  //   return UserInfo(
-  //     id: id,
-  //     mobile: mobile,
-  //     nickName: nickName,
-  //     avatar: avatar,
-  //   );
-  // }
 }

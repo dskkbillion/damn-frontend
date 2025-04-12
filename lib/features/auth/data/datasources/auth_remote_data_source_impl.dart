@@ -6,7 +6,10 @@ import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_credent
 // import 'package:dskk_flutter_refactor/features/auth/domain/entities/verification_purpose.dart'; // No longer needed
 import '../models/authenticated_user_model.dart'; // 确认这是登录响应模型
 import 'auth_remote_data_source.dart';
+import 'package:injectable/injectable.dart'; // Import injectable
 
+@LazySingleton(as: AuthRemoteDataSource) // Register implementation for the interface
+@injectable // Mark class for injectable generator
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final Dio dio; // 网络客户端通过依赖注入传入
 
@@ -37,17 +40,17 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         print(
             'Login API returned status ${response.statusCode} or missing token in data.');
         throw ServerException(
-            'Login failed. Status: ${response.statusCode}, Data: ${response.data?.toString() ?? 'N/A'}');
+            message: 'Login failed. Status: ${response.statusCode}, Data: ${response.data?.toString() ?? 'N/A'}');
       }
     } on DioException catch (e) {
       print('DioException during login: ${e.message}');
-      throw ServerException('Login failed due to network or server error.');
+      throw ServerException(message: 'Login failed due to network or server error.');
     } on FormatException catch (e) {
       print('Error parsing login response: ${e.toString()}');
-      throw ServerException('Failed to parse login response.');
+      throw ServerException(message: 'Failed to parse login response.');
     } catch (e) {
       print('Unknown error during login: ${e.toString()}');
-      throw ServerException('An unknown error occurred during login.');
+      throw ServerException(message: 'An unknown error occurred during login.');
     }
   }
 
@@ -74,14 +77,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
          print('Send code API returned status ${response.statusCode} or business error: ${response.data?.toString()}');
          // 可以考虑解析 response.data 中的错误信息 (如果后端返回了结构化错误)
          throw ServerException(
-            'Failed to send verification code. Status: ${response.statusCode}');
+            message: 'Failed to send verification code. Status: ${response.statusCode}');
       }
     } on DioException catch (e) {
       print('DioException during send code: ${e.message}');
-      throw ServerException('Send code failed due to network or server error.');
+      throw ServerException(message: 'Send code failed due to network or server error.');
     } catch (e) {
       print('Unknown error during send code: ${e.toString()}');
-      throw ServerException('An unknown error occurred while sending the code.');
+      throw ServerException(message: 'An unknown error occurred while sending the code.');
     }
   }
 

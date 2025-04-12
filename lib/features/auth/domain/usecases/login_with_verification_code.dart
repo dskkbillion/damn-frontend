@@ -2,6 +2,7 @@
 
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart'; // Import injectable
 
 import 'package:dskk_flutter_refactor/core/error/failures.dart'; // 使用包路径
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/authenticated_user.dart';
@@ -10,6 +11,8 @@ import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_r
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart'; // 确认路径
 
 /// 处理使用手机和验证码登录的流程。
+@lazySingleton // Register UseCase as LazySingleton
+@injectable // Mark class for injectable generator
 class LoginWithVerificationCodeUseCase
     implements UseCase<AuthenticatedUser, VerificationCodeCredentials> {
   final IAuthRepository repository;

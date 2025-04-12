@@ -43,6 +43,8 @@ dependencies:
   # Core Libraries - Tech Stack Selection
   # flutter_riverpod: ^2.5.1 # State Management (Riverpod)
   # riverpod_annotation: ^2.3.5 # Riverpod Annotations for generator
+  flutter_riverpod: ^2.5.1 # State Management (Riverpod) - Re-enabled
+  riverpod_annotation: ^2.3.5 # Riverpod Annotations for generator - Re-enabled
   get_it: ^7.7.0 # Dependency Injection (Service Locator)
   injectable: ^2.4.1 # DI Code Generator Helper
   go_router: ^14.1.0 # Navigation
@@ -65,6 +67,13 @@ dependencies:
   dio: ^5.8.0+1
   http: ^1.3.0
   package_info_plus: ^8.0.0 # Add package_info_plus (check pub.dev for latest)
+
+  # --- SVG Support ---
+  flutter_svg: ^2.0.9 # Added for SVG Logo
+
+  # --- Core Utilities ---
+  flutter_secure_storage: ^9.2.2 # For secure storage (Token, UserID)
+  connectivity_plus: ^6.0.3     # For network status checking
 
 dev_dependencies:
   flutter_test:
@@ -104,7 +113,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-  # - .env # Removed as .env is loaded at runtime, not packaged as an asset
+    # - .env # Removed as .env is loaded at runtime, not packaged as an asset
+    - assets/images/ # Declare the images directory
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

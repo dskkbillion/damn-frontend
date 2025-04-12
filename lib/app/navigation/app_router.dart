@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get_it/get_it.dart'; // Import GetIt
+import 'dart:async'; // Import dart:async for StreamSubscription
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_cubit.dart';
+
+// Import authentication related classes
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_status.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
 
 // Import the main shell page which will act as the navigator shell
 import 'package:dskk_flutter_refactor/app/widgets/main_shell_page.dart';
+// Import the actual login page
+import 'package:dskk_flutter_refactor/features/auth/presentation/pages/sms_login_page.dart';
 
 // Placeholder pages for each tab
 // TODO: Replace these with actual feature pages later
@@ -23,6 +33,9 @@ class PlaceholderPage extends StatelessWidget {
 
 // Provider for the GoRouter instance
 final goRouterProvider = Provider<GoRouter>((ref) {
+  // Access the AuthRepository via GetIt
+  final authRepository = GetIt.instance<IAuthRepository>();
+
   // TODO: Add observers later if needed (e.g., for analytics)
   // final observers = <NavigatorObserver>[];
 
@@ -36,13 +49,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: '/home', // Set initial tab to '主页'
     // observers: observers,
     debugLogDiagnostics: true, // Enable debug logging
+    refreshListenable: GoRouterRefreshStream(authRepository.authStatus), // Listen to auth status changes
 
     routes: [
       // Configuration for the bottom navigation bar using StatefulShellRoute
       StatefulShellRoute.indexedStack(
         // This builder is responsible for building the shell UI (e.g., Scaffold with BottomNavBar)
         builder: (context, state, navigationShell) {
-          // The navigationShell is passed to the MainShellPage 
+          // The navigationShell is passed to the MainShellPage
           // It contains the pages for the different tabs and methods to navigate between them
           return MainShellPage(navigationShell: navigationShell);
         },
@@ -96,19 +110,86 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      // TODO: Add other top-level routes here later (e.g., for login, settings outside the shell)
-      // GoRoute(
-      //   path: '/login',
-      //   builder: (context, state) => const LoginPage(),
-      // ),
+      // Add the Login Route (outside the shell)
+      GoRoute(
+        path: '/login',
+        // builder: (context, state) => const SmsLoginPage(), // Use the actual SmsLoginPage
+        // Wrap SmsLoginPage with BlocProvider
+        pageBuilder: (context, state) {
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: BlocProvider<SmsLoginCubit>(
+              // Use GetIt to create the Cubit instance (registered as factory)
+              create: (_) => GetIt.instance<SmsLoginCubit>(),
+              child: const SmsLoginPage(),
+            ),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              // Example: Fade transition
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        },
+      ),
     ],
     // TODO: Add error handling later
     // errorBuilder: (context, state) => const ErrorScreen(),
 
-    // TODO: Add redirection logic later (e.g., for authentication)
-    // redirect: (context, state) {
-    //   // Check auth status
-    //   return null; // Return null means no redirect
-    // },
+    // Implement redirection logic for authentication
+    redirect: (context, state) {
+      // Get the current login status synchronously.
+      // Note: This relies on the repository having been initialized.
+      final loginStatus = authRepository.getLoggedInUserSync().fold(
+        (failure) => const Unauthenticated(), // Treat failure to get status as unauthenticated
+        (user) => user != null ? Authenticated(user) : const Unauthenticated(),
+      );
+
+      final isLoggingIn = state.matchedLocation == '/login';
+      final isUnknown = loginStatus is AuthUnknown; // Check if status is still unknown
+
+      print('Redirect Check: Current Location: ${state.matchedLocation}, Login Status: $loginStatus, Is Logging In: $isLoggingIn');
+
+      // If the status is still unknown, don't redirect yet.
+      // The refreshListenable will trigger a re-evaluation once the status is known.
+      if (isUnknown) {
+        print('Redirect Check: Auth status unknown, no redirect.');
+        return null;
+      }
+
+      // If the user is not logged in and not trying to access the login page, redirect to login.
+      if (loginStatus is Unauthenticated && !isLoggingIn) {
+         print('Redirect Check: Not logged in, redirecting to /login');
+        return '/login';
+      }
+
+      // If the user is logged in and trying to access the login page, redirect to home.
+      if (loginStatus is Authenticated && isLoggingIn) {
+        print('Redirect Check: Logged in, redirecting from /login to /home');
+        return '/home';
+      }
+
+      // No redirect needed in other cases.
+       print('Redirect Check: No redirect needed.');
+      return null;
+    },
   );
-}); 
+});
+
+// Helper class to trigger GoRouter redirects when auth status stream changes
+// (From GoRouter documentation example)
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    notifyListeners();
+    _subscription = stream.asBroadcastStream().listen(
+          (dynamic _) => notifyListeners(),
+        );
+  }
+
+  late final StreamSubscription<dynamic> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}

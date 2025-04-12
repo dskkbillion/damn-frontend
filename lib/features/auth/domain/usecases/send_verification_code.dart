@@ -4,8 +4,11 @@ import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart'; // 确认路径
 import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart'; // Import injectable
 
 // 定义发送验证码的 UseCase
+@lazySingleton // Register UseCase as LazySingleton
+@injectable // Mark class for injectable generator
 class SendVerificationCodeUseCase implements UseCase<void, SendVerificationCodeParams> {
   final IAuthRepository repository;
 

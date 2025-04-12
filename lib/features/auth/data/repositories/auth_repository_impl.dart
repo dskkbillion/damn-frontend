@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'dart:async';
+import 'package:injectable/injectable.dart'; // Import injectable
 
 // 尝试导入主项目的 main.dart
 import 'package:dskk_flutter_refactor/main.dart'; // 假设主文件是 lib/main.dart
@@ -21,6 +22,8 @@ import '../datasources/auth_remote_data_source.dart';
 // class UserInfo { ... }
 // abstract class IUserInfoRepository { ... }
 
+@LazySingleton(as: IAuthRepository) // Register as LazySingleton for the interface
+@injectable // Mark class for injectable generator
 class AuthRepositoryImpl implements IAuthRepository {
   final AuthRemoteDataSource remoteDataSource;
   final ISecureStorageRepository secureStorage; // 注入安全存储
