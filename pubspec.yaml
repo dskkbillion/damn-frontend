@@ -57,6 +57,11 @@ dependencies:
   flutter_secure_storage: ^9.2.2 # CORRECTED version constraint
   pretty_dio_logger: ^1.4.0
   package_info_plus: ^8.3.0 # For getting app version/package name
+  # Drift dependencies
+  drift: ^2.26.0
+  sqlite3_flutter_libs: ^0.5.32 # Use suggested compatible version
+  path_provider: ^2.1.3
+  path: ^1.9.0
 
 dev_dependencies:
   flutter_test:
@@ -79,6 +84,9 @@ dev_dependencies:
   # Added for Code Generation (Freezed & JSON Serializable)
   freezed: ^2.4.7
   json_serializable: ^6.8.0
+
+  # Drift generator
+  drift_dev: ^2.26.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

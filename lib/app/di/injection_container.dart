@@ -6,6 +6,10 @@ import 'package:dskk_flutter_refactor/core/navigation/services/i_navigation_serv
 import 'package:dskk_flutter_refactor/core/payment/services/i_payment_service.dart';
 import 'package:dskk_flutter_refactor/core/payment/services/mocks/mock_payment_service.dart';
 
+// Import database and DAO
+import 'package:dskk_flutter_refactor/core/database/app_database.dart';
+// import 'package:dskk_flutter_refactor/core/database/daos/order_dao.dart'; // No need to import DAO directly here
+
 // Import the generated file
 import 'injection_container.config.dart'; 
 
@@ -28,6 +32,14 @@ abstract class RegisterModule {
   //       connectTimeout: const Duration(seconds: 5),
   //       receiveTimeout: const Duration(seconds: 3),
   //     ));
+
+  // Provide AppDatabase instance as a singleton
+  @lazySingleton
+  AppDatabase get appDatabase => AppDatabase();
+
+  // REMOVED: OrderDao registration - Drift handles DAO access via AppDatabase instance
+  // @lazySingleton 
+  // OrderDao get orderDao => OrderDao(getIt<AppDatabase>()); 
 
   // Provide Navigation Service implementation (using Mock)
   @lazySingleton

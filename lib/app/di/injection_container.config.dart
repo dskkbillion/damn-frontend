@@ -14,6 +14,7 @@ import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 import 'package:package_info_plus/package_info_plus.dart' as _i655;
 
+import '../../core/database/app_database.dart' as _i50;
 import '../../core/navigation/services/i_navigation_service.dart' as _i625;
 import '../../core/network/core_dio_client.dart' as _i412;
 import '../../core/network/interceptors/app_info_interceptor.dart' as _i405;
@@ -38,8 +39,12 @@ import '../../features/after_sales/domain/usecases/get_after_sales_list_use_case
     as _i953;
 import '../../features/after_sales/presentation/bloc/after_sales_bloc.dart'
     as _i59;
+import '../../features/orders/data/datasources/i_order_local_data_source.dart'
+    as _i406;
 import '../../features/orders/data/datasources/i_order_remote_data_source.dart'
     as _i346;
+import '../../features/orders/data/datasources/order_local_data_source_impl.dart'
+    as _i1016;
 import '../../features/orders/data/datasources/order_remote_data_source_impl.dart'
     as _i230;
 import '../../features/orders/data/repositories/order_repository_impl.dart'
@@ -77,6 +82,7 @@ _i174.GetIt init(
     environmentFilter,
   );
   final registerModule = _$RegisterModule();
+  gh.lazySingleton<_i50.AppDatabase>(() => registerModule.appDatabase);
   gh.lazySingleton<_i625.INavigationService>(
       () => registerModule.navigationService);
   gh.lazySingleton<_i395.IPaymentService>(() => registerModule.paymentService);
@@ -99,6 +105,8 @@ _i174.GetIt init(
         gh<_i773.CancelAfterSalesUseCase>(),
         gh<_i88.DeleteAfterSalesUseCase>(),
       ));
+  gh.lazySingleton<_i406.IOrderLocalDataSource>(() =>
+      _i1016.OrderLocalDataSourceImpl(appDatabase: gh<_i50.AppDatabase>()));
   gh.factory<_i405.AppInfoInterceptor>(
       () => _i405.AppInfoInterceptor(gh<_i655.PackageInfo>()));
   gh.factory<_i412.CoreDioClient>(() => _i412.CoreDioClient(
@@ -110,9 +118,9 @@ _i174.GetIt init(
       _i230.OrderRemoteDataSourceImpl(
           coreDioClient: gh<_i412.CoreDioClient>()));
   gh.lazySingleton<_i724.IOrderRepository>(() => _i376.OrderRepositoryImpl(
-      remoteDataSource: gh<_i346.IOrderRemoteDataSource>()));
-  gh.lazySingleton<_i253.IAfterSalesRemoteDataSource>(
-      () => _i519.AfterSalesRemoteDataSource(gh<_i412.CoreDioClient>()));
+        remoteDataSource: gh<_i346.IOrderRemoteDataSource>(),
+        localDataSource: gh<_i406.IOrderLocalDataSource>(),
+      ));
   gh.factory<_i1.CancelOrderUseCase>(
       () => _i1.CancelOrderUseCase(gh<_i724.IOrderRepository>()));
   gh.factory<_i708.ConfirmOrderReceiptUseCase>(
@@ -138,6 +146,8 @@ _i174.GetIt init(
       ));
   gh.factory<_i176.OrderListBloc>(() => _i176.OrderListBloc(
       getOrderListUseCase: gh<_i1015.GetOrderListUseCase>()));
+  gh.lazySingleton<_i253.IAfterSalesRemoteDataSource>(
+      () => _i519.AfterSalesRemoteDataSource(gh<_i412.CoreDioClient>()));
   return getIt;
 }
 

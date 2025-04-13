@@ -87,6 +87,7 @@
     *   [x] 定义 `order_remote_data_source_impl.dart`: 实现接口。
         *   注入 `Core` HTTP Client (`Dio`)。
         *   实现 `getOrderList`: 调用 `POST /api/shop/order/list`，正确构造请求体 (分页、状态字符串映射、keyword)。处理响应。
+            *   [x] (**修正**) 根据 API 文档/示例，修正 `OrderStatus` 到 `states` 数组参数的映射逻辑。
         *   实现 `getOrderDetail`: 调用 `GET /api/shop/order/detail`，传递 `id`。处理响应。
         *   实现 `cancelOrder`: 调用 `PUT /api/shop/order/cancel`。
         *   实现 `confirmOrderReceipt`: 调用 `PUT /api/shop/order/complete`。
@@ -97,12 +98,15 @@
         *   [ ] (**重构/移除**) 移除 `saveRequirementDraft` 或改为本地存储实现。
         *   处理网络和 API 错误，抛出特定异常 (如 `ServerException` - 已改为 ServerFailure)。
         *   [x] 添加 `saveRequirementDraft` 和 `submitRequirements` 方法签名。
+        *   [x] (**调试**) 成功连接 `getOrderList` API，解决请求头(`clienttype`, `client`, `version`, `Authorization`)和响应解析 (`rows`) 问题。
     *   [x] (**数据模型修正**) 根据 API 文档调整 `OrderModel`, `OrderItemModel`, 创建 `AddressModel`。
     *   [x] 定义 `i_order_remote_data_source.dart`: ... (添加 `addEvaluation`)
     *   [x] 定义 `order_remote_data_source_impl.dart`: ... (根据 API 调整实现, 添加 `addEvaluation`, 添加 `@injectable`)
         *   [x] 添加 `saveRequirementDraft` 和 `submitRequirements` 的占位符实现。
     *   [ ] (**售后数据源接口 - 真实实现推迟**) 定义 `IAfterSalesRemoteDataSource` 接口 (`lib/features/after_sales/data/datasources/i_after_sales_remote_data_source.dart`) (文件已创建，待完善真实API对接)。
     *   [ ] (**售后数据源实现 - 真实实现推迟**) 定义 `AfterSalesRemoteDataSourceImpl` (`lib/features/after_sales/data/datasources/after_sales_remote_data_source.dart`)，实现接口，注入 `CoreDioClient`，调用后端 API (文件已创建基础，待完善真实API对接和错误处理)。
+    *   [x] 定义 `i_order_local_data_source.dart`: 定义接口，包含获取、缓存、清除订单的方法。
+    *   [x] 定义 `order_local_data_source_impl.dart`: 实现接口，注入 DAO/DB，处理实体/数据类映射。
 *   `lib/features/orders/data/repositories/`
     *   [x] 定义 `order_repository_impl.dart`: 实现 `IOrderRepository`。
         *   注入 `IOrderRemoteDataSource` (和网络状态检查器，如果需要)。
@@ -112,6 +116,8 @@
         *   调用 `model.toEntity()` 将 `OrderModel` / `List<OrderModel>` 转换为 `Order` / `List<Order>`。
         *   返回 `Either<Failure, ResultType>`。
         *   [x] 实现 `saveRequirementDraft` 和 `submitRequirements` (调用 DataSource)。
+        *   [x] (**缓存**) 根据 `docs/caching_and_local_storage_strategy_cn.md`，实现使用 `drift` 的订单列表缓存逻辑 ("缓存优先，网络回填")。
+        *   [ ] (**缓存 - 下一步**) 实现订单详情的 `drift` 缓存逻辑。
     *   [x] 定义 `mocks/mock_order_repository.dart`: 添加基础 Mock 数据，包括 `awaitingConfirmation` 状态。
     *   [x] (`Mock 数据完善`) 添加 `MOCK004` (待收货)。
     *   [x] (`Mock 数据完善`) 添加 `MOCK005` (待提交)。
@@ -149,7 +155,8 @@
 *   **核心参考:** **`design-info/HTML原型/HTML-new`** 和 **买家/卖家视角截图**。
 *   `lib/features/orders/presentation/bloc/`
     *   [x] 实现 `order_list_state.dart`: 定义订单列表页的状态 (loading, error, hasMore, orders list, current status filter)。
-    *   [x] 实现 `order_list_bloc.dart`: 管理列表状态。注入 `GetOrderListUseCase`。处理加载、加载更多、切换状态 Tab 的事件。
+    *   [x] 实现 `order_list_bloc.dart`: 管理列表状态。注入 `GetOrderListUseCase`。处理加载、**加载更多**、切换状态 Tab 的事件。
+        *   [x] (**分页**) 实现 `LoadMoreOrders` 事件及处理逻辑，追加数据并管理 `hasReachedMax`。
     *   [x] 实现 `order_detail_state.dart`: 定义订单详情页的状态 (loading, error, order object)。
         *   [x] 添加 `OrderDetailActionLoading`, `OrderDetailActionSuccess`, `OrderDetailActionFailure` 状态。
         *   [x] 在 `OrderDetailActionSuccess` 中添加 `actionType` 字段。
@@ -193,7 +200,7 @@
         *   [x] 构建 UI，包含状态切换 Tabs (全部、待付款、处理中、待评价等)。**严格参考 HTML 原型布局。**
         *   [x] 使用 `BlocBuilder`/`Consumer` 连接 `OrderListBloc/Cubit`。
         *   [x] 显示订单列表 (`ListView`/`InfiniteScrollView`)，使用 `OrderItemCard`。
-        *   [ ] 实现下拉刷新和上拉加载更多。
+        *   [x] 实现下拉刷新和**上拉加载更多** (滚动监听、触发事件、加载指示器)。
         *   [x] 实现导航到 `OrderDetailPage` (传递 `order.id`)。
         *   [x] 实现 `TabBar` 基础结构和 Bloc 连接。
         *   [x] 添加 "待提交" Tab 并使 `TabBar` 可滚动。
@@ -256,6 +263,7 @@
     *   [x] `MockOrderRepository` (Internal Mock for preview)
 *   [x] (预览阶段) 配置 DI 容器 (`GetIt`)，注入 Mock 实现 (`main_orders_preview.dart`) (已移除 Logistics)。
 *   [x] (**DI 配置**) 使用 `@injectable` 和 `@module` 完成核心依赖注册。
+    *   [x] (**数据库 DI**) 配置 `AppDatabase` 的依赖注入。
 *   [x] (**运行 `build_runner`**) 成功生成 `injection_container.config.dart`。
 *   [x] (**配置预览环境**) 在 `main_orders_preview.dart` 中覆盖 `IOrderRepository` 使用 Mock。
 
@@ -311,15 +319,36 @@
 *   [ ] **主题 (`AppTheme`):** 实现并测试深色主题 (`darkTheme`)。
 *   [ ] **文档:** 完成 `Rating` 模块的边界定义文档 (中文版)。
 *   [ ] **文档:** 检查并完成 `AfterSale` 模块的边界定义文档 (中文版)。
+*   [ ] (**日志**) (可选) 记录 `PrettyLogInterceptor` Linter 问题及当前使用的 `LogInterceptor` 替代方案。
 
 ---
 
-**下一步重点:**
+## 下一步重点 (Next Focus)
 
-1.  **进行真实 API 对接测试** (见第 7 节待办)。
-2.  实现评价相关的 UseCase、Bloc 事件/状态和 UI。
-3.  完善草稿清除逻辑。
-4.  实现其他待办任务。
+*   [x] **API 集成测试 - 订单详情与操作 (Order Detail & Actions API Integration Testing)**
+    *   [x] 测试 `getOrderDetail` API (`/api/shop/order/detail`)
+    *   [x] 测试 `cancelOrder` API (`/api/shop/order/cancel`) 及 UI 反馈 (SnackBar, 返回列表)
+    *   [x] 测试 `confirmOrderReceipt` API (`/api/shop/order/complete`) 及 UI 反馈 (SnackBar, 刷新详情)
+    *   [x] 测试 `deleteOrder` API (`/api/shop/order/delete`) 及 UI 反馈 (SnackBar, 返回列表)
+    *   [x] 测试 `submitRequirements` API (`/api/project/orderMaterials/add`) 及 UI 反馈 (SnackBar, 刷新详情)
+*   [ ] **实现订单评价流程 (Implement Order Evaluation Flow)**
+    *   [ ] 定义 `SubmitEvaluationUseCase` (如果尚未完成)。
+    *   [ ] 更新 `OrderDetailBloc` 添加处理评价提交的事件 (`SubmitEvaluationRequested`?) 和状态。
+    *   [ ] 连接 `OrderEvaluationForm` UI 到 Bloc 事件。
+    *   [ ] 测试评价提交 API (`/api/shop/order/comment/add` 或类似接口) 对接。
+*   [ ] **完善/实现草稿本地存储 (Refine/Implement Draft Local Storage)**
+    *   [ ] 在 `OrderRequirementSubmissionForm` 中实现使用 `SharedPreferences` 或文件存储来保存和加载草稿。
+    *   [ ] 确定草稿保存/加载的时机（例如，`initState`, `dispose`, 文本/文件变化时）。
+    *   [ ] 清理草稿的时机（例如，提交成功后）。
+*   [ ] **实现订单详情缓存 (Implement Order Detail Caching)**
+    *   [ ] 类似 `OrderList` 的缓存策略，在 `OrderRepositoryImpl` 中为 `getOrderDetail` 添加缓存逻辑。
+    *   [ ] 可能需要更新 `OrderLocalDataSource` 添加 `getOrderDetailById`, `cacheOrderDetail`, `clearOrderDetailCache` 等方法。
+    *   [ ] 更新 `OrderDatabase` 和 `OrderDao` 添加存储/查询单个订单详情的逻辑。
+*   [ ] **核心 - Token 处理 (Core - Token Handling)**
+    *   [ ] 实现 `CoreDioClient` 从本地存储（如 `SharedPreferences`）读取真实的 `Authorization` Token 并添加到请求头。
+*   [ ] **代码清理与优化 (Code Cleanup & Optimization)**
+    *   [ ] 审查并移除不再使用的代码、注释。
+    *   [ ] 检查 UI 细节和用户体验。
 
 **步骤 11: (进行中) 图片/文件上传**
 *   [x] (**文件选择**) 使用 `file_picker` 实现本地文件选择。
@@ -335,7 +364,7 @@
 
 **步骤 13: (进行中) 真实 API 对接测试**
 *   [ ] 登录获取 Token 并存入 `flutter_secure_storage`。
-*   [ ] 测试订单列表加载 (`getOrderList`)。
+*   [x] 测试订单列表加载 (`getOrderList`)。
 *   [ ] 测试订单详情加载 (`getOrderDetail`)。
 *   [ ] 测试提交需求 (`submitRequirements`)。
 *   [ ] 测试评价提交 (`addEvaluation`) (需要在 UI/Bloc 中触发)。
@@ -343,6 +372,7 @@
 
 **步骤 14: 添加缓存与本地存储策略文档**
 *   [x] 添加缓存与本地存储策略文档 (`docs/caching_and_local_storage_strategy_cn.md`)。
+*   [x] 添加订单列表缓存实现细节文档 (`docs/order_list_caching_details_cn.md`)。
 
 **关键决策点:**
 

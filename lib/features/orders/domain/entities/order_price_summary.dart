@@ -25,6 +25,17 @@ class OrderPriceSummary extends Equatable {
     required this.payPrice,
   });
 
+  /// Add the static helper method
+  static OrderPriceSummary fromTotalPriceString(String? priceString) {
+    final double price = double.tryParse(priceString ?? '') ?? 0.0;
+    return OrderPriceSummary(
+      totalPrice: price,
+      discountPrice: 0.0, // Placeholder
+      deliveryPrice: 0.0, // Placeholder
+      payPrice: price, // Assume payPrice is same as totalPrice for summary
+    );
+  }
+
   @override
   List<Object?> get props => [
         totalPrice,

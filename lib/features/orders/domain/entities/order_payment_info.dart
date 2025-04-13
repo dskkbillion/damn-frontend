@@ -18,6 +18,13 @@ class OrderPaymentInfo extends Equatable {
     this.payChannelCode,
   });
 
+  // Add an empty factory constructor or static constant
+  static final OrderPaymentInfo empty = OrderPaymentInfo(
+    payStatus: false,
+    payTime: null,
+    payChannelCode: null,
+  );
+
   @override
   List<Object?> get props => [payStatus, payTime, payChannelCode];
 } 

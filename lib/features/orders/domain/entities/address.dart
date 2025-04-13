@@ -22,6 +22,14 @@ class Address extends Equatable {
     required this.detailAddress,
   });
 
+  // Add an empty factory constructor or static constant
+  static const Address empty = Address(
+    recipientName: '',
+    phone: '',
+    areaId: '0',
+    detailAddress: '',
+  );
+
   @override
   List<Object?> get props => [recipientName, phone, areaId, detailAddress];
 

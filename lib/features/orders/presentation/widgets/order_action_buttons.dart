@@ -70,7 +70,8 @@ class OrderDetailActionButtons extends StatelessWidget {
              title: '取消订单',
              content: '您确定要取消这个订单吗？',
              onConfirm: () {
-               context.read<OrderDetailBloc>().add(CancelOrder(orderId: order.id));
+               // Use correct parameter name 'action'
+               context.read<OrderDetailBloc>().add(OrderActionRequested(action: OrderAction.cancel, orderId: order.id.toString()));
              },
            );
         }));
@@ -93,7 +94,8 @@ class OrderDetailActionButtons extends StatelessWidget {
              title: '取消订单',
              content: '您确定要取消这个订单吗？',
              onConfirm: () {
-                context.read<OrderDetailBloc>().add(CancelOrder(orderId: order.id));
+                // Use correct parameter name 'action'
+                context.read<OrderDetailBloc>().add(OrderActionRequested(action: OrderAction.cancel, orderId: order.id.toString()));
              },
            );
         }));
@@ -109,8 +111,8 @@ class OrderDetailActionButtons extends StatelessWidget {
             title: '确认收货',
             content: '您确定已经收到货品，并确认收货吗？',
             onConfirm: () {
-              // Send event only if user confirms
-              context.read<OrderDetailBloc>().add(ConfirmReceipt(orderId: order.id));
+              // Use correct parameter name 'action'
+              context.read<OrderDetailBloc>().add(OrderActionRequested(action: OrderAction.confirmReceipt, orderId: order.id.toString()));
             },
           );
         }, isPrimary: true));
@@ -172,7 +174,8 @@ class OrderDetailActionButtons extends StatelessWidget {
              title: '删除订单',
              content: '您确定要删除这个订单吗？删除后将无法恢复。',
              onConfirm: () {
-               context.read<OrderDetailBloc>().add(DeleteOrder(orderId: order.id));
+               // Use correct parameter name 'action'
+               context.read<OrderDetailBloc>().add(OrderActionRequested(action: OrderAction.delete, orderId: order.id.toString()));
              },
            );
         }));
@@ -191,7 +194,8 @@ class OrderDetailActionButtons extends StatelessWidget {
              title: '删除订单',
              content: '您确定要删除这个订单吗？删除后将无法恢复。',
              onConfirm: () {
-               context.read<OrderDetailBloc>().add(DeleteOrder(orderId: order.id));
+               // Use correct parameter name 'action'
+               context.read<OrderDetailBloc>().add(OrderActionRequested(action: OrderAction.delete, orderId: order.id.toString()));
              },
            );
         }));

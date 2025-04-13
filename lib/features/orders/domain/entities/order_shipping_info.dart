@@ -23,6 +23,13 @@ class OrderShippingInfo extends Equatable {
     this.deliveryTime,
   });
 
+  // Add an empty factory constructor or static constant
+  static final OrderShippingInfo empty = OrderShippingInfo(
+    logisticsId: null,
+    logisticsNo: null,
+    deliveryTime: null,
+  );
+
   @override
   List<Object?> get props => [logisticsId, logisticsNo, deliveryTime];
 } 
