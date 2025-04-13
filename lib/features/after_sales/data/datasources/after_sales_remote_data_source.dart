@@ -143,4 +143,12 @@ class AfterSalesRemoteDataSource implements IAfterSalesRemoteDataSource {
        throw ServerException(message: 'An unexpected error occurred: ${e.toString()}');
     }
   }
+
+  ServerException _createServerException(Response response, String defaultMessage) {
+    if (response.data != null && response.data['msg'] != null && response.data['msg'].isNotEmpty) {
+      return ServerException(message: response.data['msg'], statusCode: response.statusCode);
+    } else {
+      return ServerException(message: defaultMessage, statusCode: response.statusCode);
+    }
+  }
 } 

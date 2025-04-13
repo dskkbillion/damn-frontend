@@ -2,6 +2,7 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart'; // Import Bloc and Events
+import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_evaluation_use_case.dart';
 import 'package:image_picker/image_picker.dart'; // Import image_picker
 import 'dart:io'; // Import dart:io for File
 
@@ -50,21 +51,20 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
       final orderItemId = widget.order.items.isNotEmpty ? widget.order.items.first.id : -1;
       if (orderItemId == -1) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('错误：无法找到要评价的商品项')),
+          const SnackBar(content: Text('错误：无法找到要评价的商品项'), backgroundColor: Colors.red),
         );
         return;
       }
 
-      context.read<OrderDetailBloc>().add(
-            SubmitEvaluationRequested(
-              orderId: widget.order.id.toString(), // Use ID as it's likely int
-              orderItemId: orderItemId,
-              score: _score.toDouble(),
-              content: _contentController.text,
-              isAnonymous: _isAnonymous,
-              pictures: _selectedImagePaths, // Pass the list of paths
-            ),
-          );
+      final params = SubmitEvaluationParams(
+        orderItemId: orderItemId,
+        score: _score.toDouble(),
+        content: _contentController.text,
+        isAnonymous: _isAnonymous,
+        pictures: _selectedImagePaths,
+      );
+
+      context.read<OrderDetailBloc>().add(SubmitEvaluationRequested(params: params));
     }
   }
 

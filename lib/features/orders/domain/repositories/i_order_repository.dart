@@ -4,6 +4,36 @@ import '../../../../core/error/failures.dart'; // 现在这个路径应该有效
 import '../entities/order.dart';
 import '../entities/order_status.dart';
 
+// Define Params classes for complex operations
+class AddOrderDemandParams {
+  final int orderId;
+  final String type; // e.g., 'refuse', 'material'
+  final String reasonValue;
+  final String reasonLabel;
+  final String? remarks;
+  // Add other fields if needed based on API: files, etc.
+
+  AddOrderDemandParams({
+    required this.orderId,
+    required this.type,
+    required this.reasonValue,
+    required this.reasonLabel,
+    this.remarks,
+  });
+}
+
+class DeliverOrderParams {
+  final int orderId;
+  final String content;
+  final List<String> files; // Assuming file paths or identifiers
+
+  DeliverOrderParams({
+    required this.orderId,
+    required this.content,
+    required this.files,
+  });
+}
+
 /// 定义订单模块的数据访问契约。
 ///
 /// 此接口定义了 Orders 模块需要对数据执行的操作，
@@ -57,6 +87,29 @@ abstract class IOrderRepository {
     required List<Map<String, String>> feature, // Use structured feature data
     required List<String> attachmentPaths, // Expecting URLs
   });
+
+  /// Buyer saves a draft of requirements locally (implementation specific).
+  Future<Either<Failure, void>> saveRequirementDraft(/* DraftParams params */);
+
+  /// Seller confirms acceptance of the order.
+  /// Corresponds to RN `verifyOrder` action. API endpoint is currently unclear.
+  Future<Either<Failure, void>> confirmOrderAcceptance(int orderId);
+
+  /// Seller submits a demand/application (e.g., reject order, request supplement).
+  /// Calls `POST /api/project/orderDemand/add`.
+  Future<Either<Failure, void>> addOrderDemand(AddOrderDemandParams params);
+
+  /// Seller delivers the order (submits deliverables).
+  /// Calls `POST /api/project/orderDelivery/add`.
+  Future<Either<Failure, void>> deliverOrder(DeliverOrderParams params);
+
+  /// Seller deletes their view of an order record.
+  /// Calls `POST /api/shop/order/sellerDelete`.
+  Future<Either<Failure, void>> deleteSellerOrderRecord(int orderId);
+
+  /// Seller invites the buyer to evaluate the order.
+  /// API endpoint needs confirmation.
+  Future<Either<Failure, void>> inviteEvaluation(int orderId);
 
   // 可选：根据需要添加其他接口方法，例如：
   // Future<Either<Failure, void>> submitMaterials(int orderId, ...);

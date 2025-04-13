@@ -23,8 +23,8 @@ import '../../features/after_sales/data/datasources/after_sales_remote_data_sour
     as _i519;
 import '../../features/after_sales/data/datasources/i_after_sales_remote_data_source.dart'
     as _i253;
-import '../../features/after_sales/data/repositories/mocks/mock_after_sales_repository.dart'
-    as _i889;
+import '../../features/after_sales/data/repositories/after_sales_repository_impl.dart'
+    as _i363;
 import '../../features/after_sales/domain/repositories/i_after_sales_repository.dart'
     as _i441;
 import '../../features/after_sales/domain/usecases/apply_for_after_sales_use_case.dart'
@@ -61,6 +61,8 @@ import '../../features/orders/domain/usecases/get_order_detail_use_case.dart'
     as _i691;
 import '../../features/orders/domain/usecases/get_order_list_use_case.dart'
     as _i1015;
+import '../../features/orders/domain/usecases/seller/seller_order_actions_use_cases.dart'
+    as _i618;
 import '../../features/orders/domain/usecases/submit_evaluation_use_case.dart'
     as _i40;
 import '../../features/orders/domain/usecases/submit_requirements_use_case.dart'
@@ -86,25 +88,6 @@ _i174.GetIt init(
   gh.lazySingleton<_i625.INavigationService>(
       () => registerModule.navigationService);
   gh.lazySingleton<_i395.IPaymentService>(() => registerModule.paymentService);
-  gh.factory<_i441.IAfterSalesRepository>(
-      () => _i889.MockAfterSalesRepository());
-  gh.lazySingleton<_i1057.GetAfterSalesDetailUseCase>(() =>
-      _i1057.GetAfterSalesDetailUseCase(gh<_i441.IAfterSalesRepository>()));
-  gh.factory<_i970.ApplyForAfterSalesUseCase>(
-      () => _i970.ApplyForAfterSalesUseCase(gh<_i441.IAfterSalesRepository>()));
-  gh.factory<_i773.CancelAfterSalesUseCase>(
-      () => _i773.CancelAfterSalesUseCase(gh<_i441.IAfterSalesRepository>()));
-  gh.factory<_i88.DeleteAfterSalesUseCase>(
-      () => _i88.DeleteAfterSalesUseCase(gh<_i441.IAfterSalesRepository>()));
-  gh.factory<_i953.GetAfterSalesListUseCase>(
-      () => _i953.GetAfterSalesListUseCase(gh<_i441.IAfterSalesRepository>()));
-  gh.factory<_i59.AfterSalesBloc>(() => _i59.AfterSalesBloc(
-        gh<_i953.GetAfterSalesListUseCase>(),
-        gh<_i1057.GetAfterSalesDetailUseCase>(),
-        gh<_i970.ApplyForAfterSalesUseCase>(),
-        gh<_i773.CancelAfterSalesUseCase>(),
-        gh<_i88.DeleteAfterSalesUseCase>(),
-      ));
   gh.lazySingleton<_i406.IOrderLocalDataSource>(() =>
       _i1016.OrderLocalDataSourceImpl(appDatabase: gh<_i50.AppDatabase>()));
   gh.factory<_i405.AppInfoInterceptor>(
@@ -135,6 +118,10 @@ _i174.GetIt init(
       () => _i40.SubmitEvaluationUseCase(gh<_i724.IOrderRepository>()));
   gh.factory<_i51.SubmitRequirementsUseCase>(
       () => _i51.SubmitRequirementsUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i618.IInviteEvaluationUseCase>(
+      () => _i618.InviteEvaluationUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i618.IAddOrderDemandUseCase>(
+      () => _i618.AddOrderDemandUseCase(gh<_i724.IOrderRepository>()));
   gh.factory<_i549.OrderDetailBloc>(() => _i549.OrderDetailBloc(
         getOrderDetailUseCase: gh<_i691.GetOrderDetailUseCase>(),
         cancelOrderUseCase: gh<_i1.CancelOrderUseCase>(),
@@ -144,10 +131,36 @@ _i174.GetIt init(
         submitEvaluationUseCase: gh<_i40.SubmitEvaluationUseCase>(),
         submitRequirementsUseCase: gh<_i51.SubmitRequirementsUseCase>(),
       ));
+  gh.factory<_i618.IDeleteSellerOrderRecordUseCase>(
+      () => _i618.DeleteSellerOrderRecordUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i618.IConfirmOrderAcceptanceUseCase>(
+      () => _i618.ConfirmOrderAcceptanceUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i618.IDeliverOrderUseCase>(
+      () => _i618.DeliverOrderUseCase(gh<_i724.IOrderRepository>()));
   gh.factory<_i176.OrderListBloc>(() => _i176.OrderListBloc(
       getOrderListUseCase: gh<_i1015.GetOrderListUseCase>()));
   gh.lazySingleton<_i253.IAfterSalesRemoteDataSource>(
       () => _i519.AfterSalesRemoteDataSource(gh<_i412.CoreDioClient>()));
+  gh.lazySingleton<_i441.IAfterSalesRepository>(() =>
+      _i363.AfterSalesRepositoryImpl(
+          remoteDataSource: gh<_i253.IAfterSalesRemoteDataSource>()));
+  gh.lazySingleton<_i1057.GetAfterSalesDetailUseCase>(() =>
+      _i1057.GetAfterSalesDetailUseCase(gh<_i441.IAfterSalesRepository>()));
+  gh.factory<_i970.ApplyForAfterSalesUseCase>(
+      () => _i970.ApplyForAfterSalesUseCase(gh<_i441.IAfterSalesRepository>()));
+  gh.factory<_i773.CancelAfterSalesUseCase>(
+      () => _i773.CancelAfterSalesUseCase(gh<_i441.IAfterSalesRepository>()));
+  gh.factory<_i88.DeleteAfterSalesUseCase>(
+      () => _i88.DeleteAfterSalesUseCase(gh<_i441.IAfterSalesRepository>()));
+  gh.factory<_i953.GetAfterSalesListUseCase>(
+      () => _i953.GetAfterSalesListUseCase(gh<_i441.IAfterSalesRepository>()));
+  gh.factory<_i59.AfterSalesBloc>(() => _i59.AfterSalesBloc(
+        gh<_i953.GetAfterSalesListUseCase>(),
+        gh<_i1057.GetAfterSalesDetailUseCase>(),
+        gh<_i970.ApplyForAfterSalesUseCase>(),
+        gh<_i773.CancelAfterSalesUseCase>(),
+        gh<_i88.DeleteAfterSalesUseCase>(),
+      ));
   return getIt;
 }
 

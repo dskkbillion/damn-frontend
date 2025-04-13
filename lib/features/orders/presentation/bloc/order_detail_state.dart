@@ -33,13 +33,19 @@ class OrderDetailLoaded extends OrderDetailState {
     required this.order,
     this.isSubmittingRequirements = false, // Default to false
     this.isSavingDraft = false, // Default to false
-    this.isSubmittingEvaluation = false, // Add this field
+    this.isSubmittingEvaluation = false, // Add this field with default
     // this.canEvaluate = false,
     // this.afterSaleStatus = SimpleAfterSaleStatus.none,
   });
 
   @override
-  List<Object?> get props => [order, isSubmittingRequirements, isSavingDraft, isSubmittingEvaluation /*, canEvaluate, afterSaleStatus*/];
+  List<Object?> get props => [
+        order,
+        isSubmittingRequirements,
+        isSavingDraft,
+        isSubmittingEvaluation,
+         /*, canEvaluate, afterSaleStatus*/
+      ];
 
   // Optional copyWith method
   OrderDetailLoaded copyWith({

@@ -39,9 +39,10 @@
         *   `Future<Either<Failure, void>> cancelOrder(int orderId)`
         *   `Future<Either<Failure, void>> confirmOrderReceipt(int orderId)`
         *   `Future<Either<Failure, void>> deleteOrder(int orderId)`
+        *   [x] (**卖家视角**) 添加卖家操作接口：`confirmOrderAcceptance(int orderId)`, `addOrderDemand(AddOrderDemandParams params)`, `deliverOrder(DeliverOrderParams params)`, `deleteSellerOrderRecord(int orderId)`, `inviteEvaluation(int orderId)` 等。 (签名已添加)
         *   *(可选: 根据需要添加其他方法，如 `submitMaterials`, `evaluate`)*
         *   确保所有方法签名和返回类型正确。添加清晰的 DartDoc。
-        *   [x] 添加 `saveRequirementDraft` 和 `submitRequirements` 方法签名。
+        *   [x] 添加 `saveRequirementDraft` 和 `submitRequirements` 方法签名。 (买家服务交付类)
         *   [x] (**扩展 `IOrderRepository`**) 添加售后相关操作的方法 (如 `applyRefund`, `getAfterSaleStatus`)。 (注：现已独立为 `IAfterSalesRepository`)
         *   [x] (**售后仓库接口**) 创建 `IAfterSalesRepository` (`lib/features/after_sales/domain/repositories/i_after_sales_repository.dart`) 定义核心售后操作接口。
     *   [x] (**扩展 `IOrderRepository`**) 根据需要（如果 API 没有在订单详情中返回足够信息），添加获取交付详情/历史的方法。
@@ -55,6 +56,7 @@
     *   [x] (**定义/实现 UseCase**) 创建 `SaveRequirementDraftUseCase` 和 `SubmitRequirementsUseCase` 骨架 (包含 Params, @injectable)。
         *   [ ] (**重构/移除**) 根据 DataSource 层 `saveRequirementDraft` 的处理方式 (改为本地存储)，调整或移除 `SaveRequirementDraftUseCase`。
     *   [x] (**实现 UseCase 逻辑**) 实现 `SaveRequirementDraftUseCase` 和 `SubmitRequirementsUseCase` 调用 Repository 方法。
+    *   [ ] (**卖家视角**) 定义卖家操作相关的 UseCase，如 `ConfirmOrderUseCase`, `RejectOrderUseCase`, `DeliverOrderUseCase`, `RequestSupplementUseCase`, `RespondToRedoRequestUseCase` 等，并添加 `@injectable`。
     *   [ ] (**定义交付 UseCase?**) 在 `usecases/delivery/` 子目录下创建获取交付信息的 UseCase (依赖 `IOrderRepository`)。
     *   [x] (**定义售后 UseCase**) 在 `usecases/after_sale/` 子目录下创建处理售后申请、获取状态等的 UseCase (依赖 `IAfterSalesRepository`)
         *   [x] 创建 `apply_for_after_sale_use_case.dart` (包含 Params 类)。
@@ -77,32 +79,42 @@
         *   实现 `fromJson` 工厂构造函数。
         *   实现 `toEntity()` 方法，正确映射到 `Order` 实体 (包括 `state` 字符串到 `OrderStatus` 枚举的转换，地址字段到 `Address` 实体的映射)。
     *   [x] (**数据模型修正**) 根据 API 文档调整 `OrderModel`, `OrderItemModel`, 创建 `AddressModel`。
+    *   [ ] (**卖家视角**) 根据卖家 API 响应，确认或调整 `OrderModel`, `OrderItemModel`。
     *   [ ] (**售后模型 - 真实实现推迟**) 定义匹配 API 响应的售后数据模型 `AfterSalesApplicationModel` (`lib/features/after_sales/data/models/after_sales_application_model.dart`)，实现 `fromJson` 和 `toEntity` (文件已创建，待完善真实API对接)。
 *   `lib/features/orders/data/datasources/`
     *   [x] 定义 `i_order_remote_data_source.dart`: 定义接口，包含与 `IOrderRepository` 方法对应的 API 调用方法 (返回 `Future<List<OrderModel>>`, `Future<OrderModel>`, `Future<void>`)。
-        *   [x] (**API 核对**) 确认核心订单操作 (list, detail, complete, cancel, delete) 的正确 API 路径和 HTTP 方法。
-        *   [x] (**API 核对**) 确认提交评价 API 为 `POST /api/shop/evaluate/add`。
-        *   [x] (**API 核对**) 确认提交要求 API 为 `POST /api/project/orderMaterials/add`。
+        *   [x] (**API 核对**) 确认核心订单操作 (list, detail, complete, cancel, delete) 的正确 API 路径和 HTTP 方法 (买家)。
+        *   [x] (**API 核对**) 确认提交评价 API 为 `POST /api/shop/evaluate/add` (买家)。
+        *   [x] (**API 核对**) 确认提交要求 API 为 `POST /api/project/orderMaterials/add` (买家服务交付类)。
         *   [x] (**API 核对**) 确认无单独的保存草稿 API，逻辑应在客户端处理。
+        *   [x] (**卖家视角**) 添加调用卖家特定 API 的方法签名 (如 `confirmOrderAcceptance`, `addOrderDemand`, `deliverOrder`, `deleteSellerOrderRecord`, `inviteEvaluation` 等)。 (签名已添加)
     *   [x] 定义 `order_remote_data_source_impl.dart`: 实现接口。
         *   注入 `Core` HTTP Client (`Dio`)。
         *   实现 `getOrderList`: 调用 `POST /api/shop/order/list`，正确构造请求体 (分页、状态字符串映射、keyword)。处理响应。
             *   [x] (**修正**) 根据 API 文档/示例，修正 `OrderStatus` 到 `states` 数组参数的映射逻辑。
         *   实现 `getOrderDetail`: 调用 `GET /api/shop/order/detail`，传递 `id`。处理响应。
-        *   实现 `cancelOrder`: 调用 `PUT /api/shop/order/cancel`。
-        *   实现 `confirmOrderReceipt`: 调用 `PUT /api/shop/order/complete`。
-        *   实现 `deleteOrder`: 调用 `DELETE /api/shop/order/delete`。
-        *   [ ] (**修改实现**) 根据 API 核对结果，修正 `confirmOrderReceipt`, `cancelOrder`, `deleteOrder` 的 HTTP 方法。
-        *   [ ] (**修改实现**) 修改 `addEvaluation` 实现以匹配 `POST /api/shop/evaluate/add` (Body 对象)。
-        *   [ ] (**修改实现**) 修改 `submitRequirements` 实现以匹配 `POST /api/project/orderMaterials/add` (Body 对象)。
-        *   [ ] (**重构/移除**) 移除 `saveRequirementDraft` 或改为本地存储实现。
+        *   实现 `cancelOrder`: 调用 `GET /api/shop/order/cancel`。 (买家) (注意 API 文档方法 GET vs PUT)
+        *   实现 `confirmOrderReceipt`: 调用 `GET /api/shop/order/complete`。 (买家) (注意 API 文档方法 GET vs PUT)
+        *   实现 `deleteOrder`: 调用 `POST /api/shop/order/delete`。 (买家) (注意 API 文档方法 POST vs DELETE)
+        *   [x] (**修正**) 根据 API 文档/示例，修正 `OrderStatus` 到 `states` 数组参数的映射逻辑。
+        *   [ ] (**修改实现**) 根据 API 核对结果，修正 `confirmOrderReceipt`, `cancelOrder`, `deleteOrder` 的 HTTP 方法。 (买家)
+        *   [ ] (**修改实现**) 修改 `addEvaluation` 实现以匹配 `POST /api/shop/evaluate/add` (Body 对象)。 (买家)
+        *   [x] (**修改实现**) 修改 `submitRequirements` 实现以匹配 `POST /api/project/orderMaterials/add` (Body 对象)。 (买家服务交付类)
+        *   [x] (**重构/移除**) 移除 `saveRequirementDraft` 或改为本地存储实现。 (买家服务交付类)
         *   处理网络和 API 错误，抛出特定异常 (如 `ServerException` - 已改为 ServerFailure)。
-        *   [x] 添加 `saveRequirementDraft` 和 `submitRequirements` 方法签名。
+        *   [x] 添加 `saveRequirementDraft` 和 `submitRequirements` 方法签名。 (买家服务交付类)
         *   [x] (**调试**) 成功连接 `getOrderList` API，解决请求头(`clienttype`, `client`, `version`, `Authorization`)和响应解析 (`rows`) 问题。
-    *   [x] (**数据模型修正**) 根据 API 文档调整 `OrderModel`, `OrderItemModel`, 创建 `AddressModel`。
-    *   [x] 定义 `i_order_remote_data_source.dart`: ... (添加 `addEvaluation`)
-    *   [x] 定义 `order_remote_data_source_impl.dart`: ... (根据 API 调整实现, 添加 `addEvaluation`, 添加 `@injectable`)
-        *   [x] 添加 `saveRequirementDraft` 和 `submitRequirements` 的占位符实现。
+        *   [ ] (**卖家视角**) 实现 `IOrderRemoteDataSource` 中新增的卖家操作方法，调用对应的后端 API：
+            *   [ ] `confirmOrderAcceptance`: 调用 `POST /api/shop/order/verify?orderId=<id>` (空请求体)。
+            *   [ ] `addOrderDemand`: 调用 `POST /api/project/orderDemand/add` (根据 params 构造请求体)。
+            *   [ ] `deliverOrder`: 调用 `POST /api/project/orderDelivery/add` (根据 params 构造请求体, **注意 files 类型**)。
+            *   [ ] `deleteSellerOrderRecord`: 调用 `POST /api/shop/order/sellerDelete?orderId=<id>` (空请求体)。
+            *   [ ] `inviteEvaluation`: (API 待确认)。
+            *   [ ] (可选) `saveDeliveryDraft`: 调用 `POST /api/project/orderDelivery/save`。
+        *   [x] (**数据模型修正**) 根据 API 文档调整 `OrderModel`, `OrderItemModel`, 创建 `AddressModel`。
+        *   [x] 定义 `i_order_remote_data_source.dart`: ... (添加 `addEvaluation`) (买家)
+        *   [x] 定义 `order_remote_data_source_impl.dart`: ... (根据 API 调整实现, 添加 `addEvaluation`, 添加 `@injectable`) (买家)
+            *   [x] 添加 `saveRequirementDraft` 和 `submitRequirements` 的占位符实现。 (买家服务交付类)
     *   [ ] (**售后数据源接口 - 真实实现推迟**) 定义 `IAfterSalesRemoteDataSource` 接口 (`lib/features/after_sales/data/datasources/i_after_sales_remote_data_source.dart`) (文件已创建，待完善真实API对接)。
     *   [ ] (**售后数据源实现 - 真实实现推迟**) 定义 `AfterSalesRemoteDataSourceImpl` (`lib/features/after_sales/data/datasources/after_sales_remote_data_source.dart`)，实现接口，注入 `CoreDioClient`，调用后端 API (文件已创建基础，待完善真实API对接和错误处理)。
     *   [x] 定义 `i_order_local_data_source.dart`: 定义接口，包含获取、缓存、清除订单的方法。
@@ -115,12 +127,14 @@
         *   使用 `try-catch` 捕获 `DataSource` 抛出的异常，并将其映射为 `Domain` 层的 `Failure` 对象 (如 `ServerFailure`)。
         *   调用 `model.toEntity()` 将 `OrderModel` / `List<OrderModel>` 转换为 `Order` / `List<Order>`。
         *   返回 `Either<Failure, ResultType>`。
-        *   [x] 实现 `saveRequirementDraft` 和 `submitRequirements` (调用 DataSource)。
+        *   [x] 实现 `saveRequirementDraft` 和 `submitRequirements` (调用 DataSource)。 (买家服务交付类)
         *   [x] (**缓存**) 根据 `docs/caching_and_local_storage_strategy_cn.md`，实现使用 `drift` 的订单列表缓存逻辑 ("缓存优先，网络回填")。
+        *   [ ] (**卖家视角**) 实现 `IOrderRepository` 中新增的卖家操作方法，调用 `DataSource` 中对应的卖家 API 方法 (`confirmOrderAcceptance`, `addOrderDemand`, `deliverOrder`, `deleteSellerOrderRecord`, `inviteEvaluation`)。
         *   [ ] (**缓存 - 下一步**) 实现订单详情的 `drift` 缓存逻辑。
     *   [x] 定义 `mocks/mock_order_repository.dart`: 添加基础 Mock 数据，包括 `awaitingConfirmation` 状态。
     *   [x] (`Mock 数据完善`) 添加 `MOCK004` (待收货)。
     *   [x] (`Mock 数据完善`) 添加 `MOCK005` (待提交)。
+    *   [ ] (**卖家视角**) 扩展 `MockOrderRepository` 或创建 `MockSellerOrderRepository` 以支持卖家操作 (`confirmOrderAcceptance`, `addOrderDemand`, `deliverOrder`, `deleteSellerOrderRecord`, `inviteEvaluation`) 的 Mock 数据和行为。
     *   [x] (**DI 配置**) 使用 `@injectable` 和 `@module` 完成核心依赖注册。
     *   [x] (**运行 `build_runner`**) 成功生成 `injection_container.config.dart`。
     *   [x] (**配置预览环境**) 在 `main_orders_preview.dart` 中覆盖 `IOrderRepository` 使用 Mock。
@@ -146,7 +160,8 @@
     *   [x] 实现 `confirm_order_receipt_use_case.dart`: 实现 `ConfirmOrderReceiptUseCase`。注入 `IOrderRepository`。`call` 方法调用 `repository.confirmOrderReceipt()`。
     *   [x] 实现 `delete_order_use_case.dart`: 实现 `DeleteOrderUseCase`。注入 `IOrderRepository`。`call` 方法调用 `repository.deleteOrder()`。
     *   [x] (**实现 UseCase**) 实现 `SaveRequirementDraftUseCase`, `SubmitRequirementsUseCase` (调用 Repository)。
-    *   [ ] (**实现交付 UseCase?**) 实现获取交付信息的 UseCase (如果定义了)。
+    *   [ ] (**卖家视角**) 定义卖家操作相关的 UseCase，如 `ConfirmOrderUseCase`, `RejectOrderUseCase`, `DeliverOrderUseCase`, `RequestSupplementUseCase`, `RespondToRedoRequestUseCase` 等，并添加 `@injectable`。
+    *   [ ] (**定义交付 UseCase?**) 实现获取交付信息的 UseCase (如果定义了)。
     *   [x] (**实现售后 UseCase**) 实现 `usecases/after_sale/` 子目录下的 UseCase 逻辑 (调用 Repository) (已创建)。
     *   [ ] (**实现 UseCase**) 实现 获取交付物 等 UseCase 逻辑。
 
@@ -170,13 +185,17 @@
         *   [ ] (**完善动作处理**) 完善 Bloc 中动作成功/失败后的状态更新逻辑。
         *   [ ] (**UI 反馈**) 在 `OrderDetailPage` 使用 `BlocListener` 处理 `ActionSuccess/Failure` 状态，显示提示并根据 `actionType` 执行刷新/导航。
         *   [ ] (`OrderDetailBloc`) 添加处理售后相关事件 (如 `AfterSaleApplyRequested`, `MediationApplyRequested`, `CancelAfterSaleRequested`)。
+    *   [ ] (**卖家视角**) 创建 `seller_order_list_bloc.dart`, `seller_order_list_event.dart`, `seller_order_list_state.dart`。
+    *   [ ] (**卖家视角**) 创建 `seller_order_detail_bloc.dart`, `seller_order_detail_event.dart`, `seller_order_detail_state.dart`。
+    *   [ ] (**卖家视角**) 定义和实现卖家列表和详情页的 Bloc 逻辑，注入卖家相关的 UseCase，处理加载、筛选、确认、拒绝、交付等事件。
     *   [ ] (`OrderDetailState`) 可能需要添加更详细的售后状态字段 (如 `afterSaleInfo`, `isApplyingForMediation`)。
-    *   [ ] (`OrderDetailBloc DI`) 确认并添加需要的外部依赖注入 (Rating, Payment, Navigation)。
+    *   [ ] (`OrderDetailBloc DI**) 确认并添加需要的外部依赖注入 (Rating, Payment, Navigation)。
 *   `lib/features/orders/presentation/widgets/`
     *   [x] 实现 `order_item_card.dart`: 用于在列表中显示单个订单摘要的 Widget。**参考 HTML 原型中的列表项样式。**
     *   [x] 实现 `order_status_widget.dart`: 根据 `OrderStatus` 显示不同文本和样式的 Widget。
     *   [x] 实现 `order_action_buttons.dart`: 根据当前订单状态 (`Order.state`) 推断并显示可用的操作按钮 (取消、确认收货、评价等)。**参考 HTML 原型中的按钮样式和布局。**
         *   [x] (**交互**) 为确认收货、取消订单、删除订单添加确认对话框。
+    *   [ ] (**卖家视角**) 创建 `seller_order_action_buttons.dart` 或调整现有 Widget。
     *   [ ] (**逻辑核对**) 根据截图核对各状态下按钮的显示逻辑。
     *   [ ] (**功能连接**) 将按钮点击连接到 `OrderDetailBloc` 的事件。 (确认收货/取消/删除已连接，待完善 Bloc 处理)
     *   [x] 实现 `order_detail_item_tile.dart`: ...
@@ -192,9 +211,13 @@
     *   [x] (**完善 `WaitingActionArea`**) 改进消息、图标、显示买家备注。
     *   [x] (**完善 `OrderCompletionSummary`**) 添加图标、调整样式、添加分隔线。
     *   [x] (**创建新 Widgets**) 创建 售后处理区域 (`AfterSaleInfoArea`) 的骨架。
-    *   [ ] (**完善 `AfterSaleInfoArea`**) 根据真实的售后状态和数据 (来自 Bloc State) 显示详细信息（进度、原因、金额、协商记录等），添加必要的操作按钮（取消申请、申请介入等）并连接 Bloc 事件。
-    *   [ ] (**完善 `OrderActionButtons`**) 确保"申请售后"按钮在合适的时机显示，并能触发 `AfterSaleApplyRequested` 事件。
-    *   [ ] (**创建售后申请表单?**) 可能需要创建一个新的 Widget/Page 用于填写详细的售后申请信息（原因、说明、上传凭证等）。
+    *   [ ] (**卖家视角**) 创建卖家专属 Widgets，可能放在 `presentation/seller/widgets/` 下：
+        *   [ ] `SellerConfirmationCard` (详情页顶部提示卡片)
+        *   [ ] `BuyerSubmissionArea` (展示买家提交内容)
+        *   [ ] `SellerDeliveryForm` (交付表单)
+        *   [ ] `RejectionDialog` / `RequestSupplementDialog` (拒绝/要求补充材料弹窗)
+        *   [ ] `SellerActionButtons` (底部按钮栏)
+        *   [ ] 其他根据截图需要的 Widget...
 *   `lib/features/orders/presentation/pages/`
     *   [x] 实现 `order_list_page.dart`:
         *   [x] 构建 UI，包含状态切换 Tabs (全部、待付款、处理中、待评价等)。**严格参考 HTML 原型布局。**
@@ -220,8 +243,17 @@
         *   [x] 实现从底部按钮导航到 `SelectAfterSalesTypePage`。
         *   [ ] (**填充内容**) 继续实现/完善各状态下的具体内容 Widget (主要是售后状态)。
     *   [ ] (**卖家视角**) 分析卖家视角原型/截图/代码。
-    *   [ ] (**卖家视角**) 实现卖家视角的订单列表和详情页（调整现有 Widget 或创建新 Widget/Page）。
-*   `lib/features/after_sales/presentation/pages/` (New Section)
+    *   [ ] (**卖家视角**) 创建 `seller_order_list_page.dart`。
+        *   [ ] 构建卖家列表 UI (Tabs: 待确认、进行中、已交付、售后等)。
+        *   [ ] 连接 `SellerOrderListBloc`。
+        *   [ ] 实现下拉刷新/上拉加载。
+        *   [ ] 导航到 `SellerOrderDetailPage`。
+    *   [ ] (**卖家视角**) 创建 `seller_order_detail_page.dart`。
+        *   [ ] 构建卖家详情 UI (状态时间轴、顶部提示卡片、商品信息、买家提交内容区、动态操作区、底部按钮)。
+        *   [ ] 连接 `SellerOrderDetailBloc`。
+        *   [ ] 实现动态内容区域切换逻辑。
+        *   [ ] 实现确认、拒绝、交付、请求补充材料等交互流程。
+*   `lib/features/after_sales/presentation/pages/` (New Section - 主要买家视角)
     *   [x] 创建 `after_sales_list_page.dart`: 显示售后申请列表 (基础骨架和 Bloc 连接)。
         *   [x] (**修复**) 修正 `AfterSalesListError` 状态中字段 `message` 的引用为 `errorMessage`。
     *   [x] 创建 `after_sales_detail_page.dart`: 显示售后申请详情 (基础骨架和 Bloc 连接)。
@@ -229,9 +261,11 @@
     *   [x] 创建 `select_after_sales_type_page.dart`: 选择售后类型页面 (骨架和导航)。
     *   [x] 创建 `after_sales_apply_page.dart`: 售后申请表单页面 (骨架和导航)。
 *   `lib/core/router/`
+    *   [x] 添加 `/orderDetail/:id` 路由。
     *   [x] 添加 `/afterSalesDetail/:id` 路由。
     *   [x] 添加 `/selectAfterSalesType/:orderItemId` 路由。
     *   [x] 添加 `/afterSalesApply` 路由 (带查询参数)。
+    *   [ ] (**卖家视角**) 添加卖家订单列表和详情页路由 (如 `/seller/orders`, `/seller/orders/:id`)。
 *   `lib/features/after_sales/presentation/bloc/` (New Section)
     *   [x] 创建 `after_sales_bloc.dart`, `after_sales_event.dart`, `after_sales_state.dart` 文件骨架。
     *   [x] 定义核心的售后列表、详情、操作（申请、取消、删除）相关的 Bloc 事件 (Events) 和状态 (States)。
@@ -292,6 +326,10 @@
 *   [ ] 手动测试导航到订单详情。
 *   [ ] 手动测试订单详情在不同状态下的显示和操作按钮的可用性/行为。
 *   [ ] 验证 UI 与预期一致，交互流畅。
+*   [ ] (**卖家视角**) 创建 `main_seller_orders_preview.dart`，配置 DI 使用支持卖家的 Mock Repository。
+*   [ ] (**卖家视角**) 运行卖家预览 App。
+*   [ ] (**卖家视角**) 手动测试卖家订单列表的加载、筛选。
+*   [ ] (**卖家视角**) 手动测试卖家订单详情在不同状态下的显示和核心操作 (确认、拒绝、交付等)。
 
 **步骤 11: 集成准备**
 
@@ -325,28 +363,39 @@
 
 ## 下一步重点 (Next Focus)
 
-*   [x] **API 集成测试 - 订单详情与操作 (Order Detail & Actions API Integration Testing)**
+*   [ ] **实现卖家视角订单流程 (Implement Seller View Order Flow)** - **当前最高优先级**
+    *   [ ] 扩展 Domain/Data 层接口和实现 (Repository, DataSource, UseCases)。
+    *   [ ] 创建卖家专属 Bloc (List, Detail)。
+    *   [ ] 创建卖家专属 Page (List, Detail) 和 路由。
+    *   [ ] 创建/调整 Widgets 以匹配卖家 UI 和交互。
+    *   [ ] 实现 Mock 数据 (`MockOrderRepository`) 和预览入口 (`main_seller_orders_preview.dart`)。
+    *   [ ] 逐步实现卖家核心操作逻辑 (确认 `verify`, 拒绝/补充 `demand/add`, 交付 `delivery/add`, 删除 `sellerDelete` 等)。
+*   [x] **API 集成测试 - 订单详情与操作 (Order Detail & Actions API Integration Testing)** - (买家视角 - 已完成)
     *   [x] 测试 `getOrderDetail` API (`/api/shop/order/detail`)
     *   [x] 测试 `cancelOrder` API (`/api/shop/order/cancel`) 及 UI 反馈 (SnackBar, 返回列表)
     *   [x] 测试 `confirmOrderReceipt` API (`/api/shop/order/complete`) 及 UI 反馈 (SnackBar, 刷新详情)
     *   [x] 测试 `deleteOrder` API (`/api/shop/order/delete`) 及 UI 反馈 (SnackBar, 返回列表)
     *   [x] 测试 `submitRequirements` API (`/api/project/orderMaterials/add`) 及 UI 反馈 (SnackBar, 刷新详情)
-*   [ ] **实现订单评价流程 (Implement Order Evaluation Flow)**
+*   [ ] **实现订单评价流程 (Implement Order Evaluation Flow)** - (优先级降低，待卖家视角后)
     *   [ ] 定义 `SubmitEvaluationUseCase` (如果尚未完成)。
     *   [ ] 更新 `OrderDetailBloc` 添加处理评价提交的事件 (`SubmitEvaluationRequested`?) 和状态。
     *   [ ] 连接 `OrderEvaluationForm` UI 到 Bloc 事件。
     *   [ ] 测试评价提交 API (`/api/shop/order/comment/add` 或类似接口) 对接。
-*   [ ] **完善/实现草稿本地存储 (Refine/Implement Draft Local Storage)**
+*   [ ] **核心 - Token 处理 (Core - Token Handling)** - (优先级降低)
+    *   [ ] 实现 `CoreDioClient` 从本地存储（如 `SharedPreferences`）读取真实的 `Authorization` Token 并添加到请求头。
+*   [ ] **完善/实现草稿本地存储 (Refine/Implement Draft Local Storage)** - (优先级降低)
     *   [ ] 在 `OrderRequirementSubmissionForm` 中实现使用 `SharedPreferences` 或文件存储来保存和加载草稿。
     *   [ ] 确定草稿保存/加载的时机（例如，`initState`, `dispose`, 文本/文件变化时）。
     *   [ ] 清理草稿的时机（例如，提交成功后）。
-*   [ ] **实现订单详情缓存 (Implement Order Detail Caching)**
+*   [ ] **实现订单详情缓存 (Implement Order Detail Caching)** - (优先级降低)
     *   [ ] 类似 `OrderList` 的缓存策略，在 `OrderRepositoryImpl` 中为 `getOrderDetail` 添加缓存逻辑。
     *   [ ] 可能需要更新 `OrderLocalDataSource` 添加 `getOrderDetailById`, `cacheOrderDetail`, `clearOrderDetailCache` 等方法。
     *   [ ] 更新 `OrderDatabase` 和 `OrderDao` 添加存储/查询单个订单详情的逻辑。
-*   [ ] **核心 - Token 处理 (Core - Token Handling)**
-    *   [ ] 实现 `CoreDioClient` 从本地存储（如 `SharedPreferences`）读取真实的 `Authorization` Token 并添加到请求头。
-*   [ ] **代码清理与优化 (Code Cleanup & Optimization)**
+*   [ ] **UI/UX 优化与代码健康 (UI/UX Optimization & Code Health)** - (优先级降低)
+    *   [ ] 优化订单详情页顶部状态时间轴样式。
+    *   [ ] 检查列表项按钮功能。
+    *   [ ] 修复图片加载错误 (`/profile/upload/...`)。
+    *   [ ] 其他视觉打磨 (字体、间距、颜色)。
     *   [ ] 审查并移除不再使用的代码、注释。
     *   [ ] 检查 UI 细节和用户体验。
 
@@ -358,31 +407,4 @@
 *   [ ] (**Bloc/UseCase 集成 - 待办**) 在提交业务表单前，调用上传逻辑，并将返回的 URL/ID 列表用于最终的 API 请求。
 
 **步骤 12: (进行中) 买家视角交互完善**
-*   [ ] (**核心订单操作 - Bloc 处理**) 在 `OrderDetailBloc` 中完整实现 `ConfirmReceiptRequested`, `CancelOrderRequested`, `DeleteOrderRequested` 事件处理器，包括调用 UseCase、更新状态和处理错误/成功反馈。
-*   [ ] (**售后流程深化 - UI**) 完善 `AfterSaleInfoArea`，根据 `AfterSalesBloc` 状态动态显示售后详情和操作按钮。
-*   [ ] (**售后流程深化 - Bloc 连接**) 连接 `AfterSaleInfoArea` 中的操作按钮 (取消申请、申请介入等) 到 `AfterSaleApplyRequested` 事件。
-
-**步骤 13: (进行中) 真实 API 对接测试**
-*   [ ] 登录获取 Token 并存入 `flutter_secure_storage`。
-*   [x] 测试订单列表加载 (`getOrderList`)。
-*   [ ] 测试订单详情加载 (`getOrderDetail`)。
-*   [ ] 测试提交需求 (`submitRequirements`)。
-*   [ ] 测试评价提交 (`addEvaluation`) (需要在 UI/Bloc 中触发)。
-*   [ ] 测试取消、确认收货、删除订单。
-
-**步骤 14: 添加缓存与本地存储策略文档**
-*   [x] 添加缓存与本地存储策略文档 (`docs/caching_and_local_storage_strategy_cn.md`)。
-*   [x] 添加订单列表缓存实现细节文档 (`docs/order_list_caching_details_cn.md`)。
-
-**关键决策点:**
-
-*   `saveRequirementDraft` 功能转为本地存储。
-*   `submitRequirements` API 参数结构已变更。
-*   `addEvaluation` API 确认使用 `orderItemId`。
-*   Token 存储使用 `flutter_secure_storage`。
-
-**后续计划 (已调整):**
-
-1.  实现评价相关的 UseCase、Bloc 事件/状态和 UI。
-2.  完善草稿清除逻辑。
-3.  实现其他待办任务。
+*   [ ] (**核心订单操作 - Bloc 处理**) 在 `OrderDetailBloc` 中完整实现 `ConfirmReceiptRequested`, `CancelOrderRequested`, `DeleteOrderRequested`

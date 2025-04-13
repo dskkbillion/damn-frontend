@@ -142,12 +142,109 @@
 *   **成功响应**: 标准 wrapper (`code`, `msg`, `data`)，`data` 为 null。
 *   **前端实现**: `OrderRemoteDataSourceImpl.deleteOrder` (已更新检查 `code`)
 
+### 2.8. `/api/project/orderDemand/add` (卖家: 拒绝接单 / 请求补充材料)
+
+*   **用途**: 卖家用于提交拒绝接单或请求买家补充材料的申请。
+*   **方法**: `POST`
+*   **认证**: 需要 `Authorization` 头 (原始 Token)。
+*   **请求体 (JSON)**:
+    ```json
+    {
+      "orderId": <integer>,     // 订单 ID (必需)
+      "type": "<string>",       // 申请类型 (必需, "refuse" 或 "material")
+      "reasonValue": "<string>",  // 原因代码 (必需, e.g., "materialLack")
+      "reasonLabel": "<string>",  // 原因标签 (必需, e.g., "材料缺失")
+      "remarks": "<string>"     // 补充说明 (必需? API 文档如此)
+      // "files": ?             // API 文档未定义 files，若需附件需确认
+    }
+    ```
+*   **成功响应**: 标准 wrapper (`code`, `msg`, `data`)，`data` 可能为 null 或空对象。
+*   **前端实现**: `OrderRemoteDataSourceImpl.addOrderDemand` (需要实现)
+
+### 2.9. `/api/project/orderDelivery/add` (卖家: 交付订单)
+
+*   **用途**: 卖家提交最终交付物。
+*   **方法**: `POST`
+*   **认证**: 需要 `Authorization` 头 (原始 Token)。
+*   **请求体 (JSON)**:
+    ```json
+    {
+      "orderId": <integer>,   // 订单 ID (必需)
+      "content": "<string>",    // 交付内容文本 (可选?)
+      "files": "<string>"     // 交付附件 (可选?, **类型待确认: 文档为 string, RN 为 string[]**)
+    }
+    ```
+*   **成功响应**: 标准 wrapper (`code`, `msg`, `data`)，`data` 可能为 null 或空对象。
+*   **前端实现**: `OrderRemoteDataSourceImpl.deliverOrder` (需要实现)
+*   **注意**: `files` 参数类型需与后端确认。
+
+### 2.10. `/api/project/orderDelivery/save` (卖家: 保存交付草稿)
+
+*   **用途**: 卖家保存交付内容的草稿。
+*   **方法**: `POST`
+*   **认证**: 需要 `Authorization` 头 (原始 Token)。
+*   **请求体 (JSON)**: 与 `/api/project/orderDelivery/add` 结构相同。
+    ```json
+    {
+      "orderId": <integer>,
+      "content": "<string>",
+      "files": "<string>" // **类型待确认: 文档为 string, RN 为 string[]**
+    }
+    ```
+*   **成功响应**: 标准 wrapper (`code`, `msg`, `data`)，`data` 可能为 null 或空对象。
+*   **前端实现**: 需要添加对应 DataSource 方法 (例如 `saveDeliveryDraft`)
+*   **注意**: `files` 参数类型需与后端确认。
+
+### 2.11. `/api/shop/order/sellerDelete` (卖家: 删除订单记录)
+
+*   **用途**: 卖家删除自己的订单记录视图。
+*   **方法**: `POST`
+*   **认证**: 需要 `Authorization` 头 (原始 Token)。
+*   **请求参数 (Query)**: `orderId=<integer>` (订单 ID, 必需)
+*   **请求体**: 无
+*   **成功响应**: 标准 wrapper (`code`, `msg`, `data`)，`data` 为空对象 `{}`。
+*   **前端实现**: `OrderRemoteDataSourceImpl.deleteSellerOrderRecord` (需要实现)
+
+### 2.12. `/api/afterSale/...` (卖家: 售后处理)
+
+*   **用途**: 卖家处理售后申请的多个操作。
+*   **详见端点**: 
+    *   `POST /api/afterSale/agreeRefund` (同意退款): 请求体 `{"id": <售后单 ID>}`
+    *   `POST /api/afterSale/refuseRefund` (拒绝退款): 请求体 `{"id": <售后单 ID>, "refuseReason": "<string>"}`
+    *   `POST /api/afterSale/agreeReturn` (同意退货): 请求体 `{"id": <售后单 ID>}`
+    *   `POST /api/afterSale/refuseReturn` (拒绝退货): 请求体 `{"id": <售后单 ID>, "refuseReason": "<string>", "refuseImages": "<string>"}` (images 为逗号分隔)
+    *   `PUT /api/afterSale/confirmReceipt` (确认收到退货): 请求体 `{"id": <售后单 ID>}`
+*   **认证**: 均需要 `Authorization` 头。
+*   **成功响应**: 标准 wrapper (`code`, `msg`, `data`)。
+*   **前端实现**: 需要在 `AfterSalesRemoteDataSourceImpl` 中实现对应方法。
+
+### 待确认 API
+
+*   **卖家确认接单**: 
+    *   **RN Action**: `verifyOrder`
+    *   **方法/路径**: **POST `/api/shop/order/verify`** (已从 RN 代码确认)
+    *   **请求参数**: `orderId=<integer>` (作为 Query Parameter)
+    *   **请求体**: 空对象 `{}`
+    *   **状态**: **已确认** (但未在 API 文档 JSON 中找到)
+*   **卖家邀请评价**: 
+    *   **RN Action**: `inviteComment` (来自 `item` slice)
+    *   **方法/路径**: 未在 API 文档中找到明确端点。
+    *   **预期参数**: `orderId`
+    *   **状态**: **待确认**
+
 ---
 
 **待确认/待办事项:**
 
 *   **`imageUrl` 来源**: 确认订单列表/详情接口中 `items` 是否返回 `productImage` 或 `picUrl`。
 *   **评价接口 `/evaluate/add`**: 确认请求体是单个对象还是数组？是否需要 `orderId`？
+*   **交付/草稿 `files` 类型**: 确认 `/api/project/orderDelivery/add` 和 `save` 的 `files` 参数实际类型 (string vs string[])。
+*   **卖家确认接单 API**: 与后端确认此操作的实现方式。
+*   **卖家邀请评价 API**: 与后端确认此操作的实现方式。
 *   **字段完整性**: 在运行时测试，进一步确认 `OrderModel/ItemModel` 与 API 响应的所有字段匹配。
 
 *(后续将补充其他接口的分析结果)* 
+
+---
+
+*(移除之前的卖家 API 总结表格)* 

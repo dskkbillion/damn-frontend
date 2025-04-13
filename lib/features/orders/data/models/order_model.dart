@@ -11,7 +11,7 @@ import 'order_item_model.dart';
 /// Data Transfer Object (DTO) for an Order, matching the API structure.
 class OrderModel {
   final int id;
-  final String no; // API 字段: no
+  final String orderSn; // Changed back from 'no' to match API and Entity
   final String state; // API 字段: state (字符串)
   final String? orderType;
   final List<OrderItemModel> items;
@@ -39,7 +39,7 @@ class OrderModel {
 
   const OrderModel({
     required this.id,
-    required this.no, // Changed from orderSn
+    required this.orderSn, // Changed back from 'no'
     required this.state,
     this.orderType,
     required this.items,
@@ -99,7 +99,7 @@ class OrderModel {
 
     return OrderModel(
       id: json['id'] as int? ?? 0,
-      no: json['no'] as String? ?? '', // Use 'no' key
+      orderSn: json['orderSn'] as String? ?? '', // Use 'orderSn' key from API
       state: json['state'] as String? ?? 'unknown',
       orderType: json['orderType'] as String?,
       items: itemsList,
@@ -148,7 +148,7 @@ class OrderModel {
 
     return Order(
       id: id,
-      orderSn: no, // Map model.no to entity.orderSn
+      orderSn: orderSn, // Now directly maps model.orderSn to entity.orderSn
       state: OrderStatus.fromString(state),
       orderType: orderType,
       items: items.map((itemModel) => itemModel.toEntity()).toList(),

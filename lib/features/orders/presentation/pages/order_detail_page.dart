@@ -250,36 +250,37 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     final colorScheme = Theme.of(context).colorScheme;
 
     // The main scrollable content
-    return RefreshIndicator( // Added RefreshIndicator here
+    return RefreshIndicator(
        onRefresh: () async {
           if (_orderIdInt != null) {
              context.read<OrderDetailBloc>().add(LoadOrderDetail(orderId: _orderIdInt!));
           }
        },
        child: SingleChildScrollView(
-          // Keep padding at the scroll view level
-          padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 80.0, top: 0), // Increased bottom padding for buttons
+          padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 80.0, top: 0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Use actual widgets confirmed from previous code reading
+              // ALWAYS use OrderStatusTimelineHeader for the top status display
               OrderStatusTimelineHeader(order: order),
               const SizedBox(height: 24),
+              // Dynamic section based on state (e.g., form, info area)
               _buildDynamicContentSection(context, order),
               const SizedBox(height: 24),
+              // Order Items Section
               if (order.items.isNotEmpty)
                  Column(
                    crossAxisAlignment: CrossAxisAlignment.start,
                    children: [
                       Text('订单商品', style: textTheme.titleMedium),
                       const SizedBox(height: 8),
-                      // Use ListView.builder for multiple items if needed, or just the tile
-                      OrderDetailItemTile(item: order.items.first), // Assuming this exists
+                      OrderDetailItemTile(item: order.items.first),
                       const SizedBox(height: 16),
                       const Divider(),
                       const SizedBox(height: 16),
                    ],
                  ),
+              // Pricing Section
               Text('价格信息', style: textTheme.titleMedium),
               const SizedBox(height: 8),
               _buildPriceRow(context, '商品总价', '¥${order.priceSummary.totalPrice.toStringAsFixed(2)}'),
@@ -299,6 +300,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               const SizedBox(height: 16),
               const Divider(),
               const SizedBox(height: 16),
+              // Order Info Section (Timestamps, etc.)
               Text('订单信息', style: textTheme.titleMedium),
               const SizedBox(height: 8),
               _buildInfoRow(context, '订单编号:', order.orderSn),
@@ -311,7 +313,6 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 _buildInfoRow(context, '完成时间:', _formatDateTime(order.completeTime!)),
               if (order.cancelTime != null)
                 _buildInfoRow(context, '取消时间:', _formatDateTime(order.cancelTime!)),
-              // Add space at the bottom if needed, handled by padding in SingleChildScrollView
             ],
           ),
        ),
@@ -332,7 +333,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       case OrderStatus.awaitingConfirmation:
          return DeliveryConfirmationArea(order: order); // Return Widget instance
        case OrderStatus.awaitingEvaluation:
-         return OrderEvaluationForm(order: order); // Return Widget instance
+         // Wrap the form in a SizedBox to force full width
+         return SizedBox(width: double.infinity, child: OrderEvaluationForm(order: order));
        case OrderStatus.afterSale:
        case OrderStatus.AfterSaleRejection:
          // Assume AfterSaleInfoArea takes the Order object
@@ -355,16 +357,22 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   }
 
   // Helper to build simple info rows
+  // Restore original implementation
   Widget _buildInfoRow(BuildContext context, String label, String value) {
+    // print('Building info row: $label - Value: "$value"'); // Remove print
     final textTheme = Theme.of(context).textTheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start, // Restore alignment
         children: [
-          Text(label, style: textTheme.bodyMedium?.copyWith(color: Colors.grey[600])), // Lighter label
+          Text(label, style: textTheme.bodyMedium?.copyWith(color: Colors.grey[600])), // Restore original style
           const SizedBox(width: 8),
-          Expanded(child: Text(value, style: textTheme.bodyMedium)),
+          // Container( // Remove container
+          //    color: Colors.yellow,
+          //    child: Text(value, style: TextStyle(color: Colors.black)),
+          // ),
+          Expanded(child: Text(value, style: textTheme.bodyMedium)), // Restore Expanded with original style
         ],
       ),
     );

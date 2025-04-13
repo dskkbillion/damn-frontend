@@ -87,7 +87,7 @@ final List<AfterSalesApplication> _mockApplications = [
 // const String envTest = 'test';
 
 // @Injectable(as: IAfterSalesRepository, env: [envDev, envTest]) // Remove env property
-@Injectable(as: IAfterSalesRepository) // Keep it simple for now
+// @Injectable(as: IAfterSalesRepository) // Keep it simple for now
 class MockAfterSalesRepository implements IAfterSalesRepository {
 
   @override

@@ -80,6 +80,10 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     // on<SaveRequirementDraftRequested>(_onSaveRequirementDraftRequested); // REMOVED Handler Registration
     on<SubmitEvaluationRequested>(_onSubmitEvaluationRequested);
     // Add more event handlers as needed
+    // Register handlers for GoToPayment, GoToTracking, GoToEvaluation if they have specific logic
+    on<GoToPayment>(_onGoToPayment);
+    on<GoToTracking>(_onGoToTracking);
+    on<GoToEvaluation>(_onGoToEvaluation);
   }
 
   Future<void> _onLoadOrderDetail(LoadOrderDetail event, Emitter<OrderDetailState> emit) async {
@@ -261,70 +265,86 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
       );
   }
 
-  Future<void> _onSubmitEvaluationRequested(
-    SubmitEvaluationRequested event,
-    Emitter<OrderDetailState> emit,
-  ) async {
-    // Check if the current state is loaded
+  Future<void> _onSubmitEvaluationRequested(SubmitEvaluationRequested event, Emitter<OrderDetailState> emit) async {
     if (state is! OrderDetailLoaded) {
-      emit(const OrderDetailActionFailure(message: 'Cannot submit evaluation: Order data is not loaded.'));
+      emit(const OrderDetailActionFailure(message: '无法提交评价：订单数据未加载'));
       return;
     }
     final currentState = state as OrderDetailLoaded;
 
-    // Ensure we have an order to evaluate
-    if (currentState.order.items.isEmpty) {
-      emit(const OrderDetailActionFailure(message: 'Cannot submit evaluation: Order has no items.'));
-      return;
-    }
-    // Find the first item to evaluate (assuming evaluation applies to the first item or order level)
-    // Adjust logic if evaluation is per-item and UI provides specific item ID
-    final orderItemId = currentState.order.items.first.id;
+    // Emit loading state by updating the flag in OrderDetailLoaded
+    emit(currentState.copyWith(isSubmittingEvaluation: true));
+    print('[OrderDetailBloc] Submitting evaluation...');
 
-    emit(currentState.copyWith(isSubmittingEvaluation: true)); // Set loading state using copyWith
+    try {
+      final result = await _submitEvaluationUseCase(event.params);
 
-    print('[OrderDetailBloc] Calling SubmitEvaluationUseCase...');
-    final result = await _submitEvaluationUseCase(
-      SubmitEvaluationParams(
-        orderItemId: orderItemId, // Use the actual item ID from the loaded state
-        score: event.score,
-        content: event.content,
-        isAnonymous: event.isAnonymous,
-        pictures: event.pictures,
-      ),
-    );
-
-    result.fold(
-      (failure) {
-        print('[OrderDetailBloc] SubmitEvaluationUseCase failed: ${failure.toString()}');
-        // Emit failure state including the reset loading flag within the previous state
-        emit(OrderDetailActionFailure(
-            message: '评价提交失败: ${failure.toString()}',
-            previousState: currentState.copyWith(isSubmittingEvaluation: false) // Combine reset state here
-        ));
-        // emit(currentState.copyWith(isSubmittingEvaluation: false)); // Remove separate state reset
-      },
-      (_) {
-        print('[OrderDetailBloc] SubmitEvaluationUseCase succeeded.');
-        // Emit success state with the correct action type
-        emit(OrderDetailActionSuccess(
+      result.fold(
+        (failure) {
+          print('[OrderDetailBloc] Evaluation submission failed: ${failure.toString()}');
+          // Emit failure state, resetting the loading flag
+          emit(OrderDetailActionFailure(
+            message: _mapFailureToMessage(failure, defaultMsg: '评价提交失败'),
+            previousState: currentState.copyWith(isSubmittingEvaluation: false), // Reset flag
+          ));
+        },
+        (_) {
+          print('[OrderDetailBloc] Evaluation submitted successfully.');
+          // Emit success state FIRST (for SnackBar)
+          emit(OrderDetailActionSuccess(
             message: '评价提交成功!',
-            actionType: OrderAction.submitEvaluation,
-            updatedState: currentState.copyWith(isSubmittingEvaluation: false)
-            ));
-        // Optionally trigger reload to update evaluation status
-        // add(LoadOrderDetail(orderId: int.parse(event.orderId)));
-      },
-    );
+            actionType: OrderAction.submitEvaluation, // Assuming OrderAction has this value
+            // No need to pass updatedState, BlocListener will trigger reload
+          ));
+          // Reloading is handled by BlocListener based on OrderDetailActionSuccess
+        },
+      );
+    } catch (e) {
+       print('[OrderDetailBloc] Exception during evaluation submission: ${e.toString()}');
+        // Emit failure state in case of unexpected exceptions, resetting the loading flag
+       emit(OrderDetailActionFailure(
+          message: '评价提交时发生意外错误: ${e.toString()}', // Provide error message
+          previousState: currentState.copyWith(isSubmittingEvaluation: false), // Reset flag
+        ));
+    }
+  }
+
+  // --- Other Handlers (GoToPayment, GoToTracking, GoToEvaluation) ---
+  // Implement these if they need specific Bloc logic beyond just UI navigation handled by buttons
+
+  Future<void> _onGoToPayment(GoToPayment event, Emitter<OrderDetailState> emit) async {
+     // Example: Initiate payment service call
+     print('[OrderDetailBloc] Initiating payment for order ${event.orderId}');
+     try {
+        await _paymentService.initiatePayment(event.orderId.toString());
+        // Maybe emit a specific state if needed, or just let UI handle navigation
+     } catch (e) {
+        print('[OrderDetailBloc] Error initiating payment: $e');
+        // Emit failure state if needed
+     }
+  }
+
+  Future<void> _onGoToTracking(GoToTracking event, Emitter<OrderDetailState> emit) async {
+     // Usually navigation is handled in UI. Add logic here if Bloc needs to do something.
+     print('[OrderDetailBloc] GoToTracking requested for order ${event.orderId}. Navigation handled by UI.');
+     // Perhaps emit a state to signal UI to navigate?
+     // emit(NavigateToTrackingState(orderId: event.orderId));
+  }
+
+    Future<void> _onGoToEvaluation(GoToEvaluation event, Emitter<OrderDetailState> emit) async {
+     // Similar to tracking, often UI handles showing the form.
+     // Add logic if Bloc needs to prepare something before evaluation.
+     print('[OrderDetailBloc] GoToEvaluation requested for order ${event.orderId}. UI should handle showing the form.');
+     // emit(ShowEvaluationFormState(orderId: event.orderId));
   }
 
   // --- Helper Function to map Failure to String ---
   // TODO: Move this to a shared utility or base bloc if common
-  String _mapFailureToMessage(Failure failure) {
+  String _mapFailureToMessage(Failure failure, {String defaultMsg = '操作失败'}) {
     // Base Failure might not have a message, check specific types
     if (failure is ServerFailure) {
        // Assuming ServerFailure has a message property
-       return failure.message ?? '服务器错误，请稍后重试';
+       return failure.message ?? defaultMsg;
     } else if (failure is CacheFailure) {
        return '缓存错误，请清理缓存后重试'; // CacheFailure might not have a specific message
     } else if (failure is NetworkFailure) {
@@ -332,7 +352,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     } else {
        // Handle generic Failure or other specific types
        print('[OrderDetailBloc] Unmapped Failure type: ${failure.runtimeType}');
-       return '发生未知错误，请联系客服'; // Generic fallback
+       return defaultMsg; // Generic fallback
     }
   }
 }
@@ -413,15 +433,11 @@ class GoToTracking extends OrderDetailEvent {
 
 /// Event triggered when the user submits an evaluation for an order item.
 class SubmitEvaluationRequested extends OrderDetailEvent {
-  final String orderId;
-  final int orderItemId;
-  final double score;
-  final String content;
-  final bool isAnonymous;
-  final List<String> pictures;
-  const SubmitEvaluationRequested({ required this.orderId, required this.orderItemId, required this.score, required this.content, required this.isAnonymous, required this.pictures });
+  final SubmitEvaluationParams params;
+  const SubmitEvaluationRequested({required this.params});
+
   @override
-  List<Object?> get props => [ orderId, orderItemId, score, content, isAnonymous, pictures ];
+  List<Object?> get props => [params];
 }
 
 // Add other events 
@@ -432,11 +448,12 @@ enum OrderAction {
   confirmReceipt,
   delete,
   goToPayment,
-  // Add new actions for other event handlers
+  goToAfterSale,
+  goToEvaluation,
+  goToTracking,
   submitRequirements,
-  // saveDraft, // REMOVED
   submitEvaluation,
-  goToTracking // Assuming this is still needed for some UI logic
+  // Add other actions as needed ONLY ONCE
 }
 
 class OrderActionRequested extends OrderDetailEvent {

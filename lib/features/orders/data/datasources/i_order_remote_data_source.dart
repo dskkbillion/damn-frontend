@@ -1,5 +1,6 @@
 import '../../domain/entities/order_status.dart';
 import '../models/order_model.dart';
+import '../../domain/repositories/i_order_repository.dart';
 
 /// 定义订单远程数据源的契约。
 ///
@@ -55,14 +56,7 @@ abstract class IOrderRemoteDataSource {
   Future<void> deleteOrder(int orderId);
 
   /// Adds an evaluation for a specific order item.
-  Future<void> addEvaluation({
-    // required String orderId, // Removed again
-    required int orderItemId,
-    required double score,
-    required String content,
-    required bool isAnonymous,
-    required List<String> pictures,
-  });
+  Future<void> addEvaluation(/* AddEvaluationParams params */);
 
   /// Submits the final order requirements/materials.
   Future<void> submitRequirements({
@@ -72,5 +66,27 @@ abstract class IOrderRemoteDataSource {
     required List<String> attachmentPaths,
   });
 
-  // 可选：根据需要添加其他 API 调用接口方法
+  // --- Seller specific actions ---
+
+  /// Seller confirms acceptance of the order.
+  /// API endpoint is currently unclear (might be a general status update).
+  Future<void> confirmOrderAcceptance(int orderId);
+
+  /// Seller submits a demand/application (e.g., reject order, request supplement).
+  /// Calls `POST /api/project/orderDemand/add`.
+  Future<void> addOrderDemand(AddOrderDemandParams params);
+
+  /// Seller delivers the order (submits deliverables).
+  /// Calls `POST /api/project/orderDelivery/add`.
+  Future<void> deliverOrder(DeliverOrderParams params);
+
+  /// Seller deletes their view of an order record.
+  /// Calls `POST /api/shop/order/sellerDelete`.
+  Future<void> deleteSellerOrderRecord(int orderId);
+
+  /// Seller invites the buyer to evaluate the order.
+  /// API endpoint needs confirmation.
+  Future<void> inviteEvaluation(int orderId);
+
+  // TODO: Add other seller API call signatures as needed
 } 
