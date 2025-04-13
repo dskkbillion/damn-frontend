@@ -35,8 +35,8 @@ Future<void> main() async {
   print('Dependency injection configured.');
 
   // --- TEMPORARY DEBUGGING CODE: Force logout on startup ---
-  // This ensures you always start from the login page during development.
   // REMOVE THIS before final merge or release!
+  /* // Commenting out the forced logout
   try {
     final authRepository = getIt<IAuthRepository>();
     print('DEBUG: Forcing logout on startup...');
@@ -45,6 +45,7 @@ Future<void> main() async {
   } catch (e) {
     print('DEBUG: Error during forced logout: $e');
   }
+  */
   // --- END TEMPORARY DEBUGGING CODE ---
 
   // Run the application, wrapped in ProviderScope
