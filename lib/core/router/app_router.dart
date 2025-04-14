@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-// Import application pages
-// import '../../features/auth/presentation/pages/login_page.dart'; // Commented out
-// import '../../features/auth/presentation/pages/registration_page.dart'; // Commented out
-// import '../../features/main/presentation/pages/main_navigation_page.dart'; // Commented out
-import '../../features/orders/presentation/pages/order_detail_page.dart';
-import '../../features/orders/presentation/pages/order_list_page.dart';
-// Import OrderItem entity here for the router builder
+// Remove direct page imports for orders, they are handled by OrderRoutes
+// import '../../features/orders/presentation/pages/order_detail_page.dart';
+// import '../../features/orders/presentation/pages/order_list_page.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_item.dart';
 import '../../features/after_sales/presentation/pages/after_sales_list_page.dart';
 import '../../features/after_sales/presentation/pages/after_sales_detail_page.dart';
 import '../../features/after_sales/presentation/pages/select_after_sales_type_page.dart';
 import '../../features/after_sales/presentation/pages/after_sales_apply_page.dart';
-// TODO: Import other pages like HomePage, SettingsPage etc. if they exist within MainNavigationPage's tabs
+// Remove direct seller page imports
+// import 'package:dskk_flutter_refactor/features/orders/presentation/seller/pages/seller_order_list_page.dart';
+// import 'package:dskk_flutter_refactor/features/orders/presentation/seller/pages/seller_order_detail_page.dart';
+
+// Import module route definitions
+import 'package:dskk_flutter_refactor/features/orders/presentation/routes/order_routes.dart';
+// TODO: Import other module route definitions (e.g., after_sales_routes.dart)
 
 // Define Route Names (optional but good practice)
 // Example: static const String login = '/login';
@@ -25,11 +27,10 @@ class AppRouter {
 
   // GoRouter instance
   static final router = GoRouter(
-    // Set the initial route
-    // initialLocation: '/', // Adjusted initial location as / might depend on ShellRoute
-    initialLocation: '/orders', // Temporarily set orders as initial
+    // Set the initial route for the seller preview
+    initialLocation: '/seller/orders', 
 
-    // Define application routes
+    // Define application routes by aggregating module routes
     routes: <RouteBase>[
       // Authentication Routes (Commented out)
       /*
@@ -93,85 +94,59 @@ class AppRouter {
         ],
       ),*/
 
-      // --- Top Level Routes (Temporarily moved from ShellRoute) ---
-       GoRoute(
-            path: '/orders',
-            name: 'orders',
-            builder: (context, state) => const OrderListPage(), // Using builder for simplicity now
-       ),
+      // --- Aggregate Module Routes --- 
+       // Include routes from the Orders module
+      ...OrderRoutes.routes,
+
+       // TODO: Include routes from other modules here (e.g., AfterSales)
+       // Example (needs after_sales_routes.dart to be created first):
+       // ...AfterSalesRoutes.routes,
+
+      // --- Top Level Buyer Routes (Keep AfterSales temporarily for now) ---
+       // Note: AfterSales routes should also be moved to their own module eventually.
        GoRoute(
             path: '/afterSales',
             name: 'afterSales',
             builder: (context, state) => const AfterSalesListPage(), // Using builder
        ),
-      // -------------------------------------------------------------
-
-      // Detail Pages (typically outside the main shell)
-      GoRoute(
-        path: '/orderDetail/:orderId',
-        name: 'orderDetail',
-        builder: (BuildContext context, GoRouterState state) {
-          // Extract the orderId from the path parameters
-          final String orderId = state.pathParameters['orderId'] ?? 'invalid';
-          return OrderDetailPage(orderId: orderId);
-        },
-      ),
-      GoRoute(
-        path: '/afterSalesDetail/:id', // Using :id as the parameter name
-        name: 'afterSalesDetail',
-        builder: (BuildContext context, GoRouterState state) {
-          // Extract the id (could be orderId or afterSalesId)
-          final String id = state.pathParameters['id'] ?? 'invalid';
-          return AfterSalesDetailPage(id: id);
-        },
-      ),
-
-       // After Sales Flow Pages
        GoRoute(
-         path: '/selectAfterSalesType/:orderItemId',
-         name: 'selectAfterSalesType',
+         path: '/afterSalesDetail/:id', // Using :id as the parameter name
+         name: 'afterSalesDetail',
          builder: (BuildContext context, GoRouterState state) {
-           // Get the OrderItem object passed via 'extra'
-           final OrderItem? orderItem = state.extra as OrderItem?;
-
-           if (orderItem == null) {
-             print('Error: OrderItem not passed correctly to /selectAfterSalesType');
-             return Scaffold(body: Center(child: Text('Error: Missing order item data.')));
-           }
-
-           print('Navigated to /selectAfterSalesType, received item: ${orderItem.productName}');
-           return SelectAfterSalesTypePage(orderItem: orderItem);
+           final String id = state.pathParameters['id'] ?? 'invalid';
+           return AfterSalesDetailPage(id: id);
          },
        ),
-       GoRoute(
-          path: '/afterSalesApply', // Path for the application form
-          name: 'afterSalesApply',
+        GoRoute(
+          path: '/selectAfterSalesType/:orderItemId',
+          name: 'selectAfterSalesType',
           builder: (BuildContext context, GoRouterState state) {
-             // Extract parameters from query
-             final String? itemIdStr = state.uri.queryParameters['itemId'];
-             final String? type = state.uri.queryParameters['type'];
-             // Extract OrderItem from extra
-             final OrderItem? orderItem = state.extra as OrderItem?;
-
-             // Validate parameters
-             final int? itemId = int.tryParse(itemIdStr ?? '');
-             if (itemId == null || type == null || type.isEmpty || orderItem == null) { // Also check orderItem
-                print('Error: Invalid parameters for /afterSalesApply. ItemId: $itemIdStr, Type: $type, Item: ${orderItem == null ? 'null' : 'provided'}');
-                return Scaffold(body: Center(child: Text('Error: Invalid apply parameters.')));
-             }
-
-             print('Navigating to /afterSalesApply with itemId: $itemId, type: $type, item: ${orderItem.productName}');
-             // Pass the OrderItem to the page constructor
-             return AfterSalesApplyPage(orderItemId: itemId, afterSalesType: type, orderItem: orderItem);
-           },
-       ),
-       // TODO: Add route for AfterSalesApplyPage later
-       // GoRoute(
-       //   path: '/afterSalesApply', // Maybe use query params: /afterSalesApply?itemId=123&type=REFUND
-       //   name: 'afterSalesApply',
-       //   builder: (context, state) => AfterSalesApplyPage(...),
-       // ),
-
+            final OrderItem? orderItem = state.extra as OrderItem?;
+            if (orderItem == null) {
+              print('Error: OrderItem not passed correctly to /selectAfterSalesType');
+              return Scaffold(body: Center(child: Text('Error: Missing order item data.')));
+            }
+            print('Navigated to /selectAfterSalesType, received item: ${orderItem.productName}');
+            return SelectAfterSalesTypePage(orderItem: orderItem);
+          },
+        ),
+        GoRoute(
+           path: '/afterSalesApply', // Path for the application form
+           name: 'afterSalesApply',
+           builder: (BuildContext context, GoRouterState state) {
+              final String? itemIdStr = state.uri.queryParameters['itemId'];
+              final String? type = state.uri.queryParameters['type'];
+              final OrderItem? orderItem = state.extra as OrderItem?;
+              final int? itemId = int.tryParse(itemIdStr ?? '');
+              if (itemId == null || type == null || type.isEmpty || orderItem == null) { 
+                 print('Error: Invalid parameters for /afterSalesApply. ItemId: $itemIdStr, Type: $type, Item: ${orderItem == null ? 'null' : 'provided'}');
+                 return Scaffold(body: Center(child: Text('Error: Invalid apply parameters.')));
+              }
+              print('Navigating to /afterSalesApply with itemId: $itemId, type: $type, item: ${orderItem.productName}');
+              return AfterSalesApplyPage(orderItemId: itemId, afterSalesType: type, orderItem: orderItem);
+            },
+        ),
+      // -----------------------------------------------------------------
     ],
 
     // Optional: Error page handler

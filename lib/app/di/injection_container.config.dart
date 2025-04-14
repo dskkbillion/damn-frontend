@@ -80,6 +80,8 @@ import '../../features/orders/domain/usecases/submit_requirements_use_case.dart'
 import '../../features/orders/presentation/bloc/order_detail_bloc.dart'
     as _i549;
 import '../../features/orders/presentation/bloc/order_list_bloc.dart' as _i176;
+import '../../features/orders/presentation/seller/bloc/seller_order_detail_bloc.dart'
+    as _i984;
 import '../../features/orders/presentation/seller/bloc/seller_order_list_bloc.dart'
     as _i470;
 import 'injection_container.dart' as _i809;
@@ -171,6 +173,8 @@ _i174.GetIt init(
       getOrderListUseCase: gh<_i1015.GetOrderListUseCase>()));
   gh.lazySingleton<_i253.IAfterSalesRemoteDataSource>(
       () => _i519.AfterSalesRemoteDataSource(gh<_i412.CoreDioClient>()));
+  gh.factory<_i984.SellerOrderDetailBloc>(
+      () => _i984.SellerOrderDetailBloc(gh<_i691.GetOrderDetailUseCase>()));
   gh.lazySingleton<_i441.IAfterSalesRepository>(() =>
       _i363.AfterSalesRepositoryImpl(
           remoteDataSource: gh<_i253.IAfterSalesRemoteDataSource>()));

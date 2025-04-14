@@ -84,3 +84,4 @@ class DeleteSellerRecordRequested extends SellerOrderListEvent {
   List<Object> get props => [orderId];
 }
 
+

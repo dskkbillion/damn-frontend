@@ -159,16 +159,33 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     Emitter<SellerOrderListState> emit,
   ) async {
     print('[SellerOrderListBloc] Received ConfirmAcceptanceRequested for order ${event.orderId}');
-    // TODO: Optionally emit a specific loading state for this action
+    // Ensure we have a previous success state to pass
+    final currentState = state;
+    if (currentState is SellerOrderListSuccess) {
+       // Emit InProgress state before calling UseCase
+      emit(SellerOrderListActionInProgress(previousState: currentState)); 
+    } else {
+      // Handle cases where action is triggered from a non-success state (e.g., initial, error)
+      // Maybe just log or prevent action? For now, let it proceed but log.
+      print('[SellerOrderListBloc] Warning: ConfirmAcceptance requested from non-success state: ${currentState.runtimeType}');
+    }
 
     final result = await _confirmOrderAcceptanceUseCase(event.orderId);
 
     result.fold(
       (failure) {
-        // TODO: Emit a specific failure state for this action (e.g., SellerOrderListActionFailure)
-        // For now, just print the error
         print('[SellerOrderListBloc] Failed to confirm acceptance for order ${event.orderId}: $failure');
-        // Optionally show a snackbar or dialog via a listener in the UI
+        // Emit Failure state, passing the previous state if available
+        if (currentState is SellerOrderListSuccess) {
+           emit(SellerOrderListActionFailure(
+            previousState: currentState,
+             message: '确认接单失败: ${failure.toString()}' // Provide user-friendly message if possible
+            ));
+        } else {
+          // If no previous success state, maybe revert to initial or a general error state?
+          // For now, just log, as the list might not be visible anyway.
+           print('[SellerOrderListBloc] Error occurred from non-success state, cannot show previous list.');
+        }
       },
       (_) {
         print('[SellerOrderListBloc] Successfully confirmed acceptance for order ${event.orderId}.');
@@ -186,11 +203,35 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     Emitter<SellerOrderListState> emit,
   ) async {
     print('[SellerOrderListBloc] Received RejectOrderRequested for order ${event.orderId}');
-    final result = await _rejectOrderUseCase(event.orderId);
+    final currentState = state;
+    if (currentState is SellerOrderListSuccess) {
+      emit(SellerOrderListActionInProgress(previousState: currentState));
+    } else {
+      print('[SellerOrderListBloc] Warning: RejectOrder requested from non-success state: ${currentState.runtimeType}');
+    }
+
+    // Construct AddOrderDemandParams for refusal here
+    // TODO: Later, get reason/remarks from the event or UI interaction
+    final params = AddOrderDemandParams(
+      orderId: event.orderId, 
+      type: 'refuse', // Default refusal type
+      reasonValue: 'seller_reject', // Default reason code
+      reasonLabel: '卖家拒绝接单', // Default reason text
+      // remarks: null, // Optional remarks
+      );
+
+    final result = await _rejectOrderUseCase(params); // Pass the params object
     result.fold(
       (failure) {
         print('[SellerOrderListBloc] Failed to reject order ${event.orderId}: $failure');
-        // TODO: Emit failure state
+        if (currentState is SellerOrderListSuccess) {
+          emit(SellerOrderListActionFailure(
+            previousState: currentState,
+            message: '拒绝订单失败: ${failure.toString()}'
+            ));
+        } else {
+           print('[SellerOrderListBloc] Error occurred from non-success state.');
+        }
       },
       (_) {
         print('[SellerOrderListBloc] Successfully rejected order ${event.orderId}.');
@@ -204,6 +245,13 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     Emitter<SellerOrderListState> emit,
   ) async {
     print('[SellerOrderListBloc] Received DeliverOrderRequested for order ${event.orderId}');
+    final currentState = state;
+    if (currentState is SellerOrderListSuccess) {
+      emit(SellerOrderListActionInProgress(previousState: currentState));
+    } else {
+       print('[SellerOrderListBloc] Warning: DeliverOrder requested from non-success state: ${currentState.runtimeType}');
+    }
+
     // TODO: Construct DeliverOrderParams properly. This needs UI interaction (files, content).
     // For now, use placeholder params for the skeleton call.
     final params = DeliverOrderParams(orderId: event.orderId, content: 'Mock delivery content', files: []);
@@ -211,7 +259,14 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     result.fold(
       (failure) {
         print('[SellerOrderListBloc] Failed to deliver order ${event.orderId}: $failure');
-        // TODO: Emit failure state
+         if (currentState is SellerOrderListSuccess) {
+          emit(SellerOrderListActionFailure(
+            previousState: currentState,
+            message: '确认发货失败: ${failure.toString()}'
+            ));
+        } else {
+            print('[SellerOrderListBloc] Error occurred from non-success state.');
+        }
       },
       (_) {
         print('[SellerOrderListBloc] Successfully delivered order ${event.orderId}.');
@@ -225,14 +280,38 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     Emitter<SellerOrderListState> emit,
   ) async {
     print('[SellerOrderListBloc] Received InviteEvaluationRequested for order ${event.orderId}');
+     final currentState = state;
+    if (currentState is SellerOrderListSuccess) {
+      emit(SellerOrderListActionInProgress(previousState: currentState));
+    } else {
+       print('[SellerOrderListBloc] Warning: InviteEvaluation requested from non-success state: ${currentState.runtimeType}');
+    }
+
     final result = await _inviteEvaluationUseCase(event.orderId);
     result.fold(
       (failure) {
         print('[SellerOrderListBloc] Failed to invite evaluation for order ${event.orderId}: $failure');
-        // TODO: Emit failure state
+        if (currentState is SellerOrderListSuccess) {
+          emit(SellerOrderListActionFailure(
+            previousState: currentState,
+            message: '邀请评价失败: ${failure.toString()}'
+            ));
+        } else {
+           print('[SellerOrderListBloc] Error occurred from non-success state.');
+        }
       },
       (_) {
         print('[SellerOrderListBloc] Successfully invited evaluation for order ${event.orderId}.');
+        // For non-list-modifying actions, revert to previous success state 
+        // Or potentially emit a specific ActionSuccess state for SnackBar
+        if (currentState is SellerOrderListSuccess) {
+           // Option 1: Just revert state
+           // emit(currentState); 
+           // Option 2: Emit specific success state (if defined) for listener
+           // emit(SellerOrderListActionSuccess(previousState: currentState, message: '已成功邀请评价'));
+           // For now, let's just revert to previous state. Refresh is commented out.
+           emit(currentState);
+        } 
         // Optionally show a success message via state/listener, refreshing list might not be needed
         // add(LoadSellerOrdersRequested(statusFilter: _currentStatusFilter, refresh: true));
       },
@@ -244,11 +323,25 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     Emitter<SellerOrderListState> emit,
   ) async {
     print('[SellerOrderListBloc] Received DeleteSellerRecordRequested for order ${event.orderId}');
+    final currentState = state;
+     if (currentState is SellerOrderListSuccess) {
+      emit(SellerOrderListActionInProgress(previousState: currentState));
+    } else {
+       print('[SellerOrderListBloc] Warning: DeleteRecord requested from non-success state: ${currentState.runtimeType}');
+    }
+
     final result = await _deleteSellerRecordUseCase(event.orderId);
     result.fold(
       (failure) {
         print('[SellerOrderListBloc] Failed to delete seller record for order ${event.orderId}: $failure');
-        // TODO: Emit failure state
+         if (currentState is SellerOrderListSuccess) {
+          emit(SellerOrderListActionFailure(
+            previousState: currentState,
+            message: '删除记录失败: ${failure.toString()}'
+            ));
+        } else {
+            print('[SellerOrderListBloc] Error occurred from non-success state.');
+        }
       },
       (_) {
         print('[SellerOrderListBloc] Successfully deleted seller record for order ${event.orderId}.');
@@ -258,4 +351,5 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     );
   }
 }
+
 

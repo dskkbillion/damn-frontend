@@ -64,7 +64,7 @@ class MockSellerOrderRepository implements IOrderRepository {
       productName: '定制服务X (待卖家确认)',
       skuId: 401,
       skuName: '基础版, 红色', // Matches properties format
-      imageUrl: '/placeholder_seller_1.png', // Correct field name
+      imageUrl: 'https://placehold.co/80x80/E91E63/FFFFFF/png?text=Item1', // Correct field name
       quantity: 1, // Correct field name
       price: 150.00, // Correct field name
       totalPrice: 150.00, // Correct field name
@@ -76,7 +76,7 @@ class MockSellerOrderRepository implements IOrderRepository {
       productName: '实体商品Y (卖家备货中)',
       skuId: 402,
       skuName: '标准装, V2',
-      imageUrl: '/placeholder_seller_2.png',
+      imageUrl: 'https://placehold.co/80x80/4CAF50/FFFFFF/png?text=Item2',
       quantity: 1,
       price: 88.00,
       totalPrice: 88.00,
@@ -88,7 +88,7 @@ class MockSellerOrderRepository implements IOrderRepository {
       productName: '实体商品Z (待买家收货)',
       skuId: 403,
       skuName: '豪华版',
-      imageUrl: '/placeholder_seller_3.png',
+      imageUrl: 'https://placehold.co/80x80/2196F3/FFFFFF/png?text=Item3',
       quantity: 1,
       price: 250.00,
       totalPrice: 250.00,
@@ -100,7 +100,7 @@ class MockSellerOrderRepository implements IOrderRepository {
       productName: '设计服务W (已完成)',
       skuId: 404,
       skuName: '高级套餐',
-      imageUrl: '/placeholder_seller_4.png',
+      imageUrl: 'https://placehold.co/80x80/FF9800/FFFFFF/png?text=Item4',
       quantity: 1,
       price: 500.00,
       totalPrice: 500.00,
@@ -113,7 +113,7 @@ class MockSellerOrderRepository implements IOrderRepository {
       productName: '商品V (已取消)',
       skuId: 405,
       skuName: '基础款',
-      imageUrl: '/placeholder_seller_5.png',
+      imageUrl: 'https://placehold.co/80x80/9E9E9E/FFFFFF/png?text=Item5',
       quantity: 1,
       price: 99.00,
       totalPrice: 99.00,

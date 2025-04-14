@@ -72,6 +72,8 @@ import 'features/orders/domain/usecases/submit_requirements_use_case.dart'
     as _i648;
 import 'features/orders/presentation/bloc/order_detail_bloc.dart' as _i768;
 import 'features/orders/presentation/bloc/order_list_bloc.dart' as _i620;
+import 'features/orders/presentation/seller/bloc/seller_order_detail_bloc.dart'
+    as _i263;
 import 'features/orders/presentation/seller/bloc/seller_order_list_bloc.dart'
     as _i1008;
 
@@ -162,6 +164,8 @@ _i174.GetIt $initGetIt(
       getOrderListUseCase: gh<_i354.GetOrderListUseCase>()));
   gh.lazySingleton<_i297.IAfterSalesRemoteDataSource>(
       () => _i504.AfterSalesRemoteDataSource(gh<_i831.CoreDioClient>()));
+  gh.factory<_i263.SellerOrderDetailBloc>(
+      () => _i263.SellerOrderDetailBloc(gh<_i332.GetOrderDetailUseCase>()));
   gh.lazySingleton<_i882.IAfterSalesRepository>(() =>
       _i429.AfterSalesRepositoryImpl(
           remoteDataSource: gh<_i297.IAfterSalesRemoteDataSource>()));

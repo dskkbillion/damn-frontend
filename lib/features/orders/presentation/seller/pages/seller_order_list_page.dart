@@ -98,18 +98,53 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
       ),
       body: BlocConsumer<SellerOrderListBloc, SellerOrderListState>(
          listener: (context, state) {
-            // Optional: Show snackbars for errors on load more?
-            // if (state is SellerOrderListFailure && state.isLoadMoreError) { // Need to add flag to state
-            //   ScaffoldMessenger.of(context).showSnackBar(
-            //     SnackBar(content: Text('加载更多失败: ${state.message}')),
+            // Listen for action failures and show SnackBar
+            if (state is SellerOrderListActionFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('操作失败: ${state.message}'),
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                  ), 
+              );
+            }
+            // Optional: Add listener for ActionSuccess if we define such a state for feedback
+            // if (state is SellerOrderListActionSuccess) {
+            //    ScaffoldMessenger.of(context).showSnackBar(
+            //     SnackBar(content: Text(state.message), backgroundColor: Colors.green),
             //   );
             // }
           },
           builder: (context, state) {
-            if (state is SellerOrderListLoading && state.orders.isEmpty) { // Check if loading initial data
+            // Determine the list of orders to display based on the current state
+            // This now correctly handles ActionInProgress and ActionFailure by using their previousState
+            final List<Order> ordersToShow;
+            SellerOrderListSuccess? successState;
+            if (state is SellerOrderListSuccess) {
+              ordersToShow = state.orders;
+              successState = state;
+            } else if (state is SellerOrderListActionInProgress) {
+              ordersToShow = state.previousState.orders;
+              successState = state.previousState;
+            } else if (state is SellerOrderListActionFailure) {
+              ordersToShow = state.previousState.orders;
+              successState = state.previousState;
+            } else if (state is SellerOrderListLoading && state.previousState != null) {
+              // Handle loading more case
+              ordersToShow = state.previousState!.orders;
+              successState = state.previousState;
+            } else {
+               ordersToShow = []; // Default for Initial or complete failure
+               successState = null;
+            }
+
+            final bool isLoading = state is SellerOrderListLoading;
+            final bool isActionInProgress = state is SellerOrderListActionInProgress;
+
+            // Handle initial loading and initial error states separately
+            if (state is SellerOrderListLoading && state.previousState == null) {
                return const Center(child: CircularProgressIndicator());
             }
-            if (state is SellerOrderListFailure && state.orders.isEmpty) { // Check if initial load failed
+            if (state is SellerOrderListFailure && state.previousState == null) {
                return Center(
                  child: Column(
                    mainAxisAlignment: MainAxisAlignment.center,
@@ -126,72 +161,64 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
                  ),
                );
             }
-            if (state is SellerOrderListSuccess || (state is SellerOrderListLoading && state.orders.isNotEmpty) || (state is SellerOrderListFailure && state.orders.isNotEmpty)) {
-              // Show list data even if loading more or if load more failed
-              final orders = state.orders;
-              final bool isLoadingMore = state is SellerOrderListLoading;
-
-              if (orders.isEmpty && !isLoadingMore) {
-                 return const Center(child: Text('没有找到相关订单'));
-              }
-
-              return RefreshIndicator(
-                onRefresh: () async {
-                   context.read<SellerOrderListBloc>().add(
-                        LoadSellerOrdersRequested(statusFilter: _tabStatuses[_tabController.index], refresh: true)
-                    );
-                   // Consider returning a Future that completes when loading finishes
-                   // return context.read<SellerOrderListBloc>().stream.firstWhere((s) => s is! SellerOrderListLoading);
-                },
-                child: ListView.builder(
-                  controller: _scrollController,
-                  itemCount: orders.length + (isLoadingMore ? 1 : 0), // Add space for loading indicator
-                  itemBuilder: (context, index) {
-                    if (index >= orders.length) {
-                      // Bottom loading indicator
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16.0),
-                        child: Center(child: CircularProgressIndicator()),
-                      );
-                    }
-                    final order = orders[index];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                      child: SellerOrderItemCard(
-                        order: order,
-                        onTap: () {
-                          // TODO: Define seller detail route
-                          // context.go('/seller/orders/${order.id}');
-                           print('Navigate to seller detail for order ${order.id}');
-                        },
-                      ),
-                    );
-                  },
-                ),
-              );
+            
+            // Display the list (potentially with loading/action indicators)
+            if (ordersToShow.isEmpty && !isLoading && !isActionInProgress) {
+               // Use the current filter from successState if available
+               final statusText = successState?.currentStatusFilter?.toString().split('.').last ?? '当前';
+               return Center(child: Text('没有找到 $statusText 状态的订单'));
             }
-            // Should not happen if initial state is handled, but provide fallback
-            return const Center(child: Text('未知状态'));
+
+            return Stack( // Use Stack to overlay progress indicator
+              children: [
+                RefreshIndicator(
+                  onRefresh: () async {
+                     context.read<SellerOrderListBloc>().add(
+                          LoadSellerOrdersRequested(statusFilter: _tabStatuses[_tabController.index], refresh: true)
+                      );
+                     // Consider returning a Future that completes when loading finishes
+                     // return context.read<SellerOrderListBloc>().stream.firstWhere((s) => s is! SellerOrderListLoading);
+                  },
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    itemCount: ordersToShow.length + (isLoading ? 1 : 0), // Add space for loading indicator
+                    itemBuilder: (context, index) {
+                      if (index >= ordersToShow.length) {
+                        // Bottom loading indicator
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16.0),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
+                      final order = ordersToShow[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                        child: SellerOrderItemCard(
+                          order: order,
+                          onTap: () {
+                            // Navigate to the seller detail page using GoRouter
+                            context.go('/seller/orders/${order.id}'); 
+                             print('[SellerOrderListPage] Navigating to seller detail for order ${order.id}');
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                 // Overlay a progress indicator if an action is in progress
+                if (isActionInProgress)
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.black.withOpacity(0.1), // Semi-transparent overlay
+                      child: const Center(child: CircularProgressIndicator()),
+                    ),
+                  ),
+              ],
+            );
           },
        ),
     );
   }
 }
 
-// Extension to access orders from any state for builder convenience
-// Avoids direct casting and handles potential null cases if states change
-extension SellerOrderListStateOrders on SellerOrderListState {
-  List<Order> get orders {
-    if (this is SellerOrderListSuccess) {
-      return (this as SellerOrderListSuccess).orders;
-    } else if (this is SellerOrderListLoading && (this as SellerOrderListLoading).previousState != null) {
-       // If loading more, show previous orders
-       return (this as SellerOrderListLoading).previousState!.orders;
-    } else if (this is SellerOrderListFailure && (this as SellerOrderListFailure).previousState != null) {
-      // If loading more failed, show previous orders
-      return (this as SellerOrderListFailure).previousState!.orders;
-    }
-    return []; // Default to empty list for Initial or unhandled states
-  }
-}
 

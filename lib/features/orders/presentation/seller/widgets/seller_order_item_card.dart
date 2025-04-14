@@ -49,12 +49,16 @@ class SellerOrderItemCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // TODO: 显示**买家**信息 (原型中有 buyerName/buyerId? 需要确认 Order 实体或关联 User 实体是否有相应字段)
-                  Text(
-                    '买家: ${order.shippingAddress.recipientName}', // Example: Use buyer name from address
-                    style: textTheme.bodySmall?.copyWith(color: colorScheme.secondary),
-                     overflow: TextOverflow.ellipsis,
+                  // Display BUYER name from shipping address
+                  Expanded( // Use Expanded to prevent overflow if name is long
+                    child: Text(
+                      // Use recipientName from the shipping address
+                      '买家: ${order.shippingAddress.recipientName}', 
+                      style: textTheme.bodySmall?.copyWith(color: colorScheme.secondary),
+                       overflow: TextOverflow.ellipsis, // Prevent overflow
+                    ),
                   ),
+                  const SizedBox(width: 8), // Add some space
                   OrderStatusWidget(status: order.state), // 显示订单状态
                 ],
               ),

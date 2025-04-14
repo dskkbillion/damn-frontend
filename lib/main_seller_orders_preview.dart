@@ -26,6 +26,8 @@ import 'features/orders/domain/usecases/delete_seller_record_use_case.dart';
 import 'features/orders/data/repositories/mocks/mock_seller_order_repository.dart';
 import 'features/orders/domain/repositories/i_order_repository.dart';
 
+// 导入 GoRouter 配置
+import 'core/router/app_router.dart';
 
 // 配置 GetIt 实例
 final getIt = GetIt.instance;
@@ -46,32 +48,18 @@ Future<void> configureDependenciesPreview() async {
   // --- 卖家视图的预览特定覆盖 ---
 
   // 使用适用于卖家视图的 mock 实现覆盖 IOrderRepository
-  // TODO: 增强 MockOrderRepository 或创建一个专用的 MockSellerOrderRepository
-  //       以提供真实的卖家端订单数据 (例如 awaitingConfirmation, inProgress)
-  //       并模拟卖家操作 (确认、拒绝、交付)。
-  // 注意：如果 getIt 已经注册了 IOrderRepository，先 unregister
+  // 注意：如果 getIt 已经注册了 IOrderRepository，先 unregister 或 reset
   if (getIt.isRegistered<IOrderRepository>()) {
-    // 使用 getIt.resetLazySingleton 替代 unregister + register
-    // 或者确保在主 DI 中 IOrderRepository 是可覆盖的 (例如使用 allowReassignment: true)
-    // 为简单起见，这里假设可以安全地重置或主 DI 未注册它
-    // Correct usage: resetLazySingleton takes no arguments, the factory is assumed to be the same
-    // If the factory changes, you need unregister + register or ensure allowReassignment is true in the main DI
-    getIt.resetLazySingleton<IOrderRepository>(); // Corrected: Provide the type argument
-    // If you need to provide a NEW factory function, you MUST unregister first:
-    // await getIt.unregister<IOrderRepository>();
-    // getIt.registerLazySingleton<IOrderRepository>(() => MockOrderRepository());
+    getIt.resetLazySingleton<IOrderRepository>(); // Reset if already registered
+     // Ensure MockSellerOrderRepository is used
+    getIt.registerLazySingleton<IOrderRepository>(() => MockSellerOrderRepository());
   } else {
+      // If not registered by main config, register it here
       getIt.registerLazySingleton<IOrderRepository>(() => MockSellerOrderRepository());
   }
 
-  // TODO: 在这里注册卖家特定的 Blocs，注入 mock repository (或 mock UseCases)
-  // 示例:
-  // 确保 GetOrderListUseCase 适应卖家或有 Seller 版本
-  // 注意：我们需要 GetOrderListUseCase，而 MockOrderRepository 实现了 IOrderRepository
-  // GetOrderListUseCase 依赖 IOrderRepository，所以 getIt<IOrderRepository>() 会返回 MockOrderRepository 实例
-  // 确保 GetOrderListUseCase 本身已在主 DI 或这里注册
-  // 如果 GetOrderListUseCase 已通过 @injectable 注册，它会自动找到 IOrderRepository
-  // 我们假设 GetOrderListUseCase 已经注册
+  // --- 移除以下注册，假设它们由主 configureDependencies() 处理 ---
+  /* 
   getIt.registerFactory(() => GetOrderListUseCase(getIt()));
   getIt.registerFactory(() => ConfirmOrderAcceptanceUseCase(getIt()));
   getIt.registerFactory(() => RejectOrderUseCase(getIt()));
@@ -79,7 +67,7 @@ Future<void> configureDependenciesPreview() async {
   getIt.registerFactory(() => InviteEvaluationUseCase(getIt()));
   getIt.registerFactory(() => DeleteSellerRecordUseCase(getIt()));
 
-  // Register SellerOrderListBloc, passing all dependencies explicitly
+  // Register SellerOrderListBloc, assuming it's covered by main config
   getIt.registerFactory(() => SellerOrderListBloc(
       getIt(), // GetOrderListUseCase
       getIt(), // ConfirmOrderAcceptanceUseCase
@@ -88,14 +76,7 @@ Future<void> configureDependenciesPreview() async {
       getIt(), // InviteEvaluationUseCase
       getIt(), // DeleteSellerRecordUseCase
       ));
-
-  // getIt.registerFactory(() => SellerOrderDetailBloc(\r
-  //       getOrderDetailUseCase: getIt(), // 确保 GetOrderDetailUseCase 适应卖家或有 Seller 版本\r
-  //       confirmOrderUseCase: getIt(), // 确保这些卖家 UseCase 已注册或 mock\r
-  //       rejectOrderUseCase: getIt(),
-  //       deliverOrderUseCase: getIt(),
-  //       // ... 其他卖家 use cases
-  //     ));
+  */
 
   // 确保卖家 Pages/Blocs 需要的所有其他依赖项都已注册 (或 mock)
   // 例如 NavigationService, PaymentService (如果适用)
@@ -107,7 +88,10 @@ void main() async {
   // 如果需要，加载环境变量 (例如使用 flutter_dotenv)
   // await dotenv.load(fileName: ".env");
 
-  // 为卖家预览环境专门配置依赖项
+  // 首先运行主依赖配置
+  await configureDependencies();
+
+  // 然后为卖家预览环境覆盖特定依赖项
   await configureDependenciesPreview();
 
   // 设置错误处理 (可选但推荐)
@@ -131,40 +115,31 @@ class SellerOrdersPreviewApp extends StatelessWidget {
         //   create: (context) => getIt<SellerOrderDetailBloc>(), // 详情 Bloc 可能在页面导航时加载\r
         // ),\r
       ],
-      child: MaterialApp(
+      // Change MaterialApp to MaterialApp.router
+      child: MaterialApp.router(
         title: 'Seller Orders Preview',
         theme: AppTheme.lightTheme, // 使用你的应用主题
         // darkTheme: AppTheme.darkTheme, // 可选的暗色主题
         // themeMode: ThemeMode.system, // 或强制 light/dark
-        // 创建 SellerOrderListPage 后，将其设置为 home
-        home: const SellerOrderListPage(),
-        /*
-        home: Scaffold( // 在 SellerOrderListPage 准备好之前的占位符页面
-          backgroundColor: Colors.deepPurple[300], // 使用不同的颜色区分
-          appBar: AppBar(title: const Text('Seller Preview')),
-          body: const Center(
-            child: Text(
-              'Seller Orders Preview\\n请创建 SellerOrderListPage 并设为 home',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white, fontSize: 18),
-            ),
-          ),
-        ),
-        */
-        // 如果需要在预览内导航，定义路由 (例如到 SellerOrderDetailPage)
-        // onGenerateRoute: (settings) {\r
-        //   // 示例:
-        //   // if (settings.name == '/seller/orders/detail') {
-        //   //   final orderId = settings.arguments as int;
-        //   //   return MaterialPageRoute(
-        //   //     builder: (_) => BlocProvider.value(
-        //   //       value: getIt<SellerOrderDetailBloc>()..add(LoadSellerOrderDetail(orderId)),
-        //   //       child: const SellerOrderDetailPage(),
-        //   //     ),
-        //   //   );
-        //   // }
-        //   return null; // 对未处理的路由返回 null
-        // },
+
+        // Configure GoRouter
+        routeInformationProvider: AppRouter.router.routeInformationProvider,
+        routeInformationParser: AppRouter.router.routeInformationParser,
+        routerDelegate: AppRouter.router.routerDelegate,
+
+        // NOTE: GoRouter's initialLocation defaults to '/' if not specified in GoRouter constructor.
+        // If AppRouter.router sets a different initialLocation, it will be used.
+        // If we want this preview to *always* start at /seller/orders, 
+        // we might need to adjust the GoRouter instance itself or use a redirect.
+        // For now, assuming AppRouter's config is sufficient or defaults correctly.
+        // Let's ensure AppRouter is configured with initialLocation: '/seller/orders' for this preview.
+        // We will modify AppRouter.dart for this.
+
+        // Remove home property as GoRouter handles the initial route
+        // home: const SellerOrderListPage(),
+        
+        // onGenerateRoute is not used with GoRouter
+        // onGenerateRoute: (settings) { ... },
       ),
     );
   }

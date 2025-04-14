@@ -72,3 +72,39 @@ class SellerOrderListFailure extends SellerOrderListState {
   List<Object?> get props => [message, previousState];
 }
 
+// --- States for specific item actions ---
+
+/// State indicating an action on a specific order item is in progress.
+/// Contains the previous successful state to keep displaying the list.
+class SellerOrderListActionInProgress extends SellerOrderListState {
+  final SellerOrderListSuccess previousState;
+  // Optionally add which action is in progress if needed for UI differentiation
+  // final SellerListActionType actionType;
+
+  const SellerOrderListActionInProgress({required this.previousState});
+
+  @override
+  List<Object?> get props => [previousState];
+}
+
+/// State indicating an action on a specific order item failed.
+/// Contains the previous successful state and the error message.
+class SellerOrderListActionFailure extends SellerOrderListState {
+  final SellerOrderListSuccess previousState;
+  final String message;
+   // Optionally add which action failed
+  // final SellerListActionType actionType;
+
+  const SellerOrderListActionFailure({
+    required this.previousState,
+    required this.message,
+  });
+
+  @override
+  List<Object?> get props => [previousState, message];
+}
+
+// Optional: Define an enum for action types if needed later
+// enum SellerListActionType { confirmAcceptance, reject, deliver, deleteRecord, inviteEvaluation }
+
+
