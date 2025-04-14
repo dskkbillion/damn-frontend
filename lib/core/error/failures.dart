@@ -8,22 +8,22 @@ import 'package:equatable/equatable.dart';
 /// {@endtemplate}
 abstract class Failure extends Equatable {
   /// {@macro failure}
-  // If you want Failures to have a default message or properties, define them here.
-  // const Failure([List properties = const <dynamic>[]]);
-  const Failure();
+  final String message;
+
+  const Failure({required this.message});
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [message];
 }
 
 // General failures
 
 /// Represents a failure originating from the server (e.g., API error responses).
 class ServerFailure extends Failure {
-  final String message;
   final int? statusCode;
 
-  const ServerFailure({this.message = 'Server Failure', this.statusCode});
+  const ServerFailure({required String message, this.statusCode})
+      : super(message: message);
 
   @override
   List<Object?> get props => [message, statusCode];
@@ -31,30 +31,25 @@ class ServerFailure extends Failure {
 
 /// Represents a failure related to network connectivity.
 class NetworkFailure extends Failure {
-    final String message;
-
-    const NetworkFailure({this.message = 'Network Failure'});
-
-    @override
-    List<Object?> get props => [message];
+  const NetworkFailure({required String message}) : super(message: message);
 }
 
 /// Represents a failure originating from local cache operations.
 class CacheFailure extends Failure {
-  final String message;
-
-  const CacheFailure({this.message = 'Cache Failure'});
-
-   @override
-  List<Object?> get props => [message];
+  const CacheFailure({required String message}) : super(message: message);
 }
 
-/// Represents an unexpected failure during data processing or other operations.
-class GeneralFailure extends Failure {
-  final String message;
+/// Represents a failure during authentication or authorization.
+class AuthenticationFailure extends Failure {
+  const AuthenticationFailure({required String message}) : super(message: message);
+}
 
-  const GeneralFailure({this.message = 'An unexpected error occurred'});
+/// Represents a failure during data parsing (e.g., JSON deserialization).
+class ParsingFailure extends Failure {
+  const ParsingFailure({required String message}) : super(message: message);
+}
 
-  @override
-  List<Object?> get props => [message];
+/// Represents an unexpected failure not covered by other specific types.
+class UnexpectedFailure extends Failure {
+  const UnexpectedFailure({required String message}) : super(message: message);
 } 

@@ -1,0 +1,350 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "多少看看",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "tags": [],
+  "paths": {
+    "/api/project/statistics/upgradeLevel": {
+      "post": {
+        "summary": "升到下一级",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "clienttype",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "android",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "100",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{member_token}}",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "integer"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "days": {
+                          "type": "integer"
+                        },
+                        "orderNum": {
+                          "type": "integer"
+                        },
+                        "orderPrice": {
+                          "type": "integer"
+                        },
+                        "totalDays": {
+                          "type": "integer"
+                        },
+                        "totalOrderNum": {
+                          "type": "integer"
+                        },
+                        "totalOrderPrice": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "days",
+                        "orderNum",
+                        "orderPrice",
+                        "totalDays",
+                        "totalOrderNum",
+                        "totalOrderPrice"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "msg",
+                    "code",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/project/statistics/index": {
+      "post": {
+        "summary": "指标   待处理",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "clienttype",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "android",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "100",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{member_token}}",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "integer"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "totalEarnings": {
+                          "type": "integer"
+                        },
+                        "thisMonthTotalEarnings": {
+                          "type": "integer"
+                        },
+                        "totalOrderNum": {
+                          "type": "integer"
+                        },
+                        "activeOrderNum": {
+                          "type": "integer"
+                        },
+                        "pendingOrderNum": {
+                          "type": "integer"
+                        },
+                        "receiptOrderNum": {
+                          "type": "integer"
+                        },
+                        "earlyTime": {
+                          "type": "integer"
+                        },
+                        "latenessTime": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "totalEarnings",
+                        "thisMonthTotalEarnings",
+                        "totalOrderNum",
+                        "activeOrderNum",
+                        "pendingOrderNum",
+                        "receiptOrderNum",
+                        "earlyTime",
+                        "latenessTime"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "msg",
+                    "code",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/project/statistics/percent": {
+      "post": {
+        "summary": "百分比",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "clienttype",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "android",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "100",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{member_token}}",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "integer"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "heatPercent": {
+                          "type": "integer"
+                        },
+                        "recoverPercent": {
+                          "type": "integer"
+                        },
+                        "completePercent": {
+                          "type": "integer"
+                        },
+                        "goodPercent": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "heatPercent",
+                        "recoverPercent",
+                        "completePercent",
+                        "goodPercent"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "msg",
+                    "code",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "securitySchemes": {}
+  },
+  "servers": [],
+  "security": []
+}
