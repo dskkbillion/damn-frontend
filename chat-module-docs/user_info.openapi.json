@@ -1,0 +1,333 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "多少看看",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "tags": [],
+  "paths": {
+    "/api/member/info": {
+      "get": {
+        "summary": "查询个人信息",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "clienttype",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "android",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "100",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{member_token}}",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "integer"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "createTime": {
+                          "type": "string"
+                        },
+                        "updateTime": {
+                          "type": "string"
+                        },
+                        "sort": {
+                          "type": "integer"
+                        },
+                        "id": {
+                          "type": "integer"
+                        },
+                        "signature": {
+                          "type": "null"
+                        },
+                        "birthday": {
+                          "type": "null"
+                        },
+                        "vipTime": {
+                          "type": "string"
+                        },
+                        "mobile": {
+                          "type": "string"
+                        },
+                        "nickName": {
+                          "type": "string"
+                        },
+                        "trueName": {
+                          "type": "string"
+                        },
+                        "avatar": {
+                          "type": "string"
+                        },
+                        "gender": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "province": {
+                          "type": "string"
+                        },
+                        "remarks": {
+                          "type": "string"
+                        },
+                        "weminiOpenid": {
+                          "type": "null"
+                        },
+                        "weappOpenid": {
+                          "type": "null"
+                        },
+                        "weUnionid": {
+                          "type": "null"
+                        },
+                        "realNameFlag": {
+                          "type": "boolean"
+                        },
+                        "attestationName": {
+                          "type": "null"
+                        },
+                        "productNum": {
+                          "type": "null"
+                        },
+                        "orderNum": {
+                          "type": "null"
+                        },
+                        "buyOrderNum": {
+                          "type": "null"
+                        },
+                        "ip": {
+                          "type": "null"
+                        },
+                        "loginTime": {
+                          "type": "null"
+                        },
+                        "recoverFlag": {
+                          "type": "boolean"
+                        },
+                        "commonUserId": {
+                          "type": "integer"
+                        },
+                        "onlineFlag": {
+                          "type": "boolean"
+                        },
+                        "lastLoginTime": {
+                          "type": "null"
+                        },
+                        "payPriceTotal": {
+                          "type": "null"
+                        },
+                        "inviter": {
+                          "type": "null"
+                        },
+                        "isApplyDel": {
+                          "type": "integer"
+                        },
+                        "age": {
+                          "type": "null"
+                        },
+                        "xingzuo": {
+                          "type": "null"
+                        }
+                      },
+                      "required": [
+                        "createTime",
+                        "updateTime",
+                        "sort",
+                        "id",
+                        "signature",
+                        "birthday",
+                        "vipTime",
+                        "mobile",
+                        "nickName",
+                        "trueName",
+                        "avatar",
+                        "gender",
+                        "status",
+                        "type",
+                        "province",
+                        "remarks",
+                        "weminiOpenid",
+                        "weappOpenid",
+                        "weUnionid",
+                        "realNameFlag",
+                        "attestationName",
+                        "productNum",
+                        "orderNum",
+                        "buyOrderNum",
+                        "ip",
+                        "loginTime",
+                        "recoverFlag",
+                        "commonUserId",
+                        "onlineFlag",
+                        "lastLoginTime",
+                        "payPriceTotal",
+                        "inviter",
+                        "isApplyDel",
+                        "age",
+                        "xingzuo"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "msg",
+                    "code",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "x-200:500-传参异常": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "x-200:200-成功返回": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "x-200:401-未登录": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "securitySchemes": {}
+  },
+  "servers": [],
+  "security": []
+}

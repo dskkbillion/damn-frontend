@@ -1,26 +1,27 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/error/failures.dart';
-import '../entities/entities.dart';
-import '../repositories/repositories.dart';
 
-/// 获取消息用例
+import '../entities/failure.dart';
+import '../entities/message.dart';
+import '../repositories/i_chat_repository.dart';
+
+/// 获取指定会话的消息列表。
 class GetMessagesUseCase {
-  final IChatRepository _chatRepository;
+  final IChatRepository _repository;
 
-  GetMessagesUseCase(this._chatRepository);
+  GetMessagesUseCase(this._repository);
 
-  /// 执行获取消息操作
-  /// 
-  /// [sessionId] 会话ID
-  /// [beforeMessageId] 可选的分页标记，获取此消息ID之前的消息
-  /// [limit] 返回消息数量限制
-  /// 
-  /// 返回消息列表或失败
-  Future<Either<Failure, List<Message>>> execute(
-    String sessionId, {
-    String? beforeMessageId,
-    int limit = 20,
-  }) async {
-    return _chatRepository.getMessages(sessionId, beforeMessageId, limit);
+  /// 调用此 UseCase。
+  /// [params] 包含需要获取消息的 `chatId`。
+  /// 成功时返回消息列表 `List<Message>`。
+  /// 失败时返回 `Failure`。
+  Future<Either<Failure, List<Message>>> call(GetMessagesParams params) {
+    return _repository.getMessages(params.chatId);
   }
+}
+
+/// GetMessagesUseCase 的参数
+class GetMessagesParams {
+  final int chatId;
+
+  GetMessagesParams({required this.chatId});
 } 

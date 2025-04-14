@@ -1,222 +1,126 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/entities.dart';
 
-/// 聊天会话列表项组件
+import '../../../core/utils/date_utils.dart'; // Import the utility function
+import '../../../domain/entities/chat_session.dart';
+import '../../../domain/entities/message.dart';
+import '../../../domain/entities/message_type.dart'; // For preview text
+
+/// 单个聊天会话列表项 Widget
 class ChatSessionListItem extends StatelessWidget {
-  /// 会话对象
   final ChatSession session;
-  
-  /// 点击回调
   final VoidCallback onTap;
-  
-  /// 长按回调
-  final VoidCallback onLongPress;
 
   const ChatSessionListItem({
-    Key? key,
+    super.key,
     required this.session,
     required this.onTap,
-    required this.onLongPress,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    final theme = Theme.of(context);
+    final lastMessage = session.lastMessage;
+    String previewText = session.context ?? ''; // Default to context if available
+
+    // Generate a more descriptive preview for non-text messages if needed
+    if (lastMessage != null && lastMessage.msgType != MessageType.text && previewText.isEmpty) {
+        switch (lastMessage.msgType) {
+            case MessageType.image:
+               previewText = '[图片]';
+               break;
+             case MessageType.voice:
+               previewText = '[语音]';
+               break;
+            case MessageType.file:
+                previewText = '[文件]';
+                break;
+            case MessageType.system:
+                previewText = '[系统消息]'; // Or use lastMessage.context
+                break;
+            default:
+                previewText = '[未知消息]';
+        }
+    }
+     // Handle revoked message preview
+    if (lastMessage?.withdrawFlag == true) {
+       // Decide if you want to show who revoked it or a generic message
+       previewText = '消息已撤回'; // Simple generic preview
+    }
+
+
+    return ListTile(
       onTap: onTap,
-      onLongPress: onLongPress,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        decoration: BoxDecoration(
-          color: session.pinned ? Colors.grey.withOpacity(0.1) : null,
-        ),
-        child: Row(
-          children: [
-            // 头像
-            _buildAvatar(),
-            
-            const SizedBox(width: 12),
-            
-            // 会话信息
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 标题行
-                  Row(
-                    children: [
-                      // 会话标题
-                      Expanded(
-                        child: Text(
-                          session.title,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      
-                      // 时间
-                      Text(
-                        _formatTime(session.updatedAt),
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 4),
-                  
-                  // 最后消息和未读数
-                  Row(
-                    children: [
-                      // 静音图标
-                      if (session.muted)
-                        const Padding(
-                          padding: EdgeInsets.only(right: 4),
-                          child: Icon(
-                            Icons.volume_off,
-                            size: 14,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      
-                      // 最后消息
-                      Expanded(
-                        child: Text(
-                          _getLastMessageText(),
-                          style: TextStyle(
-                            color: session.unreadCount > 0 ? Colors.black : Colors.grey,
-                            fontSize: 14,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      
-                      // 未读数
-                      if (session.unreadCount > 0)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            _formatUnreadCount(session.unreadCount),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
+      leading: _buildAvatar(),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Text(
+              session.partnerNickname, // Use the helper getter from ChatSession
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              overflow: TextOverflow.ellipsis,
             ),
-          ],
-        ),
+          ),
+          Text(
+            formatRelativeTime(session.lastMessageTimestamp, context), // Use the utility function
+            style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+          ),
+        ],
       ),
+      subtitle: Row(
+         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+         children: [
+           Expanded(
+             child: Text(
+               previewText,
+               style: theme.textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey[600],
+                  // Bold if unread? Requires state management
+                  // fontWeight: session.messageNum > 0 ? FontWeight.bold : FontWeight.normal,
+               ),
+               overflow: TextOverflow.ellipsis,
+             ),
+           ),
+           if (session.messageNum > 0)
+              _buildUnreadBadge(context, session.messageNum),
+         ],
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      // dense: true, // Consider if needed
     );
   }
 
   Widget _buildAvatar() {
-    return Stack(
-      children: [
-        // 头像主体
-        Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(25),
-            color: Colors.grey.shade300,
-          ),
-          child: Center(
-            child: Text(
-              session.title.isNotEmpty ? session.title[0].toUpperCase() : '?',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-              ),
-            ),
-          ),
-        ),
-        
-        // 置顶标记
-        if (session.pinned)
-          Positioned(
-            right: 0,
-            top: 0,
-            child: Container(
-              width: 16,
-              height: 16,
-              decoration: BoxDecoration(
-                color: Colors.blue,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.push_pin,
-                color: Colors.white,
-                size: 10,
-              ),
-            ),
-          ),
-      ],
+    // TODO: Replace with actual user avatar URL from session.partnerAvatar
+    return CircleAvatar(
+      radius: 24.0,
+      backgroundImage: session.partnerAvatar != null && session.partnerAvatar!.isNotEmpty
+          ? NetworkImage(session.partnerAvatar!) // Load actual avatar
+          : null,
+      backgroundColor: Colors.grey[300],
+      child: session.partnerAvatar == null || session.partnerAvatar!.isEmpty
+          ? const Icon(Icons.person, size: 28, color: Colors.white) // Placeholder icon
+          : null,
     );
   }
 
-  String _getLastMessageText() {
-    if (session.lastMessage == null) {
-      return '';
-    }
-    
-    switch (session.lastMessage!.type) {
-      case MessageType.TEXT:
-        return session.lastMessage!.content;
-      case MessageType.IMAGE:
-        return '[图片]';
-      case MessageType.AUDIO:
-        return '[语音]';
-      case MessageType.SYSTEM:
-        return '[系统消息]';
-      case MessageType.ORDER_NOTIFICATION:
-        return '[订单通知]';
-      default:
-        return '';
-    }
-  }
-
-  String _formatTime(DateTime time) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final yesterday = today.subtract(const Duration(days: 1));
-    final messageDate = DateTime(time.year, time.month, time.day);
-    
-    if (messageDate == today) {
-      // 今天
-      return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-    } else if (messageDate == yesterday) {
-      // 昨天
-      return '昨天';
-    } else if (now.difference(time).inDays < 7) {
-      // 一周内
-      const weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-      return weekdays[time.weekday - 1];
-    } else {
-      // 更早
-      return '${time.month}/${time.day}';
-    }
-  }
-
-  String _formatUnreadCount(int count) {
-    if (count > 99) {
-      return '99+';
-    } else {
-      return count.toString();
-    }
+  Widget _buildUnreadBadge(BuildContext context, int count) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.red, // Standard color for unread badges
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      constraints: const BoxConstraints(minWidth: 20),
+      child: Text(
+        count > 99 ? '99+' : count.toString(), // Cap at 99+
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11.0,
+          fontWeight: FontWeight.bold,
+        ),
+        textAlign: TextAlign.center,
+      ),
+    );
   }
 } 

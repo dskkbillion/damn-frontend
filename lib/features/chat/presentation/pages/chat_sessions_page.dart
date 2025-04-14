@@ -1,148 +1,118 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/chat_sessions/chat_sessions_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
+import 'package:get_it/get_it.dart'; // Import GetIt for DI
+
+import '../../../domain/entities/chat_session.dart';
+// Remove placeholder imports if no longer needed directly
+// import '../../../domain/entities/message.dart';
+// import '../../../domain/entities/message_type.dart';
+// import '../../../domain/entities/user.dart';
+import '../bloc/sessions/chat_sessions_bloc.dart'; // Import Bloc
 import '../widgets/chat_session_list_item.dart';
-import '../widgets/empty_sessions_placeholder.dart';
-import '../widgets/loading_indicator.dart';
-import 'chat_detail_page.dart';
+import './chat_detail_page.dart';
 
-/// 聊天会话列表页面
-class ChatSessionsPage extends StatefulWidget {
-  /// 页面路由名称
-  static const String routeName = '/chat/sessions';
+class ChatSessionsPage extends StatelessWidget { // Changed to StatelessWidget
+  const ChatSessionsPage({super.key});
 
-  const ChatSessionsPage({Key? key}) : super(key: key);
+ // Removed _ChatSessionsPageState and placeholder data
 
-  @override
-  State<ChatSessionsPage> createState() => _ChatSessionsPageState();
-}
+  void _navigateToChatDetail(BuildContext context, ChatSession session) {
+     print("Navigating to chat with ${session.partnerNickname} (Chat ID: ${session.id})");
+     // Mark session as read when navigating to it
+     context.read<ChatSessionsBloc>().add(MarkSessionAsRead(session.id));
 
-class _ChatSessionsPageState extends State<ChatSessionsPage> {
-  @override
-  void initState() {
-    super.initState();
-    // 加载会话列表
-    context.read<ChatSessionsBloc>().add(ChatSessionsLoadEvent());
-  }
+     Navigator.push(
+       context,
+       MaterialPageRoute(
+         builder: (_) => ChatDetailPage(
+           chatId: session.id,
+           chatPartnerName: session.partnerNickname,
+           // TODO: Pass the target User entity if available/needed by ChatDetailPage
+         ),
+       ),
+     );
+   }
+
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('消息'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // 跳转到搜索页面
-            },
-          ),
-        ],
-      ),
-      body: BlocBuilder<ChatSessionsBloc, ChatSessionsState>(
-        builder: (context, state) {
-          if (state is ChatSessionsLoading) {
-            return const LoadingIndicator();
-          } else if (state is ChatSessionsLoaded) {
-            return state.sessions.isEmpty
-                ? const EmptySessionsPlaceholder()
-                : ListView.separated(
-                    itemCount: state.sessions.length,
-                    separatorBuilder: (context, index) => const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final session = state.sessions[index];
-                      return ChatSessionListItem(
-                        session: session,
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            ChatDetailPage.routeName,
-                            arguments: session,
-                          );
-                        },
-                        onLongPress: () {
-                          _showSessionOptionsDialog(context, session);
-                        },
-                      );
-                    },
-                  );
-          } else if (state is ChatSessionsError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('加载失败: ${state.message}'),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<ChatSessionsBloc>().add(ChatSessionsLoadEvent());
-                    },
-                    child: const Text('重试'),
-                  ),
-                ],
-              ),
-            );
-          }
-          return const SizedBox();
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // 创建新会话
-        },
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
+     // Provide the Bloc using BlocProvider. 
+     // This assumes ChatSessionsBloc is registered with GetIt.
+     // Alternatively, provide it higher up in the widget tree.
+    return BlocProvider(
+       create: (context) => GetIt.instance<ChatSessionsBloc>()..add(const LoadChatSessions()),
+       child: Scaffold(
+         appBar: AppBar(
+           title: const Text('消息'),
+           actions: [
+             IconButton(
+               icon: const Icon(Icons.search),
+               onPressed: () {
+                 print("Search pressed");
+                 // TODO: Implement search functionality
+               },
+               tooltip: '搜索',
+             ),
+             IconButton(
+               icon: const Icon(Icons.add_circle_outline),
+               onPressed: () {
+                 print("Add action pressed");
+                 // TODO: Implement add chat/contact functionality
+               },
+               tooltip: '添加',
+             ),
+           ],
+         ),
+         body: BlocBuilder<ChatSessionsBloc, ChatSessionsState>(
+            builder: (context, state) {
+              // Handle Loading state (especially initial load)
+              if (state is ChatSessionsLoading && state.sessions.isEmpty) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              // Handle Error state (especially initial load error)
+              if (state is ChatSessionsError && state.sessions.isEmpty) {
+                return Center(
+                   child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                         Text('加载会话失败: ${state.failure.message}'),
+                         const SizedBox(height: 16),
+                         ElevatedButton(
+                            onPressed: () => context.read<ChatSessionsBloc>().add(const LoadChatSessions(forceRefresh: true)), 
+                            child: const Text('重试')
+                         )
+                      ],
+                   )
+                );
+              }
+              // Handle Loaded state or Loading/Error with existing data
+              if (state.sessions.isEmpty && state is! ChatSessionsLoading) {
+                 return const Center(child: Text('没有会话')); // Show empty message if loaded and empty
+              }
 
-  void _showSessionOptionsDialog(BuildContext context, dynamic session) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.delete),
-                title: const Text('删除会话'),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.read<ChatSessionsBloc>().add(ChatSessionDeleteEvent(sessionId: session.id));
+              // Display the list (works for Loaded, or Loading/Error with data)
+              return RefreshIndicator(
+                onRefresh: () async {
+                  print("Refreshing chat sessions via pull-to-refresh...");
+                  context.read<ChatSessionsBloc>().add(const LoadChatSessions(forceRefresh: true));
+                  // Bloc state will manage the loading indicator internally
                 },
-              ),
-              ListTile(
-                leading: Icon(session.pinned ? Icons.push_pin : Icons.push_pin_outlined),
-                title: Text(session.pinned ? '取消置顶' : '置顶会话'),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.read<ChatSessionsBloc>().add(
-                    ChatSessionUpdateSettingsEvent(
-                      sessionId: session.id,
-                      isPinned: !session.pinned,
-                      isMuted: session.muted,
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                leading: Icon(session.muted ? Icons.volume_off : Icons.volume_up),
-                title: Text(session.muted ? '取消静音' : '静音通知'),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.read<ChatSessionsBloc>().add(
-                    ChatSessionUpdateSettingsEvent(
-                      sessionId: session.id,
-                      isPinned: session.pinned,
-                      isMuted: !session.muted,
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        );
-      },
+                child: ListView.builder(
+                  itemCount: state.sessions.length,
+                  itemBuilder: (context, index) {
+                    final session = state.sessions[index];
+                    return ChatSessionListItem(
+                      session: session,
+                      onTap: () => _navigateToChatDetail(context, session),
+                    );
+                  },
+                ),
+              );
+            },
+         ),
+       ),
     );
   }
-} 
+}
+
+// Removed _createPlaceholderSessions helper function 

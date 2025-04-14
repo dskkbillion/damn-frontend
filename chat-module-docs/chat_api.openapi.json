@@ -1,0 +1,2161 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "多少看看",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "tags": [],
+  "paths": {
+    "/api/chat/get": {
+      "get": {
+        "summary": "聊天室详情",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "clienttype",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "android",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "100",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{member_token}}",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "integer"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "doctorId": {
+                          "type": "integer"
+                        },
+                        "memberId": {
+                          "type": "integer"
+                        },
+                        "messageNum": {
+                          "type": "integer"
+                        },
+                        "context": {
+                          "type": "null"
+                        },
+                        "chatMessageNewVo": {
+                          "type": "null"
+                        },
+                        "member": {
+                          "type": "object",
+                          "properties": {
+                            "createTime": {
+                              "type": "string"
+                            },
+                            "updateTime": {
+                              "type": "null"
+                            },
+                            "sort": {
+                              "type": "null"
+                            },
+                            "id": {
+                              "type": "integer"
+                            },
+                            "referId": {
+                              "type": "integer"
+                            },
+                            "nickName": {
+                              "type": "string"
+                            },
+                            "trueName": {
+                              "type": "null"
+                            },
+                            "avatar": {
+                              "type": "string"
+                            },
+                            "mobile": {
+                              "type": "string"
+                            },
+                            "gender": {
+                              "type": "string"
+                            },
+                            "type": {
+                              "type": "string"
+                            },
+                            "status": {
+                              "type": "string"
+                            },
+                            "tenantId": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "createTime",
+                            "updateTime",
+                            "sort",
+                            "id",
+                            "referId",
+                            "nickName",
+                            "trueName",
+                            "avatar",
+                            "mobile",
+                            "gender",
+                            "type",
+                            "status",
+                            "tenantId"
+                          ]
+                        },
+                        "doctor": {
+                          "type": "object",
+                          "properties": {
+                            "createTime": {
+                              "type": "string"
+                            },
+                            "updateTime": {
+                              "type": "null"
+                            },
+                            "sort": {
+                              "type": "null"
+                            },
+                            "id": {
+                              "type": "integer"
+                            },
+                            "referId": {
+                              "type": "integer"
+                            },
+                            "nickName": {
+                              "type": "string"
+                            },
+                            "trueName": {
+                              "type": "null"
+                            },
+                            "avatar": {
+                              "type": "null"
+                            },
+                            "mobile": {
+                              "type": "string"
+                            },
+                            "gender": {
+                              "type": "string"
+                            },
+                            "type": {
+                              "type": "string"
+                            },
+                            "status": {
+                              "type": "string"
+                            },
+                            "tenantId": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "createTime",
+                            "updateTime",
+                            "sort",
+                            "id",
+                            "referId",
+                            "nickName",
+                            "trueName",
+                            "avatar",
+                            "mobile",
+                            "gender",
+                            "type",
+                            "status",
+                            "tenantId"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "doctorId",
+                        "memberId",
+                        "messageNum",
+                        "context",
+                        "chatMessageNewVo",
+                        "member",
+                        "doctor"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "msg",
+                    "code",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/chat/message/delete": {
+      "post": {
+        "summary": "删除聊天记录",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": [
+              ""
+            ],
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "clienttype",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "android",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "100",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{member_token}}",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "msg",
+                    "code"
+                  ]
+                },
+                "example": {
+                  "msg": "删除成功",
+                  "code": 200
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "x-200:500-传参异常": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "x-200:200-成功返回": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "x-200:401-未登录": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/chat/list": {
+      "post": {
+        "summary": "查询聊天室列表",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "clienttype",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "android",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "100",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{member_token}}",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "integer"
+                    },
+                    "rows": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "doctorId": {
+                            "type": "integer"
+                          },
+                          "memberId": {
+                            "type": "integer"
+                          },
+                          "messageNum": {
+                            "type": "integer"
+                          },
+                          "context": {
+                            "type": "string"
+                          },
+                          "chatMessageNewVo": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer"
+                              },
+                              "chatId": {
+                                "type": "integer"
+                              },
+                              "doctorId": {
+                                "type": "integer"
+                              },
+                              "memberId": {
+                                "type": "integer"
+                              },
+                              "context": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              },
+                              "readFlg": {
+                                "type": "boolean"
+                              },
+                              "recipientId": {
+                                "type": "integer"
+                              },
+                              "messageNum": {
+                                "type": "integer"
+                              },
+                              "withdrawFlag": {
+                                "type": "boolean"
+                              },
+                              "senderDelFlag": {
+                                "type": "boolean"
+                              },
+                              "receiverDelFlag": {
+                                "type": "boolean"
+                              },
+                              "member": {
+                                "type": "null"
+                              },
+                              "doctor": {
+                                "type": "null"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "chatId",
+                              "doctorId",
+                              "memberId",
+                              "context",
+                              "type",
+                              "readFlg",
+                              "recipientId",
+                              "messageNum",
+                              "withdrawFlag",
+                              "senderDelFlag",
+                              "receiverDelFlag",
+                              "member",
+                              "doctor"
+                            ]
+                          },
+                          "member": {
+                            "type": "object",
+                            "properties": {
+                              "createTime": {
+                                "type": "string"
+                              },
+                              "updateTime": {
+                                "type": "null"
+                              },
+                              "sort": {
+                                "type": "null"
+                              },
+                              "id": {
+                                "type": "integer"
+                              },
+                              "referId": {
+                                "type": "integer"
+                              },
+                              "nickName": {
+                                "type": "string"
+                              },
+                              "trueName": {
+                                "type": "null"
+                              },
+                              "avatar": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "mobile": {
+                                "type": "string"
+                              },
+                              "gender": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "string"
+                              },
+                              "tenantId": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "createTime",
+                              "updateTime",
+                              "sort",
+                              "id",
+                              "referId",
+                              "nickName",
+                              "trueName",
+                              "avatar",
+                              "mobile",
+                              "gender",
+                              "type",
+                              "status",
+                              "tenantId"
+                            ]
+                          },
+                          "doctor": {
+                            "type": "object",
+                            "properties": {
+                              "createTime": {
+                                "type": "string"
+                              },
+                              "updateTime": {
+                                "type": "null"
+                              },
+                              "sort": {
+                                "type": "null"
+                              },
+                              "id": {
+                                "type": "integer"
+                              },
+                              "referId": {
+                                "type": "integer"
+                              },
+                              "nickName": {
+                                "type": "string"
+                              },
+                              "trueName": {
+                                "type": "null"
+                              },
+                              "avatar": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "mobile": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "gender": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "string"
+                              },
+                              "tenantId": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "createTime",
+                              "updateTime",
+                              "sort",
+                              "id",
+                              "referId",
+                              "nickName",
+                              "trueName",
+                              "avatar",
+                              "mobile",
+                              "gender",
+                              "type",
+                              "status",
+                              "tenantId"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "doctorId",
+                          "memberId",
+                          "messageNum",
+                          "context",
+                          "chatMessageNewVo",
+                          "member",
+                          "doctor"
+                        ]
+                      }
+                    },
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "encrypt": {
+                      "type": "null"
+                    },
+                    "encryptField": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "total",
+                    "rows",
+                    "code",
+                    "msg",
+                    "encrypt",
+                    "encryptField"
+                  ]
+                },
+                "example": {
+                  "total": 5,
+                  "rows": [
+                    {
+                      "id": 76,
+                      "doctorId": 10296,
+                      "memberId": 10290,
+                      "messageNum": 2,
+                      "context": "我现在不在线稍后回复您",
+                      "chatMessageNewVo": {
+                        "id": 1147,
+                        "chatId": 76,
+                        "doctorId": 10290,
+                        "memberId": 10296,
+                        "context": "我现在不在线稍后回复您",
+                        "type": "text",
+                        "readFlg": false,
+                        "recipientId": 10290,
+                        "messageNum": 0,
+                        "withdrawFlag": false,
+                        "senderDelFlag": false,
+                        "receiverDelFlag": false,
+                        "member": null,
+                        "doctor": null
+                      },
+                      "member": {
+                        "createTime": "2024-08-01 15:44:48",
+                        "updateTime": null,
+                        "sort": null,
+                        "id": 10290,
+                        "referId": 1,
+                        "nickName": "瑞",
+                        "trueName": null,
+                        "avatar": "https://duoshaokankan.oss-cn-beijing.aliyuncs.com/20250309/9c09ca8f-59df-4cbf-8d45-c8edb66f8ba9.jpg",
+                        "mobile": "18888888888",
+                        "gender": "NONE",
+                        "type": "MEMBER",
+                        "status": "NORMAL",
+                        "tenantId": 0
+                      },
+                      "doctor": {
+                        "createTime": "2024-08-20 18:31:38",
+                        "updateTime": null,
+                        "sort": null,
+                        "id": 10296,
+                        "referId": 10301,
+                        "nickName": "172****7",
+                        "trueName": null,
+                        "avatar": null,
+                        "mobile": "17285200007",
+                        "gender": "NONE",
+                        "type": "MEMBER",
+                        "status": "NORMAL",
+                        "tenantId": 0
+                      }
+                    },
+                    {
+                      "id": 80,
+                      "doctorId": 10290,
+                      "memberId": 10309,
+                      "messageNum": 0,
+                      "context": "https://duoshaokankan.oss-cn-beijing.aliyuncs.com/20250311/0cc465b0-940a-42d5-abbd-b71cc80570a9.mp3",
+                      "chatMessageNewVo": {
+                        "id": 1129,
+                        "chatId": 80,
+                        "doctorId": 10309,
+                        "memberId": 10290,
+                        "context": "https://duoshaokankan.oss-cn-beijing.aliyuncs.com/20250311/0cc465b0-940a-42d5-abbd-b71cc80570a9.mp3",
+                        "type": "audio",
+                        "readFlg": false,
+                        "recipientId": 10309,
+                        "messageNum": 0,
+                        "withdrawFlag": false,
+                        "senderDelFlag": false,
+                        "receiverDelFlag": false,
+                        "member": null,
+                        "doctor": null
+                      },
+                      "member": {
+                        "createTime": "2024-09-24 16:19:23",
+                        "updateTime": null,
+                        "sort": null,
+                        "id": 10309,
+                        "referId": 10312,
+                        "nickName": "173****3",
+                        "trueName": null,
+                        "avatar": null,
+                        "mobile": "17302321473",
+                        "gender": "NONE",
+                        "type": "MEMBER",
+                        "status": "NORMAL",
+                        "tenantId": 0
+                      },
+                      "doctor": {
+                        "createTime": "2024-08-01 15:44:48",
+                        "updateTime": null,
+                        "sort": null,
+                        "id": 10290,
+                        "referId": 1,
+                        "nickName": "瑞",
+                        "trueName": null,
+                        "avatar": "https://duoshaokankan.oss-cn-beijing.aliyuncs.com/20250309/9c09ca8f-59df-4cbf-8d45-c8edb66f8ba9.jpg",
+                        "mobile": "18888888888",
+                        "gender": "NONE",
+                        "type": "MEMBER",
+                        "status": "NORMAL",
+                        "tenantId": 0
+                      }
+                    },
+                    {
+                      "id": 77,
+                      "doctorId": 10288,
+                      "memberId": 10290,
+                      "messageNum": 0,
+                      "context": "我现在不在线稍后回复您",
+                      "chatMessageNewVo": {
+                        "id": 1128,
+                        "chatId": 77,
+                        "doctorId": 10290,
+                        "memberId": 10288,
+                        "context": "我现在不在线稍后回复您",
+                        "type": "text",
+                        "readFlg": true,
+                        "recipientId": 10290,
+                        "messageNum": 0,
+                        "withdrawFlag": false,
+                        "senderDelFlag": false,
+                        "receiverDelFlag": false,
+                        "member": null,
+                        "doctor": null
+                      },
+                      "member": {
+                        "createTime": "2024-08-01 15:44:48",
+                        "updateTime": null,
+                        "sort": null,
+                        "id": 10290,
+                        "referId": 1,
+                        "nickName": "瑞",
+                        "trueName": null,
+                        "avatar": "https://duoshaokankan.oss-cn-beijing.aliyuncs.com/20250309/9c09ca8f-59df-4cbf-8d45-c8edb66f8ba9.jpg",
+                        "mobile": "18888888888",
+                        "gender": "NONE",
+                        "type": "MEMBER",
+                        "status": "NORMAL",
+                        "tenantId": 0
+                      },
+                      "doctor": {
+                        "createTime": "2024-06-03 15:54:03",
+                        "updateTime": null,
+                        "sort": null,
+                        "id": 10288,
+                        "referId": 10294,
+                        "nickName": "188****9",
+                        "trueName": null,
+                        "avatar": null,
+                        "mobile": "18888888889",
+                        "gender": "NONE",
+                        "type": "MEMBER",
+                        "status": "NORMAL",
+                        "tenantId": 0
+                      }
+                    },
+                    {
+                      "id": 78,
+                      "doctorId": 10304,
+                      "memberId": 10290,
+                      "messageNum": 0,
+                      "context": "https://duoshaokankan.oss-cn-beijing.aliyuncs.com/20250306/91398eb7-459f-4b03-b01b-489917aefc1f.jpg",
+                      "chatMessageNewVo": {
+                        "id": 1126,
+                        "chatId": 78,
+                        "doctorId": 10304,
+                        "memberId": 10290,
+                        "context": "https://duoshaokankan.oss-cn-beijing.aliyuncs.com/20250306/91398eb7-459f-4b03-b01b-489917aefc1f.jpg",
+                        "type": "image",
+                        "readFlg": false,
+                        "recipientId": 10304,
+                        "messageNum": 0,
+                        "withdrawFlag": false,
+                        "senderDelFlag": false,
+                        "receiverDelFlag": false,
+                        "member": null,
+                        "doctor": null
+                      },
+                      "member": {
+                        "createTime": "2024-08-01 15:44:48",
+                        "updateTime": null,
+                        "sort": null,
+                        "id": 10290,
+                        "referId": 1,
+                        "nickName": "瑞",
+                        "trueName": null,
+                        "avatar": "https://duoshaokankan.oss-cn-beijing.aliyuncs.com/20250309/9c09ca8f-59df-4cbf-8d45-c8edb66f8ba9.jpg",
+                        "mobile": "18888888888",
+                        "gender": "NONE",
+                        "type": "MEMBER",
+                        "status": "NORMAL",
+                        "tenantId": 0
+                      },
+                      "doctor": {
+                        "createTime": "2024-08-22 20:06:00",
+                        "updateTime": null,
+                        "sort": null,
+                        "id": 10304,
+                        "referId": 10307,
+                        "nickName": "Test",
+                        "trueName": null,
+                        "avatar": null,
+                        "mobile": "17723577781",
+                        "gender": "NONE",
+                        "type": "MEMBER",
+                        "status": "NORMAL",
+                        "tenantId": 0
+                      }
+                    },
+                    {
+                      "id": 79,
+                      "doctorId": 10312,
+                      "memberId": 10290,
+                      "messageNum": 0,
+                      "context": "…",
+                      "chatMessageNewVo": {
+                        "id": 1113,
+                        "chatId": 79,
+                        "doctorId": 10312,
+                        "memberId": 10290,
+                        "context": "…",
+                        "type": "text",
+                        "readFlg": false,
+                        "recipientId": 10312,
+                        "messageNum": 0,
+                        "withdrawFlag": false,
+                        "senderDelFlag": false,
+                        "receiverDelFlag": false,
+                        "member": null,
+                        "doctor": null
+                      },
+                      "member": {
+                        "createTime": "2024-08-01 15:44:48",
+                        "updateTime": null,
+                        "sort": null,
+                        "id": 10290,
+                        "referId": 1,
+                        "nickName": "瑞",
+                        "trueName": null,
+                        "avatar": "https://duoshaokankan.oss-cn-beijing.aliyuncs.com/20250309/9c09ca8f-59df-4cbf-8d45-c8edb66f8ba9.jpg",
+                        "mobile": "18888888888",
+                        "gender": "NONE",
+                        "type": "MEMBER",
+                        "status": "NORMAL",
+                        "tenantId": 0
+                      },
+                      "doctor": {
+                        "createTime": "2024-10-17 16:07:37",
+                        "updateTime": null,
+                        "sort": null,
+                        "id": 10312,
+                        "referId": 1,
+                        "nickName": "系统管理员",
+                        "trueName": null,
+                        "avatar": null,
+                        "mobile": null,
+                        "gender": "NONE",
+                        "type": "ADMIN",
+                        "status": "NORMAL",
+                        "tenantId": 0
+                      }
+                    }
+                  ],
+                  "code": 200,
+                  "msg": "查询成功",
+                  "encrypt": null,
+                  "encryptField": null
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "x-200:500-传参异常": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "x-200:200-成功返回": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "x-200:401-未登录": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/chat/message/list": {
+      "post": {
+        "summary": "消息列表",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "clienttype",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "android",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "100",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{member_token}}",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "chatId": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "chatId"
+                ]
+              },
+              "example": {
+                "chatId": 0
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "integer"
+                    },
+                    "rows": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "chatId": {
+                            "type": "integer"
+                          },
+                          "doctorId": {
+                            "type": "integer"
+                          },
+                          "memberId": {
+                            "type": "integer"
+                          },
+                          "context": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string"
+                          },
+                          "readFlg": {
+                            "type": "boolean"
+                          },
+                          "recipientId": {
+                            "type": "integer"
+                          },
+                          "messageNum": {
+                            "type": "integer"
+                          },
+                          "withdrawFlag": {
+                            "type": "boolean"
+                          },
+                          "senderDelFlag": {
+                            "type": "boolean"
+                          },
+                          "receiverDelFlag": {
+                            "type": "boolean"
+                          },
+                          "member": {
+                            "type": "object",
+                            "properties": {
+                              "createTime": {
+                                "type": "string"
+                              },
+                              "updateTime": {
+                                "type": "null"
+                              },
+                              "sort": {
+                                "type": "null"
+                              },
+                              "id": {
+                                "type": "integer"
+                              },
+                              "referId": {
+                                "type": "integer"
+                              },
+                              "nickName": {
+                                "type": "string"
+                              },
+                              "trueName": {
+                                "type": "null"
+                              },
+                              "avatar": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "mobile": {
+                                "type": "string"
+                              },
+                              "gender": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "string"
+                              },
+                              "tenantId": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "createTime",
+                              "updateTime",
+                              "sort",
+                              "id",
+                              "referId",
+                              "nickName",
+                              "trueName",
+                              "avatar",
+                              "mobile",
+                              "gender",
+                              "type",
+                              "status",
+                              "tenantId"
+                            ]
+                          },
+                          "doctor": {
+                            "type": "object",
+                            "properties": {
+                              "createTime": {
+                                "type": "string"
+                              },
+                              "updateTime": {
+                                "type": "null"
+                              },
+                              "sort": {
+                                "type": "null"
+                              },
+                              "id": {
+                                "type": "integer"
+                              },
+                              "referId": {
+                                "type": "integer"
+                              },
+                              "nickName": {
+                                "type": "string"
+                              },
+                              "trueName": {
+                                "type": "null"
+                              },
+                              "avatar": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "mobile": {
+                                "type": "string"
+                              },
+                              "gender": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "string"
+                              },
+                              "tenantId": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "createTime",
+                              "updateTime",
+                              "sort",
+                              "id",
+                              "referId",
+                              "nickName",
+                              "trueName",
+                              "avatar",
+                              "mobile",
+                              "gender",
+                              "type",
+                              "status",
+                              "tenantId"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "chatId",
+                          "doctorId",
+                          "memberId",
+                          "context",
+                          "type",
+                          "readFlg",
+                          "recipientId",
+                          "messageNum",
+                          "withdrawFlag",
+                          "senderDelFlag",
+                          "receiverDelFlag",
+                          "member",
+                          "doctor"
+                        ]
+                      }
+                    },
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "encrypt": {
+                      "type": "null"
+                    },
+                    "encryptField": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "total",
+                    "rows",
+                    "code",
+                    "msg",
+                    "encrypt",
+                    "encryptField"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "x-200:500-传参异常": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "x-200:200-成功返回": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "x-200:401-未登录": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/common/chat/message/add": {
+      "post": {
+        "summary": "发消息",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "clienttype",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "android",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "100",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{member_token}}",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "chatId": {
+                    "type": "integer"
+                  },
+                  "context": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "chatId",
+                  "context",
+                  "type"
+                ]
+              },
+              "example": {
+                "chatId": 0,
+                "context": "string",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "integer"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "chatId": {
+                          "type": "integer"
+                        },
+                        "doctorId": {
+                          "type": "integer"
+                        },
+                        "memberId": {
+                          "type": "integer"
+                        },
+                        "context": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "readFlg": {
+                          "type": "null"
+                        },
+                        "recipientId": {
+                          "type": "integer"
+                        },
+                        "messageNum": {
+                          "type": "integer"
+                        },
+                        "withdrawFlag": {
+                          "type": "null"
+                        },
+                        "senderDelFlag": {
+                          "type": "null"
+                        },
+                        "receiverDelFlag": {
+                          "type": "null"
+                        },
+                        "member": {
+                          "type": "null"
+                        },
+                        "doctor": {
+                          "type": "null"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "chatId",
+                        "doctorId",
+                        "memberId",
+                        "context",
+                        "type",
+                        "readFlg",
+                        "recipientId",
+                        "messageNum",
+                        "withdrawFlag",
+                        "senderDelFlag",
+                        "receiverDelFlag",
+                        "member",
+                        "doctor"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "msg",
+                    "code",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "msg": "获取成功",
+                  "code": 200,
+                  "data": {
+                    "id": 1146,
+                    "chatId": 76,
+                    "doctorId": 10296,
+                    "memberId": 10290,
+                    "context": "测试发送消息",
+                    "type": "text",
+                    "readFlg": null,
+                    "recipientId": 10296,
+                    "messageNum": 0,
+                    "withdrawFlag": null,
+                    "senderDelFlag": null,
+                    "receiverDelFlag": null,
+                    "member": null,
+                    "doctor": null
+                  }
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "x-200:500-传参异常": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "x-200:200-成功返回": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "x-200:401-未登录": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/chat/message/withdraw": {
+      "post": {
+        "summary": "撤回消息",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "clienttype",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "android",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "100",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{member_token}}",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              },
+              "example": {
+                "id": 0
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "msg",
+                    "code"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "x-200:500-传参异常": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "x-200:200-成功返回": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "x-200:401-未登录": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/chat/addChat": {
+      "post": {
+        "summary": "添加聊天室",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "clienttype",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "android",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "100",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{member_token}}",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "doctorId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "doctorId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "integer"
+                    },
+                    "data": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "msg",
+                    "code",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "msg": "操作成功",
+                  "code": 200,
+                  "data": 79
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "x-200:500-传参异常": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "x-200:200-成功返回": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "x-200:401-未登录": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "securitySchemes": {}
+  },
+  "servers": [],
+  "security": []
+}

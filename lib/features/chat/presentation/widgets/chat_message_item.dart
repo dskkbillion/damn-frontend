@@ -1,311 +1,221 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/entities.dart';
+import 'package:intl/intl.dart'; // For date formatting
 
-/// 聊天消息项组件
+import '../../../domain/entities/message.dart';
+import '../../../domain/entities/message_status.dart';
+import '../../../domain/entities/message_type.dart';
+
+/// 单个聊天消息气泡 Widget
 class ChatMessageItem extends StatelessWidget {
-  /// 消息对象
   final Message message;
-  
-  /// 是否显示时间标签
-  final bool showTimeLabel;
-  
-  /// 是否显示发送者头像
-  final bool showSenderAvatar;
-  
-  /// 搜索高亮文本
-  final String? searchHighlight;
+  final bool isSentByMe;
+  final VoidCallback? onLongPress; // Callback for long press actions (e.g., context menu)
+  final VoidCallback? onTap; // Callback for tap actions (e.g., image preview)
+  final VoidCallback? onRetry; // Callback to retry sending a failed message
 
   const ChatMessageItem({
-    Key? key,
+    super.key,
     required this.message,
-    this.showTimeLabel = false,
-    this.showSenderAvatar = true,
-    this.searchHighlight,
-  }) : super(key: key);
+    required this.isSentByMe,
+    this.onLongPress,
+    this.onTap,
+    this.onRetry,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final bool isCurrentUser = message.senderType == MessageSenderType.USER && 
-                              message.senderId == 'currentUserId'; // 实际应根据当前登录用户ID判断
-    
-    return Column(
-      children: [
-        // 时间标签
-        if (showTimeLabel)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: Text(
-              _formatTimestamp(message.timestamp),
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 12,
-              ),
-            ),
-          ),
-        
-        // 消息内容
-        Row(
-          mainAxisAlignment: isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
+    final alignment = isSentByMe ? CrossAxisAlignment.end : CrossAxisAlignment.start;
+    final bubbleColor = isSentByMe ? Colors.blue[100] : Colors.grey[200];
+    final textColor = isSentByMe ? Colors.black87 : Colors.black87;
+
+    return GestureDetector(
+      onLongPress: onLongPress,
+      onTap: onTap ?? () => _handleTap(context), // Use default tap handler if none provided
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: Row(
+          mainAxisAlignment: isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.end, // Align status icon with bottom
           children: [
-            // 对方消息的头像
-            if (!isCurrentUser && showSenderAvatar)
-              _buildAvatar(),
-            
-            const SizedBox(width: 8),
-            
-            // 消息气泡
+            if (!isSentByMe) _buildAvatar(), // Show avatar for received messages
             Flexible(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isCurrentUser ? Colors.blue.shade100 : Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 系统消息显示类型标签
-                    if (message.senderType == MessageSenderType.SYSTEM)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: Text(
-                          '系统消息',
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+              child: Column(
+                crossAxisAlignment: alignment,
+                children: [
+                  if (!isSentByMe && message.senderName != null) // Show sender name for group chats
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10.0, bottom: 4.0),
+                      child: Text(
+                        message.senderName!, 
+                        style: TextStyle(fontSize: 12.0, color: Colors.grey[600]),
+                      ),
+                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                     mainAxisAlignment: isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+                     crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                       if (isSentByMe)
+                        _buildStatusIndicator(context),
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
+                          decoration: BoxDecoration(
+                            color: bubbleColor,
+                            borderRadius: BorderRadius.circular(12.0),
                           ),
+                          child: _buildMessageContent(context, textColor),
                         ),
                       ),
-                    
-                    // 消息内容 - 根据类型显示不同内容
-                    _buildMessageContent(context),
-                    
-                    // 状态指示
-                    if (isCurrentUser)
-                      Align(
-                        alignment: Alignment.bottomRight,
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: _buildStatusIndicator(),
-                        ),
-                      ),
-                  ],
-                ),
+                      // if (!isSentByMe)
+                      //   _buildStatusIndicator(context), // Status for received messages if needed
+                    ],
+                  ),
+                  // TODO: Add timestamp below bubble if needed
+                  // Padding(
+                  //   padding: const EdgeInsets.only(top: 4.0),
+                  //   child: Text(
+                  //     DateFormat('HH:mm').format(message.createTime ?? DateTime.now()), 
+                  //     style: TextStyle(fontSize: 10.0, color: Colors.grey)
+                  //   ),
+                  // ),
+                ],
               ),
             ),
-            
-            const SizedBox(width: 8),
-            
-            // 自己消息的头像
-            if (isCurrentUser && showSenderAvatar)
-              _buildAvatar(),
+            if (isSentByMe) _buildAvatar(), // Show avatar for sent messages
           ],
         ),
-      ],
-    );
-  }
-
-  Widget _buildAvatar() {
-    return CircleAvatar(
-      radius: 16,
-      backgroundColor: Colors.grey.shade300,
-      child: Text(
-        message.senderId.isNotEmpty ? message.senderId[0].toUpperCase() : '?',
-        style: const TextStyle(color: Colors.white),
       ),
     );
   }
 
-  Widget _buildMessageContent(BuildContext context) {
-    switch (message.type) {
-      case MessageType.TEXT:
-        return searchHighlight != null && searchHighlight!.isNotEmpty
-            ? _buildHighlightedText(context)
-            : Text(message.content);
-            
-      case MessageType.IMAGE:
-        return Container(
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.6,
-            maxHeight: 200,
-          ),
-          child: GestureDetector(
-            onTap: () {
-              // 显示图片预览
-            },
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                message.content,
-                fit: BoxFit.cover,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    width: 150,
-                    height: 150,
-                    color: Colors.grey.shade300,
-                    child: const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: 150,
-                    height: 150,
-                    color: Colors.grey.shade300,
-                    child: const Center(
-                      child: Icon(Icons.error, color: Colors.red),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-        );
-        
-      case MessageType.AUDIO:
-        return Container(
-          width: 120,
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.6),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.play_arrow, size: 20),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Container(
-                  height: 2,
-                  color: Colors.grey,
-                ),
-              ),
-              const SizedBox(width: 4),
-              const Text(
-                '1:23', // 应该从音频文件中获取时长
-                style: TextStyle(fontSize: 12),
-              ),
-            ],
-          ),
-        );
-        
-      case MessageType.SYSTEM:
-      case MessageType.ORDER_NOTIFICATION:
+  // Builds the message content based on message type
+  Widget _buildMessageContent(BuildContext context, Color textColor) {
+     if (message.withdrawFlag) {
+       return Text(
+         isSentByMe ? '你撤回了一条消息' : '对方撤回了一条消息', 
+         style: TextStyle(fontSize: 14.0, color: Colors.grey[600]),
+       );
+     }
+    
+     switch (message.msgType) {
+      case MessageType.text:
         return Text(
-          message.content,
-          style: const TextStyle(color: Colors.black54),
+          message.context ?? '',
+          style: TextStyle(fontSize: 16.0, color: textColor),
         );
-        
-      default:
-        return Text(message.content);
-    }
+      case MessageType.image:
+        // TODO: Implement image display (using message.extra or a dedicated field)
+        return Text(
+          '[图片] 占位符', 
+           style: TextStyle(fontSize: 16.0, color: textColor, fontStyle: FontStyle.italic),
+        );
+      case MessageType.file:
+        // TODO: Implement file display
+         return Text(
+           '[文件] ${message.context ?? '未知文件'}', 
+           style: TextStyle(fontSize: 16.0, color: textColor, fontStyle: FontStyle.italic),
+         );
+      case MessageType.voice:
+       // TODO: Implement voice message playback UI
+        return Row(
+           mainAxisSize: MainAxisSize.min,
+           children: [
+             Icon(isSentByMe ? Icons.multitrack_audio : Icons.multitrack_audio, color: textColor, size: 18),
+             const SizedBox(width: 8),
+             Text(
+               '[语音] ${message.extra?['duration'] ?? '--'}"', // Assuming duration is in extra
+               style: TextStyle(fontSize: 16.0, color: textColor),
+             ),
+           ],
+         );
+       case MessageType.system:
+         // System messages might not use a bubble, handle separately in the list if needed
+         return Text(
+           message.context ?? '系统消息', 
+           style: TextStyle(fontSize: 14.0, color: Colors.grey[600]),
+         );
+       default:
+         return Text(
+           '[不支持的消息类型]',
+           style: TextStyle(fontSize: 14.0, color: Colors.red[400]),
+         );
+     }
   }
 
-  Widget _buildHighlightedText(BuildContext context) {
-    final String content = message.content;
-    final String query = searchHighlight!.toLowerCase();
-    final String contentLower = content.toLowerCase();
-    
-    if (!contentLower.contains(query)) {
-      return Text(content);
-    }
-    
-    final List<InlineSpan> spans = [];
-    int start = 0;
-    
-    while (true) {
-      final int index = contentLower.indexOf(query, start);
-      if (index == -1) {
-        // 添加最后一段非高亮文本
-        if (start < content.length) {
-          spans.add(TextSpan(text: content.substring(start)));
-        }
-        break;
-      }
-      
-      // 添加高亮前的文本
-      if (index > start) {
-        spans.add(TextSpan(text: content.substring(start, index)));
-      }
-      
-      // 添加高亮文本
-      spans.add(
-        TextSpan(
-          text: content.substring(index, index + query.length),
-          style: const TextStyle(
-            backgroundColor: Colors.yellow,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      );
-      
-      start = index + query.length;
-    }
-    
-    return RichText(text: TextSpan(style: DefaultTextStyle.of(context).style, children: spans));
+  // Builds the avatar circle
+  Widget _buildAvatar() {
+    // TODO: Replace with actual user avatar URL from message.senderAvatar or user profile
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: CircleAvatar(
+        radius: 20.0,
+        // backgroundImage: NetworkImage(message.senderAvatar ?? 'DEFAULT_AVATAR_URL'),
+        backgroundColor: Colors.grey[300],
+        child: const Icon(Icons.person, size: 24, color: Colors.white), // Placeholder
+      ),
+    );
   }
 
-  Widget _buildStatusIndicator() {
+  // Builds the status indicator (sending, sent, failed, read)
+  Widget _buildStatusIndicator(BuildContext context) {
+    Widget indicator;
     switch (message.status) {
-      case MessageStatus.SENDING:
-        return SizedBox(
-          width: 12,
-          height: 12,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.grey.shade400),
-          ),
+      case MessageStatus.sending:
+        indicator = const SizedBox(
+          width: 16.0, 
+          height: 16.0, 
+          child: CircularProgressIndicator(strokeWidth: 2.0)
         );
-        
-      case MessageStatus.SENT:
-        return const Icon(Icons.check, size: 12, color: Colors.grey);
-        
-      case MessageStatus.DELIVERED:
-        return const Icon(Icons.done_all, size: 12, color: Colors.grey);
-        
-      case MessageStatus.READ:
-        return const Icon(Icons.done_all, size: 12, color: Colors.blue);
-        
-      case MessageStatus.FAILED:
-        return const Icon(Icons.error_outline, size: 12, color: Colors.red);
-        
-      case MessageStatus.REVOKED:
-        return const Text(
-          '已撤回',
-          style: TextStyle(
-            color: Colors.grey,
-            fontSize: 12,
-            fontStyle: FontStyle.italic,
-          ),
+        break;
+      case MessageStatus.sent:
+        // Could show a single checkmark or nothing for just sent
+        indicator = const SizedBox.shrink(); // Or Icon(Icons.check, size: 16.0, color: Colors.grey)
+        break;
+      case MessageStatus.delivered:
+         // TODO: Differentiate between delivered and read if needed (e.g., double check)
+        indicator = Icon(Icons.check_circle_outline, size: 16.0, color: Colors.grey);
+        break;
+      case MessageStatus.read:
+        indicator = Icon(Icons.check_circle, size: 16.0, color: Colors.blue); // Example: Blue check for read
+        break;
+      case MessageStatus.failed:
+        indicator = InkWell(
+          onTap: onRetry, // Allow tapping the icon to retry
+          child: Icon(Icons.error, size: 18.0, color: Colors.red[400]),
         );
-        
-      default:
-        return const SizedBox();
+        break;
+       default:
+         indicator = const SizedBox.shrink();
     }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0), // Add some padding
+      child: indicator,
+    );
   }
 
-  String _formatTimestamp(DateTime timestamp) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final yesterday = today.subtract(const Duration(days: 1));
-    final messageDate = DateTime(timestamp.year, timestamp.month, timestamp.day);
-    
-    final timeString = '${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}';
-    
-    if (messageDate == today) {
-      return timeString;
-    } else if (messageDate == yesterday) {
-      return '昨天 $timeString';
-    } else if (now.difference(timestamp).inDays < 7) {
-      const weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-      final weekday = weekdays[timestamp.weekday - 1];
-      return '$weekday $timeString';
-    } else {
-      return '${timestamp.month}月${timestamp.day}日 $timeString';
-    }
+  // Default tap handler (e.g., for opening images/files)
+  void _handleTap(BuildContext context) {
+     if (message.withdrawFlag) return; // Don't handle taps on revoked messages
+
+     switch (message.msgType) {
+       case MessageType.image:
+         print("Tapped image message: ${message.id}");
+         // TODO: Navigate to image preview screen
+         break;
+       case MessageType.file:
+         print("Tapped file message: ${message.id}");
+         // TODO: Handle file opening/download
+         break;
+       case MessageType.voice:
+          print("Tapped voice message: ${message.id}");
+         // TODO: Implement voice message playback
+         break;
+       default:
+         // No default action for text or other types
+         break;
+     }
   }
 } 

@@ -1,0 +1,51 @@
+# build.yaml
+
+targets:
+  $default:
+    builders:
+      # Hive Generator runs only on its specific files
+      hive_generator:
+        enabled: true
+        generate_for:
+          - lib/features/**/models/hive/**_hive_model.dart
+
+      # Exclude Hive models from other generators
+      json_serializable:
+        generate_for:
+          include:
+            - lib/**/*.dart
+          exclude:
+            - lib/features/**/models/hive/**_hive_model.dart
+
+      riverpod_generator:riverpod_generator:
+        generate_for:
+          include:
+            - lib/**/*.dart
+          exclude:
+            - lib/features/**/models/hive/**_hive_model.dart
+
+      injectable_generator:injectable_builder:
+        generate_for:
+          include:
+            - lib/**/*.dart
+          exclude:
+            - lib/features/**/models/hive/**_hive_model.dart
+
+      injectable_generator:injectable_config_builder:
+        generate_for:
+          include:
+            - lib/**/*.dart
+          exclude:
+            - lib/features/**/models/hive/**_hive_model.dart
+
+      # Add similar exclude configurations for other conflicting builders if needed
+      # injectable_generator:injectable_builder:
+      #   generate_for:
+      #     include:
+      #       - lib/**/*.dart
+      #     exclude:
+      #     - lib/**/*.dart
+      #     - '!lib/features/**/models/hive/**.dart'
+
+      # 确保其他需要的生成器也在这里配置或保持默认
+      # ...

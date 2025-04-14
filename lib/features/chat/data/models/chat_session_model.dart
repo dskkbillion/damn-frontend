@@ -1,39 +1,69 @@
-import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
+
 import '../../domain/entities/chat_session.dart';
-import 'chat_session_dto.dart';
+import './message_model.dart';
+import './user_model.dart';
 
-/// 聊天会话模型类
-/// 用于会话数据的转换和处理
-class ChatSessionModel extends Equatable {
-  final ChatSessionDto dto;
+part 'chat_session_model.g.dart';
 
-  const ChatSessionModel({required this.dto});
+/// API `/api/chat/list` 的会话数据模型
+@JsonSerializable(explicitToJson: true)
+class ChatSessionModel {
+  final int id;
+  final int? doctorId;
+  final int? memberId;
+  final int? messageNum; // API 返回可能为 null
+  final String? context;
+  final MessageModel? chatMessageNewVo;
+  final UserModel? member;
+  final UserModel? doctor;
 
-  /// 从DTO创建模型
-  factory ChatSessionModel.fromDto(ChatSessionDto dto) {
-    return ChatSessionModel(dto: dto);
+  ChatSessionModel({
+    required this.id,
+    this.doctorId,
+    this.memberId,
+    this.messageNum,
+    this.context,
+    this.chatMessageNewVo,
+    this.member,
+    this.doctor,
+  });
+
+  /// 从 JSON 数据创建 ChatSessionModel 实例
+  factory ChatSessionModel.fromJson(Map<String, dynamic> json) =>
+      _$ChatSessionModelFromJson(json);
+
+  /// 将 ChatSessionModel 实例转换为 JSON 数据
+  Map<String, dynamic> toJson() => _$ChatSessionModelToJson(this);
+
+  /// 将 ChatSessionModel 转换为 Domain 层的 ChatSession 实体
+  ChatSession toEntity() {
+    return ChatSession(
+      id: id,
+      doctorId: doctorId,
+      memberId: memberId,
+      messageNum: messageNum ?? 0, // 默认为 0
+      context: context,
+      chatMessageNewVo: chatMessageNewVo?.toEntity(),
+      member: member?.toEntity(),
+      doctor: doctor?.toEntity(),
+    );
   }
 
-  /// 从领域实体创建模型
-  factory ChatSessionModel.fromDomain(ChatSession session) {
-    return ChatSessionModel(dto: ChatSessionDto.fromDomain(session));
+  /// 从 Domain 层的 ChatSession 实体创建 ChatSessionModel
+  /// 注意：这通常用于测试或特定场景，因为实体可能不包含所有模型字段
+  factory ChatSessionModel.fromEntity(ChatSession entity) {
+    return ChatSessionModel(
+      id: entity.id,
+      doctorId: entity.doctorId,
+      memberId: entity.memberId,
+      messageNum: entity.messageNum,
+      context: entity.context,
+      chatMessageNewVo: entity.chatMessageNewVo != null
+          ? MessageModel.fromEntity(entity.chatMessageNewVo!)
+          : null,
+      member: entity.member != null ? UserModel.fromEntity(entity.member!) : null,
+      doctor: entity.doctor != null ? UserModel.fromEntity(entity.doctor!) : null,
+    );
   }
-
-  /// 从JSON映射创建模型
-  factory ChatSessionModel.fromJson(Map<String, dynamic> json) {
-    return ChatSessionModel(dto: ChatSessionDto.fromJson(json));
-  }
-
-  /// 转换为JSON映射
-  Map<String, dynamic> toJson() {
-    return dto.toJson();
-  }
-
-  /// 转换为领域实体
-  ChatSession toDomain() {
-    return dto.toDomain();
-  }
-
-  @override
-  List<Object?> get props => [dto];
 } 

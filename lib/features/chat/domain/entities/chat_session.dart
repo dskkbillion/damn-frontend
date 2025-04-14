@@ -1,89 +1,87 @@
 import 'package:equatable/equatable.dart';
-import 'message.dart';
 
-/// 会话实体类
+import './message.dart';
+import './user.dart';
+
+/// 聊天会话实体 (字段严格参考 chat_api.openapi.json -> /api/chat/list response.rows[x])
 class ChatSession extends Equatable {
-  /// 会话唯一标识
-  final String id;
-  
-  /// 当前用户ID
-  final String userId;
-  
-  /// 对方用户ID
-  final String targetUserId;
-  
-  /// 会话标题/名称 (通常是对方用户名)
-  final String title;
-  
-  /// 最后一条消息
-  final Message? lastMessage;
-  
+  /// 会话 ID
+  final int id;
+
+  /// 对方用户 ID (如果对方是 "doctor")
+  final int? doctorId;
+
+  /// 对方用户 ID (如果对方是 "member")
+  final int? memberId;
+
   /// 未读消息数
-  final int unreadCount;
-  
-  /// 创建时间
-  final DateTime createdAt;
-  
-  /// 更新时间
-  final DateTime updatedAt;
-  
-  /// 是否置顶 (本地状态) [TODO: 下一次开发中实现]
-  final bool pinned;
-  
-  /// 是否静音 (本地状态) [TODO: 下一次开发中实现]
-  final bool muted;
+  final int messageNum;
+
+  /// 最后一条消息内容预览
+  final String? context;
+
+  /// 最后一条消息详情 (可能为 null)
+  final Message? chatMessageNewVo;
+
+  /// 对方用户信息 (如果对方是 "member")
+  final User? member;
+
+  /// 对方用户信息 (如果对方是 "doctor")
+  final User? doctor;
 
   const ChatSession({
     required this.id,
-    required this.userId,
-    required this.targetUserId,
-    required this.title,
-    this.lastMessage,
-    this.unreadCount = 0,
-    required this.createdAt,
-    required this.updatedAt,
-    this.pinned = false,
-    this.muted = false,
+    this.doctorId,
+    this.memberId,
+    required this.messageNum,
+    this.context,
+    this.chatMessageNewVo,
+    this.member,
+    this.doctor,
   });
 
-  /// 复制并返回一个新的会话对象，可更新指定字段
-  ChatSession copyWith({
-    String? id,
-    String? userId,
-    String? targetUserId,
-    String? title,
-    Message? lastMessage,
-    int? unreadCount,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    bool? pinned,
-    bool? muted,
-  }) {
-    return ChatSession(
-      id: id ?? this.id,
-      userId: userId ?? this.userId,
-      targetUserId: targetUserId ?? this.targetUserId,
-      title: title ?? this.title,
-      lastMessage: lastMessage ?? this.lastMessage,
-      unreadCount: unreadCount ?? this.unreadCount,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      pinned: pinned ?? this.pinned,
-      muted: muted ?? this.muted,
-    );
-  }
+  /// 获取对方用户信息 (优先 doctor)
+  User? get targetUser => doctor ?? member;
+
+  /// 获取对方用户 ID (优先 doctorId)
+  int? get targetUserId => doctorId ?? memberId;
+
+  /// 获取最后一条消息的时间戳
+  DateTime? get lastMessageTimestamp => chatMessageNewVo?.createTime;
 
   @override
   List<Object?> get props => [
-    id,
-    userId,
-    targetUserId,
-    title,
-    lastMessage,
-    unreadCount,
-    createdAt,
-    updatedAt,
-    pinned,
-    muted,
-  ];
+        id,
+        doctorId,
+        memberId,
+        messageNum,
+        context,
+        chatMessageNewVo,
+        member,
+        doctor,
+      ];
+
+  /// 创建副本并更新部分字段
+  ChatSession copyWith({
+    int? id,
+    int? doctorId,
+    int? memberId,
+    int? messageNum,
+    String? context,
+    Message? chatMessageNewVo,
+    bool clearChatMessageNewVo = false, // 用于显式设置 chatMessageNewVo 为 null
+    User? member,
+    User? doctor,
+  }) {
+    return ChatSession(
+      id: id ?? this.id,
+      doctorId: doctorId ?? this.doctorId,
+      memberId: memberId ?? this.memberId,
+      messageNum: messageNum ?? this.messageNum,
+      context: context ?? this.context,
+      chatMessageNewVo: clearChatMessageNewVo ? null : (chatMessageNewVo ?? this.chatMessageNewVo),
+      member: member ?? this.member,
+      doctor: doctor ?? this.doctor,
+    );
+  }
 } 
