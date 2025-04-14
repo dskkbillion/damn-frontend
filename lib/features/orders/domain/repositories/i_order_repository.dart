@@ -1,11 +1,15 @@
 import 'package:dartz/dartz.dart' hide Order; // 隐藏 dartz 中的 Order
+import 'package:equatable/equatable.dart'; // Add Equatable import
 
 import '../../../../core/error/failures.dart'; // 现在这个路径应该有效了
 import '../entities/order.dart';
 import '../entities/order_status.dart';
+// 导入 UseCase 中的 Params 定义
+import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_requirements_use_case.dart';
 
 // Define Params classes for complex operations
-class AddOrderDemandParams {
+
+class AddOrderDemandParams extends Equatable { // Make Equatable
   final int orderId;
   final String type; // e.g., 'refuse', 'material'
   final String reasonValue;
@@ -20,9 +24,12 @@ class AddOrderDemandParams {
     required this.reasonLabel,
     this.remarks,
   });
+
+  @override
+  List<Object?> get props => [orderId, type, reasonValue, reasonLabel, remarks]; // Add props
 }
 
-class DeliverOrderParams {
+class DeliverOrderParams extends Equatable { // Make Equatable
   final int orderId;
   final String content;
   final List<String> files; // Assuming file paths or identifiers
@@ -32,6 +39,9 @@ class DeliverOrderParams {
     required this.content,
     required this.files,
   });
+
+  @override
+  List<Object?> get props => [orderId, content, files]; // Add props
 }
 
 /// 定义订单模块的数据访问契约。
@@ -80,13 +90,9 @@ abstract class IOrderRepository {
     required List<String> pictures,
   });
 
-  /// Submits the final order requirements/materials.
-  Future<Either<Failure, void>> submitRequirements({
-    required String orderId,
-    required int productId,
-    required List<Map<String, String>> feature, // Use structured feature data
-    required List<String> attachmentPaths, // Expecting URLs
-  });
+  /// Buyer submits requirements (e.g., text, attachments) for a service order.
+  /// Uses [SubmitRequirementsParams] which should be defined elsewhere or passed directly.
+  Future<Either<Failure, void>> submitRequirements(SubmitRequirementsParams params);
 
   /// Buyer saves a draft of requirements locally (implementation specific).
   Future<Either<Failure, void>> saveRequirementDraft(/* DraftParams params */);

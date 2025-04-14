@@ -10,13 +10,20 @@ import 'app/di/injection_container.dart';
 // 必要时调整导入路径
 import 'core/config/theme/app_theme.dart';
 
-// 导入卖家视图所需的 BLoC 和 Page (占位符 - 稍后调整)
-// import 'features/orders/presentation/seller/bloc/seller_order_list_bloc.dart';
-// import 'features/orders/presentation/seller/pages/seller_order_list_page.dart';
+// 导入卖家视图所需的 BLoC 和 Page
+import 'features/orders/presentation/seller/bloc/seller_order_list_bloc.dart';
+import 'features/orders/presentation/seller/pages/seller_order_list_page.dart';
+// 导入 UseCase
+import 'features/orders/domain/usecases/get_order_list_use_case.dart';
+import 'features/orders/domain/usecases/confirm_order_acceptance_use_case.dart';
+import 'features/orders/domain/usecases/reject_order_use_case.dart';
+import 'features/orders/domain/usecases/deliver_order_use_case.dart';
+import 'features/orders/domain/usecases/invite_evaluation_use_case.dart';
+import 'features/orders/domain/usecases/delete_seller_record_use_case.dart';
 
 // 导入 mock repository (或创建一个卖家专属的)
-// 必要时调整导入路径
-import 'features/orders/data/repositories/mocks/mock_order_repository.dart';
+// import 'features/orders/data/repositories/mocks/mock_order_repository.dart'; // 使用下面的卖家 Mock
+import 'features/orders/data/repositories/mocks/mock_seller_order_repository.dart';
 import 'features/orders/domain/repositories/i_order_repository.dart';
 
 
@@ -54,16 +61,37 @@ Future<void> configureDependenciesPreview() async {
     // await getIt.unregister<IOrderRepository>();
     // getIt.registerLazySingleton<IOrderRepository>(() => MockOrderRepository());
   } else {
-      getIt.registerLazySingleton<IOrderRepository>(() => MockOrderRepository());
+      getIt.registerLazySingleton<IOrderRepository>(() => MockSellerOrderRepository());
   }
-
 
   // TODO: 在这里注册卖家特定的 Blocs，注入 mock repository (或 mock UseCases)
   // 示例:
-  // getIt.registerFactory(() => SellerOrderListBloc(getOrderListUseCase: getIt())); // 确保 GetOrderListUseCase 适应卖家或有 Seller 版本
-  // getIt.registerFactory(() => SellerOrderDetailBloc(
-  //       getOrderDetailUseCase: getIt(), // 确保 GetOrderDetailUseCase 适应卖家或有 Seller 版本
-  //       confirmOrderUseCase: getIt(), // 确保这些卖家 UseCase 已注册或 mock
+  // 确保 GetOrderListUseCase 适应卖家或有 Seller 版本
+  // 注意：我们需要 GetOrderListUseCase，而 MockOrderRepository 实现了 IOrderRepository
+  // GetOrderListUseCase 依赖 IOrderRepository，所以 getIt<IOrderRepository>() 会返回 MockOrderRepository 实例
+  // 确保 GetOrderListUseCase 本身已在主 DI 或这里注册
+  // 如果 GetOrderListUseCase 已通过 @injectable 注册，它会自动找到 IOrderRepository
+  // 我们假设 GetOrderListUseCase 已经注册
+  getIt.registerFactory(() => GetOrderListUseCase(getIt()));
+  getIt.registerFactory(() => ConfirmOrderAcceptanceUseCase(getIt()));
+  getIt.registerFactory(() => RejectOrderUseCase(getIt()));
+  getIt.registerFactory(() => DeliverOrderUseCase(getIt()));
+  getIt.registerFactory(() => InviteEvaluationUseCase(getIt()));
+  getIt.registerFactory(() => DeleteSellerRecordUseCase(getIt()));
+
+  // Register SellerOrderListBloc, passing all dependencies explicitly
+  getIt.registerFactory(() => SellerOrderListBloc(
+      getIt(), // GetOrderListUseCase
+      getIt(), // ConfirmOrderAcceptanceUseCase
+      getIt(), // RejectOrderUseCase
+      getIt(), // DeliverOrderUseCase
+      getIt(), // InviteEvaluationUseCase
+      getIt(), // DeleteSellerRecordUseCase
+      ));
+
+  // getIt.registerFactory(() => SellerOrderDetailBloc(\r
+  //       getOrderDetailUseCase: getIt(), // 确保 GetOrderDetailUseCase 适应卖家或有 Seller 版本\r
+  //       confirmOrderUseCase: getIt(), // 确保这些卖家 UseCase 已注册或 mock\r
   //       rejectOrderUseCase: getIt(),
   //       deliverOrderUseCase: getIt(),
   //       // ... 其他卖家 use cases
@@ -95,35 +123,36 @@ class SellerOrdersPreviewApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        // TODO: 在这里使用 getIt<YourSellerBloc>() 提供卖家 BLoCs
-        // 示例:
-        // BlocProvider<SellerOrderListBloc>(
-        //   create: (context) => getIt<SellerOrderListBloc>()..add(LoadSellerOrdersRequested()), // 触发初始加载
-        // ),
-        // BlocProvider<SellerOrderDetailBloc>(
-        //   create: (context) => getIt<SellerOrderDetailBloc>(), // 详情 Bloc 可能在页面导航时加载
-        // ),
+        // 在这里使用 getIt<YourSellerBloc>() 提供卖家 BLoCs
+        BlocProvider<SellerOrderListBloc>(
+          create: (context) => getIt<SellerOrderListBloc>()..add(const LoadSellerOrdersRequested()), // 触发初始加载
+        ),
+        // BlocProvider<SellerOrderDetailBloc>(\r
+        //   create: (context) => getIt<SellerOrderDetailBloc>(), // 详情 Bloc 可能在页面导航时加载\r
+        // ),\r
       ],
       child: MaterialApp(
         title: 'Seller Orders Preview',
         theme: AppTheme.lightTheme, // 使用你的应用主题
         // darkTheme: AppTheme.darkTheme, // 可选的暗色主题
         // themeMode: ThemeMode.system, // 或强制 light/dark
-        // TODO: 创建 SellerOrderListPage 后，将其设置为 home
-        // home: const SellerOrderListPage(),
+        // 创建 SellerOrderListPage 后，将其设置为 home
+        home: const SellerOrderListPage(),
+        /*
         home: Scaffold( // 在 SellerOrderListPage 准备好之前的占位符页面
           backgroundColor: Colors.deepPurple[300], // 使用不同的颜色区分
           appBar: AppBar(title: const Text('Seller Preview')),
           body: const Center(
             child: Text(
-              'Seller Orders Preview\n请创建 SellerOrderListPage 并设为 home',
+              'Seller Orders Preview\\n请创建 SellerOrderListPage 并设为 home',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white, fontSize: 18),
             ),
           ),
         ),
+        */
         // 如果需要在预览内导航，定义路由 (例如到 SellerOrderDetailPage)
-        // onGenerateRoute: (settings) {
+        // onGenerateRoute: (settings) {\r
         //   // 示例:
         //   // if (settings.name == '/seller/orders/detail') {
         //   //   final orderId = settings.arguments as int;

@@ -56,7 +56,13 @@ abstract class IOrderRemoteDataSource {
   Future<void> deleteOrder(int orderId);
 
   /// Adds an evaluation for a specific order item.
-  Future<void> addEvaluation(/* AddEvaluationParams params */);
+  Future<void> addEvaluation({
+    required int orderItemId,
+    required double score,
+    required String content,
+    required bool isAnonymous,
+    required List<String> pictures,
+  });
 
   /// Submits the final order requirements/materials.
   Future<void> submitRequirements({

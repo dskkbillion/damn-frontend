@@ -50,12 +50,20 @@ import 'features/orders/data/datasources/order_remote_data_source_impl.dart'
 import 'features/orders/data/repositories/order_repository_impl.dart' as _i1010;
 import 'features/orders/domain/repositories/i_order_repository.dart' as _i281;
 import 'features/orders/domain/usecases/cancel_order_use_case.dart' as _i992;
+import 'features/orders/domain/usecases/confirm_order_acceptance_use_case.dart'
+    as _i87;
 import 'features/orders/domain/usecases/confirm_order_receipt_use_case.dart'
     as _i860;
 import 'features/orders/domain/usecases/delete_order_use_case.dart' as _i249;
+import 'features/orders/domain/usecases/delete_seller_record_use_case.dart'
+    as _i326;
+import 'features/orders/domain/usecases/deliver_order_use_case.dart' as _i2;
 import 'features/orders/domain/usecases/get_order_detail_use_case.dart'
     as _i332;
 import 'features/orders/domain/usecases/get_order_list_use_case.dart' as _i354;
+import 'features/orders/domain/usecases/invite_evaluation_use_case.dart'
+    as _i323;
+import 'features/orders/domain/usecases/reject_order_use_case.dart' as _i539;
 import 'features/orders/domain/usecases/seller/seller_order_actions_use_cases.dart'
     as _i431;
 import 'features/orders/domain/usecases/submit_evaluation_use_case.dart'
@@ -64,6 +72,8 @@ import 'features/orders/domain/usecases/submit_requirements_use_case.dart'
     as _i648;
 import 'features/orders/presentation/bloc/order_detail_bloc.dart' as _i768;
 import 'features/orders/presentation/bloc/order_list_bloc.dart' as _i620;
+import 'features/orders/presentation/seller/bloc/seller_order_list_bloc.dart'
+    as _i1008;
 
 // initializes the registration of main-scope dependencies inside of GetIt
 _i174.GetIt $initGetIt(
@@ -99,14 +109,24 @@ _i174.GetIt $initGetIt(
       ));
   gh.factory<_i992.CancelOrderUseCase>(
       () => _i992.CancelOrderUseCase(gh<_i281.IOrderRepository>()));
+  gh.factory<_i87.ConfirmOrderAcceptanceUseCase>(
+      () => _i87.ConfirmOrderAcceptanceUseCase(gh<_i281.IOrderRepository>()));
   gh.factory<_i860.ConfirmOrderReceiptUseCase>(
       () => _i860.ConfirmOrderReceiptUseCase(gh<_i281.IOrderRepository>()));
   gh.factory<_i249.DeleteOrderUseCase>(
       () => _i249.DeleteOrderUseCase(gh<_i281.IOrderRepository>()));
+  gh.factory<_i326.DeleteSellerRecordUseCase>(
+      () => _i326.DeleteSellerRecordUseCase(gh<_i281.IOrderRepository>()));
+  gh.factory<_i2.DeliverOrderUseCase>(
+      () => _i2.DeliverOrderUseCase(gh<_i281.IOrderRepository>()));
   gh.factory<_i332.GetOrderDetailUseCase>(
       () => _i332.GetOrderDetailUseCase(gh<_i281.IOrderRepository>()));
   gh.factory<_i354.GetOrderListUseCase>(
       () => _i354.GetOrderListUseCase(gh<_i281.IOrderRepository>()));
+  gh.factory<_i323.InviteEvaluationUseCase>(
+      () => _i323.InviteEvaluationUseCase(gh<_i281.IOrderRepository>()));
+  gh.factory<_i539.RejectOrderUseCase>(
+      () => _i539.RejectOrderUseCase(gh<_i281.IOrderRepository>()));
   gh.factory<_i152.SubmitEvaluationUseCase>(
       () => _i152.SubmitEvaluationUseCase(gh<_i281.IOrderRepository>()));
   gh.factory<_i648.SubmitRequirementsUseCase>(
@@ -126,6 +146,14 @@ _i174.GetIt $initGetIt(
       ));
   gh.factory<_i431.IDeleteSellerOrderRecordUseCase>(
       () => _i431.DeleteSellerOrderRecordUseCase(gh<_i281.IOrderRepository>()));
+  gh.factory<_i1008.SellerOrderListBloc>(() => _i1008.SellerOrderListBloc(
+        gh<_i354.GetOrderListUseCase>(),
+        gh<_i87.ConfirmOrderAcceptanceUseCase>(),
+        gh<_i539.RejectOrderUseCase>(),
+        gh<_i2.DeliverOrderUseCase>(),
+        gh<_i323.InviteEvaluationUseCase>(),
+        gh<_i326.DeleteSellerRecordUseCase>(),
+      ));
   gh.factory<_i431.IConfirmOrderAcceptanceUseCase>(
       () => _i431.ConfirmOrderAcceptanceUseCase(gh<_i281.IOrderRepository>()));
   gh.factory<_i431.IDeliverOrderUseCase>(

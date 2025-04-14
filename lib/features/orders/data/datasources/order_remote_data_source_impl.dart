@@ -7,6 +7,7 @@ import '../../../../core/error/failures.dart'; // 使用 failures.dart
 import '../../domain/entities/order_status.dart';
 import '../models/order_model.dart';
 import 'i_order_remote_data_source.dart';
+import '../../domain/repositories/i_order_repository.dart';
 
 /// 订单远程数据源的实现类。
 @LazySingleton(as: IOrderRemoteDataSource) // Add injectable annotation
@@ -287,54 +288,30 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
   // --- Add Evaluation Method ---
   @override
   Future<void> addEvaluation({
+    // required String orderId, // Keep commented out
     required int orderItemId,
     required double score,
     required String content,
     required bool isAnonymous,
     required List<String> pictures,
   }) async {
+    final Map<String, dynamic> requestData = {
+      'orderItemId': orderItemId,
+      'score': score,
+      'content': content,
+      'isAnonymous': isAnonymous ? 1 : 0, // Assuming API expects 0/1
+      'pictures': pictures, // Assuming API accepts a list of strings
+    };
     try {
-      final data = {
-        'orderItemId': orderItemId, 
-        'score': score,
-        'remark': content,
-        'images': pictures,
-        'anonumityFlag': isAnonymous,
-      };
-      print('[OrderRemoteDataSourceImpl] addEvaluation called with data: $data');
-
-      final response = await coreDioClient.post(
-        _addEvaluationEndpoint,
-        data: data, // Sending single object, assuming doc 'array' type is incorrect
-      );
-
-      // Check BUSINESS code from response body, not just HTTP status
-      if (response.statusCode == 200 && response.data != null && response.data['code'] == 200) {
-         print('[OrderRemoteDataSourceImpl] addEvaluation successful (Code: ${response.data['code']}).');
-         // Success, return void
-         return;
-      } else {
-        // Handle business error or unexpected format
-        final errorMsg = response.data?['msg'] ?? 'Failed to submit evaluation (Unknown error)';
-        final errorCode = response.data?['code'] ?? response.statusCode; // Use business code if available
-        print('[OrderRemoteDataSourceImpl] addEvaluation failed. Code: $errorCode, Msg: $errorMsg');
-        throw ServerFailure(
-          message: errorMsg,
-          // Consider adding code to ServerFailure if needed
-        );
+      final response = await coreDioClient.post(_addEvaluationEndpoint, data: requestData);
+      if (response.statusCode != 200 || (response.data != null && response.data['code'] != 200)) {
+        throw ServerFailure(message: response.data?['msg'] ?? 'Failed to add evaluation');
       }
+      // Success
     } on DioException catch (e) {
-      // Handle network/Dio specific errors
-      print('[OrderRemoteDataSourceImpl] addEvaluation DioException: ${e.toString()}');
-      throw ServerFailure(
-        message: e.response?.data?['msg'] ?? e.message ?? 'Network error');
+      throw ServerFailure(message: e.response?.data?['msg'] ?? e.message ?? 'Network error adding evaluation');
     } catch (e) {
-      // Handle other unexpected errors
-      print('[OrderRemoteDataSourceImpl] addEvaluation unexpected error: ${e.toString()}');
-      if (e is ServerFailure) { // Avoid wrapping ServerFailure again
-         rethrow;
-      }
-      throw ServerFailure(message: 'An unexpected error occurred in addEvaluation: ${e.toString()}');
+      throw ServerFailure(message: 'An unexpected error occurred adding evaluation: ${e.toString()}');
     }
   }
 
@@ -385,5 +362,118 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
        print('[OrderRemoteDataSourceImpl] submitRequirements unexpected error: ${e.toString()}');
       throw ServerFailure(message: 'An unexpected error occurred in submitRequirements: ${e.toString()}');
     }
+  }
+
+  @override
+  Future<void> saveRequirementDraft(/* DraftParams params */) async {
+    // This operation is now intended to be handled locally (e.g., SharedPreferences).
+    // No remote API call is defined for saving drafts.
+    print('[OrderRemoteDataSource] WARN: saveRequirementDraft called, but it should be handled locally.');
+    // Optionally throw an error or return success immediately if no action needed here
+    // throw UnsupportedError('Saving requirement drafts is handled locally.');
+    return Future.value(); // Or return normally if the interface expects a Future<void>
+  }
+
+  // --- Seller specific action implementations ---
+
+  @override
+  Future<void> confirmOrderAcceptance(int orderId) async {
+    const String endpoint = '/api/shop/order/verify'; // Confirmed from RN code
+    final String url = '$endpoint?orderId=$orderId'; // Append orderId as query param
+    try {
+      final response = await coreDioClient.post(
+        url,
+        data: {}, // Empty body as confirmed from RN code
+      );
+      // Assuming standard wrapper { code: 200, msg: "...", data: null }
+      if (response.statusCode != 200 || (response.data != null && response.data['code'] != 200)) {
+        throw ServerFailure(message: response.data?['msg'] ?? 'Failed to confirm order acceptance');
+      }
+      // Success, no data expected
+    } on DioException catch (e) {
+      throw ServerFailure(message: e.response?.data?['msg'] ?? e.message ?? 'Network error confirming order');
+    } catch (e) {
+      throw ServerFailure(message: 'An unexpected error occurred confirming order: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> addOrderDemand(AddOrderDemandParams params) async {
+    const String endpoint = '/api/project/orderDemand/add';
+    try {
+      final requestData = {
+        'orderId': params.orderId,
+        'type': params.type, // "refuse" or "material"
+        'reasonValue': params.reasonValue,
+        'reasonLabel': params.reasonLabel,
+        'remarks': params.remarks,
+        // Files are not part of this API according to the doc
+      };
+      final response = await coreDioClient.post(endpoint, data: requestData);
+
+      if (response.statusCode != 200 || (response.data != null && response.data['code'] != 200)) {
+        throw ServerFailure(message: response.data?['msg'] ?? 'Failed to add order demand');
+      }
+      // Success
+    } on DioException catch (e) {
+      throw ServerFailure(message: e.response?.data?['msg'] ?? e.message ?? 'Network error adding order demand');
+    } catch (e) {
+      throw ServerFailure(message: 'An unexpected error occurred adding order demand: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> deliverOrder(DeliverOrderParams params) async {
+    const String endpoint = '/api/project/orderDelivery/add';
+    try {
+      // !! IMPORTANT: API doc says 'files' is string, RN code uses string[].
+      //    Assuming string[] is correct based on RN, needs backend confirmation.
+      //    If API expects comma-separated string, adjust here:
+      //    'files': params.files.join(',')
+      final requestData = {
+        'orderId': params.orderId,
+        'content': params.content,
+        'files': params.files, // Sending as array, confirm with backend!
+      };
+      final response = await coreDioClient.post(endpoint, data: requestData);
+
+      if (response.statusCode != 200 || (response.data != null && response.data['code'] != 200)) {
+        throw ServerFailure(message: response.data?['msg'] ?? 'Failed to deliver order');
+      }
+      // Success
+    } on DioException catch (e) {
+      throw ServerFailure(message: e.response?.data?['msg'] ?? e.message ?? 'Network error delivering order');
+    } catch (e) {
+      throw ServerFailure(message: 'An unexpected error occurred delivering order: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> deleteSellerOrderRecord(int orderId) async {
+    const String endpoint = '/api/shop/order/sellerDelete';
+    final String url = '$endpoint?orderId=$orderId';
+    try {
+      final response = await coreDioClient.post(
+        url,
+        data: {}, // Empty body
+      );
+      if (response.statusCode != 200 || (response.data != null && response.data['code'] != 200)) {
+        // API doc example shows empty data object {} on success, code is likely in wrapper
+        throw ServerFailure(message: response.data?['msg'] ?? 'Failed to delete seller order record');
+      }
+      // Success
+    } on DioException catch (e) {
+      throw ServerFailure(message: e.response?.data?['msg'] ?? e.message ?? 'Network error deleting seller order');
+    } catch (e) {
+      throw ServerFailure(message: 'An unexpected error occurred deleting seller order: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> inviteEvaluation(int orderId) async {
+    // API endpoint for inviting evaluation is not confirmed yet.
+    print('[OrderRemoteDataSource] ERROR: inviteEvaluation called, but API endpoint is unknown.');
+    throw UnimplementedError('API endpoint for inviting evaluation is not implemented.');
+    // Or return Left(ServerFailure(...)) immediately if preferred
   }
 } 

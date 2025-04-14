@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:dartz/dartz.dart' hide Order;
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
@@ -8,6 +10,8 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_pric
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_payment_info.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_shipping_info.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/repositories/i_order_repository.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_requirements_use_case.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_evaluation_use_case.dart';
 
 /// IOrderRepository 的手动 Mock/Dummy 实现，用于预览环境。
 class MockOrderRepository implements IOrderRepository {
@@ -121,7 +125,70 @@ class MockOrderRepository implements IOrderRepository {
       completeTime: DateTime.now().subtract(const Duration(days: 10)),
       buyerRemark: '这个商品申请售后了',
     ),
+    // --- Add Mock Orders for Seller View ---
+    Order(
+      id: 8,
+      orderSn: 'MOCK008_SELLER', 
+      state: OrderStatus.awaitingStart, // **Seller: Waiting for seller to confirm acceptance**
+      orderType: '0',
+      items: [
+        OrderItem(id: 108, orderId: 8, productId: 1008, productName: '服务 H (待接单)', skuId: 2008, skuName: '标准服务', imageUrl: 'https://picsum.photos/seed/MOCK008/150/150', quantity: 1, price: 80.0, totalPrice: 80.0),
+      ],
+      shippingAddress: const Address(recipientName: '买家小明', phone: '13100131000', areaId: '110105', detailAddress: '朝阳区 XX 路 8 号'),
+      priceSummary: const OrderPriceSummary(totalPrice: 80.0, discountPrice: 0.0, deliveryPrice: 0.0, payPrice: 80.0),
+      paymentInfo: OrderPaymentInfo(payStatus: true, payTime: DateTime.now().subtract(const Duration(minutes: 30))),
+      shippingInfo: const OrderShippingInfo(),
+      createdAt: DateTime.now().subtract(const Duration(minutes: 45)),
+      buyerRemark: '买家希望快速开始',
+    ),
+    Order(
+      id: 9,
+      orderSn: 'MOCK009_SELLER', 
+      state: OrderStatus.awaitingDelivery, // **Seller: Order accepted, waiting for delivery**
+      orderType: '0',
+      items: [
+        OrderItem(id: 109, orderId: 9, productId: 1009, productName: '设计服务 I (进行中)', skuId: 2009, skuName: 'Logo 设计', imageUrl: 'https://picsum.photos/seed/MOCK009/150/150', quantity: 1, price: 500.0, totalPrice: 500.0),
+      ],
+      shippingAddress: const Address(recipientName: '买家小红', phone: '13200132000', areaId: '440305', detailAddress: '南山区 YY 路 9 号'),
+      priceSummary: const OrderPriceSummary(totalPrice: 500.0, discountPrice: 20.0, deliveryPrice: 0.0, payPrice: 480.0),
+      paymentInfo: OrderPaymentInfo(payStatus: true, payTime: DateTime.now().subtract(const Duration(days: 1, hours: 2))),
+      shippingInfo: const OrderShippingInfo(),
+      createdAt: DateTime.now().subtract(const Duration(days: 1, hours: 3)),
+      buyerRemark: '需要包含源文件',
+    ),
+     Order(
+      id: 10,
+      orderSn: 'MOCK010_SELLER',
+      state: OrderStatus.applyForRefuse, // **Seller: Buyer requested redo/refund (showing refuse for example)**
+      orderType: '1',
+      items: [
+        OrderItem(id: 110, orderId: 10, productId: 1010, productName: '翻译服务 J (买家申请重做)', skuId: 2010, skuName: '英译中 1000 字', imageUrl: 'https://picsum.photos/seed/MOCK010/150/150', quantity: 1, price: 150.0, totalPrice: 150.0),
+      ],
+      shippingAddress: const Address(recipientName: '买家小刚', phone: '13300133000', areaId: '330106', detailAddress: '西湖区 ZZ 路 10 号'),
+      priceSummary: const OrderPriceSummary(totalPrice: 150.0, discountPrice: 0.0, deliveryPrice: 0.0, payPrice: 150.0),
+      paymentInfo: OrderPaymentInfo(payStatus: true, payTime: DateTime.now().subtract(const Duration(days: 5))),
+      shippingInfo: OrderShippingInfo(logisticsId: null, logisticsNo: null, deliveryTime: DateTime.now().subtract(const Duration(days: 2))), // Simulating delivery happened
+      createdAt: DateTime.now().subtract(const Duration(days: 6)),
+      completeTime: null, // Not completed as redo requested
+      buyerRemark: '翻译质量不满意，要求重新翻译指定段落。',
+    ),
   ];
+
+  // Helper to find and potentially update an order
+  Order? _findOrderById(int orderId) {
+    try {
+      return _mockOrders.firstWhere((o) => o.id == orderId);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  void _updateOrder(Order updatedOrder) {
+    final index = _mockOrders.indexWhere((o) => o.id == updatedOrder.id);
+    if (index != -1) {
+      _mockOrders[index] = updatedOrder;
+    }
+  }
 
   @override
   Future<Either<Failure, List<Order>>> getOrderList({
@@ -129,20 +196,23 @@ class MockOrderRepository implements IOrderRepository {
     String? keyword,
     required int page,
     required int limit,
+    // Assuming this mock serves both buyer and seller views for simplicity
+    // In a real scenario, might filter based on a role or have separate mocks
   }) async {
     print('[MockOrderRepository] Getting Order List - Page: $page, Limit: $limit, Status: $status, Keyword: $keyword');
     await Future.delayed(const Duration(milliseconds: 300)); // Simulate network delay
 
     // Simulate filtering by status
     List<Order> filteredOrders = _mockOrders;
-    if (status != null) {
+    if (status != null && status != OrderStatus.unknown) { // Handle 'All' case
       filteredOrders = _mockOrders.where((order) => order.state == status).toList();
     }
     // Simulate keyword search (simple)
     if (keyword != null && keyword.isNotEmpty) {
       filteredOrders = filteredOrders.where((order) =>
-        order.orderSn!.contains(keyword) ||
-        order.items.any((item) => item.productName.contains(keyword))
+        (order.orderSn?.contains(keyword) ?? false) || // Null check for safety
+        order.items.any((item) => item.productName.contains(keyword)) ||
+        (order.shippingAddress.recipientName.contains(keyword))
       ).toList();
     }
 
@@ -164,45 +234,63 @@ class MockOrderRepository implements IOrderRepository {
     print('[MockOrderRepository] Getting Order Detail for ID: $orderId');
     await Future.delayed(const Duration(milliseconds: 200));
 
-    final order = _mockOrders.firstWhere(
-      (o) => o.id == orderId,
-      orElse: () => _mockOrders.first // Return first order as fallback or handle error
-    );
+    final order = _findOrderById(orderId);
 
-    // Simulate potential failure if needed, e.g., based on orderId
-    // if (orderId == 999) return Left(ServerFailure(message: 'Mock: Order not found'));
-
-     // If no order found by ID, return a specific failure or a default order
-     // For simplicity, returning the found/fallback order
-    return Right(order);
+    if (order != null) {
+      return Right(order);
+    } else {
+      // Simulate not found
+      return Left(ServerFailure(message: 'Mock: Order with ID $orderId not found'));
+    }
   }
 
   @override
   Future<Either<Failure, void>> cancelOrder(int orderId) async {
-    print('[MockOrderRepository] Cancelling Order ID: $orderId');
+    print('[MockOrderRepository] Buyer Cancelling Order ID: $orderId');
     await Future.delayed(const Duration(milliseconds: 150));
-     // Simulate success
-    return const Right(null);
-    // Simulate failure: return Left(ServerFailure(message: 'Mock: Cannot cancel order'));
+    final order = _findOrderById(orderId);
+    if (order != null && order.state == OrderStatus.awaitingPayment) { // Only allow cancel if awaiting payment
+       _updateOrder(order.copyWith(state: OrderStatus.canceled, cancelTime: DateTime.now()));
+       print('[MockOrderRepository] Order $orderId status changed to canceled.');
+       return const Right(null);
+    } else {
+      print('[MockOrderRepository] Cannot cancel order $orderId (state: ${order?.state}).');
+      return Left(ServerFailure(message: 'Mock: Cannot cancel order in its current state'));
+    }
   }
 
   @override
   Future<Either<Failure, void>> confirmOrderReceipt(int orderId) async {
-     print('[MockOrderRepository] Confirming Receipt for Order ID: $orderId');
+     print('[MockOrderRepository] Buyer Confirming Receipt for Order ID: $orderId');
      await Future.delayed(const Duration(milliseconds: 150));
-     // Simulate success
-    return const Right(null);
+     final order = _findOrderById(orderId);
+     if (order != null && order.state == OrderStatus.awaitingConfirmation) {
+        _updateOrder(order.copyWith(state: OrderStatus.awaitingEvaluation, completeTime: DateTime.now()));
+        print('[MockOrderRepository] Order $orderId status changed to awaitingEvaluation.');
+        return const Right(null);
+     } else {
+       print('[MockOrderRepository] Cannot confirm receipt for order $orderId (state: ${order?.state}).');
+       return Left(ServerFailure(message: 'Mock: Cannot confirm receipt in its current state'));
+     }
   }
 
   @override
   Future<Either<Failure, void>> deleteOrder(int orderId) async {
-    print('[MockOrderRepository] Deleting Order ID: $orderId');
+    print('[MockOrderRepository] Buyer Deleting Order ID: $orderId');
     await Future.delayed(const Duration(milliseconds: 150));
-     // Simulate success
-    return const Right(null);
+    final initialLength = _mockOrders.length; // 记录初始长度
+    _mockOrders.removeWhere((o) => o.id == orderId); // 直接修改列表
+    final removedCount = initialLength - _mockOrders.length; // 计算删除的数量
+
+    if (removedCount > 0) { // 使用计算出的数量进行判断
+       print('[MockOrderRepository] Order $orderId removed from mock list.');
+       return const Right(null);
+    } else {
+       print('[MockOrderRepository] Order $orderId not found for deletion.');
+       return Left(ServerFailure(message: 'Mock: Order not found for deletion'));
+    }
   }
 
-  // --- Add Mock Implementation for addEvaluation ---
   @override
   Future<Either<Failure, void>> addEvaluation({
     required int orderItemId,
@@ -211,47 +299,113 @@ class MockOrderRepository implements IOrderRepository {
     required bool isAnonymous,
     required List<String> pictures,
   }) async {
-    print(
-        '[MockOrderRepository] addEvaluation called for orderItemId: $orderItemId');
-    print('  Score: $score, Content: $content, Anonymous: $isAnonymous');
-    print('  Pictures: ${pictures.length}');
-    // Simulate success
-    await Future.delayed(const Duration(milliseconds: 500));
-    return const Right(null);
-    // Simulate failure:
-    // return Left(ServerFailure('Mock evaluation submission failed'));
-  }
-
-  // --- Implement new mock methods ---
-
-  @override
-  Future<Either<Failure, void>> saveRequirementDraft({
-    required String orderId,
-    required Map<String, String> requirementsData,
-    required List<String> attachmentPaths,
-  }) async {
-    print(
-        '[MockOrderRepository] saveRequirementDraft called for order $orderId');
-    await Future.delayed(const Duration(milliseconds: 300));
-    print('  Requirements Data: $requirementsData');
-    print('  Attachment Paths: ${attachmentPaths.length}');
-    // Simulate success
+     print('[MockOrderRepository] Adding Evaluation for OrderItem ID: $orderItemId, Score: $score');
+     await Future.delayed(const Duration(milliseconds: 150));
+    // Find the order containing the item and update its state if needed
+    final orderIndex = _mockOrders.indexWhere((o) => o.items.any((item) => item.id == orderItemId));
+    if (orderIndex != -1 && _mockOrders[orderIndex].state == OrderStatus.awaitingEvaluation) {
+      _mockOrders[orderIndex] = _mockOrders[orderIndex].copyWith(state: OrderStatus.orderCompleted);
+      print('[MockOrderRepository] Order ${_mockOrders[orderIndex].id} status changed to orderCompleted after evaluation.');
+    } else {
+       print('[MockOrderRepository] Could not find order in awaitingEvaluation state for item $orderItemId.');
+       // Return success anyway for mock, or failure if strict check needed
+       // return Left(ServerFailure(message: 'Mock: Cannot evaluate order in its current state'));
+    }
     return const Right(null);
   }
 
   @override
-  Future<Either<Failure, void>> submitRequirements({
-    required String orderId,
-    required int productId,
-    required List<Map<String, String>> feature,
-    required List<String> attachmentPaths,
-  }) async {
-    await Future.delayed(const Duration(seconds: 1));
-    print(
-        'MockOrderRepository: Simulating submitting requirements for order $orderId...');
-    // Simulate success
+  Future<Either<Failure, void>> submitRequirements(SubmitRequirementsParams params) async {
+    print('[MockOrderRepository] Submitting Requirements for Order ID: ${params.orderId}');
+    await Future.delayed(const Duration(milliseconds: 150));
+    final order = _findOrderById(int.tryParse(params.orderId) ?? -1);
+     if (order != null && order.state == OrderStatus.awaitingSubmission) {
+        // Simulate state change after submission
+        _updateOrder(order.copyWith(state: OrderStatus.awaitingStart));
+        print('[MockOrderRepository] Order ${params.orderId} status changed to awaitingStart.');
+        return const Right(null);
+     } else {
+       print('[MockOrderRepository] Cannot submit requirements for order ${params.orderId} (state: ${order?.state}).');
+       return Left(ServerFailure(message: 'Mock: Cannot submit requirements in its current state'));
+     }
+  }
+
+  @override
+  Future<Either<Failure, void>> saveRequirementDraft(/* DraftParams params */) async {
+    print('[MockOrderRepository] saveRequirementDraft called (Mock does nothing).');
     return const Right(null);
-    // Simulate failure
-    // return Left(ServerFailure('Mock submit failed'));
+  }
+
+  // --- Seller action mock implementations ---
+
+  @override
+  Future<Either<Failure, void>> confirmOrderAcceptance(int orderId) async {
+    print('[MockOrderRepository] Seller Confirming Acceptance for Order ID: $orderId');
+    await Future.delayed(const Duration(milliseconds: 150));
+    final order = _findOrderById(orderId);
+    if (order != null && order.state == OrderStatus.awaitingStart) {
+      _updateOrder(order.copyWith(state: OrderStatus.awaitingDelivery));
+      print('[MockOrderRepository] Order $orderId status changed to awaitingDelivery.');
+      return const Right(null);
+    } else {
+      print('[MockOrderRepository] Cannot confirm acceptance for order $orderId (state: ${order?.state}).');
+      return Left(ServerFailure(message: 'Mock: Order not in awaitingStart state'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> addOrderDemand(AddOrderDemandParams params) async {
+    print('[MockOrderRepository] Seller Adding Demand for Order ID: ${params.orderId}, Type: ${params.type}');
+    await Future.delayed(const Duration(milliseconds: 150));
+    final order = _findOrderById(params.orderId);
+    if (order != null) {
+      if (params.type == 'refuse') {
+        _updateOrder(order.copyWith(state: OrderStatus.applyForRefuse)); // Simulate state change
+        print('[MockOrderRepository] Order ${params.orderId} status changed to applyForRefuse.');
+      } else if (params.type == 'material') {
+        _updateOrder(order.copyWith(state: OrderStatus.sellerSupplementaryMaterials)); // Simulate state change
+        print('[MockOrderRepository] Order ${params.orderId} status changed to sellerSupplementaryMaterials.');
+      } else {
+        print('[MockOrderRepository] Unknown demand type: ${params.type}');
+        return Left(ServerFailure(message: 'Mock: Invalid demand type'));
+      }
+      return const Right(null);
+    } else {
+      print('[MockOrderRepository] Order ${params.orderId} not found for adding demand.');
+      return Left(ServerFailure(message: 'Mock: Order not found'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deliverOrder(DeliverOrderParams params) async {
+    print('[MockOrderRepository] Seller Delivering Order ID: ${params.orderId}');
+    await Future.delayed(const Duration(milliseconds: 150));
+    final order = _findOrderById(params.orderId);
+    if (order != null && (order.state == OrderStatus.awaitingDelivery || order.state == OrderStatus.sellerSupplementaryMaterials)) {
+      _updateOrder(order.copyWith(state: OrderStatus.awaitingConfirmation, shippingInfo: OrderShippingInfo(deliveryTime: DateTime.now()))); // Simulate state change
+      print('[MockOrderRepository] Order ${params.orderId} status changed to awaitingConfirmation.');
+      return const Right(null);
+    } else {
+      print('[MockOrderRepository] Cannot deliver order ${params.orderId} (state: ${order?.state}).');
+      return Left(ServerFailure(message: 'Mock: Order not in correct state for delivery'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteSellerOrderRecord(int orderId) async {
+     print('[MockOrderRepository] Seller Deleting Order Record ID: $orderId');
+     await Future.delayed(const Duration(milliseconds: 150));
+     // Simulate deletion by just returning success, or remove if needed for list testing
+     // final removed = _mockOrders.removeWhere((o) => o.id == orderId);
+     // if (removed > 0) { return const Right(null); } else { return Left(ServerFailure(message: 'Mock: Order not found'));}
+     return const Right(null);
+  }
+
+  @override
+  Future<Either<Failure, void>> inviteEvaluation(int orderId) async {
+    print('[MockOrderRepository] Seller Inviting Evaluation for Order ID: $orderId');
+    await Future.delayed(const Duration(milliseconds: 150));
+    // Just simulate success
+    return const Right(null);
   }
 }

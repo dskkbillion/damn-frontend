@@ -135,6 +135,7 @@
     *   [x] (`Mock 数据完善`) 添加 `MOCK004` (待收货)。
     *   [x] (`Mock 数据完善`) 添加 `MOCK005` (待提交)。
     *   [ ] (**卖家视角**) 扩展 `MockOrderRepository` 或创建 `MockSellerOrderRepository` 以支持卖家操作 (`confirmOrderAcceptance`, `addOrderDemand`, `deliverOrder`, `deleteSellerOrderRecord`, `inviteEvaluation`) 的 Mock 数据和行为。
+        *   [x] **(完成)** 创建 `MockSellerOrderRepository` 并修复基础数据。
     *   [x] (**DI 配置**) 使用 `@injectable` 和 `@module` 完成核心依赖注册。
     *   [x] (**运行 `build_runner`**) 成功生成 `injection_container.config.dart`。
     *   [x] (**配置预览环境**) 在 `main_orders_preview.dart` 中覆盖 `IOrderRepository` 使用 Mock。
@@ -196,6 +197,8 @@
     *   [x] 实现 `order_action_buttons.dart`: 根据当前订单状态 (`Order.state`) 推断并显示可用的操作按钮 (取消、确认收货、评价等)。**参考 HTML 原型中的按钮样式和布局。**
         *   [x] (**交互**) 为确认收货、取消订单、删除订单添加确认对话框。
     *   [ ] (**卖家视角**) 创建 `seller_order_action_buttons.dart` 或调整现有 Widget。
+        *   [x] **(完成)** 创建 `SellerOrderItemCardActionButtons` 并实现基础按钮显示逻辑。
+        *   [x] **(完成)** 为关键操作按钮添加确认对话框。
     *   [ ] (**逻辑核对**) 根据截图核对各状态下按钮的显示逻辑。
     *   [ ] (**功能连接**) 将按钮点击连接到 `OrderDetailBloc` 的事件。 (确认收货/取消/删除已连接，待完善 Bloc 处理)
     *   [x] 实现 `order_detail_item_tile.dart`: ...
@@ -217,6 +220,7 @@
         *   [ ] `SellerDeliveryForm` (交付表单)
         *   [ ] `RejectionDialog` / `RequestSupplementDialog` (拒绝/要求补充材料弹窗)
         *   [ ] `SellerActionButtons` (底部按钮栏)
+        *   [x] **(完成)** 创建 `SellerOrderItemCard` Widget (从买家复制并调整)。
         *   [ ] 其他根据截图需要的 Widget...
 *   `lib/features/orders/presentation/pages/`
     *   [x] 实现 `order_list_page.dart`:
@@ -245,14 +249,18 @@
     *   [ ] (**卖家视角**) 分析卖家视角原型/截图/代码。
     *   [ ] (**卖家视角**) 创建 `seller_order_list_page.dart`。
         *   [ ] 构建卖家列表 UI (Tabs: 待确认、进行中、已交付、售后等)。
+            *   [x] **(完成)** 添加 "已完成" Tab。
         *   [ ] 连接 `SellerOrderListBloc`。
+            *   [x] **(完成)** 定义卖家列表 Bloc、State、Event 骨架。
+            *   [x] **(完成)** 实现基础加载、分页、Tab 切换逻辑。
+            *   [x] **(完成)** 定义并连接卖家操作按钮事件到 Bloc 处理器 (调用 UseCase 骨架)。
         *   [ ] 实现下拉刷新/上拉加载。
-        *   [ ] 导航到 `SellerOrderDetailPage`。
     *   [ ] (**卖家视角**) 创建 `seller_order_detail_page.dart`。
         *   [ ] 构建卖家详情 UI (状态时间轴、顶部提示卡片、商品信息、买家提交内容区、动态操作区、底部按钮)。
         *   [ ] 连接 `SellerOrderDetailBloc`。
         *   [ ] 实现动态内容区域切换逻辑。
         *   [ ] 实现确认、拒绝、交付、请求补充材料等交互流程。
+    *   [x] (**卖家视角**) 配置卖家订单列表预览入口 (`main_seller_orders_preview.dart`)。
 *   `lib/features/after_sales/presentation/pages/` (New Section - 主要买家视角)
     *   [x] 创建 `after_sales_list_page.dart`: 显示售后申请列表 (基础骨架和 Bloc 连接)。
         *   [x] (**修复**) 修正 `AfterSalesListError` 状态中字段 `message` 的引用为 `errorMessage`。
@@ -408,3 +416,19 @@
 
 **步骤 12: (进行中) 买家视角交互完善**
 *   [ ] (**核心订单操作 - Bloc 处理**) 在 `OrderDetailBloc` 中完整实现 `ConfirmReceiptRequested`, `CancelOrderRequested`, `DeleteOrderRequested`
+
+**后续步骤和优化 (Next Focus)**
+
+*   [ ] (**测试**) 进行买家视角的真实 API 集成测试 (订单列表、详情、评价、要求提交等)。
+*   [ ] (**卖家视角 - UI**) 修复卖家订单列表项的操作按钮逻辑。
+*   [ ] (**卖家视角 - UI**) 修复卖家订单列表项的图片加载问题。
+*   [ ] (**卖家视角 - UI**) 调整卖家订单列表项显示买家信息。
+*   [ ] (**UI/UX**) 买家/卖家订单列表和详情页面的视觉细节优化 (字体、间距、颜色、图标)。
+*   [ ] (**功能**) 买家视角 - 实现服务类订单提交要求后的本地草稿保存/加载功能。
+*   [ ] (**功能**) 实现订单详情的缓存策略。
+*   [ ] (**功能**) 实现 `CoreDioClient` 读取真实 Token 的逻辑 (对接认证模块)。
+*   [ ] (**功能**) 实现买家/卖家评价功能。
+*   [ ] (**功能**) 完成售后流程的真实 API 对接和 UI 实现。
+*   [ ] (**代码健康**) 代码审查和清理，移除未使用的代码，优化性能。
+
+---

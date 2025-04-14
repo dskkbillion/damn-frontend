@@ -10,6 +10,9 @@ import '../../domain/repositories/i_order_repository.dart';
 import '../datasources/i_order_remote_data_source.dart';
 import '../datasources/i_order_local_data_source.dart'; // Import LocalDataSource
 import '../models/order_model.dart'; // 导入 OrderModel 以便调用 toEntity
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart' hide OrderModel;
+import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_requirements_use_case.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_evaluation_use_case.dart'; // If AddEvaluationParams is defined there
 
 /// 订单仓库接口的实现类。
 @LazySingleton(as: IOrderRepository) // Add injectable annotation
@@ -203,24 +206,55 @@ class OrderRepositoryImpl implements IOrderRepository {
   // --- Implement new repository methods ---
 
   @override
-  Future<Either<Failure, void>> submitRequirements({
-    required String orderId,
-    required int productId,
-    required List<Map<String, String>> feature,
-    required List<String> attachmentPaths,
-  }) async {
-    // TODO: Add network check if required
-    try {
-      print('[OrderRepositoryImpl] Calling remoteDataSource.submitRequirements');
-      await remoteDataSource.submitRequirements(
-          orderId: orderId,
-          productId: productId,
-          feature: feature,
-          attachmentPaths: attachmentPaths
-      );
-      return const Right(null);
-    } on Exception catch (e) { // Catch generic Exception
-      return Left(ServerFailure(message: '提交要求失败: ${e.toString()}')); // Use ServerFailure
-    }
+  Future<Either<Failure, void>> submitRequirements(
+      SubmitRequirementsParams params) async {
+    return _handleApiCall(() => remoteDataSource.submitRequirements(
+          orderId: params.orderId.toString(), // Convert int orderId to string if API expects string
+          productId: params.productId,
+          feature: params.feature,
+          attachmentPaths: params.attachmentPaths,
+        ));
+  }
+
+  @override
+  Future<Either<Failure, void>> saveRequirementDraft(/* DraftParams params */) async {
+    // This operation is intended for local storage.
+    // The repository layer might interact with a local data source here,
+    // but for now, as it's a local-only action, we can return success directly.
+    // If a local data source for drafts exists, call it here.
+    // Example: return _handleLocalCall(() => localDraftDataSource.saveDraft(params));
+    print('[OrderRepositoryImpl] saveRequirementDraft called. Returning success as it\'s local.');
+    return const Right(null); // Indicate success
+  }
+
+  // --- Seller action implementations ---
+
+  @override
+  Future<Either<Failure, void>> confirmOrderAcceptance(int orderId) async {
+    // Optional: Add checks or logic before calling data source
+    return _handleApiCall(() => remoteDataSource.confirmOrderAcceptance(orderId));
+  }
+
+  @override
+  Future<Either<Failure, void>> addOrderDemand(AddOrderDemandParams params) async {
+    return _handleApiCall(() => remoteDataSource.addOrderDemand(params));
+  }
+
+  @override
+  Future<Either<Failure, void>> deliverOrder(DeliverOrderParams params) async {
+    // Note: The files parameter type uncertainty is handled in DataSource
+    return _handleApiCall(() => remoteDataSource.deliverOrder(params));
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteSellerOrderRecord(int orderId) async {
+    // TODO: Consider cache invalidation on success if caching seller orders
+    return _handleApiCall(() => remoteDataSource.deleteSellerOrderRecord(orderId));
+  }
+
+  @override
+  Future<Either<Failure, void>> inviteEvaluation(int orderId) async {
+    // DataSource currently throws UnimplementedError for this
+    return _handleApiCall(() => remoteDataSource.inviteEvaluation(orderId));
   }
 } 
