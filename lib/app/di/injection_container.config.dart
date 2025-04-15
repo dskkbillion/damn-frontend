@@ -19,8 +19,10 @@ import '../../core/network/dio_http_client.dart' as _i962;
 import '../../core/network/i_http_client.dart' as _i493;
 import '../../core/platform/network_info.dart' as _i50;
 import '../../core/platform/network_info_impl.dart' as _i80;
+import '../../core/platform/token_validator.dart' as _i691;
 import '../../core/storage/secure_storage_repository.dart' as _i822;
 import '../../core/storage/secure_storage_repository_impl.dart' as _i912;
+import '../../core/usecases/validate_token_usecase.dart' as _i58;
 import '../../features/ai_docs/data/datasources/ai_chat_remote_data_source_impl.dart'
     as _i404;
 import '../../features/ai_docs/data/datasources/file_upload_data_source_impl.dart'
@@ -94,8 +96,10 @@ _i174.GetIt init(
   );
   final registerModule = _$RegisterModule();
   gh.lazySingleton<_i558.FlutterSecureStorage>(
-      () => registerModule.flutterSecureStorage);
+      () => registerModule.secureStorage);
   gh.lazySingleton<_i895.Connectivity>(() => registerModule.connectivity);
+  gh.lazySingleton<_i691.TokenValidator>(
+      () => _i691.TokenValidatorImpl(gh<_i361.Dio>()));
   gh.lazySingleton<_i493.IHttpClient>(() => _i962.DioHttpClient());
   gh.lazySingleton<_i607.IAiChatRemoteDataSource>(
       () => _i404.AiChatRemoteDataSourceImpl(gh<_i493.IHttpClient>()));
@@ -125,6 +129,8 @@ _i174.GetIt init(
       () => _i63.DeleteConversationUseCase(gh<_i319.IAiChatRepository>()));
   gh.lazySingleton<_i830.LoadHistoryUseCase>(
       () => _i830.LoadHistoryUseCase(gh<_i319.IAiChatRepository>()));
+  gh.factory<_i58.ValidateTokenUseCase>(
+      () => _i58.ValidateTokenUseCase(gh<_i691.TokenValidator>()));
   gh.lazySingleton<_i436.IFileUploadDataSource>(
       () => _i478.FileUploadDataSourceImpl(gh<_i493.IHttpClient>()));
   gh.lazySingleton<_i795.IUserInfoRepository>(
@@ -142,6 +148,7 @@ _i174.GetIt init(
         secureStorage: gh<_i822.ISecureStorageRepository>(),
         networkInfo: gh<_i50.NetworkInfo>(),
         userInfoRepository: gh<_i795.IUserInfoRepository>(),
+        tokenValidator: gh<_i691.TokenValidator>(),
       ));
   gh.factory<_i1040.AiChatBloc>(() => _i1040.AiChatBloc(
         gh<_i257.GetConversationsUseCase>(),

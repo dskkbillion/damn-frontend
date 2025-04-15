@@ -13,7 +13,18 @@ import 'package:injectable/injectable.dart'; // Import injectable
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final Dio dio; // 网络客户端通过依赖注入传入
 
-  AuthRemoteDataSourceImpl({required this.dio});
+  AuthRemoteDataSourceImpl({required this.dio}) {
+    // 添加全局请求头
+    dio.options.headers = {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      // 添加后端实际需要的请求头
+      'clienttype': '1',
+      'client': 'android',
+      'version': '100',
+    };
+    print('Dio配置: 基础URL=${dio.options.baseUrl}, 请求头=${dio.options.headers}');
+  }
 
   @override
   Future<AuthenticatedUserModel> loginWithVerificationCode(
@@ -21,36 +32,47 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     const String endpoint = '/api/auth/login';
     final Map<String, dynamic> data = {
       'mobile': credentials.phone,
-      // 确认后端接收的是 `code` 还是 `smsCode`，暂时用 `code`
       'code': credentials.code,
       'scene': 'sms_code_login',
     };
 
-    try {
-      final response = await dio.post(endpoint, data: data);
+    print('===== 登录 =====');
+    print('请求接口: $endpoint');
+    print('手机号: ${credentials.phone}, 验证码: ${credentials.code}');
 
-      // 确认后端返回 token
-      if (response.statusCode == 200 && response.data != null && response.data['token'] != null) {
-        // 假设 AuthenticatedUserModel可以直接从整个响应 Map 创建
-        // 如果它只期望 data 部分，需要调整为 AuthenticatedUserModel.fromJson(response.data)
-        // 或者如果它只包含 token，需要手动创建：AuthenticatedUserModel(token: response.data['token'])
-        // TODO: 确认 AuthenticatedUserModel 的 fromJson 构造函数
+    try {
+      print('开始发送请求...');
+      final response = await dio.post(endpoint, data: data);
+      print('收到服务器响应: 状态码 ${response.statusCode}');
+      print('响应数据: ${response.data}');
+
+      // 检查HTTP状态码和业务状态码
+      if (response.statusCode == 200 &&
+          response.data != null &&
+          (response.data['code'] == 200 || response.data['code'] == 0) &&
+          response.data['token'] != null) {
+        print('登录成功! Token: ${response.data['token']}');
         return AuthenticatedUserModel.fromJson(response.data);
       } else {
-        print(
-            'Login API returned status ${response.statusCode} or missing token in data.');
+        print('登录失败: HTTP状态码 ${response.statusCode}, 业务状态码 ${response.data['code']}, 响应消息: ${response.data['msg']}');
         throw ServerException(
-            message: 'Login failed. Status: ${response.statusCode}, Data: ${response.data?.toString() ?? 'N/A'}');
+            message: '登录失败: ${response.data['msg']}');
       }
     } on DioException catch (e) {
-      print('DioException during login: ${e.message}');
-      throw ServerException(message: 'Login failed due to network or server error.');
+      print('DIO错误: ${e.message}');
+      print('请求信息: ${e.requestOptions.uri}');
+      print('请求数据: ${e.requestOptions.data}');
+      if (e.response != null) {
+        print('错误响应状态码: ${e.response?.statusCode}');
+        print('错误响应数据: ${e.response?.data}');
+      }
+      throw ServerException(message: '登录失败，网络或服务器错误: ${e.message}');
     } on FormatException catch (e) {
-      print('Error parsing login response: ${e.toString()}');
-      throw ServerException(message: 'Failed to parse login response.');
+      print('响应解析错误: ${e.toString()}');
+      throw ServerException(message: '登录响应解析失败');
     } catch (e) {
-      print('Unknown error during login: ${e.toString()}');
-      throw ServerException(message: 'An unknown error occurred during login.');
+      print('未知错误: ${e.toString()}');
+      throw ServerException(message: '登录过程中发生未知错误: ${e.toString()}');
     }
   }
 
@@ -65,26 +87,44 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     const String endpoint = '/api/common/send-code/register';
     final Map<String, dynamic> data = {
       'mobile': phone,
+      // 移除所有额外参数，只保留手机号
     };
 
+    print('===== 发送验证码 =====');
+    print('请求接口: $endpoint');
+    print('手机号: $phone');
+    print('请求头: ${dio.options.headers}');
+
     try {
+      print('开始发送请求...');
       final response = await dio.post(endpoint, data: data);
-      // 仅检查状态码，因为成功时不一定有特定响应体
-      if (response.statusCode == 200 || response.statusCode == 204) {
-         print('Verification code sent successfully.');
+      print('收到服务器响应: 状态码 ${response.statusCode}');
+      print('响应数据: ${response.data}');
+
+      // 检查HTTP状态码和业务状态码
+      if (response.statusCode == 200 &&
+          (response.data['code'] == 200 || response.data['code'] == 0)) {
+         print('验证码发送成功!');
         return;
       } else {
-         print('Send code API returned status ${response.statusCode} or business error: ${response.data?.toString()}');
+         print('验证码发送失败: HTTP状态码 ${response.statusCode}, 业务状态码 ${response.data['code']}, 响应消息: ${response.data['msg']}');
          // 可以考虑解析 response.data 中的错误信息 (如果后端返回了结构化错误)
          throw ServerException(
-            message: 'Failed to send verification code. Status: ${response.statusCode}');
+            message: '发送验证码失败: ${response.data['msg']}');
       }
     } on DioException catch (e) {
-      print('DioException during send code: ${e.message}');
-      throw ServerException(message: 'Send code failed due to network or server error.');
+      print('DIO错误: ${e.message}');
+      print('请求信息: ${e.requestOptions.uri}');
+      print('请求数据: ${e.requestOptions.data}');
+      print('请求头: ${e.requestOptions.headers}');
+      if (e.response != null) {
+        print('错误响应状态码: ${e.response?.statusCode}');
+        print('错误响应数据: ${e.response?.data}');
+      }
+      throw ServerException(message: 'Send code failed due to network or server error: ${e.message}');
     } catch (e) {
-      print('Unknown error during send code: ${e.toString()}');
-      throw ServerException(message: 'An unknown error occurred while sending the code.');
+      print('未知错误: ${e.toString()}');
+      throw ServerException(message: 'An unknown error occurred while sending the code: ${e.toString()}');
     }
   }
 

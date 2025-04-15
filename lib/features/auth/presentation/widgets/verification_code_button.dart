@@ -100,13 +100,19 @@ class _VerificationCodeButtonState extends State<VerificationCodeButton> {
     return ElevatedButton(
       onPressed: canSend
           ? () {
-              // TODO: 校验手机号格式
               final phone = widget.phoneController.text;
-              if (phone.isNotEmpty /* && isValidPhoneNumber(phone) */) {
-                 widget.onSendCode(phone);
+              print('尝试发送验证码到: $phone');
+
+              // 验证中国手机号格式 (11位数字，以1开头)
+              final bool isValidPhone = RegExp(r'^1[3-9]\d{9}$').hasMatch(phone);
+
+              if (phone.isNotEmpty && isValidPhone) {
+                print('手机号格式有效，准备发送验证码');
+                widget.onSendCode(phone);
               } else {
+                print('无效的手机号: $phone');
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('请输入有效的手机号')),
+                  const SnackBar(content: Text('请输入有效的11位手机号')),
                 );
               }
             }

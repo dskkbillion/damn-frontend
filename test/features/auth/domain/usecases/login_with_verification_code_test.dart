@@ -3,15 +3,14 @@ import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:dartz/dartz.dart';
 
-import 'package:damn_frontend/features/auth/domain/entities/auth_credentials.dart';
-import 'package:damn_frontend/features/auth/domain/entities/authenticated_user.dart';
-import 'package:damn_frontend/features/auth/domain/repositories/i_auth_repository.dart';
-import 'package:damn_frontend/features/auth/domain/usecases/login_with_verification_code.dart';
-import 'package:damn_frontend/core/error/failures.dart';
-
-@GenerateMocks([IAuthRepository])
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_credentials.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/authenticated_user.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/usecases/login_with_verification_code.dart';
+import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'login_with_verification_code_test.mocks.dart';
 
+@GenerateMocks([IAuthRepository])
 void main() {
   late LoginWithVerificationCodeUseCase usecase;
   late MockIAuthRepository mockAuthRepository;

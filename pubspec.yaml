@@ -90,6 +90,7 @@ dev_dependencies:
   build_runner: ^2.4.8
   injectable_generator: ^2.6.1 # DI Code Generator
   riverpod_generator: ^2.4.0 # Riverpod Code Generator
+  mockito: ^5.4.4 # 添加mockito用于单元测试
   # custom_lint: # Consider adding for custom lint rules later
   # riverpod_lint: # Consider adding specific Riverpod lint rules later
 

@@ -21,7 +21,8 @@ UserInfoModel _$UserInfoModelFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$UserInfoModel {
 // Match fields from UserInfo entity and potential API response structure
-  int get id => throw _privateConstructorUsedError;
+  @JsonKey(defaultValue: 0)
+  int? get id => throw _privateConstructorUsedError;
   String? get mobile => throw _privateConstructorUsedError;
   @JsonKey(name: 'nickname')
   String? get nickName => throw _privateConstructorUsedError;
@@ -44,7 +45,7 @@ abstract class $UserInfoModelCopyWith<$Res> {
       _$UserInfoModelCopyWithImpl<$Res, UserInfoModel>;
   @useResult
   $Res call(
-      {int id,
+      {@JsonKey(defaultValue: 0) int? id,
       String? mobile,
       @JsonKey(name: 'nickname') String? nickName,
       String? avatar});
@@ -65,16 +66,16 @@ class _$UserInfoModelCopyWithImpl<$Res, $Val extends UserInfoModel>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
+    Object? id = freezed,
     Object? mobile = freezed,
     Object? nickName = freezed,
     Object? avatar = freezed,
   }) {
     return _then(_value.copyWith(
-      id: null == id
+      id: freezed == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
       mobile: freezed == mobile
           ? _value.mobile
           : mobile // ignore: cast_nullable_to_non_nullable
@@ -100,7 +101,7 @@ abstract class _$$UserInfoModelImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {int id,
+      {@JsonKey(defaultValue: 0) int? id,
       String? mobile,
       @JsonKey(name: 'nickname') String? nickName,
       String? avatar});
@@ -119,16 +120,16 @@ class __$$UserInfoModelImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
+    Object? id = freezed,
     Object? mobile = freezed,
     Object? nickName = freezed,
     Object? avatar = freezed,
   }) {
     return _then(_$UserInfoModelImpl(
-      id: null == id
+      id: freezed == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
       mobile: freezed == mobile
           ? _value.mobile
           : mobile // ignore: cast_nullable_to_non_nullable
@@ -149,7 +150,7 @@ class __$$UserInfoModelImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$UserInfoModelImpl extends _UserInfoModel {
   const _$UserInfoModelImpl(
-      {required this.id,
+      {@JsonKey(defaultValue: 0) this.id,
       this.mobile,
       @JsonKey(name: 'nickname') this.nickName,
       this.avatar})
@@ -160,7 +161,8 @@ class _$UserInfoModelImpl extends _UserInfoModel {
 
 // Match fields from UserInfo entity and potential API response structure
   @override
-  final int id;
+  @JsonKey(defaultValue: 0)
+  final int? id;
   @override
   final String? mobile;
   @override
@@ -208,7 +210,7 @@ class _$UserInfoModelImpl extends _UserInfoModel {
 
 abstract class _UserInfoModel extends UserInfoModel {
   const factory _UserInfoModel(
-      {required final int id,
+      {@JsonKey(defaultValue: 0) final int? id,
       final String? mobile,
       @JsonKey(name: 'nickname') final String? nickName,
       final String? avatar}) = _$UserInfoModelImpl;
@@ -219,7 +221,8 @@ abstract class _UserInfoModel extends UserInfoModel {
 
 // Match fields from UserInfo entity and potential API response structure
   @override
-  int get id;
+  @JsonKey(defaultValue: 0)
+  int? get id;
   @override
   String? get mobile;
   @override

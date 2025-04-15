@@ -3,45 +3,49 @@ import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:dartz/dartz.dart';
 
-import 'package:damn_frontend/core/error/exceptions.dart';
-import 'package:damn_frontend/core/error/failures.dart';
-import 'package:damn_frontend/core/network/network_info.dart';
-import 'package:damn_frontend/core/storage/secure_storage_repository.dart';
+import 'package:dskk_flutter_refactor/core/error/exceptions.dart';
+import 'package:dskk_flutter_refactor/core/error/failures.dart';
+import 'package:dskk_flutter_refactor/core/platform/network_info.dart';
+import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
 
-import 'package:damn_frontend/features/auth/data/datasources/auth_remote_data_source.dart';
-import 'package:damn_frontend/features/auth/data/models/authenticated_user_model.dart';
-import 'package:damn_frontend/features/auth/data/repositories/auth_repository_impl.dart';
-import 'package:damn_frontend/features/auth/domain/entities/auth_credentials.dart';
-import 'package:damn_frontend/features/auth/domain/entities/authenticated_user.dart';
-import 'package:damn_frontend/features/auth/domain/entities/user_info.dart';
-import 'package:damn_frontend/features/auth/domain/repositories/i_user_info_repository.dart';
+import 'package:dskk_flutter_refactor/features/auth/data/datasources/auth_remote_data_source.dart';
+import 'package:dskk_flutter_refactor/features/auth/data/models/authenticated_user_model.dart';
+import 'package:dskk_flutter_refactor/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_credentials.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/authenticated_user.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/user_info.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_info_repository.dart';
+import 'package:dskk_flutter_refactor/core/platform/token_validator.dart';
 
-// 生成 Mock 文件命令: flutter pub run build_runner build --delete-conflicting-outputs
+import 'auth_repository_impl_test.mocks.dart'; // 导入生成的mock文件
+
 @GenerateMocks([
   AuthRemoteDataSource,
   IUserInfoRepository,
   ISecureStorageRepository,
   NetworkInfo,
+  TokenValidator,
 ])
-import 'auth_repository_impl_test.mocks.dart'; // 需要生成 mocks 文件
-
 void main() {
   late AuthRepositoryImpl repository;
   late MockAuthRemoteDataSource mockRemoteDataSource;
   late MockIUserInfoRepository mockUserInfoRepository;
   late MockISecureStorageRepository mockSecureStorage;
   late MockNetworkInfo mockNetworkInfo;
+  late MockTokenValidator mockTokenValidator;
 
   setUp(() {
     mockRemoteDataSource = MockAuthRemoteDataSource();
     mockUserInfoRepository = MockIUserInfoRepository();
     mockSecureStorage = MockISecureStorageRepository();
     mockNetworkInfo = MockNetworkInfo();
+    mockTokenValidator = MockTokenValidator();
     repository = AuthRepositoryImpl(
       remoteDataSource: mockRemoteDataSource,
       userInfoRepository: mockUserInfoRepository,
       secureStorage: mockSecureStorage,
       networkInfo: mockNetworkInfo,
+      tokenValidator: mockTokenValidator,
     );
 
     // Mock _initializeAuthStatus to avoid interference during login tests
@@ -266,4 +270,179 @@ void main() {
 
   });
 
+  group('_initializeAuthStatus', () {
+    const tUserId = 123;
+    const tToken = 'test.token.123';
+    final tAuthenticatedUser = AuthenticatedUser(id: tUserId, token: tToken);
+
+    test('should initialize with Authenticated status when token is valid', () async {
+      // Arrange - Mock all the calls used in _initializeAuthStatus
+      when(mockSecureStorage.getInt('user_id')).thenAnswer((_) async => tUserId);
+      when(mockSecureStorage.getString('auth_token')).thenAnswer((_) async => tToken);
+      when(mockTokenValidator.validateToken(tToken))
+          .thenAnswer((_) async => TokenValidationResult.valid);
+
+      // Act - Create a new repository instance to trigger _initializeAuthStatus
+      final repo = AuthRepositoryImpl(
+        remoteDataSource: mockRemoteDataSource,
+        networkInfo: mockNetworkInfo,
+        secureStorage: mockSecureStorage,
+        userInfoRepository: mockUserInfoRepository,
+        tokenValidator: mockTokenValidator,
+      );
+
+      // Assert - Get the first emitted status
+      final authStatus = await repo.authStatus.first;
+      expect(authStatus, isA<Authenticated>());
+      if (authStatus is Authenticated) {
+        expect(authStatus.user.id, equals(tUserId));
+        expect(authStatus.user.token, equals(tToken));
+      }
+
+      // Verify
+      verify(mockSecureStorage.getInt('user_id'));
+      verify(mockSecureStorage.getString('auth_token'));
+      verify(mockTokenValidator.validateToken(tToken));
+    });
+
+    test('should initialize with Unauthenticated status when token is expired', () async {
+      // Arrange
+      when(mockSecureStorage.getInt('user_id')).thenAnswer((_) async => tUserId);
+      when(mockSecureStorage.getString('auth_token')).thenAnswer((_) async => tToken);
+      when(mockTokenValidator.validateToken(tToken))
+          .thenAnswer((_) async => TokenValidationResult.expired);
+      when(mockSecureStorage.delete('user_id')).thenAnswer((_) async => Future.value());
+      when(mockSecureStorage.delete('auth_token')).thenAnswer((_) async => Future.value());
+
+      // Act
+      final repo = AuthRepositoryImpl(
+        remoteDataSource: mockRemoteDataSource,
+        networkInfo: mockNetworkInfo,
+        secureStorage: mockSecureStorage,
+        userInfoRepository: mockUserInfoRepository,
+        tokenValidator: mockTokenValidator,
+      );
+
+      // Assert
+      final authStatus = await repo.authStatus.first;
+      expect(authStatus, isA<Unauthenticated>());
+
+      // Verify
+      verify(mockSecureStorage.getInt('user_id'));
+      verify(mockSecureStorage.getString('auth_token'));
+      verify(mockTokenValidator.validateToken(tToken));
+      verify(mockSecureStorage.delete('user_id'));
+      verify(mockSecureStorage.delete('auth_token'));
+    });
+
+    test('should initialize with Unauthenticated status when token is invalid', () async {
+      // Arrange
+      when(mockSecureStorage.getInt('user_id')).thenAnswer((_) async => tUserId);
+      when(mockSecureStorage.getString('auth_token')).thenAnswer((_) async => tToken);
+      when(mockTokenValidator.validateToken(tToken))
+          .thenAnswer((_) async => TokenValidationResult.invalid);
+      when(mockSecureStorage.delete('user_id')).thenAnswer((_) async => Future.value());
+      when(mockSecureStorage.delete('auth_token')).thenAnswer((_) async => Future.value());
+
+      // Act
+      final repo = AuthRepositoryImpl(
+        remoteDataSource: mockRemoteDataSource,
+        networkInfo: mockNetworkInfo,
+        secureStorage: mockSecureStorage,
+        userInfoRepository: mockUserInfoRepository,
+        tokenValidator: mockTokenValidator,
+      );
+
+      // Assert
+      final authStatus = await repo.authStatus.first;
+      expect(authStatus, isA<Unauthenticated>());
+
+      // Verify
+      verify(mockSecureStorage.getInt('user_id'));
+      verify(mockSecureStorage.getString('auth_token'));
+      verify(mockTokenValidator.validateToken(tToken));
+      verify(mockSecureStorage.delete('user_id'));
+      verify(mockSecureStorage.delete('auth_token'));
+    });
+
+    test('should assume token is valid when validation encounters an error', () async {
+      // Arrange
+      when(mockSecureStorage.getInt('user_id')).thenAnswer((_) async => tUserId);
+      when(mockSecureStorage.getString('auth_token')).thenAnswer((_) async => tToken);
+      when(mockTokenValidator.validateToken(tToken))
+          .thenAnswer((_) async => TokenValidationResult.error);
+
+      // Act
+      final repo = AuthRepositoryImpl(
+        remoteDataSource: mockRemoteDataSource,
+        networkInfo: mockNetworkInfo,
+        secureStorage: mockSecureStorage,
+        userInfoRepository: mockUserInfoRepository,
+        tokenValidator: mockTokenValidator,
+      );
+
+      // Assert
+      final authStatus = await repo.authStatus.first;
+      expect(authStatus, isA<Authenticated>());
+
+      // Verify
+      verify(mockSecureStorage.getInt('user_id'));
+      verify(mockSecureStorage.getString('auth_token'));
+      verify(mockTokenValidator.validateToken(tToken));
+    });
+
+    test('should initialize with Unauthenticated status when no token is found', () async {
+      // Arrange
+      when(mockSecureStorage.getInt('user_id')).thenAnswer((_) async => null);
+      when(mockSecureStorage.getString('auth_token')).thenAnswer((_) async => null);
+      when(mockSecureStorage.delete('user_id')).thenAnswer((_) async => Future.value());
+      when(mockSecureStorage.delete('auth_token')).thenAnswer((_) async => Future.value());
+
+      // Act
+      final repo = AuthRepositoryImpl(
+        remoteDataSource: mockRemoteDataSource,
+        networkInfo: mockNetworkInfo,
+        secureStorage: mockSecureStorage,
+        userInfoRepository: mockUserInfoRepository,
+        tokenValidator: mockTokenValidator,
+      );
+
+      // Assert
+      final authStatus = await repo.authStatus.first;
+      expect(authStatus, isA<Unauthenticated>());
+
+      // Verify
+      verify(mockSecureStorage.getInt('user_id'));
+      verify(mockSecureStorage.getString('auth_token'));
+      verify(mockSecureStorage.delete('user_id'));
+      verify(mockSecureStorage.delete('auth_token'));
+      verifyZeroInteractions(mockTokenValidator); // 没有token就不会验证
+    });
+
+    test('should initialize with Unauthenticated status when storage throws an exception', () async {
+      // Arrange
+      when(mockSecureStorage.getInt('user_id')).thenThrow(Exception('Storage error'));
+      when(mockSecureStorage.delete('user_id')).thenAnswer((_) async => Future.value());
+      when(mockSecureStorage.delete('auth_token')).thenAnswer((_) async => Future.value());
+
+      // Act
+      final repo = AuthRepositoryImpl(
+        remoteDataSource: mockRemoteDataSource,
+        networkInfo: mockNetworkInfo,
+        secureStorage: mockSecureStorage,
+        userInfoRepository: mockUserInfoRepository,
+        tokenValidator: mockTokenValidator,
+      );
+
+      // Assert
+      final authStatus = await repo.authStatus.first;
+      expect(authStatus, isA<Unauthenticated>());
+
+      // Verify
+      verify(mockSecureStorage.getInt('user_id'));
+      verify(mockSecureStorage.delete('user_id'));
+      verify(mockSecureStorage.delete('auth_token'));
+      verifyZeroInteractions(mockTokenValidator); // 出错就不会验证
+    });
+  });
 }

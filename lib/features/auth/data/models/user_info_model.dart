@@ -10,7 +10,8 @@ class UserInfoModel with _$UserInfoModel {
 
   const factory UserInfoModel({
     // Match fields from UserInfo entity and potential API response structure
-    required int id,
+    @JsonKey(defaultValue: 0) // 设置默认值为0，处理null情况
+    int? id,
     String? mobile,
     @JsonKey(name: 'nickname') // Example: if API uses 'nickname' instead of 'nickName'
     String? nickName,
@@ -24,7 +25,7 @@ class UserInfoModel with _$UserInfoModel {
   // Convert Data Transfer Object (Model) to Domain Entity
   UserInfo toEntity() {
     return UserInfo(
-      id: id,
+      id: id ?? 0,
       mobile: mobile,
       nickName: nickName,
       avatar: avatar,

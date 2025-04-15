@@ -9,6 +9,8 @@ import 'package:dskk_flutter_refactor/core/error/exceptions.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/core/platform/network_info.dart';
 import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
+import 'package:dskk_flutter_refactor/core/platform/token_validator.dart';
+import 'package:dskk_flutter_refactor/core/usecases/validate_token_usecase.dart';
 
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_credentials.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_status.dart';
@@ -29,6 +31,7 @@ class AuthRepositoryImpl implements IAuthRepository {
   final ISecureStorageRepository secureStorage; // 注入安全存储
   final NetworkInfo networkInfo; // 注入网络状态检查
   final IUserInfoRepository userInfoRepository; // 注入 UserInfo Repository
+  final TokenValidator tokenValidator;
 
   final StreamController<AuthStatus> _statusController = StreamController<AuthStatus>.broadcast();
   AuthenticatedUser? _currentUser;
@@ -38,6 +41,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     required this.secureStorage,
     required this.networkInfo,
     required this.userInfoRepository, // 添加依赖
+    required this.tokenValidator, // 添加依赖
   }) {
     // 初始化时检查本地存储的认证状态
     _initializeAuthStatus();
@@ -48,15 +52,40 @@ class AuthRepositoryImpl implements IAuthRepository {
     _statusController.add(const AuthUnknown()); // 初始为未知
     try {
       // 同时获取 id (int) 和 token (String)
-      // 假设 secureStorage 有 getInt 和 getString 方法
       final id = await secureStorage.getInt('user_id'); // 使用约定的 key
       final token = await secureStorage.getString('auth_token'); // 使用约定的 key
 
       if (id != null && token != null) {
-        // TODO: Token 有效性校验逻辑 (在 core 中实现)
-        print('Found existing token ($token) and id ($id) in secure storage.');
-        _currentUser = AuthenticatedUser(id: id, token: token);
-        _statusController.add(Authenticated(_currentUser!));
+        // 验证Token有效性
+        print('Found existing token and id in secure storage. Validating token...');
+        final validationResult = await tokenValidator.validateToken(token);
+
+        switch (validationResult) {
+          case TokenValidationResult.valid:
+            print('Token is valid. User is authenticated.');
+            _currentUser = AuthenticatedUser(id: id, token: token);
+            _statusController.add(Authenticated(_currentUser!));
+            break;
+
+          case TokenValidationResult.expired:
+            print('Token has expired. Clearing local auth data.');
+            await _clearLocalAuthData();
+            _statusController.add(const Unauthenticated());
+            break;
+
+          case TokenValidationResult.invalid:
+            print('Token is invalid. Clearing local auth data.');
+            await _clearLocalAuthData();
+            _statusController.add(const Unauthenticated());
+            break;
+
+          case TokenValidationResult.error:
+            // 出错时暂时假定Token可能有效
+            print('Error validating token. Assuming token is valid for now.');
+            _currentUser = AuthenticatedUser(id: id, token: token);
+            _statusController.add(Authenticated(_currentUser!));
+            break;
+        }
       } else {
         print('No existing token/id found, or only partial data found.');
         await _clearLocalAuthData(); // 清理本地数据

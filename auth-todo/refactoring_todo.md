@@ -1,4 +1,8 @@
-# Auth 模块重构任务清单
+# Auth 模块重构 TODO
+
+**状态**: **完成** - 模块核心功能已实现并测试，包括登录、注销、验证码发送等功能，并完成了Token验证逻辑的实现。
+
+**起始日期**: 2024-04-?? **结束日期**: 2024-05-06
 
 本文档跟踪 `Auth` 模块按照 Flutter Clean Architecture 增量重构方法论进行的具体任务。**优先遵循 API 文档 (`backend-api.json`) 设计，但根据最新确认调整，并记录与文档的冲突。**
 
@@ -133,14 +137,31 @@
       - [x] 模块预览环境配置完成: 已创建 `lib/main_auth_preview.dart`，包含独立的依赖注入和模拟实现。
       - [x] 直接运行 `flutter run -t lib/main_auth_preview.dart` 可以在模拟环境中测试登录页面和流程。
       - [x] 在主应用环境 (`lib/main.dart`) 中配置好了连接真实后端的依赖。
-      - [ ] **【主要阻塞点】** 未能成功接收真实短信验证码。
-        - **已确认**: 前端 Flutter 应用成功调用了后端 API (`/api/common/send-code/register`)，后端也返回了成功响应 (HTTP 200)。
-        - **已确认**: 根据极光短信服务统计面板显示，后端没有向极光短信服务发送任何请求 (消耗统计为 0)。
-        - **结论**: 这是后端与极光短信服务之间的集成问题，而非 Flutter 应用的问题。Auth 模块在代码实现和真实数据连接配置方面已经完成。
-        - **解决方向**: 需要后端开发人员检查调用极光 API 的代码、配置或环境设置。
+      - [x] **【已解决】** 发送验证码API需要额外参数。
+        - **问题**: 验证码无法发送，虽然HTTP状态码为200但业务状态码为400，错误信息为"缺少参数包名/版本号"
+        - **解决方案**: 在请求头中添加了 `clienttype: '1'`、`client: 'android'` 和 `version: '100'` 参数
+        - **完善**: 修改了验证码和登录方法的错误处理，不仅检查HTTP状态码还检查业务状态码
+      - [x] **【已解决】** 登录成功但获取用户信息失败的问题。
+        - **问题**: 登录成功获取token后，调用用户信息API时出现 `TypeError: null: type 'Null' is not a subtype of type 'num'` 错误
+        - **原因**: `UserInfoModel` 中 `id` 字段定义为 `required int`，但API返回中该字段可能为 null
+        - **解决方案**:
+          1. 修改 `UserInfoModel` 类，使 `id` 字段可为 null，并设置默认值 0
+          2. 优化 `UserInfoRemoteDataSourceImpl.fetchUserInfo` 方法处理各种异常情况
+          3. 重新生成 freezed 代码
+        - **状态**: 已修复，登录流程现在可以完整执行
 
-- [ ] **11. (模块完成后) 集成准备 (不变)**
-    - [ ] 测试 `core` 中的 Token 校验逻辑。
+- [x] **11. (模块完成后) 集成准备**
+    - [x] 测试 `core` 中的 Token 校验逻辑。
+      - **实现内容**:
+        1. 创建了 `TokenValidator` 接口和 `TokenValidatorImpl` 实现类，用于验证Token有效性
+        2. 创建了 `ValidateTokenUseCase` 用例，封装Token验证业务逻辑
+        3. 更新了 `AuthRepositoryImpl._initializeAuthStatus()` 方法使用Token验证器
+        4. 添加了完整的单元测试覆盖以下情况：
+           - Token有效时认证成功
+           - Token过期/无效时清除本地认证数据并返回未认证状态
+           - 验证过程出错时的处理策略
+        5. 让所有API请求都包含必要的请求头信息
+        6. **完成状态**: 所有单元测试已通过，验证了Token校验逻辑的正确性
 
 - [ ] **12. 执行集成与测试 (不变)**
 - [ ] **13. 重复 (不变)**

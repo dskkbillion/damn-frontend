@@ -100,24 +100,8 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      // --- Remove Logo Section ---
-                      /* // Removing the commented out Logo code entirely
-                      // --- Logo (Temporarily Commented Out) ---
-
-                      // Ensure 'assets/images/图标.svg' exists and pubspec.yaml is updated.
-                      // Run 'flutter pub get' and try a full app restart if logo doesn't show.
-                      SvgPicture.asset(
-                        'assets/images/图标.svg',
-                        height: 80, // Adjust height as needed
-                        // Optional: Add a placeholder if loading fails, though svg loader might not support it directly
-                        // placeholderBuilder: (BuildContext context) => Container(
-                        //      height: 80, width: 80, color: Colors.grey[200], child: const Center(child: Text('Logo'))),
-                      ),
-                      const SizedBox(height: 48),
-                      */
-
-                      // Keep SizedBox for top spacing (Adjust height if needed)
-                      const SizedBox(height: 60), // Adjusted height slightly
+                      // 顶部留白间隔
+                      const SizedBox(height: 60),
 
                       PhoneInputField(controller: _phoneController),
                       const SizedBox(height: 16),
