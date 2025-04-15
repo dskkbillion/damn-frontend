@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 
-import '../../../../core/error/failures.dart';
+import '../error/failures.dart';
 
 /// {@template usecase}
 /// Base class for UseCases in the application.
@@ -22,5 +22,5 @@ abstract class UseCase<Type, Params> {
 /// {@endtemplate}
 class NoParams extends Equatable {
   @override
-  List<Object?> get props => [];
-} 
+  List<Object> get props => [];
+}

@@ -57,4 +57,4 @@ class GeneralFailure extends Failure {
 
   @override
   List<Object?> get props => [message];
-} 
+}
