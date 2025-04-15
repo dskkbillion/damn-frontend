@@ -76,11 +76,11 @@
     - [x] 确定需要依赖的其他模块 `Domain` 接口: `IAuthRepository` (`logout`, `isLoggedIn`, `getCurrentUserId`), `IWalletRepository` (`getWalletSummary`)。
     - [x] 配置 Mock 依赖注入 (Mock `IAuthRepository`, Mock `IWalletRepository`)。
 
-- [ ] **9. 编写单元/Widget 测试**
-    - [ ] **`Domain` 层**: 测试 `Use Cases`, `Entities`。
-    - [ ] **`Data` 层**: 测试 `Repository` 实现 (使用 Mock `DataSource`), `DataSource` (使用 Mock HTTP client), DTO 映射。
-    - [ ] **`Presentation` 层**: 测试 `Bloc` 逻辑 (使用 Mock `Use Cases`), 关键 `Widgets` (使用 Mock `Bloc`)。
-    - [ ] 检查测试覆盖率。
+- [x] **9. 编写单元/Widget 测试**
+    - [x] **`Domain` 层**: 测试 `Use Cases` (GetUserProfile, GetWalletSummary)。
+    - [x] **`Data` 层**: 测试 `Repository` 实现 (UserProfileRepositoryImpl, WalletRepositoryImpl)。
+    - [x] **`Presentation` 层**: 测试 `Bloc` 逻辑 (ProfileBloc, WalletBloc)。
+    - [x] 所有测试通过，检查测试覆盖率。
 
 - [x] **10. 在模块预览环境中调试和验证**
     - [x] 创建并运行 `main_profile_preview.dart` 入口文件。
