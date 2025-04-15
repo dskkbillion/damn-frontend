@@ -1,15 +1,9 @@
+/// 服务器异常
 class ServerException implements Exception {
-  final int? statusCode;
-  final String message;
+  final String? message;
 
-  ServerException({this.statusCode, required this.message});
-
-  @override
-  String toString() {
-    return 'ServerException(statusCode: $statusCode, message: $message)';
-  }
+  ServerException({this.message});
 }
 
-// You can add other custom exception types here if needed, e.g.:
-// class CacheException implements Exception {}
-// class NetworkException implements Exception {} 
+/// 缓存异常
+class CacheException implements Exception {}

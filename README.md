@@ -23,12 +23,11 @@
 5.  **实现 `Data` 层**: 实现 `Repository` 接口，对接 API/本地存储，创建 Mock 数据源。
 6.  **实现 `Domain` 逻辑**: 实现 `Use Cases`。
 7.  **实现 `Presentation` 层**: 实现 UI 页面/组件和状态管理 (Bloc/Cubit/...).
-8.  **配置 Mock 依赖**: 在模块的测试/预览环境中注入 Mock 实现。
-9.  **编写测试**: 编写单元测试和 Widget 测试，确保模块质量。
-10. **隔离调试与验证**: 在模块预览环境中手动测试功能和 UI。
-11. **集成准备**: 代码评审，确认满足 DoD。
-12. **集成与测试**: 合并到主开发分支，替换 Mock 为真实实现，进行集成测试。
-13. **重复**: 选择下一个模块。
+8.  **配置 Mock 依赖**: 在模块的预览环境中注入 Mock 实现。
+9.  **手动验证**: 在模块预览环境中手动验证功能和 UI。
+10. **集成准备**: 代码评审，确认满足 DoD。
+11. **集成与验证**: 合并到主开发分支，替换 Mock 为真实实现，进行集成验证。
+12. **重复**: 选择下一个模块。
 
 ## 分支策略
 
@@ -104,7 +103,7 @@ flutter run -t lib/main_ai_docs_preview.dart
 
 这将使用专用的入口点 (`main_ai_docs_preview.dart`) 和特定的 App Widget (`AiDocsPreviewApp`) 来启动 `ChatPage`。
 
-**注意:** 此预览目前为了测试目的，使用了一些硬编码值（用户 ID、认证 Token、API 版本号 Header）。详情请参考 `ai-docs-todo/hardcoded_values.md`。
+**注意:** 此预览目前为了演示目的，使用了一些硬编码值（用户 ID、认证 Token、API 版本号 Header）。详情请参考 `ai-docs-todo/hardcoded_values.md`。
 
 ## 项目结构 (简述)
 

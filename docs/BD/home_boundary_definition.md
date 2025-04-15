@@ -19,17 +19,22 @@
     *   `imageUrl`: (String) 图片 URL。
     *   `targetType`: (枚举: `post`, `product`, `category`, `url`, `none`) 点击后的目标类型。
     *   `targetValue`: (String) 目标的具体值（如帖子 ID、商品 ID、分类 ID、外部链接 URL）。
+    *   `createTime`: (String) 创建时间。
+    *   `updateTime`: (String) 更新时间。
 *   **`HomeCategory`**: 表示首页展示的快速分类入口。
     *   `id`: (String) 分类唯一标识。
     *   `name`: (String) 分类名称。
     *   `iconUrl`: (String) 图标 URL。
     *   `targetType`: (枚举: `category`, `search`, `feature`) 点击后的目标类型 (跳转到分类页、带关键词的搜索页、某个特定功能页等)。
     *   `targetValue`: (String) 目标的具体值。
-*   **`HomeFeedItem`**: 表示首页信息流中的单个项目 (这是一个抽象概念，具体可以是帖子、商品等的预览)。
+*   **`HomeFeedItem`**: 表示首页信息流中的单个项目，主要是商品/服务项目。
     *   `id`: (String) 项目唯一标识。
-    *   `type`: (枚举: `post`, `product`, `advertisement`, etc.) 项目类型。
-    *   `title`: (String) 标题。
-    *   `coverImageUrl`: (String) 封面图片 URL。
+    *   `type`: (枚举: `product`) 项目类型，主要是商品/服务。
+    *   `name`: (String) 标题/名称。
+    *   `images`: (List<String>) 图片 URL 列表，第一张作为封面。
+    *   `sellingPrice`: (Number) 售价。
+    *   `score`: (Number) 评分，默认为 5.0。
+    *   `evaluateNum`: (Number) 评价数量。
     *   *(具体类型如 `PostPreview` 或 `ProductPreview` 会扩展此基础，并包含各自特有的预览信息，例如作者、价格等。这些具体类型可能定义在各自的模块中，`Home` 模块使用它们的接口或简化版本)*
 *   **`HomePageData`**: 聚合首页所需的所有动态数据。
     *   `banners`: `List<Banner>`
@@ -76,18 +81,48 @@
 
 `Home` 模块的 `Presentation` 层需要触发以下导航事件 (通过中央导航服务实现):
 
-*   `navigateToSearch(initialQuery: String?)`: 点击搜索栏或搜索推荐时。
+*   `navigateToSearch(initialQuery: String?)`: 点击搜索栏或搜索推荐时，跳转到 search.html。
 *   `navigateToCategoryDetail(categoryId: String)`: 点击分类图标时 (如果目标是分类详情)。
-*   `navigateToPostDetail(postId: String)`: 点击信息流中的帖子预览时。
-*   `navigateToProductDetail(productId: String)`: 点击信息流中的商品预览时。
+*   `navigateToProductDetail(productId: String)`: 点击信息流中的商品/服务卡片时，通过 router.push 跳转到 "/(outer)/home/itemHomepage" 路径，并传递 id 和 source 参数。
 *   `navigateToUrl(url: String)`: 点击指向外部链接的 Banner 时。
 *   `navigateToFeature(featureRoute: String)`: 点击指向特定功能页面的分类或 Banner 时。
 *   `navigateToLogin()`: 当执行需要登录的操作（如个性化推荐交互）但用户未登录时。
+*   `showRecommendConfirmation(serviceId: String)`: 点击"让ta看看"按钮时，显示确认对话框。
 
 ---
 
-**待确认/后续步骤:**
+**已确认实现细节:**
 
-*   明确首页信息流 (`HomeFeedItem`) 具体包含哪些类型的内容（帖子？商品？混合？），以及每种类型需要展示哪些预览信息。
-*   确认获取首页聚合数据 (`HomePageData`) 的具体 API 调用方式（是一个统一接口还是需要客户端多次调用？）。
-*   确认 Banner 和分类的具体跳转逻辑和目标类型。 
+* **首页信息流 (`HomeFeedItem`) 内容类型**:
+  * 首页信息流主要包含**商品/服务项目**，每个项目包含以下信息：
+    * 商品/服务图片
+    * 标题
+    * 价格
+    * 评分和订单数
+    * "让ta看看"按钮（用于推荐给 AI 助手）
+  * 信息流采用瀑布流布局，双列展示
+
+* **获取首页聚合数据 (`HomePageData`) 的 API 调用方式**:
+  * 需要客户端多次调用不同 API 并聚合数据：
+    * `/api/shop/product/recommend/detail?code=home` - 获取推荐商品列表（GET 请求）
+    * `/api/content/banner/list` - 获取轮播图数据（POST 请求，需要 pageSize 和 pageNum 参数）
+  * 在 demo-repository 中，这些 API 调用通过 Redux thunk 函数实现：
+    * `createFetchHomeItemListThunk` - 调用商品列表 API
+    * `createFetchBannerListThunk` - 调用轮播图 API
+  * `HomeRepositoryImpl` 负责调用这些 API 并将数据聚合成 `HomePageData` 对象
+
+* **Banner 和分类的跳转逻辑**:
+  * Banner 点击后根据 `targetType` 跳转到相应页面：
+    * `product` - 跳转到商品详情页
+    * `category` - 跳转到分类详情页
+    * `url` - 跳转到外部链接
+  * 服务卡片点击后跳转到服务详情页面
+  * "让ta看看"按钮点击后弹出确认对话框，确认后将服务推荐给 AI 助手
+
+* **其他实现细节**:
+  * 首页使用 Redux 进行状态管理，相关代码在 `itemSlice.ts` 和 `itemActions.ts` 中
+  * 首页数据加载状态、错误处理等通过 Redux 状态管理
+  * 首页瀑布流布局通过 `waterfallLayout.tsx` 组件实现，使用 FlashList 组件进行高效渲染
+  * 轮播图通过 `top_carousel.tsx` 组件实现，使用 react-native-reanimated-carousel 库
+  * 服务卡片通过 `ItemContent` 组件实现，包含图片、评分、标题、价格等信息
+  * 模拟数据通过 `services.ts` 和 `recommendations.ts` 生成，用于开发和测试
