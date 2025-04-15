@@ -91,30 +91,37 @@
     - [x] `IAuthRepository` 接口 (**移除 `register` 方法**)
     - [x] `UserInfo` 实体 (**可基于实际响应定义**)
 
-- [ ] **5. 实现 Flutter `Data` 层 (基本完成，依赖 Core/Profile)**
+- [x] **5. 实现 Flutter `Data` 层 (基本完成)**
     - [x] **(阻塞解除)**
     - [x] **更新 `AuthRemoteDataSource` 接口** (**移除 `register` 方法**) - **已完成**
     - [x] **更新 `AuthRemoteDataSourceImpl`**:
         - [x] `loginWithVerificationCode`: 实现 (**确认响应包含 `token`**) - **已完成**
         - [x] `sendVerificationCode`: 实现已更新。- **已完成**
     - [x] **更新 `AuthenticatedUserModel`**: (**确认包含 `token`**, `code` 待定) - **已完成**
-    - [ ] **(Core/Profile) 实现 `UserInfoRemoteDataSource`**: 调用 `GET /api/member/info`。 - **需要在 Core/Profile 完成**
-    - [x] **(Core/Profile) 实现 `UserInfoModel`**: **基于实际响应解析 `/api/member/info` `data` 结构**。 - **已在 Auth 中完成模型定义，实现需在 Core/Profile**
+    - [x] **(Core/Profile) `UserInfoRemoteDataSource` 和 `UserInfoModel` 实现**:
+        - **注意**: 虽然计划在 Core/Profile 中实现，但为了解除 Auth 模块依赖阻塞，我们已在 Auth 模块中临时实现了 `UserInfoRemoteDataSourceImpl` 和 `UserInfoRepositoryImpl`。后续可能需要迁移这些代码到 Core/Profile 模块。
     - [x] **重构 `AuthRepositoryImpl`**: (注入 IUserInfoRepo, 更新 login (依赖 UserInfoRepo, **需存储 id**), **移除 register**) - **已完成**
 
 - [x] **6. 实现 Flutter `Domain` 逻辑 (已完成/调整)**
     - [x] `SendVerificationCodeUseCase` 实现 (**已完成**)。
 
-- [x] **7. 实现 Flutter `Presentation` 层 (需要更新)**
+- [x] **7. 实现 Flutter `Presentation` 层 (已完成)**
     - [x] `SmsLoginCubit`: (`sendCode` 移除 purpose) (**已完成**)。
-    - [ ] `SmsLoginPage`: UI 和逻辑确认。
+    - [x] `SmsLoginPage`: UI 和逻辑已确认。(**注意: 决定不显示 Logo**)
+        - [x] 调整主题色为 `#b66d0e`，按钮颜色为 `#c58c4a` (低饱和度版本)
+        - [x] 添加底部"隐私政策"和"用户协议"链接
+        - [x] 移除 AppBar
     - [x] `VerificationCodeButton`: (`onSendCode` 移除 purpose) (**已完成**)。
+        - [x] 修复倒计时后按钮恢复问题
 
 ### 阶段 3: 测试与集成
 
-- [ ] **8. 识别并配置外部依赖 (策略明确)**
+- [x] **8. 识别并配置外部依赖 (已完成)**
     - [x] 主要依赖 `IUserInfoRepository` (获取用户信息)。
-    - [x] **策略**: 在 `Auth` 模块测试中将 Mock `IUserInfoRepository` 接口。其真实实现 (`UserInfoRepositoryImpl`) 需要在 `Core` 或 `Profile` 模块中提供，并通过依赖注入配置。
+    - [x] 成功配置 `ISecureStorageRepository` (使用 `flutter_secure_storage`)
+    - [x] 成功配置 `NetworkInfo` (使用 `connectivity_plus`)
+    - [x] 成功配置 `Dio` (从 `.env` 读取 `BACKEND_BASE_URL`)
+    - [x] **注意**: 虽然 `IUserInfoRepository` 的实现理论上应该在 Core/Profile 模块，但为解除阻塞我们已在 Auth 模块中临时实现。
 
 - [~] **9. 编写单元/Widget 测试 (基本完成)**
     - [x] `Data` 层: `UserInfoModel`, `AuthRepositoryImpl` (login, logout, sendCode) 测试已添加。
@@ -122,9 +129,18 @@
     - [x] `Presentation` 层: `SmsLoginPage` Widget 测试已添加。
     - [ ] (待完善) 覆盖更多边缘情况和 `AuthRepositoryImpl` 其他方法测试。
 
-- [ ] **10. 在模块预览环境中调试和验证 (主要流程通过)**
-      - [x] 测试登录(确认有 token)->获取用户信息(解析完整 data, 包含 id)->更新状态的流程。
+- [ ] **10. 在模块预览环境中调试和验证 (部分完成)**
+      - [x] 模块预览环境配置完成: 已创建 `lib/main_auth_preview.dart`，包含独立的依赖注入和模拟实现。
+      - [x] 直接运行 `flutter run -t lib/main_auth_preview.dart` 可以在模拟环境中测试登录页面和流程。
+      - [x] 在主应用环境 (`lib/main.dart`) 中配置好了连接真实后端的依赖。
+      - [ ] **【主要阻塞点】** 未能成功接收真实短信验证码。
+        - **已确认**: 前端 Flutter 应用成功调用了后端 API (`/api/common/send-code/register`)，后端也返回了成功响应 (HTTP 200)。
+        - **已确认**: 根据极光短信服务统计面板显示，后端没有向极光短信服务发送任何请求 (消耗统计为 0)。
+        - **结论**: 这是后端与极光短信服务之间的集成问题，而非 Flutter 应用的问题。Auth 模块在代码实现和真实数据连接配置方面已经完成。
+        - **解决方向**: 需要后端开发人员检查调用极光 API 的代码、配置或环境设置。
+
 - [ ] **11. (模块完成后) 集成准备 (不变)**
     - [ ] 测试 `core` 中的 Token 校验逻辑。
+
 - [ ] **12. 执行集成与测试 (不变)**
 - [ ] **13. 重复 (不变)**

@@ -100,8 +100,10 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
+                      // --- Remove Logo Section ---
+                      /* // Removing the commented out Logo code entirely
                       // --- Logo (Temporarily Commented Out) ---
-                      /*
+
                       // Ensure 'assets/images/图标.svg' exists and pubspec.yaml is updated.
                       // Run 'flutter pub get' and try a full app restart if logo doesn't show.
                       SvgPicture.asset(
@@ -113,8 +115,9 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                       ),
                       const SizedBox(height: 48),
                       */
-                      // Add some space at the top if logo is removed
-                      const SizedBox(height: 80), // Adjust this value as needed
+
+                      // Keep SizedBox for top spacing (Adjust height if needed)
+                      const SizedBox(height: 60), // Adjusted height slightly
 
                       PhoneInputField(controller: _phoneController),
                       const SizedBox(height: 16),
