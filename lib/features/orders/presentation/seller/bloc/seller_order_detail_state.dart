@@ -38,4 +38,40 @@ class SellerOrderDetailLoadFailure extends SellerOrderDetailState {
   List<Object?> get props => [failedOrderId, message];
 }
 
-// TODO: Add states for actions later (e.g., ActionInProgress, ActionSuccess, ActionFailure)
+// --- Action States ---
+
+/// State indicating a seller action on the order is in progress.
+/// Contains the currently loaded order data.
+class SellerOrderDetailActionInProgress extends SellerOrderDetailState {
+  final Order order;
+  // TODO: Add action type if needed for specific UI feedback
+  const SellerOrderDetailActionInProgress({required this.order});
+  @override List<Object?> get props => [order];
+}
+
+/// State indicating a seller action succeeded.
+/// Contains the (potentially updated) order data and a success message.
+class SellerOrderDetailActionSuccess extends SellerOrderDetailState {
+  final Order order; // The order state *after* the action
+  final String message;
+  // TODO: Add action type that succeeded
+  const SellerOrderDetailActionSuccess({required this.order, required this.message});
+  @override List<Object?> get props => [order, message];
+}
+
+/// State indicating a seller action failed.
+/// Contains the order data (before the failed action) and an error message.
+class SellerOrderDetailActionFailure extends SellerOrderDetailState {
+  final Order order; // The order state *before* the action failed
+  final String message;
+   // TODO: Add action type that failed
+  const SellerOrderDetailActionFailure({required this.order, required this.message});
+  @override List<Object?> get props => [order, message];
+}
+
+
+
+
+
+
+

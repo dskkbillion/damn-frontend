@@ -33,11 +33,12 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
     String? keyword,
     required int page,
     required int limit,
+    required String userRole,
   }) async {
     final Map<String, dynamic> params = {
       'pageNum': page,
       'pageSize': limit,
-      'type': 'buyer', // 假设总是查询买家订单
+      'type': userRole,
     };
 
     // (Based on API doc/example provided by user) - CORRECTED MAPPING using 'states' array

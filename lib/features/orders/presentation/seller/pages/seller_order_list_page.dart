@@ -196,9 +196,9 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
                         child: SellerOrderItemCard(
                           order: order,
                           onTap: () {
-                            // Navigate to the seller detail page using GoRouter
-                            context.go('/seller/orders/${order.id}'); 
-                             print('[SellerOrderListPage] Navigating to seller detail for order ${order.id}');
+                            // Navigate to the seller detail page using push instead of go
+                            context.push('/seller/orders/${order.id}'); 
+                             print('[SellerOrderListPage] Pushing to seller detail for order ${order.id}');
                           },
                         ),
                       );

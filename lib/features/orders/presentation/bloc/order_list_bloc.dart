@@ -41,11 +41,16 @@ class OrderListBloc extends Bloc<OrderListEvent, OrderListState> {
   }
 
   Future<void> _onLoadOrders(LoadOrders event, Emitter<OrderListState> emit) async {
-    currentPage = 1; // Reset page number for new filter/initial load
-    currentStatus = event.status; // Store the current filter status
+    currentPage = 1; // Reset page for new filter/refresh
+    currentStatus = event.status;
     emit(OrderListLoading()); // Indicate loading
     
-    final params = GetOrderListParams(page: currentPage, limit: _pageSize, status: currentStatus);
+    final params = GetOrderListParams(
+      page: currentPage,
+      limit: _pageSize,
+      status: currentStatus == OrderStatus.unknown ? null : currentStatus,
+      userRole: 'buyer', // Pass 'buyer' role
+    );
     final Either<Failure, List<Order>> result = await _getOrderListUseCase(params);
 
     result.fold(
@@ -67,7 +72,12 @@ class OrderListBloc extends Bloc<OrderListEvent, OrderListState> {
 
       print('[OrderListBloc] Loading page $currentPage...');
 
-      final params = GetOrderListParams(page: currentPage, limit: _pageSize, status: currentStatus);
+      final params = GetOrderListParams(
+        page: currentPage,
+        limit: _pageSize,
+        status: currentStatus == OrderStatus.unknown ? null : currentStatus,
+        userRole: 'buyer', // Pass 'buyer' role
+      );
       final Either<Failure, List<Order>> result = await _getOrderListUseCase(params);
 
       result.fold(

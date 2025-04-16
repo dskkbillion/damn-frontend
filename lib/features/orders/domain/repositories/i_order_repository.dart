@@ -33,15 +33,20 @@ class DeliverOrderParams extends Equatable { // Make Equatable
   final int orderId;
   final String content;
   final List<String> files; // Assuming file paths or identifiers
+  // Add fields for shipping info
+  final String? deliverySn;
+  final String? deliveryCompany;
 
   DeliverOrderParams({
     required this.orderId,
     required this.content,
     required this.files,
+    this.deliverySn, // Add to constructor
+    this.deliveryCompany, // Add to constructor
   });
 
   @override
-  List<Object?> get props => [orderId, content, files]; // Add props
+  List<Object?> get props => [orderId, content, files, deliverySn, deliveryCompany]; // Add to props
 }
 
 /// 定义订单模块的数据访问契约。
@@ -59,6 +64,7 @@ abstract class IOrderRepository {
     String? keyword,
     required int page,
     required int limit,
+    required String userRole,
   });
 
   /// 获取指定 ID 的订单详情。

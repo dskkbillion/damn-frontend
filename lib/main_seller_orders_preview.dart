@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import secure storage
+import 'package:flutter_dotenv/flutter_dotenv.dart'; 
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:package_info_plus/package_info_plus.dart';
 
 // 假设你的 DI 设置在 injection.dart 或类似文件中
 // 必要时调整导入路径
@@ -48,15 +52,20 @@ Future<void> configureDependenciesPreview() async {
   // --- 卖家视图的预览特定覆盖 ---
 
   // 使用适用于卖家视图的 mock 实现覆盖 IOrderRepository
-  // 注意：如果 getIt 已经注册了 IOrderRepository，先 unregister 或 reset
+  // 注意：先 unregister 再 register 是更可靠的覆盖方式
+  /* 
   if (getIt.isRegistered<IOrderRepository>()) {
-    getIt.resetLazySingleton<IOrderRepository>(); // Reset if already registered
-     // Ensure MockSellerOrderRepository is used
+    print('[Preview DI] Unregistering existing IOrderRepository...');
+    await getIt.unregister<IOrderRepository>(); // Unregister first
+     // Register the Mock repository
+    print('[Preview DI] Registering MockSellerOrderRepository...');
     getIt.registerLazySingleton<IOrderRepository>(() => MockSellerOrderRepository());
   } else {
-      // If not registered by main config, register it here
+      // If not registered by main config (should not happen now), register it here
+      print('[Preview DI] IOrderRepository not found in main config, registering MockSellerOrderRepository...');
       getIt.registerLazySingleton<IOrderRepository>(() => MockSellerOrderRepository());
   }
+  */
 
   // --- 移除以下注册，假设它们由主 configureDependencies() 处理 ---
   /* 
@@ -85,14 +94,83 @@ Future<void> configureDependenciesPreview() async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // 如果需要，加载环境变量 (例如使用 flutter_dotenv)
-  // await dotenv.load(fileName: ".env");
+  
+  // --- Load .env and Register baseUrl (like in main_orders_preview) ---
+  final Map<String, String> envMap = {}; 
+  print('[main_seller_preview] Loading .env from assets...');
+  try {
+    // Load .env (ensure it's in pubspec.yaml assets)
+    await dotenv.load(fileName: ".env");
+    // Read manually for GetIt registration before injectable runs
+    final envString = await rootBundle.loadString('.env');
+    final lines = envString.split('\n');
+    for (var line in lines) {
+      line = line.trim();
+      if (line.isEmpty || line.startsWith('#')) continue;
+      final index = line.indexOf('=');
+      if (index != -1) {
+        final key = line.substring(0, index).trim();
+        final value = line.substring(index + 1).trim();
+        if (key.isNotEmpty) {
+          envMap[key] = value;
+        }
+      }
+    }
+    print('[main_seller_preview] Successfully parsed .env from assets.');
+    
+    // **Explicitly register the baseUrl String with the name 'baseUrl'**
+    final baseUrl = envMap['BACKEND_BASE_URL'];
+    if (baseUrl != null && baseUrl.isNotEmpty) {
+      getIt.registerSingleton<String>(baseUrl, instanceName: 'baseUrl');
+      print('[main_seller_preview] Registered baseUrl: $baseUrl with instanceName: baseUrl');
+    } else {
+      throw Exception('[main_seller_preview] BACKEND_BASE_URL is missing or empty in .env file');
+    }
+  } catch (e) {
+    print('[main_seller_preview] Error loading/parsing .env or registering baseUrl: $e');
+    throw Exception('Failed to load environment configuration');
+  }
+  // ---------------------------------------------------------------------
 
-  // 首先运行主依赖配置
+  // --- Register FlutterSecureStorage (like in main_orders_preview) ---
+  getIt.registerLazySingleton<FlutterSecureStorage>(() => const FlutterSecureStorage());
+  print('[main_seller_preview] Registered FlutterSecureStorage as LazySingleton.');
+  // ---------------------------------------------------------------------
+
+  // --- Register PackageInfo (needed by AppInfoInterceptor -> CoreDioClient) ---
+   try {
+    final packageInfo = await PackageInfo.fromPlatform();
+    getIt.registerSingleton<PackageInfo>(packageInfo);
+    print('[main_seller_preview] Registered PackageInfo: ${packageInfo.packageName} v${packageInfo.version}');
+  } catch (e) {
+    print('[main_seller_preview] ERROR: Failed to get or register PackageInfo: $e');
+    throw Exception('Failed to initialize PackageInfo');
+  }
+  // --------------------------------------------------------------------------
+
+  // 现在运行主依赖配置，它应该能找到 baseUrl 和 FlutterSecureStorage
   await configureDependencies();
 
-  // 然后为卖家预览环境覆盖特定依赖项
+  // 然后为卖家预览环境覆盖特定依赖项（如果需要，现在是注释掉的）
   await configureDependenciesPreview();
+
+  // --- Manually Inject Test Token and User ID for Seller Preview ---
+  print('[main_seller_preview] Attempting to inject test credentials...');
+  try {
+    // Get FlutterSecureStorage instance from GetIt (it should be registered by configureDependencies)
+    final storage = getIt<FlutterSecureStorage>();
+    // Use the same test token as buyer preview for consistency, unless seller needs a different one
+    const testToken = "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjJhMTlhYzFmLTlmYWItNDZkYS04NTRiLTVhZTc1YWVmNTJlZiJ9.Mk1dtVBPtFhhNpIe681Z3wQxgxXH2ToQul7evMrFpIqYY5qxFPmb_6PholruRsbRtGVZv87Y2h8JOt00IP_rTA"; 
+    // Use a different User ID for seller if needed, otherwise can use the same
+    const testUserId = "18888888888"; // Example seller ID
+    await storage.write(key: 'user_token', value: testToken);
+    await storage.write(key: 'user_id', value: testUserId);
+    print('[main_seller_preview] Successfully injected test token and seller user ID into secure storage.');
+  } catch (e) {
+     print('[main_seller_preview] ERROR injecting test credentials: $e');
+     // Handle error, maybe don't run app?
+  }
+  // -------------------------------------------------------------------
 
   // 设置错误处理 (可选但推荐)
   // Bloc.observer = SimpleBlocObserver(); // 示例 observer

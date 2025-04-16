@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-// Remove direct page imports for orders, they are handled by OrderRoutes
-// import '../../features/orders/presentation/pages/order_detail_page.dart';
-// import '../../features/orders/presentation/pages/order_list_page.dart';
+// Import application pages
+// import '../../features/auth/presentation/pages/login_page.dart'; // Commented out
+// import '../../features/auth/presentation/pages/registration_page.dart'; // Commented out
+// import '../../features/main/presentation/pages/main_navigation_page.dart'; // Commented out
+import '../../features/orders/presentation/pages/order_detail_page.dart';
+import '../../features/orders/presentation/pages/order_list_page.dart';
+// Import OrderItem entity here for the router builder
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_item.dart';
 import '../../features/after_sales/presentation/pages/after_sales_list_page.dart';
 import '../../features/after_sales/presentation/pages/after_sales_detail_page.dart';
 import '../../features/after_sales/presentation/pages/select_after_sales_type_page.dart';
 import '../../features/after_sales/presentation/pages/after_sales_apply_page.dart';
-// Remove direct seller page imports
+// Remove direct seller page imports - Handled by OrderRoutes
 // import 'package:dskk_flutter_refactor/features/orders/presentation/seller/pages/seller_order_list_page.dart';
 // import 'package:dskk_flutter_refactor/features/orders/presentation/seller/pages/seller_order_detail_page.dart';
 
 // Import module route definitions
 import 'package:dskk_flutter_refactor/features/orders/presentation/routes/order_routes.dart';
+import 'package:dskk_flutter_refactor/features/after_sales/presentation/routes/after_sales_routes.dart';
 // TODO: Import other module route definitions (e.g., after_sales_routes.dart)
 
 // Define Route Names (optional but good practice)
@@ -27,8 +32,8 @@ class AppRouter {
 
   // GoRouter instance
   static final router = GoRouter(
-    // Set the initial route for the seller preview
-    initialLocation: '/seller/orders', 
+    // Set the initial route (can be changed later, e.g., to '/login' or '/')
+    initialLocation: '/orders', // Changed to '/orders' as a common start point
 
     // Define application routes by aggregating module routes
     routes: <RouteBase>[
@@ -96,7 +101,7 @@ class AppRouter {
 
       // --- Aggregate Module Routes --- 
        // Include routes from the Orders module
-      ...OrderRoutes.routes,
+      ...OrderRoutes.routes, // Keep this line
 
        // TODO: Include routes from other modules here (e.g., AfterSales)
        // Example (needs after_sales_routes.dart to be created first):

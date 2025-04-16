@@ -31,6 +31,7 @@ class GetOrderListUseCase implements UseCase<List<Order>, GetOrderListParams> {
       keyword: params.keyword,
       page: params.page,
       limit: params.limit,
+      userRole: params.userRole,
     );
   }
 }
@@ -41,14 +42,16 @@ class GetOrderListParams extends Equatable { // 继承 Equatable
   final String? keyword;
   final int page;
   final int limit;
+  final String userRole; // Ensure it's final String, not String?
 
   const GetOrderListParams({
     this.status,
     this.keyword,
     required this.page,
     required this.limit,
+    required this.userRole, // Ensure it's required
   });
 
   @override
-  List<Object?> get props => [status, keyword, page, limit]; // 实现 props
+  List<Object?> get props => [status, keyword, page, limit, userRole]; // Keep userRole in props
 } 

@@ -220,8 +220,9 @@ class MockSellerOrderRepository implements IOrderRepository {
     String? keyword,
     required int page,
     required int limit,
+    required String userRole,
   }) async {
-    print('[MockSellerOrderRepository] getOrderList called - Status: $status, Keyword: $keyword, Page: $page, Limit: $limit');
+    print('[MockSellerOrderRepository] getOrderList called. Page: $page, Status: $status, Keyword: $keyword, Role: $userRole');
     await Future.delayed(const Duration(milliseconds: 300)); // Simulate network delay
 
     List<Order> filteredOrders = _mockSellerOrders;

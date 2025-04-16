@@ -80,8 +80,7 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
       limit: 10, // Or get from config
       status: _currentStatusFilter == OrderStatus.unknown ? null : _currentStatusFilter,
       keyword: _currentKeyword,
-      // TODO: IMPORTANT - How to specify role? Add 'role' to GetOrderListParams?
-      // role: 'seller',
+      userRole: 'seller', // Pass 'seller' role
     ));
 
     result.fold(
@@ -116,7 +115,7 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
         limit: 10,
         status: _currentStatusFilter == OrderStatus.unknown ? null : _currentStatusFilter,
         keyword: _currentKeyword,
-        // role: 'seller', // Add role here too
+        userRole: 'seller', // Pass 'seller' role
       ));
 
       result.fold(

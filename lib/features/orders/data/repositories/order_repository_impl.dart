@@ -54,6 +54,7 @@ class OrderRepositoryImpl implements IOrderRepository {
     String? keyword,
     required int page,
     required int limit,
+    required String userRole,
   }) async {
     final int offset = (page - 1) * limit;
     final bool isFetchingAll = status == null;
@@ -89,20 +90,22 @@ class OrderRepositoryImpl implements IOrderRepository {
     // Note: This simple implementation doesn't notify the UI about the network update.
     if (returnedCache && resultToReturn != null) {
         // Intentionally start network fetch *after* returning cache
-        _fetchAndUpdateCache(status, keyword, page, limit, stateKey);
+        _fetchAndUpdateCache(status, keyword, page, limit, stateKey, userRole);
         return resultToReturn!;
     }
 
     // 2. If cache missed, empty, or failed, fetch from network
     print('[OrderRepository] Fetching $stateKey page $page from network...');
     try {
-        final orderModels = await remoteDataSource.getOrderList(
+        print('[OrderRepository] Fetching order list from remote. Page: $page, Limit: $limit, Status: $status, Keyword: $keyword, Role: $userRole');
+        final remoteOrders = await remoteDataSource.getOrderList(
           status: status,
           keyword: keyword,
           page: page,
           limit: limit,
+          userRole: userRole,
         );
-        final networkOrders = orderModels.map((model) => model.toEntity()).toList();
+        final networkOrders = remoteOrders.map((model) => model.toEntity()).toList();
         print('[OrderRepository] Fetched ${networkOrders.length} orders from network for $stateKey page $page.');
 
         // 3. Cache the network response
@@ -137,16 +140,18 @@ class OrderRepositoryImpl implements IOrderRepository {
   // Helper function to fetch from network and update cache in the background
   // This is called when cache is hit and returned immediately
   Future<void> _fetchAndUpdateCache(
-      OrderStatus? status, String? keyword, int page, int limit, String stateKey) async {
+      OrderStatus? status, String? keyword, int page, int limit, String stateKey, String userRole) async {
      print('[OrderRepository] Background fetch starting for $stateKey page $page...');
       try {
-        final orderModels = await remoteDataSource.getOrderList(
+        print('[OrderRepository] Fetching order list from remote. Page: $page, Limit: $limit, Status: $status, Keyword: $keyword, Role: $userRole');
+        final remoteOrders = await remoteDataSource.getOrderList(
           status: status,
           keyword: keyword,
           page: page,
           limit: limit,
+          userRole: userRole,
         );
-        final networkOrders = orderModels.map((model) => model.toEntity()).toList();
+        final networkOrders = remoteOrders.map((model) => model.toEntity()).toList();
         await localDataSource.cacheOrders(networkOrders);
         print('[OrderRepository] Background fetch and cache update successful for $stateKey page $page.');
       } catch (e) {

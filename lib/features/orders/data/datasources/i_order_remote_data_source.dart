@@ -13,6 +13,7 @@ abstract class IOrderRemoteDataSource {
   /// - [keyword]: 搜索关键词。
   /// - [page]: 页码。
   /// - [limit]: 每页数量。
+  /// - [userRole]: The role of the user making the request.
   ///
   /// 成功时返回 [List<OrderModel>]。
   /// 失败时应抛出特定异常 (如 ServerException)。
@@ -21,6 +22,7 @@ abstract class IOrderRemoteDataSource {
     String? keyword,
     required int page,
     required int limit,
+    required String userRole,
   });
 
   /// 调用后端 API 获取指定 ID 的订单详情。

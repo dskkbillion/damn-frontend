@@ -165,6 +165,14 @@ _i174.GetIt init(
         gh<_i696.InviteEvaluationUseCase>(),
         gh<_i258.DeleteSellerRecordUseCase>(),
       ));
+  gh.factory<_i984.SellerOrderDetailBloc>(() => _i984.SellerOrderDetailBloc(
+        gh<_i691.GetOrderDetailUseCase>(),
+        gh<_i449.ConfirmOrderAcceptanceUseCase>(),
+        gh<_i194.RejectOrderUseCase>(),
+        gh<_i176.DeliverOrderUseCase>(),
+        gh<_i696.InviteEvaluationUseCase>(),
+        gh<_i258.DeleteSellerRecordUseCase>(),
+      ));
   gh.factory<_i618.IConfirmOrderAcceptanceUseCase>(
       () => _i618.ConfirmOrderAcceptanceUseCase(gh<_i724.IOrderRepository>()));
   gh.factory<_i618.IDeliverOrderUseCase>(
@@ -173,8 +181,6 @@ _i174.GetIt init(
       getOrderListUseCase: gh<_i1015.GetOrderListUseCase>()));
   gh.lazySingleton<_i253.IAfterSalesRemoteDataSource>(
       () => _i519.AfterSalesRemoteDataSource(gh<_i412.CoreDioClient>()));
-  gh.factory<_i984.SellerOrderDetailBloc>(
-      () => _i984.SellerOrderDetailBloc(gh<_i691.GetOrderDetailUseCase>()));
   gh.lazySingleton<_i441.IAfterSalesRepository>(() =>
       _i363.AfterSalesRepositoryImpl(
           remoteDataSource: gh<_i253.IAfterSalesRemoteDataSource>()));
