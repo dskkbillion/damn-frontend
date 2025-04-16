@@ -196,20 +196,19 @@ class MockOrderRepository implements IOrderRepository {
     String? keyword,
     required int page,
     required int limit,
-    // Assuming this mock serves both buyer and seller views for simplicity
-    // In a real scenario, might filter based on a role or have separate mocks
+    required String userRole,
   }) async {
-    print('[MockOrderRepository] Getting Order List - Page: $page, Limit: $limit, Status: $status, Keyword: $keyword');
-    await Future.delayed(const Duration(milliseconds: 300)); // Simulate network delay
+    print(
+        '[MockOrderRepository] getOrderList called with status: $status, keyword: $keyword, page: $page, limit: $limit, userRole: $userRole'); // Log userRole
+    await Future.delayed(const Duration(milliseconds: 500)); // Simulate network delay
 
-    // Simulate filtering by status
-    List<Order> filteredOrders = _mockOrders;
+    List<Order> results = _mockOrders;
     if (status != null && status != OrderStatus.unknown) { // Handle 'All' case
-      filteredOrders = _mockOrders.where((order) => order.state == status).toList();
+      results = _mockOrders.where((order) => order.state == status).toList();
     }
     // Simulate keyword search (simple)
     if (keyword != null && keyword.isNotEmpty) {
-      filteredOrders = filteredOrders.where((order) =>
+      results = results.where((order) =>
         (order.orderSn?.contains(keyword) ?? false) || // Null check for safety
         order.items.any((item) => item.productName.contains(keyword)) ||
         (order.shippingAddress.recipientName.contains(keyword))
@@ -219,14 +218,14 @@ class MockOrderRepository implements IOrderRepository {
     // Simulate pagination
     int startIndex = (page - 1) * limit;
     int endIndex = startIndex + limit;
-    if (startIndex >= filteredOrders.length) {
+    if (startIndex >= results.length) {
       return const Right([]); // No more data for this page
     }
-    if (endIndex > filteredOrders.length) {
-      endIndex = filteredOrders.length;
+    if (endIndex > results.length) {
+      endIndex = results.length;
     }
 
-    return Right(filteredOrders.sublist(startIndex, endIndex));
+    return Right(results.sublist(startIndex, endIndex));
   }
 
   @override

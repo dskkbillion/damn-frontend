@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // Import the main shell page which will act as the navigator shell
 import 'package:dskk_flutter_refactor/app/widgets/main_shell_page.dart';
 // Import feature routes
-import 'package:dskk_flutter_refactor/features/orders/orders_routes.dart';
+import 'package:dskk_flutter_refactor/features/orders/presentation/routes/order_routes.dart';
 
 // Placeholder pages for each tab
 // TODO: Replace these with actual feature pages later
@@ -99,7 +99,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
       // Add the routes from the Orders module
-      ...OrdersRoutes.routes,
+      ...OrderRoutes.routes,
 
       // TODO: Add other top-level routes here later (e.g., for login, settings outside the shell)
       // GoRoute(
