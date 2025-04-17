@@ -1,27 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dskk_flutter_refactor/app/navigation/app_router.dart';
+// import 'package:flutter_riverpod/flutter_riverpod.dart'; // Keep commented out
+import 'package:dskk_flutter_refactor/app/navigation/app_router.dart'; // Import the goRouter instance directly
 import 'package:dskk_flutter_refactor/core/config/theme/app_theme.dart';
 
 // Remove direct import of MainShellPage, navigation is handled by router
-// import 'package:dskk_flutter_refactor/app/widgets/main_shell_page.dart'; 
+// import 'package:dskk_flutter_refactor/app/widgets/main_shell_page.dart';
 
-// Import the GoRouter provider
+// Import the GoRouter provider - not needed anymore
 // import 'package:dskk_flutter_refactor/app/navigation/app_router.dart';
 
 // This is the root widget of the application.
-// It extends ConsumerWidget to enable Riverpod integration.
-class MyApp extends ConsumerWidget {
+// Change from ConsumerWidget to StatelessWidget as Riverpod is not used here.
+class MyApp extends StatelessWidget { // Changed to StatelessWidget
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Get the GoRouter instance from the provider
-    final goRouter = ref.watch(goRouterProvider); 
+  Widget build(BuildContext context) { // Removed WidgetRef ref
+    // Get the GoRouter instance directly (it's now a top-level final variable)
+    // final goRouter = ref.watch(goRouterProvider); // Remove ref.watch
 
     // Use MaterialApp.router and provide the router configuration
     return MaterialApp.router(
-      routerConfig: goRouter, 
+      // Use the directly imported goRouter instance
+      routerConfig: goRouter,
 
       title: 'DSKK Flutter Refactor',
 
@@ -33,7 +34,7 @@ class MyApp extends ConsumerWidget {
       // themeMode: ThemeMode.system, // Or ThemeMode.light, ThemeMode.dark
 
       // Remove the home property, router handles the initial route
-      // home: const MainShellPage(), 
+      // home: const MainShellPage(),
     );
   }
 } 

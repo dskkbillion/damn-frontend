@@ -40,39 +40,6 @@ import 'features/after_sales/domain/usecases/get_after_sales_detail_use_case.dar
 import 'features/after_sales/domain/usecases/get_after_sales_list_use_case.dart'
     as _i915;
 import 'features/after_sales/presentation/bloc/after_sales_bloc.dart' as _i918;
-import 'features/ai_docs/data/datasources/ai_chat_remote_data_source_impl.dart'
-    as _i682;
-import 'features/ai_docs/data/datasources/file_upload_data_source_impl.dart'
-    as _i324;
-import 'features/ai_docs/data/datasources/i_ai_chat_remote_data_source.dart'
-    as _i748;
-import 'features/ai_docs/data/datasources/i_file_upload_data_source.dart'
-    as _i145;
-import 'features/ai_docs/data/repositories/ai_chat_repository_impl.dart'
-    as _i1065;
-import 'features/ai_docs/data/repositories/file_upload_repository_impl.dart'
-    as _i362;
-import 'features/ai_docs/domain/repositories/i_ai_chat_repository.dart'
-    as _i920;
-import 'features/ai_docs/domain/repositories/i_file_upload_repository.dart'
-    as _i172;
-import 'features/ai_docs/domain/usecases/allocate_chat_resource_usecase.dart'
-    as _i57;
-import 'features/ai_docs/domain/usecases/create_conversation_usecase.dart'
-    as _i16;
-import 'features/ai_docs/domain/usecases/delete_conversation_usecase.dart'
-    as _i182;
-import 'features/ai_docs/domain/usecases/get_conversations_usecase.dart'
-    as _i437;
-import 'features/ai_docs/domain/usecases/get_related_services_usecase.dart'
-    as _i67;
-import 'features/ai_docs/domain/usecases/load_history_usecase.dart' as _i209;
-import 'features/ai_docs/domain/usecases/stream_chat_completion_usecase.dart'
-    as _i562;
-import 'features/ai_docs/domain/usecases/transcribe_audio_usecase.dart'
-    as _i266;
-import 'features/ai_docs/domain/usecases/upload_file_usecase.dart' as _i317;
-import 'features/ai_docs/presentation/bloc/ai_chat/ai_chat_bloc.dart' as _i959;
 import 'features/orders/data/datasources/i_order_local_data_source.dart'
     as _i632;
 import 'features/orders/data/datasources/i_order_remote_data_source.dart'
@@ -123,42 +90,21 @@ _i174.GetIt $initGetIt(
     environmentFilter,
   );
   final registerModule = _$RegisterModule();
+  gh.lazySingleton<_i558.FlutterSecureStorage>(
+      () => registerModule.secureStorage);
   gh.lazySingleton<_i111.AppDatabase>(() => registerModule.appDatabase);
   gh.lazySingleton<_i735.INavigationService>(
       () => registerModule.navigationService);
   gh.lazySingleton<_i910.IPaymentService>(() => registerModule.paymentService);
   gh.lazySingleton<_i31.IHttpClient>(() => _i1030.DioHttpClient());
-  gh.lazySingleton<_i748.IAiChatRemoteDataSource>(
-      () => _i682.AiChatRemoteDataSourceImpl(gh<_i31.IHttpClient>()));
-  gh.lazySingleton<_i920.IAiChatRepository>(
-      () => _i1065.AiChatRepositoryImpl(gh<_i748.IAiChatRemoteDataSource>()));
+  gh.lazySingleton<String>(
+    () => registerModule.baseUrl,
+    instanceName: 'baseUrl',
+  );
   gh.lazySingleton<_i632.IOrderLocalDataSource>(() =>
       _i936.OrderLocalDataSourceImpl(appDatabase: gh<_i111.AppDatabase>()));
-  gh.lazySingleton<_i57.AllocateChatResourceUseCase>(
-      () => _i57.AllocateChatResourceUseCase(gh<_i920.IAiChatRepository>()));
-  gh.lazySingleton<_i16.CreateConversationUseCase>(
-      () => _i16.CreateConversationUseCase(gh<_i920.IAiChatRepository>()));
-  gh.lazySingleton<_i182.DeleteConversationUseCase>(
-      () => _i182.DeleteConversationUseCase(gh<_i920.IAiChatRepository>()));
-  gh.lazySingleton<_i437.GetConversationsUseCase>(
-      () => _i437.GetConversationsUseCase(gh<_i920.IAiChatRepository>()));
-  gh.lazySingleton<_i67.GetRelatedServicesUseCase>(
-      () => _i67.GetRelatedServicesUseCase(gh<_i920.IAiChatRepository>()));
-  gh.lazySingleton<_i209.LoadHistoryUseCase>(
-      () => _i209.LoadHistoryUseCase(gh<_i920.IAiChatRepository>()));
-  gh.lazySingleton<_i562.StreamChatCompletionUseCase>(
-      () => _i562.StreamChatCompletionUseCase(gh<_i920.IAiChatRepository>()));
-  gh.lazySingleton<_i266.TranscribeAudioUseCase>(
-      () => _i266.TranscribeAudioUseCase(gh<_i920.IAiChatRepository>()));
   gh.factory<_i1018.AppInfoInterceptor>(
       () => _i1018.AppInfoInterceptor(gh<_i655.PackageInfo>()));
-  gh.lazySingleton<_i145.IFileUploadDataSource>(
-      () => _i324.FileUploadDataSourceImpl(gh<_i31.IHttpClient>()));
-  gh.lazySingleton<_i172.IFileUploadRepository>(() =>
-      _i362.FileUploadRepositoryImpl(
-          dataSource: gh<_i145.IFileUploadDataSource>()));
-  gh.lazySingleton<_i317.UploadFileUseCase>(
-      () => _i317.UploadFileUseCase(gh<_i172.IFileUploadRepository>()));
   gh.factory<_i831.CoreDioClient>(() => _i831.CoreDioClient(
         gh<String>(instanceName: 'baseUrl'),
         gh<_i558.FlutterSecureStorage>(),
@@ -195,17 +141,6 @@ _i174.GetIt $initGetIt(
       () => _i152.SubmitEvaluationUseCase(gh<_i281.IOrderRepository>()));
   gh.factory<_i648.SubmitRequirementsUseCase>(
       () => _i648.SubmitRequirementsUseCase(gh<_i281.IOrderRepository>()));
-  gh.factory<_i959.AiChatBloc>(() => _i959.AiChatBloc(
-        gh<_i437.GetConversationsUseCase>(),
-        gh<_i209.LoadHistoryUseCase>(),
-        gh<_i16.CreateConversationUseCase>(),
-        gh<_i182.DeleteConversationUseCase>(),
-        gh<_i562.StreamChatCompletionUseCase>(),
-        gh<_i317.UploadFileUseCase>(),
-        gh<_i67.GetRelatedServicesUseCase>(),
-        gh<_i57.AllocateChatResourceUseCase>(),
-        gh<_i266.TranscribeAudioUseCase>(),
-      ));
   gh.factory<_i431.IInviteEvaluationUseCase>(
       () => _i431.InviteEvaluationUseCase(gh<_i281.IOrderRepository>()));
   gh.factory<_i431.IAddOrderDemandUseCase>(

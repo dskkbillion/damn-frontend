@@ -57,6 +57,12 @@ class MainShellPage extends StatelessWidget { // Changed to StatelessWidget
             activeIcon: Icon(Icons.person),
             label: '我的',
           ),
+          // Add the new item for the Dev Menu
+          BottomNavigationBarItem(
+            icon: Icon(Icons.developer_mode_outlined),
+            activeIcon: Icon(Icons.developer_mode),
+            label: '开发', // Label for the new tab
+          ),
         ],
         // Current index is determined by the navigationShell
         currentIndex: navigationShell.currentIndex,

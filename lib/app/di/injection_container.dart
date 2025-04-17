@@ -5,6 +5,9 @@ import 'package:dskk_flutter_refactor/core/navigation/services/mocks/mock_naviga
 import 'package:dskk_flutter_refactor/core/navigation/services/i_navigation_service.dart';
 import 'package:dskk_flutter_refactor/core/payment/services/i_payment_service.dart';
 import 'package:dskk_flutter_refactor/core/payment/services/mocks/mock_payment_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Import database and DAO
 import 'package:dskk_flutter_refactor/core/database/app_database.dart';
@@ -25,13 +28,21 @@ Future<void> configureDependencies() async => init(getIt);
 // --- Register Module for Third Party Libs and Core Services ---
 @module
 abstract class RegisterModule {
-  // Provide Dio instance - REMOVED/COMMENTED OUT as CoreDioClient manages its own Dio instance
-  // @lazySingleton
-  // Dio get dio => Dio(BaseOptions(
-  //       baseUrl: 'https://your.api.base.url/api', // Placeholder!
-  //       connectTimeout: const Duration(seconds: 5),
-  //       receiveTimeout: const Duration(seconds: 3),
-  //     ));
+  // Provide baseUrl as a named instance from .env
+  @Named('baseUrl')
+  @lazySingleton
+  String get baseUrl {
+    final url = dotenv.env['BACKEND_BASE_URL']; // Assuming key is BACKEND_BASE_URL
+    if (url == null || url.isEmpty) {
+      throw Exception('BACKEND_BASE_URL not found or empty in .env file');
+    }
+    print('[RegisterModule] Providing baseUrl: $url');
+    return url;
+  }
+
+  // Provide FlutterSecureStorage instance
+  @lazySingleton
+  FlutterSecureStorage get secureStorage => const FlutterSecureStorage();
 
   // Provide AppDatabase instance as a singleton
   @lazySingleton

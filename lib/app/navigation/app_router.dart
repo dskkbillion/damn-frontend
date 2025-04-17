@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+// import 'package:flutter_riverpod/flutter_riverpod.dart'; // Remove unused import
 
 // Import the main shell page which will act as the navigator shell
 import 'package:dskk_flutter_refactor/app/widgets/main_shell_page.dart';
+// Import the dev menu page
+import 'package:dskk_flutter_refactor/app/widgets/dev_menu_page.dart';
 // Import feature routes
 import 'package:dskk_flutter_refactor/features/orders/presentation/routes/order_routes.dart';
+import 'package:dskk_flutter_refactor/features/after_sales/presentation/routes/after_sales_routes.dart';
 
 // Placeholder pages for each tab
 // TODO: Replace these with actual feature pages later
@@ -24,7 +27,12 @@ class PlaceholderPage extends StatelessWidget {
 }
 
 // Provider for the GoRouter instance
-final goRouterProvider = Provider<GoRouter>((ref) {
+// Remove Riverpod Provider as it's not used and dependencies are commented out
+// final goRouterProvider = Provider<GoRouter>((ref) {
+// Instead, create the GoRouter instance directly or using GetIt if configured
+final goRouter = _createGoRouter(); // Helper function to keep it clean
+
+GoRouter _createGoRouter() {
   // TODO: Add observers later if needed (e.g., for analytics)
   // final observers = <NavigatorObserver>[];
 
@@ -96,10 +104,24 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
+          // Branch for the '开发' tab (Temporary Debug Menu)
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/dev_menu', // Path for the fifth tab
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  // Ensure DevMenuPage is imported
+                  child: DevMenuPage(),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
       // Add the routes from the Orders module
       ...OrderRoutes.routes,
+      // Add the routes from the AfterSales module
+      ...AfterSalesRoutes.routes,
 
       // TODO: Add other top-level routes here later (e.g., for login, settings outside the shell)
       // GoRoute(
@@ -116,4 +138,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     //   return null; // Return null means no redirect
     // },
   );
-}); 
+}
+// }); // Remove closing parenthesis of Provider
+
+// ... rest of the file ... 
