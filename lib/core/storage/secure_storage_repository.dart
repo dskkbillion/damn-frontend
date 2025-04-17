@@ -50,4 +50,13 @@ abstract class ISecureStorageRepository {
 
   /// Deletes the stored user ID.
   Future<void> deleteUserId() => delete('user_id');
+
+  /// 获取保存的commonUserId
+  Future<int?> getCommonUserId() => getInt('common_user_id');
+
+  /// 保存commonUserId
+  Future<void> saveCommonUserId(int commonUserId) => saveInt('common_user_id', commonUserId);
+
+  /// 删除保存的commonUserId
+  Future<void> deleteCommonUserId() => delete('common_user_id');
 }

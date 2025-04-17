@@ -156,6 +156,13 @@ class AuthRepositoryImpl implements IAuthRepository {
               // 假设 secureStorage 有 saveInt 和 saveString
               await secureStorage.saveInt('user_id', userInfo.id); // 使用约定 key
               await secureStorage.saveString('auth_token', authenticatedUserModel.token); // 使用约定 key
+
+              // 同时保存commonUserId
+              if (userInfo.commonUserId != null) {
+                await secureStorage.saveInt('common_user_id', userInfo.commonUserId);
+                print('Saved commonUserId: ${userInfo.commonUserId}');
+              }
+
               _currentUser = authenticatedUser;
               _statusController.add(Authenticated(authenticatedUser));
               print('Login successful. UserID: ${userInfo.id}, Token: ${authenticatedUserModel.token}');
@@ -179,7 +186,8 @@ class AuthRepositoryImpl implements IAuthRepository {
        // 假设 secureStorage 有 delete 方法
        await secureStorage.delete('user_id');
        await secureStorage.delete('auth_token');
-       print('Cleared local auth data (id, token).');
+       await secureStorage.delete('common_user_id'); // 同时清理commonUserId
+       print('Cleared local auth data (id, token, commonUserId).');
     } catch (e) {
         print('Error clearing local auth data: $e');
     }
