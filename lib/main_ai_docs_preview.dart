@@ -5,11 +5,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:io'; // Import dart:io for FileSystemException
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
+import 'features/ai_docs/presentation/routes/ai_docs_routes.dart';
+// import 'core/config/theme/app_theme.dart'; // Remove import for non-existent file
+
 // No need to import injectable here if not using Environment constants directly
 // import 'package:injectable/injectable.dart'; 
 
+// GetIt instance
+final getIt = GetIt.instance;
+
 // Temporary entry point for previewing the AI Docs Chat module.
-void main() async {
+Future<void> main() async {
   // 1. Ensure WidgetsBinding initialized
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -34,34 +44,65 @@ void main() async {
   await di.configureDependencies(); 
   print("Dependencies configured.");
 
+  // --- Register Core Singletons needed before configureDependencies ---
+  // Register baseUrl
+  try {
+    final baseUrl = dotenv.env['BACKEND_BASE_URL'];
+    if (baseUrl != null && baseUrl.isNotEmpty) {
+      getIt.registerSingleton<String>(baseUrl, instanceName: 'baseUrl');
+      print('[main_ai_docs_preview] Registered baseUrl: $baseUrl');
+    } else {
+      throw Exception('BACKEND_BASE_URL missing in .env');
+    }
+  } catch (e) {
+    print('[main_ai_docs_preview] ERROR registering baseUrl: $e');
+    throw Exception('Failed to load/register baseUrl');
+  }
+  // Register SecureStorage
+  getIt.registerLazySingleton<FlutterSecureStorage>(() => const FlutterSecureStorage());
+  print('[main_ai_docs_preview] Registered FlutterSecureStorage.');
+  // Register PackageInfo
+  try {
+    final packageInfo = await PackageInfo.fromPlatform();
+    getIt.registerSingleton<PackageInfo>(packageInfo);
+    print('[main_ai_docs_preview] Registered PackageInfo: ${packageInfo.packageName}');
+  } catch (e) {
+    print('[main_ai_docs_preview] ERROR registering PackageInfo: $e');
+    throw Exception('Failed to initialize PackageInfo');
+  }
+  // -------------------------------------------------------------------
+
   // 4. Run the app
   runApp(const AiDocsPreviewApp());
   print("App running.");
 }
 
+// --- GoRouter instance specifically for this preview ---
+final GoRouter _previewRouter = GoRouter(
+  initialLocation: '/ai_chat', // Start directly at the AI chat page
+  debugLogDiagnostics: true,
+  routes: [
+    // Only include routes from the AiDocs module for this preview
+    ...AiDocsRoutes.routes,
+  ],
+  errorBuilder: (context, state) => Scaffold(
+    appBar: AppBar(title: const Text('Preview Error')),
+    body: Center(child: Text('Error loading preview route: ${state.error}')),
+  ),
+);
+// ----------------------------------------------------
+
 class AiDocsPreviewApp extends StatelessWidget {
   const AiDocsPreviewApp({super.key});
 
-  // Restore the custom primary color
-  static const Color primaryColor = Color(0xFFB66D0E);
-
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    // Use MaterialApp.router with the preview-specific router
+    return MaterialApp.router(
       title: 'AI Docs Preview',
-      theme: ThemeData(
-        // Restore using ColorScheme.fromSeed with the primary color
-        colorScheme: ColorScheme.fromSeed(seedColor: primaryColor),
-        // Ensure Material 3 is enabled
-        useMaterial3: true, 
-        // Remove primarySwatch and visualDensity as they are less relevant with M3
-        // primarySwatch: Colors.blue,
-        // visualDensity: VisualDensity.adaptivePlatformDensity, 
-      ),
-      home: BlocProvider(
-        create: (_) => di.getIt<AiChatBloc>()..add(LoadConversations()),
-        child: const ChatPage(),
-      ),
+      // Use default light theme as AppTheme is not found in this branch
+      theme: ThemeData.light(useMaterial3: true),
+      routerConfig: _previewRouter, // Use the preview router
     );
   }
 }

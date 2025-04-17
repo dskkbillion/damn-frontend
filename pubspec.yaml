@@ -56,6 +56,9 @@ dependencies:
   freezed_annotation: ^2.4.1
   json_annotation: ^4.8.1
 
+  # Secure Storage
+  flutter_secure_storage: ^9.2.2 # Add secure storage dependency
+
   # --- Add audioplayers here ---
   audioplayers: ^6.0.0 # For audio playback
 
