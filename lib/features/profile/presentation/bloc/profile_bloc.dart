@@ -33,7 +33,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     required this.getWalletSummary,
     required this.checkAuthStatus,
     required this.logout,
-  }) : super(ProfileInitial()) {
+  }) : super(const ProfileInitial()) {
     on<CheckAuthStatusEvent>(_onCheckAuthStatus);
     on<GetUserProfileEvent>(_onGetUserProfile);
     on<UpdateUserProfileEvent>(_onUpdateUserProfile);
@@ -48,7 +48,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     CheckAuthStatusEvent event,
     Emitter<ProfileState> emit,
   ) async {
-    emit(ProfileLoading());
+    emit(const ProfileLoading());
     final result = await checkAuthStatus(NoParams());
     result.fold(
       (failure) => emit(ProfileAuthStatusLoaded(isAuthenticated: false)),
@@ -60,7 +60,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     GetUserProfileEvent event,
     Emitter<ProfileState> emit,
   ) async {
-    emit(ProfileLoading());
+    emit(const ProfileLoading());
     final result = await getUserProfile(NoParams());
     result.fold(
       (failure) => emit(ProfileError(message: failure.toString())),
@@ -72,7 +72,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     UpdateUserProfileEvent event,
     Emitter<ProfileState> emit,
   ) async {
-    emit(ProfileUpdating());
+    emit(const ProfileUpdating());
     final result = await updateUserProfile(
       UpdateUserProfileParams(
         nickName: event.nickName,
@@ -89,7 +89,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     UploadAvatarEvent event,
     Emitter<ProfileState> emit,
   ) async {
-    emit(ProfileAvatarUploading());
+    emit(const ProfileAvatarUploading());
     final result = await uploadAvatar(UploadAvatarParams(imageFile: event.imageFile));
     result.fold(
       (failure) => emit(ProfileError(message: failure.toString())),
@@ -101,7 +101,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     GetWalletSummaryEvent event,
     Emitter<ProfileState> emit,
   ) async {
-    emit(WalletSummaryLoading());
+    emit(const WalletSummaryLoading());
     final result = await getWalletSummary(NoParams());
     result.fold(
       (failure) => emit(ProfileError(message: failure.toString())),
@@ -113,7 +113,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     LogoutEvent event,
     Emitter<ProfileState> emit,
   ) async {
-    emit(ProfileLoggingOut());
+    emit(const ProfileLoggingOut());
     final result = await logout(NoParams());
     result.fold(
       (failure) => emit(ProfileError(message: failure.toString())),
@@ -125,7 +125,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     SwitchToSellerModeEvent event,
     Emitter<ProfileState> emit,
   ) async {
-    emit(ProfileSwitchingToSellerMode());
+    emit(const ProfileSwitchingToSellerMode());
     // 这里可能需要在 BLoC 以外处理实际的导航逻辑
     // 例如通过 `BlocListener` 监听此状态并使用导航服务
     emit(const ProfileSwitchedToSellerMode());
@@ -135,7 +135,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     SwitchToBuyerModeEvent event,
     Emitter<ProfileState> emit,
   ) async {
-    emit(ProfileSwitchingToBuyerMode());
+    emit(const ProfileSwitchingToBuyerMode());
     // 这里可能需要在 BLoC 以外处理实际的导航逻辑
     emit(const ProfileSwitchedToBuyerMode());
   }

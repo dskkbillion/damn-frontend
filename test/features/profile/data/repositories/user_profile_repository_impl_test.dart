@@ -10,7 +10,6 @@ import 'package:dskk_flutter_refactor/features/profile/data/datasources/profile_
 import 'package:dskk_flutter_refactor/features/profile/data/models/user_profile_dto.dart';
 import 'package:dskk_flutter_refactor/features/profile/data/repositories/user_profile_repository_impl.dart';
 import 'package:dskk_flutter_refactor/features/profile/domain/entities/user_profile.dart';
-import 'package:dskk_flutter_refactor/features/profile/domain/repositories/i_user_profile_repository.dart';
 
 @GenerateMocks([ProfileRemoteDataSource, ProfileLocalDataSource, NetworkInfo])
 import 'user_profile_repository_impl_test.mocks.dart';
@@ -102,7 +101,7 @@ void main() {
         // 断言
         verify(mockRemoteDataSource.getUserProfile());
         verifyZeroInteractions(mockLocalDataSource);
-        expect(result, equals(Left(ServerFailure(message: '服务器错误'))));
+        expect(result, equals(Left(const ServerFailure(message: '服务器错误'))));
       });
     });
 
@@ -136,7 +135,7 @@ void main() {
         // 断言
         verifyZeroInteractions(mockRemoteDataSource);
         verify(mockLocalDataSource.getLastUserProfile());
-        expect(result, equals(Left(CacheFailure(message: '没有缓存的用户资料'))));
+        expect(result, equals(Left(const CacheFailure(message: '没有缓存的用户资料'))));
       });
     });
   });

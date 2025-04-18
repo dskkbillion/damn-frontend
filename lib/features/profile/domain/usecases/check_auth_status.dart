@@ -1,11 +1,10 @@
 import 'package:dartz/dartz.dart';
-import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../repositories/i_auth_repository.dart';
 
-/// 检查用户认证状态
+/// 检查认证状态的用例
 class CheckAuthStatusUseCase implements UseCase<bool, NoParams> {
   final IAuthRepository repository;
 
@@ -14,10 +13,10 @@ class CheckAuthStatusUseCase implements UseCase<bool, NoParams> {
   @override
   Future<Either<Failure, bool>> call(NoParams params) async {
     try {
-      final result = await repository.isLoggedIn();
-      return Right(result);
+      final isLoggedIn = await repository.isLoggedIn();
+      return Right(isLoggedIn);
     } catch (e) {
-      return Left(GeneralFailure(message: e.toString()));
+      return Left(ServerFailure(message: e.toString()));
     }
   }
 }

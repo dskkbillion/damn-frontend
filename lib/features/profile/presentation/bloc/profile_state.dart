@@ -9,10 +9,14 @@ abstract class ProfileState extends Equatable {
 }
 
 /// 初始状态
-class ProfileInitial extends ProfileState {}
+class ProfileInitial extends ProfileState {
+  const ProfileInitial();
+}
 
 /// 加载中状态
-class ProfileLoading extends ProfileState {}
+class ProfileLoading extends ProfileState {
+  const ProfileLoading();
+}
 
 /// 身份验证状态加载完成
 class ProfileAuthStatusLoaded extends ProfileState {
@@ -35,7 +39,9 @@ class ProfileLoaded extends ProfileState {
 }
 
 /// 正在更新资料
-class ProfileUpdating extends ProfileState {}
+class ProfileUpdating extends ProfileState {
+  const ProfileUpdating();
+}
 
 /// 资料更新完成
 class ProfileUpdated extends ProfileState {
@@ -48,7 +54,9 @@ class ProfileUpdated extends ProfileState {
 }
 
 /// 正在上传头像
-class ProfileAvatarUploading extends ProfileState {}
+class ProfileAvatarUploading extends ProfileState {
+  const ProfileAvatarUploading();
+}
 
 /// 头像上传完成
 class ProfileAvatarUploaded extends ProfileState {
@@ -61,7 +69,9 @@ class ProfileAvatarUploaded extends ProfileState {
 }
 
 /// 钱包摘要加载中
-class WalletSummaryLoading extends ProfileState {}
+class WalletSummaryLoading extends ProfileState {
+  const WalletSummaryLoading();
+}
 
 /// 钱包摘要加载完成
 class WalletSummaryLoaded extends ProfileState {
@@ -74,7 +84,9 @@ class WalletSummaryLoaded extends ProfileState {
 }
 
 /// 登出中
-class ProfileLoggingOut extends ProfileState {}
+class ProfileLoggingOut extends ProfileState {
+  const ProfileLoggingOut();
+}
 
 /// 已登出
 class ProfileLoggedOut extends ProfileState {

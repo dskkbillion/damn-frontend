@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/user_profile_dto.dart';
 
-const CACHED_USER_PROFILE = 'CACHED_USER_PROFILE';
+const cachedUserProfile = 'CACHED_USER_PROFILE';
 
 /// 本地数据源抽象接口
 abstract class ProfileLocalDataSource {
@@ -28,7 +28,7 @@ class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
 
   @override
   Future<UserProfileDto> getLastUserProfile() async {
-    final jsonString = sharedPreferences.getString(CACHED_USER_PROFILE);
+    final jsonString = sharedPreferences.getString(cachedUserProfile);
     if (jsonString != null) {
       return UserProfileDto.fromJson(json.decode(jsonString));
     } else {
@@ -39,14 +39,14 @@ class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
   @override
   Future<void> cacheUserProfile(UserProfileDto userProfile) {
     return sharedPreferences.setString(
-      CACHED_USER_PROFILE,
+      cachedUserProfile,
       json.encode(userProfile.toJson()),
     );
   }
 
   @override
   Future<void> clearUserProfile() {
-    return sharedPreferences.remove(CACHED_USER_PROFILE);
+    return sharedPreferences.remove(cachedUserProfile);
   }
 }
 

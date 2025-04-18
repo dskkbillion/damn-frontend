@@ -28,13 +28,13 @@ void main() {
     );
   });
 
-  final tWalletSummaryDto = WalletSummaryDto(
+  const tWalletSummaryDto = WalletSummaryDto(
     balance: 1000.0,
     pendingAmount: 200.0,
     totalIncome: 5000.0,
   );
 
-  final tWalletSummary = WalletSummary(
+  const tWalletSummary = WalletSummary(
     balance: 1000.0,
     pendingAmount: 200.0,
     totalIncome: 5000.0,
@@ -72,7 +72,7 @@ void main() {
 
         // 断言
         verify(mockRemoteDataSource.getWalletSummary());
-        expect(result, equals(Right(tWalletSummary)));
+        expect(result, equals(const Right(tWalletSummary)));
       });
 
       test('应该返回ServerFailure当远程调用失败时', () async {
@@ -85,7 +85,7 @@ void main() {
 
         // 断言
         verify(mockRemoteDataSource.getWalletSummary());
-        expect(result, equals(Left(ServerFailure(message: '服务器错误'))));
+        expect(result, equals(Left(const ServerFailure(message: '服务器错误'))));
       });
     });
 
@@ -100,7 +100,7 @@ void main() {
 
         // 断言
         verifyZeroInteractions(mockRemoteDataSource);
-        expect(result, equals(Left(NetworkFailure(message: '无网络连接'))));
+        expect(result, equals(Left(const NetworkFailure(message: '无网络连接'))));
       });
     });
   });

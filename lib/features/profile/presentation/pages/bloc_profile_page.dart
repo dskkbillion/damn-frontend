@@ -1,88 +1,421 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../domain/entities/user_profile.dart';
 import '../bloc/profile_bloc.dart';
-import '../../../../core/usecases/usecase.dart';
+import '../widgets/profile_header.dart';
 
-class BlocProfilePage extends StatelessWidget {
-  const BlocProfilePage({Key? key}) : super(key: key);
+class BlocProfilePage extends StatefulWidget {
+  const BlocProfilePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<BlocProfilePage> createState() => _BlocProfilePageState();
+}
+
+class _BlocProfilePageState extends State<BlocProfilePage> {
+  @override
+  void initState() {
+    super.initState();
     // 获取ProfileBloc实例并触发初始事件
     final profileBloc = BlocProvider.of<ProfileBloc>(context);
     profileBloc.add(CheckAuthStatusEvent());
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return BlocConsumer<ProfileBloc, ProfileState>(
       listener: (context, state) {
         if (state is ProfileError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),
           );
-        } else if (state is ProfileLoggedOut) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('已退出登录')),
-          );
-        } else if (state is ProfileSwitchedToSellerMode) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('已切换到卖家模式')),
-          );
-        } else if (state is ProfileSwitchedToBuyerMode) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('已切换到买家模式')),
-          );
         } else if (state is ProfileAvatarUploaded) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('头像上传成功')),
           );
-          // 重新加载用户资料
+          // 更新上传头像后获取最新用户信息
           context.read<ProfileBloc>().add(GetUserProfileEvent());
         } else if (state is ProfileUpdated) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('信息更新成功')),
+            const SnackBar(content: Text('个人资料更新成功')),
           );
+        } else if (state is ProfileAuthStatusLoaded) {
+          if (state.isAuthenticated) {
+            // 如果已登录，获取用户信息
+            context.read<ProfileBloc>().add(GetUserProfileEvent());
+          } else {
+            // 如果未登录，可以导航到登录页面
+            // Navigator.pushReplacementNamed(context, '/login');
+          }
+        } else if (state is ProfileSwitchedToSellerMode) {
+          // 导航到卖家中心
+          // Navigator.pushReplacementNamed(context, '/seller/home');
         }
       },
       builder: (context, state) {
-        if (state is ProfileAuthStatusLoaded) {
-          if (!state.isAuthenticated) {
-            return _buildLoginPrompt(context);
-          } else if (state is! ProfileLoaded && state is! ProfileUpdated) {
-            context.read<ProfileBloc>().add(GetUserProfileEvent());
-          }
-        }
+        if (state is ProfileLoading || state is ProfileInitial) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('个人中心')),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        } else if (state is ProfileLoaded || state is ProfileUpdated || state is ProfileAvatarUploaded) {
+          // 显示已加载的用户资料
+          final UserProfile profile = state is ProfileLoaded
+              ? state.profile
+              : state is ProfileUpdated
+                  ? state.profile
+                  : (context.read<ProfileBloc>().state as ProfileLoaded).profile;
 
-        // 构建主页面
-        return _buildMainContent(context, state);
+          return _buildUserProfilePage(context, profile);
+        } else {
+          // 默认内容
+          return Scaffold(
+            appBar: AppBar(title: const Text('个人中心')),
+            body: Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  context.read<ProfileBloc>().add(GetUserProfileEvent());
+                },
+                child: const Text('重新加载'),
+              ),
+            ),
+          );
+        }
       },
     );
   }
 
-  Widget _buildLoginPrompt(BuildContext context) {
+  Widget _buildUserProfilePage(BuildContext context, UserProfile profile) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('个人中心'),
-        backgroundColor: Theme.of(context).primaryColor,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              // 导航到设置页面
+              // Navigator.pushNamed(context, '/settings');
+            },
+          ),
+        ],
       ),
-      body: Center(
-        child: Column(
+      body: RefreshIndicator(
+        onRefresh: () async {
+          context.read<ProfileBloc>().add(GetUserProfileEvent());
+        },
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              ProfileHeader(
+                profile: profile,
+                onAvatarTap: () => _showImageSourceActionSheet(context),
+                onEditTap: () => _showEditProfileDialog(context, profile),
+              ),
+              const SizedBox(height: 16),
+              _buildWalletSection(context),
+              const SizedBox(height: 16),
+              _buildOrderStatusSection(),
+              const SizedBox(height: 16),
+              _buildMenuSection(context),
+              const SizedBox(height: 24),
+              _buildSellerModeButton(context),
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWalletSection(BuildContext context) {
+    return BlocBuilder<ProfileBloc, ProfileState>(
+      builder: (context, state) {
+        final bool isLoading = state is WalletSummaryLoading;
+
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          child: InkWell(
+            onTap: () {
+              // 导航到钱包详情页
+              // Navigator.pushNamed(context, '/wallet');
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        '我的钱包',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.refresh),
+                        onPressed: isLoading
+                            ? null
+                            : () => context.read<ProfileBloc>().add(GetWalletSummaryEvent()),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  if (isLoading)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  else if (state is WalletSummaryLoaded)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '¥ ${state.walletSummary.balance.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text('账户余额'),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('待结算'),
+                                const SizedBox(height: 4),
+                                Text('¥ ${state.walletSummary.pendingAmount.toStringAsFixed(2)}'),
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('总收入'),
+                                const SizedBox(height: 4),
+                                Text('¥ ${state.walletSummary.totalIncome.toStringAsFixed(2)}'),
+                              ],
+                            ),
+                            const Icon(Icons.arrow_forward_ios, size: 16),
+                          ],
+                        ),
+                      ],
+                    )
+                  else
+                    Center(
+                      child: TextButton(
+                        onPressed: () => context.read<ProfileBloc>().add(GetWalletSummaryEvent()),
+                        child: const Text('点击加载钱包信息'),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildOrderStatusSection() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  '我的订单',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    // 导航到全部订单页面
+                    // Navigator.pushNamed(context, '/orders');
+                  },
+                  child: const Row(
+                    children: [
+                      Text('全部订单', style: TextStyle(color: Colors.grey)),
+                      Icon(Icons.arrow_forward_ios, size: 12, color: Colors.grey),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildOrderStatusItem(icon: Icons.payment, label: '待付款', badge: 2),
+                _buildOrderStatusItem(icon: Icons.local_shipping, label: '待发货'),
+                _buildOrderStatusItem(icon: Icons.inventory, label: '待收货', badge: 1),
+                _buildOrderStatusItem(icon: Icons.star_border, label: '待评价'),
+                _buildOrderStatusItem(icon: Icons.undo, label: '退款/售后'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrderStatusItem({
+    required IconData icon,
+    required String label,
+    int badge = 0,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        // 导航到对应订单状态页面
+        // Navigator.pushNamed(context, '/orders', arguments: {'status': label});
+      },
+      child: Column(
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Icon(icon, size: 28),
+              if (badge > 0)
+                Positioned(
+                  right: -8,
+                  top: -8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      badge.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(label, style: const TextStyle(fontSize: 12)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuSection(BuildContext context) {
+    final menuItems = [
+      {'icon': Icons.location_on, 'title': '收货地址', 'route': '/address'},
+      {'icon': Icons.favorite, 'title': '我的收藏', 'route': '/favorites'},
+      {'icon': Icons.history, 'title': '浏览历史', 'route': '/history'},
+      {'icon': Icons.headset_mic, 'title': '联系客服', 'route': '/customer-service'},
+      {'icon': Icons.help, 'title': '帮助中心', 'route': '/help'},
+      {'icon': Icons.feedback, 'title': '意见反馈', 'route': '/feedback'},
+    ];
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          childAspectRatio: 1.2,
+        ),
+        itemCount: menuItems.length,
+        itemBuilder: (context, index) {
+          final item = menuItems[index];
+          return InkWell(
+            onTap: () {
+              // 导航到对应页面
+              // Navigator.pushNamed(context, item['route']!);
+            },
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(item['icon'] as IconData, size: 24),
+                const SizedBox(height: 8),
+                Text(item['title']!, style: const TextStyle(fontSize: 14)),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSellerModeButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        context.read<ProfileBloc>().add(SwitchToSellerModeEvent());
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).primaryColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              '请登录以查看您的个人资料',
-              style: TextStyle(fontSize: 18),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                // 导航到登录页面 (在实际应用中会使用导航服务)
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('导航到登录页面')),
-                );
-              },
-              child: const Text('去登录'),
+            Icon(Icons.storefront, color: Theme.of(context).primaryColor),
+            const SizedBox(width: 8),
+            Text(
+              '切换至卖家模式',
+              style: TextStyle(
+                color: Theme.of(context).primaryColor,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
@@ -90,442 +423,86 @@ class BlocProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildMainContent(BuildContext context, ProfileState state) {
-    final profile = state is ProfileLoaded
-        ? state.profile
-        : (state is ProfileUpdated ? state.profile : null);
-
-    return Scaffold(
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            context.read<ProfileBloc>().add(GetUserProfileEvent());
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 头部
-                _buildHeader(context, profile, state),
-
-                // 我的订单
-                _buildSection(
-                  context,
-                  '我的订单',
-                  [
-                    _buildMenuItem(
-                      context,
-                      Icons.access_time,
-                      '待付款',
-                      () => _showStatusMessage(context, '导航到待付款订单列表'),
-                    ),
-                    _buildMenuItem(
-                      context,
-                      Icons.sync,
-                      '进行中',
-                      () => _showStatusMessage(context, '导航到进行中订单列表'),
-                    ),
-                    _buildMenuItem(
-                      context,
-                      Icons.check_circle,
-                      '已完成',
-                      () => _showStatusMessage(context, '导航到已完成订单列表'),
-                    ),
-                    _buildMenuItem(
-                      context,
-                      Icons.undo,
-                      '退款/售后',
-                      () => _showStatusMessage(context, '导航到退款/售后订单列表'),
-                    ),
-                  ],
-                  isGrid: true,
-                ),
-
-                // 我的关看
-                _buildSection(
-                  context,
-                  '我的关看',
-                  [
-                    _buildMenuItem(
-                      context,
-                      Icons.star_border,
-                      '收藏',
-                      () => _showStatusMessage(context, '导航到收藏列表'),
-                    ),
-                    _buildMenuItem(
-                      context,
-                      Icons.favorite_border,
-                      '点赞的故事',
-                      () => _showStatusMessage(context, '导航到点赞的故事'),
-                    ),
-                  ],
-                  isGrid: false,
-                ),
-
-                // 我的钱包
-                _buildSection(
-                  context,
-                  '我的钱包',
-                  [
-                    _buildMenuItem(
-                      context,
-                      Icons.account_balance_wallet,
-                      '钱包',
-                      () => _showStatusMessage(context, '导航到钱包页面'),
-                    ),
-                  ],
-                  isGrid: false,
-                ),
-
-                // 设置
-                _buildSection(
-                  context,
-                  '设置',
-                  [
-                    _buildMenuItem(
-                      context,
-                      Icons.security,
-                      '账号与安全',
-                      () => _showStatusMessage(context, '导航到账号与安全页面'),
-                    ),
-                  ],
-                  isGrid: false,
-                ),
-
-                // 登出按钮
-                Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('确认登出'),
-                            content: const Text('您确定要退出登录吗？'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('取消'),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  context.read<ProfileBloc>().add(LogoutEvent());
-                                },
-                                child: const Text('确定'),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red[50],
-                        foregroundColor: Colors.red,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      child: const Text('退出登录'),
-                    ),
-                  ),
-                ),
-
-                // 底部空间
-                const SizedBox(height: 30),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context, dynamic profile, ProfileState state) {
-    // 检查当前是否为卖家模式
-    bool isSellerMode = state is ProfileSwitchedToSellerMode;
-
-    return Container(
-      color: Theme.of(context).primaryColor,
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          // 用户信息
-          Row(
-            children: [
-              // 头像
-              GestureDetector(
-                onTap: () => _showImagePicker(context),
-                child: CircleAvatar(
-                  radius: 40,
-                  backgroundColor: Colors.grey[300],
-                  backgroundImage: profile?.avatarUrl != null
-                      ? (profile!.avatarUrl!.startsWith('assets/')
-                          ? AssetImage(profile.avatarUrl!)
-                          : NetworkImage(profile.avatarUrl!) as ImageProvider)
-                      : null,
-                  child: profile?.avatarUrl == null
-                      ? const Icon(Icons.person, size: 40, color: Colors.white)
-                      : null,
-                ),
-              ),
-              const SizedBox(width: 16),
-
-              // 用户名称和状态
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  GestureDetector(
-                    onTap: () => _showEditNicknameDialog(context, profile?.nickName),
-                    child: Text(
-                      profile?.nickName ?? '用户',
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: profile?.onlineFlag == true ? Colors.green : Colors.grey,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        profile?.onlineFlag == true ? '在线' : '离线',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white.withOpacity(0.8),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // 卖家模式开关
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColorLight,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  '卖家模式',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                  ),
-                ),
-                Switch(
-                  value: isSellerMode, // 根据当前状态设置开关值
-                  onChanged: (value) {
-                    if (value) {
-                      // 切换到卖家模式
-                      context.read<ProfileBloc>().add(const SwitchToSellerModeEvent());
-                    } else {
-                      // 切换到买家模式
-                      context.read<ProfileBloc>().add(const SwitchToBuyerModeEvent());
-                    }
-                  },
-                  activeColor: Theme.of(context).primaryColor,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSection(
-    BuildContext context,
-    String title,
-    List<Widget> items,
-    {bool isGrid = false}
-  ) {
-    return Container(
-      margin: const EdgeInsets.only(top: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          if (isGrid)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: items,
-            )
-          else
-            Column(
-              children: items,
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMenuItem(
-    BuildContext context,
-    IconData icon,
-    String text,
-    VoidCallback onTap,
-  ) {
-    if (text == '待付款' || text == '进行中' || text == '已完成' || text == '退款/售后') {
-      // 订单状态样式
-      return InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  icon,
-                  color: Theme.of(context).primaryColor,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                text,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[700],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    } else {
-      // 菜单项样式
-      return InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                color: Colors.grey[600],
-                size: 24,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  text,
-                  style: const TextStyle(
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-              Icon(
-                Icons.chevron_right,
-                color: Colors.grey[400],
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-  }
-
-  void _showImagePicker(BuildContext context) {
+  void _showImageSourceActionSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      builder: (context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            leading: const Icon(Icons.photo_library),
-            title: const Text('从相册选择'),
-            onTap: () async {
-              Navigator.pop(context);
-              _pickImage(context, ImageSource.gallery);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.camera_alt),
-            title: const Text('拍照'),
-            onTap: () async {
-              Navigator.pop(context);
-              _pickImage(context, ImageSource.camera);
-            },
-          ),
-        ],
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera),
+              title: const Text('拍照'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('从相册选择'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Future<void> _pickImage(BuildContext context, ImageSource source) async {
+  Future<void> _pickImage(ImageSource source) async {
     try {
       final ImagePicker picker = ImagePicker();
-      final XFile? pickedFile = await picker.pickImage(source: source);
+      final XFile? image = await picker.pickImage(
+        source: source,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 85,
+      );
 
-      if (pickedFile != null) {
-        context.read<ProfileBloc>().add(
-          UploadAvatarEvent(imageFile: File(pickedFile.path))
-        );
+      if (image != null) {
+        context.read<ProfileBloc>().add(UploadAvatarEvent(imageFile: File(image.path)));
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('选择图片失败: ${e.toString()}')),
+        SnackBar(content: Text('选择图片失败: $e')),
       );
     }
   }
 
-  void _showEditNicknameDialog(BuildContext context, String? currentNickname) {
-    final TextEditingController controller = TextEditingController(text: currentNickname);
+  void _showEditProfileDialog(BuildContext context, UserProfile profile) {
+    final TextEditingController nickNameController = TextEditingController(text: profile.nickName);
+    bool isOnline = profile.onlineFlag;
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('修改昵称'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            hintText: '请输入新昵称',
-          ),
-          maxLength: 20,
+        title: const Text('编辑个人资料'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nickNameController,
+              decoration: const InputDecoration(
+                labelText: '昵称',
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const Text('在线状态'),
+                const Spacer(),
+                Switch(
+                  value: isOnline,
+                  onChanged: (value) {
+                    isOnline = value;
+                  },
+                ),
+              ],
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -534,24 +511,18 @@ class BlocProfilePage extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              final String newNickname = controller.text.trim();
-              if (newNickname.isNotEmpty) {
-                context.read<ProfileBloc>().add(
-                  UpdateUserProfileEvent(nickName: newNickname)
-                );
-              }
               Navigator.pop(context);
+              context.read<ProfileBloc>().add(
+                    UpdateUserProfileEvent(
+                      nickName: nickNameController.text,
+                      onlineFlag: isOnline,
+                    ),
+                  );
             },
             child: const Text('保存'),
           ),
         ],
       ),
-    );
-  }
-
-  void _showStatusMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
     );
   }
 }

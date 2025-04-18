@@ -1,8 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:dartz/dartz.dart';
 import 'package:get_it/get_it.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/error/failures.dart';
 import '../../core/network/network_info.dart';
 import 'data/datasources/profile_local_data_source.dart';
 import 'data/datasources/profile_remote_data_source.dart';
@@ -24,6 +26,7 @@ import 'domain/usecases/logout.dart';
 import 'domain/usecases/update_user_profile.dart';
 import 'domain/usecases/upload_avatar.dart';
 import 'presentation/bloc/profile_bloc.dart';
+import 'presentation/bloc/wallet_bloc.dart';
 
 /// 依赖注入容器，注册 Profile 模块相关的服务
 Future<void> initProfileDependencies(GetIt locator) async {
@@ -39,11 +42,17 @@ Future<void> initProfileDependencies(GetIt locator) async {
     ),
   );
 
+  locator.registerFactory(
+    () => WalletBloc(
+      getWalletSummary: locator(),
+    ),
+  );
+
   // Use cases
   locator.registerLazySingleton(() => GetUserProfileUseCase(locator()));
   locator.registerLazySingleton(() => UpdateUserProfileUseCase(locator()));
   locator.registerLazySingleton(() => UploadAvatarUseCase(locator()));
-  locator.registerLazySingleton(() => GetWalletSummaryUseCase(locator()));
+  locator.registerLazySingleton(() => GetWalletSummary(locator()));
   locator.registerLazySingleton(() => GetSavedItemsUseCase(locator()));
   locator.registerLazySingleton(() => GetLikedStoriesUseCase(locator()));
   locator.registerLazySingleton(() => CheckAuthStatusUseCase(locator()));
@@ -134,6 +143,6 @@ class MockAuthRepository implements IAuthRepository {
   @override
   Future<Either<Failure, void>> logout() async {
     _isLoggedIn = false;
-    return const Right(null);
+    return Right(null);
   }
 }
