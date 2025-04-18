@@ -5,30 +5,25 @@ part 'user_info_model.freezed.dart';
 part 'user_info_model.g.dart';
 
 @freezed
-class UserInfoModel with _$UserInfoModel {
-  const UserInfoModel._(); // Private constructor for entity conversion method
-
+class UserInfoModel with _$UserInfoModel implements UserInfo {
+  @Implements<UserInfo>() // Let freezed handle Equatable via the UserInfo entity
   const factory UserInfoModel({
-    // Match fields from UserInfo entity and potential API response structure
-    @JsonKey(defaultValue: 0) // 设置默认值为0，处理null情况
-    int? id,
-    String? mobile,
-    @JsonKey(name: 'nickname') // Example: if API uses 'nickname' instead of 'nickName'
+    required int id,
+    required String mobile,
     String? nickName,
     String? avatar,
-    // Add other fields based on the actual /api/member/info response
+    int? commonUserId,
   }) = _UserInfoModel;
+
+  const UserInfoModel._(); // Re-add the private constructor required by freezed for custom getters
 
   factory UserInfoModel.fromJson(Map<String, dynamic> json) =>
       _$UserInfoModelFromJson(json);
 
-  // Convert Data Transfer Object (Model) to Domain Entity
-  UserInfo toEntity() {
-    return UserInfo(
-      id: id ?? 0,
-      mobile: mobile,
-      nickName: nickName,
-      avatar: avatar,
-    );
-  }
+  // Explicitly add the overrides again
+  @override
+  List<Object?> get props => [id, mobile, nickName, avatar, commonUserId];
+
+  @override
+  bool? get stringify => true;
 }

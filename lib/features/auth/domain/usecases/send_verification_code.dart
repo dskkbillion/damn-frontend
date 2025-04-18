@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
-// import 'package:damn_frontend/features/auth/domain/entities/verification_purpose.dart'; // 不再需要
+// import 'package:dskk_flutter_refactor/features/auth/domain/entities/verification_purpose.dart'; // 不再需要
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart'; // 确认路径
 import 'package:equatable/equatable.dart';

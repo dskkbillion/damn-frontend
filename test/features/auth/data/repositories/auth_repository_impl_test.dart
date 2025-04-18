@@ -16,6 +16,7 @@ import 'package:dskk_flutter_refactor/features/auth/domain/entities/authenticate
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/user_info.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_info_repository.dart';
 import 'package:dskk_flutter_refactor/core/platform/token_validator.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_status.dart';
 
 import 'auth_repository_impl_test.mocks.dart'; // 导入生成的mock文件
 

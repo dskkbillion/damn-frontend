@@ -45,13 +45,27 @@ class UserInfoRemoteDataSourceImpl implements UserInfoRemoteDataSource {
           // 创建默认的UserInfoModel以防返回为空
           if (userData == null) {
             print('警告: 用户数据为空，使用默认值');
-            return const UserInfoModel(id: 0);
+            // Provide default values for required fields
+            return const UserInfoModel(
+              id: 0,
+              mobile: '', // Changed from null
+              nickName: null,
+              avatar: null,
+              commonUserId: null,
+            );
           }
 
           // 确保userData是Map类型
           if (userData is! Map<String, dynamic>) {
             print('警告: 用户数据不是预期的Map格式: ${userData.runtimeType}');
-            return const UserInfoModel(id: 0);
+            // Provide default values for required fields
+            return const UserInfoModel(
+              id: 0,
+              mobile: '', // Changed from null
+              nickName: null,
+              avatar: null,
+              commonUserId: null,
+            );
           }
 
           return UserInfoModel.fromJson(userData);

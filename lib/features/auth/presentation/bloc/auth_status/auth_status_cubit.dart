@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:damn_frontend/features/auth/domain/entities/auth_status.dart';
-import 'package:damn_frontend/features/auth/domain/usecases/get_auth_status_stream.dart';
-import 'package:damn_frontend/features/auth/domain/usecases/logout.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_status.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/usecases/get_auth_status_stream.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/usecases/logout.dart';
 import 'dart:async';
 
 /// 全局管理认证状态的 Cubit/Bloc

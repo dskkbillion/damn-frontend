@@ -4,7 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart'; // Import GetIt
 import 'dart:async'; // Import dart:async for StreamSubscription
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_cubit.dart';
+// Remove import for non-existent SmsLoginCubit on auth branch?
+// import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_cubit.dart';
 
 // Import authentication related classes
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_status.dart';
@@ -12,16 +13,18 @@ import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_r
 
 // Import the main shell page which will act as the navigator shell
 import 'package:dskk_flutter_refactor/app/widgets/main_shell_page.dart';
-// Import the actual login page - NO LONGER NEEDED HERE, handled by AuthRoutes
-// import 'package:dskk_flutter_refactor/features/auth/presentation/pages/sms_login_page.dart';
 
 // --- Import Module Routes ---
-import 'package:dskk_flutter_refactor/features/ai_docs/presentation/routes/ai_docs_routes.dart';
+// import 'package:dskk_flutter_refactor/features/ai_docs/presentation/routes/ai_docs_routes.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/routes/auth_routes.dart'; // Import Auth routes
-// TODO: Import other feature module routes here
+// REMOVE non-existent imports for auth branch
+// import 'package:dskk_flutter_refactor/features/home/presentation/routes/home_routes.dart';
+// import 'package:dskk_flutter_refactor/features/orders/presentation/routes/order_routes.dart';
+
+// REMOVE NotFoundPage for now, as it might not exist
+// import 'package:dskk_flutter_refactor/app/widgets/not_found_page.dart';
 
 // Placeholder pages for each tab
-// TODO: Replace these with actual feature pages later
 class PlaceholderPage extends StatelessWidget {
   final String title;
   const PlaceholderPage({required this.title, super.key});
@@ -41,9 +44,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   // Access the AuthRepository via GetIt
   final authRepository = GetIt.instance<IAuthRepository>();
 
-  // TODO: Add observers later if needed (e.g., for analytics)
-  // final observers = <NavigatorObserver>[];
-
   // GlobalKey for the root navigator
   final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
   // GlobalKey for the shell navigator
@@ -51,32 +51,27 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: '/home', // Set initial tab to '主页'
-    // observers: observers,
+    // Adjust initial location if /home doesn't make sense on auth branch
+    // Maybe initialLocation: '/login' or '/'? Let's keep /home for now, redirect handles it.
+    initialLocation: '/home',
     debugLogDiagnostics: true, // Enable debug logging
     refreshListenable: GoRouterRefreshStream(authRepository.authStatus), // Listen to auth status changes
 
     routes: [
       // Configuration for the bottom navigation bar using StatefulShellRoute
       StatefulShellRoute.indexedStack(
-        // This builder is responsible for building the shell UI (e.g., Scaffold with BottomNavBar)
         builder: (context, state, navigationShell) {
-          // The navigationShell is passed to the MainShellPage
-          // It contains the pages for the different tabs and methods to navigate between them
           return MainShellPage(navigationShell: navigationShell);
         },
-        // Define the branches for each tab
         branches: [
           // Branch for the '多少看看' tab
           StatefulShellBranch(
-            // navigatorKey: shellNavigatorKey, // Optional key if needed for inner navigation
             routes: [
               GoRoute(
-                path: '/discover', // Path for the first tab
+                path: '/discover', 
                 pageBuilder: (context, state) => const NoTransitionPage(
-                  child: PlaceholderPage(title: '多少看看'),
+                  child: PlaceholderPage(title: '多少看看 (Auth Branch)'), // Indicate branch context
                 ),
-                // TODO: Add sub-routes for this branch if needed
               ),
             ],
           ),
@@ -84,9 +79,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/home', // Path for the second tab
+                path: '/home', 
                 pageBuilder: (context, state) => const NoTransitionPage(
-                  child: PlaceholderPage(title: '主页'),
+                  child: PlaceholderPage(title: '主页 (Auth Branch)'),
                 ),
               ),
             ],
@@ -95,9 +90,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/chat', // Path for the third tab
+                path: '/chat', 
                 pageBuilder: (context, state) => const NoTransitionPage(
-                  child: PlaceholderPage(title: '消息'),
+                  child: PlaceholderPage(title: '消息 (Auth Branch)'),
                 ),
               ),
             ],
@@ -106,23 +101,20 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/profile', // Path for the fourth tab
+                path: '/profile', 
                 pageBuilder: (context, state) => const NoTransitionPage(
-                  child: PlaceholderPage(title: '我的'),
+                  child: PlaceholderPage(title: '我的 (Auth Branch)'),
                 ),
               ),
             ],
           ),
-          // Branch for the 'AI Docs' tab (using DevMenuPage for now)
+          // Branch for the 'AI Docs' tab (Dev Menu placeholder on auth branch)
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/dev_menu', // Path for the dev menu tab
+                path: '/dev_menu', 
                 pageBuilder: (context, state) => const NoTransitionPage(
-                  // Load DevMenuPage which contains the link to /ai_chat
-                  // child: DevMenuPage(), 
-                  // TEMPORARY FIX: Use PlaceholderPage until DevMenuPage is restored/found
-                  child: PlaceholderPage(title: 'Dev Menu (Placeholder)'),
+                  child: PlaceholderPage(title: 'Dev Menu Placeholder (Auth Branch)'),
                 ),
               ),
             ],
@@ -132,51 +124,42 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
       // --- Top-level routes (not part of the shell) ---
 
-      // Aggregate routes from feature modules
+      // Aggregate routes from feature modules - ONLY AUTH on this branch
       ...AuthRoutes.routes, // Add routes from Auth module
-      ...AiDocsRoutes.routes, // Add routes from AI Docs module
-      // TODO: Add routes from other modules here ...
-
-      // Add other top-level routes if needed
-
+      // REMOVE non-existent routes for auth branch
+      // ...HomeRoutes.routes,
+      // ...OrderRoutes.routes,
+      
     ],
-    // TODO: Add error handling later
-    // errorBuilder: (context, state) => const ErrorScreen(),
+    // Use a simple placeholder for error page on auth branch
+    errorBuilder: (context, state) => Scaffold(
+      appBar: AppBar(title: const Text('Error')),
+      body: Center(child: Text('Page not found: ${state.uri}\nError: ${state.error}')),
+    ),
 
     // Implement redirection logic for authentication
     redirect: (context, state) {
-      // Get the current login status synchronously.
-      // Note: This relies on the repository having been initialized.
       final loginStatus = authRepository.getLoggedInUserSync().fold(
-        (failure) => const Unauthenticated(), // Treat failure to get status as unauthenticated
+        (failure) => const Unauthenticated(),
         (user) => user != null ? Authenticated(user) : const Unauthenticated(),
       );
-
       final isLoggingIn = state.matchedLocation == '/login';
-      final isUnknown = loginStatus is AuthUnknown; // Check if status is still unknown
+      final isUnknown = loginStatus is AuthUnknown;
 
       print('Redirect Check: Current Location: ${state.matchedLocation}, Login Status: $loginStatus, Is Logging In: $isLoggingIn');
 
-      // If the status is still unknown, don't redirect yet.
-      // The refreshListenable will trigger a re-evaluation once the status is known.
       if (isUnknown) {
         print('Redirect Check: Auth status unknown, no redirect.');
         return null;
       }
-
-      // If the user is not logged in and not trying to access the login page, redirect to login.
       if (loginStatus is Unauthenticated && !isLoggingIn) {
          print('Redirect Check: Not logged in, redirecting to /login');
         return '/login';
       }
-
-      // If the user is logged in and trying to access the login page, redirect to home.
       if (loginStatus is Authenticated && isLoggingIn) {
         print('Redirect Check: Logged in, redirecting from /login to /home');
         return '/home';
       }
-
-      // No redirect needed in other cases.
        print('Redirect Check: No redirect needed.');
       return null;
     },
@@ -184,7 +167,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 });
 
 // Helper class to trigger GoRouter redirects when auth status stream changes
-// (From GoRouter documentation example)
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
     notifyListeners();

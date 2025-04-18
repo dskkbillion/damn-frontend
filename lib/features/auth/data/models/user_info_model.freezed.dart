@@ -20,13 +20,11 @@ UserInfoModel _$UserInfoModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$UserInfoModel {
-// Match fields from UserInfo entity and potential API response structure
-  @JsonKey(defaultValue: 0)
-  int? get id => throw _privateConstructorUsedError;
-  String? get mobile => throw _privateConstructorUsedError;
-  @JsonKey(name: 'nickname')
+  int get id => throw _privateConstructorUsedError;
+  String get mobile => throw _privateConstructorUsedError;
   String? get nickName => throw _privateConstructorUsedError;
   String? get avatar => throw _privateConstructorUsedError;
+  int? get commonUserId => throw _privateConstructorUsedError;
 
   /// Serializes this UserInfoModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -45,10 +43,11 @@ abstract class $UserInfoModelCopyWith<$Res> {
       _$UserInfoModelCopyWithImpl<$Res, UserInfoModel>;
   @useResult
   $Res call(
-      {@JsonKey(defaultValue: 0) int? id,
-      String? mobile,
-      @JsonKey(name: 'nickname') String? nickName,
-      String? avatar});
+      {int id,
+      String mobile,
+      String? nickName,
+      String? avatar,
+      int? commonUserId});
 }
 
 /// @nodoc
@@ -66,20 +65,21 @@ class _$UserInfoModelCopyWithImpl<$Res, $Val extends UserInfoModel>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = freezed,
-    Object? mobile = freezed,
+    Object? id = null,
+    Object? mobile = null,
     Object? nickName = freezed,
     Object? avatar = freezed,
+    Object? commonUserId = freezed,
   }) {
     return _then(_value.copyWith(
-      id: freezed == id
+      id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      mobile: freezed == mobile
+              as int,
+      mobile: null == mobile
           ? _value.mobile
           : mobile // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       nickName: freezed == nickName
           ? _value.nickName
           : nickName // ignore: cast_nullable_to_non_nullable
@@ -88,6 +88,10 @@ class _$UserInfoModelCopyWithImpl<$Res, $Val extends UserInfoModel>
           ? _value.avatar
           : avatar // ignore: cast_nullable_to_non_nullable
               as String?,
+      commonUserId: freezed == commonUserId
+          ? _value.commonUserId
+          : commonUserId // ignore: cast_nullable_to_non_nullable
+              as int?,
     ) as $Val);
   }
 }
@@ -101,10 +105,11 @@ abstract class _$$UserInfoModelImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {@JsonKey(defaultValue: 0) int? id,
-      String? mobile,
-      @JsonKey(name: 'nickname') String? nickName,
-      String? avatar});
+      {int id,
+      String mobile,
+      String? nickName,
+      String? avatar,
+      int? commonUserId});
 }
 
 /// @nodoc
@@ -120,20 +125,21 @@ class __$$UserInfoModelImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = freezed,
-    Object? mobile = freezed,
+    Object? id = null,
+    Object? mobile = null,
     Object? nickName = freezed,
     Object? avatar = freezed,
+    Object? commonUserId = freezed,
   }) {
     return _then(_$UserInfoModelImpl(
-      id: freezed == id
+      id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      mobile: freezed == mobile
+              as int,
+      mobile: null == mobile
           ? _value.mobile
           : mobile // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       nickName: freezed == nickName
           ? _value.nickName
           : nickName // ignore: cast_nullable_to_non_nullable
@@ -142,6 +148,10 @@ class __$$UserInfoModelImplCopyWithImpl<$Res>
           ? _value.avatar
           : avatar // ignore: cast_nullable_to_non_nullable
               as String?,
+      commonUserId: freezed == commonUserId
+          ? _value.commonUserId
+          : commonUserId // ignore: cast_nullable_to_non_nullable
+              as int?,
     ));
   }
 }
@@ -150,47 +160,26 @@ class __$$UserInfoModelImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$UserInfoModelImpl extends _UserInfoModel {
   const _$UserInfoModelImpl(
-      {@JsonKey(defaultValue: 0) this.id,
-      this.mobile,
-      @JsonKey(name: 'nickname') this.nickName,
-      this.avatar})
+      {required this.id,
+      required this.mobile,
+      this.nickName,
+      this.avatar,
+      this.commonUserId})
       : super._();
 
   factory _$UserInfoModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserInfoModelImplFromJson(json);
 
-// Match fields from UserInfo entity and potential API response structure
   @override
-  @JsonKey(defaultValue: 0)
-  final int? id;
+  final int id;
   @override
-  final String? mobile;
+  final String mobile;
   @override
-  @JsonKey(name: 'nickname')
   final String? nickName;
   @override
   final String? avatar;
-
   @override
-  String toString() {
-    return 'UserInfoModel(id: $id, mobile: $mobile, nickName: $nickName, avatar: $avatar)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$UserInfoModelImpl &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.mobile, mobile) || other.mobile == mobile) &&
-            (identical(other.nickName, nickName) ||
-                other.nickName == nickName) &&
-            (identical(other.avatar, avatar) || other.avatar == avatar));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(runtimeType, id, mobile, nickName, avatar);
+  final int? commonUserId;
 
   /// Create a copy of UserInfoModel
   /// with the given fields replaced by the non-null parameter values.
@@ -208,28 +197,28 @@ class _$UserInfoModelImpl extends _UserInfoModel {
   }
 }
 
-abstract class _UserInfoModel extends UserInfoModel {
+abstract class _UserInfoModel extends UserInfoModel implements UserInfo {
   const factory _UserInfoModel(
-      {@JsonKey(defaultValue: 0) final int? id,
-      final String? mobile,
-      @JsonKey(name: 'nickname') final String? nickName,
-      final String? avatar}) = _$UserInfoModelImpl;
+      {required final int id,
+      required final String mobile,
+      final String? nickName,
+      final String? avatar,
+      final int? commonUserId}) = _$UserInfoModelImpl;
   const _UserInfoModel._() : super._();
 
   factory _UserInfoModel.fromJson(Map<String, dynamic> json) =
       _$UserInfoModelImpl.fromJson;
 
-// Match fields from UserInfo entity and potential API response structure
   @override
-  @JsonKey(defaultValue: 0)
-  int? get id;
+  int get id;
   @override
-  String? get mobile;
+  String get mobile;
   @override
-  @JsonKey(name: 'nickname')
   String? get nickName;
   @override
   String? get avatar;
+  @override
+  int? get commonUserId;
 
   /// Create a copy of UserInfoModel
   /// with the given fields replaced by the non-null parameter values.

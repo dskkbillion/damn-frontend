@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:damn_frontend/features/auth/data/models/user_info_model.dart';
-import 'package:damn_frontend/features/auth/domain/entities/user_info.dart';
+import 'package:dskk_flutter_refactor/features/auth/data/models/user_info_model.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/user_info.dart';
 
 // 实际的 /api/member/info 响应 data 部分
 const String fixtureUserInfoJson = '''
@@ -50,7 +50,7 @@ void main() {
     mobile: "17895868541",
     nickName: "178****1",
     avatar: null,
-    // 根据需要可以在这里添加其他字段的期望值
+    commonUserId: 10297,
   );
 
   test(
@@ -75,6 +75,7 @@ void main() {
         expect(result.mobile, "17895868541");
         expect(result.nickName, "178****1");
         expect(result.avatar, isNull);
+        expect(result.commonUserId, 10297);
       },
     );
 

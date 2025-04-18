@@ -5,14 +5,14 @@ import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:bloc_test/bloc_test.dart'; // For mocking cubits/blocs easily
 
-import 'package:damn_frontend/features/auth/presentation/bloc/sms_login/sms_login_cubit.dart';
-import 'package:damn_frontend/features/auth/presentation/bloc/sms_login/sms_login_state.dart';
-import 'package:damn_frontend/features/auth/presentation/pages/sms_login_page.dart';
-import 'package:damn_frontend/features/auth/presentation/widgets/phone_input_field.dart'; // Assuming these widgets exist
-import 'package:damn_frontend/features/auth/presentation/widgets/verification_code_input_field.dart';
-import 'package:damn_frontend/features/auth/presentation/widgets/verification_code_button.dart';
-import 'package:damn_frontend/features/auth/domain/entities/authenticated_user.dart';
-import 'package:damn_frontend/core/error/failures.dart'; // For Failure type
+import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_cubit.dart';
+import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_state.dart';
+import 'package:dskk_flutter_refactor/features/auth/presentation/pages/sms_login_page.dart';
+import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/phone_input_field.dart'; // Assuming these widgets exist
+import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_input_field.dart';
+import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_button.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/authenticated_user.dart';
+import 'package:dskk_flutter_refactor/core/error/failures.dart'; // For Failure type
 
 // Mock Cubit using mocktail or bloc_test's MockCubit
 class MockSmsLoginCubit extends MockCubit<SmsLoginState> implements SmsLoginCubit {}
@@ -26,8 +26,8 @@ void main() {
 
   setUp(() {
     mockSmsLoginCubit = MockSmsLoginCubit();
-    // Stub the initial state
-    when(() => mockSmsLoginCubit.state).thenReturn(SmsLoginInitial());
+    // Remove stubbing the state here, rely on initialState in whenListen
+    // when(() => mockSmsLoginCubit.state).thenReturn(SmsLoginInitial());
   });
 
   // Helper to build the widget tree for testing

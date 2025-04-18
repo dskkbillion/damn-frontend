@@ -32,8 +32,13 @@ import 'package:mockito/mockito.dart' as _i1;
 // ignore_for_file: subtype_of_sealed_class
 
 class _FakeEither_0<L, R> extends _i1.SmartFake implements _i2.Either<L, R> {
-  _FakeEither_0(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
+  _FakeEither_0(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
 }
 
 /// A class which mocks [IAuthRepository].
@@ -45,65 +50,80 @@ class MockIAuthRepository extends _i1.Mock implements _i3.IAuthRepository {
   }
 
   @override
-  _i4.Stream<_i5.AuthStatus> get authStatus =>
-      (super.noSuchMethod(
-            Invocation.getter(#authStatus),
-            returnValue: _i4.Stream<_i5.AuthStatus>.empty(),
-          )
-          as _i4.Stream<_i5.AuthStatus>);
+  _i4.Stream<_i5.AuthStatus> get authStatus => (super.noSuchMethod(
+        Invocation.getter(#authStatus),
+        returnValue: _i4.Stream<_i5.AuthStatus>.empty(),
+      ) as _i4.Stream<_i5.AuthStatus>);
 
   @override
-  _i4.Future<_i2.Either<_i6.Failure, _i7.AuthenticatedUser>>
-  loginWithVerificationCode(_i8.VerificationCodeCredentials? credentials) =>
+  _i4.Future<
+      _i2.Either<_i6.Failure, _i7.AuthenticatedUser>> loginWithVerificationCode(
+          _i8.VerificationCodeCredentials? credentials) =>
       (super.noSuchMethod(
-            Invocation.method(#loginWithVerificationCode, [credentials]),
-            returnValue: _i4.Future<
-              _i2.Either<_i6.Failure, _i7.AuthenticatedUser>
-            >.value(
-              _FakeEither_0<_i6.Failure, _i7.AuthenticatedUser>(
-                this,
-                Invocation.method(#loginWithVerificationCode, [credentials]),
-              ),
-            ),
-          )
-          as _i4.Future<_i2.Either<_i6.Failure, _i7.AuthenticatedUser>>);
+        Invocation.method(
+          #loginWithVerificationCode,
+          [credentials],
+        ),
+        returnValue:
+            _i4.Future<_i2.Either<_i6.Failure, _i7.AuthenticatedUser>>.value(
+                _FakeEither_0<_i6.Failure, _i7.AuthenticatedUser>(
+          this,
+          Invocation.method(
+            #loginWithVerificationCode,
+            [credentials],
+          ),
+        )),
+      ) as _i4.Future<_i2.Either<_i6.Failure, _i7.AuthenticatedUser>>);
 
   @override
-  _i4.Future<_i2.Either<_i6.Failure, void>> logout() =>
-      (super.noSuchMethod(
-            Invocation.method(#logout, []),
-            returnValue: _i4.Future<_i2.Either<_i6.Failure, void>>.value(
-              _FakeEither_0<_i6.Failure, void>(
-                this,
-                Invocation.method(#logout, []),
-              ),
-            ),
-          )
-          as _i4.Future<_i2.Either<_i6.Failure, void>>);
+  _i4.Future<_i2.Either<_i6.Failure, void>> logout() => (super.noSuchMethod(
+        Invocation.method(
+          #logout,
+          [],
+        ),
+        returnValue: _i4.Future<_i2.Either<_i6.Failure, void>>.value(
+            _FakeEither_0<_i6.Failure, void>(
+          this,
+          Invocation.method(
+            #logout,
+            [],
+          ),
+        )),
+      ) as _i4.Future<_i2.Either<_i6.Failure, void>>);
 
   @override
-  _i4.Future<_i2.Either<_i6.Failure, void>> sendVerificationCode({
-    required String? phone,
-  }) =>
+  _i4.Future<_i2.Either<_i6.Failure, void>> sendVerificationCode(
+          {required String? phone}) =>
       (super.noSuchMethod(
-            Invocation.method(#sendVerificationCode, [], {#phone: phone}),
-            returnValue: _i4.Future<_i2.Either<_i6.Failure, void>>.value(
-              _FakeEither_0<_i6.Failure, void>(
-                this,
-                Invocation.method(#sendVerificationCode, [], {#phone: phone}),
-              ),
-            ),
-          )
-          as _i4.Future<_i2.Either<_i6.Failure, void>>);
+        Invocation.method(
+          #sendVerificationCode,
+          [],
+          {#phone: phone},
+        ),
+        returnValue: _i4.Future<_i2.Either<_i6.Failure, void>>.value(
+            _FakeEither_0<_i6.Failure, void>(
+          this,
+          Invocation.method(
+            #sendVerificationCode,
+            [],
+            {#phone: phone},
+          ),
+        )),
+      ) as _i4.Future<_i2.Either<_i6.Failure, void>>);
 
   @override
   _i2.Either<_i6.Failure, _i7.AuthenticatedUser?> getLoggedInUserSync() =>
       (super.noSuchMethod(
-            Invocation.method(#getLoggedInUserSync, []),
-            returnValue: _FakeEither_0<_i6.Failure, _i7.AuthenticatedUser?>(
-              this,
-              Invocation.method(#getLoggedInUserSync, []),
-            ),
-          )
-          as _i2.Either<_i6.Failure, _i7.AuthenticatedUser?>);
+        Invocation.method(
+          #getLoggedInUserSync,
+          [],
+        ),
+        returnValue: _FakeEither_0<_i6.Failure, _i7.AuthenticatedUser?>(
+          this,
+          Invocation.method(
+            #getLoggedInUserSync,
+            [],
+          ),
+        ),
+      ) as _i2.Either<_i6.Failure, _i7.AuthenticatedUser?>);
 }

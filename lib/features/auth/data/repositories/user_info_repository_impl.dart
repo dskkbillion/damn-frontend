@@ -23,9 +23,8 @@ class UserInfoRepositoryImpl implements IUserInfoRepository {
     if (await networkInfo.isConnected) {
       try {
         final userInfoModel = await remoteDataSource.fetchUserInfo(token);
-        // Assuming UserInfoModel has a method to convert to UserInfo entity
-        // or UserInfo entity has a constructor/factory that takes UserInfoModel
-        return Right(userInfoModel.toEntity());
+        // UserInfoModel now extends UserInfo, so we can return it directly.
+        return Right(userInfoModel);
       } on UnauthenticatedException catch (e) {
         print('UnauthenticatedException in UserInfoRepository: ${e.message}');
         return Left(AuthenticationFailure(message: e.message));

@@ -34,10 +34,11 @@ class MockTokenValidator extends _i1.Mock implements _i2.TokenValidator {
   @override
   _i3.Future<_i2.TokenValidationResult> validateToken(String? token) =>
       (super.noSuchMethod(
-            Invocation.method(#validateToken, [token]),
-            returnValue: _i3.Future<_i2.TokenValidationResult>.value(
-              _i2.TokenValidationResult.valid,
-            ),
-          )
-          as _i3.Future<_i2.TokenValidationResult>);
+        Invocation.method(
+          #validateToken,
+          [token],
+        ),
+        returnValue: _i3.Future<_i2.TokenValidationResult>.value(
+            _i2.TokenValidationResult.valid),
+      ) as _i3.Future<_i2.TokenValidationResult>);
 }

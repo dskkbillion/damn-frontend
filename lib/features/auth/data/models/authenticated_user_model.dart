@@ -1,4 +1,4 @@
-// import 'package:damn_frontend/features/auth/domain/entities/authenticated_user.dart';
+// import 'package:dskk_flutter_refactor/features/auth/domain/entities/authenticated_user.dart';
 
 // TODO: 此 Model 用于解析 /api/auth/login 的响应
 // 它不再需要继承 AuthenticatedUser，只包含 token 和 code
