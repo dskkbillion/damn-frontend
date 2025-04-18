@@ -6,8 +6,8 @@ import 'package:flutter_bloc/flutter_bloc.dart'; // For BlocProvider
 import '../../../../app/di/injection_container.dart'; // Adjust path if needed
 
 // Correctly import the Bloc and Page for this route
-import '../bloc/ai_chat/ai_chat_bloc.dart'; // Restore import
-import '../pages/chat_page.dart' hide getIt; // Restore import AND hide getIt from chat_page
+import '../bloc/ai_chat/ai_chat_bloc.dart'; // Corrected path
+import '../pages/chat_page.dart' hide getIt; // Hide getIt from chat_page if it exports it
 
 /// Defines routes specifically for the AiDocs feature module.
 class AiDocsRoutes {
@@ -17,22 +17,17 @@ class AiDocsRoutes {
   /// Static getter for the list of routes defined in this module.
   static List<RouteBase> get routes => _routes;
 
-  static const String chatPath = '/ai_chat';
-
   // Define the routes for this module
   static final List<RouteBase> _routes = [
     GoRoute(
-      path: chatPath,
-      name: 'aiChat',
-      builder: (context, state) {
-        // Restore BlocProvider with actual Page and Bloc
-        // print('Navigating to AI Docs placeholder - Implement ChatPage and AiChatBloc');
-        return BlocProvider(
-          create: (_) => getIt<AiChatBloc>(), // Restore Bloc creation
-          child: const ChatPage(), // Restore actual page
-        );
-        // return const _AiDocsPlaceholder(); // Remove placeholder
-      },
+      path: '/ai_chat', // Example path for the main chat interface
+      name: 'aiChat',   // Optional route name
+      // Wrap ChatPage with BlocProvider for AiChatBloc
+      builder: (context, state) => BlocProvider(
+        // Use GetIt (imported from injection_container) to create the AiChatBloc instance
+        create: (_) => getIt<AiChatBloc>(),
+        child: const ChatPage(), // Assuming ChatPage takes no initial parameters for this route
+      ),
       // TODO: Add sub-routes if needed, e.g., for specific conversation IDs:
       // routes: [
       //   GoRoute(
