@@ -9,6 +9,7 @@ import 'package:dskk_flutter_refactor/app/widgets/dev_menu_page.dart';
 // Import feature routes
 import 'package:dskk_flutter_refactor/features/orders/presentation/routes/order_routes.dart';
 import 'package:dskk_flutter_refactor/features/after_sales/presentation/routes/after_sales_routes.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/routes/ai_docs_routes.dart';
 
 // Placeholder pages for each tab
 // TODO: Replace these with actual feature pages later
@@ -122,6 +123,8 @@ GoRouter _createGoRouter() {
       ...OrderRoutes.routes,
       // Add the routes from the AfterSales module
       ...AfterSalesRoutes.routes,
+      // Add the routes from the AI Docs module
+      ...AiDocsRoutes.routes,
 
       // TODO: Add other top-level routes here later (e.g., for login, settings outside the shell)
       // GoRoute(

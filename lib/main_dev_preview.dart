@@ -40,10 +40,10 @@ Future<void> main() async {
     final storage = getIt<FlutterSecureStorage>(); 
     // Use a generic test token and ID for buyer/general use
     const testToken = "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjFmODBjYWYxLWE5ZGEtNDNhZi1hYzNjLTZkOWFjY2I4MmVjZiJ9.kyKSBwHvo3czm-R1cVySStWQQiSDQef4zAHS5dSjQ7MPjpfCR-PyqQgVN30GhmJf5eBmeaT9jJI13gMS8pmBSA"; // Example Buyer/General Token
-    const testUserId = "18888888888"; // Example Buyer/General ID
+    const testUserId = "1"; // Example Buyer/General ID as String representation of an int
     await storage.write(key: 'user_token', value: testToken);
     await storage.write(key: 'user_id', value: testUserId);
-    print('[main_dev_preview] Successfully injected test token and user ID into secure storage.');
+    print('[main_dev_preview] Successfully injected test token and user ID (${testUserId}) into secure storage.');
   } catch (e) {
      print('[main_dev_preview] ERROR injecting test credentials: $e');
      // Consider how fatal this error should be

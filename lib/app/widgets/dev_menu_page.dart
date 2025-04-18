@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart'; // Import getIt
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/routes/ai_docs_routes.dart'; // Import AI Docs routes
 
 // Change to StatefulWidget to read storage in initState
 class DevMenuPage extends StatefulWidget {
@@ -72,6 +73,11 @@ class _DevMenuPageState extends State<DevMenuPage> {
                 _buildNavButton(context, '卖家订单列表', '/seller/orders'),
                  _buildNavButton(context, '卖家订单详情 (示例)', '/seller/orders/mock_seller_order_1'),
                 // TODO: Add other seller order actions/views if needed
+                const Divider(),
+
+                // Add entry points for AI Docs Module
+                _buildSectionTitle('AI Docs 模块'),
+                _buildNavButton(context, 'AI 聊天', AiDocsRoutes.chatPath), // Use constant path
                 const Divider(),
 
                 // TODO: Add entry points for other modules as they are merged

@@ -39,6 +39,12 @@ class SimpleFailure extends Failure {
   /*const*/ SimpleFailure(this.message) : super([message]); // Removed const
 }
 
+/// 表示一个通用的、未指定类型的失败情况。
+class GeneralFailure extends Failure {
+  final String message;
+  GeneralFailure({required this.message}) : super([message]); // Removed const
+}
+
 // 未来可以根据需要添加其他特定的 Failure 类型，例如：
 // class NetworkFailure extends Failure {}
 // class AuthenticationFailure extends Failure {} 
