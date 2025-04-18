@@ -20,6 +20,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dartz/dartz.dart';
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/platform/token_validator.dart'; // Import TokenValidator and related enum
 
 final sl = GetIt.instance; // Service Locator instance for preview
 
@@ -30,29 +31,29 @@ class FakeSecureStorageRepository implements ISecureStorageRepository {
 
   @override
   Future<void> delete(String key) async {
-    print('[FakeSecureStorage] Deleting: \$key');
+    print('[FakeSecureStorage] Deleting: $key');
     _storage.remove(key);
   }
   @override
   Future<int?> getInt(String key) async {
     final value = _storage[key] as int?;
-    print('[FakeSecureStorage] Getting int: \$key -> \$value');
+    print('[FakeSecureStorage] Getting int: $key -> $value');
     return value;
   }
   @override
   Future<String?> getString(String key) async {
     final value = _storage[key] as String?;
-    print('[FakeSecureStorage] Getting string: \$key -> \$value');
+    print('[FakeSecureStorage] Getting string: $key -> $value');
     return value;
   }
   @override
   Future<void> saveInt(String key, int value) async {
-    print('[FakeSecureStorage] Saving int: \$key = \$value');
+    print('[FakeSecureStorage] Saving int: $key = $value');
     _storage[key] = value;
   }
   @override
   Future<void> saveString(String key, String value) async {
-    print('[FakeSecureStorage] Saving string: \$key = \$value');
+    print('[FakeSecureStorage] Saving string: $key = $value');
     _storage[key] = value;
   }
   @override
@@ -71,7 +72,35 @@ class FakeSecureStorageRepository implements ISecureStorageRepository {
   Future<void> clearAllAuthData() async {
     await deleteToken();
     await deleteUserId();
+    await deleteCommonUserId(); // Also clear common user id
   }
+
+  // --- Corrected fake implementations for common_user_id (int) ---
+  @override
+  Future<int?> getCommonUserId() async {
+     // Read as String from storage, then parse to int
+     final valueString = _storage['common_user_id'] as String?;
+     print('[FakeSecureStorage] Getting string: common_user_id -> $valueString');
+     if (valueString != null) {
+         return int.tryParse(valueString);
+     }
+     return null;
+  }
+
+  @override
+  Future<void> saveCommonUserId(int commonUserId) async {
+    // Store as String in the fake storage
+    final valueString = commonUserId.toString();
+    print('[FakeSecureStorage] Saving string: common_user_id = $valueString');
+    _storage['common_user_id'] = valueString;
+  }
+
+  @override
+  Future<void> deleteCommonUserId() async {
+    print('[FakeSecureStorage] Deleting: common_user_id');
+    _storage.remove('common_user_id');
+  }
+  // -----------------------------------------------------------
 }
 
 class FakeNetworkInfo implements NetworkInfo {
@@ -85,7 +114,7 @@ class FakeUserInfoRepository implements IUserInfoRepository {
   // Simulate fetching user info after successful login
   @override
   Future<Either<Failure, UserInfo>> fetchUserInfo(String token) async {
-    print('[FakeUserInfoRepo] Fetching user info with token: \$token');
+    print('[FakeUserInfoRepo] Fetching user info with token: $token');
     await Future.delayed(const Duration(milliseconds: 100));
     if (token == 'fake_valid_token') {
       // Return dummy user info if the token matches the one from fake login
@@ -100,7 +129,7 @@ class FakeAuthRemoteDataSource implements AuthRemoteDataSource {
   // Simulate sending verification code
   @override
   Future<void> sendVerificationCode({required String phone}) async {
-    print('[FakeAuthRemote] Attempting to send code to: \$phone');
+    print('[FakeAuthRemote] Attempting to send code to: $phone');
     await Future.delayed(const Duration(milliseconds: 500)); // Simulate network delay
     // Simulate success, maybe add logic later to simulate failures based on phone#
     if (phone.startsWith('1')) { // Basic check
@@ -115,7 +144,7 @@ class FakeAuthRemoteDataSource implements AuthRemoteDataSource {
   // Simulate login with verification code
   @override
   Future<AuthenticatedUserModel> loginWithVerificationCode(VerificationCodeCredentials credentials) async {
-     print('[FakeAuthRemote] Attempting login with phone: \${credentials.phone}, code: \${credentials.code}');
+     print('[FakeAuthRemote] Attempting login with phone: ${credentials.phone}, code: ${credentials.code}');
      await Future.delayed(const Duration(milliseconds: 500)); // Simulate network delay
      // Simulate success if code is "1234" or "123456", otherwise fail
      if (credentials.code == '1234' || credentials.code == '123456') {
@@ -128,6 +157,17 @@ class FakeAuthRemoteDataSource implements AuthRemoteDataSource {
   }
 }
 
+// --- Fake Token Validator (Corrected) --- 
+// Now implements the actual TokenValidator interface
+class FakeTokenValidator implements TokenValidator {
+   // Correct return type and return value
+   @override
+   Future<TokenValidationResult> validateToken(String token) async {
+      print('[FakeTokenValidator] Validating token: $token -> always returning valid');
+      return TokenValidationResult.valid; // Return the enum value
+   }
+}
+
 // --- Dependency Injection Setup for Preview ---
 
 Future<void> configureAuthPreviewDependencies() async {
@@ -138,6 +178,8 @@ Future<void> configureAuthPreviewDependencies() async {
   sl.registerLazySingleton<NetworkInfo>(() => FakeNetworkInfo());
   sl.registerLazySingleton<IUserInfoRepository>(() => FakeUserInfoRepository());
   sl.registerLazySingleton<AuthRemoteDataSource>(() => FakeAuthRemoteDataSource());
+  // Register the fake validator using the INTERFACE type
+  sl.registerLazySingleton<TokenValidator>(() => FakeTokenValidator()); 
 
   // Register Real Auth Domain & Data Layer (wired to fakes)
   sl.registerLazySingleton<IAuthRepository>(() => AuthRepositoryImpl(
@@ -145,6 +187,8 @@ Future<void> configureAuthPreviewDependencies() async {
         secureStorage: sl(),
         networkInfo: sl(),
         userInfoRepository: sl(),
+        // Provide an instance of the TokenValidator (which will be the Fake one)
+        tokenValidator: sl<TokenValidator>(), 
       ));
 
   // Register Real Use Cases (wired to real repository)

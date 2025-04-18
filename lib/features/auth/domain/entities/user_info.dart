@@ -5,6 +5,7 @@ class UserInfo extends Equatable {
   final String? mobile;
   final String? nickName;
   final String? avatar;
+  final int? commonUserId;
   // 可以根据需要添加更多从 /api/member/info 获取的字段
   // 例如: gender, status, etc.
 
@@ -13,8 +14,9 @@ class UserInfo extends Equatable {
     this.mobile,
     this.nickName,
     this.avatar,
+    this.commonUserId,
   });
 
   @override
-  List<Object?> get props => [id, mobile, nickName, avatar];
+  List<Object?> get props => [id, mobile, nickName, avatar, commonUserId];
 }

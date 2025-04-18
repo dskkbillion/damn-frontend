@@ -80,12 +80,34 @@ class SecureStorageRepositoryImpl implements ISecureStorageRepository {
   @override
   Future<void> deleteUserId() async => delete('user_id');
 
+  // --- Add implementations for common_user_id (int) ---
+  static const _commonUserIdKey = 'common_user_id';
+
+  @override
+  Future<int?> getCommonUserId() async {
+    return _tryCatch(() async {
+      final value = await _storage.read(key: _commonUserIdKey);
+      return value == null ? null : int.tryParse(value);
+    }, 'get int for key $_commonUserIdKey');
+  }
+
+  @override
+  Future<void> saveCommonUserId(int commonUserId) async {
+    await _tryCatch(() => _storage.write(key: _commonUserIdKey, value: commonUserId.toString()), 'save int for key $_commonUserIdKey');
+  }
+
+  @override
+  Future<void> deleteCommonUserId() async {
+    await _tryCatch(() => _storage.delete(key: _commonUserIdKey), 'delete key $_commonUserIdKey');
+  }
+  // -----------------------------------------------------
 
   @override
   Future<void> clearAllAuthData() async {
      // Implement clearing logic if needed, e.g., delete both keys
      await deleteToken();
      await deleteUserId();
+     await deleteCommonUserId(); // Also clear common user id
      print('Cleared all auth data from secure storage.');
   }
 }

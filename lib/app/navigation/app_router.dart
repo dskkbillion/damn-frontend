@@ -12,8 +12,13 @@ import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_r
 
 // Import the main shell page which will act as the navigator shell
 import 'package:dskk_flutter_refactor/app/widgets/main_shell_page.dart';
-// Import the actual login page
-import 'package:dskk_flutter_refactor/features/auth/presentation/pages/sms_login_page.dart';
+// Import the actual login page - NO LONGER NEEDED HERE, handled by AuthRoutes
+// import 'package:dskk_flutter_refactor/features/auth/presentation/pages/sms_login_page.dart';
+
+// --- Import Module Routes ---
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/routes/ai_docs_routes.dart';
+import 'package:dskk_flutter_refactor/features/auth/presentation/routes/auth_routes.dart'; // Import Auth routes
+// TODO: Import other feature module routes here
 
 // Placeholder pages for each tab
 // TODO: Replace these with actual feature pages later
@@ -108,29 +113,32 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
+          // Branch for the 'AI Docs' tab (using DevMenuPage for now)
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/dev_menu', // Path for the dev menu tab
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  // Load DevMenuPage which contains the link to /ai_chat
+                  // child: DevMenuPage(), 
+                  // TEMPORARY FIX: Use PlaceholderPage until DevMenuPage is restored/found
+                  child: PlaceholderPage(title: 'Dev Menu (Placeholder)'),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
-      // Add the Login Route (outside the shell)
-      GoRoute(
-        path: '/login',
-        // builder: (context, state) => const SmsLoginPage(), // Use the actual SmsLoginPage
-        // Wrap SmsLoginPage with BlocProvider
-        pageBuilder: (context, state) {
-          return CustomTransitionPage(
-            key: state.pageKey,
-            child: BlocProvider<SmsLoginCubit>(
-              // Use GetIt to create the Cubit instance (registered as factory)
-              create: (_) => GetIt.instance<SmsLoginCubit>(),
-              child: const SmsLoginPage(),
-            ),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              // Example: Fade transition
-              return FadeTransition(opacity: animation, child: child);
-            },
-          );
-        },
-      ),
+
+      // --- Top-level routes (not part of the shell) ---
+
+      // Aggregate routes from feature modules
+      ...AuthRoutes.routes, // Add routes from Auth module
+      ...AiDocsRoutes.routes, // Add routes from AI Docs module
+      // TODO: Add routes from other modules here ...
+
+      // Add other top-level routes if needed
+
     ],
     // TODO: Add error handling later
     // errorBuilder: (context, state) => const ErrorScreen(),

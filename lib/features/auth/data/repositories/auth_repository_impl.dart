@@ -159,8 +159,10 @@ class AuthRepositoryImpl implements IAuthRepository {
 
               // 同时保存commonUserId
               if (userInfo.commonUserId != null) {
-                await secureStorage.saveInt('common_user_id', userInfo.commonUserId);
+                await secureStorage.saveCommonUserId(userInfo.commonUserId!);
                 print('Saved commonUserId: ${userInfo.commonUserId}');
+              } else {
+                print('commonUserId from UserInfo is null. Key will not be saved/updated in secure storage.');
               }
 
               _currentUser = authenticatedUser;
