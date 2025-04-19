@@ -32,7 +32,7 @@ class OrderLocalDataSourceImpl implements IOrderLocalDataSource {
       return Right(orders);
     } catch (e) {
       print('[OrderLocalDataSource] Error getting orders from cache: $e');
-      return Left(CacheFailure()); // Use CacheFailure without message
+      return Left(CacheFailure(message: '获取订单缓存失败'));
     }
   }
 
@@ -48,7 +48,7 @@ class OrderLocalDataSourceImpl implements IOrderLocalDataSource {
       return Right(orders);
     } catch (e) {
       print('[OrderLocalDataSource] Error getting all orders from cache: $e');
-      return Left(CacheFailure()); // Use CacheFailure without message
+      return Left(CacheFailure(message: '获取所有订单缓存失败'));
     }
   }
 

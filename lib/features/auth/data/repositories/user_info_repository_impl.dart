@@ -30,7 +30,7 @@ class UserInfoRepositoryImpl implements IUserInfoRepository {
         return Left(AuthenticationFailure(message: e.message));
       } on ServerException catch (e) {
         print('ServerException in UserInfoRepository: ${e.message}');
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '获取用户信息时发生服务器错误'));
       } catch (e) {
         print('Unknown exception in UserInfoRepository: ${e.toString()}');
         return Left(UnknownFailure(message: 'Failed to fetch user info'));

@@ -82,19 +82,16 @@ Future<void> main() async {
     throw Exception('BACKEND_BASE_URL is missing or empty in .env file');
   }
 
-  // **Register FlutterSecureStorage BEFORE configuring dependencies**
-  GetIt.instance.registerLazySingleton<FlutterSecureStorage>(() => const FlutterSecureStorage());
-  print('[main_orders_preview] Registered FlutterSecureStorage as LazySingleton.');
-
   // **Get and Register PackageInfo**
-  try {
-    final packageInfo = await PackageInfo.fromPlatform();
-    GetIt.instance.registerSingleton<PackageInfo>(packageInfo);
-    print('[main_orders_preview] Registered PackageInfo: ${packageInfo.packageName} v${packageInfo.version}');
-  } catch (e) {
-    print('[main_orders_preview] ERROR: Failed to get or register PackageInfo: $e');
-    throw Exception('Failed to initialize PackageInfo');
-  }
+  // try {
+  //   final packageInfo = await PackageInfo.fromPlatform();
+  //   GetIt.instance.registerSingleton<PackageInfo>(packageInfo);
+  //   print('[main_orders_preview] Registered PackageInfo: ${packageInfo.packageName} v${packageInfo.version}');
+  // } catch (e) {
+  //   print('[main_orders_preview] ERROR: Failed to get or register PackageInfo: $e');
+  //   throw Exception('Failed to initialize PackageInfo');
+  // }
+  // Registration will be handled by @preResolve in RegisterModule
 
   // --- Configure dependencies using injectable --- 
   // injectable's generated code will now be able to find the registered map if needed

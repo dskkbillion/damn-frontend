@@ -37,15 +37,9 @@ Future<void> configureDependencies({required String backendBaseUrl}) async {
 abstract class RegisterModule {
   // Dio factory method
   @lazySingleton
-  Dio createDio() {
+  Dio createDio(@Named('backendBaseUrl') String baseUrl) {
     final dio = Dio();
-    final url = dotenv.env['BACKEND_BASE_URL']; 
-    if (url == null || url.isEmpty) {
-      print('[DI-WARN] BACKEND_BASE_URL not found/empty. Using fallback.');
-      dio.options.baseUrl = 'https://app.duoshaokankan.com/prod-api'; // Fallback
-    } else {
-      dio.options.baseUrl = url;
-    }
+    dio.options.baseUrl = baseUrl;
     print('Dio configured via RegisterModule with Base URL: ${dio.options.baseUrl}');
     dio.options.connectTimeout = const Duration(seconds: 15);
     dio.options.receiveTimeout = const Duration(seconds: 15);
@@ -56,7 +50,7 @@ abstract class RegisterModule {
   @preResolve 
   Future<PackageInfo> get packageInfo => PackageInfo.fromPlatform();
 
-  // FlutterSecureStorage instance
+  // FlutterSecureStorage instance - UNCOMMENT
   @lazySingleton
   FlutterSecureStorage get secureStorage => const FlutterSecureStorage();
 

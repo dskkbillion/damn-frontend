@@ -33,15 +33,16 @@ Future<void> main() async { // Make main async
   }
 
   // --- Register PackageInfo (needed before configureDependencies) (from HEAD) ---
-  try {
-    final packageInfo = await PackageInfo.fromPlatform();
-    getIt.registerSingleton<PackageInfo>(packageInfo); // Use the global getIt instance
-    print('[main] Registered PackageInfo: ${packageInfo.packageName} v${packageInfo.version}');
-  } catch (e) {
-    print('[main] ERROR: Failed to get or register PackageInfo: $e');
-    // Decide if the app can run without PackageInfo or should throw
-    throw Exception('Failed to initialize PackageInfo');
-  }
+  // try {
+  //   final packageInfo = await PackageInfo.fromPlatform();
+  //   getIt.registerSingleton<PackageInfo>(packageInfo); // Use the global getIt instance
+  //   print('[main] Registered PackageInfo: ${packageInfo.packageName} v${packageInfo.version}');
+  // } catch (e) {
+  //   print('[main] ERROR: Failed to get or register PackageInfo: $e');
+  //   // Decide if the app can run without PackageInfo or should throw
+  //   throw Exception('Failed to initialize PackageInfo');
+  // }
+  // Registration will be handled by @preResolve in RegisterModule
   // --------------------------------------------------------------------------
 
   // Initialize dependencies, passing the Base URL (from auth-module)

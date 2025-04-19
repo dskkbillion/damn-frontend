@@ -77,7 +77,7 @@ class _DevMenuPageState extends State<DevMenuPage> {
 
                 // Add entry points for AI Docs Module
                 _buildSectionTitle('AI Docs 模块'),
-                _buildNavButton(context, 'AI 聊天', AiDocsRoutes.chatPath), // Use constant path
+                _buildNavButton(context, 'AI 聊天', '/ai_chat'), // Use string literal path
                 const Divider(),
 
                 // TODO: Add entry points for other modules as they are merged

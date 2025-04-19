@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Import the root App Widget
 import 'package:dskk_flutter_refactor/app/app.dart';
 // Import the DI configuration function and GetIt instance
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart'; // Exports getIt
+// Import the IAuthRepository interface and the Mock implementation
+import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
+import 'package:dskk_flutter_refactor/core/auth/repositories/mocks/mock_auth_repository.dart';
 
 /// Application entry point for running the app with the Dev Menu navigator tab.
 /// Use this for convenient testing of different module entry points during development.
@@ -30,20 +33,30 @@ Future<void> main() async {
   }
 
   // --- Register PackageInfo (needed by AppInfoInterceptor -> CoreDioClient) ---
-  try {
-    final packageInfo = await PackageInfo.fromPlatform();
-    getIt.registerSingleton<PackageInfo>(packageInfo); // Use the global getIt instance
-    print('[main_dev_preview] Registered PackageInfo: ${packageInfo.packageName} v${packageInfo.version}');
-  } catch (e) {
-    print('[main_dev_preview] ERROR: Failed to get or register PackageInfo: $e');
-    // Decide if the app can run without PackageInfo or should throw
-    throw Exception('Failed to initialize PackageInfo');
-  }
+  // try {
+  //   final packageInfo = await PackageInfo.fromPlatform();
+  //   getIt.registerSingleton<PackageInfo>(packageInfo); // Use the global getIt instance
+  //   print('[main_dev_preview] Registered PackageInfo: ${packageInfo.packageName} v${packageInfo.version}');
+  // } catch (e) {
+  //   print('[main_dev_preview] ERROR: Failed to get or register PackageInfo: $e');
+  //   // Decide if the app can run without PackageInfo or should throw
+  //   throw Exception('Failed to initialize PackageInfo');
+  // }
+  // Registration will be handled by @preResolve in RegisterModule
   // --------------------------------------------------------------------------
 
   // Initialize dependencies (using the same configuration as the main app)
-  // (will now find PackageInfo)
+  // (injectable will now handle PackageInfo registration via @preResolve)
   await configureDependencies(backendBaseUrl: backendBaseUrl!);
+  print('[main_dev_preview] Core dependencies configured.');
+
+  // --- Override AuthRepository with Mock for Dev Preview --- 
+  print('[main_dev_preview] Overriding IAuthRepository with MockAuthRepository...');
+  getIt.allowReassignment = true; // Allow overriding registrations
+  getIt.registerLazySingleton<IAuthRepository>(() => MockAuthRepository());
+  getIt.allowReassignment = false; // Optional: Disable reassignment after overriding
+  print('[main_dev_preview] IAuthRepository overridden.');
+  // ---------------------------------------------------------
 
   // --- Manually Inject Test Token and User ID for development --- 
   // This is temporary until the auth module is integrated.
@@ -64,5 +77,9 @@ Future<void> main() async {
 
   // Run the main application widget
   // MyApp contains the GoRouter setup which includes the Dev Menu tab
-  runApp(const MyApp());
+  runApp(
+    ProviderScope( // Wrap with ProviderScope to enable Riverpod providers
+      child: const MyApp(),
+    ),
+  );
 } 

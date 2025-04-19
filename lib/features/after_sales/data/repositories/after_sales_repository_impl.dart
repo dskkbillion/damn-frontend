@@ -27,7 +27,7 @@ class AfterSalesRepositoryImpl implements IAfterSalesRepository {
       final resultId = await remoteDataSource.applyForAfterSales(params);
       return Right(resultId);
     } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
+      return Left(ServerFailure(message: e.message ?? '申请售后时发生服务器错误'));
     } catch (e) {
       // Catch any other unexpected exceptions during the process
       print('[AfterSalesRepositoryImpl] Unexpected error applying for after sales: ${e.toString()}');
@@ -43,7 +43,7 @@ class AfterSalesRepositoryImpl implements IAfterSalesRepository {
       // No need to call toEntity() because Model extends Entity
       return Right(models);
     } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
+      return Left(ServerFailure(message: e.message ?? '获取售后列表时发生服务器错误'));
     } catch (e) {
        print('[AfterSalesRepositoryImpl] Unexpected error getting after sales list: ${e.toString()}');
       return Left(ServerFailure(message: '获取售后列表时发生未知错误: ${e.toString()}'));
@@ -60,7 +60,7 @@ class AfterSalesRepositoryImpl implements IAfterSalesRepository {
     } on ServerException catch (e) {
       // Handle specific "not found" cases if API provides distinct codes/messages
       // For now, treat all server exceptions similarly
-      return Left(ServerFailure(message: e.message));
+      return Left(ServerFailure(message: e.message ?? '获取售后详情时发生服务器错误'));
     } catch (e) {
        print('[AfterSalesRepositoryImpl] Unexpected error getting after sales detail: ${e.toString()}');
       return Left(ServerFailure(message: '获取售后详情时发生未知错误: ${e.toString()}'));
@@ -73,7 +73,7 @@ class AfterSalesRepositoryImpl implements IAfterSalesRepository {
       await remoteDataSource.cancelAfterSales(refundId);
       return const Right(null); // Indicate success with void
     } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
+      return Left(ServerFailure(message: e.message ?? '取消售后申请时发生服务器错误'));
     } catch (e) {
        print('[AfterSalesRepositoryImpl] Unexpected error canceling after sales: ${e.toString()}');
       return Left(ServerFailure(message: '取消售后申请时发生未知错误: ${e.toString()}'));
@@ -86,7 +86,7 @@ class AfterSalesRepositoryImpl implements IAfterSalesRepository {
       await remoteDataSource.deleteAfterSales(refundIds);
       return const Right(null); // Indicate success with void
     } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
+      return Left(ServerFailure(message: e.message ?? '删除售后记录时发生服务器错误'));
     } catch (e) {
        print('[AfterSalesRepositoryImpl] Unexpected error deleting after sales: ${e.toString()}');
       return Left(ServerFailure(message: '删除售后记录时发生未知错误: ${e.toString()}'));

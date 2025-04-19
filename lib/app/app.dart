@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-// import 'package:flutter_riverpod/flutter_riverpod.dart'; // Keep commented out
-import 'package:dskk_flutter_refactor/app/navigation/app_router.dart'; // Import the goRouter instance directly
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod
+import 'package:dskk_flutter_refactor/app/navigation/app_router.dart'; // Import the provider
 import 'package:dskk_flutter_refactor/core/config/theme/app_theme.dart';
 
 // Remove direct import of MainShellPage, navigation is handled by router
@@ -10,19 +10,20 @@ import 'package:dskk_flutter_refactor/core/config/theme/app_theme.dart';
 // import 'package:dskk_flutter_refactor/app/navigation/app_router.dart';
 
 // This is the root widget of the application.
-// Change from ConsumerWidget to StatelessWidget as Riverpod is not used here.
-class MyApp extends StatelessWidget { // Changed to StatelessWidget
+// Change back to ConsumerWidget to access the provider
+class MyApp extends ConsumerWidget { // Changed to ConsumerWidget
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) { // Removed WidgetRef ref
-    // Get the GoRouter instance directly (it's now a top-level final variable)
-    // final goRouter = ref.watch(goRouterProvider); // Remove ref.watch
+  // Add WidgetRef ref back to build method
+  Widget build(BuildContext context, WidgetRef ref) { 
+    // Get the GoRouter instance from the provider
+    final router = ref.watch(goRouterProvider); // Use ref.watch
 
     // Use MaterialApp.router and provide the router configuration
     return MaterialApp.router(
-      // Use the directly imported goRouter instance
-      routerConfig: goRouter,
+      // Use the router instance obtained from the provider
+      routerConfig: router, 
 
       title: 'DSKK Flutter Refactor',
 

@@ -14,8 +14,8 @@ import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/chat_allo
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/related_service_entity.dart';
 // import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/chat_completion_entity.dart'; // <-- Assuming this might be missing
 
-// Data Layer (Data Sources - Assuming these paths are correct or exist)
-import '../datasources/i_ai_chat_remote_data_source.dart';
+// Data Layer (Data Sources - Use package imports)
+import 'package:dskk_flutter_refactor/features/ai_docs/data/datasources/i_ai_chat_remote_data_source.dart'; // Use package import
 // import '../datasources/i_ai_chat_local_data_source.dart'; // <-- Assuming this might be missing
 
 /// {@template ai_chat_repository_impl}
@@ -48,13 +48,13 @@ class AiChatRepositoryImpl implements IAiChatRepository {
       final result = await action();
       return Right(result);
     } on ServerException catch (e) {
-      // Corrected: Use ServerFailure from core/error/failures.dart (takes optional message)
-      return Left(ServerFailure(message: e.message)); 
+      // Corrected: Use ServerFailure from core/error/failures.dart and provide default message
+      return Left(ServerFailure(message: e.message ?? '服务器处理失败')); 
     } on NetworkException /*catch (e)*/ {
       // Corrected: Use NetworkFailure from core/error/failures.dart (takes no args)
       return Left(NetworkFailure()); 
     } on CacheException {
-      return Left(CacheFailure());
+      return Left(CacheFailure(message: '缓存处理失败'));
     } on DataSourceException catch (e) { // Assuming DataSourceException is defined in core/error/exceptions.dart
       print('DataSourceException in Repository: ${e.message}');
       // Corrected: Use GeneralFailure (now defined in failures.dart)
@@ -72,11 +72,12 @@ class AiChatRepositoryImpl implements IAiChatRepository {
       final stream = await streamAction();
       return Right(stream);
     } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
+      // Corrected: Provide default message
+      return Left(ServerFailure(message: e.message ?? '服务器处理失败(流)')); 
     } on NetworkException {
       return Left(NetworkFailure());
     } on CacheException {
-      return Left(CacheFailure());
+      return Left(CacheFailure(message: '缓存处理失败(流)'));
     } on DataSourceException catch (e) { // Assuming DataSourceException exists
       // Corrected: Use GeneralFailure
       return Left(GeneralFailure(message: 'Data source error initiating stream: ${e.message}'));

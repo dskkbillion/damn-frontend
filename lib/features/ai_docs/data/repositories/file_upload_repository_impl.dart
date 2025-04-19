@@ -33,13 +33,14 @@ class FileUploadRepositoryImpl implements IFileUploadRepository {
       final result = await action();
       return Right(result);
     } on ServerException catch (e) {
-      // Corrected: Use ServerFailure from core
-      return Left(ServerFailure(message: e.message)); 
+      // Corrected: Use ServerFailure from core and provide default message
+      return Left(ServerFailure(message: e.message ?? '文件上传服务器错误')); 
     } on NetworkException {
       // Corrected: Use NetworkFailure from core
       return Left(NetworkFailure()); 
     } on CacheException {
-      return Left(CacheFailure());
+      // Corrected: Add message
+      return Left(CacheFailure(message: '文件上传缓存错误')); 
     } on DataSourceException catch (e) { // Assuming DataSourceException exists in core
       print('DataSourceException in FileUploadRepository: ${e.message}');
       // Corrected: Use GeneralFailure
