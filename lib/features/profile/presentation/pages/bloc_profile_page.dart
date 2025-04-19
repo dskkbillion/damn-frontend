@@ -109,10 +109,10 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              ProfileHeader(
-                profile: profile,
-                onAvatarTap: () => _showImageSourceActionSheet(context),
-                onEditTap: () => _showEditProfileDialog(context, profile),
+              BlocBuilder<ProfileBloc, ProfileState>(
+                builder: (context, state) {
+                  return ProfileHeader(state: state);
+                },
               ),
               const SizedBox(height: 16),
               _buildWalletSection(context),
@@ -195,7 +195,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                               children: [
                                 const Text('待结算'),
                                 const SizedBox(height: 4),
-                                Text('¥ ${state.walletSummary.pendingAmount.toStringAsFixed(2)}'),
+                                Text('¥ ${state.walletSummary.pendingAmount?.toStringAsFixed(2) ?? '0.00'}'),
                               ],
                             ),
                             Column(
@@ -203,7 +203,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                               children: [
                                 const Text('总收入'),
                                 const SizedBox(height: 4),
-                                Text('¥ ${state.walletSummary.totalIncome.toStringAsFixed(2)}'),
+                                Text('¥ ${state.walletSummary.totalIncome?.toStringAsFixed(2) ?? '0.00'}'),
                               ],
                             ),
                             const Icon(Icons.arrow_forward_ios, size: 16),
@@ -341,7 +341,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
   }
 
   Widget _buildMenuSection(BuildContext context) {
-    final menuItems = [
+    final List<Map<String, dynamic>> menuItems = [
       {'icon': Icons.location_on, 'title': '收货地址', 'route': '/address'},
       {'icon': Icons.favorite, 'title': '我的收藏', 'route': '/favorites'},
       {'icon': Icons.history, 'title': '浏览历史', 'route': '/history'},
@@ -474,7 +474,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
 
   void _showEditProfileDialog(BuildContext context, UserProfile profile) {
     final TextEditingController nickNameController = TextEditingController(text: profile.nickName);
-    bool isOnline = profile.onlineFlag;
+    bool onlineFlag = profile.onlineFlag ?? false;
 
     showDialog(
       context: context,
@@ -495,9 +495,9 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                 const Text('在线状态'),
                 const Spacer(),
                 Switch(
-                  value: isOnline,
+                  value: onlineFlag,
                   onChanged: (value) {
-                    isOnline = value;
+                    onlineFlag = value;
                   },
                 ),
               ],
@@ -515,7 +515,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
               context.read<ProfileBloc>().add(
                     UpdateUserProfileEvent(
                       nickName: nickNameController.text,
-                      onlineFlag: isOnline,
+                      onlineFlag: onlineFlag,
                     ),
                   );
             },

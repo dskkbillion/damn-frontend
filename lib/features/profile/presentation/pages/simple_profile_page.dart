@@ -19,99 +19,124 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // 头部
-              _buildHeader(context),
-
-              // 我的订单
-              _buildSection(
-                context,
-                '我的订单',
-                [
-                  _buildMenuItem(context, Icons.access_time, '待付款', () {
-                    _showStatusMessage('导航到待付款订单列表');
-                  }),
-                  _buildMenuItem(context, Icons.sync, '进行中', () {
-                    _showStatusMessage('导航到进行中订单列表');
-                  }),
-                  _buildMenuItem(context, Icons.check_circle, '已完成', () {
-                    _showStatusMessage('导航到已完成订单列表');
-                  }),
-                  _buildMenuItem(context, Icons.undo, '退款/售后', () {
-                    _showStatusMessage('导航到退款/售后订单列表');
-                  }),
-                ],
-                isGrid: true,
-              ),
-
-              // 我的关看
-              _buildSection(
-                context,
-                '我的关看',
-                [
-                  _buildMenuItem(context, Icons.star_border, '收藏', () {
-                    _showStatusMessage('导航到收藏列表');
-                  }),
-                  _buildMenuItem(context, Icons.favorite_border, '点赞的故事', () {
-                    _showStatusMessage('导航到点赞的故事');
-                  }),
-                ],
-                isGrid: false,
-              ),
-
-              // 我的钱包
-              _buildSection(
-                context,
-                '我的钱包',
-                [
-                  _buildMenuItem(context, Icons.account_balance_wallet, '钱包', () {
-                    _showStatusMessage('导航到钱包页面');
-                  }),
-                ],
-                isGrid: false,
-              ),
-
-              // 设置
-              _buildSection(
-                context,
-                '设置',
-                [
-                  _buildMenuItem(context, Icons.security, '账号与安全', () {
-                    _showStatusMessage('导航到账号与安全页面');
-                  }),
-                ],
-                isGrid: false,
-              ),
-
-              // 登出按钮
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _logout,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red[50],
-                      foregroundColor: Colors.red,
-                    ),
-                    child: const Text('退出登录'),
+      appBar: AppBar(
+        title: const Text('个人中心'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('设置功能尚未实现')),
+              );
+            },
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildProfileHeader(context),
+            _buildProfileSection(
+              context,
+              '我的订单',
+              _buildOrderStatusList(context)
+            ),
+            _buildProfileSection(
+              context,
+              '我的关看',
+              _buildMenuList(context, [
+                MenuItem(
+                  icon: Icons.star_border,
+                  title: '收藏',
+                  onTap: () => _showFeatureNotImplemented(context, '收藏'),
+                ),
+                MenuItem(
+                  icon: Icons.favorite_border,
+                  title: '点赞的故事',
+                  onTap: () => _showFeatureNotImplemented(context, '点赞的故事'),
+                ),
+              ]),
+            ),
+            _buildProfileSection(
+              context,
+              '我的钱包',
+              _buildMenuList(context, [
+                MenuItem(
+                  icon: Icons.account_balance_wallet,
+                  title: '钱包',
+                  onTap: () => _showFeatureNotImplemented(context, '钱包'),
+                ),
+              ]),
+            ),
+            _buildProfileSection(
+              context,
+              '设置',
+              _buildMenuList(context, [
+                MenuItem(
+                  icon: Icons.security,
+                  title: '账号与安全',
+                  onTap: () => _showFeatureNotImplemented(context, '账号与安全'),
+                ),
+              ]),
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () {
+                    _showFeatureNotImplemented(context, '退出登录');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.red,
+                    backgroundColor: Colors.red[50],
                   ),
+                  child: const Text('退出登录'),
                 ),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 24),
+          ],
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 3,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Theme.of(context).primaryColor,
+        unselectedItemColor: Colors.grey,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.smart_toy),
+            label: '多少看看',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: '首页',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.message),
+            label: '消息',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: '我的',
+          ),
+        ],
+        onTap: (index) {
+          if (index != 3) {
+            _showFeatureNotImplemented(context, '切换到其他标签页');
+          }
+        },
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildProfileHeader(BuildContext context) {
     return Container(
       color: Theme.of(context).primaryColor,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       child: Column(
         children: [
           // 用户信息
@@ -119,29 +144,24 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
             children: [
               // 头像
               GestureDetector(
-                onTap: _showImagePicker,
+                onTap: () => _showFeatureNotImplemented(context, '编辑头像'),
                 child: CircleAvatar(
                   radius: 40,
-                  backgroundColor: Colors.white,
-                  backgroundImage: avatarFile != null
-                      ? FileImage(avatarFile!)
-                      : (avatarUrl != null ? NetworkImage(avatarUrl!) as ImageProvider : null),
-                  child: (avatarFile == null && avatarUrl == null)
-                      ? const Icon(Icons.person, size: 40, color: Colors.grey)
-                      : null,
+                  backgroundColor: Theme.of(context).primaryColorLight,
+                  child: const Icon(Icons.person, size: 40, color: Colors.white),
                 ),
               ),
               const SizedBox(width: 16),
 
-              // 用户信息
+              // 用户名称和状态
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   GestureDetector(
-                    onTap: _showEditNameDialog,
-                    child: Text(
-                      userName,
-                      style: const TextStyle(
+                    onTap: () => _showFeatureNotImplemented(context, '编辑昵称'),
+                    child: const Text(
+                      '测试用户',
+                      style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -154,14 +174,14 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                       Container(
                         width: 8,
                         height: 8,
-                        decoration: BoxDecoration(
-                          color: isOnline ? Colors.green : Colors.grey,
+                        decoration: const BoxDecoration(
+                          color: Colors.green,
                           shape: BoxShape.circle,
                         ),
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        isOnline ? '在线' : '离线',
+                        '在线',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.white.withOpacity(0.8),
@@ -197,7 +217,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                   value: false,
                   onChanged: (value) {
                     if (value) {
-                      _showStatusMessage('切换到卖家模式');
+                      _showFeatureNotImplemented(context, '切换到卖家模式');
                     }
                   },
                   activeColor: Colors.green,
@@ -210,25 +230,13 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
     );
   }
 
-  Widget _buildSection(
-    BuildContext context,
-    String title,
-    List<Widget> items,
-    {bool isGrid = false}
-  ) {
+  Widget _buildProfileSection(BuildContext context, String title, Widget content) {
     return Container(
-      margin: const EdgeInsets.only(top: 16),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -241,190 +249,143 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
             ),
           ),
           const SizedBox(height: 16),
-          if (isGrid)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: items,
-            )
-          else
-            Column(
-              children: items,
-            ),
+          content,
         ],
       ),
     );
   }
 
-  Widget _buildMenuItem(
-    BuildContext context,
-    IconData icon,
-    String text,
-    VoidCallback onTap,
-  ) {
-    if (text == '待付款' || text == '进行中' || text == '已完成' || text == '退款/售后') {
-      // 订单状态样式
-      return InkWell(
-        onTap: onTap,
-        child: Column(
+  Widget _buildOrderStatusList(BuildContext context) {
+    final List<OrderStatusItem> items = [
+      OrderStatusItem(
+        icon: Icons.access_time,
+        label: '待付款',
+        onTap: () => _showFeatureNotImplemented(context, '待付款订单'),
+      ),
+      OrderStatusItem(
+        icon: Icons.sync,
+        label: '进行中',
+        onTap: () => _showFeatureNotImplemented(context, '进行中订单'),
+      ),
+      OrderStatusItem(
+        icon: Icons.check_circle,
+        label: '已完成',
+        onTap: () => _showFeatureNotImplemented(context, '已完成订单'),
+      ),
+      OrderStatusItem(
+        icon: Icons.undo,
+        label: '退款/售后',
+        onTap: () => _showFeatureNotImplemented(context, '退款/售后'),
+      ),
+    ];
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: items.map((item) => _buildOrderStatusItem(
+        context,
+        item.icon,
+        item.label,
+        item.onTap,
+      )).toList(),
+    );
+  }
+
+  Widget _buildOrderStatusItem(BuildContext context, IconData icon, String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              color: Theme.of(context).primaryColor,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[700],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuList(BuildContext context, List<MenuItem> items) {
+    return Column(
+      children: items.map((item) => _buildMenuItem(
+        context,
+        item.icon,
+        item.title,
+        item.onTap,
+      )).toList(),
+    );
+  }
+
+  Widget _buildMenuItem(BuildContext context, IconData icon, String text, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                color: Theme.of(context).primaryColor,
+            Icon(
+              icon,
+              color: Colors.grey[600],
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                text,
+                style: const TextStyle(fontSize: 16),
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              text,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[700],
-              ),
+            Icon(
+              Icons.chevron_right,
+              color: Colors.grey[400],
             ),
           ],
         ),
-      );
-    } else {
-      // 菜单项样式
-      return InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                color: Colors.grey[600],
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  text,
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ),
-              Icon(
-                Icons.chevron_right,
-                color: Colors.grey[400],
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-  }
-
-  // 显示头像选择器
-  Future<void> _showImagePicker() async {
-    final ImagePicker picker = ImagePicker();
-
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            leading: const Icon(Icons.photo_library),
-            title: const Text('从相册选择'),
-            onTap: () async {
-              Navigator.pop(context);
-              final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-              if (image != null) {
-                setState(() {
-                  avatarFile = File(image.path);
-                });
-              }
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.camera_alt),
-            title: const Text('拍照'),
-            onTap: () async {
-              Navigator.pop(context);
-              final XFile? image = await picker.pickImage(source: ImageSource.camera);
-              if (image != null) {
-                setState(() {
-                  avatarFile = File(image.path);
-                });
-              }
-            },
-          ),
-        ],
       ),
     );
   }
 
-  // 显示编辑名称对话框
-  void _showEditNameDialog() {
-    final TextEditingController controller = TextEditingController(text: userName);
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('修改昵称'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            hintText: '请输入新昵称',
-          ),
-          maxLength: 20,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () {
-              final String newName = controller.text.trim();
-              if (newName.isNotEmpty) {
-                setState(() {
-                  userName = newName;
-                });
-              }
-              Navigator.pop(context);
-            },
-            child: const Text('保存'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 登出
-  void _logout() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('确认登出'),
-        content: const Text('您确定要退出登录吗？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _showStatusMessage('已退出登录');
-            },
-            child: const Text('确定'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 显示状态消息
-  void _showStatusMessage(String message) {
+  void _showFeatureNotImplemented(BuildContext context, String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+      SnackBar(content: Text('$feature功能尚未实现')),
     );
   }
+}
+
+class MenuItem {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  MenuItem({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
+}
+
+class OrderStatusItem {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  OrderStatusItem({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 }
