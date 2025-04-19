@@ -8,27 +8,27 @@ import 'package:injectable/injectable.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import Secure Storage
 
 // Core
-import '../../../../../core/error/failures.dart';
+import 'package:dskk_flutter_refactor/core/error/failures.dart'; // Use package import
 
-// Domain Layer
-import '../../../domain/entities/ai_chat_message_entity.dart';
-import '../../../domain/entities/ai_conversation_entity.dart';
-import '../../../domain/entities/chat_allocation_result_entity.dart';
-import '../../../domain/entities/related_service_entity.dart';
-import '../../../domain/usecases/allocate_chat_resource_usecase.dart';
-import '../../../domain/usecases/create_conversation_usecase.dart';
-import '../../../domain/usecases/delete_conversation_usecase.dart';
-import '../../../domain/usecases/get_conversations_usecase.dart';
-import '../../../domain/usecases/get_related_services_usecase.dart';
-import '../../../domain/usecases/load_history_usecase.dart';
-import '../../../domain/usecases/stream_chat_completion_usecase.dart';
-import '../../../domain/usecases/transcribe_audio_usecase.dart';
-import '../../../domain/usecases/upload_file_usecase.dart';
+// Domain Layer - Use package imports
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_chat_message_entity.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_conversation_entity.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/chat_allocation_result_entity.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/related_service_entity.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/allocate_chat_resource_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/create_conversation_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/delete_conversation_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/get_conversations_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/get_related_services_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/load_history_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/stream_chat_completion_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/transcribe_audio_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/upload_file_usecase.dart';
 
-// Move Exports Before Parts
-export '../../../domain/entities/ai_conversation_entity.dart'; 
-export '../../../domain/entities/ai_chat_message_entity.dart'; 
-export '../../../domain/entities/related_service_entity.dart'; 
+// Move Exports Before Parts - Use package imports
+export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_conversation_entity.dart'; 
+export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_chat_message_entity.dart'; 
+export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/related_service_entity.dart'; 
 
 // Parts (No Duplicates)
 part 'ai_chat_event.dart';

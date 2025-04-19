@@ -9,31 +9,31 @@ import 'package:get_it/get_it.dart'; // Import GetIt
 import 'package:collection/collection.dart'; // Import collection package
 
 // Import Bloc and State/Event files
-import '../bloc/ai_chat/ai_chat_bloc.dart';
-import '../widgets/chat_message_widget.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/bloc/ai_chat/ai_chat_bloc.dart'; // Use package import
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat_message_widget.dart'; // Use package import
 
-// Import domain interfaces and usecases (needed for manual creation)
-import '../../domain/repositories/i_ai_chat_repository.dart';
-import '../../domain/repositories/i_file_upload_repository.dart';
-import '../../domain/usecases/load_history_usecase.dart';
-import '../../domain/usecases/stream_chat_completion_usecase.dart';
-import '../../domain/usecases/upload_file_usecase.dart';
-import '../../domain/usecases/transcribe_audio_usecase.dart';
-import '../../domain/usecases/get_related_services_usecase.dart';
-import '../../domain/usecases/allocate_chat_resource_usecase.dart';
+// Import domain interfaces and usecases (Use package imports)
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/repositories/i_ai_chat_repository.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/repositories/i_file_upload_repository.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/load_history_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/stream_chat_completion_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/upload_file_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/transcribe_audio_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/get_related_services_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/allocate_chat_resource_usecase.dart';
 
-// Import data layer implementations (needed for manual creation)
-import '../../data/repositories/ai_chat_repository_impl.dart';
-import '../../data/repositories/file_upload_repository_impl.dart';
-import '../../data/datasources/mocks/mock_ai_chat_remote_data_source.dart';
-import '../../data/datasources/mocks/mock_file_upload_data_source.dart';
+// Import data layer implementations (Use package imports)
+import 'package:dskk_flutter_refactor/features/ai_docs/data/repositories/ai_chat_repository_impl.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/data/repositories/file_upload_repository_impl.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/data/datasources/mocks/mock_ai_chat_remote_data_source.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/data/datasources/mocks/mock_file_upload_data_source.dart';
 // TODO: Import actual datasources and HTTP client when moving away from mocks
 
-// Import Custom Widgets
-import '../widgets/chat_input_field.dart';
-import '../widgets/chat_message_list.dart';
-import '../widgets/conversation_sidebar.dart';
-import '../widgets/service_card.dart'; // Import the new card widget
+// Import Custom Widgets (Use package imports)
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat_input_field.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat_message_list.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/conversation_sidebar.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/service_card.dart'; 
 
 // Get the GetIt instance
 final getIt = GetIt.instance; 

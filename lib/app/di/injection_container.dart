@@ -6,64 +6,73 @@ import 'package:dskk_flutter_refactor/core/navigation/services/i_navigation_serv
 import 'package:dskk_flutter_refactor/core/payment/services/i_payment_service.dart';
 import 'package:dskk_flutter_refactor/core/payment/services/mocks/mock_payment_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:connectivity_plus/connectivity_plus.dart'; // Import Connectivity
 
 // Import database and DAO
 import 'package:dskk_flutter_refactor/core/database/app_database.dart';
-// import 'package:dskk_flutter_refactor/core/database/daos/order_dao.dart'; // No need to import DAO directly here
 
 // Import the generated file
-import 'injection_container.config.dart'; 
+import 'injection_container.config.dart' hide module; // Hide module from generated file
 
 final getIt = GetIt.instance;
 
 @InjectableInit(
-  initializerName: r'init', // default
-  preferRelativeImports: true, // default
-  asExtension: false, // default
+  initializerName: r'init',
+  preferRelativeImports: true,
+  asExtension: false,
 )
-Future<void> configureDependencies() async => init(getIt);
+Future<void> configureDependencies({required String backendBaseUrl}) async {
+  // Register backendBaseUrl as named instance 
+  getIt.registerSingleton<String>(backendBaseUrl, instanceName: 'backendBaseUrl');
+  print('[DI] Registered backendBaseUrl: $backendBaseUrl');
 
-// --- Register Module for Third Party Libs and Core Services ---
+  // Initialize injectable configurations (processes RegisterModule)
+  await init(getIt); 
+  print('[DI] Injectable initialization complete.');
+}
+
 @module
 abstract class RegisterModule {
-  // Provide baseUrl as a named instance from .env
-  @Named('baseUrl')
+  // Dio factory method
   @lazySingleton
-  String get baseUrl {
-    final url = dotenv.env['BACKEND_BASE_URL']; // Assuming key is BACKEND_BASE_URL
+  Dio createDio() {
+    final dio = Dio();
+    final url = dotenv.env['BACKEND_BASE_URL']; 
     if (url == null || url.isEmpty) {
-      throw Exception('BACKEND_BASE_URL not found or empty in .env file');
+      print('[DI-WARN] BACKEND_BASE_URL not found/empty. Using fallback.');
+      dio.options.baseUrl = 'https://app.duoshaokankan.com/prod-api'; // Fallback
+    } else {
+      dio.options.baseUrl = url;
     }
-    print('[RegisterModule] Providing baseUrl: $url');
-    return url;
+    print('Dio configured via RegisterModule with Base URL: ${dio.options.baseUrl}');
+    dio.options.connectTimeout = const Duration(seconds: 15);
+    dio.options.receiveTimeout = const Duration(seconds: 15);
+    return dio;
   }
 
-  // Provide FlutterSecureStorage instance
+  // PackageInfo factory method
+  @preResolve 
+  Future<PackageInfo> get packageInfo => PackageInfo.fromPlatform();
+
+  // FlutterSecureStorage instance
   @lazySingleton
   FlutterSecureStorage get secureStorage => const FlutterSecureStorage();
 
-  // Provide AppDatabase instance as a singleton
+  // Connectivity instance
+  @lazySingleton
+  Connectivity get connectivity => Connectivity();
+
+  // AppDatabase instance
   @lazySingleton
   AppDatabase get appDatabase => AppDatabase();
 
-  // REMOVED: OrderDao registration - Drift handles DAO access via AppDatabase instance
-  // @lazySingleton 
-  // OrderDao get orderDao => OrderDao(getIt<AppDatabase>()); 
-
-  // Provide Navigation Service implementation (using Mock)
+  // Navigation Service mock
   @lazySingleton
   INavigationService get navigationService => MockNavigationService();
 
-  // Provide Payment Service implementation (using Mock)
+  // Payment Service mock
   @lazySingleton
   IPaymentService get paymentService => MockPaymentService();
 }
-
-// Later, you will register your modules/services like this:
-// @module
-// abstract class RegisterModule {
-//   @lazySingleton
-//   MyService get myService => MyServiceImpl();
-// } 

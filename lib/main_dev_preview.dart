@@ -15,7 +15,19 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Load environment variables from .env file
-  await dotenv.load(fileName: ".env");
+  String? backendBaseUrl; // Declare variable
+  try {
+      await dotenv.load(fileName: ".env");
+      backendBaseUrl = dotenv.env['BACKEND_BASE_URL']; // Extract URL
+      print("[main_dev_preview] Loaded BACKEND_BASE_URL: $backendBaseUrl");
+      if (backendBaseUrl == null || backendBaseUrl.isEmpty) {
+          print("[main_dev_preview] WARNING: BACKEND_BASE_URL not found or empty. Using fallback.");
+          backendBaseUrl = 'https://app.duoshaokankan.com/prod-api'; // Fallback
+      }
+  } catch (e) {
+      print("[main_dev_preview] Error loading .env file: $e. Using fallback.");
+      backendBaseUrl = 'https://app.duoshaokankan.com/prod-api'; // Fallback on error
+  }
 
   // --- Register PackageInfo (needed by AppInfoInterceptor -> CoreDioClient) ---
   try {
@@ -31,7 +43,7 @@ Future<void> main() async {
 
   // Initialize dependencies (using the same configuration as the main app)
   // (will now find PackageInfo)
-  await configureDependencies();
+  await configureDependencies(backendBaseUrl: backendBaseUrl!);
 
   // --- Manually Inject Test Token and User ID for development --- 
   // This is temporary until the auth module is integrated.

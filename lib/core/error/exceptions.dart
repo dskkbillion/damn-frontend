@@ -11,8 +11,14 @@ class ServerException implements Exception {
   }
 }
 
-/// Represents errors occurring during local cache operations.
-class CacheException implements Exception {}
+/// Exception indicating a failure during cache operations.
+class CacheException implements Exception {
+    final String message;
+    CacheException({this.message = "Cache Error"});
+
+     @override
+    String toString() => 'CacheException: $message';
+}
 
 /// Represents errors related to network connectivity.
 class NetworkException implements Exception {
@@ -25,7 +31,7 @@ class NetworkException implements Exception {
   }
 }
 
-/// Represents errors originating from data sources (local or remote) 
+/// Represents errors originating from data sources (local or remote)
 /// that are not specific server, network, or cache errors.
 class DataSourceException implements Exception {
   final String message;
@@ -37,5 +43,11 @@ class DataSourceException implements Exception {
   }
 }
 
-// You might already have Failure classes here or in failures.dart
-// class NetworkException implements Exception {} // For general network issues 
+/// Exception indicating an authentication failure (e.g., 401 Unauthorized).
+class UnauthenticatedException implements Exception {
+    final String message;
+    UnauthenticatedException({this.message = "Authentication Required"});
+
+     @override
+    String toString() => 'UnauthenticatedException: $message';
+}

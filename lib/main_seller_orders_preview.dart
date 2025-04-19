@@ -97,6 +97,7 @@ void main() async {
   
   // --- Load .env and Register baseUrl (like in main_orders_preview) ---
   final Map<String, String> envMap = {}; 
+  String? baseUrl; // Declare baseUrl here
   print('[main_seller_preview] Loading .env from assets...');
   try {
     // Load .env (ensure it's in pubspec.yaml assets)
@@ -119,9 +120,10 @@ void main() async {
     print('[main_seller_preview] Successfully parsed .env from assets.');
     
     // **Explicitly register the baseUrl String with the name 'baseUrl'**
-    final baseUrl = envMap['BACKEND_BASE_URL'];
+    // Assign to the outer scope baseUrl
+    baseUrl = envMap['BACKEND_BASE_URL'];
     if (baseUrl != null && baseUrl.isNotEmpty) {
-      getIt.registerSingleton<String>(baseUrl, instanceName: 'baseUrl');
+      getIt.registerSingleton<String>(baseUrl!, instanceName: 'baseUrl');
       print('[main_seller_preview] Registered baseUrl: $baseUrl with instanceName: baseUrl');
     } else {
       throw Exception('[main_seller_preview] BACKEND_BASE_URL is missing or empty in .env file');
@@ -149,7 +151,8 @@ void main() async {
   // --------------------------------------------------------------------------
 
   // 现在运行主依赖配置，它应该能找到 baseUrl 和 FlutterSecureStorage
-  await configureDependencies();
+  // Pass the required backendBaseUrl using the outer scope baseUrl variable
+  await configureDependencies(backendBaseUrl: baseUrl!);
 
   // 然后为卖家预览环境覆盖特定依赖项（如果需要，现在是注释掉的）
   await configureDependenciesPreview();

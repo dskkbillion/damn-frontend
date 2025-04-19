@@ -98,7 +98,8 @@ Future<void> main() async {
 
   // --- Configure dependencies using injectable --- 
   // injectable's generated code will now be able to find the registered map if needed
-  await configureDependencies();
+  // Pass the required backendBaseUrl using the local baseUrl variable
+  await configureDependencies(backendBaseUrl: baseUrl!);
 
   // --- Manually Inject Test Token and User ID for Preview ---
   print('[main_orders_preview] Attempting to inject test credentials...');

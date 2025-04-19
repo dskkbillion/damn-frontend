@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'package:injectable/injectable.dart';
 import 'i_http_client.dart';
+import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart' show CancelToken;
+import 'package:dskk_flutter_refactor/core/error/failures.dart';
 
 /// A mock implementation of IHttpClient for testing and development.
 ///
@@ -199,6 +202,16 @@ class MockHttpClient implements IHttpClient {
        'message': 'Mock multipart success (Unhandled)',
        'data': {'success': true} 
       };
+  }
+
+  @override
+  Stream<String> postAndStream(String path, {Map<String, dynamic>? data, Map<String, dynamic>? queryParameters}) {
+    // Corrected signature to match IHttpClient
+    // Removed CancelToken as it's not in the interface signature defined earlier?
+    // Removed queryParameters as it might not be in the interface either
+    print('[MockHttpClient] postAndStream called for $path - Returning error stream');
+    // Return a stream that emits an error, matching the interface return type
+    return Stream.error(NetworkFailure(message: 'MockHttpClient.postAndStream not implemented'));
   }
 
   // TODO: Implement mock behavior for PUT, DELETE if added to IHttpClient

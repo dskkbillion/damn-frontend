@@ -24,12 +24,22 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 2. Load .env file BEFORE configuring dependencies
+  String? backendBaseUrl; // Declare variable to hold the URL
   try {
     // Try explicitly using the default filename again
     await dotenv.load(fileName: ".env"); 
     print(".env file loaded successfully.");
+    backendBaseUrl = dotenv.env['BACKEND_BASE_URL']; // Assign loaded value
     print("MODEL_BASE_URL from env: ${dotenv.env['MODEL_BASE_URL']}");
-    print("BACKEND_BASE_URL from env: ${dotenv.env['BACKEND_BASE_URL']}");
+    print("BACKEND_BASE_URL from env: $backendBaseUrl");
+
+    // Add fallback logic
+    if (backendBaseUrl == null || backendBaseUrl.isEmpty) {
+      print('WARNING: BACKEND_BASE_URL is empty or not found in .env file.');
+      backendBaseUrl = 'https://app.duoshaokankan.com/prod-api'; // Fallback
+      print('Using fallback Base URL: $backendBaseUrl');
+    }
+
   } catch (e) {
       print("Error loading .env file: $e");
       // Add more details about the error type
@@ -38,10 +48,14 @@ Future<void> main() async {
         print("FileSystemException Path: ${e.path}");
         print("FileSystemException OS Error: ${e.osError}");
       }
+      // Apply fallback on error too
+      backendBaseUrl = 'https://app.duoshaokankan.com/prod-api'; // Fallback
+      print('Using fallback Base URL due to error: $backendBaseUrl');
   }
 
   // 3. Configure dependencies AFTER loading .env
-  await di.configureDependencies(); 
+  // Pass the required backendBaseUrl
+  await di.configureDependencies(backendBaseUrl: backendBaseUrl!); 
   print("Dependencies configured.");
 
   // 4. Run the app

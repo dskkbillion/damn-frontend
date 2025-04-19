@@ -1,0 +1,34 @@
+# build.yaml
+
+# Configuration for build_runner
+
+targets:
+  $default:
+    builders:
+      # Configure the specific injectable config builder to exclude test files
+      # This is the builder name mentioned in the error logs
+      injectable_generator:injectable_config_builder:
+        enabled: true
+        generate_for:
+          exclude:
+            - test/** # Exclude ALL test files
+            - lib/features/auth/example/** # Keep excluding the (now deleted) example dir just in case
+
+      # Configure json_serializable to ignore example and test directories
+      json_serializable:
+        enabled: true
+        generate_for:
+          exclude:
+            - lib/features/auth/example/**
+            - test/** # Also exclude test directory for json_serializable
+
+      # Configure riverpod_generator to ignore example and test directories
+      riverpod_generator:
+        enabled: true # Assuming it's enabled based on errors
+        generate_for:
+          exclude:
+            - lib/features/auth/example/** # This path doesn't exist anymore, but harmless
+            - test/**
+
+      # Add configurations for other builders here if they cause issues
+      # in the excluded directories.
