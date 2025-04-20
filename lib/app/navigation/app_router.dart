@@ -3,7 +3,13 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Import the main shell page which will act as the navigator shell
-import 'package:dskk_flutter_refactor/app/widgets/main_shell_page.dart';
+// REMOVE: import 'package:dskk_flutter_refactor/app/widgets/main_shell_page.dart';
+
+// REMOVE: Direct import of profile page, handled by module routes now
+// import 'package:dskk_flutter_refactor/features/profile/presentation/pages/simple_profile_page.dart';
+
+// ADD: Import profile module routes
+import 'package:dskk_flutter_refactor/features/profile/presentation/routes/profile_routes.dart';
 
 // Placeholder pages for each tab
 // TODO: Replace these with actual feature pages later
@@ -29,7 +35,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   // GlobalKey for the root navigator
   final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
   // GlobalKey for the shell navigator
-  final shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
+  // REMOVE: final shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
@@ -38,64 +44,24 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     debugLogDiagnostics: true, // Enable debug logging
 
     routes: [
-      // Configuration for the bottom navigation bar using StatefulShellRoute
-      StatefulShellRoute.indexedStack(
-        // This builder is responsible for building the shell UI (e.g., Scaffold with BottomNavBar)
-        builder: (context, state, navigationShell) {
-          // The navigationShell is passed to the MainShellPage 
-          // It contains the pages for the different tabs and methods to navigate between them
-          return MainShellPage(navigationShell: navigationShell);
-        },
-        // Define the branches for each tab
-        branches: [
-          // Branch for the '多少看看' tab
-          StatefulShellBranch(
-            // navigatorKey: shellNavigatorKey, // Optional key if needed for inner navigation
-            routes: [
-              GoRoute(
-                path: '/discover', // Path for the first tab
-                pageBuilder: (context, state) => const NoTransitionPage(
-                  child: PlaceholderPage(title: '多少看看'),
-                ),
-                // TODO: Add sub-routes for this branch if needed
-              ),
-            ],
-          ),
-          // Branch for the '主页' tab
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/home', // Path for the second tab
-                pageBuilder: (context, state) => const NoTransitionPage(
-                  child: PlaceholderPage(title: '主页'),
-                ),
-              ),
-            ],
-          ),
-          // Branch for the '消息' tab
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/chat', // Path for the third tab
-                pageBuilder: (context, state) => const NoTransitionPage(
-                  child: PlaceholderPage(title: '消息'),
-                ),
-              ),
-            ],
-          ),
-          // Branch for the '我的' tab
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/profile', // Path for the fourth tab
-                pageBuilder: (context, state) => const NoTransitionPage(
-                  child: PlaceholderPage(title: '我的'),
-                ),
-              ),
-            ],
-          ),
-        ],
+      // REMOVE: Old StatefulShellRoute structure
+      // ... (Removed StatefulShellRoute and its branches) ...
+
+      // Define top-level routes
+      GoRoute(
+        path: '/home',
+        builder: (context, state) => const PlaceholderPage(title: '主页'),
       ),
+      // REMOVE: Direct GoRoute definition for /profile
+      // GoRoute(
+      //   path: '/profile',
+      //   builder: (context, state) => const SimpleProfilePage(),
+      // ),
+
+      // ADD: Aggregate routes from modules
+      ...ProfileRoutes.routes, // Aggregate profile routes
+      // ... Other module routes can be aggregated here later ...
+
       // TODO: Add other top-level routes here later (e.g., for login, settings outside the shell)
       // GoRoute(
       //   path: '/login',

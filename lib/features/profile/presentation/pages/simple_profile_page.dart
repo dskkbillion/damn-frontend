@@ -101,35 +101,6 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 3,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Theme.of(context).primaryColor,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.smart_toy),
-            label: '多少看看',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '首页',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.message),
-            label: '消息',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: '我的',
-          ),
-        ],
-        onTap: (index) {
-          if (index != 3) {
-            _showFeatureNotImplemented(context, '切换到其他标签页');
-          }
-        },
-      ),
     );
   }
 
