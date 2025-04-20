@@ -5,6 +5,7 @@ import '../../../../core/network/network_info.dart';
 import '../../domain/entities/wallet_summary.dart';
 import '../../domain/repositories/i_wallet_repository.dart';
 import '../datasources/profile_remote_data_source.dart';
+import '../models/transaction_dto.dart';
 
 /// 钱包仓库实现
 class WalletRepositoryImpl implements IWalletRepository {
@@ -22,6 +23,34 @@ class WalletRepositoryImpl implements IWalletRepository {
       try {
         final walletSummaryDto = await remoteDataSource.getWalletSummary();
         return Right(walletSummaryDto.toEntity());
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message, statusCode: e.statusCode));
+      } catch (e) {
+        return Left(GeneralFailure(message: e.toString()));
+      }
+    } else {
+      return Left(NetworkFailure(message: '无网络连接'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<TransactionDto>>> getWalletTransactions({
+    required int page,
+    required int pageSize,
+    String? startDate,
+    String? endDate,
+    required String transactionType,
+  }) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final transactions = await remoteDataSource.getWalletTransactions(
+          page: page,
+          pageSize: pageSize,
+          startDate: startDate,
+          endDate: endDate,
+          transactionType: transactionType,
+        );
+        return Right(transactions);
       } on ServerException catch (e) {
         return Left(ServerFailure(message: e.message, statusCode: e.statusCode));
       } catch (e) {

@@ -38,7 +38,6 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                 ),
               ),
             ),
-            _buildBottomNavigationBar(),
           ],
         ),
       ),
@@ -310,42 +309,6 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
           _showNotImplemented(title);
         },
       ),
-    );
-  }
-
-  Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      currentIndex: 3, // 个人中心页面
-      unselectedItemColor: Colors.grey,
-      selectedItemColor: const Color(0xFFB66D0E),
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home_outlined),
-          activeIcon: Icon(Icons.home),
-          label: '主页',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.post_add_outlined),
-          activeIcon: Icon(Icons.post_add),
-          label: '发布',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.message_outlined),
-          activeIcon: Icon(Icons.message),
-          label: '消息',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline),
-          activeIcon: Icon(Icons.person),
-          label: '我的',
-        ),
-      ],
-      onTap: (index) {
-        if (index != 3) {
-          _showNotImplemented('底部导航切换');
-        }
-      },
     );
   }
 

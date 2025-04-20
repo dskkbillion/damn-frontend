@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:get_it/get_it.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:io';
+
+import '../bloc/profile_bloc.dart';
+import '../bloc/wallet_bloc.dart';
+import 'wallet_page.dart';
+import 'account_security_page.dart';
 
 class SimpleProfilePage extends StatefulWidget {
   final VoidCallback? onSwitchMode;
@@ -50,12 +57,12 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                 MenuItem(
                   icon: Icons.star_border,
                   title: '收藏',
-                  onTap: () => _showFeatureNotImplemented(context, '收藏'),
+                  onTap: () => _showFeatureNotImplemented('收藏'),
                 ),
                 MenuItem(
                   icon: Icons.favorite_border,
                   title: '点赞的故事',
-                  onTap: () => _showFeatureNotImplemented(context, '点赞的故事'),
+                  onTap: () => _showFeatureNotImplemented('点赞的故事'),
                 ),
               ]),
             ),
@@ -66,7 +73,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                 MenuItem(
                   icon: Icons.account_balance_wallet,
                   title: '钱包',
-                  onTap: () => _showFeatureNotImplemented(context, '钱包'),
+                  onTap: () => _navigateToWallet(context),
                 ),
               ]),
             ),
@@ -77,7 +84,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                 MenuItem(
                   icon: Icons.security,
                   title: '账号与安全',
-                  onTap: () => _showFeatureNotImplemented(context, '账号与安全'),
+                  onTap: () => _navigateToAccountSecurity(context),
                 ),
               ]),
             ),
@@ -89,7 +96,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                 height: 48,
                 child: ElevatedButton(
                   onPressed: () {
-                    _showFeatureNotImplemented(context, '退出登录');
+                    _showFeatureNotImplemented('退出登录');
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.red,
@@ -102,6 +109,35 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
             const SizedBox(height: 24),
           ],
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 3,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Theme.of(context).primaryColor,
+        unselectedItemColor: Colors.grey,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.smart_toy),
+            label: '多少看看',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: '首页',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.message),
+            label: '消息',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: '我的',
+          ),
+        ],
+        onTap: (index) {
+          if (index != 3) {
+            _showFeatureNotImplemented('切换到其他标签页');
+          }
+        },
       ),
     );
   }
@@ -117,11 +153,12 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
             children: [
               // 头像
               GestureDetector(
-                onTap: () => _showFeatureNotImplemented(context, '编辑头像'),
+                onTap: () => _pickImage(),
                 child: CircleAvatar(
                   radius: 40,
                   backgroundColor: Theme.of(context).primaryColorLight,
-                  child: const Icon(Icons.person, size: 40, color: Colors.white),
+                  backgroundImage: avatarFile != null ? FileImage(avatarFile!) : null,
+                  child: avatarFile == null ? const Icon(Icons.person, size: 40, color: Colors.white) : null,
                 ),
               ),
               const SizedBox(width: 16),
@@ -131,10 +168,10 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   GestureDetector(
-                    onTap: () => _showFeatureNotImplemented(context, '编辑昵称'),
-                    child: const Text(
-                      '测试用户',
-                      style: TextStyle(
+                    onTap: () => _showFeatureNotImplemented('编辑昵称'),
+                    child: Text(
+                      userName,
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -233,22 +270,22 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
       OrderStatusItem(
         icon: Icons.access_time,
         label: '待付款',
-        onTap: () => _showFeatureNotImplemented(context, '待付款订单'),
+        onTap: () => _showFeatureNotImplemented('待付款订单'),
       ),
       OrderStatusItem(
         icon: Icons.sync,
         label: '进行中',
-        onTap: () => _showFeatureNotImplemented(context, '进行中订单'),
+        onTap: () => _showFeatureNotImplemented('进行中订单'),
       ),
       OrderStatusItem(
         icon: Icons.check_circle,
         label: '已完成',
-        onTap: () => _showFeatureNotImplemented(context, '已完成订单'),
+        onTap: () => _showFeatureNotImplemented('已完成订单'),
       ),
       OrderStatusItem(
         icon: Icons.undo,
         label: '退款/售后',
-        onTap: () => _showFeatureNotImplemented(context, '退款/售后'),
+        onTap: () => _showFeatureNotImplemented('退款/售后'),
       ),
     ];
 
@@ -332,9 +369,65 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
     );
   }
 
-  void _showFeatureNotImplemented(BuildContext context, String feature) {
+  void _pickImage() async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+      if (pickedFile != null) {
+        setState(() {
+          avatarFile = File(pickedFile.path);
+        });
+        // 显示提示
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('头像已更新，但尚未保存到服务器')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('选择图片时出错: $e')),
+      );
+    }
+  }
+
+  void _showFeatureNotImplemented(String featureName) {
+    if (featureName == '我的钱包') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BlocProvider(
+            create: (context) => GetIt.instance<WalletBloc>(),
+            child: const WalletPage(),
+          ),
+        ),
+      );
+      return;
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$feature功能尚未实现')),
+      SnackBar(content: Text('$featureName功能尚未实现')),
+    );
+  }
+
+  void _navigateToWallet(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BlocProvider(
+          create: (context) => GetIt.instance<WalletBloc>(),
+          child: const WalletPage(),
+        ),
+      ),
+    );
+  }
+
+  void _navigateToAccountSecurity(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AccountSecurityPage(),
+      ),
     );
   }
 }
