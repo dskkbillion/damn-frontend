@@ -41,8 +41,8 @@ dependencies:
   flutter_dotenv: ^5.1.0
 
   # Core Libraries - Tech Stack Selection
-  # flutter_riverpod: ^2.5.1 # State Management (Riverpod)
-  # riverpod_annotation: ^2.3.5 # Riverpod Annotations for generator
+  flutter_riverpod: ^2.5.1 # State Management (Riverpod)
+  riverpod_annotation: ^2.3.5 # Riverpod Annotations for generator
   get_it: ^7.6.0 # Dependency Injection (Service Locator)
   injectable: ^2.4.1 # DI Code Generator Helper
   go_router: ^14.1.0 # Navigation
