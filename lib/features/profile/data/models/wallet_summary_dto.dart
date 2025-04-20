@@ -5,11 +5,17 @@ class WalletSummaryDto {
   final double balance;
   final double? pendingAmount;
   final double? totalIncome;
+  final bool hasBankCard;
+  final bool hasPaymentPassword;
+  final int recentTransactionsCount;
 
   const WalletSummaryDto({
     required this.balance,
     this.pendingAmount,
     this.totalIncome,
+    this.hasBankCard = false,
+    this.hasPaymentPassword = false,
+    this.recentTransactionsCount = 0,
   });
 
   /// 从 JSON 映射创建 WalletSummaryDto 实例
@@ -18,6 +24,9 @@ class WalletSummaryDto {
       balance: _parseDouble(json['balance']) ?? 0.0,
       pendingAmount: _parseDouble(json['pendingAmount'] ?? json['pending_amount']),
       totalIncome: _parseDouble(json['totalIncome'] ?? json['total_income']),
+      hasBankCard: json['hasBankCard'] ?? json['has_bank_card'] ?? false,
+      hasPaymentPassword: json['hasPaymentPassword'] ?? json['has_payment_password'] ?? false,
+      recentTransactionsCount: json['recentTransactionsCount'] ?? json['recent_transactions_count'] ?? 0,
     );
   }
 
@@ -27,6 +36,9 @@ class WalletSummaryDto {
       balance: balance,
       pendingAmount: pendingAmount,
       totalIncome: totalIncome,
+      hasBankCard: hasBankCard,
+      hasPaymentPassword: hasPaymentPassword,
+      recentTransactionsCount: recentTransactionsCount,
     );
   }
 
@@ -36,6 +48,9 @@ class WalletSummaryDto {
       'balance': balance,
       if (pendingAmount != null) 'pendingAmount': pendingAmount,
       if (totalIncome != null) 'totalIncome': totalIncome,
+      'hasBankCard': hasBankCard,
+      'hasPaymentPassword': hasPaymentPassword,
+      'recentTransactionsCount': recentTransactionsCount,
     };
   }
 

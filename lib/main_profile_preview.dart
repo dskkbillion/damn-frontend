@@ -1,13 +1,52 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 
 import 'features/profile/data/datasources/profile_remote_data_source.dart';
 import 'features/profile/data/models/user_profile_dto.dart';
 import 'features/profile/data/models/wallet_summary_dto.dart';
 import 'features/profile/data/models/transaction_dto.dart';
+import 'features/profile/data/models/saved_item_dto.dart';
+import 'features/profile/data/models/liked_story_dto.dart';
 import 'features/profile/presentation/pages/simple_profile_page.dart';
+import 'features/seller/presentation/pages/seller_profile_page.dart';
+import 'features/profile/presentation/bloc/profile_bloc.dart';
+import 'features/profile/presentation/bloc/wallet_bloc.dart';
+import 'features/profile/domain/usecases/get_wallet_summary.dart';
+import 'features/profile/domain/usecases/get_wallet_transactions.dart';
+import 'features/profile/domain/repositories/i_wallet_repository.dart';
+import 'features/profile/data/repositories/wallet_repository_impl.dart';
+import 'core/network/network_info.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 注册依赖项
+  final GetIt locator = GetIt.instance;
+
+  // 注册mock数据源
+  final mockRemoteDataSource = MockProfileRemoteDataSource();
+  locator.registerLazySingleton<ProfileRemoteDataSource>(() => mockRemoteDataSource);
+
+  // 注册网络信息服务
+  locator.registerLazySingleton<NetworkInfo>(() => MockNetworkInfo());
+
+  // 注册钱包仓库
+  locator.registerLazySingleton<IWalletRepository>(() => WalletRepositoryImpl(
+    remoteDataSource: locator(),
+    networkInfo: locator(),
+  ));
+
+  // 注册用例
+  locator.registerLazySingleton(() => GetWalletSummary(locator()));
+  locator.registerLazySingleton(() => GetWalletTransactions(locator()));
+
+  // 注册BLoC
+  locator.registerFactory(() => WalletBloc(
+    getWalletSummary: locator(),
+    getWalletTransactions: locator(),
+  ));
+
   runApp(const ProfilePreviewApp());
 }
 
@@ -41,8 +80,38 @@ class ProfilePreviewApp extends StatelessWidget {
         primaryColorDark: const Color(0xFF8C430A),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const SimpleProfilePage(),
+      home: const MainProfileScreen(),
     );
+  }
+}
+
+class MainProfileScreen extends StatefulWidget {
+  const MainProfileScreen({Key? key}) : super(key: key);
+
+  @override
+  State<MainProfileScreen> createState() => _MainProfileScreenState();
+}
+
+class _MainProfileScreenState extends State<MainProfileScreen> {
+  bool _isSellerMode = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return _isSellerMode
+        ? SellerProfilePage(
+            onSwitchToBuyer: () {
+              setState(() {
+                _isSellerMode = false;
+              });
+            },
+          )
+        : SimpleProfilePage(
+            onSwitchMode: () {
+              setState(() {
+                _isSellerMode = true;
+              });
+            },
+          );
   }
 }
 
@@ -124,7 +193,7 @@ class MockProfileRemoteDataSource implements ProfileRemoteDataSource {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getSavedItems({
+  Future<List<SavedItemDto>> getSavedItems({
     int page = 1,
     int pageSize = 20,
   }) async {
@@ -135,7 +204,7 @@ class MockProfileRemoteDataSource implements ProfileRemoteDataSource {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getLikedStories({
+  Future<List<LikedStoryDto>> getLikedStories({
     int page = 1,
     int pageSize = 20,
   }) async {
@@ -144,4 +213,10 @@ class MockProfileRemoteDataSource implements ProfileRemoteDataSource {
 
     return []; // 返回空列表作为模拟数据
   }
+}
+
+// 添加一个简单的Mock网络信息类
+class MockNetworkInfo implements NetworkInfo {
+  @override
+  Future<bool> get isConnected async => true;
 }

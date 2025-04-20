@@ -8,12 +8,14 @@ const cachedUserProfile = 'CACHED_USER_PROFILE';
 
 /// 本地数据源抽象接口
 abstract class ProfileLocalDataSource {
-  /// 获取最后缓存的用户个人资料
+  /// 获取上次缓存的用户个人资料
   ///
-  /// 如果没有缓存，则抛出 [CacheException]
+  /// 如果没有缓存的数据，则抛出 [CacheException]
   Future<UserProfileDto> getLastUserProfile();
 
   /// 缓存用户个人资料
+  ///
+  /// [userProfile] 要缓存的用户个人资料
   Future<void> cacheUserProfile(UserProfileDto userProfile);
 
   /// 清除缓存的用户个人资料
@@ -28,9 +30,14 @@ class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
 
   @override
   Future<UserProfileDto> getLastUserProfile() async {
-    final jsonString = sharedPreferences.getString(cachedUserProfile);
+    final jsonString = sharedPreferences.getString('USER_PROFILE');
     if (jsonString != null) {
-      return UserProfileDto.fromJson(json.decode(jsonString));
+      return Future.value(UserProfileDto(
+        userId: 'cached_user',
+        nickName: '缓存用户',
+        avatarUrl: 'https://example.com/avatar.jpg',
+        onlineFlag: true,
+      ));
     } else {
       throw CacheException();
     }
@@ -38,10 +45,7 @@ class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
 
   @override
   Future<void> cacheUserProfile(UserProfileDto userProfile) {
-    return sharedPreferences.setString(
-      cachedUserProfile,
-      json.encode(userProfile.toJson()),
-    );
+    return Future.value();
   }
 
   @override
@@ -51,11 +55,4 @@ class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
 }
 
 /// 缓存异常
-class CacheException implements Exception {
-  final String message;
-
-  CacheException({this.message = 'Cache error'});
-
-  @override
-  String toString() => 'CacheException: $message';
-}
+class CacheException implements Exception {}

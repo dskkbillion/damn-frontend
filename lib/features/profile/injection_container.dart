@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/error/failures.dart';
 import '../../core/network/network_info.dart';
+import '../../core/network/mock_network_info.dart';
 import 'data/datasources/profile_local_data_source.dart';
 import 'data/datasources/profile_remote_data_source.dart';
 import 'data/repositories/liked_story_repository_impl.dart';
@@ -22,6 +23,7 @@ import 'domain/usecases/get_liked_stories.dart';
 import 'domain/usecases/get_saved_items.dart';
 import 'domain/usecases/get_user_profile.dart';
 import 'domain/usecases/get_wallet_summary.dart';
+import 'domain/usecases/get_wallet_transactions.dart';
 import 'domain/usecases/logout.dart';
 import 'domain/usecases/update_user_profile.dart';
 import 'domain/usecases/upload_avatar.dart';
@@ -45,6 +47,7 @@ Future<void> initProfileDependencies(GetIt locator) async {
   locator.registerFactory(
     () => WalletBloc(
       getWalletSummary: locator(),
+      getWalletTransactions: locator(),
     ),
   );
 
@@ -53,6 +56,7 @@ Future<void> initProfileDependencies(GetIt locator) async {
   locator.registerLazySingleton(() => UpdateUserProfileUseCase(locator()));
   locator.registerLazySingleton(() => UploadAvatarUseCase(locator()));
   locator.registerLazySingleton(() => GetWalletSummary(locator()));
+  locator.registerLazySingleton(() => GetWalletTransactions(locator()));
   locator.registerLazySingleton(() => GetSavedItemsUseCase(locator()));
   locator.registerLazySingleton(() => GetLikedStoriesUseCase(locator()));
   locator.registerLazySingleton(() => CheckAuthStatusUseCase(locator()));
@@ -97,7 +101,11 @@ Future<void> initProfileDependencies(GetIt locator) async {
 
   // Data sources
   locator.registerLazySingleton<ProfileRemoteDataSource>(
-    () => ProfileRemoteDataSourceImpl(dio: locator()),
+    () => ProfileRemoteDataSourceImpl(
+      dio: locator<Dio>(),
+      token: '用户给定的token', // 这里应该使用用户之前提供的token
+      userId: '用户ID', // 这里应该使用用户之前提供的userID
+    ),
   );
 
   locator.registerLazySingleton<ProfileLocalDataSource>(

@@ -6,9 +6,11 @@ import 'package:dskk_flutter_refactor/core/navigation/services/i_navigation_serv
 import 'package:dskk_flutter_refactor/core/payment/services/i_payment_service.dart';
 import 'package:dskk_flutter_refactor/core/payment/services/mocks/mock_payment_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:connectivity_plus/connectivity_plus.dart'; // Import Connectivity
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 // Import database and DAO
 import 'package:dskk_flutter_refactor/core/database/app_database.dart';
@@ -43,6 +45,18 @@ abstract class RegisterModule {
     print('Dio configured via RegisterModule with Base URL: ${dio.options.baseUrl}');
     dio.options.connectTimeout = const Duration(seconds: 15);
     dio.options.receiveTimeout = const Duration(seconds: 15);
+    dio.options.contentType = 'application/json';
+
+    // ADDED LogInterceptor from profile branch logic
+    dio.interceptors.add(PrettyDioLogger(
+      requestHeader: true,
+      requestBody: true,
+      responseBody: true,
+      responseHeader: false,
+      error: true,
+      compact: true,
+      maxWidth: 90));
+    
     return dio;
   }
 
@@ -57,6 +71,14 @@ abstract class RegisterModule {
   // Connectivity instance
   @lazySingleton
   Connectivity get connectivity => Connectivity();
+
+  // ADDED SharedPreferences instance
+  @preResolve 
+  Future<SharedPreferences> get sharedPreferences => SharedPreferences.getInstance();
+
+  // ADDED InternetConnectionChecker instance
+  @lazySingleton
+  InternetConnectionChecker get connectionChecker => InternetConnectionChecker();
 
   // AppDatabase instance
   @lazySingleton

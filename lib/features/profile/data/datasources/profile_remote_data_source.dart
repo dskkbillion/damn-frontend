@@ -68,52 +68,72 @@ abstract class ProfileRemoteDataSource {
   /// * [pageSize] - 每页记录数，默认为20
   ///
   /// 如果服务器返回非200状态码，则抛出 [ServerException]
-  Future<List<Map<String, dynamic>>> getLikedStories({
+  Future<List<SavedItemDto>> getSavedItems({
     int page = 1,
     int pageSize = 20,
   });
 
-  /// 获取已保存的商品列表
+  /// 获取已点赞的故事列表
   ///
   /// 可选参数：
   /// * [page] - 页码，默认为1
   /// * [pageSize] - 每页记录数，默认为20
   ///
   /// 如果服务器返回非200状态码，则抛出 [ServerException]
-  Future<List<Map<String, dynamic>>> getSavedItems({
+  Future<List<LikedStoryDto>> getLikedStories({
     int page = 1,
     int pageSize = 20,
   });
 }
 
-/// 远程数据源实现
+class ServerException implements Exception {
+  final String message;
+  final int? statusCode;
+
+  ServerException({required this.message, this.statusCode});
+}
+
+/// 用户资料远程数据源实现
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   final Dio dio;
+  final String token;
+  final String userId;
 
-  ProfileRemoteDataSourceImpl({required this.dio});
+  ProfileRemoteDataSourceImpl({
+    required this.dio,
+    required this.token,
+    required this.userId,
+  }) {
+    // 添加认证token到请求头
+    dio.options.headers['Authorization'] = 'Bearer $token';
+  }
 
   @override
   Future<UserProfileDto> getUserProfile() async {
     try {
-      // Mock data for development
-      await Future.delayed(const Duration(milliseconds: 800));
-      return const UserProfileDto(
-        userId: '12345',
-        nickName: '张小花',
-        avatarUrl: 'https://randomuser.me/api/portraits/women/44.jpg',
-        onlineFlag: true,
-      );
+      final response = await dio.get('/api/user/profile');
 
-      // Actual implementation would be:
-      // final response = await dio.get('/api/user/profile');
-      // if (response.statusCode == 200) {
-      //   return UserProfileDto.fromJson(response.data);
-      // } else {
-      //   throw ServerException(
-      //     message: response.data['message'] ?? '获取用户资料失败',
-      //   );
-      // }
+      if (response.statusCode == 200) {
+        final data = response.data;
+
+        if (data['code'] == 200 && data['data'] != null) {
+          return UserProfileDto.fromJson(data['data']);
+        } else {
+          throw ServerException(
+            message: data['message'] ?? '获取用户信息失败',
+            statusCode: data['code'],
+          );
+        }
+      } else {
+        throw ServerException(
+          message: '获取用户信息失败，状态码: ${response.statusCode}',
+          statusCode: response.statusCode,
+        );
+      }
     } catch (e) {
+      if (e is ServerException) {
+        rethrow;
+      }
       throw ServerException(message: e.toString());
     }
   }
@@ -124,31 +144,34 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     bool? onlineFlag,
   }) async {
     try {
-      // Mock data for development
-      await Future.delayed(const Duration(milliseconds: 800));
-      return UserProfileDto(
-        userId: '12345',
-        nickName: nickName,
-        avatarUrl: 'https://randomuser.me/api/portraits/women/44.jpg',
-        onlineFlag: onlineFlag ?? true,
-      );
+      final data = {
+        'nickName': nickName,
+        if (onlineFlag != null) 'onlineFlag': onlineFlag,
+      };
 
-      // Actual implementation would be:
-      // final response = await dio.put(
-      //   '/api/user/profile',
-      //   data: {
-      //     'nickName': nickName,
-      //     if (onlineFlag != null) 'onlineFlag': onlineFlag,
-      //   },
-      // );
-      // if (response.statusCode == 200) {
-      //   return UserProfileDto.fromJson(response.data);
-      // } else {
-      //   throw ServerException(
-      //     message: response.data['message'] ?? '更新用户资料失败',
-      //   );
-      // }
+      final response = await dio.put('/api/user/profile', data: data);
+
+      if (response.statusCode == 200) {
+        final responseData = response.data;
+
+        if (responseData['code'] == 200 && responseData['data'] != null) {
+          return UserProfileDto.fromJson(responseData['data']);
+        } else {
+          throw ServerException(
+            message: responseData['message'] ?? '更新用户信息失败',
+            statusCode: responseData['code'],
+          );
+        }
+      } else {
+        throw ServerException(
+          message: '更新用户信息失败，状态码: ${response.statusCode}',
+          statusCode: response.statusCode,
+        );
+      }
     } catch (e) {
+      if (e is ServerException) {
+        rethrow;
+      }
       throw ServerException(message: e.toString());
     }
   }
@@ -156,26 +179,67 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   @override
   Future<String> uploadAvatar({required String imageFilePath}) async {
     try {
-      // Mock data for development
-      await Future.delayed(const Duration(milliseconds: 1200));
-      return 'https://randomuser.me/api/portraits/women/33.jpg';
+      final file = File(imageFilePath);
 
-      // Actual implementation would be:
-      // final formData = FormData.fromMap({
-      //   'avatar': await MultipartFile.fromFile(imageFilePath),
-      // });
-      // final response = await dio.post(
-      //   '/api/user/avatar',
-      //   data: formData,
-      // );
-      // if (response.statusCode == 200) {
-      //   return response.data['avatarUrl'];
-      // } else {
-      //   throw ServerException(
-      //     message: response.data['message'] ?? '上传头像失败',
-      //   );
-      // }
+      if (!await file.exists()) {
+        throw ServerException(message: '文件不存在: $imageFilePath');
+      }
+
+      final fileName = imageFilePath.split('/').last;
+      final fileExtension = fileName.split('.').last.toLowerCase();
+
+      // 确定文件类型
+      String contentType;
+      switch (fileExtension) {
+        case 'jpg':
+        case 'jpeg':
+          contentType = 'image/jpeg';
+          break;
+        case 'png':
+          contentType = 'image/png';
+          break;
+        case 'gif':
+          contentType = 'image/gif';
+          break;
+        default:
+          contentType = 'application/octet-stream';
+      }
+
+      // 创建FormData对象
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(
+          imageFilePath,
+          filename: fileName,
+          contentType: MediaType.parse(contentType),
+        ),
+      });
+
+      final response = await dio.post(
+        '/api/user/avatar',
+        data: formData,
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = response.data;
+
+        if (responseData['code'] == 200 && responseData['data'] != null) {
+          return responseData['data']['avatarUrl'] ?? '';
+        } else {
+          throw ServerException(
+            message: responseData['message'] ?? '上传头像失败',
+            statusCode: responseData['code'],
+          );
+        }
+      } else {
+        throw ServerException(
+          message: '上传头像失败，状态码: ${response.statusCode}',
+          statusCode: response.statusCode,
+        );
+      }
     } catch (e) {
+      if (e is ServerException) {
+        rethrow;
+      }
       throw ServerException(message: e.toString());
     }
   }
@@ -183,24 +247,29 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   @override
   Future<WalletSummaryDto> getWalletSummary() async {
     try {
-      // Mock data for development
-      await Future.delayed(const Duration(milliseconds: 500));
-      return const WalletSummaryDto(
-        balance: 2345.67,
-        pendingAmount: 123.45,
-        totalIncome: 15678.90,
-      );
+      final response = await dio.get('/api/wallet/summary');
 
-      // Actual implementation would be:
-      // final response = await dio.get('/api/wallet/summary');
-      // if (response.statusCode == 200) {
-      //   return WalletSummaryDto.fromJson(response.data);
-      // } else {
-      //   throw ServerException(
-      //     message: response.data['message'] ?? '获取钱包信息失败',
-      //   );
-      // }
+      if (response.statusCode == 200) {
+        final data = response.data;
+
+        if (data['code'] == 200 && data['data'] != null) {
+          return WalletSummaryDto.fromJson(data['data']);
+        } else {
+          throw ServerException(
+            message: data['message'] ?? '获取钱包信息失败',
+            statusCode: data['code'],
+          );
+        }
+      } else {
+        throw ServerException(
+          message: '获取钱包信息失败，状态码: ${response.statusCode}',
+          statusCode: response.statusCode,
+        );
+      }
     } catch (e) {
+      if (e is ServerException) {
+        rethrow;
+      }
       throw ServerException(message: e.toString());
     }
   }
@@ -214,136 +283,62 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     String transactionType = 'all',
   }) async {
     try {
-      // Mock data for development
-      await Future.delayed(const Duration(milliseconds: 700));
+      final queryParams = {
+        'page': page.toString(),
+        'size': pageSize.toString(),
+        'type': transactionType,
+        if (startDate != null) 'startDate': startDate,
+        if (endDate != null) 'endDate': endDate,
+      };
 
-      // Generate some random transactions
-      return List.generate(
-        pageSize,
-        (index) => TransactionDto(
-          id: 'TR${10000 + index + (page - 1) * pageSize}',
-          amount: (index % 2 == 0 ? 1 : -1) * ((index + 1) * 25 + 10.99),
-          type: index % 2 == 0 ? 'income' : 'outcome',
-          description: index % 2 == 0 ? '收到付款' : '购买商品',
-          date: DateTime.now().subtract(Duration(days: index)),
-          status: 'completed',
-        ),
+      final response = await dio.get(
+        '/api/wallet/transactions',
+        queryParameters: queryParams,
       );
 
-      // Actual implementation would be:
-      // final response = await dio.get(
-      //   '/api/wallet/transactions',
-      //   queryParameters: {
-      //     'page': page,
-      //     'pageSize': pageSize,
-      //     if (startDate != null) 'startDate': startDate,
-      //     if (endDate != null) 'endDate': endDate,
-      //     'type': transactionType,
-      //   },
-      // );
-      // if (response.statusCode == 200) {
-      //   final List<dynamic> data = response.data['transactions'];
-      //   return data.map((item) => TransactionDto.fromJson(item)).toList();
-      // } else {
-      //   throw ServerException(
-      //     message: response.data['message'] ?? '获取交易记录失败',
-      //   );
-      // }
+      if (response.statusCode == 200) {
+        final data = response.data;
+
+        if (data['code'] == 200 && data['data'] != null && data['data']['list'] != null) {
+          final List<dynamic> transactionsList = data['data']['list'];
+          return transactionsList
+              .map((json) => TransactionDto.fromJson(json))
+              .toList();
+        } else {
+          throw ServerException(
+            message: data['message'] ?? '获取交易记录失败',
+            statusCode: data['code'],
+          );
+        }
+      } else {
+        throw ServerException(
+          message: '获取交易记录失败，状态码: ${response.statusCode}',
+          statusCode: response.statusCode,
+        );
+      }
     } catch (e) {
+      if (e is ServerException) {
+        rethrow;
+      }
       throw ServerException(message: e.toString());
     }
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getLikedStories({
+  Future<List<SavedItemDto>> getSavedItems({
     int page = 1,
     int pageSize = 20,
   }) async {
-    try {
-      // Mock data for development
-      await Future.delayed(const Duration(milliseconds: 600));
-
-      return List.generate(
-        pageSize,
-        (index) => {
-          'id': 'ST${10000 + index + (page - 1) * pageSize}',
-          'title': '有趣的故事 #${index + 1}',
-          'coverUrl': 'https://picsum.photos/200/300?random=${index + 1}',
-          'authorName': '作者 ${(index % 5) + 1}',
-          'likeCount': (index + 1) * 10 + 5,
-          'viewCount': (index + 1) * 100 + 50,
-          'createdAt': DateTime.now().subtract(Duration(days: index)).toIso8601String(),
-        },
-      );
-
-      // Actual implementation would be:
-      // final response = await dio.get(
-      //   '/api/user/liked-stories',
-      //   queryParameters: {
-      //     'page': page,
-      //     'pageSize': pageSize,
-      //   },
-      // );
-      // if (response.statusCode == 200) {
-      //   return List<Map<String, dynamic>>.from(response.data['stories']);
-      // } else {
-      //   throw ServerException(
-      //     message: response.data['message'] ?? '获取收藏故事失败',
-      //   );
-      // }
-    } catch (e) {
-      throw ServerException(message: e.toString());
-    }
+    // API实现待定
+    throw UnimplementedError('getSavedItems API尚未实现');
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getSavedItems({
+  Future<List<LikedStoryDto>> getLikedStories({
     int page = 1,
     int pageSize = 20,
   }) async {
-    try {
-      // Mock data for development
-      await Future.delayed(const Duration(milliseconds: 550));
-
-      return List.generate(
-        pageSize,
-        (index) => {
-          'id': 'IT${10000 + index + (page - 1) * pageSize}',
-          'title': '优质商品 #${index + 1}',
-          'imageUrl': 'https://picsum.photos/200/200?random=${index + 10}',
-          'price': (index + 1) * 99.99,
-          'storeName': '商店 ${(index % 3) + 1}',
-          'savedAt': DateTime.now().subtract(Duration(days: index)).toIso8601String(),
-        },
-      );
-
-      // Actual implementation would be:
-      // final response = await dio.get(
-      //   '/api/user/saved-items',
-      //   queryParameters: {
-      //     'page': page,
-      //     'pageSize': pageSize,
-      //   },
-      // );
-      // if (response.statusCode == 200) {
-      //   return List<Map<String, dynamic>>.from(response.data['items']);
-      // } else {
-      //   throw ServerException(
-      //     message: response.data['message'] ?? '获取收藏商品失败',
-      //   );
-      // }
-    } catch (e) {
-      throw ServerException(message: e.toString());
-    }
+    // API实现待定
+    throw UnimplementedError('getLikedStories API尚未实现');
   }
-}
-
-/// 服务器异常
-class ServerException implements Exception {
-  final String message;
-
-  ServerException({this.message = 'Server error'});
-
-  @override
-  String toString() => 'ServerException: $message';
 }

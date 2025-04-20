@@ -1,77 +1,64 @@
+import 'package:equatable/equatable.dart';
 import '../../domain/entities/saved_item.dart';
 
-/// 收藏项目数据传输对象
-class SavedItemDto {
-  final String itemId;
-  final String title;
-  final String? imageUrl;
-  final double? price;
-  final String? sellerName;
-  final String? savedAtString;
+/// 已收藏项目的数据传输对象
+class SavedItemDto extends Equatable {
+  /// 收藏ID
+  final String id;
 
+  /// 内容ID
+  final String contentId;
+
+  /// 内容类型
+  final String contentType;
+
+  /// 标题
+  final String title;
+
+  /// 封面图片URL
+  final String? coverUrl;
+
+  /// 创建时间
+  final DateTime createdAt;
+
+  /// 构造函数
   const SavedItemDto({
-    required this.itemId,
+    required this.id,
+    required this.contentId,
+    required this.contentType,
     required this.title,
-    this.imageUrl,
-    this.price,
-    this.sellerName,
-    this.savedAtString,
+    this.coverUrl,
+    required this.createdAt,
   });
 
-  /// 从 JSON 映射创建 SavedItemDto 实例
+  /// 从JSON映射创建SavedItemDto实例
   factory SavedItemDto.fromJson(Map<String, dynamic> json) {
     return SavedItemDto(
-      itemId: json['itemId'] ?? json['id'] ?? '',
+      id: json['id'] ?? '',
+      contentId: json['contentId'] ?? '',
+      contentType: json['contentType'] ?? '',
       title: json['title'] ?? '',
-      imageUrl: json['imageUrl'] ?? json['image'] ?? json['img_url'],
-      price: _parseDouble(json['price']),
-      sellerName: json['sellerName'] ?? json['seller_name'],
-      savedAtString: json['savedAt'] ?? json['saved_at'],
+      coverUrl: json['coverUrl'],
+      createdAt: json['createdAt'] is String
+          ? DateTime.parse(json['createdAt'])
+          : (json['createdAt'] is DateTime
+              ? json['createdAt']
+              : DateTime.now()),
     );
   }
 
-  /// 转换为 SavedItem 实体
-  SavedItem toEntity() {
-    DateTime? savedAt;
-    if (savedAtString != null) {
-      try {
-        savedAt = DateTime.parse(savedAtString!);
-      } catch (_) {}
-    }
-
-    return SavedItem(
-      itemId: itemId,
-      title: title,
-      imageUrl: imageUrl,
-      price: price,
-      sellerName: sellerName,
-      savedAt: savedAt,
-    );
-  }
-
-  /// 将 SavedItemDto 转换为 JSON 映射
+  /// 转换为JSON映射
   Map<String, dynamic> toJson() {
     return {
-      'itemId': itemId,
+      'id': id,
+      'contentId': contentId,
+      'contentType': contentType,
       'title': title,
-      if (imageUrl != null) 'imageUrl': imageUrl,
-      if (price != null) 'price': price,
-      if (sellerName != null) 'sellerName': sellerName,
-      if (savedAtString != null) 'savedAt': savedAtString,
+      'coverUrl': coverUrl,
+      'createdAt': createdAt.toIso8601String(),
     };
   }
 
-  /// 解析数字类型值，处理字符串和数字类型
-  static double? _parseDouble(dynamic value) {
-    if (value == null) return null;
-    if (value is num) return value.toDouble();
-    if (value is String) {
-      try {
-        return double.parse(value);
-      } catch (_) {
-        return null;
-      }
-    }
-    return null;
-  }
+  @override
+  List<Object?> get props => [id, contentId, contentType, title, coverUrl, createdAt];
 }
