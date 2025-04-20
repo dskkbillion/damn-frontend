@@ -13,11 +13,13 @@ import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_r
 import 'package:dskk_flutter_refactor/app/widgets/main_shell_page.dart';
 // Import the dev menu page
 import 'package:dskk_flutter_refactor/app/widgets/dev_menu_page.dart';
+
 // Import feature routes
 import 'package:dskk_flutter_refactor/features/orders/presentation/routes/order_routes.dart';
 import 'package:dskk_flutter_refactor/features/after_sales/presentation/routes/after_sales_routes.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/routes/ai_docs_routes.dart';
-import 'package:dskk_flutter_refactor/features/auth/presentation/routes/auth_routes.dart'; // Import Auth routes
+import 'package:dskk_flutter_refactor/features/auth/presentation/routes/auth_routes.dart'; 
+import 'package:dskk_flutter_refactor/features/profile/presentation/routes/profile_routes.dart'; // Import Profile routes
 
 // Placeholder pages for each tab - Keep one definition
 class PlaceholderPage extends StatelessWidget {
@@ -51,7 +53,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     refreshListenable: GoRouterRefreshStream(authRepository.authStatus), // Listen to auth status changes
 
     routes: [
-      // Configuration for the bottom navigation bar using StatefulShellRoute - Use branches from HEAD
+      // Configuration for the bottom navigation bar using StatefulShellRoute
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainShellPage(navigationShell: navigationShell);
@@ -93,12 +95,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           // Branch for the '我的' tab
           StatefulShellBranch(
             routes: [
-              GoRoute(
-                path: '/profile',
-                pageBuilder: (context, state) => const NoTransitionPage(
-                  child: PlaceholderPage(title: '我的'), // Simplified title
-                ),
-              ),
+              // Use the routes from the profile module here
+              ...ProfileRoutes.routes, 
             ],
           ),
           // Branch for the '开发' tab (Temporary Debug Menu)
@@ -117,11 +115,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
 
       // --- Top-level routes (not part of the shell) ---
-      // Aggregate routes from feature modules - Combine routes from both branches
-      ...AuthRoutes.routes, // Add routes from Auth module
-      ...OrderRoutes.routes, // Add routes from Orders module
-      ...AfterSalesRoutes.routes, // Add routes from AfterSales module
-      ...AiDocsRoutes.routes, // Add routes from AI Docs module
+      // Aggregate routes from feature modules
+      ...AuthRoutes.routes, 
+      ...OrderRoutes.routes, 
+      ...AfterSalesRoutes.routes, 
+      ...AiDocsRoutes.routes, 
+      // Profile routes are now part of the shell, no need to aggregate here
     ],
 
     // Use the errorBuilder from refactor/auth-module
@@ -175,4 +174,4 @@ class GoRouterRefreshStream extends ChangeNotifier {
     _subscription.cancel();
     super.dispose();
   }
-}
+} 

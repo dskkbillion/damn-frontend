@@ -183,6 +183,7 @@ Future<_i174.GetIt> init(
   gh.lazySingleton<_i493.IHttpClient>(() => _i962.DioHttpClient());
   gh.lazySingleton<_i607.IAiChatRemoteDataSource>(
       () => _i404.AiChatRemoteDataSourceImpl(gh<_i493.IHttpClient>()));
+<<<<<<< HEAD
   gh.lazySingleton<_i319.IAiChatRepository>(() => _i1012.AiChatRepositoryImpl(
       remoteDataSource: gh<_i607.IAiChatRemoteDataSource>()));
   gh.lazySingleton<_i232.UserInfoRemoteDataSource>(
@@ -201,20 +202,33 @@ Future<_i174.GetIt> init(
       () => _i567.CreateConversationUseCase(gh<_i319.IAiChatRepository>()));
   gh.lazySingleton<_i63.DeleteConversationUseCase>(
       () => _i63.DeleteConversationUseCase(gh<_i319.IAiChatRepository>()));
+=======
+  gh.lazySingleton<_i319.IAiChatRepository>(
+      () => _i1012.AiChatRepositoryImpl(gh<_i607.IAiChatRemoteDataSource>()));
+>>>>>>> refactor/profile-module
   gh.lazySingleton<_i257.GetConversationsUseCase>(
       () => _i257.GetConversationsUseCase(gh<_i319.IAiChatRepository>()));
-  gh.lazySingleton<_i598.GetRelatedServicesUseCase>(
-      () => _i598.GetRelatedServicesUseCase(gh<_i319.IAiChatRepository>()));
-  gh.lazySingleton<_i830.LoadHistoryUseCase>(
-      () => _i830.LoadHistoryUseCase(gh<_i319.IAiChatRepository>()));
   gh.lazySingleton<_i558.StreamChatCompletionUseCase>(
       () => _i558.StreamChatCompletionUseCase(gh<_i319.IAiChatRepository>()));
   gh.lazySingleton<_i309.TranscribeAudioUseCase>(
       () => _i309.TranscribeAudioUseCase(gh<_i319.IAiChatRepository>()));
+<<<<<<< HEAD
   gh.factory<_i405.AppInfoInterceptor>(
       () => _i405.AppInfoInterceptor(gh<_i655.PackageInfo>()));
   gh.factory<_i58.ValidateTokenUseCase>(
       () => _i58.ValidateTokenUseCase(gh<_i691.TokenValidator>()));
+=======
+  gh.lazySingleton<_i234.AllocateChatResourceUseCase>(
+      () => _i234.AllocateChatResourceUseCase(gh<_i319.IAiChatRepository>()));
+  gh.lazySingleton<_i598.GetRelatedServicesUseCase>(
+      () => _i598.GetRelatedServicesUseCase(gh<_i319.IAiChatRepository>()));
+  gh.lazySingleton<_i567.CreateConversationUseCase>(
+      () => _i567.CreateConversationUseCase(gh<_i319.IAiChatRepository>()));
+  gh.lazySingleton<_i63.DeleteConversationUseCase>(
+      () => _i63.DeleteConversationUseCase(gh<_i319.IAiChatRepository>()));
+  gh.lazySingleton<_i830.LoadHistoryUseCase>(
+      () => _i830.LoadHistoryUseCase(gh<_i319.IAiChatRepository>()));
+>>>>>>> refactor/profile-module
   gh.lazySingleton<_i436.IFileUploadDataSource>(
       () => _i478.FileUploadDataSourceImpl(gh<_i493.IHttpClient>()));
   gh.lazySingleton<_i795.IUserInfoRepository>(
