@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../domain/entities/user_profile.dart';
 import '../bloc/profile_bloc.dart';
 import '../widgets/profile_header.dart';
+import '../../../seller/presentation/pages/seller_profile_page.dart';
 
 class BlocProfilePage extends StatefulWidget {
   const BlocProfilePage({super.key});
@@ -52,7 +53,10 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
           }
         } else if (state is ProfileSwitchedToSellerMode) {
           // 导航到卖家中心
-          // Navigator.pushReplacementNamed(context, '/seller/home');
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const SellerProfilePage()),
+          );
         }
       },
       builder: (context, state) {

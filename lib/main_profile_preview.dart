@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'features/profile/data/datasources/profile_remote_data_source.dart';
 import 'features/profile/data/models/user_profile_dto.dart';
 import 'features/profile/data/models/wallet_summary_dto.dart';
 import 'features/profile/data/models/transaction_dto.dart';
 import 'features/profile/presentation/pages/simple_profile_page.dart';
+import 'features/seller/presentation/pages/seller_profile_page.dart';
+import 'features/profile/presentation/bloc/profile_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,8 +44,38 @@ class ProfilePreviewApp extends StatelessWidget {
         primaryColorDark: const Color(0xFF8C430A),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const SimpleProfilePage(),
+      home: const MainProfileScreen(),
     );
+  }
+}
+
+class MainProfileScreen extends StatefulWidget {
+  const MainProfileScreen({Key? key}) : super(key: key);
+
+  @override
+  State<MainProfileScreen> createState() => _MainProfileScreenState();
+}
+
+class _MainProfileScreenState extends State<MainProfileScreen> {
+  bool _isSellerMode = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return _isSellerMode
+        ? SellerProfilePage(
+            onSwitchToBuyer: () {
+              setState(() {
+                _isSellerMode = false;
+              });
+            },
+          )
+        : SimpleProfilePage(
+            onSwitchMode: () {
+              setState(() {
+                _isSellerMode = true;
+              });
+            },
+          );
   }
 }
 

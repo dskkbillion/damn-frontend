@@ -3,7 +3,9 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class SimpleProfilePage extends StatefulWidget {
-  const SimpleProfilePage({Key? key}) : super(key: key);
+  final VoidCallback? onSwitchMode;
+
+  const SimpleProfilePage({Key? key, this.onSwitchMode}) : super(key: key);
 
   @override
   State<SimpleProfilePage> createState() => _SimpleProfilePageState();
@@ -207,7 +209,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  '卖家模式',
+                  '买家模式',
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.white,
@@ -216,8 +218,8 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                 Switch(
                   value: false,
                   onChanged: (value) {
-                    if (value) {
-                      _showFeatureNotImplemented(context, '切换到卖家模式');
+                    if (value && widget.onSwitchMode != null) {
+                      widget.onSwitchMode!();
                     }
                   },
                   activeColor: Colors.green,
