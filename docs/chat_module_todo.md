@@ -121,9 +121,14 @@
 
   - [ ] **8.1. 明确导航调用**: 列出所有需要调用的导航方法及其参数。
   - [ ] **8.2. 明确外部 Repo 调用**: 列出需要从 `IUserRepository` 调用的方法。
-  - [x] 需要确保能获取到 `commonUserId`
+  - [x] **处理 ID 复杂性**:
+    - [x] **确认**: WebSocket 使用 `commonUserId` (或 `User.id`) 连接，而聊天室/消息 API 使用单独的 `Participant ID` (`memberId`/`doctorId`)。
+    - [x] **确认**: `Participant` DTO/Entity 包含 `referId`，链接回 `commonUserId`。
+    - [x] **实现**: 在 `ChatMessagesBloc` 加载时，通过 `getRoomDetails` 和 `referId` 查找当前用户的 `Participant ID` 并存入 State。
+    - [x] **实现**: `ChatMessageDto.toEntity` 和 WebSocket 消息处理时，将 DTO 中的 `memberId` 或 `doctorId` (代表发送者) 直接赋值给 `ChatMessage.senderId`。
+    - [x] **实现**: `ChatMessageBubble` 中通过比较 `message.senderId == state.currentUserParticipantId` 判断是否为当前用户消息。
   - [ ] **待办**: 实现删除消息逻辑
-    - [x] 定义 `DeleteChatMessage` Use Case (接口, 实现, 参数)。
+    - [x] 定义 `DeleteChatMessage` Use Case (接口, 实现, 参数 - 使用 `List<int> messageIds`)。
     - [x] 注册 Use Case 到 DI。
     - [x] 在 `ChatMessagesBloc` 中添加依赖和 `DeleteMessageRequested` 事件处理 (含乐观删除)。
     - [x] 连接 `ChatMessageBubble` 长按菜单的"删除"选项到 Bloc 事件。
@@ -250,11 +255,20 @@
     - **解决方案**: 使用匿名函数包裹方法调用：`IconButton(onPressed: () => _myMethodWithContext(context))`。
 
 21. **`MissingPluginException` (常见于 Web)**:
+
     - **问题**: 调用某个插件的方法时，出现 `MissingPluginException`，提示找不到方法的原生实现。这在 Web 平台尤其常见，因为很多依赖原生功能的插件（如 `path_provider`, `record` 的部分功能）在 Web 上没有完全对应的实现。
     - **示例**: 在 Web 上调用 `path_provider` 的 `getTemporaryDirectory()`。
     - **解决方案**:
       - **检查插件文档**: 查看插件是否支持当前目标平台，以及是否有平台特定的限制或替代方法。
       - **平台条件判断**: 使用 `kIsWeb` (来自 `package:flutter/foundation.dart`) 或 `Platform` (来自 `dart:io`) 来判断当前平台，并为不支持的平台提供替代逻辑（如禁用功能、显示提示信息、使用 Web 专有的 API）。
+
+22. **用户 ID 与参与者 ID 不匹配**:
+    - **问题**: WebSocket 连接使用全局 `commonUserId`，而聊天消息和聊天室详情中的发送者/接收者由特定的 `Participant ID` (`memberId`/`doctorId`) 标识。直接比较 `commonUserId` 和 `memberId`/`doctorId` 来判断消息发送者是错误的。
+    - **解决方案**:
+      1. 确保 `Participant` DTO/Entity 包含 `referId` (链接回 `commonUserId`)。
+      2. 在进入聊天室时 (`ChatMessagesBloc._onLoadChatMessages`)，获取当前用户的 `commonUserId`，然后通过 `getRoomDetails` 返回的参与者列表，找到 `referId` 与 `commonUserId` 匹配的那个参与者，并将其 `id` (即 `currentUserParticipantId`) 存储在 Bloc 状态 (`ChatMessagesLoaded.currentUserParticipantId`) 中。
+      3. 在转换消息 DTO 为 Entity 时 (`ChatMessageDto.toEntity`, `_onInternalMessageReceived`)，将消息 DTO 中的 `memberId` 或 `doctorId` (代表发送者) 直接赋值给 `ChatMessage.senderId`。
+      4. 在 UI (`ChatMessageBubble`) 中，通过比较 `message.senderId == state.currentUserParticipantId` 来判断消息是否由当前用户发送。
 
 - [ ] **实现 WebSocket 实时更新**
   - [x] 添加 `web_socket_channel` 依赖。

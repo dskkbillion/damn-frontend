@@ -73,16 +73,20 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
   ) async {
      emit(const ChatMessagesLoading());
     try {
-      // 1. Fetch user and token (token logic remains hardcoded for now)
+      // 1. Fetch current user and commonUserId
       final userResult = await userRepository.getCurrentUser();
       _currentUser = userResult.getOrElse(() => throw Exception("Failed to get current user"));
+      final currentCommonUserId = _currentUser!.id; // Assuming User.id is commonUserId
+
+      // Use real token and commonUserId for WebSocket
       _token = 'eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjFjYjlhZmYyLThjOTktNGMwYy05YTk5LWQ2NjdhYjVkMDY4NSJ9.I7cLrFM0qkBF9D-r90fowh3i9xO5v_39Oafl_K7hXdxJ2pQ1Yd9_PCd_C_M6za_0Y8YHt0bZRVb01am-F8r9ew';
-      String commonUserId = '10315';
+      String commonUserIdForWS = '10315';
 
       if (_currentUser == null || _token == null) {
          throw Exception("User or token not available");
       }
-      print("[ChatMessagesBloc] Using commonUserId: $commonUserId, Token: ${_token!.substring(0, 10)}...");
+      print("[ChatMessagesBloc] Current commonUserId: $currentCommonUserId");
+      print("[ChatMessagesBloc] Using WebSocket commonUserId: $commonUserIdForWS, Token: ${_token!.substring(0, 10)}...");
 
       // 2. Fetch initial messages and opponent details concurrently
       final results = await Future.wait([
@@ -90,34 +94,56 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
         getChatRoomDetails(GetChatRoomDetailsParams(chatId: event.chatId)),
       ]);
 
-      // FIX: Correctly define and access results with proper types
       final messageResult = results[0] as Either<Failure, List<ChatMessage>>;
       final roomDetailsResult = results[1] as Either<Failure, ChatRoom>;
 
-      // 3. FIX: Process results with correct nested fold structure
+      // 3. Process results
       await messageResult.fold(
         (failure) async => emit(ChatMessagesError('Failed to load messages: ${failure.message}')),
         (messages) async {
           await roomDetailsResult.fold(
             (failure) async => emit(ChatMessagesError('Failed to load room details: ${failure.message}')),
             (roomDetails) async {
-              // Determine the opponent
-              // Use the correct ChatRoom entity structure (participant1, participant2)
-               _opponent = roomDetails.getOpponent(_currentUser!.id); // Use getter from entity
-              
-              print("[ChatMessagesBloc] Messages and details loaded successfully. Opponent: ${_opponent?.nickName} (${_opponent?.id})");
+              // FIX: Find opponent AND current user's participant ID
+              Participant? opponentParticipant;
+              int? currentUserParticipantId;
 
-              // FIX: Emit ChatMessagesLoaded with currentUserId
+              // Assuming ChatRoom entity now uses participant1 and participant2
+              final p1 = roomDetails.participant1;
+              final p2 = roomDetails.participant2;
+
+              if (p1.referId == currentCommonUserId) {
+                  currentUserParticipantId = p1.id;
+                  opponentParticipant = p2;
+              } else if (p2.referId == currentCommonUserId) {
+                  currentUserParticipantId = p2.id;
+                  opponentParticipant = p1;
+              } else {
+                   // Error: Current user (based on commonUserId) not found in this chat's participants
+                  print("Error: Current user commonId ($currentCommonUserId) doesn't match referId of participant ${p1.id} (${p1.referId}) or ${p2.id} (${p2.referId})");
+                  emit(ChatMessagesError('Error: You are not a participant in this chat.'));
+                  return; // Stop processing
+              }
+
+              if (currentUserParticipantId == null || opponentParticipant == null) {
+                 emit(ChatMessagesError('Failed to identify participants in chat.'));
+                 return;
+              }
+              
+              _opponent = opponentParticipant; // Store opponent locally if needed elsewhere
+              print("[ChatMessagesBloc] Messages and details loaded. Opponent: ${_opponent?.nickName} (${_opponent?.id}), CurrentUserParticipantId: $currentUserParticipantId");
+
+              // Emit ChatMessagesLoaded with the found participant ID
               emit(ChatMessagesLoaded(
-                messages: messages, // Assuming API returns newest first or reversed in UseCase/Repo
-                opponent: _opponent!, // Assert not null after successful load
-                currentUserId: _currentUser!.id, // Provide the required ID
+                messages: messages,
+                opponent: _opponent!, 
+                currentUserId: currentCommonUserId, // Keep commonUserId here if needed globally
+                currentUserParticipantId: currentUserParticipantId, // Pass the specific participant ID
               ));
 
-              // 4. Connect to WebSocket AFTER successfully loading and emitting initial state
-              print("[ChatMessagesBloc] Connecting to WebSocket with REAL commonUserId: $commonUserId");
-              // FIX: Remove await from void function call inside awaited fold
-              _connectAndSubscribeWebSocket(commonUserId, _token!); 
+              // 4. Connect to WebSocket
+              print("[ChatMessagesBloc] Connecting to WebSocket with commonUserId: $commonUserIdForWS");
+              _connectAndSubscribeWebSocket(commonUserIdForWS, _token!); 
             },
           );
         },
@@ -133,45 +159,46 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     SendMessageRequested event,
     Emitter<ChatMessagesState> emit,
   ) async {
-    if (state is! ChatMessagesLoaded) return; // Can only send when loaded
+    if (state is! ChatMessagesLoaded) return; 
     final loadedState = state as ChatMessagesLoaded;
 
     if (_currentUser == null) {
-      emit(loadedState.copyWith(error: 'Cannot send message: User not loaded'));
+      // FIX: Wrap error message in ValueGetter
+      emit(loadedState.copyWith(error: () => 'Cannot send message: User not loaded'));
       return;
     }
 
     // 1. Create optimistic message
     final optimisticMessage = ChatMessage(
-      id: Random().nextInt(1000000) + 1000000, // Temporary client-side ID
+      id: Random().nextInt(1000000) + 1000000,
       chatId: chatId,
-      senderId: _currentUser!.id, // Use current user ID
-      memberId: _currentUser!.type == 'MEMBER' ? _currentUser!.id : loadedState.opponent.id, // Determine member/doctor ID based on type
-      doctorId: _currentUser!.type == 'DOCTOR' ? _currentUser!.id : loadedState.opponent.id,
-      context: event.type == 'text' ? event.text! : (event.file?.path ?? 'Sending file...'), // Use event fields correctly
-      type: event.type, // Use event field correctly
+      senderId: loadedState.currentUserParticipantId, // Use participant ID for sender
+      memberId: _currentUser!.type == 'MEMBER' ? loadedState.currentUserParticipantId : loadedState.opponent.id,
+      doctorId: _currentUser!.type == 'DOCTOR' ? loadedState.currentUserParticipantId : loadedState.opponent.id,
+      context: event.type == 'text' ? event.text! : (event.file?.path ?? 'Sending file...'),
+      type: event.type,
       createTime: DateTime.now(),
       withdrawFlag: false,
-      status: MessageStatus.sending, // Initial status
+      status: MessageStatus.sending,
     );
 
     // 2. Emit state with optimistic message
     emit(loadedState.copyWith(
-      messages: [optimisticMessage, ...loadedState.messages], // Add to the top
-      error: null // Clear error using corrected copyWith
+      messages: [optimisticMessage, ...loadedState.messages],
+      // FIX: Wrap null in ValueGetter to clear error
+      error: () => null
     ));
 
     // 3. Prepare Use Case parameters
     final params = SendMessageParams(
-      message: optimisticMessage.copyWith(id: 0), // Use a temp ID or 0 for API call if backend assigns ID
-      file: event.file, // Use event field correctly
+      message: optimisticMessage.copyWith(id: 0), 
+      file: event.file,
     );
 
     // 4. Call Use Case
     final result = await sendMessage(params);
 
-    // 5. Handle result and update state
-    if (state is! ChatMessagesLoaded) return; // State might have changed
+    if (state is! ChatMessagesLoaded) return;
     final currentState = state as ChatMessagesLoaded;
 
     result.fold(
@@ -184,21 +211,22 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
         }).toList();
         emit(currentState.copyWith(
           messages: updatedMessages,
-          error: failure.message, // Use corrected copyWith
+          // FIX: Wrap error message in ValueGetter
+          error: () => failure.message,
         ));
         print("Failed to send message: ${failure.message}");
       },
       (sentMessage) {
-        // Replace optimistic message with confirmed message from server
+        // Replace optimistic message with confirmed message
         final updatedMessages = currentState.messages.map((msg) {
-          // Use optimistic ID for matching
           return msg.id == optimisticMessage.id
-              ? sentMessage.copyWith(status: MessageStatus.sent) // Ensure status is sent
+              ? sentMessage.copyWith(status: MessageStatus.sent)
               : msg;
         }).toList();
         emit(currentState.copyWith(
           messages: updatedMessages,
-          error: null, // Use corrected copyWith to clear error
+          // FIX: Wrap null in ValueGetter to clear error
+          error: () => null,
         ));
          print("Message sent successfully: ${sentMessage.id}");
       },
@@ -208,30 +236,36 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
   void _onInternalMessageReceived(_MessageReceived event, Emitter<ChatMessagesState> emit) {
     if (state is ChatMessagesLoaded && _currentUser != null) {
       final currentState = state as ChatMessagesLoaded;
-      final ChatMessageDto messageDto = event.messageDto; // Correct: _MessageReceived contains DTO
+      final ChatMessageDto messageDto = event.messageDto;
 
       print("[Bloc] Received message via WebSocket: ${messageDto.id}");
 
-      // Convert DTO to Entity
       try {
+        // FIX: Determine sender participant ID from DTO
+        final int senderParticipantId = messageDto.memberId ?? messageDto.doctorId ?? 0;
+        if (senderParticipantId == 0) {
+           print("[Bloc] Error: Received message DTO has neither memberId nor doctorId. DTO: ${messageDto.toJson()}");
+           emit(currentState.copyWith(error: () => "Received invalid message data from WebSocket"));
+           return;
+        }
+
+        // FIX: Pass both currentUserId and determined senderId to toEntity
         final messageEntity = messageDto.toEntity(
-          currentUserId: _currentUser!.id,
-          senderId: messageDto.memberId == _currentUser!.id ? messageDto.memberId! :
-                    messageDto.doctorId == _currentUser!.id ? messageDto.doctorId! :
-                    (messageDto.memberId ?? messageDto.doctorId ?? 0)
+            currentUserId: currentState.currentUserId, // Pass commonUserId
+            senderId: senderParticipantId // Pass participant ID
         );
 
         if (!currentState.messages.any((m) => m.id == messageEntity.id)) {
           emit(currentState.copyWith(
             messages: [messageEntity.copyWith(status: MessageStatus.sent), ...currentState.messages],
-            error: null
+            error: () => null
           ));
         } else {
            print("[Bloc] Received duplicate message ID via WebSocket: ${messageEntity.id}");
         }
       } catch (e) {
          print("[Bloc] Error converting WebSocket DTO to Entity: $e");
-         emit(currentState.copyWith(error: "Error processing incoming message"));
+         emit(currentState.copyWith(error: () => "Error processing incoming message"));
       }
     }
   }
@@ -240,40 +274,35 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     RevokeMessageRequested event,
     Emitter<ChatMessagesState> emit,
   ) async {
-     if (state is! ChatMessagesLoaded) return;
+    if (state is! ChatMessagesLoaded) return;
     final loadedState = state as ChatMessagesLoaded;
 
     // Optimistic update
     final updatedMessagesOptimistic = loadedState.messages.map((msg) {
-      // FIX: Use withdrawFlag and type for revoked status
       return msg.id == event.messageId ? msg.copyWith(withdrawFlag: true, type: 'revoke', status: MessageStatus.sent) : msg;
     }).toList();
-    emit(loadedState.copyWith(messages: updatedMessagesOptimistic, error: null));
+    // FIX: Wrap null in ValueGetter
+    emit(loadedState.copyWith(messages: updatedMessagesOptimistic, error: () => null));
 
     final result = await revokeMessage(RevokeMessageParams(messageId: event.messageId));
 
-     if (state is! ChatMessagesLoaded) return; // Re-check state
-     final currentState = state as ChatMessagesLoaded;
+    if (state is! ChatMessagesLoaded) return;
+    final currentState = state as ChatMessagesLoaded;
 
     result.fold(
       (failure) {
-        // Revert optimistic update (complex, just show error)
-         final revertedMessages = currentState.messages.map((msg) {
-           // Find the original message? For now, just keep the revoked UI but show error.
-           if (msg.id == event.messageId) {
-                // Maybe revert UI? msg.copyWith(withdrawFlag: false, type: originalType?)
-           }
-           return msg;
-         }).toList();
+         final revertedMessages = currentState.messages.map((msg) { return msg; }).toList();
         emit(currentState.copyWith(
-             messages: revertedMessages, // Or revert fully if possible
-             error: 'Failed to revoke: ${failure.message}'
+             messages: revertedMessages,
+             // FIX: Wrap error message in ValueGetter
+             error: () => 'Failed to revoke: ${failure.message}'
              ));
          print("Failed to revoke message: ${failure.message}");
       },
       (_) {
          print("Message revoked successfully: ${event.messageId}");
-          emit(currentState.copyWith(error: null));
+         // FIX: Wrap null in ValueGetter
+          emit(currentState.copyWith(error: () => null));
       },
     );
   }
@@ -282,30 +311,31 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     DeleteMessageRequested event,
     Emitter<ChatMessagesState> emit,
   ) async {
-     if (state is! ChatMessagesLoaded) return;
+    if (state is! ChatMessagesLoaded) return;
     final loadedState = state as ChatMessagesLoaded;
 
     // Optimistic update
      final List<ChatMessage> updatedMessagesOptimistic = loadedState.messages
         .where((msg) => !event.messageIds.contains(msg.id))
         .toList();
-    emit(loadedState.copyWith(messages: updatedMessagesOptimistic, error: null));
+    // FIX: Wrap null in ValueGetter
+    emit(loadedState.copyWith(messages: updatedMessagesOptimistic, error: () => null));
 
-    // FIX: Use correct params name `messageIds`
     final result = await deleteChatMessage(DeleteChatMessageParams(messageIds: event.messageIds, chatId: chatId));
 
-     if (state is! ChatMessagesLoaded) return; // Re-check state
-     final currentState = state as ChatMessagesLoaded;
+    if (state is! ChatMessagesLoaded) return;
+    final currentState = state as ChatMessagesLoaded;
 
      result.fold(
       (failure) {
-        // Revert optimistic update is complex. Show error.
         print("Failed to delete messages: ${failure.message}");
-         emit(loadedState.copyWith(error: 'Failed to delete: ${failure.message}'));
+         // FIX: Wrap error message in ValueGetter
+         emit(loadedState.copyWith(error: () => 'Failed to delete: ${failure.message}'));
       },
       (_) {
         print("Messages deleted successfully: ${event.messageIds}");
-         emit(currentState.copyWith(error: null));
+        // FIX: Wrap null in ValueGetter
+         emit(currentState.copyWith(error: () => null));
       },
     );
   }

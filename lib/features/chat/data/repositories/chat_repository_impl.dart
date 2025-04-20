@@ -55,13 +55,14 @@ class ChatRepositoryImpl implements IChatRepository {
          (user) async {
            try {
              final sentMessageDto = await remoteDataSource.sendMessage(message);
-             // Convert DTO back to Entity, providing necessary context (current user ID)
+             
+             // FIX: Determine sender participant ID before calling toEntity
+             final int senderParticipantId = sentMessageDto.memberId ?? sentMessageDto.doctorId ?? 0;
+             
              final sentMessageEntity = sentMessageDto.toEntity(
-                currentUserId: user.id,
-                // Use DTO fields to determine senderId for the entity
-                senderId: sentMessageDto.memberId == user.id ? sentMessageDto.memberId! :
-                          sentMessageDto.doctorId == user.id ? sentMessageDto.doctorId! :
-                          (sentMessageDto.memberId ?? sentMessageDto.doctorId ?? 0) // Adjust fallback logic if needed
+                currentUserId: user.id, // Pass commonUserId
+                // FIX: Pass the determined sender participant ID
+                senderId: senderParticipantId 
               );
              return Right(sentMessageEntity);
            } on ServerException catch (e) {

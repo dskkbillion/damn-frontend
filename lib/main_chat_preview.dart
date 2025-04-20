@@ -62,11 +62,12 @@ final sl = GetIt.instance;
 // --- Mock Implementations ---
 
 // Mock Participants and User
-const mockUser = User(id: 1, commonUserId: 'user-123', nickName: 'Me', type: 'MEMBER');
-const mockCurrentUserParticipant = Participant(id: 1, nickName: 'Me', type: 'MEMBER');
-const mockOpponent1 = Participant(id: 2, nickName: 'Alice', avatar: null, type: 'MEMBER');
-const mockOpponent2 = Participant(id: 3, nickName: 'Bob', avatar: null, type: 'MEMBER');
-const mockOpponent3 = Participant(id: 4, nickName: 'Charlie', type: 'MEMBER', avatar: null);
+const mockUser = User(id: 1, commonUserId: 'user-123', nickName: 'Me', type: 'MEMBER'); // User.id is commonUserId (1)
+// FIX: Add referId to mock participants matching their corresponding commonUserId (or id for simplicity)
+const mockCurrentUserParticipant = Participant(id: 1, nickName: 'Me', type: 'MEMBER', referId: 1); 
+const mockOpponent1 = Participant(id: 2, nickName: 'Alice', avatar: null, type: 'MEMBER', referId: 2);
+const mockOpponent2 = Participant(id: 3, nickName: 'Bob', avatar: null, type: 'MEMBER', referId: 3);
+const mockOpponent3 = Participant(id: 4, nickName: 'Charlie', type: 'MEMBER', avatar: null, referId: 4);
 
 class MockChatRepository implements IChatRepository {
   final Map<int, List<ChatMessage>> _mockMessages = {
@@ -84,34 +85,34 @@ class MockChatRepository implements IChatRepository {
     ],
   };
 
-  final Map<int, ChatRoom> _mockRoomDetails = {
-     101: ChatRoom(
-        id: 101,
-        participant1: mockCurrentUserParticipant,
-        participant2: mockOpponent1,
-        unreadCount: 2,
-        lastMessage: ChatMessage(
-          id: 1002, chatId: 101, senderId: 1, memberId: 1, doctorId: 2, context: 'Hey Alice! How are you?', type: 'text', createTime: DateTime.now().subtract(const Duration(minutes: 5)), withdrawFlag: false, status: MessageStatus.sent
-        ),
-      ),
+  late final Map<int, ChatRoom> _mockRoomDetails = {
+    101: ChatRoom(
+      id: 101,
+      // FIX: Use updated participant mocks with referId
+      participant1: mockCurrentUserParticipant,
+      participant2: mockOpponent1, 
+      unreadCount: 2,
+      lastMessage: ChatMessage(
+          id: 1, chatId: 101, senderId: mockOpponent1.id, memberId: mockOpponent1.id, context: 'Hello there!', type: 'text', createTime: DateTime.now().subtract(const Duration(minutes: 5)), withdrawFlag: false, status: MessageStatus.sent)
+    ),
     102: ChatRoom(
-        id: 102,
-        participant1: mockOpponent2, // Bob
-        participant2: mockCurrentUserParticipant,
-        unreadCount: 0,
-        lastMessage: ChatMessage(
-          id: 2002, chatId: 102, senderId: 1, memberId: 1, doctorId: 3, context: 'Okay, sounds good.', type: 'text', createTime: DateTime.now().subtract(const Duration(hours: 2)), withdrawFlag: false, status: MessageStatus.sent
-        ),
-      ),
+      id: 102,
+      // FIX: Use updated participant mocks with referId
+      participant1: mockCurrentUserParticipant, 
+      participant2: mockOpponent2,
+      unreadCount: 0,
+      lastMessage: ChatMessage(
+          id: 2, chatId: 102, senderId: mockCurrentUserParticipant.id, memberId: mockCurrentUserParticipant.id, context: 'Image sent', type: 'image', createTime: DateTime.now().subtract(const Duration(hours: 1)), withdrawFlag: false, status: MessageStatus.sent)
+    ),
      103: ChatRoom(
-        id: 103,
-        participant1: mockCurrentUserParticipant,
-        participant2: mockOpponent3, // Charlie
-        unreadCount: 1,
-        lastMessage: ChatMessage(
-          id: 3001, chatId: 103, senderId: 1, memberId: 1, doctorId: 4, context: 'Meeting reminder for tomorrow.', type: 'text', createTime: DateTime.now().subtract(const Duration(days: 1)), withdrawFlag: false, status: MessageStatus.sent
-        ),
-      ),
+      id: 103,
+       // FIX: Use updated participant mocks with referId
+      participant1: mockOpponent3, 
+      participant2: mockCurrentUserParticipant,
+      unreadCount: 1,
+      lastMessage: ChatMessage(
+          id: 3, chatId: 103, senderId: mockOpponent3.id, memberId: mockOpponent3.id, context: 'Audio message', type: 'audio', createTime: DateTime.now().subtract(const Duration(days: 1)), withdrawFlag: false, status: MessageStatus.sent)
+    ),
   };
 
   @override

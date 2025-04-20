@@ -11,6 +11,7 @@ class ParticipantDto with _$ParticipantDto {
     String? nickName,
     String? avatar,
     String? type, // 'MEMBER', 'DOCTOR', 'ADMIN'
+    int? referId,
     // Add other fields from API if needed (e.g., trueName, mobile)
   }) = _ParticipantDto;
 
@@ -25,6 +26,7 @@ class ParticipantDto with _$ParticipantDto {
       nickName: nickName,
       avatar: avatar,
       type: type,
+      referId: referId,
     );
   }
 } 

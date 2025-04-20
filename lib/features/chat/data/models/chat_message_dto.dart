@@ -56,7 +56,7 @@ class ChatMessageDto with _$ChatMessageDto {
     return ChatMessage(
       id: id,
       chatId: chatId,
-      senderId: senderId, // Determined externally
+      senderId: senderId,
       memberId: memberId,
       doctorId: doctorId,
       context: context,

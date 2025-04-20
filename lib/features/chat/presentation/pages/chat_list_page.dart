@@ -16,56 +16,74 @@ class ChatListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // TODO: Replace this placeholder with actual user ID from state/provider
+    const int currentUserId = 1; 
+
     return Scaffold(
+      // Set Scaffold background color
+      backgroundColor: const Color(0xFFEDEDED),
       appBar: AppBar(
         title: const Text('聊天列表'),
+        // Set AppBar background and text/icon color
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black, // Sets default color for title and icons
+        elevation: 0.5, // Add a subtle shadow
+        shadowColor: Colors.grey[300],
       ),
       body: BlocBuilder<ChatListBloc, ChatListState>(
         builder: (context, state) {
           if (state.status == ChatListStatus.loading) {
-            return const Center(child: CircularProgressIndicator());
+            // Return loading indicator on the desired background
+            return const Center(child: CircularProgressIndicator()); 
           } else if (state.status == ChatListStatus.success) {
             if (state.chatRooms.isEmpty) {
-              return const Center(child: Text('没有聊天记录'));
+              // Return empty message on the desired background
+              return const Center(child: Text('没有聊天记录')); 
             }
-            return ListView.builder(
+            // Use ListView.separated to add dividers
+            return ListView.separated(
               itemCount: state.chatRooms.length,
               itemBuilder: (context, index) {
                 final chatRoom = state.chatRooms[index];
-                // final opponent = chatRoom.getOpponent(1); // Logic moved inside ChatListItem
-
-                return ChatListItem( // Pass the whole chatRoom object
-                  key: ValueKey(chatRoom.id), // Add key for performance
-                  chatRoom: chatRoom,
-                  // avatarUrl: opponent.avatar,
-                  // name: opponent.nickName ?? 'Unknown',
-                  // lastMessage: chatRoom.lastMessage?.context ?? '',
-                  // lastMessageTime: chatRoom.lastActivityTime,
-                  // unreadCount: chatRoom.unreadCount,
-                  onTap: () {
-                    // Navigate to ChatRoomPage
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => BlocProvider(
-                          // FIX: Call GetIt with correct parameter (param1 is now chatId)
-                          create: (_) => sl<ChatMessagesBloc>(param1: chatRoom.id)
-                                        ..add(LoadChatMessages(chatRoom.id)),
-                          child: ChatRoomPage(chatId: chatRoom.id),
+                // Wrap ChatListItem with Material for InkWell splash on correct background
+                return Material(
+                  color: Colors.white, // List item background
+                  child: ChatListItem(
+                    key: ValueKey(chatRoom.id), 
+                    chatRoom: chatRoom,
+                    currentUserId: currentUserId, // Pass currentUserId
+                    onTap: () {
+                      // Navigation logic remains the same
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => BlocProvider(
+                            create: (_) => sl<ChatMessagesBloc>(param1: chatRoom.id)
+                                          ..add(LoadChatMessages(chatRoom.id)),
+                            child: ChatRoomPage(chatId: chatRoom.id),
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 );
               },
+              separatorBuilder: (context, index) => Divider(
+                height: 1,
+                indent: 80, // Adjust indent to align after avatar+padding
+                endIndent: 16,
+                color: Colors.grey[200], // Lighter divider color
+                thickness: 0.5, // Make divider thinner
+              ),
             );
           } else if (state.status == ChatListStatus.failure) {
+            // Return error message on the desired background
             return Center(
-              child: Text('加载失败: ${state.errorMessage ?? "未知错误"}'),
+              child: Text('加载失败: ${state.errorMessage ?? "未知错误"}'), 
             );
           } else {
-            // Initial state
-            return const Center(child: Text('正在加载...'));
+            // Return initial state message on the desired background
+            return const Center(child: Text('正在加载...')); 
           }
         },
       ),

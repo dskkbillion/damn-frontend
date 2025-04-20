@@ -12,6 +12,7 @@ _$ParticipantDtoImpl _$$ParticipantDtoImplFromJson(Map<String, dynamic> json) =>
       nickName: json['nickName'] as String?,
       avatar: json['avatar'] as String?,
       type: json['type'] as String?,
+      referId: (json['referId'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$$ParticipantDtoImplToJson(
@@ -21,4 +22,5 @@ Map<String, dynamic> _$$ParticipantDtoImplToJson(
       'nickName': instance.nickName,
       'avatar': instance.avatar,
       'type': instance.type,
+      'referId': instance.referId,
     };

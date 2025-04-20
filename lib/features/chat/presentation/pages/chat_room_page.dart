@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart'; // Import intl for date formatting
 
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_messages/chat_messages_bloc.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/chat_message_bubble.dart';
@@ -37,6 +38,46 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
          }
       });
     }
+  }
+
+  // Helper to check if timestamp separator is needed
+  bool _shouldShowTimestampSeparator(ChatMessage current, ChatMessage? previous) {
+    if (previous == null) {
+      return true; // Always show for the very first message (oldest)
+    }
+    // Show if difference is more than 5 minutes
+    final difference = previous.createTime.difference(current.createTime).abs(); 
+    return difference.inMinutes >= 5;
+  }
+
+  // Helper to build the timestamp separator widget
+  Widget _buildTimestampSeparator(DateTime timestamp, bool isFirstMessage) {
+    String formattedTime;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final messageDate = DateTime(timestamp.year, timestamp.month, timestamp.day);
+
+    if (isFirstMessage || messageDate.isBefore(today)) {
+       // Show full date for the first message or if it's not today
+       // Use Chinese locale for month/day format
+       formattedTime = DateFormat('MM 月 dd 日 HH:mm', 'zh_CN').format(timestamp); 
+    } else {
+       // Show only time if it's today
+       formattedTime = DateFormat('HH:mm').format(timestamp);
+    }
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10.0),
+        child: Text(
+          formattedTime,
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 12.0,
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -89,16 +130,52 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   return ListView.builder(
                     controller: _scrollController,
                     reverse: true, // Show latest messages at the bottom
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0), // Adjust padding
                     itemCount: state.messages.length,
                     itemBuilder: (context, index) {
-                      final message = state.messages[index];
-                      final bool isCurrentUser = message.senderId == state.currentUserId;
-                      // TODO: Add message grouping by date if needed
-                      return ChatMessageBubble(
-                        key: ValueKey(message.id),
-                        message: message,
-                        isCurrentUser: isCurrentUser,
+                      // Add null checks for safety
+                      if (state.opponent == null || state.currentUserParticipantId == 0) {
+                        // Handle state inconsistency - maybe show an error or loading indicator?
+                        // Returning an empty container for now to avoid crashing.
+                        print('Error: Inconsistent state in ChatRoomPage itemBuilder - opponent or currentUserParticipantId is invalid.');
+                        return Container(); 
+                      }
+
+                      final currentMessage = state.messages[index];
+                      final previousMessage = (index + 1 < state.messages.length)
+                          ? state.messages[index + 1]
+                          : null;
+
+                      final bool isFirstInList = previousMessage == null;
+
+                      // Check if createTime is null before using timestamp logic
+                      if (currentMessage.createTime == null) {
+                        // Handle messages with null createTime (e.g., log error, show placeholder)
+                        print('Error: Message ID ${currentMessage.id} has null createTime.');
+                        // Return only the bubble without timestamp processing
+                        return ChatMessageBubble(
+                           key: ValueKey(currentMessage.id), 
+                           message: currentMessage,
+                           currentUserParticipantId: state.currentUserParticipantId,
+                           opponent: state.opponent,
+                        );
+                      }
+
+                      // Proceed with timestamp logic only if createTime is not null
+                      final bool showTimestamp = _shouldShowTimestampSeparator(currentMessage, previousMessage);
+
+                      return Column(
+                        children: [
+                          if (showTimestamp) 
+                             _buildTimestampSeparator(currentMessage.createTime!, isFirstInList), // Use ! as we checked null
+                          
+                          ChatMessageBubble(
+                            key: ValueKey(currentMessage.id), 
+                            message: currentMessage,
+                            currentUserParticipantId: state.currentUserParticipantId,
+                            opponent: state.opponent, // Now checked for null above
+                          ),
+                        ],
                       );
                     },
                   );

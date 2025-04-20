@@ -20,29 +20,33 @@ class ChatMessagesLoaded extends ChatMessagesState {
   final List<ChatMessage> messages;
   final Participant opponent; // Assuming opponent info is fetched
   final int currentUserId; // Need current user ID to determine message alignment
+  final int currentUserParticipantId; // FIX: Add current user's Participant ID
   final String? error; // Optional error message
 
   const ChatMessagesLoaded({
     required this.messages,
     required this.opponent,
     required this.currentUserId,
+    required this.currentUserParticipantId, // FIX: Add to constructor
     this.error,
   });
 
   @override
-  List<Object?> get props => [messages, opponent, currentUserId, error];
+  List<Object?> get props => [messages, opponent, currentUserId, currentUserParticipantId, error];
 
   ChatMessagesLoaded copyWith({
     List<ChatMessage>? messages,
     Participant? opponent,
     int? currentUserId,
-    String? error,
+    int? currentUserParticipantId, // FIX: Add to copyWith
+    ValueGetter<String?>? error,
   }) {
     return ChatMessagesLoaded(
       messages: messages ?? this.messages,
       opponent: opponent ?? this.opponent,
       currentUserId: currentUserId ?? this.currentUserId,
-      error: error,
+      currentUserParticipantId: currentUserParticipantId ?? this.currentUserParticipantId,
+      error: error != null ? error() : this.error,
     );
   }
 }

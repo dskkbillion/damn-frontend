@@ -34,16 +34,22 @@ class ChatRoomDto with _$ChatRoomDto {
          lastActivity = null; // Fallback
        }
      }
+
+    // FIX: Determine sender participant ID for the last message before calling its toEntity
+    int? lastMessageSenderId;
+    if (chatMessageNewVo != null) {
+        lastMessageSenderId = chatMessageNewVo!.memberId ?? chatMessageNewVo!.doctorId ?? 0;
+    }
+
     return ChatRoom(
       id: id,
       participant1: member.toEntity(),
       participant2: doctor.toEntity(),
       unreadCount: messageNum,
       lastMessage: chatMessageNewVo?.toEntity(
-         currentUserId: currentUserId,
-         senderId: chatMessageNewVo!.memberId == currentUserId ? chatMessageNewVo!.memberId! :
-                   chatMessageNewVo!.doctorId == currentUserId ? chatMessageNewVo!.doctorId! :
-                   (chatMessageNewVo!.memberId ?? chatMessageNewVo!.doctorId ?? 0)
+         currentUserId: currentUserId, // Pass commonUserId
+         // FIX: Pass the determined sender participant ID (if message exists)
+         senderId: lastMessageSenderId ?? 0 // Use 0 or handle null appropriately
       ),
     );
   }
