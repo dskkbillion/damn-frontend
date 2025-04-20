@@ -4,25 +4,20 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i5;
-import 'dart:io' as _i7;
 
-import 'package:dskk_flutter_refactor/core/network/network_info.dart' as _i12;
+import 'package:dskk_flutter_refactor/core/network/network_info.dart' as _i9;
 import 'package:dskk_flutter_refactor/features/profile/data/datasources/profile_local_data_source.dart'
-    as _i11;
+    as _i8;
 import 'package:dskk_flutter_refactor/features/profile/data/datasources/profile_remote_data_source.dart'
     as _i4;
-import 'package:dskk_flutter_refactor/features/profile/data/models/liked_story_dto.dart'
-    as _i10;
-import 'package:dskk_flutter_refactor/features/profile/data/models/saved_item_dto.dart'
-    as _i9;
+import 'package:dskk_flutter_refactor/features/profile/data/models/transaction_dto.dart'
+    as _i7;
 import 'package:dskk_flutter_refactor/features/profile/data/models/user_profile_dto.dart'
     as _i2;
 import 'package:dskk_flutter_refactor/features/profile/data/models/wallet_summary_dto.dart'
     as _i3;
-import 'package:dskk_flutter_refactor/features/profile/domain/repositories/i_user_profile_repository.dart'
-    as _i6;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i8;
+import 'package:mockito/src/dummies.dart' as _i6;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -40,14 +35,24 @@ import 'package:mockito/src/dummies.dart' as _i8;
 
 class _FakeUserProfileDto_0 extends _i1.SmartFake
     implements _i2.UserProfileDto {
-  _FakeUserProfileDto_0(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
+  _FakeUserProfileDto_0(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
 }
 
 class _FakeWalletSummaryDto_1 extends _i1.SmartFake
     implements _i3.WalletSummaryDto {
-  _FakeWalletSummaryDto_1(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
+  _FakeWalletSummaryDto_1(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
 }
 
 /// A class which mocks [ProfileRemoteDataSource].
@@ -60,146 +65,199 @@ class MockProfileRemoteDataSource extends _i1.Mock
   }
 
   @override
-  _i5.Future<_i2.UserProfileDto> getUserProfile() =>
-      (super.noSuchMethod(
-            Invocation.method(#getUserProfile, []),
-            returnValue: _i5.Future<_i2.UserProfileDto>.value(
-              _FakeUserProfileDto_0(
-                this,
-                Invocation.method(#getUserProfile, []),
-              ),
-            ),
-          )
-          as _i5.Future<_i2.UserProfileDto>);
+  _i5.Future<_i2.UserProfileDto> getUserProfile() => (super.noSuchMethod(
+        Invocation.method(
+          #getUserProfile,
+          [],
+        ),
+        returnValue: _i5.Future<_i2.UserProfileDto>.value(_FakeUserProfileDto_0(
+          this,
+          Invocation.method(
+            #getUserProfile,
+            [],
+          ),
+        )),
+      ) as _i5.Future<_i2.UserProfileDto>);
 
   @override
-  _i5.Future<_i2.UserProfileDto> updateUserProfile(
-    _i6.UserProfileUpdateData? data,
-  ) =>
-      (super.noSuchMethod(
-            Invocation.method(#updateUserProfile, [data]),
-            returnValue: _i5.Future<_i2.UserProfileDto>.value(
-              _FakeUserProfileDto_0(
-                this,
-                Invocation.method(#updateUserProfile, [data]),
-              ),
-            ),
-          )
-          as _i5.Future<_i2.UserProfileDto>);
-
-  @override
-  _i5.Future<String> uploadAvatar(_i7.File? imageFile) =>
-      (super.noSuchMethod(
-            Invocation.method(#uploadAvatar, [imageFile]),
-            returnValue: _i5.Future<String>.value(
-              _i8.dummyValue<String>(
-                this,
-                Invocation.method(#uploadAvatar, [imageFile]),
-              ),
-            ),
-          )
-          as _i5.Future<String>);
-
-  @override
-  _i5.Future<_i3.WalletSummaryDto> getWalletSummary() =>
-      (super.noSuchMethod(
-            Invocation.method(#getWalletSummary, []),
-            returnValue: _i5.Future<_i3.WalletSummaryDto>.value(
-              _FakeWalletSummaryDto_1(
-                this,
-                Invocation.method(#getWalletSummary, []),
-              ),
-            ),
-          )
-          as _i5.Future<_i3.WalletSummaryDto>);
-
-  @override
-  _i5.Future<List<_i9.SavedItemDto>> getSavedItems({
-    required int? page,
-    required int? pageSize,
+  _i5.Future<_i2.UserProfileDto> updateUserProfile({
+    required String? nickName,
+    bool? onlineFlag,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#getSavedItems, [], {
-              #page: page,
-              #pageSize: pageSize,
-            }),
-            returnValue: _i5.Future<List<_i9.SavedItemDto>>.value(
-              <_i9.SavedItemDto>[],
-            ),
-          )
-          as _i5.Future<List<_i9.SavedItemDto>>);
+        Invocation.method(
+          #updateUserProfile,
+          [],
+          {
+            #nickName: nickName,
+            #onlineFlag: onlineFlag,
+          },
+        ),
+        returnValue: _i5.Future<_i2.UserProfileDto>.value(_FakeUserProfileDto_0(
+          this,
+          Invocation.method(
+            #updateUserProfile,
+            [],
+            {
+              #nickName: nickName,
+              #onlineFlag: onlineFlag,
+            },
+          ),
+        )),
+      ) as _i5.Future<_i2.UserProfileDto>);
 
   @override
-  _i5.Future<List<_i10.LikedStoryDto>> getLikedStories({
-    required int? page,
-    required int? pageSize,
+  _i5.Future<String> uploadAvatar({required String? imageFilePath}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #uploadAvatar,
+          [],
+          {#imageFilePath: imageFilePath},
+        ),
+        returnValue: _i5.Future<String>.value(_i6.dummyValue<String>(
+          this,
+          Invocation.method(
+            #uploadAvatar,
+            [],
+            {#imageFilePath: imageFilePath},
+          ),
+        )),
+      ) as _i5.Future<String>);
+
+  @override
+  _i5.Future<_i3.WalletSummaryDto> getWalletSummary() => (super.noSuchMethod(
+        Invocation.method(
+          #getWalletSummary,
+          [],
+        ),
+        returnValue:
+            _i5.Future<_i3.WalletSummaryDto>.value(_FakeWalletSummaryDto_1(
+          this,
+          Invocation.method(
+            #getWalletSummary,
+            [],
+          ),
+        )),
+      ) as _i5.Future<_i3.WalletSummaryDto>);
+
+  @override
+  _i5.Future<List<_i7.TransactionDto>> getWalletTransactions({
+    int? page = 1,
+    int? pageSize = 20,
+    String? startDate,
+    String? endDate,
+    String? transactionType = 'all',
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#getLikedStories, [], {
-              #page: page,
-              #pageSize: pageSize,
-            }),
-            returnValue: _i5.Future<List<_i10.LikedStoryDto>>.value(
-              <_i10.LikedStoryDto>[],
-            ),
-          )
-          as _i5.Future<List<_i10.LikedStoryDto>>);
+        Invocation.method(
+          #getWalletTransactions,
+          [],
+          {
+            #page: page,
+            #pageSize: pageSize,
+            #startDate: startDate,
+            #endDate: endDate,
+            #transactionType: transactionType,
+          },
+        ),
+        returnValue:
+            _i5.Future<List<_i7.TransactionDto>>.value(<_i7.TransactionDto>[]),
+      ) as _i5.Future<List<_i7.TransactionDto>>);
+
+  @override
+  _i5.Future<List<Map<String, dynamic>>> getLikedStories({
+    int? page = 1,
+    int? pageSize = 20,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getLikedStories,
+          [],
+          {
+            #page: page,
+            #pageSize: pageSize,
+          },
+        ),
+        returnValue: _i5.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+      ) as _i5.Future<List<Map<String, dynamic>>>);
+
+  @override
+  _i5.Future<List<Map<String, dynamic>>> getSavedItems({
+    int? page = 1,
+    int? pageSize = 20,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getSavedItems,
+          [],
+          {
+            #page: page,
+            #pageSize: pageSize,
+          },
+        ),
+        returnValue: _i5.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+      ) as _i5.Future<List<Map<String, dynamic>>>);
 }
 
 /// A class which mocks [ProfileLocalDataSource].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockProfileLocalDataSource extends _i1.Mock
-    implements _i11.ProfileLocalDataSource {
+    implements _i8.ProfileLocalDataSource {
   MockProfileLocalDataSource() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i5.Future<_i2.UserProfileDto> getLastUserProfile() =>
-      (super.noSuchMethod(
-            Invocation.method(#getLastUserProfile, []),
-            returnValue: _i5.Future<_i2.UserProfileDto>.value(
-              _FakeUserProfileDto_0(
-                this,
-                Invocation.method(#getLastUserProfile, []),
-              ),
-            ),
-          )
-          as _i5.Future<_i2.UserProfileDto>);
+  _i5.Future<_i2.UserProfileDto> getLastUserProfile() => (super.noSuchMethod(
+        Invocation.method(
+          #getLastUserProfile,
+          [],
+        ),
+        returnValue: _i5.Future<_i2.UserProfileDto>.value(_FakeUserProfileDto_0(
+          this,
+          Invocation.method(
+            #getLastUserProfile,
+            [],
+          ),
+        )),
+      ) as _i5.Future<_i2.UserProfileDto>);
 
   @override
   _i5.Future<void> cacheUserProfile(_i2.UserProfileDto? userProfile) =>
       (super.noSuchMethod(
-            Invocation.method(#cacheUserProfile, [userProfile]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+        Invocation.method(
+          #cacheUserProfile,
+          [userProfile],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> clearUserProfile() =>
-      (super.noSuchMethod(
-            Invocation.method(#clearUserProfile, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> clearUserProfile() => (super.noSuchMethod(
+        Invocation.method(
+          #clearUserProfile,
+          [],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }
 
 /// A class which mocks [NetworkInfo].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockNetworkInfo extends _i1.Mock implements _i12.NetworkInfo {
+class MockNetworkInfo extends _i1.Mock implements _i9.NetworkInfo {
   MockNetworkInfo() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i5.Future<bool> get isConnected =>
-      (super.noSuchMethod(
-            Invocation.getter(#isConnected),
-            returnValue: _i5.Future<bool>.value(false),
-          )
-          as _i5.Future<bool>);
+  _i5.Future<bool> get isConnected => (super.noSuchMethod(
+        Invocation.getter(#isConnected),
+        returnValue: _i5.Future<bool>.value(false),
+      ) as _i5.Future<bool>);
 }

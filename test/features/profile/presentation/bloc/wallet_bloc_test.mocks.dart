@@ -32,13 +32,23 @@ import 'package:mockito/mockito.dart' as _i1;
 
 class _FakeIWalletRepository_0 extends _i1.SmartFake
     implements _i2.IWalletRepository {
-  _FakeIWalletRepository_0(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
+  _FakeIWalletRepository_0(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
 }
 
 class _FakeEither_1<L, R> extends _i1.SmartFake implements _i3.Either<L, R> {
-  _FakeEither_1(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
+  _FakeEither_1(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
 }
 
 /// A class which mocks [GetWalletSummary].
@@ -50,29 +60,30 @@ class MockGetWalletSummary extends _i1.Mock implements _i4.GetWalletSummary {
   }
 
   @override
-  _i2.IWalletRepository get repository =>
-      (super.noSuchMethod(
-            Invocation.getter(#repository),
-            returnValue: _FakeIWalletRepository_0(
-              this,
-              Invocation.getter(#repository),
-            ),
-          )
-          as _i2.IWalletRepository);
+  _i2.IWalletRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeIWalletRepository_0(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i2.IWalletRepository);
 
   @override
   _i5.Future<_i3.Either<_i6.Failure, _i7.WalletSummary>> call(
-    _i8.NoParams? params,
-  ) =>
+          _i8.NoParams? params) =>
       (super.noSuchMethod(
-            Invocation.method(#call, [params]),
-            returnValue:
-                _i5.Future<_i3.Either<_i6.Failure, _i7.WalletSummary>>.value(
-                  _FakeEither_1<_i6.Failure, _i7.WalletSummary>(
-                    this,
-                    Invocation.method(#call, [params]),
-                  ),
-                ),
-          )
-          as _i5.Future<_i3.Either<_i6.Failure, _i7.WalletSummary>>);
+        Invocation.method(
+          #call,
+          [params],
+        ),
+        returnValue:
+            _i5.Future<_i3.Either<_i6.Failure, _i7.WalletSummary>>.value(
+                _FakeEither_1<_i6.Failure, _i7.WalletSummary>(
+          this,
+          Invocation.method(
+            #call,
+            [params],
+          ),
+        )),
+      ) as _i5.Future<_i3.Either<_i6.Failure, _i7.WalletSummary>>);
 }

@@ -48,25 +48,45 @@ import 'package:mockito/mockito.dart' as _i1;
 
 class _FakeIUserProfileRepository_0 extends _i1.SmartFake
     implements _i2.IUserProfileRepository {
-  _FakeIUserProfileRepository_0(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
+  _FakeIUserProfileRepository_0(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
 }
 
 class _FakeEither_1<L, R> extends _i1.SmartFake implements _i3.Either<L, R> {
-  _FakeEither_1(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
+  _FakeEither_1(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
 }
 
 class _FakeIWalletRepository_2 extends _i1.SmartFake
     implements _i4.IWalletRepository {
-  _FakeIWalletRepository_2(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
+  _FakeIWalletRepository_2(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
 }
 
 class _FakeIAuthRepository_3 extends _i1.SmartFake
     implements _i5.IAuthRepository {
-  _FakeIAuthRepository_3(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
+  _FakeIAuthRepository_3(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
 }
 
 /// A class which mocks [GetUserProfileUseCase].
@@ -79,31 +99,31 @@ class MockGetUserProfileUseCase extends _i1.Mock
   }
 
   @override
-  _i2.IUserProfileRepository get repository =>
-      (super.noSuchMethod(
-            Invocation.getter(#repository),
-            returnValue: _FakeIUserProfileRepository_0(
-              this,
-              Invocation.getter(#repository),
-            ),
-          )
-          as _i2.IUserProfileRepository);
+  _i2.IUserProfileRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeIUserProfileRepository_0(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i2.IUserProfileRepository);
 
   @override
   _i7.Future<_i3.Either<_i8.Failure, _i9.UserProfile>> call(
-    _i10.NoParams? params,
-  ) =>
+          _i10.NoParams? params) =>
       (super.noSuchMethod(
-            Invocation.method(#call, [params]),
-            returnValue:
-                _i7.Future<_i3.Either<_i8.Failure, _i9.UserProfile>>.value(
-                  _FakeEither_1<_i8.Failure, _i9.UserProfile>(
-                    this,
-                    Invocation.method(#call, [params]),
-                  ),
-                ),
-          )
-          as _i7.Future<_i3.Either<_i8.Failure, _i9.UserProfile>>);
+        Invocation.method(
+          #call,
+          [params],
+        ),
+        returnValue: _i7.Future<_i3.Either<_i8.Failure, _i9.UserProfile>>.value(
+            _FakeEither_1<_i8.Failure, _i9.UserProfile>(
+          this,
+          Invocation.method(
+            #call,
+            [params],
+          ),
+        )),
+      ) as _i7.Future<_i3.Either<_i8.Failure, _i9.UserProfile>>);
 }
 
 /// A class which mocks [UpdateUserProfileUseCase].
@@ -116,31 +136,31 @@ class MockUpdateUserProfileUseCase extends _i1.Mock
   }
 
   @override
-  _i2.IUserProfileRepository get repository =>
-      (super.noSuchMethod(
-            Invocation.getter(#repository),
-            returnValue: _FakeIUserProfileRepository_0(
-              this,
-              Invocation.getter(#repository),
-            ),
-          )
-          as _i2.IUserProfileRepository);
+  _i2.IUserProfileRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeIUserProfileRepository_0(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i2.IUserProfileRepository);
 
   @override
   _i7.Future<_i3.Either<_i8.Failure, _i9.UserProfile>> call(
-    _i11.UpdateUserProfileParams? params,
-  ) =>
+          _i11.UpdateUserProfileParams? params) =>
       (super.noSuchMethod(
-            Invocation.method(#call, [params]),
-            returnValue:
-                _i7.Future<_i3.Either<_i8.Failure, _i9.UserProfile>>.value(
-                  _FakeEither_1<_i8.Failure, _i9.UserProfile>(
-                    this,
-                    Invocation.method(#call, [params]),
-                  ),
-                ),
-          )
-          as _i7.Future<_i3.Either<_i8.Failure, _i9.UserProfile>>);
+        Invocation.method(
+          #call,
+          [params],
+        ),
+        returnValue: _i7.Future<_i3.Either<_i8.Failure, _i9.UserProfile>>.value(
+            _FakeEither_1<_i8.Failure, _i9.UserProfile>(
+          this,
+          Invocation.method(
+            #call,
+            [params],
+          ),
+        )),
+      ) as _i7.Future<_i3.Either<_i8.Failure, _i9.UserProfile>>);
 }
 
 /// A class which mocks [UploadAvatarUseCase].
@@ -153,30 +173,31 @@ class MockUploadAvatarUseCase extends _i1.Mock
   }
 
   @override
-  _i2.IUserProfileRepository get repository =>
-      (super.noSuchMethod(
-            Invocation.getter(#repository),
-            returnValue: _FakeIUserProfileRepository_0(
-              this,
-              Invocation.getter(#repository),
-            ),
-          )
-          as _i2.IUserProfileRepository);
+  _i2.IUserProfileRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeIUserProfileRepository_0(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i2.IUserProfileRepository);
 
   @override
   _i7.Future<_i3.Either<_i8.Failure, String>> call(
-    _i12.UploadAvatarParams? params,
-  ) =>
+          _i12.UploadAvatarParams? params) =>
       (super.noSuchMethod(
-            Invocation.method(#call, [params]),
-            returnValue: _i7.Future<_i3.Either<_i8.Failure, String>>.value(
-              _FakeEither_1<_i8.Failure, String>(
-                this,
-                Invocation.method(#call, [params]),
-              ),
-            ),
-          )
-          as _i7.Future<_i3.Either<_i8.Failure, String>>);
+        Invocation.method(
+          #call,
+          [params],
+        ),
+        returnValue: _i7.Future<_i3.Either<_i8.Failure, String>>.value(
+            _FakeEither_1<_i8.Failure, String>(
+          this,
+          Invocation.method(
+            #call,
+            [params],
+          ),
+        )),
+      ) as _i7.Future<_i3.Either<_i8.Failure, String>>);
 }
 
 /// A class which mocks [GetWalletSummary].
@@ -188,31 +209,32 @@ class MockGetWalletSummary extends _i1.Mock implements _i13.GetWalletSummary {
   }
 
   @override
-  _i4.IWalletRepository get repository =>
-      (super.noSuchMethod(
-            Invocation.getter(#repository),
-            returnValue: _FakeIWalletRepository_2(
-              this,
-              Invocation.getter(#repository),
-            ),
-          )
-          as _i4.IWalletRepository);
+  _i4.IWalletRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeIWalletRepository_2(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i4.IWalletRepository);
 
   @override
   _i7.Future<_i3.Either<_i8.Failure, _i14.WalletSummary>> call(
-    _i10.NoParams? params,
-  ) =>
+          _i10.NoParams? params) =>
       (super.noSuchMethod(
-            Invocation.method(#call, [params]),
-            returnValue:
-                _i7.Future<_i3.Either<_i8.Failure, _i14.WalletSummary>>.value(
-                  _FakeEither_1<_i8.Failure, _i14.WalletSummary>(
-                    this,
-                    Invocation.method(#call, [params]),
-                  ),
-                ),
-          )
-          as _i7.Future<_i3.Either<_i8.Failure, _i14.WalletSummary>>);
+        Invocation.method(
+          #call,
+          [params],
+        ),
+        returnValue:
+            _i7.Future<_i3.Either<_i8.Failure, _i14.WalletSummary>>.value(
+                _FakeEither_1<_i8.Failure, _i14.WalletSummary>(
+          this,
+          Invocation.method(
+            #call,
+            [params],
+          ),
+        )),
+      ) as _i7.Future<_i3.Either<_i8.Failure, _i14.WalletSummary>>);
 }
 
 /// A class which mocks [CheckAuthStatusUseCase].
@@ -225,28 +247,30 @@ class MockCheckAuthStatusUseCase extends _i1.Mock
   }
 
   @override
-  _i5.IAuthRepository get repository =>
-      (super.noSuchMethod(
-            Invocation.getter(#repository),
-            returnValue: _FakeIAuthRepository_3(
-              this,
-              Invocation.getter(#repository),
-            ),
-          )
-          as _i5.IAuthRepository);
+  _i5.IAuthRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeIAuthRepository_3(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i5.IAuthRepository);
 
   @override
   _i7.Future<_i3.Either<_i8.Failure, bool>> call(_i10.NoParams? params) =>
       (super.noSuchMethod(
-            Invocation.method(#call, [params]),
-            returnValue: _i7.Future<_i3.Either<_i8.Failure, bool>>.value(
-              _FakeEither_1<_i8.Failure, bool>(
-                this,
-                Invocation.method(#call, [params]),
-              ),
-            ),
-          )
-          as _i7.Future<_i3.Either<_i8.Failure, bool>>);
+        Invocation.method(
+          #call,
+          [params],
+        ),
+        returnValue: _i7.Future<_i3.Either<_i8.Failure, bool>>.value(
+            _FakeEither_1<_i8.Failure, bool>(
+          this,
+          Invocation.method(
+            #call,
+            [params],
+          ),
+        )),
+      ) as _i7.Future<_i3.Either<_i8.Failure, bool>>);
 }
 
 /// A class which mocks [LogoutUseCase].
@@ -258,26 +282,28 @@ class MockLogoutUseCase extends _i1.Mock implements _i16.LogoutUseCase {
   }
 
   @override
-  _i5.IAuthRepository get repository =>
-      (super.noSuchMethod(
-            Invocation.getter(#repository),
-            returnValue: _FakeIAuthRepository_3(
-              this,
-              Invocation.getter(#repository),
-            ),
-          )
-          as _i5.IAuthRepository);
+  _i5.IAuthRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeIAuthRepository_3(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i5.IAuthRepository);
 
   @override
   _i7.Future<_i3.Either<_i8.Failure, void>> call(_i10.NoParams? params) =>
       (super.noSuchMethod(
-            Invocation.method(#call, [params]),
-            returnValue: _i7.Future<_i3.Either<_i8.Failure, void>>.value(
-              _FakeEither_1<_i8.Failure, void>(
-                this,
-                Invocation.method(#call, [params]),
-              ),
-            ),
-          )
-          as _i7.Future<_i3.Either<_i8.Failure, void>>);
+        Invocation.method(
+          #call,
+          [params],
+        ),
+        returnValue: _i7.Future<_i3.Either<_i8.Failure, void>>.value(
+            _FakeEither_1<_i8.Failure, void>(
+          this,
+          Invocation.method(
+            #call,
+            [params],
+          ),
+        )),
+      ) as _i7.Future<_i3.Either<_i8.Failure, void>>);
 }
