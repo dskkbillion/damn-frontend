@@ -24,7 +24,8 @@ class _MessageInputBarState extends State<MessageInputBar> {
   final TextEditingController _controller = TextEditingController();
   bool _canSend = false;
   bool _isRecording = false;
-  final AudioRecorder _audioRecorder = AudioRecorder(); // Recorder instance
+  bool _isVoiceMode = false; // Added state for input mode
+  final AudioRecorder _audioRecorder = AudioRecorder();
   String? _recordingPath;
   Timer? _recordingTimer;
   int _recordingDuration = 0;
@@ -33,7 +34,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
   void initState() {
     super.initState();
     _controller.addListener(() {
-      if(mounted) {
+      if (mounted) {
         setState(() {
           _canSend = _controller.text.trim().isNotEmpty;
         });
@@ -53,9 +54,11 @@ class _MessageInputBarState extends State<MessageInputBar> {
     if (_canSend) {
       final text = _controller.text.trim();
       context.read<ChatMessagesBloc>().add(
-        SendMessageRequested(type: 'text', text: text),
-      );
+            SendMessageRequested(type: 'text', text: text),
+          );
       _controller.clear();
+      // Ensure keyboard hides after sending
+      FocusScope.of(context).unfocus(); 
     }
   }
 
@@ -232,103 +235,142 @@ class _MessageInputBarState extends State<MessageInputBar> {
         });
   }
 
+  // Helper widget builders
+  Widget _buildVoiceKeyboardButton() {
+    return IconButton(
+      icon: Icon(_isVoiceMode ? Icons.keyboard_alt_outlined : Icons.mic_none_outlined),
+      onPressed: () {
+        setState(() {
+          _isVoiceMode = !_isVoiceMode;
+        });
+        // Hide keyboard if switching to voice mode
+        if (_isVoiceMode) FocusScope.of(context).unfocus();
+      },
+      tooltip: _isVoiceMode ? '切换到文本输入' : '切换到语音输入',
+      color: Colors.grey[700],
+    );
+  }
+
+  Widget _buildTextField() {
+    return TextField(
+      controller: _controller,
+      maxLines: 5, // Allow multi-line input
+      minLines: 1,
+      textInputAction: TextInputAction.newline, // Or send on enter? Decide behavior
+      decoration: InputDecoration(
+        hintText: '输入消息...',
+        filled: true,
+        fillColor: Colors.grey[100],
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(25.0),
+          borderSide: BorderSide.none, // No visible border
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(25.0),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(25.0),
+          borderSide: BorderSide.none, // Or a subtle highlight
+        ),
+      ),
+      onSubmitted: (_) => _sendMessage(), // Option: Send on keyboard submit action
+    );
+  }
+
+  Widget _buildPressToTalkButton() {
+    Color buttonColor = _isRecording ? Colors.red : Theme.of(context).primaryColor;
+    String buttonText = _isRecording ? '松开 发送 (${_recordingDuration}s)' : '按住 说话';
+
+    return GestureDetector(
+      // Use LongPressDraggable or simple LongPress handlers based on complexity needed
+      onLongPressStart: (_) {
+          if (!_isRecording) {
+             _startRecording(); 
+          }
+      },
+      onLongPressEnd: (_) { 
+         if (_isRecording) {
+            _stopRecordingAndSend();
+         } 
+      },
+      onLongPressCancel: () { // This might not trigger easily, consider drag update
+          if(_isRecording) {
+              _cancelRecording();
+              print('Recording cancelled via onLongPressCancel');
+          }
+      },
+      // Consider adding onLongPressMoveUpdate for cancel-by-dragging logic
+
+      child: Container(
+          height: 48, // Match TextField height approx
+          decoration: BoxDecoration(
+              color: buttonColor.withOpacity(0.1), // Lighter background
+              borderRadius: BorderRadius.circular(25.0),
+              border: Border.all(color: buttonColor)
+          ),
+          child: Center(
+              child: Text(
+                  buttonText,
+                  style: TextStyle(color: buttonColor, fontWeight: FontWeight.bold)
+              )
+          ),
+      )
+    );
+  }
+
+  Widget _buildAttachmentButton() {
+    return IconButton(
+      icon: const Icon(Icons.add_circle_outline),
+      onPressed: () => _showAttachmentMenu(context),
+      tooltip: '发送图片/文件',
+      color: Colors.grey[700],
+    );
+  }
+
+  Widget _buildSendButton() {
+    return Visibility(
+      visible: _canSend && !_isVoiceMode, // Show only if text entered and not in voice mode
+      child: IconButton(
+        icon: const Icon(Icons.send),
+        onPressed: _sendMessage,
+        tooltip: '发送',
+        color: Theme.of(context).primaryColor, // Use theme color
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        boxShadow: [
-          BoxShadow(
-            offset: const Offset(0, -1),
-            blurRadius: 4,
-            color: Colors.black.withOpacity(0.05),
-          ),
-        ],
+        color: Colors.grey[50], // Lighter background for the bar
+        border: Border(top: BorderSide(color: Colors.grey[200]!, width: 0.5)), // Top border
+        // boxShadow removed for flatter design, adjust if needed
       ),
       child: SafeArea(
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center, // Align items vertically
           children: [
-            // --- Voice/Keyboard Toggle Button ---
-            IconButton(
-              icon: Icon(_isRecording ? Icons.keyboard : Icons.mic_none_outlined),
-              onPressed: () {
-                 if (_isRecording) {
-                   // TODO: Switch back to keyboard, maybe cancel recording?
-                   _cancelRecording(); // For now, cancel if mic is pressed again while recording
-                 } else {
-                   // TODO: Show voice recording UI or start recording
-                   _startRecording();
-                 }
-              },
-            ),
-            // --- Text Input Field ---
+            _buildVoiceKeyboardButton(),
+            const SizedBox(width: 4), // Spacing
             Expanded(
-              child: _isRecording
-                  ? GestureDetector(
-                      onLongPressEnd:(details) {
-                         print("Long press end");
-                         _stopRecordingAndSend();
-                      },
-                      onTapUp: (details) {
-                         print("Tap up - stopping recording");
-                         _stopRecordingAndSend(); // Treat tap up as sending for now
-                      },
-                      onHorizontalDragEnd: (details) {
-                         print("Drag end - cancelling");
-                         _cancelRecording(); // Cancel on swipe
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(20.0),
-                        ),
-                        child: Text(
-                          _recordingDuration > 0
-                           ? '正在录音... ${_recordingDuration}s (松开结束，滑动取消)'
-                           : '按住说话',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey[700]),
-                        ),
-                      ),
-                    )
-                  : TextField(
-                      controller: _controller,
-                      decoration: InputDecoration(
-                        hintText: '输入消息...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20.0),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey[200],
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-                      ),
-                      textInputAction: TextInputAction.send,
-                      onSubmitted: (_) => _sendMessage(),
-                      minLines: 1,
-                      maxLines: 5, // Allow multiple lines
-                    ),
+              // Switch between TextField and PressToTalk button
+              child: _isVoiceMode ? _buildPressToTalkButton() : _buildTextField(),
             ),
-            // --- Attachment Button ---
-            if (!_isRecording) // Only show if not recording
-              IconButton(
-                icon: const Icon(Icons.add_circle_outline),
-                onPressed: () {
-                  _showAttachmentMenu(context); // Call the method to show the bottom sheet
-                },
-              ),
-            // --- Send Button ---
-             if (!_isRecording && _canSend) // Only show send button if not recording and text entered
-              IconButton(
-                icon: const Icon(Icons.send),
-                onPressed: _sendMessage, // Call the send message method
-                color: Theme.of(context).primaryColor,
-              ),
+            const SizedBox(width: 4), // Spacing
+            // Show attachment button only when not recording
+            // Or always show? Decide based on UX preference
+            if (!_isRecording)
+               _buildAttachmentButton(), 
+            
+            // Send button is conditionally visible inside its builder
+            _buildSendButton(),
           ],
         ),
       ),
     );
   }
-} 
+}

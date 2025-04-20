@@ -10,6 +10,15 @@ import '../../domain/entities/chat_message.dart';
 import '../bloc/chat_messages/chat_messages_bloc.dart'; // Import ChatMessagesBloc
 import '../../domain/entities/participant.dart'; // Import Participant
 
+// Helper function to format duration (e.g., 0:05, 1:23)
+String _formatDuration(Duration? duration) {
+  if (duration == null) return '0:00';
+  String twoDigits(int n) => n.toString().padLeft(2, '0');
+  final minutes = twoDigits(duration.inMinutes.remainder(60));
+  final seconds = twoDigits(duration.inSeconds.remainder(60));
+  return "$minutes:$seconds";
+}
+
 class ChatMessageBubble extends StatefulWidget {
   final ChatMessage message;
   final int currentUserParticipantId;
@@ -145,10 +154,12 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
     final bool isRevoked = widget.message.withdrawFlag || widget.message.type == 'revoke';
     final alignment = isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start;
-    final bubbleColor = isCurrentUser 
-        ? Theme.of(context).primaryColor.withOpacity(0.15) 
-        : Theme.of(context).colorScheme.surfaceVariant;
-    final textColor = Theme.of(context).colorScheme.onSurface;
+    // Updated bubble colors based on frontend.md alignment
+    final bubbleColor = isCurrentUser
+        ? const Color(0xFFC9E6FF) // Light blue for current user
+        : Colors.white;          // White for opponent
+    // Consistent text color for both bubble types
+    final textColor = Colors.black87;
 
     // Avatar Widget (only for opponent)
     final avatarWidget = !isCurrentUser && widget.opponent != null
@@ -180,11 +191,12 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 14.0),
         decoration: BoxDecoration(
           color: bubbleColor,
-          borderRadius: BorderRadius.circular(16.0),
+          borderRadius: BorderRadius.circular(16.0), // Keep consistent radius
         ),
         constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.7,
+            maxWidth: MediaQuery.of(context).size.width * 0.7, // Keep max width constraint
         ),
+        // Pass the determined text color to the content builder
         child: _buildMessageContent(context, textColor, isCurrentUser, isRevoked, widget.message.context ?? ''),
       ),
     );
@@ -207,15 +219,19 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     if (isRevoked) {
         return Text(
           '消息已撤回',
-          style: TextStyle(color: Colors.grey[600], fontStyle: FontStyle.italic),
+          // Use a more neutral grey for revoked message text
+          style: TextStyle(color: Colors.grey[500], fontStyle: FontStyle.italic),
         );
      } else if (widget.message.type == 'text') {
-       return Text(messageContext, style: TextStyle(color: textColor));
+       // Use the passed textColor
+       return Text(messageContext, style: TextStyle(color: textColor, fontSize: 15)); // Ensure appropriate font size
      } else if (widget.message.type == 'image') {
        return _buildImageContent(context, messageContext);
      } else if (widget.message.type == 'audio') {
+       // Pass textColor and isCurrentUser to audio content
        return _buildAudioContent(context, textColor, isCurrentUser, messageContext);
      } else {
+       // Keep handling for unsupported types
        return Text('[不受支持的消息类型: ${widget.message.type}]', style: TextStyle(color: Colors.red));
      }
   }
@@ -238,8 +254,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                maxHeight: 200,
                maxWidth: 200,
             ),
+           // Ensure image clip radius matches or is slightly less than bubble radius
            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8.0),
+              borderRadius: BorderRadius.circular(12.0), // Slightly smaller radius for content
               child: CachedNetworkImage(
                 imageUrl: imageUrl,
                 placeholder: (context, url) => Container(
@@ -260,63 +277,30 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
      );
   }
 
-  Widget _buildAudioContent(BuildContext context, Color? textColor, bool isCurrentUser, String audioUrl) {
-    final iconColor = isCurrentUser ? Theme.of(context).colorScheme.onPrimary.withOpacity(0.8) : Theme.of(context).colorScheme.primary;
-    final progressTrackColor = isCurrentUser ? Colors.white70 : Theme.of(context).colorScheme.primary.withOpacity(0.7);
-    final progressBackgroundColor = isCurrentUser ? Colors.white38 : Theme.of(context).colorScheme.primary.withOpacity(0.3);
-
-    final String durationText = _duration != null ? _formatDuration(_duration!) : '--:--';
-    final double progress = (_duration != null && _position != null && _duration!.inMilliseconds > 0)
-        ? (_position!.inMilliseconds / _duration!.inMilliseconds).clamp(0.0, 1.0)
-        : 0.0;
+  Widget _buildAudioContent(BuildContext context, Color iconAndTextColor, bool isCurrentUser, String audioUrl) {
+    // Determine icon color based on user (can be same as text or specific)
+    final Color effectiveIconColor = isCurrentUser ? Colors.black54 : Colors.black54; // Example: use greyish for both
+    final Color effectiveTextColor = isCurrentUser ? Colors.black54 : Colors.black54; // Example: use greyish for both
 
     return Row(
-      mainAxisSize: MainAxisSize.min,
+      mainAxisSize: MainAxisSize.min, // Prevent Row from expanding unnecessarily
       children: [
         IconButton(
-          icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
-          color: iconColor,
-          onPressed: _playPauseAudio,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: SliderTheme(
-             data: SliderTheme.of(context).copyWith(
-                trackHeight: 3.0,
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5.0),
-                overlayShape: const RoundSliderOverlayShape(overlayRadius: 10.0),
-                activeTrackColor: progressTrackColor,
-                inactiveTrackColor: progressBackgroundColor,
-                thumbColor: iconColor,
-                overlayColor: iconColor.withOpacity(0.2),
-             ),
-             child: Slider(
-               value: progress,
-               onChanged: (value) async {
-                  if (_duration == null) return; 
-                  final newPosition = _duration! * value;
-                  try {
-                     await _audioPlayer.seek(newPosition);
-                     if (_isPaused) {
-                        await _audioPlayer.resume();
-                        setState(() => _playerState = PlayerState.playing);
-                     }
-                  } catch (e) {
-                     print("Error seeking audio: $e");
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error seeking audio: $e')),
-                      );
-                  }
-               },
-            ),
+          icon: Icon(
+            _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+            color: effectiveIconColor,
+            size: 28, // Adjust size as needed
           ),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(), // Remove extra padding around icon
+          onPressed: _playPauseAudio,
+          tooltip: _isPlaying ? '暂停' : '播放',
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 8), // Space between icon and duration
+        // TODO: Add waveform visualization here later
         Text(
-          durationText,
-          style: TextStyle(fontSize: 12, color: textColor?.withOpacity(0.7)),
+          _formatDuration(_duration ?? Duration.zero), // Display formatted duration
+          style: TextStyle(color: effectiveTextColor, fontSize: 14),
         ),
       ],
     );
@@ -389,11 +373,5 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 break;
         }
     });
-  }
-
-   String _formatDuration(Duration d) {
-    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return "$minutes:$seconds";
   }
 } 

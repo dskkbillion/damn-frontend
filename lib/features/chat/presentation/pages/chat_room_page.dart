@@ -31,7 +31,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       Future.delayed(const Duration(milliseconds: 100), () {
          if (_scrollController.hasClients) { // Check again as widget might dispose
              _scrollController.animateTo(
-               _scrollController.position.minScrollExtent,
+               _scrollController.position.maxScrollExtent, // Scroll to the actual bottom now
                duration: const Duration(milliseconds: 300),
                curve: Curves.easeOut,
              );
@@ -83,13 +83,18 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFEDEDED), // Set background color here
       appBar: AppBar(
+        backgroundColor: Colors.white,    // Set AppBar background
+        foregroundColor: Colors.black,    // Set AppBar foreground (text/icons)
+        elevation: 0.5,                 // Add subtle elevation
+        shadowColor: Colors.grey[300],    // Set shadow color
+        centerTitle: true,              // Center the title
         title: BlocBuilder<ChatMessagesBloc, ChatMessagesState>(
           builder: (context, state) {
             if (state is ChatMessagesLoaded) {
               return Text(state.opponent.nickName ?? 'Chat');
             } else if (state is ChatMessagesLoading && state is! ChatMessagesInitial) {
-                 // Show opponent name even while loading messages if already fetched
                  final bloc = context.read<ChatMessagesBloc>();
                  if (bloc.state is ChatMessagesLoaded) {
                      return Text((bloc.state as ChatMessagesLoaded).opponent.nickName ?? 'Chat');
@@ -98,7 +103,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             } else if (state is ChatMessagesInitial) {
                  return const Text('Loading...');
             } else {
-              // Handle error or initial state where opponent might not be known yet
               return const Text('Chat');
             }
           },
@@ -111,12 +115,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             child: BlocConsumer<ChatMessagesBloc, ChatMessagesState>(
               listener: (context, state) {
                  if (state is ChatMessagesLoaded) {
-                   // Scroll to bottom when messages are loaded or new message arrives
-                   // Check if the new message was added at the beginning (index 0)
-                   // This helps differentiate between initial load and new messages
-                   // if (state.messages.isNotEmpty && state.messages.first.status != MessageStatus.failed ) { // Adjust condition as needed
-                      _scrollToBottom();
-                   // }
+                    _scrollToBottom();
                  }
               },
               builder: (context, state) {
@@ -129,30 +128,25 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   }
                   return ListView.builder(
                     controller: _scrollController,
-                    reverse: true, // Show latest messages at the bottom
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0), // Adjust padding
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
                     itemCount: state.messages.length,
                     itemBuilder: (context, index) {
                       // Add null checks for safety
                       if (state.opponent == null || state.currentUserParticipantId == 0) {
-                        // Handle state inconsistency - maybe show an error or loading indicator?
-                        // Returning an empty container for now to avoid crashing.
                         print('Error: Inconsistent state in ChatRoomPage itemBuilder - opponent or currentUserParticipantId is invalid.');
                         return Container(); 
                       }
 
-                      final currentMessage = state.messages[index];
-                      final previousMessage = (index + 1 < state.messages.length)
-                          ? state.messages[index + 1]
-                          : null;
+                      // Access messages in normal order (index 0 is oldest)
+                      final currentMessage = state.messages[index]; 
+                      final previousMessage = (index > 0) 
+                          ? state.messages[index - 1]
+                          : null; // Previous message is at index - 1
 
-                      final bool isFirstInList = previousMessage == null;
+                      final bool isFirstInList = index == 0;
 
-                      // Check if createTime is null before using timestamp logic
                       if (currentMessage.createTime == null) {
-                        // Handle messages with null createTime (e.g., log error, show placeholder)
                         print('Error: Message ID ${currentMessage.id} has null createTime.');
-                        // Return only the bubble without timestamp processing
                         return ChatMessageBubble(
                            key: ValueKey(currentMessage.id), 
                            message: currentMessage,
@@ -161,19 +155,22 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         );
                       }
 
-                      // Proceed with timestamp logic only if createTime is not null
+                      // Since list is not reversed, createTime comparison needs adjustment if it relied on reversed order
+                      // Let's assume _shouldShowTimestampSeparator compares current with previous correctly
+                      // Note: _shouldShowTimestampSeparator needs to handle potential null createTime if not already done.
                       final bool showTimestamp = _shouldShowTimestampSeparator(currentMessage, previousMessage);
 
                       return Column(
                         children: [
+                          // Build timestamp separator based on comparison with previous message (index - 1)
                           if (showTimestamp) 
-                             _buildTimestampSeparator(currentMessage.createTime!, isFirstInList), // Use ! as we checked null
+                             _buildTimestampSeparator(currentMessage.createTime!, isFirstInList),
                           
                           ChatMessageBubble(
                             key: ValueKey(currentMessage.id), 
                             message: currentMessage,
                             currentUserParticipantId: state.currentUserParticipantId,
-                            opponent: state.opponent, // Now checked for null above
+                            opponent: state.opponent,
                           ),
                         ],
                       );

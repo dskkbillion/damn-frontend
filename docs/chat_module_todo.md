@@ -263,12 +263,20 @@
       - **平台条件判断**: 使用 `kIsWeb` (来自 `package:flutter/foundation.dart`) 或 `Platform` (来自 `dart:io`) 来判断当前平台，并为不支持的平台提供替代逻辑（如禁用功能、显示提示信息、使用 Web 专有的 API）。
 
 22. **用户 ID 与参与者 ID 不匹配**:
+
     - **问题**: WebSocket 连接使用全局 `commonUserId`，而聊天消息和聊天室详情中的发送者/接收者由特定的 `Participant ID` (`memberId`/`doctorId`) 标识。直接比较 `commonUserId` 和 `memberId`/`doctorId` 来判断消息发送者是错误的。
     - **解决方案**:
       1. 确保 `Participant` DTO/Entity 包含 `referId` (链接回 `commonUserId`)。
       2. 在进入聊天室时 (`ChatMessagesBloc._onLoadChatMessages`)，获取当前用户的 `commonUserId`，然后通过 `getRoomDetails` 返回的参与者列表，找到 `referId` 与 `commonUserId` 匹配的那个参与者，并将其 `id` (即 `currentUserParticipantId`) 存储在 Bloc 状态 (`ChatMessagesLoaded.currentUserParticipantId`) 中。
       3. 在转换消息 DTO 为 Entity 时 (`ChatMessageDto.toEntity`, `_onInternalMessageReceived`)，将消息 DTO 中的 `memberId` 或 `doctorId` (代表发送者) 直接赋值给 `ChatMessage.senderId`。
       4. 在 UI (`ChatMessageBubble`) 中，通过比较 `message.senderId == state.currentUserParticipantId` 来判断消息是否由当前用户发送。
+
+23. **ListView 消息顺序错误 (新消息在顶部)**:
+    - **问题**: 移除 `ListView.builder` 的 `reverse: true` 后，新消息仍然显示在顶部，尤其是在重新进入聊天室时。
+    - **原因**: 初始假设 API (`getMessageList`) 返回反序列表（新->旧）是错误的。API 很可能返回正序列表（旧->新）。Bloc 在 `_onLoadChatMessages` 中错误地调用了 `.reversed`，导致初始状态列表变成反序。后续追加的新消息（发送或 WebSocket）被添加到了这个反序列表的末尾。
+    - **解决方案**:
+      - **移除 Bloc 中的反转**: 在 `ChatMessagesBloc._onLoadChatMessages` 处理函数中，**移除** 对从 Repository 获取的初始消息列表的 `.reversed` 调用。直接使用 API 返回的列表（假设为正序）。
+      - **确认 Bloc 中追加逻辑**: 确保 `_onSendMessageRequested` (乐观更新) 和 `_onInternalMessageReceived` (WebSocket 更新) 仍然将新消息添加到列表的 _末尾_，使用 `[...currentState.messages, newMessage]`，这对于正序列表是正确的。
 
 - [ ] **实现 WebSocket 实时更新**
   - [x] 添加 `web_socket_channel` 依赖。

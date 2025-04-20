@@ -134,8 +134,10 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
               print("[ChatMessagesBloc] Messages and details loaded. Opponent: ${_opponent?.nickName} (${_opponent?.id}), CurrentUserParticipantId: $currentUserParticipantId");
 
               // Emit ChatMessagesLoaded with the found participant ID
+              // FIX: REMOVE the .reversed call, assuming getMessageList returns messages in chronological order (oldest first).
+              // final sortedMessages = List<ChatMessage>.from(messages.reversed);
               emit(ChatMessagesLoaded(
-                messages: messages,
+                messages: messages, // Emit the list directly as received
                 opponent: _opponent!, 
                 currentUserId: currentCommonUserId, // Keep commonUserId here if needed globally
                 currentUserParticipantId: currentUserParticipantId, // Pass the specific participant ID
@@ -182,10 +184,9 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
       status: MessageStatus.sending,
     );
 
-    // 2. Emit state with optimistic message
+    // 2. Emit state with optimistic message ADDED TO THE END
     emit(loadedState.copyWith(
-      messages: [optimisticMessage, ...loadedState.messages],
-      // FIX: Wrap null in ValueGetter to clear error
+      messages: [...loadedState.messages, optimisticMessage], // Append new message
       error: () => null
     ));
 
@@ -203,7 +204,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
 
     result.fold(
       (failure) {
-        // Update message status to failed
+        // Update message status to failed (map logic is fine)
         final updatedMessages = currentState.messages.map((msg) {
           return msg.id == optimisticMessage.id
               ? msg.copyWith(status: MessageStatus.failed)
@@ -211,13 +212,12 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
         }).toList();
         emit(currentState.copyWith(
           messages: updatedMessages,
-          // FIX: Wrap error message in ValueGetter
           error: () => failure.message,
         ));
         print("Failed to send message: ${failure.message}");
       },
       (sentMessage) {
-        // Replace optimistic message with confirmed message
+        // Replace optimistic message with confirmed message (map logic is fine)
         final updatedMessages = currentState.messages.map((msg) {
           return msg.id == optimisticMessage.id
               ? sentMessage.copyWith(status: MessageStatus.sent)
@@ -225,7 +225,6 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
         }).toList();
         emit(currentState.copyWith(
           messages: updatedMessages,
-          // FIX: Wrap null in ValueGetter to clear error
           error: () => null,
         ));
          print("Message sent successfully: ${sentMessage.id}");
@@ -249,24 +248,32 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
            return;
         }
 
-        // FIX: Pass both currentUserId and determined senderId to toEntity
-        final messageEntity = messageDto.toEntity(
-            currentUserId: currentState.currentUserId, // Pass commonUserId
-            senderId: senderParticipantId // Pass participant ID
+        // Convert DTO to Entity
+        final newMessage = messageDto.toEntity(
+          currentUserId: currentState.currentUserId,
+          senderId: senderParticipantId, // Pass determined sender ID
         );
 
-        if (!currentState.messages.any((m) => m.id == messageEntity.id)) {
-          emit(currentState.copyWith(
-            messages: [messageEntity.copyWith(status: MessageStatus.sent), ...currentState.messages],
-            error: () => null
-          ));
+        // Check if message already exists (e.g., from optimistic update)
+        final messageExists = currentState.messages.any((m) => m.id == newMessage.id);
+        
+        if (!messageExists) {
+             // FIX: Append the new message to the END of the list
+            emit(currentState.copyWith(
+              messages: [...currentState.messages, newMessage], // Append new message
+            ));
+             print("[Bloc] Appended new message ${newMessage.id} from WebSocket");
         } else {
-           print("[Bloc] Received duplicate message ID via WebSocket: ${messageEntity.id}");
+             print("[Bloc] Message ${newMessage.id} from WebSocket already exists, ignoring.");
         }
+
       } catch (e) {
-         print("[Bloc] Error converting WebSocket DTO to Entity: $e");
-         emit(currentState.copyWith(error: () => "Error processing incoming message"));
+        print("[Bloc] Error processing WebSocket message: $e");
+        // FIX: Wrap error message in ValueGetter
+        emit(currentState.copyWith(error: () => "Error processing received message"));
       }
+    } else {
+       print("[Bloc] Received WebSocket message but state is not ChatMessagesLoaded or currentUser is null. State: $state");
     }
   }
 

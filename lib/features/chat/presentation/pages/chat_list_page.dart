@@ -72,7 +72,7 @@ class ChatListPage extends StatelessWidget {
                 height: 1,
                 indent: 80, // Adjust indent to align after avatar+padding
                 endIndent: 16,
-                color: Colors.grey[200], // Lighter divider color
+                color: Colors.grey[100], // Lighter divider color
                 thickness: 0.5, // Make divider thinner
               ),
             );
