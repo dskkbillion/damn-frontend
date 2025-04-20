@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 
-import '../../../../core/error/failures.dart';
+import '../error/failures.dart';
 
 /// {@template usecase}
 /// Base class for UseCases in the application.
@@ -15,6 +15,12 @@ abstract class UseCase<Type, Params> {
   ///
   /// Returns an [Either] containing either a [Failure] or the expected [Type].
   Future<Either<Failure, Type>> call(Params params);
+}
+
+/// A specific implementation for use cases that don't require parameters.
+abstract class UseCaseWithoutParams<Type> {
+  /// Executes the use case without parameters.
+  Future<Either<Failure, Type>> call();
 }
 
 /// {@template noparams}

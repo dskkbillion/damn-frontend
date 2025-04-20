@@ -14,6 +14,8 @@ import 'package:injectable/injectable.dart' as _i526;
 
 import '../../core/network/dio_http_client.dart' as _i962;
 import '../../core/network/i_http_client.dart' as _i493;
+import '../../core/network/network_info.dart' as _i892;
+import '../../core/network/network_info_impl.dart' as _i678;
 import '../../features/ai_docs/data/datasources/ai_chat_remote_data_source_impl.dart'
     as _i404;
 import '../../features/ai_docs/data/datasources/file_upload_data_source_impl.dart'
@@ -50,6 +52,10 @@ import '../../features/ai_docs/domain/usecases/upload_file_usecase.dart'
     as _i798;
 import '../../features/ai_docs/presentation/bloc/ai_chat/ai_chat_bloc.dart'
     as _i1040;
+import '../../features/chat/domain/repositories/i_chat_repository.dart' as _i81;
+import '../../features/chat/domain/usecases/get_chat_room_list.dart' as _i974;
+import '../../features/chat/presentation/bloc/chat_list/chat_list_bloc.dart'
+    as _i505;
 
 // initializes the registration of main-scope dependencies inside of GetIt
 _i174.GetIt init(
@@ -65,8 +71,21 @@ _i174.GetIt init(
   gh.lazySingleton<_i493.IHttpClient>(() => _i962.DioHttpClient());
   gh.lazySingleton<_i607.IAiChatRemoteDataSource>(
       () => _i404.AiChatRemoteDataSourceImpl(gh<_i493.IHttpClient>()));
-  gh.lazySingleton<_i319.IAiChatRepository>(
-      () => _i1012.AiChatRepositoryImpl(gh<_i607.IAiChatRemoteDataSource>()));
+  gh.lazySingleton<_i892.NetworkInfo>(
+      () => _i678.NetworkInfoImpl(gh<InvalidType>()));
+  gh.lazySingleton<_i319.IAiChatRepository>(() => _i1012.AiChatRepositoryImpl(
+        gh<_i607.IAiChatRemoteDataSource>(),
+        gh<_i892.NetworkInfo>(),
+      ));
+  gh.lazySingleton<_i569.IFileUploadRepository>(
+      () => _i43.FileUploadRepositoryImpl(
+            remoteDataSource: gh<InvalidType>(),
+            networkInfo: gh<_i892.NetworkInfo>(),
+          ));
+  gh.lazySingleton<_i798.UploadFileUseCase>(
+      () => _i798.UploadFileUseCase(gh<_i569.IFileUploadRepository>()));
+  gh.lazySingleton<_i974.GetChatRoomList>(
+      () => _i974.GetChatRoomListImpl(gh<_i81.IChatRepository>()));
   gh.lazySingleton<_i257.GetConversationsUseCase>(
       () => _i257.GetConversationsUseCase(gh<_i319.IAiChatRepository>()));
   gh.lazySingleton<_i558.StreamChatCompletionUseCase>(
@@ -85,11 +104,6 @@ _i174.GetIt init(
       () => _i830.LoadHistoryUseCase(gh<_i319.IAiChatRepository>()));
   gh.lazySingleton<_i436.IFileUploadDataSource>(
       () => _i478.FileUploadDataSourceImpl(gh<_i493.IHttpClient>()));
-  gh.lazySingleton<_i569.IFileUploadRepository>(() =>
-      _i43.FileUploadRepositoryImpl(
-          dataSource: gh<_i436.IFileUploadDataSource>()));
-  gh.lazySingleton<_i798.UploadFileUseCase>(
-      () => _i798.UploadFileUseCase(gh<_i569.IFileUploadRepository>()));
   gh.factory<_i1040.AiChatBloc>(() => _i1040.AiChatBloc(
         gh<_i257.GetConversationsUseCase>(),
         gh<_i830.LoadHistoryUseCase>(),
@@ -101,5 +115,7 @@ _i174.GetIt init(
         gh<_i234.AllocateChatResourceUseCase>(),
         gh<_i309.TranscribeAudioUseCase>(),
       ));
+  gh.factory<_i505.ChatListBloc>(
+      () => _i505.ChatListBloc(getChatRoomList: gh<_i974.GetChatRoomList>()));
   return getIt;
 }

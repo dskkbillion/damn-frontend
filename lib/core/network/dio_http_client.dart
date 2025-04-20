@@ -46,9 +46,9 @@ class DioHttpClient implements IHttpClient {
   }
 
   @override
-  Future<Map<String, dynamic>> get(String path, {Map<String, dynamic>? queryParameters}) async {
+  Future<dynamic> get(String endpoint, {Map<String, dynamic>? queryParams}) async {
     try {
-      final response = await _dio.get(path, queryParameters: queryParameters);
+      final response = await _dio.get(endpoint, queryParameters: queryParams);
       return _handleResponse(response);
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -58,9 +58,9 @@ class DioHttpClient implements IHttpClient {
   }
 
   @override
-  Future<Map<String, dynamic>> post(String path, {Map<String, dynamic>? data}) async {
+  Future<dynamic> post(String endpoint, {required Map<String, dynamic> body}) async {
     try {
-      final response = await _dio.post(path, data: data);
+      final response = await _dio.post(endpoint, data: body);
       return _handleResponse(response);
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -70,11 +70,35 @@ class DioHttpClient implements IHttpClient {
   }
 
   @override
+  Future<dynamic> put(String endpoint, {required Map<String, dynamic> body}) async {
+    try {
+      final response = await _dio.put(endpoint, data: body);
+      return _handleResponse(response);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    } catch (e) {
+      throw ServerException(message: 'Unexpected error during PUT: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<dynamic> delete(String endpoint) async {
+    try {
+      final response = await _dio.delete(endpoint);
+      return _handleResponse(response);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    } catch (e) {
+      throw ServerException(message: 'Unexpected error during DELETE: ${e.toString()}');
+    }
+  }
+
+  @override
   Future<Map<String, dynamic>> postMultipart(
-    String pathOrUrl, // Changed parameter name to reflect it can be full URL
+    String path, // Keep name as path for consistency within this file
     File file,
-   {String fileField = 'file',
-    Map<String, String>? fields} // Keep fields param in case needed elsewhere
+   {String fileField = 'file', 
+    Map<String, String>? fields}
   ) async {
      try {
        final fileName = file.path.split(Platform.pathSeparator).last;
@@ -86,30 +110,30 @@ class DioHttpClient implements IHttpClient {
        });
 
        // --- Prepare Headers --- 
-       // TODO: Replace hardcoded token and version with dynamic values
-       const String hardcodedAuthToken = 'eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjMwZmZjY2YxLWFjNDUtNGM3OS04MjJiLTliNzM0MDZjZjdkYiJ9.g0FkPdnBuvpsirksABX04FrQLTjn-qgbLwRE9QLJOW6Df5syAdTGLn0IhpUYMDRaefbFQ49MWnL5wYUMRtMuiQ';
-       const String hardcodedVersion = '100'; 
+       // TODO: Replace hardcoded token and version with dynamic values from a config/auth service
+       const String hardcodedAuthToken = 'YOUR_AUTH_TOKEN_HERE'; // Replace with actual token logic
+       const String hardcodedVersion = '100'; // Replace with actual version logic
 
        final options = Options(
           headers: {
              'clienttype': '1',
-             'client': 'android', 
+             'client': Platform.isAndroid ? 'android' : Platform.isIOS ? 'ios' : 'unknown',
              'version': hardcodedVersion, 
              'Authorization': hardcodedAuthToken, 
-             // Dio usually handles Content-Type for FormData automatically
-             // 'Content-Type': 'multipart/form-data; boundary=...', 
-             // Other headers like User-Agent, Host, Connection are often handled by Dio
           },
-          // Ensure followRedirects is handled appropriately if needed, 
-          // but since we provide full URL, it might not be relevant here.
-          // followRedirects: false, 
-          // receiveDataWhenStatusError: true,
        );
        // --- End Headers --- 
 
-       // Use pathOrUrl directly (could be base+path or full URL)
-       final response = await _dio.post(pathOrUrl, data: formData, options: options); 
-       return _handleResponse(response);
+       // Use path (endpoint within base URL)
+       final response = await _dio.post(path, data: formData, options: options); 
+       // We expect Map<String, dynamic> but _handleResponse returns dynamic, need cast or adjust
+       final result = _handleResponse(response);
+       if (result is Map<String, dynamic>){
+         return result;
+       } else {
+         // Decide how to handle non-map results from multipart post
+         throw ServerException(message: 'Unexpected response format from multipart upload');
+       }
      } on DioException catch (e) {
         throw _handleDioError(e);
      } catch (e) {
@@ -176,23 +200,31 @@ class DioHttpClient implements IHttpClient {
 
   // --- Helper Methods --- 
 
-  Map<String, dynamic> _handleResponse(Response response) {
+  dynamic _handleResponse(Response response) { // Return dynamic as API might not always return Map
     // Basic response handling, assuming API returns JSON with status indication
     // TODO: Adapt this based on your actual API response structure
     if (response.statusCode! >= 200 && response.statusCode! < 300) {
-       if (response.data is Map<String, dynamic>) {
-         // Assuming your API wraps data, e.g., { "code": 200, "message": "Success", "data": {...} }
-         // Or maybe it returns the data directly
-         return response.data;
-       } else {
-          // Handle cases where response is not JSON or has unexpected format
-          return {'data': response.data}; // Or throw an exception
-       }
+       // Just return the data directly, let the DataSource parse it
+       return response.data;
+      //  if (response.data is Map<String, dynamic>) {
+      //    // Assuming your API wraps data, e.g., { "code": 200, "message": "Success", "data": {...} }
+      //    // Or maybe it returns the data directly
+      //    return response.data;
+      //  } else {
+      //     // Handle cases where response is not JSON or has unexpected format
+      //     return {'data': response.data}; // Or throw an exception
+      //  }
     } else {
       // Throw a ServerException for non-2xx responses
+      String? message;
+      if (response.data is Map<String, dynamic> && response.data['message'] != null) {
+        message = response.data['message'];
+      } else {
+        message = response.statusMessage ?? 'Unknown server error';
+      }
       throw ServerException(
          statusCode: response.statusCode,
-         message: response.data?['message'] ?? response.statusMessage ?? 'Unknown server error',
+         message: message,
       );
     }
   }
@@ -209,7 +241,11 @@ class DioHttpClient implements IHttpClient {
         break;
       case DioExceptionType.badResponse:
         // Try to get message from response data, fallback to status message
-        errorMessage = error.response?.data?['message'] ?? error.response?.statusMessage ?? "Invalid response from server";
+        if (error.response?.data is Map<String, dynamic> && error.response!.data['message'] != null) {
+           errorMessage = error.response!.data['message'];
+        } else {
+           errorMessage = error.response?.statusMessage ?? "Invalid response from server";
+        }
         break;
       case DioExceptionType.cancel:
         errorMessage = "Request cancelled";
@@ -223,6 +259,9 @@ class DioHttpClient implements IHttpClient {
       case DioExceptionType.unknown:
       default:
         errorMessage = "An unexpected network error occurred";
+        if (error.error is SocketException) {
+           errorMessage = "Network connectivity issue";
+        }
         break;
     }
      print("[DioError] Path: ${error.requestOptions.path}, Status: $statusCode, Type: ${error.type}, Message: $errorMessage, Data: ${error.response?.data}");

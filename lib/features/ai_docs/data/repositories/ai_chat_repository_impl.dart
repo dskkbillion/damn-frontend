@@ -12,6 +12,8 @@ import '../../domain/entities/related_service_entity.dart';
 import '../../domain/repositories/i_ai_chat_repository.dart';
 import '../datasources/exceptions.dart' as ds_exceptions; // DataSource exceptions
 import '../datasources/i_ai_chat_remote_data_source.dart';
+import '../../../../core/error/exceptions.dart';
+import '../../../../core/network/network_info.dart';
 
 /// {@template ai_chat_repository_impl}
 /// Implementation of [IAiChatRepository] that uses [IAiChatRemoteDataSource]
@@ -21,12 +23,13 @@ import '../datasources/i_ai_chat_remote_data_source.dart';
 @LazySingleton(as: IAiChatRepository) // Annotate for DI
 class AiChatRepositoryImpl implements IAiChatRepository {
   final IAiChatRemoteDataSource _remoteDataSource;
+  final NetworkInfo _networkInfo;
   // Optional dependencies for future enhancements:
   // final INetworkInfo networkInfo; // For checking network status
   // final ILocalDataSource localDataSource; // For implementing caching
 
   /// {@macro ai_chat_repository_impl}
-  AiChatRepositoryImpl(this._remoteDataSource);
+  AiChatRepositoryImpl(this._remoteDataSource, this._networkInfo);
 
   /// Helper function to execute a remote data source call safely.
   /// Handles specific data source exceptions and converts them to domain Failures.
@@ -200,4 +203,135 @@ class AiChatRepositoryImpl implements IAiChatRepository {
        );
      });
   }
+
+  @override
+  Future<Either<Failure, List<AiChatEntry>>> getAiChatHistory(String userId) async {
+     if (await _networkInfo.isConnected) {
+       try {
+         final remoteHistory = await _remoteDataSource.getAiChatHistory(userId);
+         // TODO: Cache the history locally if needed
+         // localDataSource.cacheAiChatHistory(remoteHistory);
+         return Right(remoteHistory.map((model) => model.toEntity()).toList());
+       } on ServerException catch (e) {
+         return Left(ServerFailure(message: e.message, code: e.statusCode)); // Use statusCode
+       } on Exception catch (e) {
+         print('getAiChatHistory Unexpected Exception: $e');
+         return Left(ServerFailure(message: e.toString()));
+       }
+     } else {
+       // TODO: Load from cache if offline
+       // try {
+       //   final localHistory = await localDataSource.getLastAiChatHistory();
+       //   return Right(localHistory.map((model) => model.toEntity()).toList());
+       // } on CacheException {
+       //   return Left(CacheFailure());
+       // }
+       return Left(const NetworkFailure()); // Return NetworkFailure
+     }
+  }
+
+   @override
+   Future<Either<Failure, String>> sendToAi(String sessionId, String message, String userId) async {
+      if (await _networkInfo.isConnected) {
+       try {
+         final result = await _remoteDataSource.sendToAi(sessionId, message, userId);
+         return Right(result);
+       } on ServerException catch (e) {
+          return Left(ServerFailure(message: e.message, code: e.statusCode)); // Use statusCode
+       } on Exception catch (e) {
+         print('sendToAi Unexpected Exception: $e');
+         return Left(ServerFailure(message: e.toString()));
+       }
+     } else {
+        return Left(const NetworkFailure()); // Return NetworkFailure
+     }
+   }
+
+   @override
+   Stream<Either<Failure, String>> streamAiResponse(String sessionId) async* {
+      if (await _networkInfo.isConnected) {
+       try {
+         final stream = _remoteDataSource.streamAiResponse(sessionId);
+         await for (final chunk in stream) {
+           yield Right(chunk);
+         }
+       } on ServerException catch (e) {
+          yield Left(ServerFailure(message: e.message, code: e.statusCode)); // Use statusCode
+       } on Exception catch (e) {
+         print('streamAiResponse Unexpected Exception: $e');
+         yield Left(ServerFailure(message: e.toString()));
+       }
+     } else {
+        yield Left(const NetworkFailure()); // Return NetworkFailure
+     }
+   }
+
+
+   @override
+   Future<Either<Failure, AiChatSetting>> getAiChatSetting(String userId) async {
+      if (await _networkInfo.isConnected) {
+       try {
+         final remoteSetting = await _remoteDataSource.getAiChatSetting(userId);
+         return Right(remoteSetting.toEntity());
+       } on ServerException catch (e) {
+         return Left(ServerFailure(message: e.message, code: e.statusCode)); // Use statusCode
+       } on Exception catch (e) {
+          print('getAiChatSetting Unexpected Exception: $e');
+          return Left(ServerFailure(message: e.toString()));
+       }
+     } else {
+        return Left(const NetworkFailure()); // Use NetworkFailure
+     }
+   }
+
+   @override
+   Future<Either<Failure, Unit>> saveAiChatSetting(String userId, AiChatSetting setting) async {
+      if (await _networkInfo.isConnected) {
+       try {
+         await _remoteDataSource.saveAiChatSetting(userId, AiChatSettingModel.fromEntity(setting));
+         return const Right(unit);
+       } on ServerException catch (e) {
+         return Left(ServerFailure(message: e.message, code: e.statusCode)); // Use statusCode
+       } on Exception catch (e) {
+         print('saveAiChatSetting Unexpected Exception: $e');
+         return Left(ServerFailure(message: e.toString()));
+       }
+     } else {
+        return Left(const NetworkFailure()); // Use NetworkFailure
+     }
+   }
+
+    @override
+    Future<Either<Failure, Unit>> deleteAiChatHistory(String sessionId) async {
+       if (await _networkInfo.isConnected) {
+       try {
+         await _remoteDataSource.deleteAiChatHistory(sessionId);
+         return const Right(unit);
+       } on ServerException catch (e) {
+         return Left(ServerFailure(message: e.message, code: e.statusCode)); // Use statusCode
+       } on Exception catch (e) {
+         print('deleteAiChatHistory Unexpected Exception: $e');
+         return Left(ServerFailure(message: e.toString()));
+       }
+     } else {
+        return Left(const NetworkFailure()); // Use NetworkFailure
+     }
+    }
+
+    @override
+    Future<Either<Failure, Unit>> clearAllAiChatHistory(String userId) async {
+       if (await _networkInfo.isConnected) {
+       try {
+         await _remoteDataSource.clearAllAiChatHistory(userId);
+         return const Right(unit);
+       } on ServerException catch (e) {
+         return Left(ServerFailure(message: e.message, code: e.statusCode)); // Use statusCode
+       } on Exception catch (e) {
+          print('clearAllAiChatHistory Unexpected Exception: $e');
+          return Left(ServerFailure(message: e.toString()));
+       }
+     } else {
+        return Left(const NetworkFailure()); // Use NetworkFailure
+     }
+    }
 } 

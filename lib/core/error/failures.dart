@@ -8,74 +8,96 @@ import 'package:equatable/equatable.dart';
 /// {@endtemplate}
 abstract class Failure extends Equatable {
   /// {@macro failure}
-  // If you want Failures to have a default message or properties, define them here.
-  // const Failure([List properties = const <dynamic>[]]);
+  // If you want Failures to always have a message, make it required
   final String message;
-  final String code;
 
-  const Failure({
-    required this.message,
-    required this.code,
-  });
+  const Failure({this.message = 'An unexpected error occurred'});
 
+  // Subclasses should override props if they have properties to compare
   @override
-  List<Object?> get props => [message, code];
+  List<Object?> get props => [message];
 }
 
 // General failures
 
 /// Represents a failure originating from the server (e.g., API error responses).
 class ServerFailure extends Failure {
-  const ServerFailure({
-    required String message,
-    String code = 'SERVER_ERROR',
-  }) : super(message: message, code: code);
+  final String? code;
+  const ServerFailure({String message = 'Server Error', this.code}) : super(message: message);
+
+  @override
+  List<Object?> get props => [message, code];
+
+  @override
+  String toString() => 'ServerFailure(message: $message, code: $code)';
 }
 
 /// Represents a failure related to network connectivity.
 class NetworkFailure extends Failure {
-  const NetworkFailure({
-    required String message,
-    String code = 'NETWORK_ERROR',
-  }) : super(message: message, code: code);
+  final String? code;
+  const NetworkFailure({String message = 'Network Error', this.code}) : super(message: message);
 }
 
 /// Represents a failure originating from local cache operations.
 class CacheFailure extends Failure {
-  const CacheFailure({
-    required String message,
-    String code = 'CACHE_ERROR',
-  }) : super(message: message, code: code);
+  final String? code;
+  const CacheFailure({String message = 'Cache Error', this.code}) : super(message: message);
+
+  @override
+  List<Object?> get props => [message, code];
+
+  @override
+  String toString() => 'CacheFailure(message: $message, code: $code)';
 }
 
 /// Represents an unexpected failure during data processing or other operations.
 class GeneralFailure extends Failure {
+  final String code;
   const GeneralFailure({
-    String message = 'An unexpected error occurred',
-    String code = 'GENERAL_ERROR',
-  }) : super(message: message, code: code);
+    this.code = 'GENERAL_ERROR',
+  }) : super(message: 'An unexpected error occurred');
+
+  @override
+  List<Object?> get props => [message, code];
 }
 
 /// 聊天错误
 class ChatFailure extends Failure {
+  final String code;
   const ChatFailure({
-    required String message,
-    required String code,
-  }) : super(message: message, code: code);
+    required this.code,
+  }) : super(message: 'Chat Error');
+
+  @override
+  List<Object?> get props => [message, code];
 }
 
 /// 未授权错误
 class UnauthorizedFailure extends Failure {
+  final String code;
   const UnauthorizedFailure({
-    required String message,
-    String code = 'UNAUTHORIZED',
-  }) : super(message: message, code: code);
+    this.code = 'UNAUTHORIZED',
+  }) : super(message: 'Unauthorized');
+
+  @override
+  List<Object?> get props => [message, code];
 }
 
 /// 无效输入错误
 class InvalidInputFailure extends Failure {
-  const InvalidInputFailure({
-    required String message,
-    String code = 'INVALID_INPUT',
-  }) : super(message: message, code: code);
+  const InvalidInputFailure() : super(message: 'Invalid Input');
+}
+
+/// Represents a generic failure when no specific type is identified.
+class GenericFailure extends Failure {
+  const GenericFailure() : super(message: 'Generic Error');
+}
+
+// Specific failures (can add more as needed)
+class AuthenticationFailure extends Failure {
+  const AuthenticationFailure() : super(message: 'Authentication Failed');
+}
+
+class ClientFailure extends Failure {
+  const ClientFailure() : super(message: 'Client Error / Invalid Input');
 } 

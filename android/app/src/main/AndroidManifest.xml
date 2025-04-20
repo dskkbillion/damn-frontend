@@ -1,4 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Permissions -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Internet is typically needed for network requests -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:label="dskk_flutter_refactor"
         android:name="${applicationName}"
