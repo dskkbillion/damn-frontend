@@ -26,8 +26,28 @@ abstract class HomeRemoteDataSource {
 
 class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   final http.Client client;
+  final String baseUrl;
+  final Future<String> Function() getToken; // 获取认证令牌的函数
+  final Future<String> Function() getUserId; // 获取用户ID的函数
 
-  HomeRemoteDataSourceImpl({required this.client});
+  HomeRemoteDataSourceImpl({
+    required this.client,
+    required this.baseUrl,
+    required this.getToken,
+    required this.getUserId,
+  });
+
+  /// 获取请求头
+  Future<Map<String, String>> _getHeaders() async {
+    final token = await getToken();
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': token,
+      'clienttype': '1',
+      'client': 'android',
+      'version': '100',
+    };
+  }
 
   @override
   Future<HomePageDataModel> getHomePageData() async {
@@ -47,21 +67,35 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
 
   @override
   Future<List<HomeFeedItemModel>> getHomeFeed(int page, int limit) async {
-    final url = Uri.parse('/api/shop/product/recommend/detail?code=home&page=$page&limit=$limit');
+    final url = Uri.parse('$baseUrl/api/shop/product/recommend/detail?code=home&page=$page&limit=$limit');
     
     try {
+      final headers = await _getHeaders();
+      print('Feed API请求URL: $url');
+      print('Feed API请求头: $headers');
+      
       final response = await client.get(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: headers,
       );
+
+      print('Feed API响应状态码: ${response.statusCode}');
+      print('Feed API响应内容: ${response.body}');
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
-        if (jsonData['code'] == 0 && jsonData['data'] != null) {
+        if (jsonData['code'] == 200 && jsonData['data'] != null) {
           final List<dynamic> productsList = jsonData['data']['products'] ?? [];
-          return productsList
+          print('产品列表: $productsList');
+          
+          final products = productsList
               .map((item) => HomeFeedItemModel.fromJson(item))
               .toList();
+          
+          print('解析后的产品列表: $products');
+          print('产品图片URL: ${products.map((p) => p.images).toList()}');
+          
+          return products;
         } else {
           throw ServerException(message: jsonData['msg'] ?? 'Unknown error');
         }
@@ -78,68 +112,56 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
 
   /// 获取轮播图数据
   Future<List<BannerModel>> _getBanners() async {
-    final url = Uri.parse('/api/content/banner/list');
-    final body = json.encode({
-      'pageSize': 10,
-      'pageNum': 1,
-    });
+    final url = Uri.parse('$baseUrl/api/content/banner/list');
     
     try {
+      final headers = await _getHeaders();
+      print('Banner API请求URL: $url');
+      print('Banner API请求头: $headers');
+      
       final response = await client.post(
         url,
-        headers: {'Content-Type': 'application/json'},
-        body: body,
+        headers: headers,
+        body: json.encode({
+          "categoryId": 1,  // 首页轮播图分类ID
+          "pageSize": 10,
+          "pageNum": 1
+        }),
       );
+
+      print('Banner API响应状态码: ${response.statusCode}');
+      print('Banner API响应内容: ${response.body}');
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
-        if (jsonData['code'] == 0 && jsonData['data'] != null) {
-          final List<dynamic> bannersList = jsonData['data']['list'] ?? [];
-          return bannersList
+        if (jsonData['code'] == 200) {
+          final List<dynamic> bannersList = jsonData['rows'] ?? [];
+          print('Banner列表: $bannersList');
+          
+          final banners = bannersList
               .map((item) => BannerModel.fromJson(item))
               .toList();
+          
+          print('解析后的Banner列表: $banners');
+          print('Banner图片URL: ${banners.map((b) => b.imageUrl).toList()}');
+          
+          return banners;
         } else {
-          throw ServerException(message: jsonData['msg'] ?? 'Unknown error');
+          print('Banner API返回信息: ${jsonData['msg']}');
+          return [];
         }
       } else {
-        throw ServerException(message: 'Failed to load banner data');
+        print('Banner API请求失败: ${response.statusCode}');
+        return [];
       }
     } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
-      throw ServerException(message: e.toString());
+      print('获取轮播图出错: $e');
+      return [];
     }
   }
 
   /// 获取推荐商品列表
   Future<List<HomeFeedItemModel>> _getRecommendProducts() async {
-    final url = Uri.parse('/api/shop/product/recommend/detail?code=home');
-    
-    try {
-      final response = await client.get(
-        url,
-        headers: {'Content-Type': 'application/json'},
-      );
-
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        if (jsonData['code'] == 0 && jsonData['data'] != null) {
-          final List<dynamic> productsList = jsonData['data']['products'] ?? [];
-          return productsList
-              .map((item) => HomeFeedItemModel.fromJson(item))
-              .toList();
-        } else {
-          throw ServerException(message: jsonData['msg'] ?? 'Unknown error');
-        }
-      } else {
-        throw ServerException(message: 'Failed to load product data');
-      }
-    } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
-      throw ServerException(message: e.toString());
-    }
+    return getHomeFeed(1, 10);  // 获取第一页，每页10条数据
   }
 }

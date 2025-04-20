@@ -22,25 +22,116 @@ class HomeFeedItemModel extends HomeFeedItem {
 
   /// 从 JSON 创建 HomeFeedItemModel 实例
   factory HomeFeedItemModel.fromJson(Map<String, dynamic> json) {
-    // 处理图片列表，确保它是一个字符串列表
+    print('Parsing HomeFeedItemModel from JSON: $json');
+    
+    // 处理图片URL
     List<String> imagesList = [];
+    
+    // 尝试解析images字段
     if (json['images'] != null) {
       if (json['images'] is List) {
-        imagesList = (json['images'] as List).map((e) => e.toString()).toList();
+        // 如果是列表，直接使用
+        imagesList = (json['images'] as List)
+            .map((img) => img != null ? _getFullImageUrl(img.toString()) : '')
+            .where((url) => url.isNotEmpty)
+            .toList();
       } else if (json['images'] is String) {
-        imagesList = [json['images'] as String];
+        // 如果是字符串，可能是逗号分隔的URL列表
+        imagesList = (json['images'] as String)
+            .split(',')
+            .map((img) => _getFullImageUrl(img.trim()))
+            .where((url) => url.isNotEmpty)
+            .toList();
       }
+    }
+    
+    // 如果没有找到图片，尝试其他可能的字段
+    if (imagesList.isEmpty) {
+      if (json['image'] != null && json['image'].toString().isNotEmpty) {
+        imagesList.add(_getFullImageUrl(json['image'].toString()));
+      } else if (json['mainImage'] != null && json['mainImage'].toString().isNotEmpty) {
+        imagesList.add(_getFullImageUrl(json['mainImage'].toString()));
+      }
+    }
+    
+    // 如果仍然没有图片，使用空列表
+    if (imagesList.isEmpty) {
+      print('没有找到产品图片');
+      imagesList = [];
+    } else {
+      print('产品图片列表: $imagesList');
+    }
+
+    // 尝试解析价格
+    double price = 0.0;
+    try {
+      var priceValue = json['sellingPrice'] ?? json['price'] ?? json['originalPrice'] ?? '0';
+      if (priceValue is String) {
+        price = double.tryParse(priceValue) ?? 0.0;
+      } else if (priceValue is num) {
+        price = priceValue.toDouble();
+      }
+    } catch (e) {
+      print('Error parsing price: $e');
+      price = 0.0;
+    }
+
+    // 尝试解析评分
+    double score = 5.0;
+    try {
+      var scoreValue = json['score'] ?? json['rating'] ?? 5.0;
+      if (scoreValue is String) {
+        score = double.tryParse(scoreValue) ?? 5.0;
+      } else if (scoreValue is num) {
+        score = scoreValue.toDouble();
+      }
+    } catch (e) {
+      print('Error parsing score: $e');
+      score = 5.0;
+    }
+
+    // 尝试解析评价数量
+    int evaluateNum = 0;
+    try {
+      evaluateNum = int.parse((json['evaluateNum'] ?? json['rating_num'] ?? '0').toString());
+    } catch (e) {
+      print('Error parsing evaluateNum: $e');
+      evaluateNum = 0;
     }
 
     return HomeFeedItemModel(
       id: json['id'].toString(),
       type: json['type'] ?? 'product',
-      name: json['name'] ?? json['service_title'] ?? '',
+      name: json['name'] ?? json['title'] ?? json['service_title'] ?? '',
       images: imagesList,
-      sellingPrice: (json['sellingPrice'] ?? json['price'] ?? 0).toDouble(),
-      score: (json['score'] ?? json['rating'] ?? 5.0).toDouble(),
-      evaluateNum: (json['evaluateNum'] ?? json['rating_num'] ?? 0) as int,
+      sellingPrice: price,
+      score: score,
+      evaluateNum: evaluateNum,
     );
+  }
+  
+  /// 将相对图片URL转换为完整URL
+  static String _getFullImageUrl(String relativeUrl) {
+    print('处理产品图片URL: $relativeUrl');
+    
+    if (relativeUrl.isEmpty) return '';
+    
+    // 如果是完整URL，直接返回
+    if (relativeUrl.startsWith('http')) {
+      print('完整产品图片URL: $relativeUrl');
+      return relativeUrl;
+    }
+    
+    // 如果是相对URL，转为完整URL
+    final baseUrl = 'https://app.duoshaokankan.com/prod-api';
+    
+    // 确保baseUrl不以斜杠结尾，relativeUrl以斜杠开头
+    final cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+    final cleanRelativeUrl = relativeUrl.startsWith('/') ? relativeUrl : '/$relativeUrl';
+    
+    final fullUrl = '$cleanBaseUrl$cleanRelativeUrl';
+    print('转换后的完整产品图片URL: $fullUrl');
+    return fullUrl;
   }
 
   /// 将 HomeFeedItemModel 转换为 JSON

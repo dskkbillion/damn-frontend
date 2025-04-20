@@ -57,12 +57,63 @@ Home 模块调用以下后端 API 端点:
 - **`GET /api/shop/product/recommend/detail?code=home`**: 获取推荐商品列表
   - 用途: 获取首页信息流数据
   - 参数: `code=home` (固定值)，`page` (页码)，`limit` (每页数量)
+  - 请求头:
+    - `clienttype`: "1"
+    - `client`: "android"
+    - `version`: "100"
+    - `Authorization`: 认证token
   
 - **`POST /api/content/banner/list`**: 获取轮播图数据
   - 用途: 获取首页轮播图数据
   - 参数: `pageSize` (每页数量)，`pageNum` (页码)
+  - 请求头:
+    - `clienttype`: "1"
+    - `client`: "android"
+    - `version`: "100"
+    - `Authorization`: 认证token
 
 API 的详细请求/响应结构可以参考 `docs/api_usage_summary_cn.md` 文档。
+
+### API 响应格式
+
+#### 轮播图API响应格式
+```json
+{
+  "total": 4,
+  "rows": [
+    {
+      "id": 68,
+      "image": "/profile/upload/2024/09/24/aadd524a-2de7-49af-8964-8479b6eb2a65.jpg",
+      "linkType": "MENU",
+      "link": "pages/car/car-index",
+      "createTime": "2022-01-25 13:22:42",
+      "updateTime": "2024-09-24 08:45:08"
+    }
+  ],
+  "code": 200,
+  "msg": "查询成功"
+}
+```
+
+#### 推荐商品API响应格式
+```json
+{
+  "code": 200,
+  "data": {
+    "products": [
+      {
+        "id": 101,
+        "name": "产品名称",
+        "image": "/profile/upload/2024/06/01/image.jpg",
+        "price": 100.0,
+        "score": 4.8,
+        "evaluateNum": 120
+      }
+    ]
+  },
+  "msg": "查询成功"
+}
+```
 
 ## 5. 对外暴露的服务/接口 (Exposed Services/Interfaces)
 
@@ -79,6 +130,9 @@ Home 模块的设计原则是高内聚低耦合，尽量减少模块间的直接
 - **缓存策略**: 首页数据会在本地缓存，以便在网络不可用时仍能显示内容
 - **图片加载**: 使用 `cached_network_image` 包加载网络图片，需要确保正确配置缓存策略
 - **性能考量**: 首页使用瀑布流布局显示商品，需要注意滚动性能优化
+- **认证配置**: 连接真实API时需要提供有效的认证Token，在`home_preview_di.dart`中配置
+- **环境变量**: 使用`.env`文件中的`BACKEND_BASE_URL`作为API基础URL
+- **图片URL处理**: API返回的图片URL是相对路径，需要添加基础URL前缀
 
 ## 7. 依赖包使用说明 (Package Dependencies)
 
@@ -127,6 +181,8 @@ Image.asset('assets/images/home/placeholder.png')
 - **图片加载失败**: 某些情况下网络图片可能加载失败
 - **搜索页面**: 当前搜索页面是占位实现，将来需要替换为实际的搜索页面
 - **分类详情页**: 当前分类详情页是占位实现，将来需要替换为实际的分类详情页面
+- **认证过期**: 使用硬编码的认证Token可能会过期，需要定期更新
+- **图片URL解析**: API返回的图片URL是相对路径，需要正确处理基础URL前缀
 
 ### 临时解决方案:
 
@@ -143,6 +199,18 @@ Image.asset('assets/images/home/placeholder.png')
 
 - 轮播图点击后的导航逻辑依赖于 `targetType` 和 `targetValue`，需要确保这些值正确
 - "让ta看看"按钮的功能依赖于对话框确认，需要确保对话框正确显示
+- 真实API连接配置:
+  - 在`home_preview_di.dart`中配置了认证Token和用户ID
+  - 使用`HomeRemoteDataSourceImpl`替代了`HomeMockDataSource`
+  - 所有API请求都添加了认证头和完整的基础URL
+  - API字段映射:
+    - 轮播图: `linkType` -> `targetType`, `link` -> `targetValue`
+    - 图片URL: 相对路径需要添加基础URL前缀
+- 图片URL处理注意事项:
+  - 轮播图API返回的图片URL在`rows`数组中，而不是`data.rows`中
+  - 轮播图图片URL在`image`字段中，需要添加基础URL前缀
+  - 商品图片URL可能在`mainImage`或`images`数组中，都需要添加基础URL前缀
+  - 基础URL应为`https://app.duoshaokankan.com`，不包含`/prod-api`
 
 ## 10. 跨模块通信机制 (Cross-Module Communication)
 
