@@ -59,6 +59,20 @@ class SavedItemDto extends Equatable {
     };
   }
 
+  /// 转换为 SavedItem 实体
+  SavedItem toEntity() {
+    return SavedItem(
+      itemId: contentId, // DTO 的 contentId 对应实体的 itemId
+      title: title,
+      imageUrl: coverUrl, // DTO 的 coverUrl 对应实体的 imageUrl
+      savedAt: createdAt, // DTO 的 createdAt 对应实体的 savedAt
+      // 注意：SavedItem 实体中的 price 和 sellerName 在 DTO 中没有对应字段
+      // 根据业务逻辑，这里可以设为 null 或默认值
+      price: null,
+      sellerName: null,
+    );
+  }
+
   @override
   List<Object?> get props => [id, contentId, contentType, title, coverUrl, createdAt];
 }

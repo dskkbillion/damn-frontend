@@ -156,7 +156,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
   );
-});
+}); 
 
 // Helper class to trigger GoRouter redirects when auth status stream changes - Keep from refactor/auth-module
 class GoRouterRefreshStream extends ChangeNotifier {

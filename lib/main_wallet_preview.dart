@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'features/profile/presentation/pages/wallet_page.dart';
 import 'app/di/injection_container.dart' as di;
@@ -14,9 +15,18 @@ import 'features/profile/presentation/bloc/wallet_event.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // 加载环境变量
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    print('Error loading .env file: $e');
+    // 可以选择在此处提供默认值或抛出错误
+  }
+  final backendBaseUrl = dotenv.env['BACKEND_BASE_URL'] ?? 'http://localhost:8080'; // 提供默认值
+
   // 初始化依赖注入
   final GetIt locator = GetIt.instance;
-  await di.init(locator);
+  await di.configureDependencies(backendBaseUrl: backendBaseUrl);
   await initProfileDependencies(locator);
 
   runApp(const WalletPreviewApp());

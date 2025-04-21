@@ -57,6 +57,17 @@ class LikedStoryDto extends Equatable {
     };
   }
 
+  /// 转换为实体对象
+  LikedStory toEntity() {
+    return LikedStory(
+      storyId: storyId,
+      title: title,
+      imageUrl: coverUrl,
+      authorName: authorName,
+      likedAt: likedAt,
+    );
+  }
+
   @override
   List<Object?> get props => [id, storyId, title, coverUrl, authorName, likedAt];
 }

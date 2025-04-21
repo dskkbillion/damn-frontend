@@ -5,11 +5,15 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i5;
 
-import 'package:dskk_flutter_refactor/core/network/network_info.dart' as _i9;
+import 'package:dskk_flutter_refactor/core/network/network_info.dart' as _i11;
 import 'package:dskk_flutter_refactor/features/profile/data/datasources/profile_local_data_source.dart'
-    as _i8;
+    as _i10;
 import 'package:dskk_flutter_refactor/features/profile/data/datasources/profile_remote_data_source.dart'
     as _i4;
+import 'package:dskk_flutter_refactor/features/profile/data/models/liked_story_dto.dart'
+    as _i9;
+import 'package:dskk_flutter_refactor/features/profile/data/models/saved_item_dto.dart'
+    as _i8;
 import 'package:dskk_flutter_refactor/features/profile/data/models/transaction_dto.dart'
     as _i7;
 import 'package:dskk_flutter_refactor/features/profile/data/models/user_profile_dto.dart'
@@ -165,25 +169,7 @@ class MockProfileRemoteDataSource extends _i1.Mock
       ) as _i5.Future<List<_i7.TransactionDto>>);
 
   @override
-  _i5.Future<List<Map<String, dynamic>>> getLikedStories({
-    int? page = 1,
-    int? pageSize = 20,
-  }) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #getLikedStories,
-          [],
-          {
-            #page: page,
-            #pageSize: pageSize,
-          },
-        ),
-        returnValue: _i5.Future<List<Map<String, dynamic>>>.value(
-            <Map<String, dynamic>>[]),
-      ) as _i5.Future<List<Map<String, dynamic>>>);
-
-  @override
-  _i5.Future<List<Map<String, dynamic>>> getSavedItems({
+  _i5.Future<List<_i8.SavedItemDto>> getSavedItems({
     int? page = 1,
     int? pageSize = 20,
   }) =>
@@ -196,16 +182,34 @@ class MockProfileRemoteDataSource extends _i1.Mock
             #pageSize: pageSize,
           },
         ),
-        returnValue: _i5.Future<List<Map<String, dynamic>>>.value(
-            <Map<String, dynamic>>[]),
-      ) as _i5.Future<List<Map<String, dynamic>>>);
+        returnValue:
+            _i5.Future<List<_i8.SavedItemDto>>.value(<_i8.SavedItemDto>[]),
+      ) as _i5.Future<List<_i8.SavedItemDto>>);
+
+  @override
+  _i5.Future<List<_i9.LikedStoryDto>> getLikedStories({
+    int? page = 1,
+    int? pageSize = 20,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getLikedStories,
+          [],
+          {
+            #page: page,
+            #pageSize: pageSize,
+          },
+        ),
+        returnValue:
+            _i5.Future<List<_i9.LikedStoryDto>>.value(<_i9.LikedStoryDto>[]),
+      ) as _i5.Future<List<_i9.LikedStoryDto>>);
 }
 
 /// A class which mocks [ProfileLocalDataSource].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockProfileLocalDataSource extends _i1.Mock
-    implements _i8.ProfileLocalDataSource {
+    implements _i10.ProfileLocalDataSource {
   MockProfileLocalDataSource() {
     _i1.throwOnMissingStub(this);
   }
@@ -250,7 +254,7 @@ class MockProfileLocalDataSource extends _i1.Mock
 /// A class which mocks [NetworkInfo].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockNetworkInfo extends _i1.Mock implements _i9.NetworkInfo {
+class MockNetworkInfo extends _i1.Mock implements _i11.NetworkInfo {
   MockNetworkInfo() {
     _i1.throwOnMissingStub(this);
   }

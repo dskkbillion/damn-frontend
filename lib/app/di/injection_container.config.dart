@@ -13,7 +13,10 @@ import 'package:dio/dio.dart' as _i361;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart' as _i558;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
+import 'package:internet_connection_checker/internet_connection_checker.dart'
+    as _i973;
 import 'package:package_info_plus/package_info_plus.dart' as _i655;
+import 'package:shared_preferences/shared_preferences.dart' as _i460;
 
 import '../../core/database/app_database.dart' as _i50;
 import '../../core/navigation/services/i_navigation_service.dart' as _i625;
@@ -151,6 +154,13 @@ import '../../features/orders/presentation/seller/bloc/seller_order_detail_bloc.
     as _i984;
 import '../../features/orders/presentation/seller/bloc/seller_order_list_bloc.dart'
     as _i470;
+import '../../features/profile/domain/repositories/i_wallet_repository.dart'
+    as _i636;
+import '../../features/profile/domain/usecases/get_wallet_summary.dart'
+    as _i226;
+import '../../features/profile/domain/usecases/get_wallet_transactions.dart'
+    as _i332;
+import '../../features/profile/presentation/bloc/wallet_bloc.dart' as _i579;
 import 'injection_container.dart' as _i809;
 
 // initializes the registration of main-scope dependencies inside of GetIt
@@ -169,9 +179,15 @@ Future<_i174.GetIt> init(
     () => registerModule.packageInfo,
     preResolve: true,
   );
+  await gh.factoryAsync<_i460.SharedPreferences>(
+    () => registerModule.sharedPreferences,
+    preResolve: true,
+  );
   gh.lazySingleton<_i558.FlutterSecureStorage>(
       () => registerModule.secureStorage);
   gh.lazySingleton<_i895.Connectivity>(() => registerModule.connectivity);
+  gh.lazySingleton<_i973.InternetConnectionChecker>(
+      () => registerModule.connectionChecker);
   gh.lazySingleton<_i50.AppDatabase>(() => registerModule.appDatabase);
   gh.lazySingleton<_i625.INavigationService>(
       () => registerModule.navigationService);
@@ -185,12 +201,20 @@ Future<_i174.GetIt> init(
       () => _i404.AiChatRemoteDataSourceImpl(gh<_i493.IHttpClient>()));
   gh.lazySingleton<_i319.IAiChatRepository>(() => _i1012.AiChatRepositoryImpl(
       remoteDataSource: gh<_i607.IAiChatRemoteDataSource>()));
+  gh.factory<_i226.GetWalletSummary>(
+      () => _i226.GetWalletSummary(gh<_i636.IWalletRepository>()));
+  gh.factory<_i332.GetWalletTransactions>(
+      () => _i332.GetWalletTransactions(gh<_i636.IWalletRepository>()));
   gh.lazySingleton<_i232.UserInfoRemoteDataSource>(
       () => _i957.UserInfoRemoteDataSourceImpl(gh<_i361.Dio>()));
   gh.lazySingleton<_i50.NetworkInfo>(
       () => _i80.NetworkInfoImpl(gh<_i895.Connectivity>()));
   gh.lazySingleton<_i107.AuthRemoteDataSource>(
       () => _i123.AuthRemoteDataSourceImpl(dio: gh<_i361.Dio>()));
+  gh.factory<_i579.WalletBloc>(() => _i579.WalletBloc(
+        getWalletSummary: gh<_i226.GetWalletSummary>(),
+        getWalletTransactions: gh<_i332.GetWalletTransactions>(),
+      ));
   gh.lazySingleton<_i406.IOrderLocalDataSource>(() =>
       _i1016.OrderLocalDataSourceImpl(appDatabase: gh<_i50.AppDatabase>()));
   gh.lazySingleton<_i822.ISecureStorageRepository>(() =>
