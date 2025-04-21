@@ -26,6 +26,10 @@ import '../../features/ai_docs/data/datasources/i_ai_chat_remote_data_source.dar
     as _i607;
 import '../../features/ai_docs/data/datasources/i_file_upload_data_source.dart'
     as _i436;
+import '../../features/ai_docs/data/repositories/ai_chat_repository_impl.dart'
+    as _i1012;
+import '../../features/ai_docs/data/repositories/file_upload_repository_impl.dart'
+    as _i43;
 import '../../features/ai_docs/domain/repositories/i_ai_chat_repository.dart'
     as _i319;
 import '../../features/ai_docs/domain/repositories/i_file_upload_repository.dart'
@@ -50,8 +54,6 @@ import '../../features/ai_docs/domain/usecases/upload_file_usecase.dart'
     as _i798;
 import '../../features/ai_docs/presentation/bloc/ai_chat/ai_chat_bloc.dart'
     as _i1040;
-import '../../features/auth/domain/repositories/i_user_repository.dart'
-    as _i223;
 import '../../features/chat/data/datasources/chat_remote_data_source.impl.dart'
     as _i987;
 import '../../features/chat/data/datasources/chat_web_socket_data_source.impl.dart'
@@ -70,6 +72,7 @@ import '../../features/chat/domain/repositories/i_chat_repository.dart' as _i81;
 import '../../features/chat/domain/usecases/get_chat_room_list.dart' as _i974;
 import '../../features/chat/presentation/bloc/chat_list/chat_list_bloc.dart'
     as _i505;
+import 'injection_container.dart' as _i809;
 
 // initializes the registration of main-scope dependencies inside of GetIt
 _i174.GetIt init(
@@ -82,11 +85,13 @@ _i174.GetIt init(
     environment,
     environmentFilter,
   );
+  final thirdPartyInjectableModule = _$ThirdPartyInjectableModule();
+  gh.lazySingleton<_i895.Connectivity>(
+      () => thirdPartyInjectableModule.connectivity);
+  gh.lazySingleton<_i361.Dio>(() => thirdPartyInjectableModule.dio);
   gh.lazySingleton<_i493.IHttpClient>(() => _i962.DioHttpClient());
   gh.lazySingleton<_i607.IAiChatRemoteDataSource>(
       () => _i404.AiChatRemoteDataSourceImpl(gh<_i493.IHttpClient>()));
-  gh.lazySingleton<_i798.UploadFileUseCase>(
-      () => _i798.UploadFileUseCase(gh<_i569.IFileUploadRepository>()));
   gh.lazySingleton<_i998.IChatWebSocketDataSource>(
       () => _i979.ChatWebSocketDataSourceImpl());
   gh.lazySingleton<_i396.IFileRemoteDataSource>(
@@ -95,11 +100,23 @@ _i174.GetIt init(
       () => _i987.ChatRemoteDataSourceImpl(dio: gh<_i361.Dio>()));
   gh.lazySingleton<_i892.NetworkInfo>(
       () => _i678.NetworkInfoImpl(gh<_i895.Connectivity>()));
+  gh.lazySingleton<_i436.IFileUploadDataSource>(
+      () => _i478.FileUploadDataSourceImpl(gh<_i493.IHttpClient>()));
+  gh.lazySingleton<_i319.IAiChatRepository>(() => _i1012.AiChatRepositoryImpl(
+        gh<_i607.IAiChatRemoteDataSource>(),
+        gh<_i892.NetworkInfo>(),
+      ));
+  gh.lazySingleton<_i569.IFileUploadRepository>(
+      () => _i43.FileUploadRepositoryImpl(
+            remoteDataSource: gh<InvalidType>(),
+            networkInfo: gh<_i892.NetworkInfo>(),
+          ));
   gh.lazySingleton<_i81.IChatRepository>(() => _i504.ChatRepositoryImpl(
         remoteDataSource: gh<_i174.IChatRemoteDataSource>(),
         webSocketDataSource: gh<_i998.IChatWebSocketDataSource>(),
-        userRepository: gh<_i223.IUserRepository>(),
       ));
+  gh.lazySingleton<_i798.UploadFileUseCase>(
+      () => _i798.UploadFileUseCase(gh<_i569.IFileUploadRepository>()));
   gh.lazySingleton<_i974.GetChatRoomList>(
       () => _i974.GetChatRoomListImpl(gh<_i81.IChatRepository>()));
   gh.lazySingleton<_i257.GetConversationsUseCase>(
@@ -118,8 +135,6 @@ _i174.GetIt init(
       () => _i63.DeleteConversationUseCase(gh<_i319.IAiChatRepository>()));
   gh.lazySingleton<_i830.LoadHistoryUseCase>(
       () => _i830.LoadHistoryUseCase(gh<_i319.IAiChatRepository>()));
-  gh.lazySingleton<_i436.IFileUploadDataSource>(
-      () => _i478.FileUploadDataSourceImpl(gh<_i493.IHttpClient>()));
   gh.factory<_i1040.AiChatBloc>(() => _i1040.AiChatBloc(
         gh<_i257.GetConversationsUseCase>(),
         gh<_i830.LoadHistoryUseCase>(),
@@ -135,3 +150,5 @@ _i174.GetIt init(
       () => _i505.ChatListBloc(getChatRoomList: gh<_i974.GetChatRoomList>()));
   return getIt;
 }
+
+class _$ThirdPartyInjectableModule extends _i809.ThirdPartyInjectableModule {}

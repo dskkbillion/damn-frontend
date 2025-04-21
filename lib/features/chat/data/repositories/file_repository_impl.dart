@@ -8,7 +8,6 @@ import 'package:dskk_flutter_refactor/features/chat/domain/repositories/i_file_r
 // Correct import for Interface using package path
 import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_file_remote_data_source.dart';
 // import 'package:dskk_flutter_refactor/core/platform/network_info.dart'; // Import if checking network status
-import 'package:injectable/injectable.dart'; // Import injectable
 
 class FileRepositoryImpl implements IFileRepository {
   final IFileRemoteDataSource remoteDataSource;

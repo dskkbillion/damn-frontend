@@ -19,10 +19,6 @@ abstract class IChatWebSocketDataSource {
   /// Disconnects from the WebSocket server.
   Future<void> disconnect();
 
-  /// Sends a raw string message through the WebSocket.
-  /// Use this primarily for sending pre-formatted JSON like auth or ping.
-  void sendMessage(String message);
-
   // Optional: Add dispose method if needed for resource cleanup
   // void dispose();
 } 

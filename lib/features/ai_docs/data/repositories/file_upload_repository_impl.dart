@@ -1,18 +1,18 @@
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
-// import '../datasources/i_file_upload_remote_data_source.dart'; // Keep import for type checking
+import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/network/network_info.dart';
 import '../../domain/repositories/i_file_upload_repository.dart';
+import '../datasources/i_file_upload_remote_data_source.dart';
 
 /// {@template file_upload_repository_impl}
 /// Implementation of [IFileUploadRepository].
 /// {@endtemplate}
-// Temporarily comment out injectable annotation to avoid build errors
-// @LazySingleton(as: IFileUploadRepository)
+@LazySingleton(as: IFileUploadRepository)
 class FileUploadRepositoryImpl implements IFileUploadRepository {
   final IFileUploadRemoteDataSource remoteDataSource;
   final NetworkInfo networkInfo;

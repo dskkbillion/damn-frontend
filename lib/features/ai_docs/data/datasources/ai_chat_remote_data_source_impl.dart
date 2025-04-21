@@ -54,7 +54,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     try {
       final responseData = await _httpClient.post(
         fullUrl, // Use full URL
-        body: {'user_id': userId}
+        data: {'user_id': userId}
       );
       final data = _handleResponse(responseData);
       if (data != null && data['conversations'] is List) {

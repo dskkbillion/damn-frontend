@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart'; // Import Dio
 import 'package:dskk_flutter_refactor/core/error/exceptions.dart'; // Import ServerException
-import 'package:injectable/injectable.dart'; // Import injectable
+import 'package:injectable/injectable.dart'; // Add injectable import
 
 // Correct import for Interface using package path
 import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_file_remote_data_source.dart';
@@ -13,7 +13,7 @@ import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_file_remo
 final _dio = Dio(BaseOptions(baseUrl: "http://app.duoshaokankan.com/prod-api")); 
 // NOTE: Configure interceptors (auth, logging)
 
-@LazySingleton(as: IFileRemoteDataSource) // Add annotation
+@LazySingleton(as: IFileRemoteDataSource) // Add injectable annotation
 class FileRemoteDataSourceImpl implements IFileRemoteDataSource {
   final Dio dio; // Inject Dio
 

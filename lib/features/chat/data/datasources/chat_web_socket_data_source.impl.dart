@@ -6,7 +6,7 @@ import 'package:dskk_flutter_refactor/features/chat/data/models/chat_message_dto
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:flutter/foundation.dart' show kIsWeb; // For platform check
-import 'package:injectable/injectable.dart'; // Import injectable
+import 'package:injectable/injectable.dart'; // Add injectable import
 
 import 'i_chat_web_socket_data_source.dart'; // Import interface
 
@@ -17,7 +17,7 @@ enum ConnectionStatus {
   error,
 }
 
-@LazySingleton(as: IChatWebSocketDataSource)
+@LazySingleton(as: IChatWebSocketDataSource) // Add injectable annotation
 class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
   WebSocketChannel? _channel;
   StreamSubscription? _channelSubscription;
@@ -210,6 +210,8 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
      // _connectionStatusController.close();
   }
 
+  // Remove or comment out this method as message sending is handled via HTTP
+  /* 
   @override
   void sendMessage(String message) {
      if (_channel != null) {
@@ -220,4 +222,5 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
        // Optionally notify about the error
     }
   }
+  */
 } 
