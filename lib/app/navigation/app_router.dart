@@ -5,6 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // Import the main shell page which will act as the navigator shell
 import 'package:dskk_flutter_refactor/app/widgets/main_shell_page.dart';
 
+// Import feature routes
+import 'package:dskk_flutter_refactor/features/home/presentation/routes/home_routes.dart';
+
 // Placeholder pages for each tab
 // TODO: Replace these with actual feature pages later
 class PlaceholderPage extends StatelessWidget {
@@ -64,12 +67,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           // Branch for the '主页' tab
           StatefulShellBranch(
             routes: [
-              GoRoute(
-                path: '/home', // Path for the second tab
-                pageBuilder: (context, state) => const NoTransitionPage(
-                  child: PlaceholderPage(title: '主页'),
-                ),
-              ),
+              ...HomeRoutes.routes,
             ],
           ),
           // Branch for the '消息' tab
