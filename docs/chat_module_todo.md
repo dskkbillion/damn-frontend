@@ -272,11 +272,27 @@
       4. 在 UI (`ChatMessageBubble`) 中，通过比较 `message.senderId == state.currentUserParticipantId` 来判断消息是否由当前用户发送。
 
 23. **ListView 消息顺序错误 (新消息在顶部)**:
+
     - **问题**: 移除 `ListView.builder` 的 `reverse: true` 后，新消息仍然显示在顶部，尤其是在重新进入聊天室时。
     - **原因**: 初始假设 API (`getMessageList`) 返回反序列表（新->旧）是错误的。API 很可能返回正序列表（旧->新）。Bloc 在 `_onLoadChatMessages` 中错误地调用了 `.reversed`，导致初始状态列表变成反序。后续追加的新消息（发送或 WebSocket）被添加到了这个反序列表的末尾。
     - **解决方案**:
       - **移除 Bloc 中的反转**: 在 `ChatMessagesBloc._onLoadChatMessages` 处理函数中，**移除** 对从 Repository 获取的初始消息列表的 `.reversed` 调用。直接使用 API 返回的列表（假设为正序）。
       - **确认 Bloc 中追加逻辑**: 确保 `_onSendMessageRequested` (乐观更新) 和 `_onInternalMessageReceived` (WebSocket 更新) 仍然将新消息添加到列表的 _末尾_，使用 `[...currentState.messages, newMessage]`，这对于正序列表是正确的。
+
+24. **ChatMessagesBloc 中硬编码 Token 和 WebSocket User ID**:
+
+    - **问题**: 在 `ChatMessagesBloc._onLoadChatMessages` 方法中，`_token` 和 `commonUserIdForWS` 被硬编码为特定值。
+    - **风险**: 导致 WebSocket 连接和可能的 API 调用使用固定的用户凭证，无法适配实际登录用户。
+    - **解决方案**:
+      - **动态获取 Token**: 修改代码，从用户认证状态管理器（如 `AuthBloc`/`AuthRepository`）动态获取当前用户的有效 Token。
+      - **动态获取 commonUserId**: 修改代码，使用从 `IUserRepository.getCurrentUser()` 获取到的 `_currentUser!.id` 作为 WebSocket 连接的 `commonUserId`，而不是硬编码的 `commonUserIdForWS`。
+
+25. **ChatListPage 中硬编码 currentUserId**:
+    - **问题**: 在 `ChatListPage` 的 `build` 方法中，传递给 `ChatListItem` 的 `currentUserId` 被硬编码为 `10307`。
+    - **风险**: 导致列表项始终基于固定的用户 ID 来判断谁是对方，无法适应实际登录用户。
+    - **解决方案**:
+      - 从合适的来源（如 `AuthBloc` 的状态或 `UserRepository`）获取当前已登录用户的 `referId`。
+      - 将动态获取到的 `referId` 传递给 `ChatListItem` 的 `currentUserId` 参数。
 
 - [ ] **实现 WebSocket 实时更新**
   - [x] 添加 `web_socket_channel` 依赖。
@@ -287,3 +303,10 @@
   - [x] 在 `ChatMessagesBloc` 的 `close` 方法中断开连接。
   - [ ] **待办**: 在 UI 层根据 WebSocket 连接状态显示反馈 (可选)。
   - [ ] **待办**: 需要真实的 `commonUserId` 和 `token` 进行实际测试。
+
+26. **系统管理员入口视觉区分**:
+    - **问题**: 聊天列表顶部的“系统管理员”入口目前使用标准的 `ChatListItem` 样式，不够突出。
+    - **解决方案**:
+      - 可以考虑修改 `ChatListItem`，增加一个可选参数（如 `isSpecialEntry: true`），并根据此参数应用不同的背景色、图标或字体样式。
+      - 或者，创建一个专门的 `AdminChatListItem` Widget，完全自定义其外观，并在 `ChatListPage` 的 `itemBuilder` 中使用它来渲染 `index == 0` 的情况。
+      - 更新 `_buildAdminListItem` 帮助函数，使用自定义的头像或图标代替默认的 CircleAvatar。

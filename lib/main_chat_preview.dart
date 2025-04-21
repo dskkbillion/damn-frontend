@@ -26,10 +26,12 @@ import 'package:dskk_flutter_refactor/features/chat/domain/usecases/send_message
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/revoke_message.dart'; // Corrected import path
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_chat_room_details.dart'; // Corrected import path
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/delete_chat_message.dart'; // Import DeleteChatMessage
+import 'package:dskk_flutter_refactor/features/chat/domain/usecases/create_chat_room.dart'; // Import CreateChatRoom
 
 // Auth feature imports (Domain) - Assuming these exist now
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/user.dart'; // Corrected import path
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_repository.dart'; // Corrected import path
+import 'package:dskk_flutter_refactor/core/error/failures.dart'; // Import Failures
 
 // Chat feature imports (Data)
 import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_chat_web_socket_data_source.dart'; // Import WS Interface
@@ -56,6 +58,8 @@ import 'package:dskk_flutter_refactor/features/chat/data/datasources/file_remote
 import 'package:dskk_flutter_refactor/features/chat/data/datasources/chat_web_socket_data_source.impl.dart';
 import 'package:dskk_flutter_refactor/features/chat/data/repositories/chat_repository_impl.dart';
 import 'package:dskk_flutter_refactor/features/chat/data/repositories/file_repository_impl.dart';
+// Import the HeaderInterceptor
+import 'package:dskk_flutter_refactor/core/network/header_interceptor.dart';
 
 final sl = GetIt.instance;
 
@@ -261,15 +265,36 @@ class MockFileRepository implements IFileRepository {
 
 // Add Mock IUserRepository
 class MockUserRepository implements IUserRepository {
+  // Simulate a logged-in user
+  // FIX: Update mock user ID to reflect the referId 10307
+  final mockUser = const User(id: 10307, commonUserId: 'user-mock-10307', nickName: 'Me (10307)', type: 'MEMBER');
+
   @override
   Future<Either<Failure, User>> getCurrentUser() async {
     print('[MockUserRepository] Getting mock current user...');
-    await Future.delayed(const Duration(milliseconds: 50));
+    await Future.delayed(const Duration(milliseconds: 50)); // Simulate short delay
     print('[MockUserRepository] Returning mock user: ${mockUser.nickName}');
-    return const Right(mockUser); // Corrected return type
+    return Right(mockUser);
   }
-
-  // Implement other IUserRepository methods if needed
+  
+  // Implement other methods if needed by Chat feature, otherwise throw UnimplementedError
+  @override
+  Future<Either<Failure, User>> getUserById(int userId) async {
+    print('[MockUserRepository] Getting mock user by ID: $userId');
+    // Simple mock: return the main mock user if ID matches, otherwise failure
+    if (userId == mockUser.id) {
+      return Right(mockUser);
+    } else {
+      // Simulate finding another user based on participant ID (needs more data)
+       if(userId == 10304) return Right(User(id: 10307, commonUserId: 'user-mock-10307', nickName: 'Test (from 10304)', type: 'MEMBER'));
+       if(userId == 10290) return Right(User(id: 1, commonUserId: 'user-mock-1', nickName: '瑞 (from 10290)', type: 'MEMBER'));
+       if(userId == 10313) return Right(User(id: 10315, commonUserId: 'user-mock-10315', nickName: '133****3 (from 10313)', type: 'MEMBER'));
+       if(userId == 10288) return Right(User(id: 10294, commonUserId: 'user-mock-10294', nickName: '188****9 (from 10288)', type: 'MEMBER'));
+       if(userId == 10312) return Right(User(id: 1, commonUserId: 'user-mock-admin-1', nickName: '系统管理员 (from 10312)', type: 'ADMIN'));
+       print('[MockUserRepository] User not found for ID: $userId');
+       return Left(NotFoundFailure());
+    }
+  }
 }
 
 class MockNavigationService implements NavigationService {
@@ -388,56 +413,69 @@ class MockDeleteChatMessage implements DeleteChatMessage {
   }
 }
 
+// Register CreateChatRoom Use Case
+class MockCreateChatRoom implements CreateChatRoom {
+  @override
+  Future<Either<Failure, int>> call(CreateChatRoomParams params) async {
+    print('[MockCreateChatRoom] Called for params: $params');
+    final repo = sl<IChatRepository>();
+    if (repo is MockChatRepository) {
+      return await repo.createRoom(params.participantId);
+    } else {
+      await Future.delayed(const Duration(milliseconds: 100));
+      return Left(ServerFailure(message: "Mock repo not found"));
+    }
+  }
+}
+
 // --- Dependency Injection Setup ---
 Future<void> setupLocator() async {
   print('Setting up locator...');
-  // Register Mocks First
-  sl.registerLazySingleton<MockChatRepository>(() => MockChatRepository());
-  sl.registerLazySingleton<MockFileRepository>(() => MockFileRepository());
+  // Register Core Dependencies (if needed for preview, e.g., Theme)
+  // sl.registerLazySingleton(() => AppTheme());
+
+  // Register Auth Mock Dependencies (Needed for current user ID)
   sl.registerLazySingleton<IUserRepository>(() => MockUserRepository());
-  sl.registerLazySingleton<NavigationService>(() => MockNavigationService());
 
-  // Register Use Cases
-  sl.registerLazySingleton<GetChatRoomList>(() => MockGetChatRoomList());
-  sl.registerLazySingleton<GetMessageList>(() => MockGetMessageList());
-  sl.registerLazySingleton<SendMessage>(() => SendMessageImpl(sl(), sl())); // Keep Real SendMessage for testing
-  sl.registerLazySingleton<RevokeMessage>(() => MockRevokeMessage());
-  sl.registerLazySingleton<GetChatRoomDetails>(() => MockGetChatRoomDetails());
-  sl.registerLazySingleton<DeleteChatMessage>(() => MockDeleteChatMessage());
+  // Register Chat Mock Dependencies
+  // Comment out the mock repository to use the real one (if configured)
+  // sl.registerLazySingleton<IChatRepository>(() => MockChatRepository());
 
-  // Register Repositories
-  // FIX: Register interfaces with MOCK implementations for preview
-  sl.registerLazySingleton<IChatRepository>(() => sl<MockChatRepository>());
-  sl.registerLazySingleton<IFileRepository>(() => sl<MockFileRepository>());
-  // Comment out Real Repository registrations for now
-  /*
-   sl.registerLazySingleton<IChatRepository>(
-     () => ChatRepositoryImpl(
-       remoteDataSource: sl(),
-       userRepository: sl(),
-     ),
-   );
-   sl.registerLazySingleton<IFileRepository>(
-     () => FileRepositoryImpl(
-       remoteDataSource: sl(),
-     ),
-   );
-   */
+  // Register Mock File Repository (Keep this mock unless SendMessage test needs real file upload)
+  // FIX: Comment out mock and register real implementation
+  // sl.registerLazySingleton<IFileRepository>(() => MockFileRepository());
+  sl.registerLazySingleton<IFileRepository>(() => FileRepositoryImpl(remoteDataSource: sl()));
 
-  // Register DataSources (These are needed by the REAL SendMessageImpl)
-  sl.registerLazySingleton<IChatRemoteDataSource>(
-    () => ChatRemoteDataSourceImpl(dio: sl()),
-  );
-  sl.registerLazySingleton<IFileRemoteDataSource>(
-    () => FileRemoteDataSourceImpl(dio: sl()),
-  );
-  sl.registerLazySingleton<IChatWebSocketDataSource>(() => ChatWebSocketDataSourceImpl());
+  // Register Mock WebSocket DataSource (Comment out if using real repo/ws)
+  // sl.registerLazySingleton<IChatWebSocketDataSource>(() => MockChatWebSocketDataSource());
 
-  // Register External Dependencies
-  sl.registerLazySingleton<Dio>(() => Dio());
+  // !!! IMPORTANT: Register REAL DataSources if NOT using Mock Repository !!!
+  // These will be picked up by the real Repository implementation if it's used.
+  // Ensure Dio is registered before these (or passed explicitly).
+  // This setup assumes you want to test with REAL DataSources but potentially
+  // mock the repository itself earlier. If you comment out MockChatRepository,
+  // you likely want the REAL repository which depends on these REAL sources.
 
-  // Register Blocs
-  sl.registerFactory(() => ChatListBloc(getChatRoomList: sl()));
+  // Register Mock RemoteDataSource first if needed (Keep commented)
+  // sl.registerLazySingleton<IChatRemoteDataSource>(() => MockChatRemoteDataSource());
+  // sl.registerLazySingleton<IFileRemoteDataSource>(() => MockFileRemoteDataSource());
+
+  // --- Use Cases --- 
+  // Assume UseCases depend on the Repository INTERFACE, so they work with Mock or Real Repo
+  // FIX: Register IMPLEMENTATION classes AS the INTERFACE type
+  sl.registerLazySingleton<GetChatRoomList>(() => GetChatRoomListImpl(sl()));
+  sl.registerLazySingleton<GetMessageList>(() => GetMessageListImpl(sl()));
+  sl.registerLazySingleton<SendMessage>(() => SendMessageImpl(sl(), sl())); // Requires IChatRepository & IFileRepository
+  sl.registerLazySingleton<RevokeMessage>(() => RevokeMessageImpl(sl()));
+  sl.registerLazySingleton<GetChatRoomDetails>(() => GetChatRoomDetailsImpl(sl()));
+  sl.registerLazySingleton<DeleteChatMessage>(() => DeleteChatMessageImpl(sl()));
+  // Register CreateChatRoom Use Case
+  sl.registerLazySingleton<CreateChatRoom>(() => CreateChatRoomImpl(sl()));
+
+  // --- Blocs --- 
+  // Now ChatListBloc can resolve GetChatRoomList correctly
+  // FIX: Provide createChatRoom dependency
+  sl.registerFactory(() => ChatListBloc(getChatRoomList: sl(), createChatRoom: sl())); 
   sl.registerFactoryParam<ChatMessagesBloc, int, void>(
     (chatId, _) => ChatMessagesBloc(
       chatId: chatId,
@@ -445,13 +483,62 @@ Future<void> setupLocator() async {
       sendMessage: sl(),
       revokeMessage: sl(),
       getChatRoomDetails: sl(),
-      userRepository: sl(),
+      userRepository: sl(), // Need Mock or Real User Repo
       deleteChatMessage: sl(),
-      webSocketDataSource: sl<IChatWebSocketDataSource>(),
+      // Inject WebSocket DataSource - If using real repo, this needs real WS source
+      webSocketDataSource: sl(), // Inject the REAL WS DataSource now
     ),
   );
 
-  print('Locator setup complete.');
+   // Register Mock Navigation Service (Keep for preview)
+   sl.registerLazySingleton<NavigationService>(() => MockNavigationService());
+
+   // Register Dio (use a simple one for preview, or configure as needed)
+   sl.registerLazySingleton<Dio>(() {
+      print('--- Creating Dio Instance (Preview Setup - Real API) ---');
+      // CONFIGURE DIO FOR REAL API
+      final dio = Dio(BaseOptions(
+         baseUrl: "https://app.duoshaokankan.com/prod-api", // UPDATE to HTTPS based on .env
+         connectTimeout: const Duration(seconds: 15),
+         receiveTimeout: const Duration(seconds: 30),
+         headers: {
+           'Accept': 'application/json',
+           // Auth header will be added by interceptor now
+         },
+      ));
+      // ADD INTERCEPTORS TO THIS PREVIEW INSTANCE AS WELL
+      dio.interceptors.add(HeaderInterceptor()); // Add the header interceptor
+      // dio.interceptors.add(LoggingInterceptor()); // Optional: Add logging
+      // dio.interceptors.add(AuthInterceptor(sl())); // TODO: Add Auth Interceptor if needed for preview
+      print('--- Dio Instance (Preview Setup - Real API) Created with Interceptors ---');
+      return dio;
+   });
+
+   // --- REGISTER REAL DATASOURCES HERE SINCE MOCK REPOSITORY IS COMMENTED OUT --- 
+   // Uncomment these lines if you want main_chat_preview to use REAL datasources
+   // Ensure Dio is registered before these
+   sl.registerLazySingleton<IChatRemoteDataSource>(
+       () => ChatRemoteDataSourceImpl(dio: sl()));
+   sl.registerLazySingleton<IFileRemoteDataSource>(
+       () => FileRemoteDataSourceImpl(dio: sl()));
+   sl.registerLazySingleton<IChatWebSocketDataSource>(
+       () => ChatWebSocketDataSourceImpl()); // WebSocket Impl doesn't need Dio in constructor
+   
+
+    // --- REGISTER REAL REPOSITORY HERE SINCE MOCK REPOSITORY IS COMMENTED OUT --- 
+   // Uncomment this if you want to use the real repository which depends on real sources
+   // Ensure REAL sources are registered above
+   sl.registerLazySingleton<IChatRepository>(
+       () => ChatRepositoryImpl(
+            remoteDataSource: sl(),
+            // Assuming localDataSource is not used or mocked elsewhere if needed 
+            // localDataSource: sl(), 
+            // FIX: Provide the required userRepository dependency
+            userRepository: sl(), 
+            // FIX: Remove webSocketDataSource from constructor call as it's not needed
+            // webSocketDataSource: sl(),
+          ));
+    
 }
 
 // --- Main Application ---

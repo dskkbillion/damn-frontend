@@ -73,23 +73,51 @@ class _MessageInputBarState extends State<MessageInputBar> {
     // --- End Web Check --- 
 
     // Check and Request permission AT RUNTIME
-    // Log current status BEFORE requesting
     var status = await Permission.microphone.status;
     print('[Permission Check] Microphone status BEFORE request: $status');
 
-    if (!status.isGranted) { // Only request if not already granted
-        status = await Permission.microphone.request(); // Request permission
+    if (status.isPermanentlyDenied) {
+        // FIX: Handle permanently denied status
+        print("[Permission Check] Permission permanently denied.");
+        showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+                title: const Text('麦克风权限已被禁用'),
+                content: const Text('请在系统设置中手动开启麦克风权限才能使用录音功能。'),
+                actions: <Widget>[
+                    TextButton(
+                        child: const Text('取消'),
+                        onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    TextButton(
+                        child: const Text('去设置'),
+                        onPressed: () {
+                            Navigator.of(context).pop();
+                            openAppSettings(); // Open app settings
+                        },
+                    ),
+                ],
+            ),
+        );
+        return; // Stop execution
+    }
+
+    // Request if denied or restricted, but not permanently denied
+    if (!status.isGranted) {
+        status = await Permission.microphone.request();
         print('[Permission Check] Microphone status AFTER request: $status');
     }
 
-    // Check final status
-    if (status != PermissionStatus.granted) {
+    // Check final status after potential request
+    if (!status.isGranted) {
+      // FIX: Provide slightly more context if denied after request
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('需要麦克风权限才能录音')), // Keep message generic
+        const SnackBar(content: Text('未获得麦克风权限，无法录音')),
       );
       return;
     }
 
+    // --- Permission Granted - Proceed with recording --- 
     try {
       final Directory tempDir = await getTemporaryDirectory();
       _recordingPath = '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.m4a'; // Use m4a for broader compatibility
@@ -189,6 +217,53 @@ class _MessageInputBarState extends State<MessageInputBar> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
+    // --- Camera Permission Check --- 
+    if (source == ImageSource.camera) {
+      var status = await Permission.camera.status;
+      print('[Permission Check] Camera status BEFORE request: $status');
+
+      if (status.isPermanentlyDenied) {
+        print("[Permission Check] Camera permission permanently denied.");
+        showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+                title: const Text('相机权限已被禁用'),
+                content: const Text('请在系统设置中手动开启相机权限才能使用拍照功能。'),
+                actions: <Widget>[
+                    TextButton(
+                        child: const Text('取消'),
+                        onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    TextButton(
+                        child: const Text('去设置'),
+                        onPressed: () {
+                            Navigator.of(context).pop();
+                            openAppSettings(); // Open app settings
+                        },
+                    ),
+                ],
+            ),
+        );
+        return; // Stop execution
+      }
+
+      // Request if not granted
+      if (!status.isGranted) {
+          status = await Permission.camera.request();
+          print('[Permission Check] Camera status AFTER request: $status');
+      }
+
+      // Check final status
+      if (!status.isGranted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('未获得相机权限，无法拍照')),
+        );
+        return;
+      }
+    }
+    // --- End Camera Permission Check --- 
+
+    // --- Permission Granted (or Gallery source) - Proceed with picking --- 
     final ImagePicker picker = ImagePicker();
     try {
       final XFile? pickedFile = await picker.pickImage(source: source);
@@ -203,6 +278,9 @@ class _MessageInputBarState extends State<MessageInputBar> {
       }
     } catch (e) {
        print('Error picking image: $e');
+       ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('选择图片出错: $e')),
+      ); 
     }
   }
 

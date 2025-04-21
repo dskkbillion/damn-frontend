@@ -57,6 +57,7 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
       return;
     }
 
+    // FIX: Revert to ws:// as confirmed by user
     final url = 'ws://app.duoshaokankan.com/prod-api/websocket/message/$_commonUserId/member';
     print("[WebSocket] Connecting to: $url");
 

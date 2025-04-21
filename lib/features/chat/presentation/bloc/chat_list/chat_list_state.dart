@@ -8,30 +8,32 @@ class ChatListState extends Equatable {
   final ChatListStatus status;
   final List<ChatRoom> chatRooms;
   final String? errorMessage;
-  // Add currentUserId later if needed by ChatListItem for rendering logic
-  // final int? currentUserId; 
+  // Add field to trigger navigation
+  final int? navigateToChatId; 
 
   const ChatListState({
     this.status = ChatListStatus.initial,
     this.chatRooms = const <ChatRoom>[],
     this.errorMessage,
-    // this.currentUserId,
+    this.navigateToChatId, // Initialize
   });
 
   ChatListState copyWith({
     ChatListStatus? status,
     List<ChatRoom>? chatRooms,
     String? errorMessage,
-    // int? currentUserId,
+    int? navigateToChatId,
+    bool clearNavigateToChatId = false, // Flag to clear navigation trigger
   }) {
     return ChatListState(
       status: status ?? this.status,
       chatRooms: chatRooms ?? this.chatRooms,
       errorMessage: errorMessage ?? this.errorMessage,
-      // currentUserId: currentUserId ?? this.currentUserId,
+      // If clearNavigateToChatId is true, set to null, otherwise update or keep existing
+      navigateToChatId: clearNavigateToChatId ? null : (navigateToChatId ?? this.navigateToChatId),
     );
   }
 
   @override
-  List<Object?> get props => [status, chatRooms, errorMessage]; // Add currentUserId if used
+  List<Object?> get props => [status, chatRooms, errorMessage, navigateToChatId];
 } 

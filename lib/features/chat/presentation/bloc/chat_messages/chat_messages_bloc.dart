@@ -46,9 +46,9 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
 
   User? _currentUser;
   Participant? _opponent;
-  StreamSubscription? _webSocketMessageSubscription;
-  StreamSubscription? _webSocketStatusSubscription;
+  ChatRoom? _currentRoom;
   String? _token;
+  StreamSubscription? _messageSubscription;
 
   ChatMessagesBloc({
     required this.chatId,
@@ -56,8 +56,8 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     required this.sendMessage,
     required this.revokeMessage,
     required this.getChatRoomDetails,
-    required this.userRepository,
     required this.deleteChatMessage,
+    required this.userRepository,
     required this.webSocketDataSource,
   }) : super(ChatMessagesInitial()) {
     on<LoadChatMessages>(_onLoadChatMessages);
@@ -71,89 +71,111 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     LoadChatMessages event,
     Emitter<ChatMessagesState> emit
   ) async {
-     emit(const ChatMessagesLoading());
+    emit(ChatMessagesLoading());
     try {
-      // 1. Fetch current user and commonUserId
+      // 1. Fetch current user's main ID (referId)
       final userResult = await userRepository.getCurrentUser();
-      _currentUser = userResult.getOrElse(() => throw Exception("Failed to get current user"));
-      final currentCommonUserId = _currentUser!.id; // Assuming User.id is commonUserId
+      final userEither = await userResult.fold(
+        (failure) {
+          emit(ChatMessagesError('Failed to get current user: ${failure.message}'));
+          return null;
+        },
+        (user) {
+          _currentUser = user; // Store current user
+          print("[ChatMessagesBloc] Current User loaded: ID=${user.id} (referId)");
+          return user;
+        },
+      );
 
-      // Use real token and commonUserId for WebSocket
-      _token = 'eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjFjYjlhZmYyLThjOTktNGMwYy05YTk5LWQ2NjdhYjVkMDY4NSJ9.I7cLrFM0qkBF9D-r90fowh3i9xO5v_39Oafl_K7hXdxJ2pQ1Yd9_PCd_C_M6za_0Y8YHt0bZRVb01am-F8r9ew';
-      String commonUserIdForWS = '10315';
+      if (userEither == null) return;
+      final currentReferId = userEither.id; // This is the referId (e.g., 10307)
 
-      if (_currentUser == null || _token == null) {
-         throw Exception("User or token not available");
-      }
-      print("[ChatMessagesBloc] Current commonUserId: $currentCommonUserId");
-      print("[ChatMessagesBloc] Using WebSocket commonUserId: $commonUserIdForWS, Token: ${_token!.substring(0, 10)}...");
-
-      // 2. Fetch initial messages and opponent details concurrently
+      // 2. Fetch initial messages and room details concurrently
       final results = await Future.wait([
-        getMessageList(GetMessageListParams(chatId: event.chatId)),
-        getChatRoomDetails(GetChatRoomDetailsParams(chatId: event.chatId)),
+        getMessageList(GetMessageListParams(chatId: chatId)),
+        getChatRoomDetails(GetChatRoomDetailsParams(chatId: chatId)),
       ]);
 
       final messageResult = results[0] as Either<Failure, List<ChatMessage>>;
       final roomDetailsResult = results[1] as Either<Failure, ChatRoom>;
 
-      // 3. Process results
-      await messageResult.fold(
-        (failure) async => emit(ChatMessagesError('Failed to load messages: ${failure.message}')),
-        (messages) async {
-          await roomDetailsResult.fold(
-            (failure) async => emit(ChatMessagesError('Failed to load room details: ${failure.message}')),
-            (roomDetails) async {
-              // FIX: Find opponent AND current user's participant ID
-              Participant? opponentParticipant;
-              int? currentUserParticipantId;
+      // 3. Process results only if both succeed
+      int? currentUserParticipantId; // This will be the internal ID (e.g., 10304)
+      Participant? opponentParticipant;
+      ChatRoom? fetchedRoomDetails;
 
-              // Assuming ChatRoom entity now uses participant1 and participant2
-              final p1 = roomDetails.participant1;
-              final p2 = roomDetails.participant2;
+      final success = await roomDetailsResult.fold(
+        (failure) async {
+          emit(ChatMessagesError('Failed to load room details: ${failure.message}'));
+          return false;
+        },
+        (roomDetails) async {
+           fetchedRoomDetails = roomDetails; // Store fetched room details
+           _currentRoom = roomDetails; // Also store globally if needed
 
-              if (p1.referId == currentCommonUserId) {
-                  currentUserParticipantId = p1.id;
-                  opponentParticipant = p2;
-              } else if (p2.referId == currentCommonUserId) {
-                  currentUserParticipantId = p2.id;
-                  opponentParticipant = p1;
-              } else {
-                   // Error: Current user (based on commonUserId) not found in this chat's participants
-                  print("Error: Current user commonId ($currentCommonUserId) doesn't match referId of participant ${p1.id} (${p1.referId}) or ${p2.id} (${p2.referId})");
-                  emit(ChatMessagesError('Error: You are not a participant in this chat.'));
-                  return; // Stop processing
-              }
+           // Determine current user's INTERNAL participant ID and the opponent
+           final p1 = roomDetails.participant1;
+           final p2 = roomDetails.participant2;
 
-              if (currentUserParticipantId == null || opponentParticipant == null) {
-                 emit(ChatMessagesError('Failed to identify participants in chat.'));
-                 return;
-              }
-              
-              _opponent = opponentParticipant; // Store opponent locally if needed elsewhere
-              print("[ChatMessagesBloc] Messages and details loaded. Opponent: ${_opponent?.nickName} (${_opponent?.id}), CurrentUserParticipantId: $currentUserParticipantId");
+           if (p1.referId == currentReferId) {
+               currentUserParticipantId = p1.id;
+               opponentParticipant = p2;
+           } else if (p2.referId == currentReferId) {
+               currentUserParticipantId = p2.id;
+               opponentParticipant = p1;
+           } else {
+               print("[ChatMessagesBloc] Error: Current user (referId: $currentReferId) not found in room participants!");
+               emit(ChatMessagesError('Error: You are not a participant in this chat.'));
+               return false; // Indicate failure
+           }
 
-              // Emit ChatMessagesLoaded with the found participant ID
-              // FIX: REMOVE the .reversed call, assuming getMessageList returns messages in chronological order (oldest first).
-              // final sortedMessages = List<ChatMessage>.from(messages.reversed);
-              emit(ChatMessagesLoaded(
-                messages: messages, // Emit the list directly as received
-                opponent: _opponent!, 
-                currentUserId: currentCommonUserId, // Keep commonUserId here if needed globally
-                currentUserParticipantId: currentUserParticipantId, // Pass the specific participant ID
-              ));
+           if (currentUserParticipantId == null || opponentParticipant == null) {
+              emit(ChatMessagesError('Failed to identify participants in chat.'));
+              return false; // Indicate failure
+           }
 
-              // 4. Connect to WebSocket
-              print("[ChatMessagesBloc] Connecting to WebSocket with commonUserId: $commonUserIdForWS");
-              _connectAndSubscribeWebSocket(commonUserIdForWS, _token!); 
-            },
-          );
+           _opponent = opponentParticipant; // Store opponent
+           print("[ChatMessagesBloc] Room details processed. Opponent: ${_opponent?.nickName} (ID: ${_opponent?.id}, ReferID: ${_opponent?.referId}), CurrentUserParticipantId: $currentUserParticipantId");
+           return true; // Indicate success
         },
       );
 
-    } catch (e) {
-      emit(ChatMessagesError('An error occurred: ${e.toString()}'));
-      print("[ChatMessagesBloc] Error loading chat: $e");
+      // If room details failed or participant identification failed, stop here
+      if (!success || currentUserParticipantId == null || opponentParticipant == null || fetchedRoomDetails == null) {
+           return;
+      }
+
+      // Process message results now that we know room details are valid
+      await messageResult.fold(
+        (failure) async => emit(ChatMessagesError('Failed to load messages: ${failure.message}')),
+        (messages) async {
+          // Emit loaded state with all necessary info
+          emit(ChatMessagesLoaded(
+            messages: messages, // Assuming messages are already sorted correctly by use case/repo
+            opponent: opponentParticipant!,
+            currentUserId: currentReferId, // Pass referId as currentUserId
+            currentUserParticipantId: currentUserParticipantId!, // Pass internal ID
+          ));
+
+          // 4. Connect to WebSocket using the INTERNAL participant ID
+          // TODO: Fetch token dynamically
+          _token = 'eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjA5NjhhMDNkLTM1NzYtNDkzZi1iMjA5LTc2YWEzMzMwYzYzMCJ9.AJ_IIJypohoKS_5EJa7bpE5erREM9qqbFXNoeaTaD0tpGSDhaqcdeccjU2y4z3Y_MuXWyzBCoq24HPna6itjJQ';
+          final String commonUserIdForWS = currentUserParticipantId!.toString(); // Use internal ID
+
+          if (_token == null) {
+            print("[ChatMessagesBloc] Error: Token is null, cannot connect WebSocket.");
+             emit(ChatMessagesError("Authentication token not available."));
+            return;
+          }
+
+          print("[ChatMessagesBloc] Connecting to WebSocket with commonUserIdForWS: $commonUserIdForWS (Internal Participant ID)");
+          _connectAndSubscribeWebSocket(commonUserIdForWS, _token!); 
+        },
+      );
+
+    } catch (e, stacktrace) { // Catch potential errors from Future.wait or elsewhere
+      emit(ChatMessagesError('An unexpected error occurred: ${e.toString()}'));
+      print("[ChatMessagesBloc] Error loading chat: $e\n$stacktrace");
     }
   }
 
@@ -347,49 +369,45 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     );
   }
 
-  Future<void> _connectAndSubscribeWebSocket(String commonUserId, String token) async {
-    if (_currentUser == null || _token == null) {
-      print("[Bloc] Cannot connect WebSocket: Missing user info or token.");
-      return;
-    }
-    print("[Bloc] Attempting to connect WebSocket...");
-    
-    _webSocketStatusSubscription?.cancel();
-    _webSocketMessageSubscription?.cancel();
-    
-    // Connect WS (DataSource handles reconnection logic internally)
-    // Use await here as connect itself is async and we want to ensure it's called
-    await webSocketDataSource.connect(commonUserId, token);
+  void _connectAndSubscribeWebSocket(String commonUserIdForWS, String token) {
+     print("[WebSocket] Attempting to connect for user $commonUserIdForWS");
+     // Cancel previous subscription before connecting/subscribing again
+     _messageSubscription?.cancel();
+     
+     // Connect and then subscribe
+     // Assuming connect is async or returns a future that completes on connection
+     // or status stream indicates connection.
+     // For simplicity, calling subscribe immediately after connect request.
+     webSocketDataSource.connect(commonUserIdForWS, token); 
 
-    // Subscribe to connection status changes
-    _webSocketStatusSubscription = webSocketDataSource.connectionStatusStream.listen((status) {
-        print("[Bloc] WebSocket Status: $status");
-         // TODO: Could update UI based on status if needed
-         if (status == ConnectionStatus.error) {
-            // Optionally emit an error state or show feedback
+     // Subscribe to the messages stream
+     _messageSubscription = webSocketDataSource.messageStream.listen(
+       (messageDto) {
+         // Ensure DTO is not null before adding event
+         if (messageDto != null) { 
+             add(_MessageReceived(messageDto));
+         } else {
+            print("[WebSocket] Received null message DTO from stream.");
          }
-    });
-
-    // Subscribe to incoming messages
-    _webSocketMessageSubscription = webSocketDataSource.messageStream.listen((messageDto) {
-      print("[Bloc] Received message DTO via WebSocket listener: ${messageDto.id}");
-      // Dispatch internal event to handle message processing
-      add(_MessageReceived(messageDto)); 
-    }, onError: (error) {
-       print("[Bloc] Error on WebSocket message stream: $error");
-    });
+       },
+       onError: (error) {
+          print("[WebSocket] Error on message stream: $error");
+          // Handle stream error, maybe emit failure state
+          emit(ChatMessagesError("WebSocket connection error."));
+       },
+       onDone: () {
+         print("[WebSocket] Message stream closed.");
+         // Handle stream closing, maybe try reconnecting or emit state
+       }
+     );
+     // TODO: Also listen to webSocketDataSource.status stream for connection feedback
   }
 
   @override
   Future<void> close() {
     print("[Bloc] Closing ChatMessagesBloc for chatId: $chatId");
-    _webSocketMessageSubscription?.cancel();
-    _webSocketStatusSubscription?.cancel();
-    // Consider if disconnect should happen here or be managed globally
-    // If WebSocket connection is per ChatRoomPage, disconnect here.
-    // If it's a single global connection, manage elsewhere.
-    // For preview, let's assume we disconnect when this Bloc closes.
-    webSocketDataSource.disconnect(); 
+    _messageSubscription?.cancel();
+    webSocketDataSource.disconnect();
     return super.close();
   }
 } 

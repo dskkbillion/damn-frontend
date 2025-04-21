@@ -100,4 +100,9 @@ class AuthenticationFailure extends Failure {
 
 class ClientFailure extends Failure {
   const ClientFailure() : super(message: 'Client Error / Invalid Input');
+}
+
+/// Represents a failure when a requested resource is not found.
+class NotFoundFailure extends Failure {
+  const NotFoundFailure({String message = 'Resource not found'}) : super(message: message);
 } 

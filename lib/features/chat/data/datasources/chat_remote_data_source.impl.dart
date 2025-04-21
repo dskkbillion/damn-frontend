@@ -24,35 +24,46 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
 
   ChatRemoteDataSourceImpl({required this.dio}); // Constructor injection
 
+  // Helper to check if the API code indicates success (handles int 200 or String '200')
+  bool _isSuccessCode(dynamic codeValue) {
+    return (codeValue == 200) || (codeValue is String && codeValue == '200');
+  }
+
   // Helper to handle common API response pattern
   dynamic _handleResponse(Response response, String operation) {
-    if (response.statusCode == 200 && response.data != null && response.data['code'] == 200) {
+    final dynamic codeValue = response.data?['code'];
+    if (response.statusCode == 200 && response.data != null && _isSuccessCode(codeValue)) {
       return response.data['data']; // Return the actual data part
     } else {
       final errorMessage = response.data?['msg'] ?? 'Failed to $operation';
-      print("API Error ($operation): $errorMessage, Code: ${response.data?['code']}, Status: ${response.statusCode}");
+      final errorCode = codeValue?.toString(); // Log the actual code value
+      print("API Error ($operation): $errorMessage, Code: $errorCode, Status: ${response.statusCode}");
       throw ServerException(message: errorMessage, statusCode: response.statusCode);
     }
   }
 
   // Helper to handle common API response pattern for list results
   List<dynamic> _handleListResponse(Response response, String operation) {
-     if (response.statusCode == 200 && response.data != null && response.data['code'] == 200 && response.data['rows'] is List) {
+     final dynamic codeValue = response.data?['code'];
+     if (response.statusCode == 200 && response.data != null && _isSuccessCode(codeValue) && response.data['rows'] is List) {
         return response.data['rows'];
      } else {
         final errorMessage = response.data?['msg'] ?? 'Failed to $operation';
-        print("API Error ($operation): $errorMessage, Code: ${response.data?['code']}, Status: ${response.statusCode}");
+        final errorCode = codeValue?.toString();
+        print("API Error ($operation): $errorMessage, Code: $errorCode, Status: ${response.statusCode}");
         throw ServerException(message: errorMessage, statusCode: response.statusCode);
      }
   }
 
     // Helper to handle simple success/failure responses (like withdraw, delete)
   void _handleVoidResponse(Response response, String operation) {
-    if (response.statusCode == 200 && response.data != null && response.data['code'] == 200) {
+    final dynamic codeValue = response.data?['code'];
+    if (response.statusCode == 200 && response.data != null && _isSuccessCode(codeValue)) {
       return; // Success
     } else {
       final errorMessage = response.data?['msg'] ?? 'Failed to $operation';
-      print("API Error ($operation): $errorMessage, Code: ${response.data?['code']}, Status: ${response.statusCode}");
+      final errorCode = codeValue?.toString();
+      print("API Error ($operation): $errorMessage, Code: $errorCode, Status: ${response.statusCode}");
       throw ServerException(message: errorMessage, statusCode: response.statusCode);
     }
   }
@@ -61,25 +72,61 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
   Future<List<ChatRoomDto>> getChatRooms() async {
     print("[API Call] Fetching chat rooms...");
     try {
-      // Use POST as per OpenAPI spec for /api/chat/list
-      final response = await dio.post('/api/chat/list');
-      final List<dynamic> roomsJson = _handleListResponse(response, "load chat rooms");
-      // Sort by last message time descending (newest first)
-      final rooms = roomsJson.map((json) => ChatRoomDto.fromJson(json)).toList();
-      rooms.sort((a, b) {
-          // Explicitly cast to DateTime? before null-coalescing operator
+      // Request response as plain text to handle potential type inconsistencies manually
+      final response = await dio.post(
+        '/api/chat/list',
+        data: {}, 
+        options: Options(responseType: ResponseType.plain), // Get raw string
+      );
+
+      // Check if response data is a non-empty string
+      if (response.data is String && (response.data as String).isNotEmpty) {
+        final String responseBody = response.data as String;
+        print("[API Response Raw String /api/chat/list]: $responseBody");
+        
+        // Manually decode JSON
+        final Map<String, dynamic> decodedData = jsonDecode(responseBody);
+
+        // Now process the decoded map using helpers (passing the map directly)
+        final List<dynamic> roomsJson = _handleListResponseManual(decodedData, "load chat rooms");
+        
+        final rooms = roomsJson.map((json) => ChatRoomDto.fromJson(json)).toList();
+        rooms.sort((a, b) {
           final DateTime timeA = (a.chatMessageNewVo?.createTime as DateTime?) ?? DateTime.fromMillisecondsSinceEpoch(0);
           final DateTime timeB = (b.chatMessageNewVo?.createTime as DateTime?) ?? DateTime.fromMillisecondsSinceEpoch(0);
           return timeB.compareTo(timeA); // Descending order
-      });
-      return rooms;
+        });
+        return rooms;
+      } else {
+         print("API Error (load chat rooms): Received empty or non-string response body");
+         throw ServerException(message: "Received invalid response from server", statusCode: response.statusCode);
+      }
+
     } on DioException catch (e) {
       print("DioException fetching rooms: ${e.message}, Response: ${e.response?.data}");
       throw ServerException(message: e.message ?? "Network error fetching rooms", statusCode: e.response?.statusCode);
     } catch (e) {
       print("Unexpected error fetching rooms: $e");
-      throw ServerException(message: "An unexpected error occurred while fetching chat rooms");
+      // If error is TypeError during jsonDecode, it might indicate invalid JSON
+      if (e is FormatException) { 
+           throw ServerException(message: "Failed to parse server response (Invalid JSON)");
+      }
+      throw ServerException(message: "An unexpected error occurred while fetching chat rooms: ${e.runtimeType}");
     }
+  }
+
+  // Helper adapted for manually decoded data
+  List<dynamic> _handleListResponseManual(Map<String, dynamic> decodedData, String operation) {
+     final dynamic codeValue = decodedData['code'];
+     if (_isSuccessCode(codeValue) && decodedData['rows'] is List) {
+        return decodedData['rows'];
+     } else {
+        final errorMessage = decodedData['msg']?.toString() ?? 'Failed to $operation';
+        final errorCode = codeValue?.toString();
+        print("API Business Error ($operation): $errorMessage, Code: $errorCode");
+        // Use a generic status code like 400 for business logic errors if original status was 200
+        throw ServerException(message: errorMessage, statusCode: 400); 
+     }
   }
 
   @override
@@ -103,23 +150,42 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
 
   @override
   Future<int> createRoom(int participantId) async {
-    print("[API Call] Creating room with participantId: $participantId...");
+    print("[API Call] Creating room with participantId: $participantId");
     try {
-      // OpenAPI spec shows doctorId as string, ensure correct type
-      final response = await dio.post('/api/chat/addChat', data: {'doctorId': participantId.toString()}); 
-      final dynamic data = _handleResponse(response, "create room");
+      // Prepare request data
+      final Map<String, dynamic> requestData = {
+        'doctorId': participantId.toString() // Send participantId as string
+      };
+      
+      // FIX: Add type field based on participantId
+      if (participantId == 1) {
+         requestData['type'] = 'ADMIN';
+         print("[API Call] Added type: ADMIN for admin chat creation.");
+      } else {
+         // Assuming any other ID represents a standard member/doctor chat
+         requestData['type'] = 'MEMBER'; 
+         print("[API Call] Added type: MEMBER for chat creation.");
+      }
+
+      final response = await dio.post(
+        '/api/chat/addChat',
+        data: requestData, // Send the complete data map
+        // Assuming default responseType: json is okay here
+      );
+      // Handle response, expecting an integer chat ID in the 'data' field
+      final dynamic data = _handleResponse(response, "create room"); 
       if (data is int) {
         return data;
       } else {
-         print("API Error (create room): Expected int chatId, but got ${data.runtimeType}");
-         throw ServerException(message: "Failed to create room: Invalid response format");
+         print("API Error (create room): Expected integer chat ID in 'data', but got ${data?.runtimeType}");
+         throw ServerException(message: "Invalid response format for create room");
       }
     } on DioException catch (e) {
       print("DioException creating room: ${e.message}, Response: ${e.response?.data}");
       throw ServerException(message: e.message ?? "Network error creating room", statusCode: e.response?.statusCode);
     } catch (e) {
       print("Unexpected error creating room: $e");
-      throw ServerException(message: "An unexpected error occurred while creating room");
+      throw ServerException(message: "An unexpected error occurred while creating room: ${e.runtimeType}");
     }
   }
 

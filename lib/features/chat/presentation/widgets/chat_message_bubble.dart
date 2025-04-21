@@ -237,6 +237,20 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   }
 
   Widget _buildImageContent(BuildContext context, String imageUrl) {
+     // FIX: Show loading indicator if the image message is still sending
+     if (widget.message.status == MessageStatus.sending) {
+       return Container(
+         width: 150, // Define a reasonable size for the placeholder
+         height: 150,
+         padding: const EdgeInsets.all(50), // Padding around the indicator
+         decoration: BoxDecoration(
+            color: Colors.grey[300], // Placeholder background
+            borderRadius: BorderRadius.circular(8.0),
+         ),
+         child: const Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
+       );
+     }
+
      final heroTag = 'imagePreview_${widget.message.id}';
      if (imageUrl.isEmpty) {
        return Container(

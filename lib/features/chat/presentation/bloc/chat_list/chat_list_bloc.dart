@@ -11,30 +11,35 @@ import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart'; // For NoParams
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_room.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_chat_room_list.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/usecases/create_chat_room.dart';
 
 part 'chat_list_event.dart';
 part 'chat_list_state.dart';
 
 @injectable // Optional: for DI later
 class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
-  final GetChatRoomList _getChatRoomList;
+  final GetChatRoomList getChatRoomList;
+  final CreateChatRoom createChatRoom;
 
-  ChatListBloc({required GetChatRoomList getChatRoomList}) 
-      : _getChatRoomList = getChatRoomList,
-        super(const ChatListState()) {
+  ChatListBloc({
+    required this.getChatRoomList,
+    required this.createChatRoom,
+  })
+      : super(const ChatListState()) {
     on<LoadChatRoomList>(_onLoadChatRoomList);
-    // Register the handler for the refresh event
-    on<RefreshChatList>(_onRefreshChatList); 
+    on<RefreshChatList>(_onRefreshChatList);
+    on<StartAdminChatRequested>(_onStartAdminChatRequested);
+    on<ClearNavigationTrigger>(_onClearNavigationTrigger);
   }
 
   Future<void> _onLoadChatRoomList(
     LoadChatRoomList event,
     Emitter<ChatListState> emit,
   ) async {
-    print('[ChatListBloc] Handling LoadChatRoomList event...');
+    print("[ChatListBloc] Handling LoadChatRoomList event...");
     emit(state.copyWith(status: ChatListStatus.loading));
     
-    final failureOrChatRooms = await _getChatRoomList(NoParams());
+    final failureOrChatRooms = await getChatRoomList(NoParams());
 
     failureOrChatRooms.fold(
       (failure) {
@@ -63,7 +68,7 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
     // You could emit a specific status like `refreshing` if needed.
     // emit(state.copyWith(status: ChatListStatus.loading)); // Optional: Show loading
 
-    final failureOrChatRooms = await _getChatRoomList(NoParams());
+    final failureOrChatRooms = await getChatRoomList(NoParams());
 
     failureOrChatRooms.fold(
       (failure) {
@@ -79,5 +84,40 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
             chatRooms: chatRooms));
       },
     );
+  }
+
+  // Handler for starting admin chat
+  Future<void> _onStartAdminChatRequested(
+    StartAdminChatRequested event,
+    Emitter<ChatListState> emit,
+  ) async {
+    print("[ChatListBloc] Handling StartAdminChatRequested event...");
+    // Optionally emit a loading state specific to this action if needed
+    // emit(state.copyWith(status: ChatListStatus.loading)); 
+    
+    final result = await createChatRoom(const CreateChatRoomParams(participantId: 1)); // Admin ID is 1
+    
+    result.fold(
+      (failure) {
+         print("[ChatListBloc] Failed to create/get admin chat room: ${failure.message}");
+         // Emit failure state, potentially with a message for the user
+         emit(state.copyWith(status: ChatListStatus.failure, errorMessage: "无法连接到系统管理员: ${failure.message}"));
+      },
+      (chatId) {
+        print("[ChatListBloc] Successfully created/retrieved admin chat room ID: $chatId. Triggering navigation.");
+        // Emit state to trigger navigation
+        emit(state.copyWith(status: ChatListStatus.success, navigateToChatId: chatId));
+      },
+    );
+  }
+
+  // Handler to clear the navigation trigger
+  void _onClearNavigationTrigger(
+    ClearNavigationTrigger event,
+    Emitter<ChatListState> emit,
+  ) {
+    print("[ChatListBloc] Clearing navigation trigger.");
+    // Emit state with navigateToChatId set to null using the flag
+    emit(state.copyWith(clearNavigateToChatId: true)); 
   }
 } 

@@ -21,7 +21,10 @@ class FileRemoteDataSourceImpl implements IFileRemoteDataSource {
 
   @override
   Future<String> uploadFile(File file) async {
-    print("[API Call] Uploading file: ${file.path}");
+    final uploadPath = '/api/common/public/upload'; // Define path clearly
+    final targetUrl = dio.options.baseUrl + uploadPath;
+    print("[API Call] Uploading file: ${file.path} to $targetUrl"); // Log full target URL
+
     String fileName = file.path.split('/').last;
     FormData formData = FormData.fromMap({
       "file": await MultipartFile.fromFile(file.path, filename: fileName),
@@ -29,37 +32,65 @@ class FileRemoteDataSourceImpl implements IFileRemoteDataSource {
 
     try {
       final response = await dio.post(
-        '/api/common/public/upload', // Use correct API endpoint
+        uploadPath, // Use the defined path
         data: formData,
-        options: Options(
-          headers: {
-            // Add any specific headers needed for file upload if required
-            // e.g., 'Content-Type': 'multipart/form-data' is usually handled by Dio
-          },
-        ),
+        // Let Dio handle multipart Content-Type
         onSendProgress: (int sent, int total) {
-          // Optional: print progress
-          // print('$sent/$total');
+           if (total > 0) { // Avoid division by zero
+              // print('Upload progress: ${(sent / total * 100).toStringAsFixed(0)}%');
+           }
         },
       );
 
-      if (response.statusCode == 200 && response.data['code'] == 200 && response.data['url'] != null) {
-         // Assuming the URL is directly under the 'url' key based on typical API design
-        return response.data['url'] as String;
+      // Manually check response data and parse safely
+      if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
+          final Map<String, dynamic> responseData = response.data;
+          // Use the robust code check helper
+          if (_isSuccessCode(responseData['code'])) { 
+             // Check for 'data' field containing the url, as per API doc example
+             final dynamic dataField = responseData['data'];
+             if (dataField is Map<String, dynamic> && dataField['url'] is String) {
+                 print("[API Call] File upload successful. URL: ${dataField['url']}");
+                 return dataField['url'] as String;
+             } else {
+                print("API Error (upload): Successful code but 'data.url' field is missing or invalid. Response: $responseData");
+                throw ServerException(message: "Invalid response format after upload (missing URL)", statusCode: response.statusCode);
+             }
+          } else {
+             // Handle business error code from server
+             final errorMessage = responseData['msg']?.toString() ?? 'File upload failed (server logic)';
+             final errorCode = responseData['code']?.toString();
+             print("API Business Error (upload): $errorMessage, Code: $errorCode, Status: ${response.statusCode}");
+             throw ServerException(message: errorMessage, statusCode: response.statusCode); // Keep original status for context
+          }
       } else {
-        // Handle API error response
-        final errorMessage = response.data?['msg'] ?? 'File upload failed';
-         print("API Error uploading file: $errorMessage, Code: ${response.data?['code']}, Status: ${response.statusCode}");
-        throw ServerException(message: errorMessage, statusCode: response.statusCode);
+         // Handle non-200 status or unexpected response type
+         print("API Error (upload): Unexpected status ${response.statusCode} or data type ${response.data?.runtimeType}. Response: ${response.data}");
+         throw ServerException(message: "Server returned unexpected status or data format during upload", statusCode: response.statusCode);
       }
+
     } on DioException catch (e) {
-      // Handle network or Dio specific errors
-       print("DioException uploading file: ${e.message}, Response: ${e.response?.data}");
-      throw ServerException(message: e.message ?? "Network error uploading file", statusCode: e.response?.statusCode);
-    } catch (e) {
-      // Handle unexpected errors
-      print("Unexpected error uploading file: $e");
-      throw ServerException(message: "An unexpected error occurred during file upload");
+      // Handle Dio/network errors
+      print("DioException uploading file: ${e.message}, Type: ${e.type}, Response: ${e.response?.data}");
+      // Provide more specific error messages based on DioErrorType if needed
+      String failureMessage = e.message ?? "Network error uploading file";
+      if (e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.sendTimeout || e.type == DioExceptionType.receiveTimeout) {
+          failureMessage = "网络超时，请稍后重试";
+      } else if (e.type == DioExceptionType.connectionError) {
+          // This might catch the 'Connection reset by peer'
+          failureMessage = "无法连接到服务器，请检查网络连接";
+      }
+      throw ServerException(message: failureMessage, statusCode: e.response?.statusCode);
+    } catch (e, stacktrace) {
+      // Handle other unexpected errors (e.g., during FormData creation)
+      print("Unexpected error during uploadFile: $e\n$stacktrace");
+      throw ServerException(message: "处理上传文件时发生意外错误"); // Generic internal error message
     }
+  }
+
+   // Helper to check if the API code indicates success (handles int 200 or String '200')
+  // Ensure this helper exists or copy it from ChatRemoteDataSourceImpl if needed
+  bool _isSuccessCode(dynamic codeValue) {
+    return (codeValue == 200) || (codeValue is String && codeValue == '200');
   }
 } 

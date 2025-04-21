@@ -50,7 +50,20 @@ class ChatRoom extends Equatable {
   }
 
   // Derived: Get the opponent participant (assuming one is the current user)
-  Participant getOpponent(int currentUserId) {
-    return participant1.id == currentUserId ? participant2 : participant1;
+  // FIX: Compare using referId, not internal id
+  Participant getOpponent(int currentUserReferId) {
+    // Ensure participant1 and participant2 are non-null before accessing referId
+    // Although the constructor requires them, adding checks for safety.
+    if (participant1.referId == currentUserReferId) {
+       return participant2;
+    }
+    if (participant2.referId == currentUserReferId) {
+       return participant1;
+    }
+    // This case should ideally not happen if the ChatRoom entity is constructed correctly
+    // based on a valid DTO and the current user is indeed a participant.
+    // Returning participant1 as a fallback, but consider logging an error.
+    print("Warning: Could not determine opponent in getOpponent. currentUserReferId: $currentUserReferId, p1.referId: ${participant1.referId}, p2.referId: ${participant2.referId}");
+    return participant1; // Fallback, might be wrong
   }
 } 

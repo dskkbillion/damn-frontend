@@ -26,21 +26,82 @@ class ChatRepositoryImpl implements IChatRepository {
   });
 
   @override
-  Future<Either<Failure, List<ChatRoom>>> getChatRooms() {
-    // TODO: Implement getChatRooms
-    throw UnimplementedError();
+  Future<Either<Failure, List<ChatRoom>>> getChatRooms() async {
+    // TODO: Check network connection using networkInfo if available
+    // if (await networkInfo.isConnected) {
+      try {
+        final userResult = await userRepository.getCurrentUser();
+        return await userResult.fold(
+          (failure) => Left(failure), // Propagate user fetch failure
+          (user) async {
+            try {
+              final chatRoomDtos = await remoteDataSource.getChatRooms();
+              // Map DTOs to Entities
+              final chatRooms = chatRoomDtos.map<ChatRoom>((dto) => dto.toEntity(currentUserId: user.id)).toList();
+              return Right(chatRooms);
+            } on ServerException catch (e) {
+              return Left(ServerFailure(message: e.message, code: e.statusCode?.toString()));
+            }
+          },
+        );
+      } catch (e) {
+        // Catch unexpected errors during user fetch or API call
+        print("Unexpected error in getChatRooms Repository: $e");
+        return Left(GeneralFailure());
+      }
+    // } else {
+    //   // Handle no network connection case if needed
+    //   return Left(NetworkFailure()); 
+    // }
   }
 
   @override
-  Future<Either<Failure, List<ChatMessage>>> getMessages(int chatId) {
-    // TODO: Implement getMessages
-    throw UnimplementedError();
+  Future<Either<Failure, List<ChatMessage>>> getMessages(int chatId) async {
+    // TODO: Implement getMessages similar to getChatRooms
+    // Need to fetch current user ID to pass to toEntity
+    try {
+       final userResult = await userRepository.getCurrentUser();
+       return await userResult.fold(
+         (failure) => Left(failure),
+         (user) async {
+           try {
+             final messageDtos = await remoteDataSource.getMessages(chatId);
+             final messages = messageDtos.map((dto) {
+               final senderId = dto.memberId ?? dto.doctorId ?? 0;
+               return dto.toEntity(currentUserId: user.id, senderId: senderId);
+             }).toList();
+             return Right(messages);
+           } on ServerException catch (e) {
+             return Left(ServerFailure(message: e.message, code: e.statusCode?.toString()));
+           }
+         },
+       );
+    } catch (e) {
+       print("Unexpected error in getMessages Repository: $e");
+       return Left(GeneralFailure());
+    }
   }
 
    @override
-  Future<Either<Failure, ChatRoom>> getRoomDetails(int chatId) {
-    // TODO: Implement getRoomDetails
-    throw UnimplementedError();
+  Future<Either<Failure, ChatRoom>> getRoomDetails(int chatId) async {
+     // TODO: Implement getRoomDetails similar to getChatRooms
+    try {
+       final userResult = await userRepository.getCurrentUser();
+       return await userResult.fold(
+         (failure) => Left(failure),
+         (user) async {
+           try {
+             final roomDto = await remoteDataSource.getRoomDetails(chatId);
+             return Right(roomDto.toEntity(currentUserId: user.id));
+           } on ServerException catch (e) {
+             return Left(ServerFailure(message: e.message, code: e.statusCode?.toString()));
+           }
+         },
+       );
+    } catch (e) {
+       print("Unexpected error in getRoomDetails Repository: $e");
+       return Left(GeneralFailure());
+    }
   }
 
   @override
@@ -79,9 +140,18 @@ class ChatRepositoryImpl implements IChatRepository {
   }
 
   @override
-  Future<Either<Failure, int>> createRoom(int participantId) {
-    // TODO: Implement createRoom
-    throw UnimplementedError();
+  Future<Either<Failure, int>> createRoom(int participantId) async {
+     print("[Repository] Creating room with participantId: $participantId");
+     // TODO: Check network connection if needed
+     try {
+       final chatId = await remoteDataSource.createRoom(participantId);
+       return Right(chatId);
+     } on ServerException catch (e) {
+       return Left(ServerFailure(message: e.message, code: e.statusCode?.toString()));
+     } catch (e) {
+       print("[Repository] Unexpected error creating room: $e");
+       return Left(GeneralFailure());
+     }
   }
 
   @override

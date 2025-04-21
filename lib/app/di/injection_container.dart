@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../core/config/app_config.dart'; // Assuming AppConfig holds the base API URL
 import '../../core/network/dio_interceptor.dart'; // Assuming you have/will create interceptors
+import 'package:dskk_flutter_refactor/core/network/header_interceptor.dart'; // Import the new header interceptor
 
 // Import the generated file
 import 'injection_container.config.dart'; 
@@ -78,3 +79,25 @@ class LoggingInterceptor extends Interceptor {
 //   @lazySingleton
 //   MyService get myService => MyServiceImpl();
 // } 
+
+// Updated Dio registration
+@lazySingleton
+Dio get realDio {
+  print('--- Creating Dio Instance (Preview Setup - Real API) ---');
+  // CONFIGURE DIO FOR REAL API
+  final dio = Dio(BaseOptions(
+    baseUrl: "http://app.duoshaokankan.com/prod-api", // Use REAL Base URL
+    connectTimeout: const Duration(seconds: 15),
+    receiveTimeout: const Duration(seconds: 30),
+    headers: {
+      'Accept': 'application/json',
+      // Authentication header should be added by AuthInterceptor typically
+    },
+  ));
+  // ADD INTERCEPTORS
+  dio.interceptors.add(HeaderInterceptor()); // Add the header interceptor
+  // dio.interceptors.add(LoggingInterceptor()); // Optional: Add logging
+  // dio.interceptors.add(AuthInterceptor(sl())); // TODO: Ensure AuthInterceptor is implemented and added
+  print('--- Dio Instance (Preview Setup - Real API) Created with Interceptors ---');
+  return dio;
+} 

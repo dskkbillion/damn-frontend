@@ -123,8 +123,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           Expanded(
             child: BlocConsumer<ChatMessagesBloc, ChatMessagesState>(
               listener: (context, state) {
-                 if (state is ChatMessagesLoaded) {
-                    _scrollToBottom();
+                 // FIX: Schedule scroll after the frame build
+                 if (state is ChatMessagesLoaded && state.messages.isNotEmpty) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                         _scrollToBottom();
+                    });
                  }
               },
               builder: (context, state) {
