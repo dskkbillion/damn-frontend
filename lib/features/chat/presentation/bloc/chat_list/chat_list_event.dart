@@ -1,7 +1,8 @@
 part of 'chat_list_bloc.dart';
 
-// NO IMPORTS HERE
+// Imports must be in the main library file (chat_list_bloc.dart)
 
+@immutable
 abstract class ChatListEvent extends Equatable {
   const ChatListEvent();
 
@@ -11,5 +12,8 @@ abstract class ChatListEvent extends Equatable {
 
 /// Event to trigger loading the chat room list.
 class LoadChatRoomList extends ChatListEvent {}
+
+// Event to refresh the chat room list (e.g., after returning from a chat)
+class RefreshChatList extends ChatListEvent {}
 
 // Add other events like UpdateChatRoomListWithNewMessage later 

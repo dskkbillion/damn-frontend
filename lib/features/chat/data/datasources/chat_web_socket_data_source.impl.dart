@@ -6,6 +6,7 @@ import 'package:dskk_flutter_refactor/features/chat/data/models/chat_message_dto
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:flutter/foundation.dart' show kIsWeb; // For platform check
+import 'package:injectable/injectable.dart'; // Import injectable
 
 import 'i_chat_web_socket_data_source.dart'; // Import interface
 
@@ -16,6 +17,7 @@ enum ConnectionStatus {
   error,
 }
 
+@LazySingleton(as: IChatWebSocketDataSource)
 class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
   WebSocketChannel? _channel;
   StreamSubscription? _channelSubscription;

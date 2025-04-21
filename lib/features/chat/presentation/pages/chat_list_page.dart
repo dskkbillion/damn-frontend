@@ -53,7 +53,7 @@ class ChatListPage extends StatelessWidget {
                     chatRoom: chatRoom,
                     currentUserId: currentUserId, // Pass currentUserId
                     onTap: () {
-                      // Navigation logic remains the same
+                      // Use .then() to handle the result when ChatRoomPage pops
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -63,7 +63,14 @@ class ChatListPage extends StatelessWidget {
                             child: ChatRoomPage(chatId: chatRoom.id),
                           ),
                         ),
-                      );
+                      ).then((result) {
+                        // If ChatRoomPage popped with true, refresh the list
+                        if (result == true) {
+                          print('[ChatListPage] Refreshing list after viewing chat ${chatRoom.id}');
+                          // Add an event to ChatListBloc to trigger refresh
+                          context.read<ChatListBloc>().add(RefreshChatList()); 
+                        }
+                      });
                     },
                   ),
                 );

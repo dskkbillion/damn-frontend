@@ -90,6 +90,15 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         elevation: 0.5,                 // Add subtle elevation
         shadowColor: Colors.grey[300],    // Set shadow color
         centerTitle: true,              // Center the title
+        // Add custom leading to control back button behavior
+        leading: BackButton(
+           onPressed: () {
+               // Check if messages were loaded (implies chat was potentially read)
+               // You might want a more robust check, e.g., tracking if the user scrolled or sent a message
+               bool chatWasViewed = context.read<ChatMessagesBloc>().state is ChatMessagesLoaded;
+               Navigator.pop(context, chatWasViewed); // Return true if viewed, false otherwise
+           },
+        ),
         title: BlocBuilder<ChatMessagesBloc, ChatMessagesState>(
           builder: (context, state) {
             if (state is ChatMessagesLoaded) {

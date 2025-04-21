@@ -209,7 +209,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         children: [
           if (!isCurrentUser) avatarWidget,
           Flexible(child: bubbleContent),
-          if (isCurrentUser) const SizedBox(width: 44),
+          if (isCurrentUser) const SizedBox.shrink(),
         ],
       ),
     );

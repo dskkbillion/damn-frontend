@@ -8,6 +8,9 @@ import 'package:dartz/dartz.dart';
 import 'package:intl/date_symbol_data_local.dart'; // Import for date formatting initialization
 import 'package:dio/dio.dart';
 
+// Import the dependency injection setup
+import 'app/di/injection_container.dart';
+
 // Core imports
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart'; // For NoParams
@@ -389,78 +392,66 @@ class MockDeleteChatMessage implements DeleteChatMessage {
 }
 
 // --- Dependency Injection Setup ---
-Future<void> setupLocator() async {
+Future<void> setupLocatorForPreview() async {
   print('Setting up locator...');
-  // Register Mocks First
-  sl.registerLazySingleton<MockChatRepository>(() => MockChatRepository());
-  sl.registerLazySingleton<MockFileRepository>(() => MockFileRepository());
-  sl.registerLazySingleton<IUserRepository>(() => MockUserRepository());
+  sl.reset(); // Reset GetIt for clean setup
+
+  // --- Register Core Dependencies (Keep Mocks or Reals as needed) ---
+  // Dio (Provide a basic instance or a mock if network calls are problematic)
+  sl.registerLazySingleton<Dio>(() => Dio(BaseOptions(
+    baseUrl: "http://app.duoshaokankan.com/prod-api", // Use REAL base URL now
+     connectTimeout: const Duration(seconds: 15),
+     receiveTimeout: const Duration(seconds: 30),
+     // TODO: Add REAL interceptors, especially for Authentication!
+     // interceptors: [AuthInterceptor(sl()), LoggingInterceptor()], 
+    )));
+
+  // Mock Navigation Service
   sl.registerLazySingleton<NavigationService>(() => MockNavigationService());
 
-  // Register Use Cases
-  sl.registerLazySingleton<GetChatRoomList>(() => MockGetChatRoomList());
-  sl.registerLazySingleton<GetMessageList>(() => MockGetMessageList());
-  sl.registerLazySingleton<SendMessage>(() => SendMessageImpl(sl(), sl())); // Keep Real SendMessage for testing
-  sl.registerLazySingleton<RevokeMessage>(() => MockRevokeMessage());
-  sl.registerLazySingleton<GetChatRoomDetails>(() => MockGetChatRoomDetails());
-  sl.registerLazySingleton<DeleteChatMessage>(() => MockDeleteChatMessage());
+  // --- Register Auth Feature Dependencies ---
+  // Use Mock User Repository for now, assuming login is not part of preview
+  sl.registerLazySingleton<IUserRepository>(() => MockUserRepository());
 
-  // Register Repositories
-  // FIX: Register interfaces with MOCK implementations for preview
-  sl.registerLazySingleton<IChatRepository>(() => sl<MockChatRepository>());
-  sl.registerLazySingleton<IFileRepository>(() => sl<MockFileRepository>());
-  // Comment out Real Repository registrations for now
+  // --- Register Chat Feature Dependencies ---
+
+  // COMMENT OUT MOCK DATASOURCES AND REPOSITORIES
   /*
-   sl.registerLazySingleton<IChatRepository>(
-     () => ChatRepositoryImpl(
-       remoteDataSource: sl(),
-       userRepository: sl(),
-     ),
-   );
-   sl.registerLazySingleton<IFileRepository>(
-     () => FileRepositoryImpl(
-       remoteDataSource: sl(),
-     ),
-   );
-   */
+  sl.registerLazySingleton<IChatRemoteDataSource>(() => MockChatRemoteDataSource());
+  sl.registerLazySingleton<IFileRemoteDataSource>(() => MockFileRemoteDataSource());
+  sl.registerLazySingleton<IChatWebSocketDataSource>(() => MockChatWebSocketDataSource());
+  sl.registerLazySingleton<IFileRepository>(() => MockFileRepository());
+  sl.registerLazySingleton<IChatRepository>(() => MockChatRepository());
+  */
 
-  // Register DataSources (These are needed by the REAL SendMessageImpl)
-  sl.registerLazySingleton<IChatRemoteDataSource>(
-    () => ChatRemoteDataSourceImpl(dio: sl()),
-  );
-  sl.registerLazySingleton<IFileRemoteDataSource>(
-    () => FileRemoteDataSourceImpl(dio: sl()),
-  );
-  sl.registerLazySingleton<IChatWebSocketDataSource>(() => ChatWebSocketDataSourceImpl());
+  // INSTEAD, LET INJECTABLE HANDLE THE REAL IMPLEMENTATIONS
+  // Ensure configureDependencies is called to register annotated singletons
+  await configureDependencies(); // This will register the REAL implementations we annotated
 
-  // Register External Dependencies
-  sl.registerLazySingleton<Dio>(() => Dio());
-
-  // Register Blocs
-  sl.registerFactory(() => ChatListBloc(getChatRoomList: sl()));
-  sl.registerFactoryParam<ChatMessagesBloc, int, void>(
-    (chatId, _) => ChatMessagesBloc(
+  // --- Register Blocs (using real dependencies now) ---
+  // Blocs depend on Repositories/UseCases which are now real (via configureDependencies)
+  sl.registerFactory<ChatListBloc>(() => ChatListBloc(getChatRoomList: sl()));
+  sl.registerFactoryParam<ChatMessagesBloc, int, void>((chatId, _) => ChatMessagesBloc(
       chatId: chatId,
       getMessageList: sl(),
       sendMessage: sl(),
       revokeMessage: sl(),
       getChatRoomDetails: sl(),
-      userRepository: sl(),
       deleteChatMessage: sl(),
-      webSocketDataSource: sl<IChatWebSocketDataSource>(),
-    ),
-  );
+      userRepository: sl(), // Now uses MockUserRepository unless you change it above
+      webSocketDataSource: sl(), // Now uses the real WebSocket source
+  ));
 
   print('Locator setup complete.');
 }
 
 // --- Main Application ---
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Initialize date formatting for the 'intl' package
   // You might want to use a specific locale if needed, e.g., 'zh_CN'
-  await initializeDateFormatting('en_US', null);
-  await setupLocator();
+  await initializeDateFormatting('zh_CN', null);
+  await setupLocatorForPreview();
   runApp(const ChatPreviewApp());
 }
 
