@@ -17,4 +17,21 @@ class ServerFailure extends Failure {
 }
 
 /// 缓存失败
-class CacheFailure extends Failure {}
+class CacheFailure extends Failure {
+  final String? message;
+
+  CacheFailure({this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+/// 网络失败
+class NetworkFailure extends Failure {
+  final String? message;
+
+  NetworkFailure({this.message});
+
+  @override
+  List<Object?> get props => [message];
+}

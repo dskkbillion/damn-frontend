@@ -1,4 +1,5 @@
 import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:injectable/injectable.dart';
 
 /// 网络信息接口，用于检查网络连接状态
 abstract class NetworkInfo {
@@ -7,6 +8,7 @@ abstract class NetworkInfo {
 }
 
 /// 网络信息实现类
+@LazySingleton(as: NetworkInfo)
 class NetworkInfoImpl implements NetworkInfo {
   final InternetConnectionChecker connectionChecker;
 
