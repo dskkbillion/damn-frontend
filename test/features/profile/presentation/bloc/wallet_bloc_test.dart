@@ -8,20 +8,26 @@ import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart';
 import 'package:dskk_flutter_refactor/features/profile/domain/entities/wallet_summary.dart';
 import 'package:dskk_flutter_refactor/features/profile/domain/usecases/get_wallet_summary.dart';
+import 'package:dskk_flutter_refactor/features/profile/domain/usecases/get_wallet_transactions.dart';
 import 'package:dskk_flutter_refactor/features/profile/presentation/bloc/wallet_bloc.dart';
 import 'package:dskk_flutter_refactor/features/profile/presentation/bloc/wallet_event.dart';
 import 'package:dskk_flutter_refactor/features/profile/presentation/bloc/wallet_state.dart';
 
-@GenerateMocks([GetWalletSummary])
+@GenerateMocks([GetWalletSummary, GetWalletTransactions])
 import 'wallet_bloc_test.mocks.dart';
 
 void main() {
   late WalletBloc bloc;
   late MockGetWalletSummary mockGetWalletSummary;
+  late MockGetWalletTransactions mockGetWalletTransactions;
 
   setUp(() {
     mockGetWalletSummary = MockGetWalletSummary();
-    bloc = WalletBloc(getWalletSummary: mockGetWalletSummary);
+    mockGetWalletTransactions = MockGetWalletTransactions();
+    bloc = WalletBloc(
+      getWalletSummary: mockGetWalletSummary,
+      getWalletTransactions: mockGetWalletTransactions,
+    );
   });
 
   tearDown(() {

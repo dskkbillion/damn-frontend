@@ -55,15 +55,19 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           return MainShellPage(navigationShell: navigationShell);
         },
         branches: [
-          // Branch for '多少看看' (Discover)
+          // Branch 1: AI Chat (Replaces Discover)
           StatefulShellBranch(
             routes: [
-              GoRoute(
-                path: '/discover',
-                pageBuilder: (context, state) => const NoTransitionPage(
-                  child: PlaceholderPage(title: '多少看看'),
-                ),
-              ),
+              // Use AiDocsRoutes, assuming its root path is handled internally or is '/ai_chat'
+              ...AiDocsRoutes.routes, 
+              // If AiDocsRoutes doesn't define the root path, add it explicitly:
+              // GoRoute(
+              //   path: '/ai_chat', // Define the root path for this branch
+              //   pageBuilder: (context, state) => NoTransitionPage(
+              //     child: AiChatPage(), // Replace with actual AI Chat page
+              //   ),
+              //   routes: AiDocsRoutes.routes, // Assuming these are sub-routes
+              // ),
             ],
           ),
           // Branch for '主页' (Home) - Integrated from theirs
@@ -107,7 +111,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ...AuthRoutes.routes, 
       ...OrderRoutes.routes, 
       ...AfterSalesRoutes.routes, 
-      ...AiDocsRoutes.routes, 
+      // ...AiDocsRoutes.routes, // Remove duplicate AiDocs routes from top-level
       // Profile routes are in the shell
     ],
 

@@ -36,11 +36,11 @@ class MainShellPage extends StatelessWidget { // Changed to StatelessWidget
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
         items: const <BottomNavigationBarItem>[
-          // Icons and labels remain the same
+          // Change the first item to AI Chat
           BottomNavigationBarItem(
-            icon: Icon(Icons.star_border_outlined),
-            activeIcon: Icon(Icons.star),
-            label: '多少看看',
+            icon: Icon(Icons.auto_awesome_outlined), // Example: AI icon
+            activeIcon: Icon(Icons.auto_awesome),     // Example: AI icon active
+            label: 'AI助手',                          // Example: AI label
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),

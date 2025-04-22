@@ -5,13 +5,13 @@ import 'package:mockito/mockito.dart';
 
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/core/network/network_info.dart';
-import 'package:dskk_flutter_refactor/features/profile/data/datasources/profile_local_data_source.dart';
-import 'package:dskk_flutter_refactor/features/profile/data/datasources/profile_remote_data_source.dart';
+import 'package:dskk_flutter_refactor/features/profile/data/datasources/profile_local_data_source.dart' as local_ds;
+import 'package:dskk_flutter_refactor/features/profile/data/datasources/profile_remote_data_source.dart' as remote_ds;
 import 'package:dskk_flutter_refactor/features/profile/data/models/user_profile_dto.dart';
 import 'package:dskk_flutter_refactor/features/profile/data/repositories/user_profile_repository_impl.dart';
 import 'package:dskk_flutter_refactor/features/profile/domain/entities/user_profile.dart';
 
-@GenerateMocks([ProfileRemoteDataSource, ProfileLocalDataSource, NetworkInfo])
+@GenerateMocks([remote_ds.ProfileRemoteDataSource, local_ds.ProfileLocalDataSource, NetworkInfo])
 import 'user_profile_repository_impl_test.mocks.dart';
 
 void main() {
@@ -93,7 +93,7 @@ void main() {
       test('应该返回ServerFailure当远程调用失败时', () async {
         // 安排
         when(mockRemoteDataSource.getUserProfile())
-            .thenThrow(ServerException(message: '服务器错误'));
+            .thenThrow(remote_ds.ServerException(message: '服务器错误'));
 
         // 行动
         final result = await repository.getUserProfile();
@@ -127,7 +127,7 @@ void main() {
       test('应该返回CacheFailure当本地缓存不存在时', () async {
         // 安排
         when(mockLocalDataSource.getLastUserProfile())
-            .thenThrow(CacheException(message: '没有缓存数据'));
+            .thenThrow(local_ds.CacheException());
 
         // 行动
         final result = await repository.getUserProfile();
@@ -135,7 +135,7 @@ void main() {
         // 断言
         verifyZeroInteractions(mockRemoteDataSource);
         verify(mockLocalDataSource.getLastUserProfile());
-        expect(result, equals(Left(const CacheFailure(message: '没有缓存的用户资料'))));
+        expect(result, equals(Left(const CacheFailure(message: '未能从本地缓存加载用户资料'))));
       });
     });
   });

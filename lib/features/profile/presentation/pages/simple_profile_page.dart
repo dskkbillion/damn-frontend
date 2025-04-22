@@ -28,19 +28,20 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('个人中心'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('设置功能尚未实现')),
-              );
-            },
-          ),
-        ],
-      ),
+      // Remove the AppBar
+      // appBar: AppBar(
+      //   title: const Text('个人中心'),
+      //   actions: [
+      //     IconButton(
+      //       icon: const Icon(Icons.settings),
+      //       onPressed: () {
+      //         ScaffoldMessenger.of(context).showSnackBar(
+      //           const SnackBar(content: Text('设置功能尚未实现')),
+      //         );
+      //       },
+      //     ),
+      //   ],
+      // ),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -109,35 +110,6 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
             const SizedBox(height: 24),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 3,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Theme.of(context).primaryColor,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.smart_toy),
-            label: '多少看看',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '首页',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.message),
-            label: '消息',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: '我的',
-          ),
-        ],
-        onTap: (index) {
-          if (index != 3) {
-            _showFeatureNotImplemented('切换到其他标签页');
-          }
-        },
       ),
     );
   }

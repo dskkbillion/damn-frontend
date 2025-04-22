@@ -154,13 +154,6 @@ import '../../features/orders/presentation/seller/bloc/seller_order_detail_bloc.
     as _i984;
 import '../../features/orders/presentation/seller/bloc/seller_order_list_bloc.dart'
     as _i470;
-import '../../features/profile/domain/repositories/i_wallet_repository.dart'
-    as _i636;
-import '../../features/profile/domain/usecases/get_wallet_summary.dart'
-    as _i226;
-import '../../features/profile/domain/usecases/get_wallet_transactions.dart'
-    as _i332;
-import '../../features/profile/presentation/bloc/wallet_bloc.dart' as _i579;
 import 'injection_container.dart' as _i809;
 
 // initializes the registration of main-scope dependencies inside of GetIt
@@ -196,29 +189,21 @@ Future<_i174.GetIt> init(
       registerModule.createDio(gh<String>(instanceName: 'backendBaseUrl')));
   gh.lazySingleton<_i691.TokenValidator>(
       () => _i691.TokenValidatorImpl(gh<_i361.Dio>()));
+  gh.lazySingleton<_i822.ISecureStorageRepository>(() =>
+      _i912.SecureStorageRepositoryImpl(gh<_i558.FlutterSecureStorage>()));
   gh.lazySingleton<_i493.IHttpClient>(() => _i962.DioHttpClient());
   gh.lazySingleton<_i607.IAiChatRemoteDataSource>(
       () => _i404.AiChatRemoteDataSourceImpl(gh<_i493.IHttpClient>()));
   gh.lazySingleton<_i319.IAiChatRepository>(() => _i1012.AiChatRepositoryImpl(
       remoteDataSource: gh<_i607.IAiChatRemoteDataSource>()));
-  gh.factory<_i226.GetWalletSummary>(
-      () => _i226.GetWalletSummary(gh<_i636.IWalletRepository>()));
-  gh.factory<_i332.GetWalletTransactions>(
-      () => _i332.GetWalletTransactions(gh<_i636.IWalletRepository>()));
   gh.lazySingleton<_i232.UserInfoRemoteDataSource>(
       () => _i957.UserInfoRemoteDataSourceImpl(gh<_i361.Dio>()));
   gh.lazySingleton<_i50.NetworkInfo>(
       () => _i80.NetworkInfoImpl(gh<_i895.Connectivity>()));
   gh.lazySingleton<_i107.AuthRemoteDataSource>(
       () => _i123.AuthRemoteDataSourceImpl(dio: gh<_i361.Dio>()));
-  gh.factory<_i579.WalletBloc>(() => _i579.WalletBloc(
-        getWalletSummary: gh<_i226.GetWalletSummary>(),
-        getWalletTransactions: gh<_i332.GetWalletTransactions>(),
-      ));
   gh.lazySingleton<_i406.IOrderLocalDataSource>(() =>
       _i1016.OrderLocalDataSourceImpl(appDatabase: gh<_i50.AppDatabase>()));
-  gh.lazySingleton<_i822.ISecureStorageRepository>(() =>
-      _i912.SecureStorageRepositoryImpl(gh<_i558.FlutterSecureStorage>()));
   gh.lazySingleton<_i234.AllocateChatResourceUseCase>(
       () => _i234.AllocateChatResourceUseCase(gh<_i319.IAiChatRepository>()));
   gh.lazySingleton<_i567.CreateConversationUseCase>(

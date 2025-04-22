@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -20,8 +21,8 @@ final sl = GetIt.instance;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // 加载环境变量
-  await dotenv.load(fileName: '.env');
+  // 加载环境变量 - Use default assets loading
+  await dotenv.load();
   
   // 初始化安全存储
   final secureStorage = const FlutterSecureStorage();

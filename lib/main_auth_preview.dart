@@ -59,11 +59,24 @@ class FakeSecureStorageRepository implements ISecureStorageRepository {
   @override
   Future<String?> getToken() => getString('auth_token');
   @override
-  Future<String?> getUserId() async => (await getInt('user_id'))?.toString();
+  Future<int?> getUserId() async {
+    // Read as String from storage, then parse to int
+    final valueString = _storage['user_id'] as String?;
+    print('[FakeSecureStorage] Getting user_id as string: $valueString');
+    if (valueString != null) {
+      return int.tryParse(valueString);
+    }
+    return null;
+  }
   @override
   Future<void> saveToken(String token) => saveString('auth_token', token);
   @override
-  Future<void> saveUserId(String userId) async => saveInt('user_id', int.parse(userId));
+  Future<void> saveUserId(int userId) async {
+    // Store as String in the fake storage
+    final valueString = userId.toString();
+    print('[FakeSecureStorage] Saving user_id as string: $valueString');
+    _storage['user_id'] = valueString;
+  }
   @override
   Future<void> deleteToken() => delete('auth_token');
   @override

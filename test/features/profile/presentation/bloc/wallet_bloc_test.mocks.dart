@@ -8,12 +8,16 @@ import 'dart:async' as _i5;
 import 'package:dartz/dartz.dart' as _i3;
 import 'package:dskk_flutter_refactor/core/error/failures.dart' as _i6;
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart' as _i8;
+import 'package:dskk_flutter_refactor/features/profile/data/models/transaction_dto.dart'
+    as _i10;
 import 'package:dskk_flutter_refactor/features/profile/domain/entities/wallet_summary.dart'
     as _i7;
 import 'package:dskk_flutter_refactor/features/profile/domain/repositories/i_wallet_repository.dart'
     as _i2;
 import 'package:dskk_flutter_refactor/features/profile/domain/usecases/get_wallet_summary.dart'
     as _i4;
+import 'package:dskk_flutter_refactor/features/profile/domain/usecases/get_wallet_transactions.dart'
+    as _i9;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -86,4 +90,42 @@ class MockGetWalletSummary extends _i1.Mock implements _i4.GetWalletSummary {
           ),
         )),
       ) as _i5.Future<_i3.Either<_i6.Failure, _i7.WalletSummary>>);
+}
+
+/// A class which mocks [GetWalletTransactions].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockGetWalletTransactions extends _i1.Mock
+    implements _i9.GetWalletTransactions {
+  MockGetWalletTransactions() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i2.IWalletRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeIWalletRepository_0(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i2.IWalletRepository);
+
+  @override
+  _i5.Future<_i3.Either<_i6.Failure, List<_i10.TransactionDto>>> call(
+          _i9.TransactionsParams? params) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #call,
+          [params],
+        ),
+        returnValue: _i5
+            .Future<_i3.Either<_i6.Failure, List<_i10.TransactionDto>>>.value(
+            _FakeEither_1<_i6.Failure, List<_i10.TransactionDto>>(
+          this,
+          Invocation.method(
+            #call,
+            [params],
+          ),
+        )),
+      ) as _i5.Future<_i3.Either<_i6.Failure, List<_i10.TransactionDto>>>);
 }

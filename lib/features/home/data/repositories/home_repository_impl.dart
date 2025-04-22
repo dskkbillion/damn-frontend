@@ -32,7 +32,8 @@ class HomeRepositoryImpl implements IHomeRepository {
         }
         return Right(remoteHomePageData);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        // Provide a default message if e.message is null
+        return Left(ServerFailure(message: e.message ?? '获取首页数据时发生服务器错误'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -46,9 +47,11 @@ class HomeRepositoryImpl implements IHomeRepository {
         final localHomePageData = await localDataSource!.getLastHomePageData();
         return Right(localHomePageData);
       } on CacheException {
-        return Left(CacheFailure());
+        // Add a message for CacheFailure
+        return Left(const CacheFailure(message: '未能从本地缓存加载首页数据'));
       } catch (e) {
-        return Left(CacheFailure());
+        // Add a message for other cache-related errors
+        return Left(CacheFailure(message: '加载本地首页数据时发生错误: ${e.toString()}'));
       }
     }
   }
@@ -65,7 +68,8 @@ class HomeRepositoryImpl implements IHomeRepository {
         }
         return Right(remoteHomeFeed);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        // Provide a default message if e.message is null
+        return Left(ServerFailure(message: e.message ?? '获取首页Feed时发生服务器错误'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -79,9 +83,11 @@ class HomeRepositoryImpl implements IHomeRepository {
         final localHomeFeed = await localDataSource!.getLastHomeFeed(page);
         return Right(localHomeFeed);
       } on CacheException {
-        return Left(CacheFailure());
+        // Add a message for CacheFailure
+        return Left(const CacheFailure(message: '未能从本地缓存加载首页Feed'));
       } catch (e) {
-        return Left(CacheFailure());
+        // Add a message for other cache-related errors
+        return Left(CacheFailure(message: '加载本地首页Feed时发生错误: ${e.toString()}'));
       }
     }
   }

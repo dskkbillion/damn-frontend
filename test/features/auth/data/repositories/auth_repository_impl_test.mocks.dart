@@ -137,15 +137,6 @@ class MockISecureStorageRepository extends _i1.Mock
   }
 
   @override
-  _i5.Future<int?> getInt(String? key) => (super.noSuchMethod(
-        Invocation.method(
-          #getInt,
-          [key],
-        ),
-        returnValue: _i5.Future<int?>.value(),
-      ) as _i5.Future<int?>);
-
-  @override
   _i5.Future<String?> getString(String? key) => (super.noSuchMethod(
         Invocation.method(
           #getString,
@@ -155,13 +146,13 @@ class MockISecureStorageRepository extends _i1.Mock
       ) as _i5.Future<String?>);
 
   @override
-  _i5.Future<void> saveInt(
+  _i5.Future<void> saveString(
     String? key,
-    int? value,
+    String? value,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
-          #saveInt,
+          #saveString,
           [
             key,
             value,
@@ -172,13 +163,22 @@ class MockISecureStorageRepository extends _i1.Mock
       ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> saveString(
+  _i5.Future<int?> getInt(String? key) => (super.noSuchMethod(
+        Invocation.method(
+          #getInt,
+          [key],
+        ),
+        returnValue: _i5.Future<int?>.value(),
+      ) as _i5.Future<int?>);
+
+  @override
+  _i5.Future<void> saveInt(
     String? key,
-    String? value,
+    int? value,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
-          #saveString,
+          #saveInt,
           [
             key,
             value,
@@ -199,28 +199,9 @@ class MockISecureStorageRepository extends _i1.Mock
       ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> clearAllAuthData() => (super.noSuchMethod(
-        Invocation.method(
-          #clearAllAuthData,
-          [],
-        ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
-
-  @override
   _i5.Future<String?> getToken() => (super.noSuchMethod(
         Invocation.method(
           #getToken,
-          [],
-        ),
-        returnValue: _i5.Future<String?>.value(),
-      ) as _i5.Future<String?>);
-
-  @override
-  _i5.Future<String?> getUserId() => (super.noSuchMethod(
-        Invocation.method(
-          #getUserId,
           [],
         ),
         returnValue: _i5.Future<String?>.value(),
@@ -237,20 +218,29 @@ class MockISecureStorageRepository extends _i1.Mock
       ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> saveUserId(String? userId) => (super.noSuchMethod(
+  _i5.Future<void> deleteToken() => (super.noSuchMethod(
         Invocation.method(
-          #saveUserId,
-          [userId],
+          #deleteToken,
+          [],
         ),
         returnValue: _i5.Future<void>.value(),
         returnValueForMissingStub: _i5.Future<void>.value(),
       ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> deleteToken() => (super.noSuchMethod(
+  _i5.Future<int?> getUserId() => (super.noSuchMethod(
         Invocation.method(
-          #deleteToken,
+          #getUserId,
           [],
+        ),
+        returnValue: _i5.Future<int?>.value(),
+      ) as _i5.Future<int?>);
+
+  @override
+  _i5.Future<void> saveUserId(int? userId) => (super.noSuchMethod(
+        Invocation.method(
+          #saveUserId,
+          [userId],
         ),
         returnValue: _i5.Future<void>.value(),
         returnValueForMissingStub: _i5.Future<void>.value(),
@@ -289,6 +279,16 @@ class MockISecureStorageRepository extends _i1.Mock
   _i5.Future<void> deleteCommonUserId() => (super.noSuchMethod(
         Invocation.method(
           #deleteCommonUserId,
+          [],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> clearAllAuthData() => (super.noSuchMethod(
+        Invocation.method(
+          #clearAllAuthData,
           [],
         ),
         returnValue: _i5.Future<void>.value(),

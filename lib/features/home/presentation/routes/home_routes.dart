@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/features/home/presentation/bloc/home_bloc.dart';
+import 'package:dskk_flutter_refactor/features/home/di/home_di.dart';
 
 import '../pages/home_page.dart';
 import '../pages/product_detail_page.dart';
@@ -47,7 +50,10 @@ class HomeRoutes {
     GoRoute(
       path: homePath,
       name: homeName,
-      builder: (context, state) => const HomePage(),
+      builder: (context, state) => BlocProvider<HomeBloc>(
+        create: (_) => sl<HomeBloc>(),
+        child: const HomePage(),
+      ),
       routes: [
         // 产品详情路由
         GoRoute(

@@ -10,6 +10,7 @@ import 'package:dskk_flutter_refactor/app/di/injection_container.dart'; // Expor
 // Import the IAuthRepository interface and the Mock implementation
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
 import 'package:dskk_flutter_refactor/core/auth/repositories/mocks/mock_auth_repository.dart';
+import 'package:dskk_flutter_refactor/features/home/di/home_di.dart'; // Import Home DI
 
 /// Application entry point for running the app with the Dev Menu navigator tab.
 /// Use this for convenient testing of different module entry points during development.
@@ -49,6 +50,10 @@ Future<void> main() async {
   // (injectable will now handle PackageInfo registration via @preResolve)
   await configureDependencies(backendBaseUrl: backendBaseUrl!);
   print('[main_dev_preview] Core dependencies configured.');
+
+  // Initialize Home module dependencies AFTER core dependencies
+  await initHomeDi();
+  print('[main_dev_preview] Home dependencies configured.');
 
   // --- Override AuthRepository with Mock for Dev Preview --- 
   print('[main_dev_preview] Overriding IAuthRepository with MockAuthRepository...');

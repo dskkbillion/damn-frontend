@@ -11,11 +11,20 @@ import '../domain/repositories/home_repository.dart';
 import '../domain/usecases/get_home_feed_usecase.dart';
 import '../domain/usecases/get_home_page_data_usecase.dart';
 import '../presentation/navigation/home_navigation_service.dart';
+import '../presentation/bloc/home_bloc.dart';
 
 final sl = GetIt.instance;
 
 /// 初始化 Home 模块的依赖注入
 Future<void> initHomeDi() async {
+  // Register HomeBloc itself
+  // Use registerFactory for Blocs/Cubits as they often have state
+  sl.registerFactory(() => HomeBloc(
+        getHomePageData: sl(),
+        getHomeFeed: sl(),
+        navigationService: sl(),
+      ));
+
   // 注册 Use Cases
   sl.registerLazySingleton(() => GetHomePageDataUseCase(sl()));
   sl.registerLazySingleton(() => GetHomeFeedUseCase(sl()));
