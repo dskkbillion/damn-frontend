@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.4.0 <4.0.0' # Updated to a recent SDK range
+  sdk: '>=3.4.0 <4.0.0' # Use higher constraint
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -34,90 +34,76 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.6 # Keep default icons
 
-  # Core Libraries - Tech Stack Selection
-  flutter_riverpod: ^2.5.1 # State Management (Riverpod) - Re-enabled
-  riverpod_annotation: ^2.3.5 # Riverpod Annotations for generator - Re-enabled
-  get_it: ^7.7.0 # Dependency Injection (Service Locator)
-  injectable: ^2.4.1 # DI Code Generator Helper
-  go_router: ^14.1.0 # Navigation
+  # Core Libraries - Merged
+  flutter_riverpod: ^2.5.1 
+  riverpod_annotation: ^2.3.5 
+  get_it: ^7.7.0 
+  injectable: ^2.4.1 
+  go_router: ^14.1.0 
   bloc: ^8.1.4
   flutter_bloc: ^8.1.5
+  bloc_concurrency: ^0.2.5 # From HEAD
+  stream_transform: ^2.1.0 # From HEAD
 
-  # Added for Domain Layer & Data Models
+  # Domain/Data - Merged
   dartz: ^0.10.1
   equatable: ^2.0.5
   freezed_annotation: ^2.4.1
   json_annotation: ^4.8.1
-  dio: ^5.8.0+1
-  pretty_dio_logger: ^1.4.0
-  bloc_concurrency: ^0.2.5
-  stream_transform: ^2.1.0
-  shared_preferences: ^2.2.3
-  # flutter_secure_storage: ^9.2.2 # Needed by CoreDioClient/Auth & AI Docs - Replaced by below
-  package_info_plus: ^8.3.0
 
-  # --- Add record and permission_handler ---
-  # REMOVED record: ^5.0.5
-  # REMOVED permission_handler: ^11.3.1 
-  http: ^1.3.0
-  carousel_slider: ^4.2.1
-  smooth_page_indicator: ^1.1.0
-  flutter_dotenv: ^5.1.0
+  # Networking - Merged
+  dio: ^5.8.0+1 # From HEAD
+  pretty_dio_logger: ^1.4.0 # From HEAD
+  http: ^1.3.0 # From HEAD
+  http_parser: ^4.0.2 # From HEAD
 
-  # Order Module specific / additions
-  image_picker: ^1.1.2
-  flutter_image_compress: ^2.3.0
-  path_provider: ^2.1.3
-  path: ^1.9.0
-  file_picker: ^8.0.5
+  # Storage - Merged
+  shared_preferences: ^2.2.3 # Higher version from HEAD
+  flutter_secure_storage: ^9.2.2 # Keep version from HEAD
+  drift: ^2.26.0 # From HEAD
+  sqlite3_flutter_libs: ^0.5.32 # From HEAD
 
-  # Drift dependencies (from order-module)
-  drift: ^2.26.0
-  sqlite3_flutter_libs: ^0.5.32
+  # Utilities - Merged
+  flutter_dotenv: ^5.1.0 # From HEAD
+  package_info_plus: ^8.3.0 # Higher version from HEAD
+  path_provider: ^2.1.3 # From HEAD
+  path: ^1.9.0 # From HEAD
+  connectivity_plus: ^6.0.3 # From HEAD
+  internet_connection_checker: ^1.0.0 # Keep this version
 
-  # Audio/Record dependencies (from ai-docs/order-module)
-  audioplayers: ^6.0.0
-  record: ^5.0.5 # KEEP THIS ONE
-  permission_handler: ^11.3.1 # KEEP THIS ONE
-
-  # State Management (commented out) - Removed duplicate commented section
-
-  # --- SVG Support ---
-  flutter_svg: ^2.0.9 # Added for SVG Logo
-
-  # --- Core Utilities ---
-  flutter_secure_storage: ^9.2.2 # For secure storage (Token, UserID) - Kept this version
-  connectivity_plus: ^6.0.3     # For network status checking
-
-  # 网络和存储
-  internet_connection_checker: ^1.0.0 # KEEP THIS ONE
-
-  # UI和文件处理
-  http_parser: ^4.0.2
+  # Feature specific - Merged
+  image_picker: ^1.1.2 # From HEAD
+  flutter_image_compress: ^2.3.0 # From HEAD
+  file_picker: ^8.0.5 # From HEAD
+  audioplayers: ^6.0.0 # From HEAD
+  record: ^5.0.5 # From HEAD
+  permission_handler: ^11.3.1 # From HEAD
+  carousel_slider: ^4.2.1 # Keep this version
+  smooth_page_indicator: ^1.1.0 # Keep this version
+  cached_network_image: ^3.3.1 # From theirs (refactor/home)
+  flutter_staggered_grid_view: ^0.7.0 # From theirs (refactor/home)
+  flutter_svg: ^2.0.9 # From HEAD
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  bloc_test: ^9.1.7 # Add bloc_test back
-  mockito: ^5.4.4 # Use Mockito for mocking
+  bloc_test: ^9.1.7 # From HEAD
+  mockito: ^5.4.4 # From HEAD
   flutter_lints: ^3.0.0 # Common, keep one entry
 
-  # Code Generators
-  build_runner: ^2.4.10 # Kept newer version from HEAD
-  injectable_generator: ^2.6.1 # DI Code Generator
-  riverpod_generator: ^2.4.0 # Riverpod Code Generator
+  # Code Generators - Merged
+  build_runner: ^2.4.10 # Higher from HEAD
+  injectable_generator: ^2.6.1 
+  riverpod_generator: ^2.4.0 
   freezed: ^2.4.7 # From HEAD
-  json_serializable: ^6.8.0 # Kept newer version from order-module
-  drift_dev: ^2.26.0 # From order-module
+  json_serializable: ^6.8.0 # Higher from HEAD
+  drift_dev: ^2.26.0 # From HEAD
 
-  # Testing
+  # Testing - Merged
   test: ^1.24.9 # From HEAD
 
-  # Explicitly override analyzer version to resolve build_runner issues
+  # Overrides - Merged
   analyzer: ^6.4.1 # From HEAD
-
-  # custom_lint: # Consider adding for custom lint rules later
-  # riverpod_lint: # Consider adding specific Riverpod lint rules later
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -135,8 +121,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    # - .env # Removed as .env is loaded at runtime, not packaged as an asset
-    - assets/images/ # Declare the images directory
+    - assets/images/ # Keep from HEAD (no .env)
   #   - images/a_dot_burr.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

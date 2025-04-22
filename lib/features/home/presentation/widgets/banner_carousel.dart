@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../domain/entities/banner.dart' as home_banner;
 
@@ -55,13 +56,21 @@ class _BannerCarouselState extends State<BannerCarousel> {
 
   void _startAutoPlay() {
     _timer = Timer.periodic(widget.autoPlayInterval, (timer) {
-      if (_currentIndex < widget.banners.length - 1) {
-        _pageController.nextPage(
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-        );
-      } else {
-        _pageController.jumpToPage(0);
+      if (widget.banners.isEmpty) return;
+      
+      if (_pageController.hasClients) {
+        if (_currentIndex < widget.banners.length - 1) {
+          _pageController.nextPage(
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
+        } else {
+          _pageController.animateToPage(
+            0,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
+        }
       }
     });
   }
@@ -73,7 +82,14 @@ class _BannerCarouselState extends State<BannerCarousel> {
 
   @override
   Widget build(BuildContext context) {
+    print('BannerCarousel.build: banners=${widget.banners}');
+    print('BannerCarousel.build: banners.length=${widget.banners.length}');
+    if (widget.banners.isNotEmpty) {
+      print('BannerCarousel.build: first banner imageUrl=${widget.banners.first.imageUrl}');
+    }
+    
     if (widget.banners.isEmpty) {
+      print('BannerCarousel.build: banners is empty');
       return SizedBox(height: widget.height);
     }
 
@@ -112,34 +128,69 @@ class _BannerCarouselState extends State<BannerCarousel> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8.0),
-                    child: Image.network(
-                      banner.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey[300],
-                          child: const Center(
-                            child: Icon(
-                              Icons.error_outline,
-                              color: Colors.grey,
-                              size: 40,
+                    child: Builder(
+                      builder: (context) {
+                        // 使用真实的图片URL
+                        if (banner.imageUrl.isNotEmpty) {
+                          return CachedNetworkImage(
+                            imageUrl: banner.imageUrl,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              color: Colors.grey[200],
+                              child: const Center(
+                                child: CircularProgressIndicator(),
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Container(
-                          color: Colors.grey[200],
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                  : null,
+                            errorWidget: (context, url, error) => Container(
+                              color: Colors.grey[200],
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.error_outline,
+                                      color: Colors.grey[400],
+                                      size: 50,
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      '图片加载失败',
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
-                          ),
-                        );
+                          );
+                        } else {
+                          // 如果没有图片URL，显示占位图
+                          return Container(
+                            color: Colors.grey[200],
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.image,
+                                    color: Colors.grey[400],
+                                    size: 50,
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    '轮播图 ${index + 1}',
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
                       },
                     ),
                   ),

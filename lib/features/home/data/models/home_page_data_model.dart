@@ -17,10 +17,17 @@ class HomePageDataModel extends HomePageData {
 
   /// 从 JSON 创建 HomePageDataModel 实例
   factory HomePageDataModel.fromJson(Map<String, dynamic> json) {
+    print('Parsing HomePageDataModel from JSON: $json');
+    
     // 处理 banners
     List<BannerModel> bannersList = [];
     if (json['banners'] != null && json['banners'] is List) {
       bannersList = (json['banners'] as List)
+          .map((e) => BannerModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } else if (json['rows'] != null && json['rows'] is List) {
+      // 处理API返回的rows字段
+      bannersList = (json['rows'] as List)
           .map((e) => BannerModel.fromJson(e as Map<String, dynamic>))
           .toList();
     }
@@ -44,6 +51,19 @@ class HomePageDataModel extends HomePageData {
       feedItemsList = (json['products'] as List)
           .map((e) => HomeFeedItemModel.fromJson(e as Map<String, dynamic>))
           .toList();
+    } else if (json['rows'] != null && json['rows'] is List && bannersList.isEmpty) {
+      // 如果rows字段没有被用于banners，则可能是feedItems
+      feedItemsList = (json['rows'] as List)
+          .map((e) => HomeFeedItemModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } else if (json['data'] != null && json['data'] is Map<String, dynamic>) {
+      // 处理嵌套在data字段中的数据
+      final data = json['data'] as Map<String, dynamic>;
+      if (data['products'] != null && data['products'] is List) {
+        feedItemsList = (data['products'] as List)
+            .map((e) => HomeFeedItemModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
     }
 
     return HomePageDataModel(

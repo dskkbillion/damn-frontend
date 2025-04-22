@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../domain/entities/home_feed_item.dart';
 
@@ -22,6 +23,9 @@ class ProductCard extends StatelessWidget {
   /// 图片高度
   final double imageHeight;
   
+  /// 图片宽高比
+  final double? aspectRatio;
+  
   /// 是否显示"让ta看看"按钮
   final bool showRecommendButton;
 
@@ -32,7 +36,8 @@ class ProductCard extends StatelessWidget {
     this.onRecommendClicked,
     this.width,
     this.height,
-    this.imageHeight = 120.0,
+    this.imageHeight = 150.0,
+    this.aspectRatio = 1.0,
     this.showRecommendButton = true,
   }) : super(key: key);
 
@@ -64,50 +69,9 @@ class ProductCard extends StatelessWidget {
                 topLeft: Radius.circular(8.0),
                 topRight: Radius.circular(8.0),
               ),
-              child: SizedBox(
-                width: double.infinity,
-                height: imageHeight,
-                child: item.images.isNotEmpty
-                    ? Image.network(
-                        item.images.first,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[300],
-                            child: const Center(
-                              child: Icon(
-                                Icons.error_outline,
-                                color: Colors.grey,
-                                size: 40,
-                              ),
-                            ),
-                          );
-                        },
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Container(
-                            color: Colors.grey[200],
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes != null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                    : null,
-                              ),
-                            ),
-                          );
-                        },
-                      )
-                    : Container(
-                        color: Colors.grey[300],
-                        child: const Center(
-                          child: Icon(
-                            Icons.image_not_supported,
-                            color: Colors.grey,
-                            size: 40,
-                          ),
-                        ),
-                      ),
+              child: AspectRatio(
+                aspectRatio: aspectRatio!,
+                child: _buildImage(),
               ),
             ),
             
@@ -202,5 +166,76 @@ class ProductCard extends StatelessWidget {
         ),
       ),
     );
+  }
+  
+  /// 构建图片组件
+  Widget _buildImage() {
+    // 检查是否有图片URL
+    if (item.images.isNotEmpty) {
+      return CachedNetworkImage(
+        imageUrl: item.images.first,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => Container(
+          color: Colors.grey[200],
+          child: const Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+        errorWidget: (context, url, error) => Container(
+          color: Colors.grey[200],
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  color: Colors.grey[400],
+                  size: 40,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '图片加载失败',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    } else {
+      // 如果没有图片URL，显示占位图
+      return Container(
+        color: Colors.grey[200],
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.shopping_bag,
+                color: Colors.grey[400],
+                size: 40,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                item.name.isNotEmpty ? item.name.substring(0, item.name.length > 10 ? 10 : item.name.length) : '商品',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
   }
 }

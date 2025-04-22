@@ -14,14 +14,15 @@ import 'package:dskk_flutter_refactor/app/widgets/main_shell_page.dart';
 // Import the dev menu page
 import 'package:dskk_flutter_refactor/app/widgets/dev_menu_page.dart';
 
-// Import feature routes
+// Import feature routes (Merged imports)
 import 'package:dskk_flutter_refactor/features/orders/presentation/routes/order_routes.dart';
 import 'package:dskk_flutter_refactor/features/after_sales/presentation/routes/after_sales_routes.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/routes/ai_docs_routes.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/routes/auth_routes.dart'; 
-import 'package:dskk_flutter_refactor/features/profile/presentation/routes/profile_routes.dart'; // Import Profile routes
+import 'package:dskk_flutter_refactor/features/profile/presentation/routes/profile_routes.dart'; 
+import 'package:dskk_flutter_refactor/features/home/presentation/routes/home_routes.dart'; // Added from theirs
 
-// Placeholder pages for each tab - Keep one definition
+// Placeholder page (defined once) - Only used if a module's routes aren't ready
 class PlaceholderPage extends StatelessWidget {
   final String title;
   const PlaceholderPage({required this.title, super.key});
@@ -36,76 +37,64 @@ class PlaceholderPage extends StatelessWidget {
   }
 }
 
-// Provider for the GoRouter instance - Use Provider from refactor/auth-module
+// Provider for the GoRouter instance (from HEAD/auth-module)
 final goRouterProvider = Provider<GoRouter>((ref) {
-  // Access the AuthRepository via GetIt
   final authRepository = GetIt.instance<IAuthRepository>();
-
-  // GlobalKey for the root navigator
   final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
-  // GlobalKey for the shell navigator - Seems unused
-  // final shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: '/home', // Keep initial location, redirect handles it
-    debugLogDiagnostics: true, // Enable debug logging
-    refreshListenable: GoRouterRefreshStream(authRepository.authStatus), // Listen to auth status changes
+    initialLocation: '/home', // Initial location
+    debugLogDiagnostics: true,
+    refreshListenable: GoRouterRefreshStream(authRepository.authStatus),
 
     routes: [
-      // Configuration for the bottom navigation bar using StatefulShellRoute
+      // StatefulShellRoute structure from HEAD
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainShellPage(navigationShell: navigationShell);
         },
         branches: [
-          // Branch for the '多少看看' tab
+          // Branch for '多少看看' (Discover)
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: '/discover',
                 pageBuilder: (context, state) => const NoTransitionPage(
-                  child: PlaceholderPage(title: '多少看看'), // Simplified title
+                  child: PlaceholderPage(title: '多少看看'),
                 ),
               ),
             ],
           ),
-          // Branch for the '主页' tab
+          // Branch for '主页' (Home) - Integrated from theirs
           StatefulShellBranch(
             routes: [
-              GoRoute(
-                path: '/home',
-                pageBuilder: (context, state) => const NoTransitionPage(
-                  child: PlaceholderPage(title: '主页'), // Simplified title
-                ),
-              ),
+              ...HomeRoutes.routes, // Use Home module routes
             ],
           ),
-          // Branch for the '消息' tab
+          // Branch for '消息' (Chat)
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: '/chat',
                 pageBuilder: (context, state) => const NoTransitionPage(
-                  child: PlaceholderPage(title: '消息'), // Simplified title
+                  child: PlaceholderPage(title: '消息'),
                 ),
               ),
             ],
           ),
-          // Branch for the '我的' tab
+          // Branch for '我的' (Profile) - Integrated from HEAD
           StatefulShellBranch(
             routes: [
-              // Use the routes from the profile module here
               ...ProfileRoutes.routes, 
             ],
           ),
-          // Branch for the '开发' tab (Temporary Debug Menu)
+          // Branch for '开发' (Dev Menu) - From HEAD
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/dev_menu', // Path for the fifth tab
+                path: '/dev_menu',
                 pageBuilder: (context, state) => const NoTransitionPage(
-                  // Ensure DevMenuPage is imported
                   child: DevMenuPage(),
                 ),
               ),
@@ -114,22 +103,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
-      // --- Top-level routes (not part of the shell) ---
-      // Aggregate routes from feature modules
+      // Top-level routes (not part of the shell) - Aggregated from HEAD
       ...AuthRoutes.routes, 
       ...OrderRoutes.routes, 
       ...AfterSalesRoutes.routes, 
       ...AiDocsRoutes.routes, 
-      // Profile routes are now part of the shell, no need to aggregate here
+      // Profile routes are in the shell
     ],
 
-    // Use the errorBuilder from refactor/auth-module
+    // errorBuilder from HEAD/auth-module
     errorBuilder: (context, state) => Scaffold(
       appBar: AppBar(title: const Text('Error')),
       body: Center(child: Text('Page not found: ${state.uri}\nError: ${state.error}')),
     ),
 
-    // Implement redirection logic for authentication - Keep from refactor/auth-module
+    // redirect logic from HEAD/auth-module
     redirect: (context, state) {
       final loginStatus = authRepository.getLoggedInUserSync().fold(
         (failure) => const Unauthenticated(),
@@ -138,6 +126,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final isLoggingIn = state.matchedLocation == '/login';
       final isUnknown = loginStatus is AuthUnknown;
 
+      // Keep print statements for debugging temporarily
       print('Redirect Check: Current Location: ${state.matchedLocation}, Login Status: $loginStatus, Is Logging In: $isLoggingIn');
 
       if (isUnknown) {
@@ -158,7 +147,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   );
 }); 
 
-// Helper class to trigger GoRouter redirects when auth status stream changes - Keep from refactor/auth-module
+// GoRouterRefreshStream helper class (from HEAD/auth-module)
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
     notifyListeners();

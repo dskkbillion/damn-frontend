@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 import '../../domain/entities/home_feed_item.dart';
 import 'product_card.dart';
@@ -87,24 +88,25 @@ class _HomeFeedListState extends State<HomeFeedList> {
       );
     }
 
-    // 使用 GridView.builder 替代 CustomScrollView 和 SliverGrid
+    // 使用 MasonryGridView 实现瀑布流布局
     return Column(
       children: [
         Expanded(
-          child: GridView.builder(
+          child: MasonryGridView.count(
             controller: _scrollController,
             padding: const EdgeInsets.all(16.0),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: widget.crossAxisCount,
-              childAspectRatio: 0.7, // 宽高比
-              crossAxisSpacing: widget.spacing,
-              mainAxisSpacing: widget.runSpacing,
-            ),
+            crossAxisCount: widget.crossAxisCount,
+            mainAxisSpacing: widget.runSpacing,
+            crossAxisSpacing: widget.spacing,
             itemCount: widget.feedItems.length,
             itemBuilder: (context, index) {
               final item = widget.feedItems[index];
+              // 根据索引生成不同的宽高比，使瀑布流更自然
+              final aspectRatio = 0.8 + (index % 3) * 0.2;
+              
               return ProductCard(
                 item: item,
+                aspectRatio: aspectRatio,
                 onCardClicked: () {
                   if (widget.onProductCardClicked != null) {
                     widget.onProductCardClicked!(item);
@@ -142,4 +144,5 @@ class _HomeFeedListState extends State<HomeFeedList> {
       ],
     );
   }
+  
 }

@@ -1,62 +1,51 @@
-/// Abstract interface for securely storing key-value data.
-/// Implementations might use flutter_secure_storage, SharedPreferences (less secure),
-/// or other platform-specific secure storage mechanisms.
-abstract class ISecureStorageRepository {
-  /// Reads an integer value associated with the [key].
-  /// Returns null if the key is not found or the value cannot be parsed as int.
-  Future<int?> getInt(String key);
+import 'package:injectable/injectable.dart';
 
-  /// Reads a string value associated with the [key].
-  /// Returns null if the key is not found.
+/// 安全存储仓库接口
+/// 
+/// 用于安全地存储敏感信息，如token、userId等
+abstract class ISecureStorageRepository {
+  /// 获取字符串值
   Future<String?> getString(String key);
 
-  /// Saves an integer [value] associated with the [key].
-  Future<void> saveInt(String key, int value);
-
-  /// Saves a string [value] associated with the [key].
+  /// 保存字符串值
   Future<void> saveString(String key, String value);
 
-  /// Deletes the value associated with the [key].
+  /// 获取整数值
+  Future<int?> getInt(String key);
+
+  /// 保存整数值
+  Future<void> saveInt(String key, int value);
+
+  /// 删除指定键的值
   Future<void> delete(String key);
 
-  /// Deletes all authentication related data (e.g., user id, token).
-  /// Implementations should know which keys to delete.
+  /// 获取认证token
+  Future<String?> getToken();
+
+  /// 保存认证token
+  Future<void> saveToken(String token);
+
+  /// 删除认证token
+  Future<void> deleteToken();
+
+  /// 获取用户ID
+  Future<int?> getUserId();
+
+  /// 保存用户ID
+  Future<void> saveUserId(int userId);
+
+  /// 删除用户ID
+  Future<void> deleteUserId();
+
+  /// 获取通用用户ID
+  Future<int?> getCommonUserId();
+
+  /// 保存通用用户ID
+  Future<void> saveCommonUserId(int commonUserId);
+
+  /// 删除通用用户ID
+  Future<void> deleteCommonUserId();
+
+  /// 清除所有认证数据
   Future<void> clearAllAuthData();
-
-  // Convenience methods often derived from the above
-
-  /// Retrieves the stored authentication token.
-  Future<String?> getToken() => getString('auth_token');
-
-  /// Retrieves the stored user ID (as a string).
-  Future<String?> getUserId() async {
-    final id = await getInt('user_id');
-    return id?.toString();
-  }
-
-  /// Saves the authentication token.
-  Future<void> saveToken(String token) => saveString('auth_token', token);
-
-  /// Saves the user ID (assuming it's an int internally).
-  Future<void> saveUserId(String userId) async {
-    final id = int.tryParse(userId);
-    if (id != null) {
-      await saveInt('user_id', id);
-    }
-  }
-
-  /// Deletes the stored authentication token.
-  Future<void> deleteToken() => delete('auth_token');
-
-  /// Deletes the stored user ID.
-  Future<void> deleteUserId() => delete('user_id');
-
-  /// 获取保存的commonUserId
-  Future<int?> getCommonUserId() => getInt('common_user_id');
-
-  /// 保存commonUserId
-  Future<void> saveCommonUserId(int commonUserId) => saveInt('common_user_id', commonUserId);
-
-  /// 删除保存的commonUserId
-  Future<void> deleteCommonUserId() => delete('common_user_id');
 }
