@@ -25,9 +25,9 @@ import '../../core/network/core_dio_client.dart' as _i412;
 import '../../core/network/dio_http_client.dart' as _i962;
 import '../../core/network/i_http_client.dart' as _i493;
 import '../../core/network/interceptors/app_info_interceptor.dart' as _i405;
+import '../../core/network/network_info.dart' as _i892;
 import '../../core/payment/services/i_payment_service.dart' as _i395;
 import '../../core/platform/network_info.dart' as _i50;
-import '../../core/platform/network_info_impl.dart' as _i80;
 import '../../core/platform/token_validator.dart' as _i691;
 import '../../core/storage/secure_storage_repository.dart' as _i822;
 import '../../core/storage/secure_storage_repository_impl.dart' as _i912;
@@ -156,6 +156,7 @@ import '../../features/orders/presentation/seller/bloc/seller_order_detail_bloc.
 import '../../features/orders/presentation/seller/bloc/seller_order_list_bloc.dart'
     as _i470;
 import 'injection_container.dart' as _i809;
+import 'register_module.dart' as _i291;
 
 // initializes the registration of main-scope dependencies inside of GetIt
 Future<_i174.GetIt> init(
@@ -169,23 +170,25 @@ Future<_i174.GetIt> init(
     environmentFilter,
   );
   final registerModule = _$RegisterModule();
+  final registerModule = _$RegisterModule();
   await gh.factoryAsync<_i655.PackageInfo>(
     () => registerModule.packageInfo,
     preResolve: true,
   );
   await gh.factoryAsync<_i460.SharedPreferences>(
-    () => registerModule.sharedPreferences,
+    () => registerModule.prefs,
     preResolve: true,
   );
   gh.lazySingleton<_i558.FlutterSecureStorage>(
       () => registerModule.secureStorage);
   gh.lazySingleton<_i895.Connectivity>(() => registerModule.connectivity);
-  gh.lazySingleton<_i973.InternetConnectionChecker>(
-      () => registerModule.connectionChecker);
   gh.lazySingleton<_i50.AppDatabase>(() => registerModule.appDatabase);
   gh.lazySingleton<_i625.INavigationService>(
       () => registerModule.navigationService);
   gh.lazySingleton<_i395.IPaymentService>(() => registerModule.paymentService);
+  gh.lazySingleton<_i973.InternetConnectionChecker>(
+      () => registerModule.internetConnectionChecker);
+  gh.lazySingleton<_i519.Client>(() => registerModule.httpClient);
   gh.lazySingleton<_i361.Dio>(() =>
       registerModule.createDio(gh<String>(instanceName: 'backendBaseUrl')));
   gh.lazySingleton<_i691.TokenValidator>(
@@ -195,16 +198,20 @@ Future<_i174.GetIt> init(
   gh.lazySingleton<_i493.IHttpClient>(() => _i962.DioHttpClient());
   gh.lazySingleton<_i607.IAiChatRemoteDataSource>(
       () => _i404.AiChatRemoteDataSourceImpl(gh<_i493.IHttpClient>()));
+  gh.lazySingleton<String>(
+    () => registerModule.baseUrl,
+    instanceName: 'baseUrl',
+  );
   gh.lazySingleton<_i319.IAiChatRepository>(() => _i1012.AiChatRepositoryImpl(
       remoteDataSource: gh<_i607.IAiChatRemoteDataSource>()));
   gh.lazySingleton<_i232.UserInfoRemoteDataSource>(
       () => _i957.UserInfoRemoteDataSourceImpl(gh<_i361.Dio>()));
-  gh.lazySingleton<_i50.NetworkInfo>(
-      () => _i80.NetworkInfoImpl(gh<_i895.Connectivity>()));
   gh.lazySingleton<_i107.AuthRemoteDataSource>(
       () => _i123.AuthRemoteDataSourceImpl(dio: gh<_i361.Dio>()));
   gh.lazySingleton<_i406.IOrderLocalDataSource>(() =>
       _i1016.OrderLocalDataSourceImpl(appDatabase: gh<_i50.AppDatabase>()));
+  gh.lazySingleton<_i892.NetworkInfo>(
+      () => _i892.NetworkInfoImpl(gh<_i973.InternetConnectionChecker>()));
   gh.lazySingleton<_i234.AllocateChatResourceUseCase>(
       () => _i234.AllocateChatResourceUseCase(gh<_i319.IAiChatRepository>()));
   gh.lazySingleton<_i567.CreateConversationUseCase>(
@@ -225,128 +232,144 @@ Future<_i174.GetIt> init(
       () => _i405.AppInfoInterceptor(gh<_i655.PackageInfo>()));
   gh.factory<_i58.ValidateTokenUseCase>(
       () => _i58.ValidateTokenUseCase(gh<_i691.TokenValidator>()));
-  gh.lazySingleton<_i436.IFileUploadDataSource>(
-      () => _i478.FileUploadDataSourceImpl(gh<_i493.IHttpClient>()));
   gh.lazySingleton<_i795.IUserInfoRepository>(
       () => _i1015.UserInfoRepositoryImpl(
             remoteDataSource: gh<_i232.UserInfoRemoteDataSource>(),
             networkInfo: gh<_i50.NetworkInfo>(),
           ));
+  gh.lazySingleton<_i436.IFileUploadDataSource>(
+      () => _i478.FileUploadDataSourceImpl(gh<_i493.IHttpClient>()));
   gh.lazySingleton<_i569.IFileUploadRepository>(() =>
       _i43.FileUploadRepositoryImpl(
           dataSource: gh<_i436.IFileUploadDataSource>()));
   gh.lazySingleton<_i798.UploadFileUseCase>(
       () => _i798.UploadFileUseCase(gh<_i569.IFileUploadRepository>()));
-  gh.lazySingleton<_i589.IAuthRepository>(() => _i153.AuthRepositoryImpl(
-        secureStorage: gh<_i822.ISecureStorageRepository>(),
-        remoteDataSource: gh<_i107.AuthRemoteDataSource>(),
-        networkInfo: gh<_i50.NetworkInfo>(),
+  gh.factory<_i412.CoreDioClient>(() => _i412.CoreDioClient(
+        gh<String>(instanceName: 'baseUrl'),
+        gh<_i558.FlutterSecureStorage>(),
+        gh<_i405.AppInfoInterceptor>(),
       ));
+  gh.factory<_i1040.AiChatBloc>(() => _i1040.AiChatBloc(
+        gh<_i257.GetConversationsUseCase>(),
+        gh<_i830.LoadHistoryUseCase>(),
+        gh<_i567.CreateConversationUseCase>(),
+        gh<_i63.DeleteConversationUseCase>(),
+        gh<_i558.StreamChatCompletionUseCase>(),
+        gh<_i798.UploadFileUseCase>(),
+        gh<_i598.GetRelatedServicesUseCase>(),
+        gh<_i234.AllocateChatResourceUseCase>(),
+        gh<_i309.TranscribeAudioUseCase>(),
+        gh<_i558.FlutterSecureStorage>(),
+      ));
+  gh.lazySingleton<_i346.IOrderRemoteDataSource>(() =>
+      _i230.OrderRemoteDataSourceImpl(
+          coreDioClient: gh<_i412.CoreDioClient>()));
+  gh.lazySingleton<_i724.IOrderRepository>(() => _i376.OrderRepositoryImpl(
+        remoteDataSource: gh<_i346.IOrderRemoteDataSource>(),
+        localDataSource: gh<_i406.IOrderLocalDataSource>(),
+      ));
+  gh.factory<_i1.CancelOrderUseCase>(
+      () => _i1.CancelOrderUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i449.ConfirmOrderAcceptanceUseCase>(
+      () => _i449.ConfirmOrderAcceptanceUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i708.ConfirmOrderReceiptUseCase>(
+      () => _i708.ConfirmOrderReceiptUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i577.DeleteOrderUseCase>(
+      () => _i577.DeleteOrderUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i258.DeleteSellerRecordUseCase>(
+      () => _i258.DeleteSellerRecordUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i176.DeliverOrderUseCase>(
+      () => _i176.DeliverOrderUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i691.GetOrderDetailUseCase>(
+      () => _i691.GetOrderDetailUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i1015.GetOrderListUseCase>(
+      () => _i1015.GetOrderListUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i696.InviteEvaluationUseCase>(
+      () => _i696.InviteEvaluationUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i194.RejectOrderUseCase>(
+      () => _i194.RejectOrderUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i40.SubmitEvaluationUseCase>(
+      () => _i40.SubmitEvaluationUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i51.SubmitRequirementsUseCase>(
+      () => _i51.SubmitRequirementsUseCase(gh<_i724.IOrderRepository>()));
+  gh.lazySingleton<_i589.IAuthRepository>(() => _i153.AuthRepositoryImpl(
+        remoteDataSource: gh<_i107.AuthRemoteDataSource>(),
+        secureStorage: gh<_i822.ISecureStorageRepository>(),
+        networkInfo: gh<_i50.NetworkInfo>(),
+        userInfoRepository: gh<_i795.IUserInfoRepository>(),
+        tokenValidator: gh<_i691.TokenValidator>(),
+      ));
+  gh.factory<_i618.IInviteEvaluationUseCase>(
+      () => _i618.InviteEvaluationUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i618.IAddOrderDemandUseCase>(
+      () => _i618.AddOrderDemandUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i549.OrderDetailBloc>(() => _i549.OrderDetailBloc(
+        getOrderDetailUseCase: gh<_i691.GetOrderDetailUseCase>(),
+        cancelOrderUseCase: gh<_i1.CancelOrderUseCase>(),
+        confirmOrderReceiptUseCase: gh<_i708.ConfirmOrderReceiptUseCase>(),
+        deleteOrderUseCase: gh<_i577.DeleteOrderUseCase>(),
+        paymentService: gh<_i395.IPaymentService>(),
+        submitEvaluationUseCase: gh<_i40.SubmitEvaluationUseCase>(),
+        submitRequirementsUseCase: gh<_i51.SubmitRequirementsUseCase>(),
+      ));
+  gh.factory<_i618.IDeleteSellerOrderRecordUseCase>(
+      () => _i618.DeleteSellerOrderRecordUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i470.SellerOrderListBloc>(() => _i470.SellerOrderListBloc(
+        gh<_i1015.GetOrderListUseCase>(),
+        gh<_i449.ConfirmOrderAcceptanceUseCase>(),
+        gh<_i194.RejectOrderUseCase>(),
+        gh<_i176.DeliverOrderUseCase>(),
+        gh<_i696.InviteEvaluationUseCase>(),
+        gh<_i258.DeleteSellerRecordUseCase>(),
+      ));
+  gh.factory<_i984.SellerOrderDetailBloc>(() => _i984.SellerOrderDetailBloc(
+        gh<_i691.GetOrderDetailUseCase>(),
+        gh<_i449.ConfirmOrderAcceptanceUseCase>(),
+        gh<_i194.RejectOrderUseCase>(),
+        gh<_i176.DeliverOrderUseCase>(),
+        gh<_i696.InviteEvaluationUseCase>(),
+        gh<_i258.DeleteSellerRecordUseCase>(),
+      ));
+  gh.factory<_i618.IConfirmOrderAcceptanceUseCase>(
+      () => _i618.ConfirmOrderAcceptanceUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i618.IDeliverOrderUseCase>(
+      () => _i618.DeliverOrderUseCase(gh<_i724.IOrderRepository>()));
   gh.lazySingleton<_i525.LoginWithVerificationCodeUseCase>(() =>
       _i525.LoginWithVerificationCodeUseCase(gh<_i589.IAuthRepository>()));
   gh.lazySingleton<_i695.SendVerificationCodeUseCase>(
       () => _i695.SendVerificationCodeUseCase(gh<_i589.IAuthRepository>()));
-  gh.lazySingleton<_i346.IOrderRemoteDataSource>(
-      () => _i230.OrderRemoteDataSourceImpl(
-            httpClient: gh<_i493.IHttpClient>(),
-            getUserToken: () => gh<_i589.IAuthRepository>().getToken(),
-            getUserId: () => gh<_i589.IAuthRepository>().getUserId(),
-          ));
-  gh.factory<_i184.SmsLoginCubit>(() => _i184.SmsLoginCubit(
-        loginWithCode: gh<_i525.LoginWithVerificationCodeUseCase>(),
-        sendVerificationCode: gh<_i695.SendVerificationCodeUseCase>(),
-      ));
-  gh.lazySingleton<_i724.IOrderRepository>(() => _i376.OrderRepositoryImpl(
-        remoteDataSource: gh<_i346.IOrderRemoteDataSource>(),
-        localDataSource: gh<_i406.IOrderLocalDataSource>(),
-        networkInfo: gh<_i50.NetworkInfo>(),
-      ));
-  gh.lazySingleton<_i1.CancelOrderUseCase>(
-      () => _i1.CancelOrderUseCase(gh<_i724.IOrderRepository>()));
-  gh.lazySingleton<_i449.ConfirmOrderAcceptanceUseCase>(
-      () => _i449.ConfirmOrderAcceptanceUseCase(gh<_i724.IOrderRepository>()));
-  gh.lazySingleton<_i708.ConfirmOrderReceiptUseCase>(
-      () => _i708.ConfirmOrderReceiptUseCase(gh<_i724.IOrderRepository>()));
-  gh.lazySingleton<_i577.DeleteOrderUseCase>(
-      () => _i577.DeleteOrderUseCase(gh<_i724.IOrderRepository>()));
-  gh.lazySingleton<_i258.DeleteSellerRecordUseCase>(
-      () => _i258.DeleteSellerRecordUseCase(gh<_i724.IOrderRepository>()));
-  gh.lazySingleton<_i176.DeliverOrderUseCase>(
-      () => _i176.DeliverOrderUseCase(gh<_i724.IOrderRepository>()));
-  gh.lazySingleton<_i691.GetOrderDetailUseCase>(
-      () => _i691.GetOrderDetailUseCase(gh<_i724.IOrderRepository>()));
-  gh.lazySingleton<_i1015.GetOrderListUseCase>(
-      () => _i1015.GetOrderListUseCase(gh<_i724.IOrderRepository>()));
-  gh.lazySingleton<_i696.InviteEvaluationUseCase>(
-      () => _i696.InviteEvaluationUseCase(gh<_i724.IOrderRepository>()));
-  gh.lazySingleton<_i194.RejectOrderUseCase>(
-      () => _i194.RejectOrderUseCase(gh<_i724.IOrderRepository>()));
-  gh.lazySingleton<_i618.SellerOrderActionsUseCase>(
-      () => _i618.SellerOrderActionsUseCase(gh<_i724.IOrderRepository>()));
-  gh.lazySingleton<_i40.SubmitEvaluationUseCase>(
-      () => _i40.SubmitEvaluationUseCase(gh<_i724.IOrderRepository>()));
-  gh.lazySingleton<_i51.SubmitRequirementsUseCase>(
-      () => _i51.SubmitRequirementsUseCase(gh<_i724.IOrderRepository>()));
-  gh.factory<_i549.OrderDetailBloc>(() => _i549.OrderDetailBloc(
-        getOrderDetail: gh<_i691.GetOrderDetailUseCase>(),
-        cancelOrder: gh<_i1.CancelOrderUseCase>(),
-        confirmReceipt: gh<_i708.ConfirmOrderReceiptUseCase>(),
-        submitEvaluation: gh<_i40.SubmitEvaluationUseCase>(),
-        deleteOrder: gh<_i577.DeleteOrderUseCase>(),
-        submitRequirements: gh<_i51.SubmitRequirementsUseCase>(),
-      ));
   gh.factory<_i176.OrderListBloc>(() => _i176.OrderListBloc(
-        getOrderList: gh<_i1015.GetOrderListUseCase>(),
-      ));
-  gh.factory<_i984.SellerOrderDetailBloc>(() => _i984.SellerOrderDetailBloc(
-        getOrderDetail: gh<_i691.GetOrderDetailUseCase>(),
-        sellerOrderActions: gh<_i618.SellerOrderActionsUseCase>(),
-        inviteEvaluation: gh<_i696.InviteEvaluationUseCase>(),
-      ));
-  gh.factory<_i470.SellerOrderListBloc>(() => _i470.SellerOrderListBloc(
-        getOrderList: gh<_i1015.GetOrderListUseCase>(),
-        deleteRecord: gh<_i258.DeleteSellerRecordUseCase>(),
-      ));
+      getOrderListUseCase: gh<_i1015.GetOrderListUseCase>()));
   gh.lazySingleton<_i253.IAfterSalesRemoteDataSource>(
-      () => _i519.AfterSalesRemoteDataSourceImpl(
-            httpClient: gh<_i493.IHttpClient>(),
-            getUserToken: () => gh<_i589.IAuthRepository>().getToken(),
-            getUserId: () => gh<_i589.IAuthRepository>().getUserId(),
-          ));
-  gh.lazySingleton<_i441.IAfterSalesRepository>(
-      () => _i363.AfterSalesRepositoryImpl(
-            remoteDataSource: gh<_i253.IAfterSalesRemoteDataSource>(),
-            networkInfo: gh<_i50.NetworkInfo>(),
-          ));
-  gh.lazySingleton<_i970.ApplyForAfterSalesUseCase>(
-      () => _i970.ApplyForAfterSalesUseCase(gh<_i441.IAfterSalesRepository>()));
-  gh.lazySingleton<_i773.CancelAfterSalesUseCase>(
-      () => _i773.CancelAfterSalesUseCase(gh<_i441.IAfterSalesRepository>()));
-  gh.lazySingleton<_i88.DeleteAfterSalesUseCase>(
-      () => _i88.DeleteAfterSalesUseCase(gh<_i441.IAfterSalesRepository>()));
+      () => _i519.AfterSalesRemoteDataSource(gh<_i412.CoreDioClient>()));
+  gh.factory<_i184.SmsLoginCubit>(() => _i184.SmsLoginCubit(
+        sendVerificationCodeUseCase: gh<_i695.SendVerificationCodeUseCase>(),
+        loginWithVerificationCodeUseCase:
+            gh<_i525.LoginWithVerificationCodeUseCase>(),
+      ));
+  gh.lazySingleton<_i441.IAfterSalesRepository>(() =>
+      _i363.AfterSalesRepositoryImpl(
+          remoteDataSource: gh<_i253.IAfterSalesRemoteDataSource>()));
   gh.lazySingleton<_i1057.GetAfterSalesDetailUseCase>(() =>
       _i1057.GetAfterSalesDetailUseCase(gh<_i441.IAfterSalesRepository>()));
-  gh.lazySingleton<_i953.GetAfterSalesListUseCase>(
+  gh.factory<_i970.ApplyForAfterSalesUseCase>(
+      () => _i970.ApplyForAfterSalesUseCase(gh<_i441.IAfterSalesRepository>()));
+  gh.factory<_i773.CancelAfterSalesUseCase>(
+      () => _i773.CancelAfterSalesUseCase(gh<_i441.IAfterSalesRepository>()));
+  gh.factory<_i88.DeleteAfterSalesUseCase>(
+      () => _i88.DeleteAfterSalesUseCase(gh<_i441.IAfterSalesRepository>()));
+  gh.factory<_i953.GetAfterSalesListUseCase>(
       () => _i953.GetAfterSalesListUseCase(gh<_i441.IAfterSalesRepository>()));
   gh.factory<_i59.AfterSalesBloc>(() => _i59.AfterSalesBloc(
-        getList: gh<_i953.GetAfterSalesListUseCase>(),
-        getDetail: gh<_i1057.GetAfterSalesDetailUseCase>(),
-        apply: gh<_i970.ApplyForAfterSalesUseCase>(),
-        cancel: gh<_i773.CancelAfterSalesUseCase>(),
-        delete: gh<_i88.DeleteAfterSalesUseCase>(),
-      ));
-  gh.factory<_i1040.AiChatBloc>(() => _i1040.AiChatBloc(
-        createConversation: gh<_i567.CreateConversationUseCase>(),
-        deleteConversation: gh<_i63.DeleteConversationUseCase>(),
-        getConversations: gh<_i257.GetConversationsUseCase>(),
-        streamChatCompletion: gh<_i558.StreamChatCompletionUseCase>(),
-        loadHistory: gh<_i830.LoadHistoryUseCase>(),
-        allocateChatResource: gh<_i234.AllocateChatResourceUseCase>(),
-        uploadFile: gh<_i798.UploadFileUseCase>(),
-        getRelatedServices: gh<_i598.GetRelatedServicesUseCase>(),
-        transcribeAudio: gh<_i309.TranscribeAudioUseCase>(),
+        gh<_i953.GetAfterSalesListUseCase>(),
+        gh<_i1057.GetAfterSalesDetailUseCase>(),
+        gh<_i970.ApplyForAfterSalesUseCase>(),
+        gh<_i773.CancelAfterSalesUseCase>(),
+        gh<_i88.DeleteAfterSalesUseCase>(),
       ));
   return getIt;
 }
 
 class _$RegisterModule extends _i809.RegisterModule {}
+
+class _$RegisterModule extends _i291.RegisterModule {}
