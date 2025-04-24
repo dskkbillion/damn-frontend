@@ -57,14 +57,14 @@ Future<void> initDependencies() async {
     instanceName: 'baseUrl'
   );
   
-  // 注册获取token和userId的函数 - 使用真实token和userId
+  // 注册获取token和userId的函数 - 使用硬编码的token和userId
   sl.registerLazySingleton<Future<String?> Function()>(
-    () => () async => 'Bearer eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjJmZDc3ZTM0LTY0YTQtNDRkYy1hMzRkLTRlNzI1YzA1YzA0YiJ9.aCyO_gQyGvrLTd5-WZXLwUVT8pWI-UkHtEXRzHiUMuVtJcZ-pEj-NKjOvTwKRLfbXjXaABgWmhIQq_ixvjGguA', // 替换为真实token
+    () => () async => 'Bearer eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjJmZDc3ZTM0LTY0YTQtNDRkYy1hMzRkLTRlNzI1YzA1YzA0YiJ9.aCyO_gQyGvrLTd5-WZXLwUVT8pWI-UkHtEXRzHiUMuVtJcZ-pEj-NKjOvTwKRLfbXjXaABgWmhIQq_ixvjGguA', // 硬编码token用于预览
     instanceName: 'getAuthToken',
   );
   
   sl.registerLazySingleton<Future<String?> Function()>(
-    () => () async => '1', // 替换为真实用户ID
+    () => () async => '1', // 硬编码用户ID用于预览
     instanceName: 'getUserId',
   );
   

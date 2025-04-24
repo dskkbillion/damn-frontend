@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Import the main shell page which will act as the navigator shell
 import 'package:dskk_flutter_refactor/app/widgets/main_shell_page.dart';
+
+// Import feature routes
+import 'package:dskk_flutter_refactor/features/favorites/presentation/routes/favorites_routes.dart';
 
 // Placeholder pages for each tab
 // TODO: Replace these with actual feature pages later
@@ -21,17 +23,19 @@ class PlaceholderPage extends StatelessWidget {
   }
 }
 
-// Provider for the GoRouter instance
-final goRouterProvider = Provider<GoRouter>((ref) {
-  // TODO: Add observers later if needed (e.g., for analytics)
-  // final observers = <NavigatorObserver>[];
-
-  // GlobalKey for the root navigator
-  final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
-  // GlobalKey for the shell navigator
-  final shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
-
-  return GoRouter(
+/// AppRouter 负责管理应用程序的路由配置
+class AppRouter {
+  /// 私有构造函数，防止实例化
+  AppRouter._();
+  
+  /// GlobalKey for the root navigator
+  static final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+  
+  /// GlobalKey for the shell navigator
+  static final shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
+  
+  /// GoRouter实例
+  static final router = GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/home', // Set initial tab to '主页'
     // observers: observers,
@@ -96,6 +100,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
+      
+      // Standalone routes outside the bottom navigation shell
+      ...FavoritesRoutes.routes,
+      
       // TODO: Add other top-level routes here later (e.g., for login, settings outside the shell)
       // GoRoute(
       //   path: '/login',
@@ -111,4 +119,4 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     //   return null; // Return null means no redirect
     // },
   );
-}); 
+} 
