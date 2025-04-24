@@ -31,8 +31,7 @@ class CacheFailure extends Failure {
 
 /// 表示认证相关的错误
 class AuthFailure extends Failure {
-  final String message;
-  AuthFailure(this.message) : super(message: message);
+  const AuthFailure({required String message}) : super(message: message);
 }
 
 /// 表示网络连接错误
@@ -43,14 +42,12 @@ class NetworkFailure extends Failure {
 
 /// 表示一个简单的、通用的失败情况，通常只包含一个错误消息。
 class SimpleFailure extends Failure {
-  final String message;
-  /*const*/ SimpleFailure(this.message) : super(message: message); // Removed const
+  const SimpleFailure(String message) : super(message: message);
 }
 
 /// 表示一个通用的、未指定类型的失败情况。
 class GeneralFailure extends Failure {
-  final String message;
-  GeneralFailure({required this.message}) : super(message: message); // Removed const
+  const GeneralFailure({required String message}) : super(message: message);
 }
 
 /// Represents a failure during input validation.

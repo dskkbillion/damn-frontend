@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:io';
+import 'package:go_router/go_router.dart';
 
 import '../bloc/profile_bloc.dart';
 import '../bloc/wallet_bloc.dart';
@@ -58,7 +59,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                 MenuItem(
                   icon: Icons.star_border,
                   title: '收藏',
-                  onTap: () => _showFeatureNotImplemented('收藏'),
+                  onTap: () => context.go('/favorites'),
                 ),
                 MenuItem(
                   icon: Icons.favorite_border,

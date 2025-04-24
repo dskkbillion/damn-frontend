@@ -37,34 +37,41 @@ Future<void> initHomeDi() async {
     ),
   );
 
-  // 注册认证信息和基础URL
-  sl.registerLazySingleton<String>(
-    () => dotenv.env['BACKEND_BASE_URL'] ?? 'https://app.duoshaokankan.com/prod-api',
-    instanceName: 'baseUrl',
-  );
+  // 检查这些依赖是否已经存在，避免重复注册
+  // 'baseUrl' 可能已经在 injection_container.dart 中注册
+  if (!sl.isRegistered<String>(instanceName: 'baseUrl')) {
+    sl.registerLazySingleton<String>(
+      () => dotenv.env['BACKEND_BASE_URL'] ?? 'https://app.duoshaokankan.com/prod-api',
+      instanceName: 'baseUrl',
+    );
+  }
   
   // 使用安全存储服务获取token和userId
-  sl.registerLazySingleton<Future<String?> Function()>(
-    () => () async {
-      final secureStorage = sl<ISecureStorageRepository>();
-      return await secureStorage.getToken();
-    },
-    instanceName: 'getAuthToken',
-  );
+  if (!sl.isRegistered<Future<String?> Function()>(instanceName: 'getAuthToken')) {
+    sl.registerLazySingleton<Future<String?> Function()>(
+      () => () async {
+        final secureStorage = sl<ISecureStorageRepository>();
+        return await secureStorage.getToken();
+      },
+      instanceName: 'getAuthToken',
+    );
+  }
   
-  sl.registerLazySingleton<Future<String?> Function()>(
-    () => () async {
-      final secureStorage = sl<ISecureStorageRepository>();
-      final userId = await secureStorage.getUserId();
-      return userId?.toString();
-    },
-    instanceName: 'getUserId',
-  );
+  if (!sl.isRegistered<Future<String?> Function()>(instanceName: 'getUserId')) {
+    sl.registerLazySingleton<Future<String?> Function()>(
+      () => () async {
+        final secureStorage = sl<ISecureStorageRepository>();
+        final userId = await secureStorage.getUserId();
+        return userId?.toString();
+      },
+      instanceName: 'getUserId',
+    );
+  }
 
   // 注册 Data Sources
   sl.registerLazySingleton<HomeRemoteDataSource>(
     () => HomeRemoteDataSourceImpl(
-      client: sl(),
+      client: sl<http.Client>(),
       baseUrl: sl(instanceName: 'baseUrl'),
       getToken: () async {
         final tokenGetter = sl<Future<String?> Function()>(instanceName: 'getAuthToken');
@@ -77,10 +84,9 @@ Future<void> initHomeDi() async {
     ),
   );
 
-  // 注册本地数据源
-  final sharedPreferences = await SharedPreferences.getInstance();
+  // 注册本地数据源，使用已注册的 SharedPreferences
   sl.registerLazySingleton<HomeLocalDataSource>(
-    () => HomeLocalDataSourceImpl(sharedPreferences: sharedPreferences),
+    () => HomeLocalDataSourceImpl(sharedPreferences: sl<SharedPreferences>()),
   );
 
   // 注册简单的导航服务
@@ -88,8 +94,10 @@ Future<void> initHomeDi() async {
     () => SimpleHomeNavigationService(),
   );
 
-  // 注册外部依赖
-  sl.registerLazySingleton(() => http.Client());
+  // http.Client 可能已经注册，避免重复注册
+  if (!sl.isRegistered<http.Client>()) {
+    sl.registerLazySingleton(() => http.Client());
+  }
 }
 
 /// 简单的导航服务实现，用于单独运行home模块

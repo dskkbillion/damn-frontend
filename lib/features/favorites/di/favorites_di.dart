@@ -84,10 +84,12 @@ class FavoritesDI {
   /// 注册Mock依赖（用于测试和预览）
   static void initMock(GetIt sl) {
     // 注册Mock实现，用于测试和预览
-    sl.registerLazySingleton<FavoritesRemoteDataSource>(
-      () => MockFavoritesRemoteDataSource(),
-      dispose: (param) {},
-      instanceName: 'mockFavoritesRemoteDataSource',
-    );
+    // TODO: 创建 MockFavoritesRemoteDataSource 类或使用真实实现
+    // 暂时注释掉，以避免编译错误
+    // sl.registerLazySingleton<FavoritesRemoteDataSource>(
+    //   () => MockFavoritesRemoteDataSource(),
+    //   dispose: (param) {},
+    //   instanceName: 'mockFavoritesRemoteDataSource',
+    // );
   }
 }

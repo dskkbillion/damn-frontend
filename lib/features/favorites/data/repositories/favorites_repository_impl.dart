@@ -42,14 +42,14 @@ class FavoritesRepositoryImpl implements IFavoritesRepository {
         
         return Right(remoteServices);
       } on ServerException {
-        return Left(ServerFailure());
+        return Left(ServerFailure(message: '获取收藏服务失败，服务器错误'));
       }
     } else {
       try {
         final localServices = await localDataSource.getCachedFavoriteServices();
         return Right(localServices);
       } on CacheException {
-        return Left(CacheFailure());
+        return Left(CacheFailure(message: '读取本地收藏服务缓存失败'));
       }
     }
   }
@@ -72,14 +72,14 @@ class FavoritesRepositoryImpl implements IFavoritesRepository {
         
         return Right(remoteSellers);
       } on ServerException {
-        return Left(ServerFailure());
+        return Left(ServerFailure(message: '获取收藏卖家失败，服务器错误'));
       }
     } else {
       try {
         final localSellers = await localDataSource.getCachedFavoriteSellers();
         return Right(localSellers);
       } on CacheException {
-        return Left(CacheFailure());
+        return Left(CacheFailure(message: '读取本地收藏卖家缓存失败'));
       }
     }
   }
@@ -96,7 +96,7 @@ class FavoritesRepositoryImpl implements IFavoritesRepository {
         await remoteDataSource.addToFavorites(type, objectId, feature);
         return const Right(null);
       } on ServerException {
-        return Left(ServerFailure());
+        return Left(ServerFailure(message: '添加收藏失败，服务器错误'));
       }
     } else {
       return Left(NetworkFailure());
@@ -111,7 +111,7 @@ class FavoritesRepositoryImpl implements IFavoritesRepository {
         await remoteDataSource.removeFromFavorites(favoriteIds);
         return const Right(null);
       } on ServerException {
-        return Left(ServerFailure());
+        return Left(ServerFailure(message: '移除收藏失败，服务器错误'));
       }
     } else {
       return Left(NetworkFailure());
@@ -129,7 +129,7 @@ class FavoritesRepositoryImpl implements IFavoritesRepository {
         final result = await remoteDataSource.checkIsFavorite(type, objectIds);
         return Right(result);
       } on ServerException {
-        return Left(ServerFailure());
+        return Left(ServerFailure(message: '检查收藏状态失败，服务器错误'));
       }
     } else {
       return Left(NetworkFailure());
@@ -158,7 +158,7 @@ class FavoritesRepositoryImpl implements IFavoritesRepository {
         await remoteDataSource.followSeller(userModel);
         return const Right(null);
       } on ServerException {
-        return Left(ServerFailure());
+        return Left(ServerFailure(message: '关注卖家失败，服务器错误'));
       }
     } else {
       return Left(NetworkFailure());
@@ -187,7 +187,7 @@ class FavoritesRepositoryImpl implements IFavoritesRepository {
         await remoteDataSource.unfollowSeller(userModel);
         return const Right(null);
       } on ServerException {
-        return Left(ServerFailure());
+        return Left(ServerFailure(message: '取消关注卖家失败，服务器错误'));
       }
     } else {
       return Left(NetworkFailure());

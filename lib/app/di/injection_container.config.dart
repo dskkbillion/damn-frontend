@@ -169,10 +169,10 @@ Future<_i174.GetIt> init(
     environment,
     environmentFilter,
   );
-  final registerModule = _$RegisterModule();
+  final coreRegisterModule = _$CoreRegisterModule();
   final registerModule = _$RegisterModule();
   await gh.factoryAsync<_i655.PackageInfo>(
-    () => registerModule.packageInfo,
+    () => coreRegisterModule.packageInfo,
     preResolve: true,
   );
   await gh.factoryAsync<_i460.SharedPreferences>(
@@ -180,17 +180,18 @@ Future<_i174.GetIt> init(
     preResolve: true,
   );
   gh.lazySingleton<_i558.FlutterSecureStorage>(
-      () => registerModule.secureStorage);
-  gh.lazySingleton<_i895.Connectivity>(() => registerModule.connectivity);
-  gh.lazySingleton<_i50.AppDatabase>(() => registerModule.appDatabase);
+      () => coreRegisterModule.secureStorage);
+  gh.lazySingleton<_i895.Connectivity>(() => coreRegisterModule.connectivity);
+  gh.lazySingleton<_i50.AppDatabase>(() => coreRegisterModule.appDatabase);
   gh.lazySingleton<_i625.INavigationService>(
-      () => registerModule.navigationService);
-  gh.lazySingleton<_i395.IPaymentService>(() => registerModule.paymentService);
+      () => coreRegisterModule.navigationService);
+  gh.lazySingleton<_i395.IPaymentService>(
+      () => coreRegisterModule.paymentService);
   gh.lazySingleton<_i973.InternetConnectionChecker>(
       () => registerModule.internetConnectionChecker);
   gh.lazySingleton<_i519.Client>(() => registerModule.httpClient);
   gh.lazySingleton<_i361.Dio>(() =>
-      registerModule.createDio(gh<String>(instanceName: 'backendBaseUrl')));
+      coreRegisterModule.createDio(gh<String>(instanceName: 'backendBaseUrl')));
   gh.lazySingleton<_i691.TokenValidator>(
       () => _i691.TokenValidatorImpl(gh<_i361.Dio>()));
   gh.lazySingleton<_i822.ISecureStorageRepository>(() =>
@@ -370,6 +371,6 @@ Future<_i174.GetIt> init(
   return getIt;
 }
 
-class _$RegisterModule extends _i809.RegisterModule {}
+class _$CoreRegisterModule extends _i809.CoreRegisterModule {}
 
 class _$RegisterModule extends _i291.RegisterModule {}

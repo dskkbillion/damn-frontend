@@ -34,13 +34,13 @@ Future<void> configureDependencies({required String backendBaseUrl}) async {
 }
 
 @module
-abstract class RegisterModule {
+abstract class CoreRegisterModule {
   // Dio factory method
   @lazySingleton
   Dio createDio(@Named('backendBaseUrl') String baseUrl) {
     final dio = Dio();
     dio.options.baseUrl = baseUrl;
-    print('Dio configured via RegisterModule with Base URL: ${dio.options.baseUrl}');
+    print('Dio configured via CoreRegisterModule with Base URL: ${dio.options.baseUrl}');
     dio.options.connectTimeout = const Duration(seconds: 15);
     dio.options.receiveTimeout = const Duration(seconds: 15);
     dio.options.contentType = 'application/json';

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 
 import '../bloc/profile_bloc.dart';
 import '../widgets/profile_header.dart';
@@ -96,8 +97,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       icon: Icons.star_border,
                       text: '收藏',
                       onTap: () {
-                        // TODO: 导航到收藏列表
-                        // navigationService.navigateToSavedList();
+                        // 导航到收藏列表
+                        context.go('/favorites');
                       },
                     ),
                     MenuItem(
