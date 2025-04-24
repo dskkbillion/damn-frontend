@@ -58,8 +58,14 @@ class FavoritesDI {
       () => FavoritesRemoteDataSourceImpl(
         client: sl<http.Client>(),
         baseUrl: sl<String>(instanceName: 'baseUrl'),
-        authToken: sl<String>(instanceName: 'authToken'),
-        userId: sl<String>(instanceName: 'userId'),
+        getToken: () async {
+          final tokenGetter = sl<Future<String?> Function()>(instanceName: 'getAuthToken');
+          return await tokenGetter() ?? '';
+        },
+        getUserId: () async {
+          final userIdGetter = sl<Future<String?> Function()>(instanceName: 'getUserId');
+          return await userIdGetter() ?? '';
+        },
       ),
     );
 
@@ -77,6 +83,11 @@ class FavoritesDI {
 
   /// 注册Mock依赖（用于测试和预览）
   static void initMock(GetIt sl) {
-    // 这里可以注册Mock实现，用于测试和预览
+    // 注册Mock实现，用于测试和预览
+    sl.registerLazySingleton<FavoritesRemoteDataSource>(
+      () => MockFavoritesRemoteDataSource(),
+      dispose: (param) {},
+      instanceName: 'mockFavoritesRemoteDataSource',
+    );
   }
 }

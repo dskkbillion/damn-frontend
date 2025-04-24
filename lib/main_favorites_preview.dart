@@ -52,16 +52,41 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<NetworkInfo>(() => MockNetworkInfo());
   
   // 配置
-  sl.registerLazySingleton<String>(() => 'https://api.example.com', instanceName: 'baseUrl');
-  sl.registerLazySingleton<String>(() => 'mock_token', instanceName: 'authToken');
-  sl.registerLazySingleton<String>(() => '123456', instanceName: 'userId');
+  sl.registerLazySingleton<String>(
+    () => 'https://app.duoshaokankan.com/prod-api',
+    instanceName: 'baseUrl'
+  );
+  
+  // 注册获取token和userId的函数 - 使用真实token和userId
+  sl.registerLazySingleton<Future<String?> Function()>(
+    () => () async => 'Bearer eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjJmZDc3ZTM0LTY0YTQtNDRkYy1hMzRkLTRlNzI1YzA1YzA0YiJ9.aCyO_gQyGvrLTd5-WZXLwUVT8pWI-UkHtEXRzHiUMuVtJcZ-pEj-NKjOvTwKRLfbXjXaABgWmhIQq_ixvjGguA', // 替换为真实token
+    instanceName: 'getAuthToken',
+  );
+  
+  sl.registerLazySingleton<Future<String?> Function()>(
+    () => () async => '1', // 替换为真实用户ID
+    instanceName: 'getUserId',
+  );
   
   // 数据源
   sl.registerLazySingleton<FavoritesLocalDataSource>(
     () => FavoritesLocalDataSourceImpl(sharedPreferences: sl()),
   );
+  
+  // 使用真实数据源进行预览
   sl.registerLazySingleton<FavoritesRemoteDataSource>(
-    () => MockFavoritesRemoteDataSource(),
+    () => FavoritesRemoteDataSourceImpl(
+      client: sl(),
+      baseUrl: sl(instanceName: 'baseUrl'),
+      getToken: () async {
+        final tokenGetter = sl<Future<String?> Function()>(instanceName: 'getAuthToken');
+        return await tokenGetter() ?? '';
+      },
+      getUserId: () async {
+        final userIdGetter = sl<Future<String?> Function()>(instanceName: 'getUserId');
+        return await userIdGetter() ?? '';
+      },
+    ),
   );
   
   // 仓库
