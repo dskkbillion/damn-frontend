@@ -62,3 +62,7 @@ windows/flutter/generated_plugin_registrant.cc
 windows/flutter/generated_plugins.cmake
 web/flutter_bootstrap.js
 web/plugins.dart
+
+
+.specstory/
+.cursorindexingignore

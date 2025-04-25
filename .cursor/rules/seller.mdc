@@ -1,0 +1,12 @@
+---
+description: 实现todo.md
+globs: 
+alwaysApply: false
+---
+按照todo.md进行推进
+
+docs\module_docs\seller\todo.md
+
+
+
+请你在推进的过程中，凡是任务要求参考某个html文件的，你一定要参考

@@ -1,0 +1,693 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+
+import '../bloc/seller_home/seller_home_bloc.dart';
+import '../bloc/seller_home/seller_home_event.dart';
+import '../bloc/seller_home/seller_home_state.dart';
+import '../routes/seller_routes.dart';
+import '../widgets/empty_state.dart';
+import '../widgets/loading_state.dart';
+
+/// 卖家中心首页
+class SellerHomePage extends StatefulWidget {
+  const SellerHomePage({Key? key}) : super(key: key);
+
+  @override
+  State<SellerHomePage> createState() => _SellerHomePageState();
+}
+
+class _SellerHomePageState extends State<SellerHomePage> {
+  @override
+  void initState() {
+    super.initState();
+    // 初始化时加载数据
+    context.read<SellerHomeBloc>().add(const LoadDashboardData());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('卖家中心'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () => _navigateTo(context, SellerRoutes.notifications),
+            tooltip: '通知',
+          ),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          context.read<SellerHomeBloc>().add(RefreshDashboardData());
+          return Future.delayed(const Duration(milliseconds: 500));
+        },
+        child: BlocBuilder<SellerHomeBloc, SellerHomeState>(
+          builder: (context, state) {
+            if (state.isLoading) {
+              return const LoadingState.list();
+            }
+            
+            if (state.hasError) {
+              return EmptyState.error(
+                text: '加载失败',
+                subText: state.errorMessage,
+                onRetryPressed: () {
+                  context.read<SellerHomeBloc>().add(const LoadDashboardData(forceRefresh: true));
+                },
+              );
+            }
+            
+            if (state.dashboardData == null) {
+              return EmptyState.error(
+                text: '暂无数据',
+                onRetryPressed: () {
+                  context.read<SellerHomeBloc>().add(const LoadDashboardData(forceRefresh: true));
+                },
+              );
+            }
+            
+            final dashboardData = state.dashboardData!;
+            
+            return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 店铺信息卡片
+                  _buildStoreProfileCard(context, state),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // 收入信息卡片
+                  _buildIncomeCard(context, dashboardData),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // 订单概览卡片
+                  _buildOrdersCard(context, dashboardData),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // 功能列表卡片
+                  _buildFunctionsCard(context),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // 统计信息卡片
+                  if (dashboardData.statistics.weeklyIncome.isNotEmpty)
+                    _buildStatisticsCard(context, dashboardData),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+  
+  // 店铺信息卡片
+  Widget _buildStoreProfileCard(BuildContext context, SellerHomeState state) {
+    if (state.storeProfile == null) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Center(
+            child: Text('暂无店铺信息'),
+          ),
+        ),
+      );
+    }
+
+    final profile = state.storeProfile!;
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: [
+          Container(
+            height: 120,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Theme.of(context).primaryColor.withOpacity(0.7),
+                  Theme.of(context).primaryColor.withOpacity(0.4),
+                ],
+              ),
+            ),
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 店铺logo
+                CircleAvatar(
+                  radius: 32,
+                  backgroundColor: Colors.white,
+                  backgroundImage: profile.logoUrl != null && profile.logoUrl!.isNotEmpty
+                      ? NetworkImage(profile.logoUrl!)
+                      : null,
+                  child: profile.logoUrl == null || profile.logoUrl!.isEmpty
+                      ? Icon(
+                          Icons.store_rounded,
+                          size: 36,
+                          color: Theme.of(context).primaryColor,
+                        )
+                      : null,
+                ),
+                const SizedBox(width: 16),
+                
+                // 店铺信息
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              profile.storeName,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (profile.onlineFlag != null)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
+                              decoration: BoxDecoration(
+                                color: profile.onlineFlag! ? Colors.green : Colors.grey,
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    profile.onlineFlag! ? Icons.circle : Icons.circle_outlined,
+                                    color: Colors.white,
+                                    size: 12,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    profile.onlineFlag! ? '在线' : '离线',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: 8),
+                      
+                      // 评分和完成率
+                      Row(
+                        children: [
+                          if (profile.averageRating != null) ...[
+                            const Icon(Icons.star, color: Colors.amber, size: 16),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${profile.averageRating!.toStringAsFixed(1)}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                          ],
+                          
+                          if (profile.completionRate != null) ...[
+                            const Icon(Icons.check_circle_outline, color: Colors.white, size: 16),
+                            const SizedBox(width: 4),
+                            Text(
+                              '完成率 ${profile.completionRate!.toStringAsFixed(1)}%',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      
+                      const SizedBox(height: 8),
+                      
+                      // 资质标签
+                      if (profile.certifications != null && profile.certifications!.isNotEmpty)
+                        Wrap(
+                          spacing: 4.0,
+                          runSpacing: 4.0,
+                          children: profile.certifications!
+                              .map((cert) => Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6.0,
+                                      vertical: 2.0,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(4.0),
+                                    ),
+                                    child: Text(
+                                      cert,
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Theme.of(context).primaryColor,
+                                      ),
+                                    ),
+                                  ))
+                              .toList(),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // 设置按钮
+          Positioned(
+            top: 0,
+            right: 0,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => _navigateTo(context, SellerRoutes.storeSettings),
+                child: const Padding(
+                  padding: EdgeInsets.all(12.0),
+                  child: Icon(
+                    Icons.settings,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // 收入信息卡片
+  Widget _buildIncomeCard(BuildContext context, dynamic dashboardData) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  '收入',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    // TODO: 导航到收入明细页面
+                  },
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(50, 30),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: const Row(
+                    children: [
+                      Text('查看明细'),
+                      Icon(Icons.arrow_forward_ios, size: 12),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildIncomeItem('总收入', '¥${dashboardData.income.total.toStringAsFixed(2)}'),
+                _buildIncomeItem('今日收入', '¥${dashboardData.income.today.toStringAsFixed(2)}'),
+                _buildIncomeItem('待结算', '¥${dashboardData.income.pending.toStringAsFixed(2)}'),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  // 订单概览卡片
+  Widget _buildOrdersCard(BuildContext context, dynamic dashboardData) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  '订单',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    // 导航到订单列表
+                    context.read<SellerHomeBloc>().add(const NavigateToOrders());
+                  },
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(50, 30),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: const Row(
+                    children: [
+                      Text('查看全部'),
+                      Icon(Icons.arrow_forward_ios, size: 12),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildOrderStatusItem(
+                  context,
+                  icon: Icons.receipt_long,
+                  label: '全部',
+                  count: dashboardData.orders.total.toString(),
+                  onTap: () => context.read<SellerHomeBloc>().add(const NavigateToOrders()),
+                ),
+                _buildOrderStatusItem(
+                  context,
+                  icon: Icons.access_time,
+                  label: '待处理',
+                  count: dashboardData.orders.pending.toString(),
+                  onTap: () => context.read<SellerHomeBloc>().add(const NavigateToOrders(orderType: 'pending')),
+                ),
+                _buildOrderStatusItem(
+                  context,
+                  icon: Icons.check_circle,
+                  label: '已完成',
+                  count: dashboardData.orders.completed.toString(),
+                  onTap: () => context.read<SellerHomeBloc>().add(const NavigateToOrders(orderType: 'completed')),
+                ),
+                _buildOrderStatusItem(
+                  context,
+                  icon: Icons.cancel,
+                  label: '已取消',
+                  count: dashboardData.orders.canceled.toString(),
+                  onTap: () => context.read<SellerHomeBloc>().add(const NavigateToOrders(orderType: 'canceled')),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  // 功能列表卡片
+  Widget _buildFunctionsCard(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '功能',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 4,
+              mainAxisSpacing: 8.0,
+              crossAxisSpacing: 8.0,
+              children: [
+                _buildFunctionItem(
+                  context,
+                  icon: Icons.inventory_2,
+                  label: '商品管理',
+                  onTap: () => _navigateTo(context, SellerRoutes.products),
+                ),
+                _buildFunctionItem(
+                  context,
+                  icon: Icons.assignment_return,
+                  label: '售后管理',
+                  onTap: () => _navigateTo(context, SellerRoutes.afterSalesReview),
+                ),
+                _buildFunctionItem(
+                  context,
+                  icon: Icons.verified_user,
+                  label: '认证管理',
+                  onTap: () => _navigateTo(context, SellerRoutes.authentication),
+                ),
+                _buildFunctionItem(
+                  context,
+                  icon: Icons.access_time,
+                  label: '时间管理',
+                  onTap: () => _navigateTo(context, SellerRoutes.timeManagement),
+                ),
+                _buildFunctionItem(
+                  context,
+                  icon: Icons.forum,
+                  label: '消息管理',
+                  onTap: () {
+                    context.read<SellerHomeBloc>().add(NavigateToChat());
+                  },
+                ),
+                _buildFunctionItem(
+                  context,
+                  icon: Icons.reply_all,
+                  label: '自动回复',
+                  onTap: () => _navigateTo(context, SellerRoutes.autoReply),
+                ),
+                _buildFunctionItem(
+                  context,
+                  icon: Icons.notifications,
+                  label: '通知中心',
+                  onTap: () => _navigateTo(context, SellerRoutes.notifications),
+                ),
+                _buildFunctionItem(
+                  context,
+                  icon: Icons.settings,
+                  label: '店铺设置',
+                  onTap: () => _navigateTo(context, SellerRoutes.storeSettings),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  // 统计信息卡片
+  Widget _buildStatisticsCard(BuildContext context, dynamic dashboardData) {
+    // 提取每周收入数据
+    final weeklyIncome = dashboardData.statistics.weeklyIncome;
+    
+    // 获取最大收入值以计算柱状图高度比例
+    final maxAmount = weeklyIncome.fold<double>(
+      0,
+      (max, item) => item.amount > max ? item.amount : max,
+    );
+    
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '近期收入',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 200,
+              child: maxAmount > 0
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: weeklyIncome
+                          .map((item) => Expanded(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Tooltip(
+                                      message: '¥${item.amount.toStringAsFixed(2)}',
+                                      child: Container(
+                                        margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                                        width: double.infinity,
+                                        height: 150 * (item.amount / maxAmount),
+                                        decoration: BoxDecoration(
+                                          color: Theme.of(context).primaryColor.withOpacity(0.7),
+                                          borderRadius: const BorderRadius.vertical(
+                                            top: Radius.circular(4.0),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      _formatDateLabel(item.date),
+                                      style: const TextStyle(fontSize: 10),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              ))
+                          .toList(),
+                    )
+                  : const Center(
+                      child: Text('暂无收入数据'),
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  // 收入项目组件
+  Widget _buildIncomeItem(String title, String value) {
+    return Column(
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey[600],
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+  
+  // 订单状态项组件
+  Widget _buildOrderStatusItem(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required String count,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8.0),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: Theme.of(context).primaryColor,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              count,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  // 功能项组件
+  Widget _buildFunctionItem(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8.0),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                color: Theme.of(context).primaryColor,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: const TextStyle(fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  
+  // 格式化日期标签
+  String _formatDateLabel(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr);
+      return '${date.month}/${date.day}';
+    } catch (e) {
+      return dateStr;
+    }
+  }
+  
+  // 导航到指定路由
+  void _navigateTo(BuildContext context, String routePath) {
+    context.go(routePath);
+  }
+} 

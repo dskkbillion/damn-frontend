@@ -1,0 +1,45 @@
+{
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug -Pkotlin.version=1.9.24 -Pcompose.compiler.version=1.5.4 -PkspVersion=1.9.24-1.0.20",
+        "ndk": "26.1.10909125"
+      },
+      "ios": {
+        "simulator": true,
+        "image": "latest"
+      },
+      "env": {
+        "KOTLIN_VERSION": "1.9.24",
+        "NODE_ENV": "development"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "channel": "preview"
+    },
+    "production": {
+      "channel": "production",
+      "distribution": "store",
+      "android": {
+        "buildType": "app-bundle",
+        "bun": "1.0.7",
+        "ndk": "26.1.10909125"
+      },
+      "ios": {
+        "bun": "1.0.7"
+      },
+      "env": {
+        "TAMAGUI_TARGET": "native"
+      }
+    }
+  },
+  "cli": {
+    "version": ">=3.18.3",
+    "appVersionSource": "remote",
+    "promptToConfigurePushNotifications": false
+  }
+}

@@ -20,6 +20,7 @@ import '../../features/after_sales/presentation/pages/after_sales_apply_page.dar
 // Import module route definitions
 import 'package:dskk_flutter_refactor/features/orders/presentation/routes/order_routes.dart';
 import 'package:dskk_flutter_refactor/features/after_sales/presentation/routes/after_sales_routes.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/routes/seller_routes.dart';
 // TODO: Import other module route definitions (e.g., after_sales_routes.dart)
 
 // Define Route Names (optional but good practice)
@@ -102,6 +103,9 @@ class AppRouter {
       // --- Aggregate Module Routes --- 
        // Include routes from the Orders module
       ...OrderRoutes.routes, // Keep this line
+
+       // Include routes from the Seller module
+      ...SellerRoutes.routes,
 
        // TODO: Include routes from other modules here (e.g., AfterSales)
        // Example (needs after_sales_routes.dart to be created first):

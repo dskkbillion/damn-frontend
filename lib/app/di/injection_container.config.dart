@@ -24,6 +24,7 @@ import '../../core/network/core_dio_client.dart' as _i412;
 import '../../core/network/dio_http_client.dart' as _i962;
 import '../../core/network/i_http_client.dart' as _i493;
 import '../../core/network/interceptors/app_info_interceptor.dart' as _i405;
+import '../../core/network/network_info.dart' as _i892;
 import '../../core/payment/services/i_payment_service.dart' as _i395;
 import '../../core/platform/network_info.dart' as _i50;
 import '../../core/platform/network_info_impl.dart' as _i80;
@@ -154,6 +155,68 @@ import '../../features/orders/presentation/seller/bloc/seller_order_detail_bloc.
     as _i984;
 import '../../features/orders/presentation/seller/bloc/seller_order_list_bloc.dart'
     as _i470;
+import '../../features/seller/data/datasources/i_seller_local_data_source.dart'
+    as _i30;
+import '../../features/seller/data/datasources/i_seller_remote_data_source.dart'
+    as _i703;
+import '../../features/seller/data/datasources/seller_local_data_source_impl.dart'
+    as _i507;
+import '../../features/seller/data/datasources/seller_remote_data_source_impl.dart'
+    as _i741;
+import '../../features/seller/data/repositories/seller_repository_impl.dart'
+    as _i927;
+import '../../features/seller/domain/repositories/i_chat_repository.dart'
+    as _i452;
+import '../../features/seller/domain/repositories/i_seller_repository.dart'
+    as _i203;
+import '../../features/seller/domain/usecases/add_order_delivery_usecase.dart'
+    as _i655;
+import '../../features/seller/domain/usecases/audit_refund_usecase.dart'
+    as _i363;
+import '../../features/seller/domain/usecases/create_product_usecase.dart'
+    as _i779;
+import '../../features/seller/domain/usecases/delete_product_usecase.dart'
+    as _i172;
+import '../../features/seller/domain/usecases/get_auto_reply_usecase.dart'
+    as _i129;
+import '../../features/seller/domain/usecases/get_chat_room_list_usecase.dart'
+    as _i481;
+import '../../features/seller/domain/usecases/get_seller_authentication_status_usecase.dart'
+    as _i405;
+import '../../features/seller/domain/usecases/get_seller_dashboard_data_usecase.dart'
+    as _i452;
+import '../../features/seller/domain/usecases/get_seller_notification_list_usecase.dart'
+    as _i992;
+import '../../features/seller/domain/usecases/get_seller_product_detail_usecase.dart'
+    as _i475;
+import '../../features/seller/domain/usecases/get_seller_product_list_usecase.dart'
+    as _i679;
+import '../../features/seller/domain/usecases/get_store_profile_usecase.dart'
+    as _i714;
+import '../../features/seller/domain/usecases/get_tenant_audit_list_usecase.dart'
+    as _i237;
+import '../../features/seller/domain/usecases/get_time_settings_usecase.dart'
+    as _i1030;
+import '../../features/seller/domain/usecases/get_unread_notification_count_usecase.dart'
+    as _i680;
+import '../../features/seller/domain/usecases/mark_all_notifications_as_read_usecase.dart'
+    as _i665;
+import '../../features/seller/domain/usecases/mark_notification_as_read_usecase.dart'
+    as _i321;
+import '../../features/seller/domain/usecases/set_auto_reply_usecase.dart'
+    as _i610;
+import '../../features/seller/domain/usecases/submit_authentication_application_usecase.dart'
+    as _i626;
+import '../../features/seller/domain/usecases/update_product_status_usecase.dart'
+    as _i311;
+import '../../features/seller/domain/usecases/update_product_usecase.dart'
+    as _i267;
+import '../../features/seller/domain/usecases/update_seller_online_status_usecase.dart'
+    as _i528;
+import '../../features/seller/domain/usecases/update_store_profile_usecase.dart'
+    as _i172;
+import '../../features/seller/domain/usecases/update_time_settings_usecase.dart'
+    as _i1002;
 import 'injection_container.dart' as _i809;
 
 // initializes the registration of main-scope dependencies inside of GetIt
@@ -187,6 +250,8 @@ Future<_i174.GetIt> init(
   gh.lazySingleton<_i395.IPaymentService>(() => registerModule.paymentService);
   gh.lazySingleton<_i361.Dio>(() =>
       registerModule.createDio(gh<String>(instanceName: 'backendBaseUrl')));
+  gh.factory<_i30.ISellerLocalDataSource>(
+      () => _i507.SellerLocalDataSourceImpl(gh<_i460.SharedPreferences>()));
   gh.lazySingleton<_i691.TokenValidator>(
       () => _i691.TokenValidatorImpl(gh<_i361.Dio>()));
   gh.lazySingleton<_i822.ISecureStorageRepository>(() =>
@@ -194,6 +259,8 @@ Future<_i174.GetIt> init(
   gh.lazySingleton<_i493.IHttpClient>(() => _i962.DioHttpClient());
   gh.lazySingleton<_i607.IAiChatRemoteDataSource>(
       () => _i404.AiChatRemoteDataSourceImpl(gh<_i493.IHttpClient>()));
+  gh.factory<_i703.ISellerRemoteDataSource>(
+      () => _i741.SellerRemoteDataSourceImpl(gh<_i361.Dio>()));
   gh.lazySingleton<_i319.IAiChatRepository>(() => _i1012.AiChatRepositoryImpl(
       remoteDataSource: gh<_i607.IAiChatRemoteDataSource>()));
   gh.lazySingleton<_i232.UserInfoRemoteDataSource>(
@@ -204,6 +271,13 @@ Future<_i174.GetIt> init(
       () => _i123.AuthRemoteDataSourceImpl(dio: gh<_i361.Dio>()));
   gh.lazySingleton<_i406.IOrderLocalDataSource>(() =>
       _i1016.OrderLocalDataSourceImpl(appDatabase: gh<_i50.AppDatabase>()));
+  gh.lazySingleton<_i203.ISellerRepository>(() => _i927.SellerRepositoryImpl(
+        gh<_i703.ISellerRemoteDataSource>(),
+        gh<_i30.ISellerLocalDataSource>(),
+        gh<_i892.NetworkInfo>(),
+      ));
+  gh.factory<_i481.GetChatRoomListUseCase>(
+      () => _i481.GetChatRoomListUseCase(gh<_i452.IChatRepository>()));
   gh.lazySingleton<_i234.AllocateChatResourceUseCase>(
       () => _i234.AllocateChatResourceUseCase(gh<_i319.IAiChatRepository>()));
   gh.lazySingleton<_i567.CreateConversationUseCase>(
@@ -241,6 +315,43 @@ Future<_i174.GetIt> init(
         gh<_i558.FlutterSecureStorage>(),
         gh<_i405.AppInfoInterceptor>(),
       ));
+  gh.factory<_i363.AuditRefundUseCase>(
+      () => _i363.AuditRefundUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i172.DeleteProductUseCase>(
+      () => _i172.DeleteProductUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i129.GetAutoReplyUseCase>(
+      () => _i129.GetAutoReplyUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i405.GetSellerAuthenticationStatusUseCase>(() =>
+      _i405.GetSellerAuthenticationStatusUseCase(
+          gh<_i203.ISellerRepository>()));
+  gh.factory<_i452.GetSellerDashboardDataUseCase>(
+      () => _i452.GetSellerDashboardDataUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i992.GetSellerNotificationListUseCase>(() =>
+      _i992.GetSellerNotificationListUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i475.GetSellerProductDetailUseCase>(
+      () => _i475.GetSellerProductDetailUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i679.GetSellerProductListUseCase>(
+      () => _i679.GetSellerProductListUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i714.GetStoreProfileUseCase>(
+      () => _i714.GetStoreProfileUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i237.GetTenantAuditListUseCase>(
+      () => _i237.GetTenantAuditListUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i1030.GetTimeSettingsUseCase>(
+      () => _i1030.GetTimeSettingsUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i680.GetUnreadNotificationCountUseCase>(() =>
+      _i680.GetUnreadNotificationCountUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i665.MarkAllNotificationsAsReadUseCase>(() =>
+      _i665.MarkAllNotificationsAsReadUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i321.MarkNotificationAsReadUseCase>(
+      () => _i321.MarkNotificationAsReadUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i610.SetAutoReplyUseCase>(
+      () => _i610.SetAutoReplyUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i311.UpdateProductStatusUseCase>(
+      () => _i311.UpdateProductStatusUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i528.UpdateSellerOnlineStatusUseCase>(() =>
+      _i528.UpdateSellerOnlineStatusUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i1002.UpdateTimeSettingsUseCase>(
+      () => _i1002.UpdateTimeSettingsUseCase(gh<_i203.ISellerRepository>()));
   gh.factory<_i1040.AiChatBloc>(() => _i1040.AiChatBloc(
         gh<_i257.GetConversationsUseCase>(),
         gh<_i830.LoadHistoryUseCase>(),
@@ -256,6 +367,28 @@ Future<_i174.GetIt> init(
   gh.lazySingleton<_i346.IOrderRemoteDataSource>(() =>
       _i230.OrderRemoteDataSourceImpl(
           coreDioClient: gh<_i412.CoreDioClient>()));
+  gh.factory<_i655.AddOrderDeliveryUseCase>(() => _i655.AddOrderDeliveryUseCase(
+        gh<_i203.ISellerRepository>(),
+        gh<_i569.IFileUploadRepository>(),
+      ));
+  gh.factory<_i779.CreateProductUseCase>(() => _i779.CreateProductUseCase(
+        gh<_i203.ISellerRepository>(),
+        gh<_i569.IFileUploadRepository>(),
+      ));
+  gh.factory<_i626.SubmitAuthenticationApplicationUseCase>(
+      () => _i626.SubmitAuthenticationApplicationUseCase(
+            gh<_i203.ISellerRepository>(),
+            gh<_i569.IFileUploadRepository>(),
+          ));
+  gh.factory<_i267.UpdateProductUseCase>(() => _i267.UpdateProductUseCase(
+        gh<_i203.ISellerRepository>(),
+        gh<_i569.IFileUploadRepository>(),
+      ));
+  gh.factory<_i172.UpdateStoreProfileUseCase>(
+      () => _i172.UpdateStoreProfileUseCase(
+            gh<_i203.ISellerRepository>(),
+            gh<_i569.IFileUploadRepository>(),
+          ));
   gh.lazySingleton<_i724.IOrderRepository>(() => _i376.OrderRepositoryImpl(
         remoteDataSource: gh<_i346.IOrderRemoteDataSource>(),
         localDataSource: gh<_i406.IOrderLocalDataSource>(),
