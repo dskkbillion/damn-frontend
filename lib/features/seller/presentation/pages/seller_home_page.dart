@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../bloc/seller_home/seller_home_bloc.dart';
 import '../bloc/seller_home/seller_home_event.dart';
 import '../bloc/seller_home/seller_home_state.dart';
+import '../../domain/entities/seller_dashboard_data.dart';
 import '../routes/seller_routes.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/loading_state.dart';
@@ -21,12 +22,13 @@ class _SellerHomePageState extends State<SellerHomePage> {
   @override
   void initState() {
     super.initState();
-    // 初始化时加载数据
+    print('[SellerHomePage] initState: Dispatching LoadDashboardData');
     context.read<SellerHomeBloc>().add(const LoadDashboardData());
   }
 
   @override
   Widget build(BuildContext context) {
+    print('[SellerHomePage] Build method called');
     return Scaffold(
       appBar: AppBar(
         title: const Text('卖家中心'),
@@ -40,13 +42,15 @@ class _SellerHomePageState extends State<SellerHomePage> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
+          print('[SellerHomePage] Refresh triggered: Dispatching RefreshDashboardData');
           context.read<SellerHomeBloc>().add(RefreshDashboardData());
           return Future.delayed(const Duration(milliseconds: 500));
         },
         child: BlocBuilder<SellerHomeBloc, SellerHomeState>(
           builder: (context, state) {
+            print('[SellerHomePage] BlocBuilder received state: ${state.runtimeType}');
             if (state.isLoading) {
-              return const LoadingState.list();
+              return LoadingState.list();
             }
             
             if (state.hasError) {
@@ -511,12 +515,22 @@ class _SellerHomePageState extends State<SellerHomePage> {
   // 统计信息卡片
   Widget _buildStatisticsCard(BuildContext context, dynamic dashboardData) {
     // 提取每周收入数据
-    final weeklyIncome = dashboardData.statistics.weeklyIncome;
+    final List<WeeklyIncomeItem> weeklyIncome = 
+        List<WeeklyIncomeItem>.from(dashboardData.statistics.weeklyIncome ?? []);
+    
+    if (weeklyIncome.isEmpty) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Center(child: Text('暂无近期收入数据')), 
+        ),
+      );
+    }
     
     // 获取最大收入值以计算柱状图高度比例
     final maxAmount = weeklyIncome.fold<double>(
-      0,
-      (max, item) => item.amount > max ? item.amount : max,
+      0.0, 
+      (max, item) => (item.amount ?? 0.0) > max ? (item.amount ?? 0.0) : max,
     );
     
     return Card(
@@ -544,11 +558,11 @@ class _SellerHomePageState extends State<SellerHomePage> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Tooltip(
-                                      message: '¥${item.amount.toStringAsFixed(2)}',
+                                      message: '¥${(item.amount ?? 0.0).toStringAsFixed(2)}',
                                       child: Container(
                                         margin: const EdgeInsets.symmetric(horizontal: 4.0),
                                         width: double.infinity,
-                                        height: 150 * (item.amount / maxAmount),
+                                        height: (maxAmount > 0 ? (150 * ((item.amount ?? 0.0) / maxAmount)) : 0).toDouble(),
                                         decoration: BoxDecoration(
                                           color: Theme.of(context).primaryColor.withOpacity(0.7),
                                           borderRadius: const BorderRadius.vertical(
@@ -686,8 +700,36 @@ class _SellerHomePageState extends State<SellerHomePage> {
     }
   }
   
-  // 导航到指定路由
-  void _navigateTo(BuildContext context, String routePath) {
-    context.go(routePath);
+  // 触发 Bloc 导航事件
+  void _navigateTo(BuildContext context, String routeName) {
+    SellerHomeEvent event;
+    switch (routeName) {
+      case SellerRoutes.products:
+        event = const NavigateToProducts();
+        break;
+      case SellerRoutes.afterSalesReview:
+        event = const NavigateToAfterSales();
+        break;
+      case SellerRoutes.authentication:
+        event = const NavigateToAuthentication();
+        break;
+      case SellerRoutes.timeManagement:
+        event = const NavigateToTimeManagement();
+        break;
+      case SellerRoutes.autoReply:
+        event = const NavigateToAutoReply();
+        break;
+      case SellerRoutes.notifications:
+        event = const NavigateToNotifications();
+        break;
+      case SellerRoutes.storeSettings:
+        event = const NavigateToStoreSettings();
+        break;
+      // 添加其他可能的导航目标
+      default:
+        print('Warning: Unknown navigation target in _navigateTo: $routeName');
+        return; // 不处理未知目标
+    }
+    context.read<SellerHomeBloc>().add(event);
   }
 } 

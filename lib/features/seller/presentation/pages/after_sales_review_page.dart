@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 
 import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
@@ -12,18 +11,31 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/empty
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/status_tag.dart';
 
 /// 售后审核列表页面
-class AfterSalesReviewPage extends StatelessWidget {
+class AfterSalesReviewPage extends StatefulWidget {
   /// 路由名称
   static const routeName = '/seller/after-sales';
 
   /// 构造函数
   const AfterSalesReviewPage({Key? key}) : super(key: key);
+  
+  @override
+  State<AfterSalesReviewPage> createState() => _AfterSalesReviewPageState();
+}
 
+class _AfterSalesReviewPageState extends State<AfterSalesReviewPage> {
+  @override
+  void initState() {
+    super.initState();
+    // 在 initState 中触发加载事件
+    context.read<AfterSalesReviewBloc>().add(LoadAfterSalesList());
+  }
+  
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => GetIt.instance<AfterSalesReviewBloc>()..add(LoadAfterSalesList()),
-      child: Scaffold(
+    // return BlocProvider( // 移除 BlocProvider
+    //   create: (_) => GetIt.instance<AfterSalesReviewBloc>()..add(LoadAfterSalesList()),
+    //   child: Scaffold(
+    return Scaffold(
         appBar: AppBar(
           title: const Text('售后审核'),
           actions: [
@@ -37,7 +49,7 @@ class AfterSalesReviewPage extends StatelessWidget {
           ],
         ),
         body: const _AfterSalesReviewBody(),
-      ),
+    //   ),
     );
   }
 }
@@ -100,7 +112,7 @@ class _AfterSalesReviewBodyState extends State<_AfterSalesReviewBody> {
         if (state is AfterSalesReviewEmpty) {
           return const EmptyState(
             icon: Icons.assignment_returned,
-            message: '暂无待审核的售后申请',
+            text: '暂无待审核的售后申请',
           );
         }
         
@@ -186,8 +198,8 @@ class _RefundCard extends StatelessWidget {
                   ),
                 ),
                 StatusTag(
-                  label: refund.state.displayName,
-                  color: _getStateColor(refund.state),
+                  text: refund.state.displayName,
+                  type: _getStateType(refund.state),
                 ),
               ],
             ),
@@ -198,7 +210,7 @@ class _RefundCard extends StatelessWidget {
             const SizedBox(height: 8),
             _buildInfoRow(context, '申请时间', dateFormat.format(refund.applyTime ?? DateTime.now())),
             const SizedBox(height: 8),
-            _buildInfoRow(context, '退款金额', '¥${refund.refundAmount.toStringAsFixed(2)}'),
+            _buildInfoRow(context, '退款金额', '¥${refund.formattedRefundPrice.toStringAsFixed(2)}'),
             
             // 退款原因
             if (refund.reason != null && refund.reason!.isNotEmpty) ...[
@@ -209,7 +221,7 @@ class _RefundCard extends StatelessWidget {
             ],
             
             // 图片证据
-            if (refund.picUrls.isNotEmpty) ...[
+            if (refund.credentials.isNotEmpty) ...[
               const SizedBox(height: 16),
               Text('图片证据:', style: textTheme.titleSmall),
               const SizedBox(height: 8),
@@ -217,16 +229,16 @@ class _RefundCard extends StatelessWidget {
                 height: 80,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: refund.picUrls.length,
+                  itemCount: refund.credentials.length,
                   itemBuilder: (context, index) {
                     return Padding(
                       padding: const EdgeInsets.only(right: 8.0),
                       child: GestureDetector(
-                        onTap: () => _showImageDialog(context, refund.picUrls[index]),
+                        onTap: () => _showImageDialog(context, refund.credentials[index]),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(4.0),
                           child: Image.network(
-                            refund.picUrls[index],
+                            refund.credentials[index],
                             width: 80,
                             height: 80,
                             fit: BoxFit.cover,
@@ -312,12 +324,10 @@ class _RefundCard extends StatelessWidget {
   // 获取退款类型标签
   String _getRefundTypeLabel(RefundType type) {
     switch (type) {
-      case RefundType.refundOnly:
+      case RefundType.onlyMoney:
         return '仅退款';
-      case RefundType.returnAndRefund:
+      case RefundType.moneyAndProduct:
         return '退货退款';
-      case RefundType.exchange:
-        return '换货';
       case RefundType.unknown:
       default:
         return '未知类型';
@@ -342,6 +352,27 @@ class _RefundCard extends StatelessWidget {
         return Colors.grey;
       default:
         return Colors.grey;
+    }
+  }
+  
+  /// 根据售后状态获取标签类型
+  StatusTagType _getStateType(OrderRefundState state) {
+    switch (state) {
+      case OrderRefundState.waitAudit:
+        return StatusTagType.warning;
+      case OrderRefundState.auditPass:
+        return StatusTagType.success;
+      case OrderRefundState.refused:
+        return StatusTagType.danger;
+      case OrderRefundState.buyerShip:
+      case OrderRefundState.sellerReceived:
+        return StatusTagType.primary;
+      case OrderRefundState.finished:
+        return StatusTagType.success;
+      case OrderRefundState.canceled:
+        return StatusTagType.defaultTag;
+      default:
+        return StatusTagType.defaultTag;
     }
   }
   

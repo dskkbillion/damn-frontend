@@ -44,11 +44,22 @@ class AfterSalesDetailPage extends StatelessWidget {
               // 从列表中查找对应ID的售后
               final refund = state.refunds.firstWhere(
                 (r) => r.id == id,
-                orElse: () => OrderRefund(id: null, orderId: 0, orderSn: '未找到'),
+                orElse: () => OrderRefund(
+                  id: -1,
+                  orderId: 0,
+                  orderSn: '未找到',
+                  refundSn: 'not-found',
+                  refundPrice: 0,
+                  reason: '',
+                  credentials: [],
+                  state: OrderRefundState.unknown,
+                  type: RefundType.unknown,
+                  applyTime: DateTime.now(),
+                ),
               );
               
               // 如果找不到对应ID的售后
-              if (refund.id == null) {
+              if (refund.id == -1) {
                 return const Center(
                   child: Text('找不到对应的售后申请'),
                 );
@@ -98,8 +109,8 @@ class AfterSalesDetailPage extends StatelessWidget {
                         ),
                       ),
                       StatusTag(
-                        label: refund.state.displayName,
-                        color: _getStateColor(refund.state),
+                        text: refund.state.displayName,
+                        type: _getStateType(refund.state),
                       ),
                     ],
                   ),
@@ -111,11 +122,9 @@ class AfterSalesDetailPage extends StatelessWidget {
                   const SizedBox(height: 12),
                   _buildInfoItem(context, '申请时间', dateFormat.format(refund.applyTime ?? DateTime.now())),
                   const SizedBox(height: 12),
-                  _buildInfoItem(context, '退款金额', '¥${refund.amount.toStringAsFixed(2)}'),
-                  if (refund.reasonType != null) ...[
-                    const SizedBox(height: 12),
-                    _buildInfoItem(context, '退款理由类型', refund.reasonType ?? ''),
-                  ],
+                  _buildInfoItem(context, '退款金额', '¥${refund.formattedRefundPrice.toStringAsFixed(2)}'),
+                  const SizedBox(height: 12),
+                  _buildInfoItem(context, '退款类型', _getRefundTypeLabel(refund.type)),
                 ],
               ),
             ),
@@ -147,7 +156,7 @@ class AfterSalesDetailPage extends StatelessWidget {
           const SizedBox(height: 16),
           
           // 图片证据
-          if (refund.images.isNotEmpty)
+          if (refund.credentials.isNotEmpty)
             Card(
               elevation: 2,
               margin: EdgeInsets.zero,
@@ -166,14 +175,14 @@ class AfterSalesDetailPage extends StatelessWidget {
                         crossAxisSpacing: 8,
                         mainAxisSpacing: 8,
                       ),
-                      itemCount: refund.images.length,
+                      itemCount: refund.credentials.length,
                       itemBuilder: (context, index) {
                         return GestureDetector(
-                          onTap: () => _showImageDialog(context, refund.images[index]),
+                          onTap: () => _showImageDialog(context, refund.credentials[index]),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(4.0),
                             child: Image.network(
-                              refund.images[index],
+                              refund.credentials[index],
                               fit: BoxFit.cover,
                               errorBuilder: (_, __, ___) => Container(
                                 color: Colors.grey[300],
@@ -259,12 +268,10 @@ class AfterSalesDetailPage extends StatelessWidget {
   // 获取退款类型标签
   String _getRefundTypeLabel(RefundType type) {
     switch (type) {
-      case RefundType.money:
+      case RefundType.onlyMoney:
         return '仅退款';
-      case RefundType.goods:
+      case RefundType.moneyAndProduct:
         return '退货退款';
-      case RefundType.exchange:
-        return '换货';
       case RefundType.unknown:
       default:
         return '未知类型';
@@ -289,6 +296,27 @@ class AfterSalesDetailPage extends StatelessWidget {
         return Colors.grey;
       default:
         return Colors.grey;
+    }
+  }
+  
+  /// 根据售后状态获取标签类型
+  StatusTagType _getStateType(OrderRefundState state) {
+    switch (state) {
+      case OrderRefundState.waitAudit:
+        return StatusTagType.warning;
+      case OrderRefundState.auditPass:
+        return StatusTagType.success;
+      case OrderRefundState.refused:
+        return StatusTagType.danger;
+      case OrderRefundState.buyerShip:
+      case OrderRefundState.sellerReceived:
+        return StatusTagType.primary;
+      case OrderRefundState.finished:
+        return StatusTagType.success;
+      case OrderRefundState.canceled:
+        return StatusTagType.defaultTag;
+      default:
+        return StatusTagType.defaultTag;
     }
   }
   

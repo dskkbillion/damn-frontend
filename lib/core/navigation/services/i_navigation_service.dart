@@ -30,4 +30,7 @@ abstract class INavigationService {
   void goBack(); // 或者 void pop();
 
   // --- 可以根据需要添加更多导航方法 ---
+
+  /// 通用导航方法 (根据需要添加)
+  Future<void> navigateTo(String path, {Object? extra});
 } 

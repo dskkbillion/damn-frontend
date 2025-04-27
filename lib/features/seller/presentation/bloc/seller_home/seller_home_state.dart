@@ -46,7 +46,7 @@ class SellerHomeState extends Equatable {
   /// 初始状态
   factory SellerHomeState.initial() {
     return const SellerHomeState(
-      isLoading: true,
+      isLoading: false,
     );
   }
   

@@ -125,8 +125,8 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     result.fold(
       (failure) => emit(state.copyWithError(failure.message)),
       (paginatedList) {
-        final products = paginatedList.records;
-        final hasMore = paginatedList.records.length >= _pageSize;
+        final products = paginatedList.items;
+        final hasMore = paginatedList.items.length >= _pageSize;
         
         // 更新当前页码
         _updateCurrentPageByStatus(status, currentPage + 1);
@@ -166,7 +166,7 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     result.fold(
       (failure) => emit(state.copyWithError(failure.message)),
       (paginatedList) {
-        final products = paginatedList.records;
+        final products = paginatedList.items;
         final hasMore = products.length >= _pageSize;
         
         // 更新当前页码
@@ -252,7 +252,7 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     
     final params = UpdateProductStatusParams(
       productId: event.productId,
-      status: event.targetStatus.value,
+      status: event.targetStatus,
     );
     
     final result = await _updateProductStatusUseCase(params);
@@ -332,7 +332,8 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     NavigateToProductCreate event,
     Emitter<ProductManagementState> emit,
   ) async {
-    _navigationService.navigateTo(SellerRoutes.productCreate);
+    // _navigationService.navigateTo(SellerRoutes.productCreate);
+    await _navigationService.navigateTo(SellerRoutes.productCreate); // 使用 await 和 navigateTo
   }
   
   /// 导航到商品编辑页面
@@ -344,7 +345,8 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
       SellerRoutes.productEdit,
       params: {'id': event.productId.toString()},
     );
-    _navigationService.navigateTo(path);
+    // _navigationService.navigateTo(path);
+    await _navigationService.navigateTo(path); // 使用 await 和 navigateTo
   }
   
   /// 导航到商品详情页面
@@ -354,6 +356,9 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
   ) async {
     // 假设存在商品详情页面路由
     // 实际应用中可能需要导航到主应用中的商品详情页面
-    _navigationService.navigateTo('/products/${event.productId}');
+    // _navigationService.navigateTo('/products/${event.productId}');
+    // 假设导航到特定商品详情，这里暂时使用 mock 路径或具体方法
+    // 注意：实际应该使用 navigateToProductDetail 或确认 '/products/:id' 路由存在于 AppRouter
+    await _navigationService.navigateToProductDetail(event.productId.toString()); // 改为调用具体方法
   }
 } 

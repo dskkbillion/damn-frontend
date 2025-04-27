@@ -15,14 +15,11 @@ class AutoReplyPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => GetIt.instance<AutoReplyBloc>()..add(LoadAutoReplySettings()),
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('自动回复设置'),
-        ),
-        body: const AutoReplyBody(),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('自动回复设置'),
       ),
+      body: const AutoReplyBody(),
     );
   }
 }
@@ -39,6 +36,16 @@ class AutoReplyBody extends StatefulWidget {
 class _AutoReplyBodyState extends State<AutoReplyBody> {
   final TextEditingController _contentController = TextEditingController();
   bool _isContentDirty = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<AutoReplyBloc>().add(LoadAutoReplySettings());
+      }
+    });
+  }
 
   @override
   void dispose() {

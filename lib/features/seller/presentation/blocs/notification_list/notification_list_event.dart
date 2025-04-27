@@ -11,15 +11,15 @@ abstract class NotificationListEvent extends Equatable {
 
 /// 加载通知列表事件
 class LoadNotificationList extends NotificationListEvent {
-  /// 通知类型
-  final NotificationType type;
+  /// 通知类型 (null 表示全部)
+  final NotificationType? type;
   
   /// 是否刷新
   final bool refresh;
 
   /// 构造函数
   const LoadNotificationList({
-    this.type = NotificationType.all,
+    this.type,
     this.refresh = false,
   });
 
@@ -29,12 +29,12 @@ class LoadNotificationList extends NotificationListEvent {
 
 /// 切换通知类型事件
 class ChangeNotificationType extends NotificationListEvent {
-  /// 通知类型
-  final NotificationType type;
+  /// 通知类型 (null 表示全部)
+  final NotificationType? type;
 
   /// 构造函数
   const ChangeNotificationType({
-    required this.type,
+    this.type,
   });
 
   @override

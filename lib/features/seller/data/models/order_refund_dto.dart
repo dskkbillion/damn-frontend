@@ -91,29 +91,29 @@ class OrderRefundDto {
       parsedCreateTime = DateTime.now();
     }
 
-    // 解析商品项数据
-    OrderProductItemDto? productItemDto;
-    if (orderProductItem != null) {
-      productItemDto = OrderProductItemDto.fromJson(orderProductItem!);
-    }
+    // // 解析商品项数据 (暂时不需要，OrderRefund 实体没有直接包含这些)
+    // OrderProductItemDto? productItemDto;
+    // if (orderProductItem != null) {
+    //   productItemDto = OrderProductItemDto.fromJson(orderProductItem!);
+    // }
 
     return OrderRefund(
       id: id ?? 0,
       orderId: order?['id'] as int? ?? 0,
       orderSn: order?['orderSn'] as String? ?? '',
-      refundState: OrderRefundState.fromValue(refundState ?? ''),
-      refundType: RefundType.fromValue(refundType ?? ''),
-      refundPrice: refundAmount ?? 0.0,
+      refundSn: id?.toString() ?? 'unknown', // 使用 id 作为占位符
+      refundPrice: ((refundAmount ?? 0.0) * 100).toInt(), // 转换为分
       reason: refundReason ?? '',
-      remark: refundRemarks ?? '',
-      auditRemark: auditRemark ?? '',
-      createTime: parsedCreateTime ?? DateTime.now(),
-      images: images ?? [],
-      productId: productItemDto?.productId ?? 0,
-      productName: productItemDto?.productName ?? '',
-      productImage: productItemDto?.imageUrl ?? '',
-      productQuantity: productItemDto?.quantity ?? 0,
-      productUnitPrice: productItemDto?.unitPrice ?? 0.0,
+      credentials: images ?? [], // 使用 images 填充 credentials
+      state: OrderRefundState.fromValue(refundState ?? ''),
+      type: RefundType.fromValue(refundType ?? ''),
+      applyTime: parsedCreateTime ?? DateTime.now(), // 使用 createTime
+      // 可选参数可以保持默认 null
+      // auditTime: ..., 
+      // finishTime: ..., 
+      // refuseReason: ..., 
+      // receiveAddress: ..., 
+      // ...
     );
   }
 

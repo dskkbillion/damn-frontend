@@ -1,12 +1,14 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/core/navigation/services/i_navigation_service.dart';
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart';
+import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_dashboard_data.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_store_profile.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_dashboard_data_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_store_profile_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_home/seller_home_event.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_home/seller_home_state.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/routes/seller_routes.dart';
 import 'package:injectable/injectable.dart';
 import 'package:equatable/equatable.dart';
 
@@ -28,6 +30,7 @@ class SellerHomeBloc extends Bloc<SellerHomeEvent, SellerHomeState> {
     this._getStoreProfileUseCase,
     this._navigationService,
   ) : super(SellerHomeState.initial()) {
+    print('[SellerHomeBloc] Created');
     on<LoadDashboardData>(_onLoadDashboardData);
     on<RefreshDashboardData>(_onRefreshDashboardData);
     on<NavigateToOrders>(_onNavigateToOrders);
@@ -46,37 +49,53 @@ class SellerHomeBloc extends Bloc<SellerHomeEvent, SellerHomeState> {
     LoadDashboardData event,
     Emitter<SellerHomeState> emit,
   ) async {
-    if (state.isLoading == false) {
-      emit(const SellerHomeLoading());
-      
-      // 获取仪表盘数据
+    print('[SellerHomeBloc] Received LoadDashboardData event');
+    print('[SellerHomeBloc] Emitting SellerHomeLoading state');
+    emit(const SellerHomeLoading());
+    
+    try {
+      print('[SellerHomeBloc] Calling getDashboardDataUseCase');
       final dashboardResult = await _getDashboardDataUseCase(NoParams());
-      
-      // 获取店铺信息
+      print('[SellerHomeBloc] getDashboardDataUseCase returned: ${dashboardResult.isRight() ? "Success" : "Failure"}');
+
+      print('[SellerHomeBloc] Calling getStoreProfileUseCase');
       final storeProfileResult = await _getStoreProfileUseCase(NoParams());
+      print('[SellerHomeBloc] getStoreProfileUseCase returned: ${storeProfileResult.isRight() ? "Success" : "Failure"}');
       
       if (dashboardResult.isLeft() || storeProfileResult.isLeft()) {
-        // 处理错误情况
+        print('[SellerHomeBloc] One or both UseCases failed');
         dashboardResult.fold(
-          (failure) => emit(SellerHomeError(failure: failure)),
+          (failure) {
+            print('[SellerHomeBloc] Dashboard failed: $failure. Emitting SellerHomeError');
+            emit(SellerHomeError(failure: failure));
+          },
           (_) => storeProfileResult.fold(
-            (failure) => emit(SellerHomeError(failure: failure)),
-            (_) {}, // 不会到达此处
+            (failure) {
+              print('[SellerHomeBloc] StoreProfile failed: $failure. Emitting SellerHomeError');
+              emit(SellerHomeError(failure: failure));
+            },
+            (_) {}, 
           ),
         );
       } else {
-        // 处理成功情况
+        print('[SellerHomeBloc] Both UseCases succeeded');
         dashboardResult.fold(
-          (_) {}, // 不会到达此处
+          (_) {}, 
           (dashboardData) => storeProfileResult.fold(
-            (_) {}, // 不会到达此处
-            (storeProfile) => emit(SellerHomeLoaded(
-              dashboardData: dashboardData,
-              storeProfile: storeProfile,
-            )),
+            (_) {}, 
+            (storeProfile) {
+               print('[SellerHomeBloc] Emitting SellerHomeLoaded state');
+               emit(SellerHomeLoaded(
+                dashboardData: dashboardData,
+                storeProfile: storeProfile,
+              ));
+            }
           ),
         );
       }
+    } catch (e) {
+      print('[SellerHomeBloc] Exception during data loading: $e. Emitting SellerHomeError');
+      emit(SellerHomeError(failure: CacheFailure(message: '未知错误: $e')));
     }
   }
   
@@ -122,17 +141,13 @@ class SellerHomeBloc extends Bloc<SellerHomeEvent, SellerHomeState> {
     NavigateToOrders event,
     Emitter<SellerHomeState> emit,
   ) async {
-    // 由于INavigationService中没有通用的导航方法，这里根据实际情况调整
-    // 可能需要扩展INavigationService接口添加更多通用导航方法
-    
-    // 根据订单类型构建导航路径
     String path = '/orders';
     if (event.orderType != null && event.orderType!.isNotEmpty) {
       path += '?type=${event.orderType}';
     }
-    
-    _navigationService.goBack(); // 临时替代，实际应该跳转到订单列表
-    emit(state.copyWithNavigation(path));
+    // 使用 navigateTo，路径是 Orders 模块的，暂时不确定是否正确
+    await _navigationService.navigateTo(path); 
+    // emit(state.copyWithNavigation(path)); // 通常不需要 Bloc 记录导航路径
   }
   
   /// 处理导航到通知列表页面事件
@@ -140,9 +155,7 @@ class SellerHomeBloc extends Bloc<SellerHomeEvent, SellerHomeState> {
     NavigateToNotifications event,
     Emitter<SellerHomeState> emit,
   ) async {
-    // 临时实现，实际应有相应的导航方法
-    _navigationService.goBack();
-    emit(state.copyWithNavigation('/seller/notifications'));
+    await _navigationService.navigateTo(SellerRoutes.notifications); // 使用 navigateTo
   }
   
   /// 处理导航到聊天列表页面事件
@@ -150,8 +163,7 @@ class SellerHomeBloc extends Bloc<SellerHomeEvent, SellerHomeState> {
     NavigateToChat event,
     Emitter<SellerHomeState> emit,
   ) async {
-    _navigationService.navigateToChat(null); // 这里应传入合适的参数
-    emit(state.copyWithNavigation('/chat'));
+    await _navigationService.navigateToChat(null); // 使用 navigateToChat
   }
   
   /// 处理导航到商品管理页面事件
@@ -159,9 +171,7 @@ class SellerHomeBloc extends Bloc<SellerHomeEvent, SellerHomeState> {
     NavigateToProducts event,
     Emitter<SellerHomeState> emit,
   ) async {
-    // 临时实现，实际应有相应的导航方法
-    _navigationService.goBack();
-    emit(state.copyWithNavigation('/seller/products'));
+    await _navigationService.navigateTo(SellerRoutes.products); // 使用 navigateTo
   }
   
   /// 处理导航到售后管理页面事件
@@ -169,9 +179,7 @@ class SellerHomeBloc extends Bloc<SellerHomeEvent, SellerHomeState> {
     NavigateToAfterSales event,
     Emitter<SellerHomeState> emit,
   ) async {
-    // 临时实现，实际应有相应的导航方法
-    _navigationService.goBack();
-    emit(state.copyWithNavigation('/seller/after-sales'));
+    await _navigationService.navigateTo(SellerRoutes.afterSalesReview); // 使用 navigateTo
   }
   
   /// 处理导航到店铺设置页面事件
@@ -179,9 +187,7 @@ class SellerHomeBloc extends Bloc<SellerHomeEvent, SellerHomeState> {
     NavigateToStoreSettings event,
     Emitter<SellerHomeState> emit,
   ) async {
-    // 临时实现，实际应有相应的导航方法
-    _navigationService.goBack();
-    emit(state.copyWithNavigation('/seller/store-settings'));
+    await _navigationService.navigateTo(SellerRoutes.storeSettings); // 使用 navigateTo
   }
   
   /// 处理导航到认证管理页面事件
@@ -189,9 +195,7 @@ class SellerHomeBloc extends Bloc<SellerHomeEvent, SellerHomeState> {
     NavigateToAuthentication event,
     Emitter<SellerHomeState> emit,
   ) async {
-    // 临时实现，实际应有相应的导航方法
-    _navigationService.goBack();
-    emit(state.copyWithNavigation('/seller/authentication'));
+    await _navigationService.navigateTo(SellerRoutes.authentication); // 使用 navigateTo
   }
   
   /// 处理导航到时间管理页面事件
@@ -199,9 +203,7 @@ class SellerHomeBloc extends Bloc<SellerHomeEvent, SellerHomeState> {
     NavigateToTimeManagement event,
     Emitter<SellerHomeState> emit,
   ) async {
-    // 临时实现，实际应有相应的导航方法
-    _navigationService.goBack();
-    emit(state.copyWithNavigation('/seller/time-management'));
+    await _navigationService.navigateTo(SellerRoutes.timeManagement); // 使用 navigateTo
   }
   
   /// 处理导航到自动回复设置页面事件
@@ -209,8 +211,6 @@ class SellerHomeBloc extends Bloc<SellerHomeEvent, SellerHomeState> {
     NavigateToAutoReply event,
     Emitter<SellerHomeState> emit,
   ) async {
-    // 临时实现，实际应有相应的导航方法
-    _navigationService.goBack();
-    emit(state.copyWithNavigation('/seller/auto-reply'));
+    await _navigationService.navigateTo(SellerRoutes.autoReply); // 使用 navigateTo
   }
 } 

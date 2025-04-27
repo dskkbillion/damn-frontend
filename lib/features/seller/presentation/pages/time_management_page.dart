@@ -3,10 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/time_settings.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/time_management/time_management_bloc.dart';
-import 'package:get_it/get_it.dart';
 
 /// 卖家时间管理页面
-class TimeManagementPage extends StatelessWidget {
+class TimeManagementPage extends StatefulWidget {
   /// 路由名称
   static const routeName = '/seller/profile/time-management';
 
@@ -14,15 +13,24 @@ class TimeManagementPage extends StatelessWidget {
   const TimeManagementPage({Key? key}) : super(key: key);
 
   @override
+  State<TimeManagementPage> createState() => _TimeManagementPageState();
+}
+
+class _TimeManagementPageState extends State<TimeManagementPage> {
+  @override
+  void initState() {
+    super.initState();
+    // 在 initState 中触发加载事件
+    context.read<TimeManagementBloc>().add(LoadTimeSettings());
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => GetIt.instance<TimeManagementBloc>()..add(LoadTimeSettings()),
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('时间管理'),
-        ),
-        body: const TimeManagementBody(),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('时间管理'),
       ),
+      body: const TimeManagementBody(),
     );
   }
 }

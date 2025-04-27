@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dartz/dartz.dart';
+import 'package:go_router/go_router.dart';
 
 // 核心层导入
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
@@ -29,6 +30,7 @@ import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_tenant
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_home/seller_home_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_home/seller_home_event.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_home/seller_home_state.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/routes/seller_routes.dart';
 
 // GetIt 服务定位器实例
 final sl = GetIt.instance;
@@ -45,9 +47,23 @@ class SellerPreviewApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    // 创建路由器
+    final router = GoRouter(
+      initialLocation: SellerRoutes.home,
+      routes: SellerRoutes.routes,
+      debugLogDiagnostics: true,
+    );
+
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<SellerHomeBloc>(
+          create: (context) => sl<SellerHomeBloc>(),
+        ),
+      ],
+      child: MaterialApp.router(
       title: '卖家中心预览',
       debugShowCheckedModeBanner: false,
+        routerConfig: router,
       theme: ThemeData(
         primarySwatch: MaterialColor(0xFFB66D0E, {
           50: const Color(0xFFF9ECCF),
@@ -69,9 +85,6 @@ class SellerPreviewApp extends StatelessWidget {
         primaryColor: const Color(0xFFB66D0E),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: BlocProvider<SellerHomeBloc>(
-        create: (_) => sl<SellerHomeBloc>()..add(const LoadDashboardData()),
-        child: const SellerHomePreviewPage(),
       ),
     );
   }
@@ -125,7 +138,7 @@ class SellerHomePreviewPage extends StatelessWidget {
                           CircleAvatar(
                             radius: 30,
                             backgroundImage: state.storeProfile!.logoUrl != null 
-                                ? NetworkImage(state.storeProfile!.logoUrl!) 
+                                ? AssetImage(state.storeProfile!.logoUrl!) 
                                 : null,
                             child: state.storeProfile!.logoUrl == null 
                                 ? const Icon(Icons.store) 
@@ -456,7 +469,7 @@ class MockSellerRepository implements ISellerRepository {
     final storeProfile = SellerStoreProfile(
       storeId: '10001',
       storeName: '测试店铺',
-      logoUrl: 'https://via.placeholder.com/150',
+      logoUrl: 'assets/images/avatar_placeholder.png',
       description: '这是一个用于测试的虚拟店铺',
       onlineFlag: true,
       joinTime: DateTime.now().subtract(const Duration(days: 180)),
@@ -483,7 +496,7 @@ class MockSellerRepository implements ISellerRepository {
         id: 1000 + index,
         name: '测试商品 ${index + 1}',
         price: 100.0 + (index * 25.0),
-        images: 'https://via.placeholder.com/300x300?text=Product${index+1}',
+        images: 'assets/images/placeholder.png',
         description: '这是测试商品的详细描述...',
         status: state == null || state == 'all' 
             ? (index % 3 == 0 ? ProductStatus.normal : (index % 3 == 1 ? ProductStatus.disabled : ProductStatus.draft))
@@ -517,7 +530,7 @@ class MockSellerRepository implements ISellerRepository {
         refundAmount: (50 + (index * 10)).toDouble(),
         refundReason: '商品质量问题',
         refundRemarks: index % 2 == 0 ? '有质量问题，请退款' : '商品与描述不符，申请退款退货',
-        images: 'https://via.placeholder.com/300x300?text=Evidence${index+1}',
+        images: 'assets/images/placeholder.png',
         order: {
           'id': 1000 + index,
           'orderSn': 'OR${10000 + index}',
@@ -525,7 +538,7 @@ class MockSellerRepository implements ISellerRepository {
         orderProductItem: {
           'productId': 100 + index,
           'productName': '测试商品 ${index + 1}',
-          'productImage': 'https://via.placeholder.com/300x300?text=Product${index+1}',
+          'productImage': 'assets/images/placeholder.png',
           'quantity': 1,
           'unitPrice': (100 + (index * 10)).toDouble(),
         },

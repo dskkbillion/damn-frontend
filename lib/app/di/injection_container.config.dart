@@ -177,6 +177,8 @@ import '../../features/seller/domain/usecases/create_product_usecase.dart'
     as _i779;
 import '../../features/seller/domain/usecases/delete_product_usecase.dart'
     as _i172;
+import '../../features/seller/domain/usecases/get_authentication_status.dart'
+    as _i825;
 import '../../features/seller/domain/usecases/get_auto_reply_usecase.dart'
     as _i129;
 import '../../features/seller/domain/usecases/get_chat_room_list_usecase.dart'
@@ -185,6 +187,8 @@ import '../../features/seller/domain/usecases/get_seller_authentication_status_u
     as _i405;
 import '../../features/seller/domain/usecases/get_seller_dashboard_data_usecase.dart'
     as _i452;
+import '../../features/seller/domain/usecases/get_seller_draft_list_usecase.dart'
+    as _i725;
 import '../../features/seller/domain/usecases/get_seller_notification_list_usecase.dart'
     as _i992;
 import '../../features/seller/domain/usecases/get_seller_product_detail_usecase.dart'
@@ -217,6 +221,26 @@ import '../../features/seller/domain/usecases/update_store_profile_usecase.dart'
     as _i172;
 import '../../features/seller/domain/usecases/update_time_settings_usecase.dart'
     as _i1002;
+import '../../features/seller/presentation/bloc/auth_application/auth_application_bloc.dart'
+    as _i887;
+import '../../features/seller/presentation/bloc/auth_management/auth_management_bloc.dart'
+    as _i517;
+import '../../features/seller/presentation/bloc/product_edit/product_edit_bloc.dart'
+    as _i110;
+import '../../features/seller/presentation/bloc/product_management/product_management_bloc.dart'
+    as _i781;
+import '../../features/seller/presentation/bloc/seller_home/seller_home_bloc.dart'
+    as _i968;
+import '../../features/seller/presentation/blocs/after_sales_review/after_sales_review_bloc.dart'
+    as _i72;
+import '../../features/seller/presentation/blocs/auto_reply/auto_reply_bloc.dart'
+    as _i1060;
+import '../../features/seller/presentation/blocs/notification_list/notification_list_bloc.dart'
+    as _i886;
+import '../../features/seller/presentation/blocs/order_delivery/order_delivery_bloc.dart'
+    as _i512;
+import '../../features/seller/presentation/blocs/time_management/time_management_bloc.dart'
+    as _i295;
 import 'injection_container.dart' as _i809;
 
 // initializes the registration of main-scope dependencies inside of GetIt
@@ -271,13 +295,15 @@ Future<_i174.GetIt> init(
       () => _i123.AuthRemoteDataSourceImpl(dio: gh<_i361.Dio>()));
   gh.lazySingleton<_i406.IOrderLocalDataSource>(() =>
       _i1016.OrderLocalDataSourceImpl(appDatabase: gh<_i50.AppDatabase>()));
-  gh.lazySingleton<_i203.ISellerRepository>(() => _i927.SellerRepositoryImpl(
+  gh.factory<_i203.ISellerRepository>(() => _i927.SellerRepositoryImpl(
         gh<_i703.ISellerRemoteDataSource>(),
         gh<_i30.ISellerLocalDataSource>(),
         gh<_i892.NetworkInfo>(),
       ));
   gh.factory<_i481.GetChatRoomListUseCase>(
       () => _i481.GetChatRoomListUseCase(gh<_i452.IChatRepository>()));
+  gh.factory<_i825.GetAuthenticationStatus>(
+      () => _i825.GetAuthenticationStatus(gh<_i203.ISellerRepository>()));
   gh.lazySingleton<_i234.AllocateChatResourceUseCase>(
       () => _i234.AllocateChatResourceUseCase(gh<_i319.IAiChatRepository>()));
   gh.lazySingleton<_i567.CreateConversationUseCase>(
@@ -310,6 +336,8 @@ Future<_i174.GetIt> init(
           dataSource: gh<_i436.IFileUploadDataSource>()));
   gh.lazySingleton<_i798.UploadFileUseCase>(
       () => _i798.UploadFileUseCase(gh<_i569.IFileUploadRepository>()));
+  gh.factory<_i517.AuthManagementBloc>(
+      () => _i517.AuthManagementBloc(gh<_i825.GetAuthenticationStatus>()));
   gh.factory<_i412.CoreDioClient>(() => _i412.CoreDioClient(
         gh<String>(instanceName: 'baseUrl'),
         gh<_i558.FlutterSecureStorage>(),
@@ -326,6 +354,8 @@ Future<_i174.GetIt> init(
           gh<_i203.ISellerRepository>()));
   gh.factory<_i452.GetSellerDashboardDataUseCase>(
       () => _i452.GetSellerDashboardDataUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i725.GetSellerDraftListUseCase>(
+      () => _i725.GetSellerDraftListUseCase(gh<_i203.ISellerRepository>()));
   gh.factory<_i992.GetSellerNotificationListUseCase>(() =>
       _i992.GetSellerNotificationListUseCase(gh<_i203.ISellerRepository>()));
   gh.factory<_i475.GetSellerProductDetailUseCase>(
@@ -417,6 +447,23 @@ Future<_i174.GetIt> init(
       () => _i40.SubmitEvaluationUseCase(gh<_i724.IOrderRepository>()));
   gh.factory<_i51.SubmitRequirementsUseCase>(
       () => _i51.SubmitRequirementsUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i110.ProductEditBloc>(() => _i110.ProductEditBloc(
+        gh<_i475.GetSellerProductDetailUseCase>(),
+        gh<_i779.CreateProductUseCase>(),
+        gh<_i267.UpdateProductUseCase>(),
+      ));
+  gh.factory<_i968.SellerHomeBloc>(() => _i968.SellerHomeBloc(
+        gh<_i452.GetSellerDashboardDataUseCase>(),
+        gh<_i714.GetStoreProfileUseCase>(),
+        gh<_i625.INavigationService>(),
+      ));
+  gh.factory<_i781.ProductManagementBloc>(() => _i781.ProductManagementBloc(
+        gh<_i679.GetSellerProductListUseCase>(),
+        gh<_i725.GetSellerDraftListUseCase>(),
+        gh<_i311.UpdateProductStatusUseCase>(),
+        gh<_i172.DeleteProductUseCase>(),
+        gh<_i625.INavigationService>(),
+      ));
   gh.lazySingleton<_i589.IAuthRepository>(() => _i153.AuthRepositoryImpl(
         remoteDataSource: gh<_i107.AuthRemoteDataSource>(),
         secureStorage: gh<_i822.ISecureStorageRepository>(),
@@ -424,10 +471,24 @@ Future<_i174.GetIt> init(
         userInfoRepository: gh<_i795.IUserInfoRepository>(),
         tokenValidator: gh<_i691.TokenValidator>(),
       ));
+  gh.factory<_i887.AuthApplicationBloc>(() => _i887.AuthApplicationBloc(
+      gh<_i626.SubmitAuthenticationApplicationUseCase>()));
+  gh.factory<_i1060.AutoReplyBloc>(() => _i1060.AutoReplyBloc(
+        gh<_i129.GetAutoReplyUseCase>(),
+        gh<_i610.SetAutoReplyUseCase>(),
+      ));
+  gh.factory<_i886.NotificationListBloc>(() => _i886.NotificationListBloc(
+        gh<_i992.GetSellerNotificationListUseCase>(),
+        gh<_i321.MarkNotificationAsReadUseCase>(),
+        gh<_i665.MarkAllNotificationsAsReadUseCase>(),
+        gh<_i680.GetUnreadNotificationCountUseCase>(),
+      ));
   gh.factory<_i618.IInviteEvaluationUseCase>(
       () => _i618.InviteEvaluationUseCase(gh<_i724.IOrderRepository>()));
   gh.factory<_i618.IAddOrderDemandUseCase>(
       () => _i618.AddOrderDemandUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i512.OrderDeliveryBloc>(
+      () => _i512.OrderDeliveryBloc(gh<_i655.AddOrderDeliveryUseCase>()));
   gh.factory<_i549.OrderDetailBloc>(() => _i549.OrderDetailBloc(
         getOrderDetailUseCase: gh<_i691.GetOrderDetailUseCase>(),
         cancelOrderUseCase: gh<_i1.CancelOrderUseCase>(),
@@ -467,6 +528,14 @@ Future<_i174.GetIt> init(
       getOrderListUseCase: gh<_i1015.GetOrderListUseCase>()));
   gh.lazySingleton<_i253.IAfterSalesRemoteDataSource>(
       () => _i519.AfterSalesRemoteDataSource(gh<_i412.CoreDioClient>()));
+  gh.factory<_i72.AfterSalesReviewBloc>(() => _i72.AfterSalesReviewBloc(
+        gh<_i237.GetTenantAuditListUseCase>(),
+        gh<_i363.AuditRefundUseCase>(),
+      ));
+  gh.factory<_i295.TimeManagementBloc>(() => _i295.TimeManagementBloc(
+        gh<_i1030.GetTimeSettingsUseCase>(),
+        gh<_i1002.UpdateTimeSettingsUseCase>(),
+      ));
   gh.factory<_i184.SmsLoginCubit>(() => _i184.SmsLoginCubit(
         sendVerificationCodeUseCase: gh<_i695.SendVerificationCodeUseCase>(),
         loginWithVerificationCodeUseCase:

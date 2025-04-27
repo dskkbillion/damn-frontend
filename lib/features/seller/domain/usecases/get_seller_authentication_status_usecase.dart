@@ -15,6 +15,6 @@ class GetSellerAuthenticationStatusUseCase implements UseCase<List<SellerAuthent
 
   @override
   Future<Either<Failure, List<SellerAuthenticationInfo>>> call(NoParams params) {
-    return _sellerRepository.getAuthenticationStatusList();
+    return _sellerRepository.getAuthenticationStatus();
   }
 } 

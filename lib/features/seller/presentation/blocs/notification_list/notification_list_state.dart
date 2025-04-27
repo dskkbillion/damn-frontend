@@ -29,8 +29,8 @@ class NotificationListLoaded extends NotificationListState {
   /// 通知列表
   final List<SellerNotification> notifications;
   
-  /// 当前通知类型
-  final NotificationType currentType;
+  /// 当前通知类型 (null 表示全部)
+  final NotificationType? currentType;
   
   /// 是否还有更多数据
   final bool hasMore;
@@ -47,7 +47,7 @@ class NotificationListLoaded extends NotificationListState {
   /// 构造函数
   NotificationListLoaded({
     required this.notifications,
-    required this.currentType,
+    this.currentType,
     required this.hasMore,
     this.unreadCount,
     this.error,
@@ -75,7 +75,7 @@ class NotificationListLoaded extends NotificationListState {
   }) {
     return NotificationListLoaded(
       notifications: notifications ?? this.notifications,
-      currentType: currentType ?? this.currentType,
+      currentType: currentType != null ? currentType : this.currentType,
       hasMore: hasMore ?? this.hasMore,
       unreadCount: unreadCount ?? this.unreadCount,
       error: error,

@@ -103,5 +103,6 @@ abstract class ISellerRemoteDataSource {
     required List<String> files,
   });
 
-  Future<ShopVerificationStatus> getShopVerificationStatus();
+  // TODO: Define ShopVerificationStatus type and uncomment this method
+  // Future<ShopVerificationStatus> getShopVerificationStatus();
 } 

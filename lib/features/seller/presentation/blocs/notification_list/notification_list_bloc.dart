@@ -112,7 +112,8 @@ class NotificationListBloc extends Bloc<NotificationListEvent, NotificationListS
       }
       
       // 更新当前类型并重新加载
-      emit(currentState.copyWith(currentType: event.type));
+      final NotificationListLoaded newState = currentState.copyWith(currentType: event.type);
+      emit(newState);
       add(LoadNotificationList(type: event.type, refresh: true));
     } else {
       // 如果当前不是已加载状态，直接加载新类型

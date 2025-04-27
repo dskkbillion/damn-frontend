@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/repositories/i_seller_repository.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/entities/order_refund.dart';
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
 

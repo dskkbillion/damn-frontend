@@ -9,9 +9,30 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/empty
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/loading_state.dart';
 
 /// 认证管理页面
-class AuthManagementPage extends StatelessWidget {
-  /// 构造函数
-  const AuthManagementPage({Key? key}) : super(key: key);
+class AuthManagementPage extends StatefulWidget {
+  const AuthManagementPage({super.key});
+
+  @override
+  State<AuthManagementPage> createState() => _AuthManagementPageState();
+}
+
+class _AuthManagementPageState extends State<AuthManagementPage> {
+
+  @override
+  void initState() {
+    super.initState();
+    // 在initState中触发初始加载事件
+    // 注意：这里不能直接用 BlocProvider.of 或 context.read，因为 initState 时 context 可能还未完全准备好
+    // 最安全的方式是在 build 方法第一次构建时或使用 addPostFrameCallback
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) { // 确保widget仍然挂载
+        context.read<AuthManagementBloc>().add(const LoadAuthenticationList());
+      }
+    });
+    // 或者，如果Bloc是在父级提供的，可以在这里直接调用
+    // context.read<AuthManagementBloc>().add(const LoadAuthenticationList()); 
+    // 但为了保险起见，使用 addPostFrameCallback
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,54 +44,50 @@ class AuthManagementPage extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: BlocProvider(
-        create: (context) => context.read<AuthManagementBloc>()
-          ..add(const LoadAuthenticationList()),
-        child: BlocBuilder<AuthManagementBloc, AuthManagementState>(
-          builder: (context, state) {
-            if (state is AuthManagementInitial || state is AuthManagementLoading) {
-              return const Center(child: LoadingState());
-            } else if (state is AuthManagementError) {
-              return EmptyState.error(
-                text: '加载失败',
-                subText: state.message,
-                onRetryPressed: () => context.read<AuthManagementBloc>()
-                  ..add(const LoadAuthenticationList()),
-              );
-            } else if (state is AuthManagementEmpty) {
-              return const EmptyState(
-                text: '暂无认证项目',
-                icon: Icons.verified_user_outlined,
-              );
-            } else if (state is AuthManagementLoaded) {
-              return RefreshIndicator(
-                onRefresh: () async {
-                  context.read<AuthManagementBloc>()
-                    .add(const RefreshAuthenticationList());
-                },
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (state.submittedAuthList.isNotEmpty)
-                          _buildSubmittedAuthSection(context, state.submittedAuthList),
-                        const SizedBox(height: 24),
-                        _buildAvailableAuthSection(context, state.availableAuthList),
-                      ],
-                    ),
+      body: BlocBuilder<AuthManagementBloc, AuthManagementState>(
+        builder: (context, state) {
+          if (state is AuthManagementInitial || state is AuthManagementLoading) {
+            return const Center(child: LoadingState());
+          } else if (state is AuthManagementError) {
+            return EmptyState.error(
+              text: '加载失败',
+              subText: state.message,
+              onRetryPressed: () => context.read<AuthManagementBloc>()
+                ..add(const LoadAuthenticationList()),
+            );
+          } else if (state is AuthManagementEmpty) {
+            return const EmptyState(
+              text: '暂无认证项目',
+              icon: Icons.verified_user_outlined,
+            );
+          } else if (state is AuthManagementLoaded) {
+            return RefreshIndicator(
+              onRefresh: () async {
+                context.read<AuthManagementBloc>()
+                  .add(const RefreshAuthenticationList());
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (state.submittedAuthList.isNotEmpty)
+                        _buildSubmittedAuthSection(context, state.submittedAuthList),
+                      const SizedBox(height: 24),
+                      _buildAvailableAuthSection(context, state.availableAuthList),
+                    ],
                   ),
                 ),
-              );
-            } else {
-              return const Center(
-                child: Text('未知状态'),
-              );
-            }
-          },
-        ),
+              ),
+            );
+          } else {
+            return const Center(
+              child: Text('未知状态'),
+            );
+          }
+        },
       ),
     );
   }

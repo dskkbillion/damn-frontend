@@ -192,19 +192,16 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
       },
       builder: (context, state) {
         if (state.isLoading && _getProductListByStatus(state, status) == null) {
-          return const LoadingState.list();
+          return const LoadingState();
         }
         
         final products = _getProductListByStatus(state, status);
         
         if (products == null || products.isEmpty) {
-          return EmptyState.noData(
+          return EmptyState.noProducts(
             text: _getEmptyStateText(status),
-            onRetryPressed: () {
-              context.read<ProductManagementBloc>().add(LoadProductList(
-                status: status,
-                forceRefresh: true,
-              ));
+            onAddPressed: () {
+              context.read<ProductManagementBloc>().add(const NavigateToProductCreate());
             },
           );
         }
@@ -336,9 +333,9 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4.0),
-                    child: product.imageUrl != null && product.imageUrl!.isNotEmpty
+                    child: product.images.isNotEmpty
                         ? Image.network(
-                            product.imageUrl!,
+                            product.images,
                             width: 80,
                             height: 80,
                             fit: BoxFit.cover,
@@ -378,7 +375,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
                             ),
                             StatusTag(
                               text: product.status.displayName,
-                              color: _getStatusColor(product.status),
+                              type: _getStatusType(product.status),
                             ),
                           ],
                         ),
@@ -399,7 +396,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
                         Row(
                           children: [
                             Text(
-                              '库存: ${product.stock}',
+                              '库存: --',
                               style: TextStyle(
                                 fontSize: 13.0,
                                 color: Colors.grey[600],
@@ -407,7 +404,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
                             ),
                             const SizedBox(width: 12.0),
                             Text(
-                              '销量: ${product.salesCount ?? 0}',
+                              '销量: ${product.sales ?? 0}',
                               style: TextStyle(
                                 fontSize: 13.0,
                                 color: Colors.grey[600],
@@ -556,6 +553,24 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
         return Colors.grey;
       default:
         return Colors.blue;
+    }
+  }
+  
+  /// 根据商品状态获取标签类型
+  StatusTagType _getStatusType(ProductStatus status) {
+    switch (status) {
+      case ProductStatus.normal:
+        return StatusTagType.success;
+      case ProductStatus.draft:
+        return StatusTagType.info;
+      case ProductStatus.disabled:
+      case ProductStatus.rejected:
+      case ProductStatus.soldOut:
+        return StatusTagType.defaultTag;
+      case ProductStatus.reviewing:
+        return StatusTagType.warning;
+      default:
+        return StatusTagType.defaultTag;
     }
   }
 } 

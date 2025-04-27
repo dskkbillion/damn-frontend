@@ -14,10 +14,11 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_not
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_store_profile.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/time_settings.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/repositories/i_seller_repository.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/entities/order_refund.dart';
 import 'package:injectable/injectable.dart';
 
 /// 卖家模块仓库实现类
-@LazySingleton(as: ISellerRepository)
+@Injectable(as: ISellerRepository)
 class SellerRepositoryImpl implements ISellerRepository {
   final ISellerRemoteDataSource _remoteDataSource;
   final ISellerLocalDataSource _localDataSource;
@@ -39,7 +40,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         await _localDataSource.cacheDashboardData(dashboardData);
         return Right(dashboardData);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -88,7 +89,7 @@ class SellerRepositoryImpl implements ISellerRepository {
           items: products,
         ));
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -143,7 +144,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         
         return Right(_mapToSellerManagedProduct(productData));
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -169,7 +170,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         final result = await _remoteDataSource.updateProductStatus(productId, state);
         return Right(result);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -186,7 +187,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         final result = await _remoteDataSource.createProduct(productData);
         return Right(result);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -203,7 +204,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         final result = await _remoteDataSource.updateProduct(productData);
         return Right(result);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -220,7 +221,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         final result = await _remoteDataSource.deleteProduct(productIds);
         return Right(result);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -238,7 +239,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         await _localDataSource.cacheStoreProfile(profile);
         return Right(profile);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -264,7 +265,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         final result = await _remoteDataSource.updateStoreProfile(profileData);
         return Right(result);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -281,7 +282,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         final result = await _remoteDataSource.updateOnlineStatus(isOnline);
         return Right(result);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -299,7 +300,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         await _localDataSource.cacheAutoReplySettings(settings);
         return Right(settings);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -325,7 +326,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         final result = await _remoteDataSource.setAutoReplySettings(settings);
         return Right(result);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -343,7 +344,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         await _localDataSource.cacheTimeSettings(settings);
         return Right(settings);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -369,7 +370,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         final result = await _remoteDataSource.updateTimeSettings(settings);
         return Right(result);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -393,7 +394,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         
         return Right(notifications);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -419,7 +420,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         final result = await _remoteDataSource.markNotificationAsRead(notificationId);
         return Right(result);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -436,7 +437,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         final result = await _remoteDataSource.markAllNotificationsAsRead(messageTypes: messageTypes);
         return Right(result);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -453,7 +454,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         final count = await _remoteDataSource.getUnreadNotificationCount();
         return Right(count);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -464,19 +465,10 @@ class SellerRepositoryImpl implements ISellerRepository {
 
   /// 获取认证状态/信息列表
   @override
-  Future<Either<Failure, List<SellerAuthenticationInfo>>> getAuthenticationStatusList() async {
-    if (await _networkInfo.isConnected) {
-      try {
-        final authList = await _remoteDataSource.getAuthenticationStatusList();
-        return Right(authList);
-      } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
-      } catch (e) {
-        return Left(ServerFailure(message: e.toString()));
-      }
-    } else {
-      return Left(NetworkFailure(message: '无网络连接，无法获取认证状态'));
-    }
+  Future<Either<Failure, List<SellerAuthenticationInfo>>> getAuthenticationStatus() async {
+    // 只返回占位符，移除错误的 remoteDataSource 调用逻辑
+    print('WARNING: Using placeholder implementation for getAuthenticationStatus in SellerRepositoryImpl');
+    return const Right([]);
   }
 
   /// 提交认证申请
@@ -487,7 +479,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         final result = await _remoteDataSource.submitAuthenticationApplication(applicationData);
         return Right(result);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -524,7 +516,7 @@ class SellerRepositoryImpl implements ISellerRepository {
           items: refunds,
         ));
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -562,7 +554,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         );
         return Right(result);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -583,7 +575,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         
         return Right(refundDto.toEntity());
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -617,7 +609,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         );
         return Right(result);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
       } catch (e) {
         return Left(ServerFailure(message: e.toString()));
       }
@@ -652,8 +644,6 @@ class SellerRepositoryImpl implements ISellerRepository {
         return ProductStatus.normal;
       case 'DISABLED':
         return ProductStatus.disabled;
-      case 'FORCE_DISABLED':
-        return ProductStatus.forceDisabled;
       default:
         return ProductStatus.disabled;
     }

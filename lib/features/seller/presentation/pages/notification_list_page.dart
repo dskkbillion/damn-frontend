@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dskk_flutter_refactor/features/seller/domain/entities/notification_type.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_notification.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/notification_list/notification_list_bloc.dart';
 import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
-import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 
 /// 通知列表页面
-class NotificationListPage extends StatelessWidget {
+class NotificationListPage extends StatefulWidget {
   /// 路由名称
   static const routeName = '/seller/notifications';
 
@@ -16,42 +14,51 @@ class NotificationListPage extends StatelessWidget {
   const NotificationListPage({Key? key}) : super(key: key);
 
   @override
+  State<NotificationListPage> createState() => _NotificationListPageState();
+}
+
+class _NotificationListPageState extends State<NotificationListPage> {
+  @override
+  void initState() {
+    super.initState();
+    // 在 initState 中触发加载事件
+    context.read<NotificationListBloc>().add(const LoadNotificationList(type: null, refresh: true));
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => GetIt.instance<NotificationListBloc>()
-        ..add(LoadNotificationList(type: NotificationType.all, refresh: true)),
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('通知'),
-          actions: [
-            BlocBuilder<NotificationListBloc, NotificationListState>(
-              builder: (context, state) {
-                if (state is NotificationListLoaded) {
-                  return IconButton(
-                    icon: const Icon(Icons.done_all),
-                    tooltip: '全部标记为已读',
-                    onPressed: () {
-                      _showMarkAllReadConfirmation(context, state.currentType);
-                    },
-                  );
-                }
-                return Container();
-              },
-            ),
-          ],
-        ),
-        body: const NotificationListContent(),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('通知'),
+        actions: [
+          BlocBuilder<NotificationListBloc, NotificationListState>(
+            builder: (context, state) {
+              if (state is NotificationListLoaded) {
+                return IconButton(
+                  icon: const Icon(Icons.done_all),
+                  tooltip: '全部标记为已读',
+                  onPressed: () {
+                    // 确保 showDialog 使用正确的 context
+                    _showMarkAllReadConfirmation(context, state.currentType);
+                  },
+                );
+              }
+              return Container();
+            },
+          ),
+        ],
       ),
+      body: const NotificationListContent(),
     );
   }
 
   /// 显示全部标记为已读确认对话框
-  void _showMarkAllReadConfirmation(BuildContext context, NotificationType type) {
+  void _showMarkAllReadConfirmation(BuildContext context, NotificationType? type) {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('标记全部已读'),
-        content: Text('确定要将${type == NotificationType.all ? '所有' : _getTypeDisplayName(type)}通知标记为已读吗？'),
+        content: Text('确定要将${type == null ? '所有' : _getTypeDisplayName(type)}通知标记为已读吗？'),
         actions: [
           TextButton(
             onPressed: () {
@@ -62,6 +69,7 @@ class NotificationListPage extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.of(dialogContext).pop();
+              // 使用 context.read 而不是 BlocProvider.of
               context.read<NotificationListBloc>().add(MarkAllNotificationsAsRead(type: type));
             },
             child: const Text('确定'),
@@ -72,16 +80,21 @@ class NotificationListPage extends StatelessWidget {
   }
 
   /// 获取通知类型显示名称
-  String _getTypeDisplayName(NotificationType type) {
+  String _getTypeDisplayName(NotificationType? type) {
+    if (type == null) return '所有';
     switch (type) {
       case NotificationType.system:
         return '系统';
       case NotificationType.order:
         return '订单';
-      case NotificationType.afterSale:
+      case NotificationType.refund:
         return '售后';
-      case NotificationType.promotion:
-        return '活动';
+      case NotificationType.message:
+        return '消息';
+      case NotificationType.review:
+        return '评价';
+      case NotificationType.authentication:
+        return '认证';
       case NotificationType.other:
         return '其他';
       default:
@@ -119,10 +132,10 @@ class _NotificationListContentState extends State<NotificationListContent> with 
   /// 处理标签页变化
   void _handleTabChange() {
     if (!_tabController.indexIsChanging) {
-      NotificationType type;
+      NotificationType? type;
       switch (_tabController.index) {
         case 0:
-          type = NotificationType.all;
+          type = null;
           break;
         case 1:
           type = NotificationType.order;
@@ -131,13 +144,13 @@ class _NotificationListContentState extends State<NotificationListContent> with 
           type = NotificationType.system;
           break;
         case 3:
-          type = NotificationType.afterSale;
+          type = NotificationType.refund;
           break;
         case 4:
-          type = NotificationType.promotion;
+          type = NotificationType.message;
           break;
         default:
-          type = NotificationType.all;
+          type = null;
       }
       context.read<NotificationListBloc>().add(ChangeNotificationType(type: type));
     }
@@ -158,7 +171,7 @@ class _NotificationListContentState extends State<NotificationListContent> with 
             Tab(text: '订单'),
             Tab(text: '系统'),
             Tab(text: '售后'),
-            Tab(text: '活动'),
+            Tab(text: '消息'),
           ],
         ),
         Expanded(
@@ -215,44 +228,54 @@ class _NotificationListContentState extends State<NotificationListContent> with 
   }
   
   /// 从当前Tab索引获取通知类型
-  NotificationType _getCurrentTypeFromTabIndex() {
+  NotificationType? _getCurrentTypeFromTabIndex() {
     switch (_tabController.index) {
       case 0:
-        return NotificationType.all;
+        return null;
       case 1:
         return NotificationType.order;
       case 2:
         return NotificationType.system;
       case 3:
-        return NotificationType.afterSale;
+        return NotificationType.refund;
       case 4:
-        return NotificationType.promotion;
+        return NotificationType.message;
       default:
-        return NotificationType.all;
+        return null;
     }
   }
   
   /// 构建空状态
-  Widget _buildEmptyState(NotificationType type) {
+  Widget _buildEmptyState(NotificationType? type) {
     String message;
-    switch (type) {
-      case NotificationType.all:
-        message = '暂无任何通知';
-        break;
-      case NotificationType.order:
-        message = '暂无订单通知';
-        break;
-      case NotificationType.system:
-        message = '暂无系统通知';
-        break;
-      case NotificationType.afterSale:
-        message = '暂无售后通知';
-        break;
-      case NotificationType.promotion:
-        message = '暂无活动通知';
-        break;
-      default:
-        message = '暂无通知';
+    if (type == null) {
+      message = '暂无任何通知';
+    } else {
+      switch (type) {
+        case NotificationType.order:
+          message = '暂无订单通知';
+          break;
+        case NotificationType.system:
+          message = '暂无系统通知';
+          break;
+        case NotificationType.refund:
+          message = '暂无售后通知';
+          break;
+        case NotificationType.message:
+          message = '暂无消息通知';
+          break;
+        case NotificationType.review:
+          message = '暂无评价通知';
+          break;
+        case NotificationType.authentication:
+          message = '暂无认证通知';
+          break;
+        case NotificationType.other:
+          message = '暂无其他通知';
+          break;
+        default:
+          message = '暂无通知';
+      }
     }
     
     return Center(
@@ -324,7 +347,7 @@ class _NotificationListContentState extends State<NotificationListContent> with 
     
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(notification.title),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -342,7 +365,7 @@ class _NotificationListContentState extends State<NotificationListContent> with 
           if (notification.relatedEntityId != null)
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
                 // 根据通知类型跳转到相应页面
                 _navigateToRelatedPage(context, notification);
               },
@@ -350,7 +373,7 @@ class _NotificationListContentState extends State<NotificationListContent> with 
             ),
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.of(dialogContext).pop();
             },
             child: const Text('关闭'),
           ),
@@ -366,7 +389,7 @@ class _NotificationListContentState extends State<NotificationListContent> with 
       case NotificationType.order:
         // 跳转到订单详情页
         break;
-      case NotificationType.afterSale:
+      case NotificationType.refund:
         // 跳转到售后详情页
         break;
       default:
@@ -463,16 +486,24 @@ class _NotificationItem extends StatelessWidget {
         iconData = Icons.notifications;
         iconColor = Colors.green;
         break;
-      case NotificationType.afterSale:
+      case NotificationType.refund:
         iconData = Icons.assignment_return;
         iconColor = Colors.orange;
         break;
-      case NotificationType.promotion:
-        iconData = Icons.campaign;
-        iconColor = Colors.purple;
+      case NotificationType.message:
+        iconData = Icons.message;
+        iconColor = Colors.cyan;
+        break;
+      case NotificationType.review:
+        iconData = Icons.rate_review;
+        iconColor = Colors.yellow.shade700;
+        break;
+      case NotificationType.authentication:
+        iconData = Icons.verified_user;
+        iconColor = Colors.teal;
         break;
       default:
-        iconData = Icons.message;
+        iconData = Icons.info;
         iconColor = Colors.grey;
     }
     

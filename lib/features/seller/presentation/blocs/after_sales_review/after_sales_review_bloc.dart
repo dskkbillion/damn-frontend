@@ -5,6 +5,7 @@ import 'package:dartz/dartz.dart';
 
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/order_refund.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/repositories/i_seller_repository.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_tenant_audit_list_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/audit_refund_usecase.dart';
 
@@ -59,9 +60,9 @@ class AfterSalesReviewBloc extends Bloc<AfterSalesReviewEvent, AfterSalesReviewS
       ));
       
       final result = await _auditRefundUseCase(AuditRefundParams(
-        refundId: event.refundId,
-        status: event.approved ? 'AUDIT_PASS' : 'REFUSED',
-        refusalReason: event.refusalReason,
+        id: event.refundId,
+        state: event.approved ? RefundAuditState.pass : RefundAuditState.reject,
+        auditRemark: event.refusalReason,
       ));
       
       result.fold(
@@ -116,7 +117,7 @@ class AfterSalesReviewBloc extends Bloc<AfterSalesReviewEvent, AfterSalesReviewS
 
   /// 处理列表结果并触发相应状态
   void _emitListResult(
-    Either<Failure, List<OrderRefund>> result,
+    Either<Failure, PaginatedList<OrderRefund>> result,
     Emitter<AfterSalesReviewState> emit, {
     required bool isFirstPage,
     List<OrderRefund> currentRefunds = const [],
@@ -129,8 +130,9 @@ class AfterSalesReviewBloc extends Bloc<AfterSalesReviewEvent, AfterSalesReviewS
         hasMore: false,
         currentPage: currentPage,
       )),
-      (refunds) {
-        final hasMore = refunds.length >= 10; // 如果返回的数量等于页大小，假设有更多数据
+      (paginatedList) {
+        final refunds = paginatedList.items ?? [];
+        final hasMore = (paginatedList.items?.length ?? 0) >= 10;
         final newList = isFirstPage ? refunds : [...currentRefunds, ...refunds];
         
         if (newList.isEmpty) {

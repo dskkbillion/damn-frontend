@@ -7,6 +7,7 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_man
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_notification.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_store_profile.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/time_settings.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/entities/order_refund.dart';
 
 /// 卖家模块数据仓库接口
 abstract class ISellerRepository {
@@ -115,59 +116,5 @@ class PaginatedList<T> {
   const PaginatedList({
     required this.total,
     required this.items,
-  });
-}
-
-/// 售后/退款数据模型
-class OrderRefund {
-  /// 售后ID
-  final int id;
-  
-  /// 创建者ID
-  final int? creatorId;
-  
-  /// 状态
-  final String refundState;
-  
-  /// 类型
-  final String refundType;
-  
-  /// 原因
-  final String? refundReason;
-  
-  /// 备注
-  final String? refundRemarks;
-  
-  /// 金额
-  final double? refundAmount;
-  
-  /// 审核备注
-  final String? auditRemark;
-  
-  /// 创建时间
-  final DateTime createTime;
-  
-  /// 图片列表 (逗号分隔)
-  final String? images;
-  
-  /// 相关订单信息
-  final Map<String, dynamic>? order;
-  
-  /// 相关订单商品项
-  final Map<String, dynamic>? orderProductItem;
-
-  const OrderRefund({
-    required this.id,
-    required this.refundState,
-    required this.refundType,
-    required this.createTime,
-    this.creatorId,
-    this.refundReason,
-    this.refundRemarks,
-    this.refundAmount,
-    this.auditRemark,
-    this.images,
-    this.order,
-    this.orderProductItem,
   });
 } 

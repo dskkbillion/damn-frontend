@@ -89,7 +89,10 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       
       _checkResponse(response);
       
-      return PaginatedListDto.fromJson(response.data);
+      return PaginatedListDto.fromJson(
+        response.data,
+        (itemJson) => itemJson, // 商品列表暂时返回原始Map
+      );
     } catch (e) {
       _handleError(e);
       rethrow;
@@ -109,7 +112,10 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       
       _checkResponse(response);
       
-      return PaginatedListDto.fromJson(response.data);
+      return PaginatedListDto.fromJson(
+        response.data,
+        (itemJson) => itemJson, // 草稿列表暂时返回原始Map
+      );
     } catch (e) {
       _handleError(e);
       rethrow;
@@ -487,17 +493,14 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       
       _checkResponse(response);
       
-      final result = PaginatedListDto.fromJson(response.data);
-      
-      // 将records转换为OrderRefundDto对象列表
-      final records = result.records?.map((json) {
-        return OrderRefundDto.fromJson(json as Map<String, dynamic>);
-      }).toList() ?? [];
-      
-      return PaginatedListDto(
-        total: result.total,
-        records: records,
+      // 提供解析单个记录的函数 (OrderRefundDto.fromJson)
+      final result = PaginatedListDto.fromJson(
+        response.data,
+        OrderRefundDto.fromJson,
       );
+      
+      // 直接返回结果
+      return result;
     } catch (e) {
       _handleError(e);
       rethrow;
@@ -568,6 +571,24 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       _handleError(e);
       rethrow;
     }
+  }
+
+  @override
+  Future<List<SellerAuthenticationInfo>> getAuthenticationStatus() async {
+    // TODO: Implement actual API call for getAuthenticationStatus
+    print('WARNING: Using placeholder implementation for getAuthenticationStatus in SellerRemoteDataSourceImpl');
+    await Future.delayed(const Duration(milliseconds: 100)); // Simulate network delay
+    return []; // Return empty list as placeholder
+  }
+
+  @override
+  Future<dynamic> getShopVerificationStatus() async {
+    // TODO: Implement actual API call for getShopVerificationStatus
+    // TODO: Define ShopVerificationStatus type and return correctly
+    print('WARNING: Using placeholder implementation for getShopVerificationStatus in SellerRemoteDataSourceImpl');
+    await Future.delayed(const Duration(milliseconds: 100)); // Simulate network delay
+    // return ShopVerificationStatus.unknown; 
+    return null; // Return null as placeholder
   }
 
   /// 检查响应状态码

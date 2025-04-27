@@ -57,4 +57,9 @@ class MockNavigationService implements INavigationService {
     print('[MockNavigationService] Going back (pop).');
     // 在测试中可能不需要记录 goBack 的具体状态，但可以根据需要添加
   }
+
+  @override
+  Future<void> navigateTo(String path, {Object? extra}) async {
+    _logNavigation(path, {'extra': extra});
+  }
 } 
