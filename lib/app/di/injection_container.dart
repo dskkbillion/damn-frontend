@@ -9,6 +9,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:dskk_flutter_refactor/core/network/interceptors/app_info_interceptor.dart';
 
 // Import database and DAO
 import 'package:dskk_flutter_refactor/core/database/app_database.dart';
@@ -37,7 +38,10 @@ Future<void> configureDependencies({required String backendBaseUrl}) async {
 abstract class CoreRegisterModule {
   // Dio factory method
   @lazySingleton
-  Dio createDio(@Named('backendBaseUrl') String baseUrl) {
+  Dio createDio(
+    @Named('backendBaseUrl') String baseUrl,
+    AppInfoInterceptor appInfoInterceptor,
+  ) {
     final dio = Dio();
     dio.options.baseUrl = baseUrl;
     print('Dio configured via CoreRegisterModule with Base URL: ${dio.options.baseUrl}');
@@ -45,6 +49,8 @@ abstract class CoreRegisterModule {
     dio.options.receiveTimeout = const Duration(seconds: 15);
     dio.options.contentType = 'application/json';
 
+    dio.interceptors.add(appInfoInterceptor);
+    
     // ADDED LogInterceptor from profile branch logic
     dio.interceptors.add(PrettyDioLogger(
       requestHeader: true,

@@ -27,7 +27,6 @@ import '../../core/network/i_http_client.dart' as _i493;
 import '../../core/network/interceptors/app_info_interceptor.dart' as _i405;
 import '../../core/network/network_info.dart' as _i892;
 import '../../core/payment/services/i_payment_service.dart' as _i395;
-import '../../core/platform/network_info.dart' as _i50;
 import '../../core/platform/token_validator.dart' as _i691;
 import '../../core/storage/secure_storage_repository.dart' as _i822;
 import '../../core/storage/secure_storage_repository_impl.dart' as _i912;
@@ -276,12 +275,8 @@ Future<_i174.GetIt> init(
   gh.lazySingleton<_i973.InternetConnectionChecker>(
       () => registerModule.internetConnectionChecker);
   gh.lazySingleton<_i519.Client>(() => registerModule.httpClient);
-  gh.lazySingleton<_i361.Dio>(() =>
-      coreRegisterModule.createDio(gh<String>(instanceName: 'backendBaseUrl')));
   gh.factory<_i30.ISellerLocalDataSource>(
       () => _i507.SellerLocalDataSourceImpl(gh<_i460.SharedPreferences>()));
-  gh.lazySingleton<_i691.TokenValidator>(
-      () => _i691.TokenValidatorImpl(gh<_i361.Dio>()));
   gh.lazySingleton<_i822.ISecureStorageRepository>(() =>
       _i912.SecureStorageRepositoryImpl(gh<_i558.FlutterSecureStorage>()));
   gh.lazySingleton<_i493.IHttpClient>(() => _i962.DioHttpClient());
@@ -291,14 +286,8 @@ Future<_i174.GetIt> init(
     () => registerModule.baseUrl,
     instanceName: 'baseUrl',
   );
-  gh.factory<_i703.ISellerRemoteDataSource>(
-      () => _i741.SellerRemoteDataSourceImpl(gh<_i361.Dio>()));
   gh.lazySingleton<_i319.IAiChatRepository>(() => _i1012.AiChatRepositoryImpl(
       remoteDataSource: gh<_i607.IAiChatRemoteDataSource>()));
-  gh.lazySingleton<_i232.UserInfoRemoteDataSource>(
-      () => _i957.UserInfoRemoteDataSourceImpl(gh<_i361.Dio>()));
-  gh.lazySingleton<_i107.AuthRemoteDataSource>(
-      () => _i123.AuthRemoteDataSourceImpl(dio: gh<_i361.Dio>()));
   gh.lazySingleton<_i406.IOrderLocalDataSource>(() =>
       _i1016.OrderLocalDataSourceImpl(appDatabase: gh<_i50.AppDatabase>()));
   gh.lazySingleton<_i892.NetworkInfo>(
@@ -323,20 +312,23 @@ Future<_i174.GetIt> init(
       () => _i309.TranscribeAudioUseCase(gh<_i319.IAiChatRepository>()));
   gh.factory<_i405.AppInfoInterceptor>(
       () => _i405.AppInfoInterceptor(gh<_i655.PackageInfo>()));
-  gh.factory<_i58.ValidateTokenUseCase>(
-      () => _i58.ValidateTokenUseCase(gh<_i691.TokenValidator>()));
-  gh.lazySingleton<_i795.IUserInfoRepository>(
-      () => _i1015.UserInfoRepositoryImpl(
-            remoteDataSource: gh<_i232.UserInfoRemoteDataSource>(),
-            networkInfo: gh<_i50.NetworkInfo>(),
-          ));
   gh.lazySingleton<_i436.IFileUploadDataSource>(
       () => _i478.FileUploadDataSourceImpl(gh<_i493.IHttpClient>()));
+  gh.lazySingleton<_i361.Dio>(() => coreRegisterModule.createDio(
+        gh<String>(instanceName: 'backendBaseUrl'),
+        gh<_i405.AppInfoInterceptor>(),
+      ));
   gh.lazySingleton<_i569.IFileUploadRepository>(() =>
       _i43.FileUploadRepositoryImpl(
           dataSource: gh<_i436.IFileUploadDataSource>()));
+  gh.factory<_i703.ISellerRemoteDataSource>(
+      () => _i741.SellerRemoteDataSourceImpl(gh<_i361.Dio>()));
+  gh.lazySingleton<_i232.UserInfoRemoteDataSource>(
+      () => _i957.UserInfoRemoteDataSourceImpl(gh<_i361.Dio>()));
   gh.lazySingleton<_i798.UploadFileUseCase>(
       () => _i798.UploadFileUseCase(gh<_i569.IFileUploadRepository>()));
+  gh.lazySingleton<_i107.AuthRemoteDataSource>(
+      () => _i123.AuthRemoteDataSourceImpl(dio: gh<_i361.Dio>()));
   gh.factory<_i412.CoreDioClient>(() => _i412.CoreDioClient(
         gh<String>(instanceName: 'baseUrl'),
         gh<_i558.FlutterSecureStorage>(),
@@ -354,6 +346,11 @@ Future<_i174.GetIt> init(
         gh<_i309.TranscribeAudioUseCase>(),
         gh<_i558.FlutterSecureStorage>(),
       ));
+  gh.lazySingleton<_i795.IUserInfoRepository>(
+      () => _i1015.UserInfoRepositoryImpl(
+            remoteDataSource: gh<_i232.UserInfoRemoteDataSource>(),
+            networkInfo: gh<_i892.NetworkInfo>(),
+          ));
   gh.factory<_i203.ISellerRepository>(() => _i927.SellerRepositoryImpl(
         gh<_i703.ISellerRemoteDataSource>(),
         gh<_i30.ISellerLocalDataSource>(),
@@ -414,15 +411,17 @@ Future<_i174.GetIt> init(
       () => _i51.SubmitRequirementsUseCase(gh<_i724.IOrderRepository>()));
   gh.factory<_i825.GetAuthenticationStatus>(
       () => _i825.GetAuthenticationStatus(gh<_i203.ISellerRepository>()));
+  gh.lazySingleton<_i691.TokenValidator>(
+      () => _i691.TokenValidatorImpl(gh<_i361.Dio>()));
+  gh.factory<_i887.AuthApplicationBloc>(() => _i887.AuthApplicationBloc(
+      gh<_i626.SubmitAuthenticationApplicationUseCase>()));
   gh.lazySingleton<_i589.IAuthRepository>(() => _i153.AuthRepositoryImpl(
         remoteDataSource: gh<_i107.AuthRemoteDataSource>(),
         secureStorage: gh<_i822.ISecureStorageRepository>(),
-        networkInfo: gh<_i50.NetworkInfo>(),
+        networkInfo: gh<_i892.NetworkInfo>(),
         userInfoRepository: gh<_i795.IUserInfoRepository>(),
         tokenValidator: gh<_i691.TokenValidator>(),
       ));
-  gh.factory<_i887.AuthApplicationBloc>(() => _i887.AuthApplicationBloc(
-      gh<_i626.SubmitAuthenticationApplicationUseCase>()));
   gh.factory<_i618.IInviteEvaluationUseCase>(
       () => _i618.InviteEvaluationUseCase(gh<_i724.IOrderRepository>()));
   gh.factory<_i618.IAddOrderDemandUseCase>(
@@ -514,6 +513,8 @@ Future<_i174.GetIt> init(
         gh<_i779.CreateProductUseCase>(),
         gh<_i267.UpdateProductUseCase>(),
       ));
+  gh.factory<_i58.ValidateTokenUseCase>(
+      () => _i58.ValidateTokenUseCase(gh<_i691.TokenValidator>()));
   gh.factory<_i968.SellerHomeBloc>(() => _i968.SellerHomeBloc(
         gh<_i452.GetSellerDashboardDataUseCase>(),
         gh<_i714.GetStoreProfileUseCase>(),

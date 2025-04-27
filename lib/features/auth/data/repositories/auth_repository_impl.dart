@@ -5,11 +5,11 @@ import 'package:injectable/injectable.dart'; // Import injectable
 // 尝试导入主项目的 main.dart
 import 'package:dskk_flutter_refactor/main.dart'; // 假设主文件是 lib/main.dart
 
-import 'package:dskk_flutter_refactor/core/error/exceptions.dart';
-import 'package:dskk_flutter_refactor/core/error/failures.dart';
-import 'package:dskk_flutter_refactor/core/platform/network_info.dart';
-import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
-import 'package:dskk_flutter_refactor/core/platform/token_validator.dart';
+import '../../../../core/error/exceptions.dart';
+import '../../../../core/error/failures.dart';
+import '../../../../core/network/network_info.dart';
+import '../../../../core/platform/token_validator.dart';
+import '../../../../core/storage/secure_storage_repository.dart';
 import 'package:dskk_flutter_refactor/core/usecases/validate_token_usecase.dart';
 
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_credentials.dart';

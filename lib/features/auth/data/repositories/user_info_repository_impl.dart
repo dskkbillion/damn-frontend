@@ -2,7 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/core/error/exceptions.dart';
-import 'package:dskk_flutter_refactor/core/platform/network_info.dart';
+import 'package:dskk_flutter_refactor/core/network/network_info.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/user_info.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_info_repository.dart';
 import 'package:dskk_flutter_refactor/features/auth/data/datasources/user_info_remote_data_source.dart';
