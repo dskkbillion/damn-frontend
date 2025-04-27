@@ -11,6 +11,7 @@ import 'package:dskk_flutter_refactor/app/di/injection_container.dart'; // Expor
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
 import 'package:dskk_flutter_refactor/core/auth/repositories/mocks/mock_auth_repository.dart';
 import 'package:dskk_flutter_refactor/features/home/di/home_di.dart'; // Import Home DI
+import 'package:dskk_flutter_refactor/features/favorites/di/favorites_di.dart'; // Import Favorites DI
 
 /// Application entry point for running the app with the Dev Menu navigator tab.
 /// Use this for convenient testing of different module entry points during development.
@@ -54,6 +55,10 @@ Future<void> main() async {
   // Initialize Home module dependencies AFTER core dependencies
   await initHomeDi();
   print('[main_dev_preview] Home dependencies configured.');
+
+  // Initialize Favorites module dependencies
+  await FavoritesDI.init(getIt);
+  print('[main_dev_preview] Favorites dependencies configured.');
 
   // --- Override AuthRepository with Mock for Dev Preview --- 
   print('[main_dev_preview] Overriding IAuthRepository with MockAuthRepository...');

@@ -8,8 +8,6 @@ import 'package:dskk_flutter_refactor/core/payment/services/mocks/mock_payment_s
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 // Import database and DAO
@@ -36,13 +34,13 @@ Future<void> configureDependencies({required String backendBaseUrl}) async {
 }
 
 @module
-abstract class RegisterModule {
+abstract class CoreRegisterModule {
   // Dio factory method
   @lazySingleton
   Dio createDio(@Named('backendBaseUrl') String baseUrl) {
     final dio = Dio();
     dio.options.baseUrl = baseUrl;
-    print('Dio configured via RegisterModule with Base URL: ${dio.options.baseUrl}');
+    print('Dio configured via CoreRegisterModule with Base URL: ${dio.options.baseUrl}');
     dio.options.connectTimeout = const Duration(seconds: 15);
     dio.options.receiveTimeout = const Duration(seconds: 15);
     dio.options.contentType = 'application/json';
@@ -71,14 +69,6 @@ abstract class RegisterModule {
   // Connectivity instance
   @lazySingleton
   Connectivity get connectivity => Connectivity();
-
-  // ADDED SharedPreferences instance
-  @preResolve 
-  Future<SharedPreferences> get sharedPreferences => SharedPreferences.getInstance();
-
-  // ADDED InternetConnectionChecker instance
-  @lazySingleton
-  InternetConnectionChecker get connectionChecker => InternetConnectionChecker();
 
   // AppDatabase instance
   @lazySingleton

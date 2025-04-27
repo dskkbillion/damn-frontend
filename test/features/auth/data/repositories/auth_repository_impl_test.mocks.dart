@@ -7,7 +7,7 @@ import 'dart:async' as _i5;
 
 import 'package:dartz/dartz.dart' as _i3;
 import 'package:dskk_flutter_refactor/core/error/failures.dart' as _i8;
-import 'package:dskk_flutter_refactor/core/platform/network_info.dart' as _i11;
+import 'package:dskk_flutter_refactor/core/network/network_info.dart' as _i11;
 import 'package:dskk_flutter_refactor/core/platform/token_validator.dart'
     as _i12;
 import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart'

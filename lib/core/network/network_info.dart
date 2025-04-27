@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:injectable/injectable.dart';
 
 /// 网络信息接口
 abstract class NetworkInfo {
@@ -8,7 +9,8 @@ abstract class NetworkInfo {
   Future<bool> get isConnected;
 }
 
-/// 使用 InternetConnectionChecker 实现网络信息接口
+/// 网络信息实现类
+@LazySingleton(as: NetworkInfo)
 class NetworkInfoImpl implements NetworkInfo {
   final InternetConnectionChecker connectionChecker;
 

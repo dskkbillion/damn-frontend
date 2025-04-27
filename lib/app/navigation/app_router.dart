@@ -20,7 +20,8 @@ import 'package:dskk_flutter_refactor/features/after_sales/presentation/routes/a
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/routes/ai_docs_routes.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/routes/auth_routes.dart'; 
 import 'package:dskk_flutter_refactor/features/profile/presentation/routes/profile_routes.dart'; 
-import 'package:dskk_flutter_refactor/features/home/presentation/routes/home_routes.dart'; // Added from theirs
+import 'package:dskk_flutter_refactor/features/home/presentation/routes/home_routes.dart';
+import 'package:dskk_flutter_refactor/features/favorites/presentation/routes/favorites_routes.dart';
 
 // Placeholder page (defined once) - Only used if a module's routes aren't ready
 class PlaceholderPage extends StatelessWidget {
@@ -110,7 +111,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       // Top-level routes (not part of the shell) - Aggregated from HEAD
       ...AuthRoutes.routes, 
       ...OrderRoutes.routes, 
-      ...AfterSalesRoutes.routes, 
+      ...AfterSalesRoutes.routes,
+      ...FavoritesRoutes.routes, // Add favorites module routes
       // ...AiDocsRoutes.routes, // Remove duplicate AiDocs routes from top-level
       // Profile routes are in the shell
     ],

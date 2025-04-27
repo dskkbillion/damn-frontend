@@ -17,7 +17,7 @@ class MockAuthRepository implements IAuthRepository {
   // --- 控制 getCurrentUserId 的行为 ---
   bool _shouldReturnUserId = true;
   String _userIdToReturn = 'mock_user_123'; // 默认模拟用户 ID
-  Failure _failureToReturn = AuthFailure('Mock Auth Error: Not logged in'); // 默认模拟错误
+  Failure _failureToReturn = AuthFailure(message: 'Mock Auth Error: Not logged in'); // 默认模拟错误
 
   /// 配置 Mock 对象在调用 getCurrentUserId 时是否返回用户 ID。
   void setShouldReturnUserId(bool shouldReturn) {

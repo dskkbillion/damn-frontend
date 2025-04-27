@@ -1,6 +1,2 @@
-/// Abstract class to check network connectivity.
-abstract class NetworkInfo {
-  /// Returns true if the device is currently connected to the network,
-  /// false otherwise.
-  Future<bool> get isConnected;
-}
+/// 此文件导出 core/network/network_info.dart 中的 NetworkInfo，以保持向后兼容性
+export '../network/network_info.dart';
