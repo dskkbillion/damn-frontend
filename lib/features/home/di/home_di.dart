@@ -41,9 +41,18 @@ Future<void> initHomeDi() async {
   // 'baseUrl' 可能已经在 injection_container.dart 中注册
   if (!sl.isRegistered<String>(instanceName: 'baseUrl')) {
     sl.registerLazySingleton<String>(
-      () => dotenv.env['BACKEND_BASE_URL'] ?? 'https://app.duoshaokankan.com/prod-api',
+      () {
+        final backendUrlFromEnv = dotenv.env['BACKEND_BASE_URL'];
+        print('[home_di] 读取到的 BACKEND_BASE_URL: $backendUrlFromEnv');
+        final baseUrlToRegister = backendUrlFromEnv ?? 'https://app.duoshaokankan.com/prod-api';
+        print('[home_di] 最终注册为 baseUrl 的值: $baseUrlToRegister');
+        return baseUrlToRegister;
+      },
       instanceName: 'baseUrl',
     );
+  } else {
+    final existingBaseUrl = sl<String>(instanceName: 'baseUrl');
+    print('[home_di] 名为 baseUrl 的实例已被注册，值为: $existingBaseUrl');
   }
   
   // 使用安全存储服务获取token和userId
