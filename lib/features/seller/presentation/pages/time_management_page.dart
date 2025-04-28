@@ -1,36 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart'; // Import GetIt
 import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/time_settings.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/time_management/time_management_bloc.dart';
 
 /// 卖家时间管理页面
-class TimeManagementPage extends StatefulWidget {
-  /// 路由名称
+class TimeManagementPage extends StatelessWidget {
+  /// 路由名称 - This might be outdated or unused if GoRouter is primary
   static const routeName = '/seller/profile/time-management';
 
   /// 构造函数
   const TimeManagementPage({Key? key}) : super(key: key);
 
   @override
-  State<TimeManagementPage> createState() => _TimeManagementPageState();
-}
-
-class _TimeManagementPageState extends State<TimeManagementPage> {
-  @override
-  void initState() {
-    super.initState();
-    // 在 initState 中触发加载事件
-    context.read<TimeManagementBloc>().add(LoadTimeSettings());
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('时间管理'),
+    // Provide the Bloc here
+    return BlocProvider<TimeManagementBloc>(
+      create: (context) {
+        // Use GetIt to get the instance and add the initial event
+        final bloc = GetIt.I<TimeManagementBloc>();
+        // Assuming LoadTimeSettings is the correct initial event based on previous code
+        bloc.add(LoadTimeSettings()); 
+        return bloc;
+      },
+      // Wrap the Scaffold with BlocProvider
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('时间管理'),
+          // Optional: Add back button if needed, depends on navigation flow
+          // leading: IconButton(
+          //   icon: const Icon(Icons.arrow_back),
+          //   onPressed: () => Navigator.of(context).pop(),
+          // ),
+        ),
+        // Use the context provided by BlocProvider
+        body: const TimeManagementBody(),
       ),
-      body: const TimeManagementBody(),
     );
   }
 }
@@ -42,6 +48,7 @@ class TimeManagementBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // BlocConsumer now uses the context provided by the BlocProvider in TimeManagementPage.build
     return BlocConsumer<TimeManagementBloc, TimeManagementState>(
       listener: (context, state) {
         if (state is TimeManagementError) {
@@ -49,29 +56,57 @@ class TimeManagementBody extends StatelessWidget {
             SnackBar(content: Text(state.message)),
           );
         }
+        // Optional: Add listener for success state if needed
+        // if (state is TimeManagementLoaded && state.justUpdated) {
+        //   ScaffoldMessenger.of(context).showSnackBar(
+        //     const SnackBar(content: Text('设置已保存')),
+        //   );
+        // }
       },
       builder: (context, state) {
-        if (state is TimeManagementLoading) {
+        if (state is TimeManagementInitial || state is TimeManagementLoading) { // Handle Initial state
           return const Center(child: LoadingIndicator());
         }
 
         if (state is TimeManagementLoaded || state is TimeManagementUpdating) {
-          final settings = state is TimeManagementLoaded 
-              ? (state as TimeManagementLoaded).settings
+          // No change needed here, state access is correct
+          final settings = state is TimeManagementLoaded
+              ? state.settings
               : (state as TimeManagementUpdating).settings;
-          
+
           final isUpdating = state is TimeManagementUpdating;
-          
+
+          // Pass the context (which has Bloc access) down
           return _buildContent(context, settings, isUpdating);
         }
+        
+        if (state is TimeManagementError) { // Handle Error state more explicitly in builder
+           return Center(
+             child: Column(
+               mainAxisAlignment: MainAxisAlignment.center,
+               children: [
+                 const Text('加载失败'),
+                 const SizedBox(height: 8),
+                 Text(state.message, style: const TextStyle(color: Colors.red)),
+                 const SizedBox(height: 16),
+                 ElevatedButton(
+                   onPressed: () => context.read<TimeManagementBloc>().add(LoadTimeSettings()),
+                   child: const Text('重试'),
+                 )
+               ],
+             ),
+           );
+        }
 
-        return const Center(child: Text('加载失败，请重试'));
+        // Fallback for any other unhandled state
+        return const Center(child: Text('未知状态'));
       },
     );
   }
 
   /// 构建页面内容
   Widget _buildContent(BuildContext context, TimeSettings settings, bool isUpdating) {
+    // Pass context down
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -79,20 +114,20 @@ class TimeManagementBody extends StatelessWidget {
         children: [
           // 在线状态切换
           _buildOnlineStatusSection(context, settings, isUpdating),
-          
+
           const SizedBox(height: 24),
-          
+
           // 状态说明
           _buildStatusDescription(settings.isOnline),
-          
+
           const SizedBox(height: 24),
-          
+
           // 自动离线设置
           _buildAutoOfflineSection(context, settings, isUpdating),
-          
+
           const SizedBox(height: 32),
-          
-          // 保存按钮
+
+          // 保存按钮 - Needs context for Bloc access
           _buildSaveButton(context, isUpdating),
         ],
       ),
@@ -101,6 +136,7 @@ class TimeManagementBody extends StatelessWidget {
 
   /// 构建在线状态切换部分
   Widget _buildOnlineStatusSection(BuildContext context, TimeSettings settings, bool isUpdating) {
+    // No changes needed here, context.read will work correctly
     return Card(
       elevation: 1,
       margin: EdgeInsets.zero,
@@ -130,9 +166,10 @@ class TimeManagementBody extends StatelessWidget {
                 Switch(
                   value: settings.isOnline,
                   activeColor: Colors.green,
-                  onChanged: isUpdating 
-                      ? null 
+                  onChanged: isUpdating
+                      ? null
                       : (value) {
+                          // Context here has access to the Bloc
                           context.read<TimeManagementBloc>().add(UpdateOnlineStatus(value));
                         },
                 ),
@@ -146,6 +183,7 @@ class TimeManagementBody extends StatelessWidget {
 
   /// 构建状态说明部分
   Widget _buildStatusDescription(bool isOnline) {
+    // This widget doesn't need context for Bloc access
     return Card(
       elevation: 1,
       margin: EdgeInsets.zero,
@@ -180,12 +218,16 @@ class TimeManagementBody extends StatelessWidget {
 
   /// 构建自动离线设置部分
   Widget _buildAutoOfflineSection(BuildContext context, TimeSettings settings, bool isUpdating) {
-    // 注意：这里使用了StatefulBuilder来管理本地状态
+    // The StatefulBuilder's context might be different, but the parent context passed
+    // to this method (`context`) still has access to the Bloc.
+    // If TimeSlotSelector or Add Button need Bloc access, pass the main `context`.
     return StatefulBuilder(
-      builder: (context, setState) {
-        // 本地状态，表示是否启用自动离线
-        bool autoOfflineEnabled = false;
-        
+      builder: (statefulBuilderContext, setState) { // Use a different name for this context
+        // Check if availableTimeSlots is not null and not empty to determine if enabled
+        bool autoOfflineEnabled = settings.availableTimeSlots != null && settings.availableTimeSlots!.isNotEmpty;
+        // Get actual time slots from settings
+        List<TimeSlot> currentTimeSlots = settings.availableTimeSlots ?? [];
+
         return Card(
           elevation: 1,
           margin: EdgeInsets.zero,
@@ -216,12 +258,14 @@ class TimeManagementBody extends StatelessWidget {
                     Switch(
                       value: autoOfflineEnabled,
                       activeColor: Colors.green,
-                      onChanged: isUpdating 
-                          ? null 
+                      onChanged: isUpdating
+                          ? null
                           : (value) {
                               setState(() {
                                 autoOfflineEnabled = value;
                               });
+                              // Optionally dispatch an event immediately, or wait for Save button
+                              // context.read<TimeManagementBloc>().add(UpdateAutoOfflineEnabled(value));
                             },
                     ),
                   ],
@@ -230,7 +274,8 @@ class TimeManagementBody extends StatelessWidget {
                 // 时间段设置（仅在启用时显示）
                 if (autoOfflineEnabled) ...[
                   const SizedBox(height: 16),
-                  _buildTimeSlotSelector(context, isUpdating),
+                  // Pass the main context if this widget needs Bloc access
+                  _buildTimeSlotSelector(context, settings, isUpdating),
                   
                   const SizedBox(height: 16),
                   const Divider(),
@@ -239,10 +284,12 @@ class TimeManagementBody extends StatelessWidget {
                   // 添加新时间段按钮
                   Center(
                     child: OutlinedButton.icon(
-                      onPressed: isUpdating 
-                          ? null 
+                      onPressed: isUpdating
+                          ? null
                           : () {
-                              // 添加新时间段的逻辑
+                              // Pass the main context if Add logic needs Bloc access
+                              // _showAddTimeSlotDialog(context);
+                              print("Add time slot clicked"); // Placeholder
                             },
                       icon: const Icon(Icons.add, size: 18),
                       label: const Text('添加时间段'),
@@ -272,99 +319,18 @@ class TimeManagementBody extends StatelessWidget {
     );
   }
   
-  /// 构建时间段选择器
-  Widget _buildTimeSlotSelector(BuildContext context, bool isUpdating) {
-    // 默认显示周一的时间段
-    final weekDay = WeekDay.monday;
-    String startTime = '09:00';
-    String endTime = '18:00';
-    
-    return Column(
-      children: [
-        // 星期选择
-        DropdownButtonFormField<WeekDay>(
-          value: weekDay,
-          decoration: const InputDecoration(
-            labelText: '选择星期',
-            border: OutlineInputBorder(),
-          ),
-          items: WeekDay.values.map((day) {
-            return DropdownMenuItem<WeekDay>(
-              value: day,
-              child: Text(day.displayName),
-            );
-          }).toList(),
-          onChanged: isUpdating ? null : (value) {
-            // 更新选中的星期几
-          },
-        ),
-        
-        const SizedBox(height: 16),
-        
-        // 时间选择
-        Row(
-          children: [
-            // 开始时间
-            Expanded(
-              child: TextFormField(
-                initialValue: startTime,
-                decoration: const InputDecoration(
-                  labelText: '开始时间',
-                  hintText: 'HH:MM',
-                  border: OutlineInputBorder(),
-                ),
-                readOnly: true,
-                onTap: isUpdating 
-                    ? null 
-                    : () async {
-                        final TimeOfDay? picked = await showTimePicker(
-                          context: context,
-                          initialTime: TimeOfDay(
-                            hour: int.parse(startTime.split(':')[0]), 
-                            minute: int.parse(startTime.split(':')[1]),
-                          ),
-                        );
-                        if (picked != null) {
-                          // 更新开始时间
-                          startTime = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
-                        }
-                      },
-              ),
-            ),
-            
-            const SizedBox(width: 16),
-            
-            // 结束时间
-            Expanded(
-              child: TextFormField(
-                initialValue: endTime,
-                decoration: const InputDecoration(
-                  labelText: '结束时间',
-                  hintText: 'HH:MM',
-                  border: OutlineInputBorder(),
-                ),
-                readOnly: true,
-                onTap: isUpdating 
-                    ? null 
-                    : () async {
-                        final TimeOfDay? picked = await showTimePicker(
-                          context: context,
-                          initialTime: TimeOfDay(
-                            hour: int.parse(endTime.split(':')[0]), 
-                            minute: int.parse(endTime.split(':')[1]),
-                          ),
-                        );
-                        if (picked != null) {
-                          // 更新结束时间
-                          endTime = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
-                        }
-                      },
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
+  /// 构建时间段选择器 (Placeholder - Needs actual implementation)
+  Widget _buildTimeSlotSelector(BuildContext context, TimeSettings settings, bool isUpdating) {
+     // TODO: Implement time slot display and editing based on settings.autoOfflineSchedule?.slots
+     // This will likely involve iterating through slots and providing ways to modify/delete them.
+     // It might need access to the Bloc via `context`.
+     return Container(
+       padding: const EdgeInsets.symmetric(vertical: 8.0),
+       child: const Text(
+         "时间段选择器 (待实现)",
+         style: TextStyle(color: Colors.grey),
+       ),
+     );
   }
   
   /// 构建保存按钮
@@ -372,27 +338,31 @@ class TimeManagementBody extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: isUpdating 
-            ? null 
-            : () {
-                // 保存所有设置
-                // 目前只实现了在线状态的更新，时间段设置还需要API支持
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('设置已保存')),
-                );
-              },
+        // Disable button if isUpdating
+        onPressed: isUpdating ? null : () {
+          // Dispatch Save event using the context with Bloc access
+          // TODO: Gather the current state from the UI (online status, auto-offline settings)
+          // and pass it to the SaveSettings event.
+          // final currentSettings = gatherCurrentSettingsFromUI();
+          // context.read<TimeManagementBloc>().add(SaveSettings(currentSettings));
+          print("Save button clicked"); // Placeholder
+           ScaffoldMessenger.of(context).showSnackBar(
+             const SnackBar(content: Text('保存功能待实现')),
+           );
+        },
         style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          backgroundColor: Colors.green,
-          disabledBackgroundColor: Colors.green.withOpacity(0.5),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          backgroundColor: Colors.deepPurple, // Or your theme's primary color
+          foregroundColor: Colors.white,
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
-        child: const Text(
-          '保存设置',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.white,
-          ),
-        ),
+        child: isUpdating
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              )
+            : const Text('保存设置'),
       ),
     );
   }

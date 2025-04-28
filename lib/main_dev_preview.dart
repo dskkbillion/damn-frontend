@@ -74,11 +74,11 @@ Future<void> main() async {
   try {
     final storage = getIt<FlutterSecureStorage>(); 
     // Use a generic test token and ID for buyer/general use
-    const testToken = "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjFmODBjYWYxLWE5ZGEtNDNhZi1hYzNjLTZkOWFjY2I4MmVjZiJ9.kyKSBwHvo3czm-R1cVySStWQQiSDQef4zAHS5dSjQ7MPjpfCR-PyqQgVN30GhmJf5eBmeaT9jJI13gMS8pmBSA"; // Example Buyer/General Token
-    const testUserId = "1"; // Example Buyer/General ID as String representation of an int
-    const testCommonUserId = "999"; // Example Common User ID as String
+    const testToken = "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6Ijk1NjBiODY2LWU2ZmUtNGYyOS04NjVjLTdmMjJjNDg0YjlmZCJ9.QCfx9k2Bu6H1yONyH5jGm_Pjy0DlPPGl9gP1_0p72c-4KjHwoRPIkxXrnJckC1g_UqudTufgjQvfYUCMGzNd9A"; // Example Buyer/General Token
+    const testUserId = "18888888888"; // Example Buyer/General ID as String representation of an int
+    const testCommonUserId = "1"; // Example Common User ID as String
 
-    await storage.write(key: 'user_token', value: testToken);
+    await storage.write(key: 'auth_token', value: testToken);
     await storage.write(key: 'user_id', value: testUserId);
     await storage.write(key: 'common_user_id', value: testCommonUserId); // Write common_user_id
 

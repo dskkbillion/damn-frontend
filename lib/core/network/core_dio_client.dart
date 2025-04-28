@@ -17,7 +17,7 @@ class CoreDioClient {
 
   CoreDioClient(
     @Named('baseUrl') String baseUrl,
-    this._secureStorage,
+    this._secureStorage, // Inject storage directly if AuthInterceptor isn't injectable
     this._appInfoInterceptor, // Inject AppInfoInterceptor
   ) {
     print('[CoreDioClient] Initializing with baseUrl: $baseUrl');
@@ -34,7 +34,8 @@ class CoreDioClient {
       dio = Dio(options);
 
       // Add interceptors
-      final authInterceptor = AuthInterceptor();
+      // Pass the injected storage to AuthInterceptor
+      final authInterceptor = AuthInterceptor(_secureStorage); 
       // Comment out PrettyLogInterceptor due to persistent Linter issues
       // final logInterceptor = PrettyLogInterceptor(
       //     requestHeader: true,
@@ -161,8 +162,10 @@ class CoreDioClient {
 
 // Auth Interceptor using FlutterSecureStorage
 class AuthInterceptor extends Interceptor {
-  // Create storage instance - potentially make this static or pass via constructor if DI is tricky here
-  final _storage = const FlutterSecureStorage();
+  // Inject FlutterSecureStorage instead of creating it
+  final FlutterSecureStorage _storage;
+
+  AuthInterceptor(this._storage); // Constructor to receive storage
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
@@ -174,22 +177,24 @@ class AuthInterceptor extends Interceptor {
       return handler.next(options);
     }
 
+    // --- Restore async logic --- 
     String? token = await _getAuthToken();
     if (token != null && token.isNotEmpty) {
-      // REVERTED: Send raw token as per API doc example
-      options.headers['Authorization'] = token; 
-      print('[AuthInterceptor] Added raw token to Authorization header.'); // Updated log
+      // Add Bearer prefix and use correct key
+      options.headers['Authorization'] = 'Bearer $token'; 
+      print('[AuthInterceptor] Added Bearer token to Authorization header.'); // Updated log
     } else {
        print('[AuthInterceptor] No token found. Request proceeding without Authorization header.');
     }
-    super.onRequest(options, handler);
+    // --- End restore ---
+    
+    handler.next(options); 
   }
 
   Future<String?> _getAuthToken() async {
-    // Read the token from secure storage
-    // Ensure the key matches the key used when saving the token
+    // Read the token from secure storage using the correct key
     try {
-      const storageKey = 'user_token'; // Make sure this key is consistent
+      const storageKey = 'auth_token'; // CORRECT KEY
       final token = await _storage.read(key: storageKey);
       if (token != null) {
         print('[AuthInterceptor] Token retrieved from secure storage.');
@@ -201,9 +206,8 @@ class AuthInterceptor extends Interceptor {
       print('[AuthInterceptor] Error reading token from secure storage: $e');
       return null; // Return null on error
     }
-
-    // REMOVED Hardcoded token logic
-    // print("[AuthInterceptor] Using hardcoded test token.");
-    // return "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6ImQ1NzgyZDRjLTMwMmQtNGNjZS1iNzY0LTc0YmVhYmMwOTI4MCJ9.Pq9zB0Pc_cByYzuzogVeSJt6f0h-lXhEa7TXY8UuXkVogGi2eEJZBA6f9QjLzgFNB-ge1-aqH-mMj7fFLotS-w";
+  }
+} 
+    }
   }
 } 

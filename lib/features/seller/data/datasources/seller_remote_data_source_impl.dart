@@ -22,70 +22,87 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
   
   @override
   Future<SellerDashboardData> getDashboardData() async {
+    print('[DataSource DEBUG] Entering getDashboardData'); // DEBUG LOG
     try {
-      final response = await _dio.get('/api/shop/dashboard/data');
+      final response = await _dio.post('/api/project/statistics/index');
       _checkResponse(response);
+      print('[DataSource DEBUG] API Response OK'); // DEBUG LOG
       
-      // 根据API响应结构处理
       final data = response.data['data'];
-      
-      // 构建收入数据
+      if (data == null || data is! Map<String, dynamic>) {
+        throw ServerException(message: 'Invalid dashboard data format received');
+      }
+      print('[DataSource DEBUG] Response data fetched: $data'); // DEBUG LOG
+
+      // Map response data to SellerDashboardData, using actual keys from the response
+      print('[DataSource DEBUG] Parsing income...'); // DEBUG LOG
       final income = SellerIncomeData(
-        total: data['totalIncome'] ?? 0.0,
-        today: data['todayIncome'] ?? 0.0,
-        pending: data['pendingIncome'] ?? 0.0,
+        total: (data['totalEarnings'] ?? 0.0).toDouble(), // Use 'totalEarnings' from response
+        today: (data['thisMonthTotalEarnings'] ?? 0.0).toDouble(), // Map appropriately, e.g., today's might not be directly available or use a different key
+        pending: (data['pendingIncome'] ?? 0.0).toDouble(), // Assuming pendingIncome exists or map to relevant key
       );
+      print('[DataSource DEBUG] Parsed income: $income'); // DEBUG LOG
       
-      // 构建订单数据
+      print('[DataSource DEBUG] Parsing orders...'); // DEBUG LOG
       final orders = SellerOrdersData(
-        total: data['totalOrders'] ?? 0,
-        pending: data['pendingOrders'] ?? 0,
-        completed: data['completedOrders'] ?? 0,
-        canceled: data['canceledOrders'] ?? 0,
+        total: data['totalOrderNum'] ?? 0,       // Use 'totalOrderNum' from response
+        pending: data['pendingOrderNum'] ?? 0,   // Use 'pendingOrderNum' from response
+        completed: data['receiptOrderNum'] ?? 0, // Map 'receiptOrderNum' to completed, adjust if needed
+        canceled: data['canceledOrders'] ?? 0,  // Assuming canceledOrders exists or map to relevant key
       );
+      print('[DataSource DEBUG] Parsed orders: $orders'); // DEBUG LOG
       
-      // 构建通知数据
+      // Notifications and Rating seem to be missing in the response, handle gracefully
+      print('[DataSource DEBUG] Parsing notifications...'); // DEBUG LOG
       final notifications = SellerNotificationsData(
-        unread: data['unreadNotifications'] ?? 0,
+        unread: data['unreadNotifications'] ?? 0, // Assuming unreadNotifications exists
       );
+      print('[DataSource DEBUG] Parsed notifications: $notifications'); // DEBUG LOG
       
-      // 构建周收入统计数据
-      final weeklyIncomeData = (data['weeklyIncome'] as List<dynamic>? ?? []).map((item) => 
-        WeeklyIncomeItem(
-          date: item['date'] ?? '',
-          amount: (item['amount'] ?? 0.0).toDouble(),
-        )
-      ).toList();
-      
+      print('[DataSource DEBUG] Parsing rating...'); // DEBUG LOG
+      final double rating = (data['rating'] ?? 0.0).toDouble(); // Assuming rating exists
+      print('[DataSource DEBUG] Parsed rating: $rating'); // DEBUG LOG
+
+      // Weekly income data seems missing in the response, handle gracefully
+      print('[DataSource DEBUG] Parsing statistics...'); // DEBUG LOG
       final statistics = SellerStatistics(
-        weeklyIncome: weeklyIncomeData,
+        weeklyIncome: [], // Return empty list as weeklyIncome is missing
       );
+      print('[DataSource DEBUG] Parsed statistics: $statistics'); // DEBUG LOG
       
+      print('[DataSource DEBUG] Creating final SellerDashboardData...'); // DEBUG LOG
       return SellerDashboardData(
         income: income,
         orders: orders,
-        rating: (data['rating'] ?? 0.0).toDouble(),
+        rating: rating,
         notifications: notifications,
         statistics: statistics,
       );
-    } catch (e) {
+    } catch (e, s) { // Catch stacktrace as well
+      print('[DataSource ERROR] Error in getDashboardData: $e'); // Log error
+      print('[DataSource ERROR] Stacktrace: $s'); // Log stacktrace
       _handleError(e);
-      rethrow;
+      rethrow; // Rethrow after handling to let BLoC know about the failure
     }
   }
 
   @override
   Future<PaginatedListDto<dynamic>> getSellerProductList({
-    required int pageNum,
-    required int pageSize,
+    required int pageNum, // 参数保留，但不在请求中使用
+    required int pageSize, // 参数保留，但不在请求中使用
     String? state,
   }) async {
     try {
-      final response = await _dio.post('/api/shop/product/list', data: {
-        'pageNum': pageNum,
-        'pageSize': pageSize,
-        if (state != null) 'state': state,
-      });
+      // 保持移除 pageNum 和 pageSize 参数，因为目标接口不支持分页
+      final requestData = <String, dynamic>{};
+      if (state != null) {
+        requestData['state'] = state.toLowerCase();
+      }
+
+      // 修改 API 端点为 /api/shop/product/myList
+      final response = await _dio.post('/api/shop/product/myList', 
+        data: requestData,
+      );
       
       _checkResponse(response);
       

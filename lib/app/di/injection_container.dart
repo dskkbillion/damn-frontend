@@ -10,6 +10,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:dskk_flutter_refactor/core/network/interceptors/app_info_interceptor.dart';
+import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart'; // Import to access AuthInterceptor
 
 // Import database and DAO
 import 'package:dskk_flutter_refactor/core/database/app_database.dart';
@@ -41,6 +42,7 @@ abstract class CoreRegisterModule {
   Dio createDio(
     @Named('backendBaseUrl') String baseUrl,
     AppInfoInterceptor appInfoInterceptor,
+    FlutterSecureStorage secureStorage, // Inject SecureStorage
   ) {
     final dio = Dio();
     dio.options.baseUrl = baseUrl;
@@ -49,9 +51,13 @@ abstract class CoreRegisterModule {
     dio.options.receiveTimeout = const Duration(seconds: 15);
     dio.options.contentType = 'application/json';
 
-    dio.interceptors.add(appInfoInterceptor);
+    // Create and add AuthInterceptor using the injected storage
+    final authInterceptor = AuthInterceptor(secureStorage); 
+
+    dio.interceptors.add(appInfoInterceptor); // Add AppInfoInterceptor FIRST
+    dio.interceptors.add(authInterceptor);   // Add AuthInterceptor
     
-    // ADDED LogInterceptor from profile branch logic
+    // ADDED LogInterceptor from profile branch logic (usually added last)
     dio.interceptors.add(PrettyDioLogger(
       requestHeader: true,
       requestBody: true,
@@ -68,7 +74,7 @@ abstract class CoreRegisterModule {
   @preResolve 
   Future<PackageInfo> get packageInfo => PackageInfo.fromPlatform();
 
-  // FlutterSecureStorage instance - UNCOMMENT
+  // FlutterSecureStorage instance
   @lazySingleton
   FlutterSecureStorage get secureStorage => const FlutterSecureStorage();
 

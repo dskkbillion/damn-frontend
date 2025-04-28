@@ -173,6 +173,12 @@
     -   [x] Setup Bloc (`after_sales_review_bloc.dart`): States/Events (列表数据, 审核中, 成功, 失败), 添加 `@injectable`.
     -   [x] Integrate Use Cases: 调用 `GetTenantAuditListUseCase` (使用 `/api/shop/order-refund/tenantAudit` API), `AuditRefundUseCase` (使用 `/api/shop/order-refund/audit` API).
     *   参考: UI: `design-info/HTML原型/HTML-new/sellerscreens/profile/orders/seller_order_refund.html`; Logic: 相关 Use Cases, `OrderRefund`模型, `docs/module_docs/seller/seller_api_specs.md`
+-   **Store Settings Page Implementation** (`lib/features/seller/presentation/pages/store_settings_page.dart` - *Needs creation*):
+    -   [ ] Build UI Layout: 店铺Logo/头像上传, 店铺名称, 店铺简介, 联系方式等表单项。
+    -   [ ] Setup Bloc (`store_settings_bloc.dart`): States/Events (加载数据, 表单状态, 保存中, 成功, 失败), 添加 `@injectable`.
+    -   [ ] Integrate Use Cases: 调用 `GetStoreProfileUseCase` (使用 `/api/member/info`), `UpdateStoreProfileUseCase` (使用 `/api/member/update`).
+    -   [ ] Handle Form & Image Upload: 管理表单状态, 处理Logo上传 (调用 `IFileRepository`).
+    *   参考: UI: `design-info/HTML原型/HTML-new/sellerscreens/profile/settings.html` (假设存在), `design-info/demo-repository/app/(sellerscreens)/profile/index.tsx` (可能包含部分逻辑); Logic: `GetStoreProfileUseCase`, `UpdateStoreProfileUseCase`, `docs/module_docs/seller/seller_api_specs.md`
 -   **Route Configuration**:
     -   [x] Create `seller_routes.dart` in `lib/features/seller/presentation/routes/`.
     -   [x] Define `GoRoute` objects for all Seller pages, linking paths to page Widgets. Expose `List<RouteBase>`.

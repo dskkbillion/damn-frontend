@@ -35,7 +35,7 @@ class _SellerHomePageState extends State<SellerHomePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
-            onPressed: () => _navigateTo(context, SellerRoutes.notifications),
+            onPressed: () => context.go(SellerRoutes.notifications),
             tooltip: '通知',
           ),
         ],
@@ -286,7 +286,7 @@ class _SellerHomePageState extends State<SellerHomePage> {
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: () => _navigateTo(context, SellerRoutes.storeSettings),
+                onTap: () => context.go(SellerRoutes.storeSettings),
                 child: const Padding(
                   padding: EdgeInsets.all(12.0),
                   child: Icon(
@@ -458,51 +458,49 @@ class _SellerHomePageState extends State<SellerHomePage> {
                   context,
                   icon: Icons.inventory_2,
                   label: '商品管理',
-                  onTap: () => _navigateTo(context, SellerRoutes.products),
+                  onTap: () => context.go(SellerRoutes.products),
                 ),
                 _buildFunctionItem(
                   context,
                   icon: Icons.assignment_return,
                   label: '售后管理',
-                  onTap: () => _navigateTo(context, SellerRoutes.afterSalesReview),
+                  onTap: () => context.go(SellerRoutes.afterSalesReview),
                 ),
                 _buildFunctionItem(
                   context,
                   icon: Icons.verified_user,
                   label: '认证管理',
-                  onTap: () => _navigateTo(context, SellerRoutes.authentication),
+                  onTap: () => context.go(SellerRoutes.authentication),
                 ),
                 _buildFunctionItem(
                   context,
                   icon: Icons.access_time,
                   label: '时间管理',
-                  onTap: () => _navigateTo(context, SellerRoutes.timeManagement),
+                  onTap: () => context.go(SellerRoutes.timeManagement),
                 ),
                 _buildFunctionItem(
                   context,
                   icon: Icons.forum,
                   label: '消息管理',
-                  onTap: () {
-                    context.read<SellerHomeBloc>().add(NavigateToChat());
-                  },
+                  onTap: () => context.go('/chat'),
                 ),
                 _buildFunctionItem(
                   context,
                   icon: Icons.reply_all,
                   label: '自动回复',
-                  onTap: () => _navigateTo(context, SellerRoutes.autoReply),
+                  onTap: () => context.go(SellerRoutes.autoReply),
                 ),
                 _buildFunctionItem(
                   context,
                   icon: Icons.notifications,
                   label: '通知中心',
-                  onTap: () => _navigateTo(context, SellerRoutes.notifications),
+                  onTap: () => context.go(SellerRoutes.notifications),
                 ),
                 _buildFunctionItem(
                   context,
                   icon: Icons.settings,
                   label: '店铺设置',
-                  onTap: () => _navigateTo(context, SellerRoutes.storeSettings),
+                  onTap: () => context.go(SellerRoutes.storeSettings),
                 ),
               ],
             ),
@@ -698,38 +696,5 @@ class _SellerHomePageState extends State<SellerHomePage> {
     } catch (e) {
       return dateStr;
     }
-  }
-  
-  // 触发 Bloc 导航事件
-  void _navigateTo(BuildContext context, String routeName) {
-    SellerHomeEvent event;
-    switch (routeName) {
-      case SellerRoutes.products:
-        event = const NavigateToProducts();
-        break;
-      case SellerRoutes.afterSalesReview:
-        event = const NavigateToAfterSales();
-        break;
-      case SellerRoutes.authentication:
-        event = const NavigateToAuthentication();
-        break;
-      case SellerRoutes.timeManagement:
-        event = const NavigateToTimeManagement();
-        break;
-      case SellerRoutes.autoReply:
-        event = const NavigateToAutoReply();
-        break;
-      case SellerRoutes.notifications:
-        event = const NavigateToNotifications();
-        break;
-      case SellerRoutes.storeSettings:
-        event = const NavigateToStoreSettings();
-        break;
-      // 添加其他可能的导航目标
-      default:
-        print('Warning: Unknown navigation target in _navigateTo: $routeName');
-        return; // 不处理未知目标
-    }
-    context.read<SellerHomeBloc>().add(event);
   }
 } 

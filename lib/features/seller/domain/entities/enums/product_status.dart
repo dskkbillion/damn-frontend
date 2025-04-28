@@ -1,13 +1,13 @@
 /// 商品状态枚举
 enum ProductStatus {
   /// 正常/已上架
-  normal('NORMAL', '已上架'),
+  normal('normal', '已上架'),
 
   /// 已下架
-  disabled('DISABLED', '已下架'),
+  disabled('disabled', '已下架'),
 
   /// 草稿
-  draft('DRAFT', '草稿'),
+  draft('draft', '草稿'),
 
   /// 审核中
   reviewing('REVIEWING', '审核中'),

@@ -128,42 +128,55 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
         ],
       ),
       body: BlocListener<ProductManagementBloc, ProductManagementState>(
-        listenWhen: (previous, current) => 
-          previous.errorMessage != current.errorMessage && current.errorMessage != null,
+        listenWhen: (previous, current) =>
+            previous.navigationPath != current.navigationPath &&
+            current.navigationPath != null,
         listener: (context, state) {
-          if (state.errorMessage != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage!),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
+          // Use push for navigating to create/edit screens
+          // This keeps the management page in the stack
+          context.push(state.navigationPath!);
         },
-        child: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildProductList(
-              context,
-              0,
-              ProductStatus.normal,
-              _onSaleScrollController,
-            ),
-            
-            _buildProductList(
-              context,
-              1,
-              ProductStatus.draft,
-              _draftScrollController,
-            ),
-            
-            _buildProductList(
-              context,
-              2,
-              ProductStatus.disabled,
-              _offShelfScrollController,
-            ),
-          ],
+        // Previous BlocListener for error messages
+        // We need to nest listeners or combine logic if needed
+        // For simplicity, let's nest them for now.
+        child: BlocListener<ProductManagementBloc, ProductManagementState>(
+          listenWhen: (previous, current) =>
+              previous.errorMessage != current.errorMessage && current.errorMessage != null,
+          listener: (context, state) {
+            if (state.errorMessage != null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.errorMessage!),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildProductList(
+                context,
+                0,
+                ProductStatus.normal,
+                _onSaleScrollController,
+              ),
+              
+              _buildProductList(
+                context,
+                1,
+                ProductStatus.draft,
+                _draftScrollController,
+              ),
+              
+              _buildProductList(
+                context,
+                2,
+                ProductStatus.disabled,
+                _offShelfScrollController,
+              ),
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -191,11 +204,17 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
           previous.processingProductIds != current.processingProductIds;
       },
       builder: (context, state) {
+        final products = _getProductListByStatus(state, status);
+        print('[ProductManagementPage] Builder executing for Tab: $tabIndex ($status)');
+        print('[ProductManagementPage] State: isLoading=${state.isLoading}, hasError=${state.hasError}');
+        print('[ProductManagementPage] Products from state (via _getProductListByStatus): ${products?.length ?? 'null'}');
+        if (products != null && products.isNotEmpty) {
+          print('[ProductManagementPage] First product in list: ID=${products.first.id}, Name=${products.first.name}');
+        }
+        
         if (state.isLoading && _getProductListByStatus(state, status) == null) {
           return const LoadingState();
         }
-        
-        final products = _getProductListByStatus(state, status);
         
         if (products == null || products.isEmpty) {
           return EmptyState.noProducts(
@@ -250,6 +269,8 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
     SellerManagedProduct product,
     ProductManagementState state,
   ) {
+    print('[ProductManagementPage] _buildProductItem: Product ID=${product.id}, Status=${product.status}, TabIndex=${state.tabIndex}');
+
     final isProcessing = state.processingProductIds.contains(product.id);
     
     List<Widget> actions = [];
@@ -373,10 +394,10 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            StatusTag(
-                              text: product.status.displayName,
-                              type: _getStatusType(product.status),
-                            ),
+                            // StatusTag( // 注释掉页面内直接构建的状态标签
+                            //   text: product.status.displayName,
+                            //   type: _getStatusType(product.status),
+                            // ),
                           ],
                         ),
                         
@@ -561,6 +582,19 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
     switch (status) {
       case ProductStatus.normal:
         return StatusTagType.success;
+      case ProductStatus.draft:
+        return StatusTagType.info;
+      case ProductStatus.disabled:
+      case ProductStatus.rejected:
+      case ProductStatus.soldOut:
+        return StatusTagType.defaultTag;
+      case ProductStatus.reviewing:
+        return StatusTagType.warning;
+      default:
+        return StatusTagType.defaultTag;
+    }
+  }
+} 
       case ProductStatus.draft:
         return StatusTagType.info;
       case ProductStatus.disabled:

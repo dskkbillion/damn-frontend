@@ -37,7 +37,8 @@ class SellerRepositoryImpl implements ISellerRepository {
     if (await _networkInfo.isConnected) {
       try {
         final dashboardData = await _remoteDataSource.getDashboardData();
-        await _localDataSource.cacheDashboardData(dashboardData);
+        // 2. Call Local Data Source to cache
+        // await _localDataSource.cacheDashboardData(dashboardData); // Temporarily commented out to avoid UnimplementedError
         return Right(dashboardData);
       } on ServerException catch (e) {
         return Left(ServerFailure(message: e.message ?? '服务器异常'));
@@ -120,13 +121,36 @@ class SellerRepositoryImpl implements ISellerRepository {
     required int pageNum,
     required int pageSize,
   }) async {
-    // 类似于getSellerProductList，但使用不同的API端点
-    // 这里暂时简化实现，直接复用getSellerProductList
-    return await getSellerProductList(
-      pageNum: pageNum,
-      pageSize: pageSize,
-      state: 'draft',
-    );
+    if (await _networkInfo.isConnected) {
+      try {
+        // 调用正确的远程数据源方法获取草稿列表
+        final result = await _remoteDataSource.getSellerDraftList(
+          pageNum: pageNum,
+          pageSize: pageSize,
+        );
+        
+        // 将结果转换为Domain实体
+        final products = (result.records ?? [])
+            .map((item) => _mapToSellerManagedProduct(item)) // 复用映射逻辑
+            .toList();
+        
+        // 可以在这里考虑是否需要缓存草稿列表，如果需要则调用 localDataSource
+        // await _localDataSource.cacheDraftList( ... );
+        
+        return Right(PaginatedList(
+          total: result.total ?? 0,
+          items: products,
+        ));
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message ?? '获取草稿列表服务器异常'));
+      } catch (e) {
+        return Left(ServerFailure(message: '获取草稿列表失败: ${e.toString()}'));
+      }
+    } else {
+      // 草稿通常不进行离线缓存，直接返回网络错误
+      // 如果需要支持离线查看草稿，则需要添加本地缓存逻辑
+      return Left(NetworkFailure(message: '无网络连接，无法获取草稿列表'));
+    }
   }
 
   /// 获取商品详情
@@ -236,7 +260,7 @@ class SellerRepositoryImpl implements ISellerRepository {
     if (await _networkInfo.isConnected) {
       try {
         final profile = await _remoteDataSource.getStoreProfile();
-        await _localDataSource.cacheStoreProfile(profile);
+        // await _localDataSource.cacheStoreProfile(profile); // Temporarily commented out to avoid UnimplementedError
         return Right(profile);
       } on ServerException catch (e) {
         return Left(ServerFailure(message: e.message ?? '服务器异常'));
@@ -620,32 +644,49 @@ class SellerRepositoryImpl implements ISellerRepository {
 
   /// 将API响应数据映射为SellerManagedProduct实体
   SellerManagedProduct _mapToSellerManagedProduct(dynamic data) {
-    // 这里简化实现，实际需要根据API响应结构进行映射
     final Map<String, dynamic> productMap = data as Map<String, dynamic>;
     
+    // Correctly handle the 'images' field which is a List in the API response
+    String imageUrl = '';
+    final dynamic imagesData = productMap['images'];
+    if (imagesData is List && imagesData.isNotEmpty) {
+      // Assuming the first image is the cover image
+      if (imagesData.first is String) {
+        imageUrl = imagesData.first;
+      }
+    }
+
     return SellerManagedProduct(
       id: productMap['id'] ?? 0,
       name: productMap['name'] ?? '',
-      price: (productMap['sellingPrice'] ?? 0.0).toDouble(),
-      images: productMap['images']?.toString() ?? '',
+      price: _parseDouble(productMap['sellingPrice']),
+      images: imageUrl,
       description: productMap['description'] ?? '',
       status: _mapStringToProductStatus(productMap['state']),
       createTime: _parseDateTime(productMap['createTime']),
       updateTime: _parseDateTime(productMap['updateTime']),
       sales: productMap['buyedNumber'],
-      // 其他字段根据实际情况映射
     );
   }
   
   /// 将字符串状态映射为ProductStatus枚举
   ProductStatus _mapStringToProductStatus(String? state) {
-    switch (state) {
-      case 'NORMAL':
+    switch (state?.toLowerCase()) {
+      case 'normal':
         return ProductStatus.normal;
-      case 'DISABLED':
+      case 'disabled':
         return ProductStatus.disabled;
+      case 'draft':
+        return ProductStatus.draft;
+      case 'reviewing':
+        return ProductStatus.reviewing;
+      case 'rejected':
+        return ProductStatus.rejected;
+      case 'sold_out':
+        return ProductStatus.soldOut;
       default:
-        return ProductStatus.disabled;
+        print('Warning: Unknown product state "$state" received from API. Defaulting to draft.');
+        return ProductStatus.draft;
     }
   }
   
@@ -657,5 +698,16 @@ class SellerRepositoryImpl implements ISellerRepository {
     } catch (_) {
       return null;
     }
+  }
+
+  /// 安全地将值解析为 double
+  double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) {
+      return double.tryParse(value) ?? 0.0; // 使用 tryParse 避免 FormatException
+    }
+    return 0.0; // 对于其他类型，返回默认值
   }
 } 

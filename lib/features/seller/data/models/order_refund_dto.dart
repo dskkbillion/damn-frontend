@@ -154,12 +154,18 @@ class PaginatedListDto<T> {
       Map<String, dynamic> json,
       T Function(Map<String, dynamic>) fromJson,
       ) {
+    // 优先尝试解析 'rows' 字段 (根据API日志)，如果不存在则回退到 'records'
+    final listData = json['rows'] ?? json['records'];
+    
     return PaginatedListDto<T>(
       total: json['total'] as int? ?? 0,
-      records: (json['records'] as List<dynamic>?)
+      records: (listData as List<dynamic>?)
               ?.map((e) => fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
+    );
+  }
+} 
     );
   }
 } 

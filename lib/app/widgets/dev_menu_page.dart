@@ -75,6 +75,13 @@ class _DevMenuPageState extends State<DevMenuPage> {
                 // TODO: Add other seller order actions/views if needed
                 const Divider(),
 
+                // ---> ADDED: Seller Module Section <---
+                _buildSectionTitle('卖家模块 (Seller)'),
+                _buildNavButton(context, '卖家中心 (首页)', '/seller'), // Navigate to Seller Home
+                // TODO: Add other seller entry points as needed (e.g., notifications, settings)
+                const Divider(),
+                // --------------------------------------
+
                 // Add entry points for AI Docs Module
                 _buildSectionTitle('AI Docs 模块'),
                 _buildNavButton(context, 'AI 聊天', '/ai_chat'), // Use string literal path

@@ -4,102 +4,30 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_not
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/notification_list/notification_list_bloc.dart';
 import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
 import 'package:intl/intl.dart';
+import 'package:get_it/get_it.dart';
 
 /// 通知列表页面
-class NotificationListPage extends StatefulWidget {
+class NotificationListPage extends StatelessWidget {
   /// 路由名称
   static const routeName = '/seller/notifications';
 
   /// 构造函数
-  const NotificationListPage({Key? key}) : super(key: key);
-
-  @override
-  State<NotificationListPage> createState() => _NotificationListPageState();
-}
-
-class _NotificationListPageState extends State<NotificationListPage> {
-  @override
-  void initState() {
-    super.initState();
-    // 在 initState 中触发加载事件
-    context.read<NotificationListBloc>().add(const LoadNotificationList(type: null, refresh: true));
-  }
+  const NotificationListPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('通知'),
-        actions: [
-          BlocBuilder<NotificationListBloc, NotificationListState>(
-            builder: (context, state) {
-              if (state is NotificationListLoaded) {
-                return IconButton(
-                  icon: const Icon(Icons.done_all),
-                  tooltip: '全部标记为已读',
-                  onPressed: () {
-                    // 确保 showDialog 使用正确的 context
-                    _showMarkAllReadConfirmation(context, state.currentType);
-                  },
-                );
-              }
-              return Container();
-            },
-          ),
-        ],
-      ),
-      body: const NotificationListContent(),
-    );
-  }
-
-  /// 显示全部标记为已读确认对话框
-  void _showMarkAllReadConfirmation(BuildContext context, NotificationType? type) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('标记全部已读'),
-        content: Text('确定要将${type == null ? '所有' : _getTypeDisplayName(type)}通知标记为已读吗？'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-            },
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              // 使用 context.read 而不是 BlocProvider.of
-              context.read<NotificationListBloc>().add(MarkAllNotificationsAsRead(type: type));
-            },
-            child: const Text('确定'),
-          ),
-        ],
+    // 在 build 方法中使用 BlocProvider 提供 Bloc
+    return BlocProvider<NotificationListBloc>(
+      // 在 create 回调中获取 Bloc 实例并触发初始事件
+      create: (context) => GetIt.I<NotificationListBloc>()..add(const LoadNotificationList(type: null, refresh: true)),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('通知中心'),
+          centerTitle: true,
+        ),
+        body: const NotificationListContent(),
       ),
     );
-  }
-
-  /// 获取通知类型显示名称
-  String _getTypeDisplayName(NotificationType? type) {
-    if (type == null) return '所有';
-    switch (type) {
-      case NotificationType.system:
-        return '系统';
-      case NotificationType.order:
-        return '订单';
-      case NotificationType.refund:
-        return '售后';
-      case NotificationType.message:
-        return '消息';
-      case NotificationType.review:
-        return '评价';
-      case NotificationType.authentication:
-        return '认证';
-      case NotificationType.other:
-        return '其他';
-      default:
-        return '';
-    }
   }
 }
 

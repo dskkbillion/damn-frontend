@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_authentication_info.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/seller_home_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/product_management_page.dart';
@@ -13,6 +15,10 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/pages/notific
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/order_delivery_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/after_sales_review_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/after_sales_detail_page.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_home/seller_home_bloc.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_management/product_management_bloc.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/after_sales_review/after_sales_review_bloc.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/auth_management/auth_management_bloc.dart';
 
 /// 卖家模块路由配置
 class SellerRoutes {
@@ -41,7 +47,10 @@ class SellerRoutes {
       name: 'seller_home',
       pageBuilder: (context, state) => MaterialPage(
         key: state.pageKey,
-        child: const SellerHomePage(),
+        child: BlocProvider(
+          create: (context) => GetIt.I<SellerHomeBloc>(), 
+          child: const SellerHomePage(),
+        ),
       ),
       routes: [
         // 商品管理
@@ -50,7 +59,10 @@ class SellerRoutes {
           name: 'seller_products',
           pageBuilder: (context, state) => MaterialPage(
             key: state.pageKey,
-            child: const ProductManagementPage(),
+            child: BlocProvider(
+              create: (context) => GetIt.I<ProductManagementBloc>(),
+              child: const ProductManagementPage(),
+            ),
           ),
           routes: [
             // 创建商品
@@ -82,10 +94,12 @@ class SellerRoutes {
         GoRoute(
           path: 'authentication',
           name: 'seller_authentication',
-          pageBuilder: (context, state) => MaterialPage(
-            key: state.pageKey,
-            child: const AuthManagementPage(),
-          ),
+          pageBuilder: (context, state) {
+            return MaterialPage(
+              key: state.pageKey,
+              child: AuthManagementPage(),
+            );
+          },
           routes: [
             // 认证申请
             GoRoute(
@@ -149,7 +163,10 @@ class SellerRoutes {
           name: 'seller_after_sales',
           pageBuilder: (context, state) => MaterialPage(
             key: state.pageKey,
-            child: const AfterSalesReviewPage(),
+            child: BlocProvider<AfterSalesReviewBloc>(
+              create: (context) => GetIt.I<AfterSalesReviewBloc>(), 
+              child: const AfterSalesReviewPage(),
+            ),
           ),
           routes: [
             // 售后详情

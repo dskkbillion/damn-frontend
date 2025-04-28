@@ -83,22 +83,10 @@ Future<void> main() async {
 
   // Configure GoRouter for Seller module
   final GoRouter router = GoRouter(
-    initialLocation: SellerRoutes.home,
-    routes: [
-      // Wrap the SellerHomePage route with BlocProvider
-      GoRoute(
-        path: SellerRoutes.home,
-        builder: (context, state) => BlocProvider(
-          create: (context) => GetIt.I<SellerHomeBloc>(), // Use GetIt to create the Bloc
-          child: const SellerHomePage(),
-        ),
-        // Add other seller routes here if they need top-level providers specific to them,
-        // otherwise let the pages handle their own BlocProviders using GetIt if needed.
-        routes: SellerRoutes.routes.where((route) => route is GoRoute && route.path != SellerRoutes.home).toList(),
-      ),
-      // Include other seller routes directly if they manage their own state/providers
-      // ...SellerRoutes.routes.where((route) => route is GoRoute && route.path != SellerRoutes.home),
-    ],
+    initialLocation: SellerRoutes.home, // Start at the seller home page
+    // Directly use the routes defined in SellerRoutes,
+    // which already contains the /seller root and its sub-routes.
+    routes: SellerRoutes.routes,
     debugLogDiagnostics: true,
   );
 
@@ -113,8 +101,15 @@ class SellerRealPreviewApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Note: We are not wrapping with ProviderScope here unless needed
-    // Note: No top-level BlocProvider here, pages should get Blocs via GetIt
+    // The BlocProvider for SellerHomeBloc needs to be above SellerHomePage.
+    // Since SellerHomePage is the builder for the '/' route within SellerRoutes,
+    // we might need to ensure the provider is added there or wrap the MaterialApp.
+    // For simplicity in preview, wrapping MaterialApp might be easier if needed,
+    // but ideally, the provider is closer to where it's used (handled in SellerRoutes definition is best).
+    
+    // Let's check if SellerRoutes's builder for '/' already includes the provider.
+    // Assuming SellerRoutes.routes already handles the BlocProvider correctly for SellerHomePage.
+    
     return MaterialApp.router(
       title: 'Seller Module Real API Preview',
       theme: ThemeData(

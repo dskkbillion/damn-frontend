@@ -88,7 +88,7 @@ class ProductCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          statusTag,
+                          // statusTag, // 暂时注释掉状态标签
                         ],
                       ),
                       const SizedBox(height: 4),

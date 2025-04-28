@@ -15,11 +15,18 @@ class AutoReplyPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('自动回复设置'),
+    return BlocProvider<AutoReplyBloc>(
+      create: (context) {
+        final bloc = GetIt.I<AutoReplyBloc>();
+        bloc.add(LoadAutoReplySettings());
+        return bloc;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('自动回复设置'),
+        ),
+        body: const AutoReplyBody(),
       ),
-      body: const AutoReplyBody(),
     );
   }
 }
@@ -40,11 +47,6 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        context.read<AutoReplyBloc>().add(LoadAutoReplySettings());
-      }
-    });
   }
 
   @override
@@ -233,5 +235,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
         ),
       ),
     );
+  }
+} 
   }
 } 

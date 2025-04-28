@@ -165,7 +165,7 @@ class MockSellerRepository implements ISellerRepository {
     
     return Future.value(Right(dashboardData)); // 返回正确创建的实体
   }
-
+  
   @override
   Future<Either<Failure, PaginatedList<SellerManagedProduct>>> getSellerProductList({
     required int pageNum,
@@ -189,7 +189,7 @@ class MockSellerRepository implements ISellerRepository {
     ));
     return Future.value(Right(PaginatedList(total: 100, items: items)));
   }
-
+  
   @override
   Future<Either<Failure, PaginatedList<SellerManagedProduct>>> getSellerDraftList({
     required int pageNum,
@@ -215,19 +215,19 @@ class MockSellerRepository implements ISellerRepository {
     print('MockSellerRepository: createProduct called with $productData');
     return Future.value(const Right(true));
   }
-
+  
   @override
   Future<Either<Failure, bool>> updateProduct(dynamic productData) async {
     print('MockSellerRepository: updateProduct called with $productData');
     return Future.value(const Right(true));
   }
-
+  
   @override
   Future<Either<Failure, bool>> deleteProduct(List<int> productIds) async {
     print('MockSellerRepository: deleteProduct called with $productIds');
     return Future.value(const Right(true));
   }
-
+  
   @override
   Future<Either<Failure, List<SellerNotification>>> getNotificationList({String? messageType}) async {
     print('MockSellerRepository: getNotificationList called with type: $messageType');
@@ -237,19 +237,19 @@ class MockSellerRepository implements ISellerRepository {
       SellerNotification(notificationId: '2', type: NotificationType.system, title: '系统更新', content: '系统将在今晚维护', isRead: true, createdAt: now.subtract(Duration(days: 1))),
     ]));
   }
-
+  
   @override
   Future<Either<Failure, bool>> markNotificationAsRead(String notificationId) async {
     print('MockSellerRepository: markNotificationAsRead called with $notificationId');
     return Future.value(const Right(true));
   }
-
+  
   @override
   Future<Either<Failure, bool>> markAllNotificationsAsRead({String? messageTypes}) async {
     print('MockSellerRepository: markAllNotificationsAsRead called with types: $messageTypes');
     return Future.value(const Right(true));
   }
-
+  
   @override
   Future<Either<Failure, int>> getUnreadNotificationCount() async {
     print('MockSellerRepository: getUnreadNotificationCount called');
@@ -285,7 +285,7 @@ class MockSellerRepository implements ISellerRepository {
     ));
     return Future.value(Right(PaginatedList(total: 30, items: items)));
   }
-
+  
   @override
   Future<Either<Failure, bool>> auditRefund({
     required int id,
@@ -295,7 +295,7 @@ class MockSellerRepository implements ISellerRepository {
     print('MockSellerRepository: auditRefund called for $id with state $refundState');
     return Future.value(const Right(true));
   }
-
+  
   @override
   Future<Either<Failure, OrderRefund>> getRefundDetail(int refundId) async {
     print('MockSellerRepository: getRefundDetail called for $refundId');
@@ -315,7 +315,7 @@ class MockSellerRepository implements ISellerRepository {
       applyTime: DateTime.now().subtract(const Duration(days: 2)),
     )));
   }
-
+  
   @override
   Future<Either<Failure, bool>> addOrderDelivery({
     required int orderId,

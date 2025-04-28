@@ -36,6 +36,9 @@ class ProductManagementState extends Equatable {
   /// 当前操作中的商品ID，用于状态变更操作 (上架/下架等)
   final List<int> processingProductIds;
   
+  /// 导航信号：目标路由路径 (用于触发页面导航)
+  final String? navigationPath;
+  
   /// 构造函数
   const ProductManagementState({
     this.isLoading = false,
@@ -49,6 +52,7 @@ class ProductManagementState extends Equatable {
     this.hasMoreDraftProducts = true,
     this.hasMoreOffShelfProducts = true,
     this.processingProductIds = const [],
+    this.navigationPath,
   });
   
   @override
@@ -64,6 +68,7 @@ class ProductManagementState extends Equatable {
     hasMoreDraftProducts,
     hasMoreOffShelfProducts,
     processingProductIds,
+    navigationPath,
   ];
   
   /// 初始状态
@@ -87,6 +92,7 @@ class ProductManagementState extends Equatable {
       hasMoreDraftProducts: hasMoreDraftProducts,
       hasMoreOffShelfProducts: hasMoreOffShelfProducts,
       processingProductIds: processingProductIds,
+      navigationPath: navigationPath,
     );
   }
   
@@ -104,6 +110,7 @@ class ProductManagementState extends Equatable {
       hasMoreDraftProducts: hasMoreDraftProducts,
       hasMoreOffShelfProducts: hasMoreOffShelfProducts,
       processingProductIds: processingProductIds,
+      navigationPath: navigationPath,
     );
   }
   
@@ -141,6 +148,7 @@ class ProductManagementState extends Equatable {
       hasMoreDraftProducts: hasMoreDraftProducts ?? this.hasMoreDraftProducts,
       hasMoreOffShelfProducts: hasMoreOffShelfProducts ?? this.hasMoreOffShelfProducts,
       processingProductIds: processingProductIds,
+      navigationPath: navigationPath,
     );
   }
   
@@ -158,6 +166,7 @@ class ProductManagementState extends Equatable {
       hasMoreDraftProducts: hasMoreDraftProducts,
       hasMoreOffShelfProducts: hasMoreOffShelfProducts,
       processingProductIds: processingProductIds,
+      navigationPath: navigationPath,
     );
   }
   
@@ -179,6 +188,7 @@ class ProductManagementState extends Equatable {
       hasMoreDraftProducts: hasMoreDraftProducts,
       hasMoreOffShelfProducts: hasMoreOffShelfProducts,
       processingProductIds: [...processingProductIds, productId],
+      navigationPath: navigationPath,
     );
   }
   
@@ -200,6 +210,7 @@ class ProductManagementState extends Equatable {
       hasMoreDraftProducts: hasMoreDraftProducts,
       hasMoreOffShelfProducts: hasMoreOffShelfProducts,
       processingProductIds: processingProductIds.where((id) => id != productId).toList(),
+      navigationPath: navigationPath,
     );
   }
   
@@ -216,6 +227,8 @@ class ProductManagementState extends Equatable {
     bool? hasMoreDraftProducts,
     bool? hasMoreOffShelfProducts,
     List<int>? processingProductIds,
+    String? navigationPath,
+    bool clearNavigationPath = false,
   }) {
     return ProductManagementState(
       isLoading: isLoading ?? this.isLoading,
@@ -229,6 +242,7 @@ class ProductManagementState extends Equatable {
       hasMoreDraftProducts: hasMoreDraftProducts ?? this.hasMoreDraftProducts,
       hasMoreOffShelfProducts: hasMoreOffShelfProducts ?? this.hasMoreOffShelfProducts,
       processingProductIds: processingProductIds ?? this.processingProductIds,
+      navigationPath: clearNavigationPath ? null : navigationPath ?? this.navigationPath,
     );
   }
 } 

@@ -12,7 +12,7 @@ part 'auth_management_event.dart';
 part 'auth_management_state.dart';
 
 /// 认证管理BLoC
-// @injectable
+@injectable
 class AuthManagementBloc extends Bloc<AuthManagementEvent, AuthManagementState> {
   final GetSellerAuthenticationStatusUseCase _getAuthenticationStatusUseCase;
 

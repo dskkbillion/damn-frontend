@@ -21,27 +21,16 @@ class SellerHomeBloc extends Bloc<SellerHomeEvent, SellerHomeState> {
   /// 获取店铺资料UseCase
   final GetStoreProfileUseCase _getStoreProfileUseCase;
   
-  /// 导航服务
-  final INavigationService _navigationService;
-  
   /// 构造函数，注入依赖
   SellerHomeBloc(
     this._getDashboardDataUseCase,
     this._getStoreProfileUseCase,
-    this._navigationService,
   ) : super(SellerHomeState.initial()) {
     print('[SellerHomeBloc] Created');
     on<LoadDashboardData>(_onLoadDashboardData);
     on<RefreshDashboardData>(_onRefreshDashboardData);
     on<NavigateToOrders>(_onNavigateToOrders);
-    on<NavigateToNotifications>(_onNavigateToNotifications);
     on<NavigateToChat>(_onNavigateToChat);
-    on<NavigateToProducts>(_onNavigateToProducts);
-    on<NavigateToAfterSales>(_onNavigateToAfterSales);
-    on<NavigateToStoreSettings>(_onNavigateToStoreSettings);
-    on<NavigateToAuthentication>(_onNavigateToAuthentication);
-    on<NavigateToTimeManagement>(_onNavigateToTimeManagement);
-    on<NavigateToAutoReply>(_onNavigateToAutoReply);
   }
   
   /// 处理加载仪表盘数据事件
@@ -146,16 +135,7 @@ class SellerHomeBloc extends Bloc<SellerHomeEvent, SellerHomeState> {
       path += '?type=${event.orderType}';
     }
     // 使用 navigateTo，路径是 Orders 模块的，暂时不确定是否正确
-    await _navigationService.navigateTo(path); 
-    // emit(state.copyWithNavigation(path)); // 通常不需要 Bloc 记录导航路径
-  }
-  
-  /// 处理导航到通知列表页面事件
-  Future<void> _onNavigateToNotifications(
-    NavigateToNotifications event,
-    Emitter<SellerHomeState> emit,
-  ) async {
-    await _navigationService.navigateTo(SellerRoutes.notifications); // 使用 navigateTo
+    print('Warning: Navigation to orders ($path) requested but INavigationService dependency removed.');
   }
   
   /// 处理导航到聊天列表页面事件
@@ -163,54 +143,6 @@ class SellerHomeBloc extends Bloc<SellerHomeEvent, SellerHomeState> {
     NavigateToChat event,
     Emitter<SellerHomeState> emit,
   ) async {
-    await _navigationService.navigateToChat(null); // 使用 navigateToChat
-  }
-  
-  /// 处理导航到商品管理页面事件
-  Future<void> _onNavigateToProducts(
-    NavigateToProducts event,
-    Emitter<SellerHomeState> emit,
-  ) async {
-    await _navigationService.navigateTo(SellerRoutes.products); // 使用 navigateTo
-  }
-  
-  /// 处理导航到售后管理页面事件
-  Future<void> _onNavigateToAfterSales(
-    NavigateToAfterSales event,
-    Emitter<SellerHomeState> emit,
-  ) async {
-    await _navigationService.navigateTo(SellerRoutes.afterSalesReview); // 使用 navigateTo
-  }
-  
-  /// 处理导航到店铺设置页面事件
-  Future<void> _onNavigateToStoreSettings(
-    NavigateToStoreSettings event,
-    Emitter<SellerHomeState> emit,
-  ) async {
-    await _navigationService.navigateTo(SellerRoutes.storeSettings); // 使用 navigateTo
-  }
-  
-  /// 处理导航到认证管理页面事件
-  Future<void> _onNavigateToAuthentication(
-    NavigateToAuthentication event,
-    Emitter<SellerHomeState> emit,
-  ) async {
-    await _navigationService.navigateTo(SellerRoutes.authentication); // 使用 navigateTo
-  }
-  
-  /// 处理导航到时间管理页面事件
-  Future<void> _onNavigateToTimeManagement(
-    NavigateToTimeManagement event,
-    Emitter<SellerHomeState> emit,
-  ) async {
-    await _navigationService.navigateTo(SellerRoutes.timeManagement); // 使用 navigateTo
-  }
-  
-  /// 处理导航到自动回复设置页面事件
-  Future<void> _onNavigateToAutoReply(
-    NavigateToAutoReply event,
-    Emitter<SellerHomeState> emit,
-  ) async {
-    await _navigationService.navigateTo(SellerRoutes.autoReply); // 使用 navigateTo
+    print('Warning: Navigation to chat requested but INavigationService dependency removed.');
   }
 } 

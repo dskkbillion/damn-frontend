@@ -29,9 +29,6 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
   /// 删除商品 UseCase
   final DeleteProductUseCase _deleteProductUseCase;
   
-  /// 导航服务
-  final INavigationService _navigationService;
-  
   /// 当前在售商品页码
   int _onSaleCurrentPage = 1;
   
@@ -47,7 +44,6 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     this._getSellerDraftListUseCase,
     this._updateProductStatusUseCase,
     this._deleteProductUseCase,
-    this._navigationService,
   ) : super(ProductManagementState.initial()) {
     on<LoadProductList>(_onLoadProductList);
     on<ChangeProductTab>(_onChangeProductTab);
@@ -130,7 +126,14 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
         
         // 更新当前页码
         _updateCurrentPageByStatus(status, currentPage + 1);
-        
+
+        // <<< ADD LOGGING HERE >>>
+        print('[ProductManagementBloc] Success. Status: $status, Fetched Products: ${products.length}, HasMore: $hasMore, IsLoadMore: $isLoadMore');
+        if (products.isNotEmpty) {
+           print('[ProductManagementBloc] First product ID: ${products.first.id}, Name: ${products.first.name}');
+        }
+        // <<< END LOGGING >>>
+
         switch (status) {
           case ProductStatus.normal:
             emit(state.copyWithProducts(
@@ -220,23 +223,33 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
   ) async {
     // 更新标签页索引
     emit(state.copyWithTabIndex(event.tabIndex));
-    
-    // 判断当前标签页对应的商品列表是否已经加载
+
+    // 如果切换到草稿箱 Tab (index 1)，直接设置为空列表，不加载
+    if (event.tabIndex == 1) {
+      // 使用 copyWith 更新状态
+      emit(state.copyWith(
+        draftProducts: [], // 确保草稿列表为空
+        hasMoreDraftProducts: false, // 明确没有更多
+        isLoading: false, // 设置加载状态为 false
+        errorMessage: null, // 清除错误信息
+        // hasError: false, // 可选: 显式设置无错误状态
+      )); 
+      return; // 不进行后续加载判断
+    }
+
+    // 对于其他 Tab，判断是否需要加载
     bool needLoad = false;
-    
     switch (event.tabIndex) {
       case 0: // 在售
         needLoad = state.onSaleProducts == null;
         break;
-      case 1: // 草稿
-        needLoad = state.draftProducts == null;
-        break;
+      // case 1: // 草稿 - 已在上面处理
       case 2: // 已下架
         needLoad = state.offShelfProducts == null;
         break;
     }
-    
-    // 如果需要加载，触发加载事件
+
+    // 如果需要加载（非草稿Tab），触发加载事件
     if (needLoad) {
       add(LoadProductList(status: _getStatusByTabIndex(event.tabIndex)));
     }
@@ -332,8 +345,11 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     NavigateToProductCreate event,
     Emitter<ProductManagementState> emit,
   ) async {
-    // _navigationService.navigateTo(SellerRoutes.productCreate);
-    await _navigationService.navigateTo(SellerRoutes.productCreate); // 使用 await 和 navigateTo
+    // Emit state with navigation path
+    emit(state.copyWith(navigationPath: SellerRoutes.productCreate));
+    // Emit state immediately after to clear the navigation path 
+    // to prevent re-navigation on unrelated state changes.
+    emit(state.copyWith(clearNavigationPath: true));
   }
   
   /// 导航到商品编辑页面
@@ -341,12 +357,15 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     NavigateToProductEdit event,
     Emitter<ProductManagementState> emit,
   ) async {
+    // Build the path with parameters
     final String path = SellerRoutes.buildPath(
-      SellerRoutes.productEdit,
+      SellerRoutes.productEdit, // Use the base route for editing
       params: {'id': event.productId.toString()},
     );
-    // _navigationService.navigateTo(path);
-    await _navigationService.navigateTo(path); // 使用 await 和 navigateTo
+    // Emit state with navigation path
+    emit(state.copyWith(navigationPath: path));
+    // Emit state immediately after to clear the navigation path
+    emit(state.copyWith(clearNavigationPath: true)); 
   }
   
   /// 导航到商品详情页面
@@ -359,6 +378,12 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     // _navigationService.navigateTo('/products/${event.productId}');
     // 假设导航到特定商品详情，这里暂时使用 mock 路径或具体方法
     // 注意：实际应该使用 navigateToProductDetail 或确认 '/products/:id' 路由存在于 AppRouter
-    await _navigationService.navigateToProductDetail(event.productId.toString()); // 改为调用具体方法
+    print('Warning: Navigation to product detail (${event.productId}) requested but INavigationService dependency removed.');
+    // Since we removed the navigation service, we can't navigate here anymore
+    // This logic might need to be moved to the UI layer with BlocListener if detail navigation is still needed
+  }
+} 
+    // Since we removed the navigation service, we can't navigate here anymore
+    // This logic might need to be moved to the UI layer with BlocListener if detail navigation is still needed
   }
 } 

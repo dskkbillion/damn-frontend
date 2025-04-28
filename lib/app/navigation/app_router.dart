@@ -22,6 +22,8 @@ import 'package:dskk_flutter_refactor/features/auth/presentation/routes/auth_rou
 import 'package:dskk_flutter_refactor/features/profile/presentation/routes/profile_routes.dart'; 
 import 'package:dskk_flutter_refactor/features/home/presentation/routes/home_routes.dart';
 import 'package:dskk_flutter_refactor/features/favorites/presentation/routes/favorites_routes.dart';
+// Import Seller routes
+import 'package:dskk_flutter_refactor/features/seller/presentation/routes/seller_routes.dart';
 
 // Placeholder page (defined once) - Only used if a module's routes aren't ready
 class PlaceholderPage extends StatelessWidget {
@@ -43,7 +45,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final authRepository = GetIt.instance<IAuthRepository>();
   final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
-  return GoRouter(
+  // Create the GoRouter instance
+  final router = GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/home', // Initial location
     debugLogDiagnostics: true,
@@ -113,6 +116,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ...OrderRoutes.routes, 
       ...AfterSalesRoutes.routes,
       ...FavoritesRoutes.routes, // Add favorites module routes
+      ...SellerRoutes.routes, // Add Seller module routes
       // ...AiDocsRoutes.routes, // Remove duplicate AiDocs routes from top-level
       // Profile routes are in the shell
     ],
@@ -151,6 +155,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
   );
+
+  // Removed GoRouter registration to GetIt
+
+  return router;
 }); 
 
 // GoRouterRefreshStream helper class (from HEAD/auth-module)
