@@ -383,7 +383,3 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     // This logic might need to be moved to the UI layer with BlocListener if detail navigation is still needed
   }
 } 
-    // Since we removed the navigation service, we can't navigate here anymore
-    // This logic might need to be moved to the UI layer with BlocListener if detail navigation is still needed
-  }
-} 

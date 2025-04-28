@@ -237,5 +237,3 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
     );
   }
 } 
-  }
-} 

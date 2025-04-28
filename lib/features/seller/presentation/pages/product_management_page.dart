@@ -595,16 +595,3 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
     }
   }
 } 
-      case ProductStatus.draft:
-        return StatusTagType.info;
-      case ProductStatus.disabled:
-      case ProductStatus.rejected:
-      case ProductStatus.soldOut:
-        return StatusTagType.defaultTag;
-      case ProductStatus.reviewing:
-        return StatusTagType.warning;
-      default:
-        return StatusTagType.defaultTag;
-    }
-  }
-} 
