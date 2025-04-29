@@ -25,6 +25,8 @@ class ProfileHeader extends ConsumerWidget {
     } else if (state is ProfileUpdated) {
       profile = (state as ProfileUpdated).profile;
     }
+    print('[ProfileHeader] Received state: ${state.runtimeType}');
+    print('[ProfileHeader] Extracted profile nickname: ${profile?.nickName}');
 
     return Container(
       margin: const EdgeInsets.all(12.0),
@@ -67,17 +69,19 @@ class ProfileHeader extends ConsumerWidget {
   }
 
   Widget _buildAvatar(BuildContext context, UserProfile? profile) {
+    final imageUrl = profile?.avatarUrl;
+    final hasUrl = imageUrl != null && imageUrl.isNotEmpty;
+    print('[ProfileHeader] Avatar URL: $imageUrl, Has URL: $hasUrl');
+
     return InkWell(
       onTap: () => _showAvatarOptions(context),
       child: CircleAvatar(
         radius: 35,
         backgroundColor: Colors.white.withOpacity(0.8),
-        backgroundImage: profile?.avatarUrl != null && profile!.avatarUrl!.isNotEmpty
-            ? NetworkImage(profile.avatarUrl!)
-            : null,
-        child: profile?.avatarUrl == null || profile!.avatarUrl!.isEmpty
+        backgroundImage: hasUrl ? NetworkImage(imageUrl) : null,
+        child: !hasUrl
             ? Icon(Icons.person, size: 35, color: Theme.of(context).primaryColor)
-            : null,
+            : Icon(Icons.image_not_supported_outlined, size: 30, color: Colors.grey[400]),
       ),
     );
   }

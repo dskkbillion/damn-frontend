@@ -366,6 +366,11 @@ Future<_i174.GetIt> init(
   gh.lazySingleton<_i346.IOrderRemoteDataSource>(() =>
       _i230.OrderRemoteDataSourceImpl(
           coreDioClient: gh<_i412.CoreDioClient>()));
+  gh.factory<_i847.ProfileRemoteDataSource>(
+      () => _i847.ProfileRemoteDataSourceImpl(
+            dio: gh<_i361.Dio>(),
+            storage: gh<_i558.FlutterSecureStorage>(),
+          ));
   gh.lazySingleton<_i724.IOrderRepository>(() => _i376.OrderRepositoryImpl(
         remoteDataSource: gh<_i346.IOrderRemoteDataSource>(),
         localDataSource: gh<_i406.IOrderLocalDataSource>(),
@@ -396,6 +401,18 @@ Future<_i174.GetIt> init(
       () => _i51.SubmitRequirementsUseCase(gh<_i724.IOrderRepository>()));
   gh.lazySingleton<_i691.TokenValidator>(
       () => _i691.TokenValidatorImpl(gh<_i361.Dio>()));
+  gh.factory<_i671.IUserProfileRepository>(
+      () => _i1008.UserProfileRepositoryImpl(
+            remoteDataSource: gh<_i847.ProfileRemoteDataSource>(),
+            localDataSource: gh<_i439.ProfileLocalDataSource>(),
+            networkInfo: gh<_i892.NetworkInfo>(),
+          ));
+  gh.factory<_i748.UpdateUserProfileUseCase>(
+      () => _i748.UpdateUserProfileUseCase(gh<_i671.IUserProfileRepository>()));
+  gh.factory<_i970.UploadAvatarUseCase>(
+      () => _i970.UploadAvatarUseCase(gh<_i671.IUserProfileRepository>()));
+  gh.lazySingleton<_i12.GetUserProfileUseCase>(
+      () => _i12.GetUserProfileUseCase(gh<_i671.IUserProfileRepository>()));
   gh.factory<_i618.IInviteEvaluationUseCase>(
       () => _i618.InviteEvaluationUseCase(gh<_i724.IOrderRepository>()));
   gh.factory<_i618.IAddOrderDemandUseCase>(
@@ -437,12 +454,14 @@ Future<_i174.GetIt> init(
       () => _i618.DeliverOrderUseCase(gh<_i724.IOrderRepository>()));
   gh.factory<_i176.OrderListBloc>(() => _i176.OrderListBloc(
       getOrderListUseCase: gh<_i1015.GetOrderListUseCase>()));
+  gh.factory<_i636.IWalletRepository>(() => _i263.WalletRepositoryImpl(
+        remoteDataSource: gh<_i847.ProfileRemoteDataSource>(),
+        networkInfo: gh<_i892.NetworkInfo>(),
+      ));
   gh.lazySingleton<_i107.AuthRemoteDataSource>(
       () => _i123.AuthRemoteDataSourceImpl(dio: gh<_i361.Dio>()));
   gh.lazySingleton<_i253.IAfterSalesRemoteDataSource>(
       () => _i519.AfterSalesRemoteDataSource(gh<_i412.CoreDioClient>()));
-  gh.factory<_i847.ProfileRemoteDataSource>(
-      () => _i847.ProfileRemoteDataSourceImpl(dio: gh<_i361.Dio>()));
   gh.lazySingleton<_i795.IUserInfoRepository>(
       () => _i1015.UserInfoRepositoryImpl(
             remoteDataSource: gh<_i232.UserInfoRemoteDataSource>(),
@@ -479,20 +498,8 @@ Future<_i174.GetIt> init(
       () => _i825.GetAuthenticationStatus(gh<_i203.ISellerRepository>()));
   gh.factory<_i58.ValidateTokenUseCase>(
       () => _i58.ValidateTokenUseCase(gh<_i691.TokenValidator>()));
-  gh.factory<_i671.IUserProfileRepository>(
-      () => _i1008.UserProfileRepositoryImpl(
-            remoteDataSource: gh<_i847.ProfileRemoteDataSource>(),
-            localDataSource: gh<_i439.ProfileLocalDataSource>(),
-            networkInfo: gh<_i892.NetworkInfo>(),
-          ));
   gh.factory<_i887.AuthApplicationBloc>(() => _i887.AuthApplicationBloc(
       gh<_i626.SubmitAuthenticationApplicationUseCase>()));
-  gh.factory<_i748.UpdateUserProfileUseCase>(
-      () => _i748.UpdateUserProfileUseCase(gh<_i671.IUserProfileRepository>()));
-  gh.factory<_i970.UploadAvatarUseCase>(
-      () => _i970.UploadAvatarUseCase(gh<_i671.IUserProfileRepository>()));
-  gh.lazySingleton<_i12.GetUserProfileUseCase>(
-      () => _i12.GetUserProfileUseCase(gh<_i671.IUserProfileRepository>()));
   gh.lazySingleton<_i589.IAuthRepository>(() => _i153.AuthRepositoryImpl(
         remoteDataSource: gh<_i107.AuthRemoteDataSource>(),
         secureStorage: gh<_i822.ISecureStorageRepository>(),
@@ -502,6 +509,8 @@ Future<_i174.GetIt> init(
       ));
   gh.factory<_i512.OrderDeliveryBloc>(
       () => _i512.OrderDeliveryBloc(gh<_i655.AddOrderDeliveryUseCase>()));
+  gh.lazySingleton<_i226.GetWalletSummary>(
+      () => _i226.GetWalletSummary(gh<_i636.IWalletRepository>()));
   gh.lazySingleton<_i441.IAfterSalesRepository>(() =>
       _i363.AfterSalesRepositoryImpl(
           remoteDataSource: gh<_i253.IAfterSalesRemoteDataSource>()));
@@ -513,10 +522,6 @@ Future<_i174.GetIt> init(
       () => _i578.CheckAuthStatusUseCase(gh<_i589.IAuthRepository>()));
   gh.lazySingleton<_i631.LogoutUseCase>(
       () => _i631.LogoutUseCase(gh<_i589.IAuthRepository>()));
-  gh.factory<_i636.IWalletRepository>(() => _i263.WalletRepositoryImpl(
-        remoteDataSource: gh<_i847.ProfileRemoteDataSource>(),
-        networkInfo: gh<_i892.NetworkInfo>(),
-      ));
   gh.factory<_i517.AuthManagementBloc>(
       () => _i517.AuthManagementBloc(gh<_i825.GetAuthenticationStatus>()));
   gh.factory<_i363.AuditRefundUseCase>(
@@ -563,6 +568,14 @@ Future<_i174.GetIt> init(
         gh<_i779.CreateProductUseCase>(),
         gh<_i267.UpdateProductUseCase>(),
       ));
+  gh.factory<_i469.ProfileBloc>(() => _i469.ProfileBloc(
+        getUserProfile: gh<_i12.GetUserProfileUseCase>(),
+        updateUserProfile: gh<_i748.UpdateUserProfileUseCase>(),
+        uploadAvatar: gh<_i970.UploadAvatarUseCase>(),
+        getWalletSummary: gh<_i226.GetWalletSummary>(),
+        checkAuthStatus: gh<_i578.CheckAuthStatusUseCase>(),
+        logout: gh<_i631.LogoutUseCase>(),
+      ));
   gh.factory<_i184.SmsLoginCubit>(() => _i184.SmsLoginCubit(
         sendVerificationCodeUseCase: gh<_i695.SendVerificationCodeUseCase>(),
         loginWithVerificationCodeUseCase:
@@ -594,8 +607,6 @@ Future<_i174.GetIt> init(
         gh<_i665.MarkAllNotificationsAsReadUseCase>(),
         gh<_i680.GetUnreadNotificationCountUseCase>(),
       ));
-  gh.lazySingleton<_i226.GetWalletSummary>(
-      () => _i226.GetWalletSummary(gh<_i636.IWalletRepository>()));
   gh.factory<_i72.AfterSalesReviewBloc>(() => _i72.AfterSalesReviewBloc(
         gh<_i237.GetTenantAuditListUseCase>(),
         gh<_i363.AuditRefundUseCase>(),
@@ -616,14 +627,6 @@ Future<_i174.GetIt> init(
   gh.factory<_i295.TimeManagementBloc>(() => _i295.TimeManagementBloc(
         gh<_i1030.GetTimeSettingsUseCase>(),
         gh<_i1002.UpdateTimeSettingsUseCase>(),
-      ));
-  gh.factory<_i469.ProfileBloc>(() => _i469.ProfileBloc(
-        getUserProfile: gh<_i12.GetUserProfileUseCase>(),
-        updateUserProfile: gh<_i748.UpdateUserProfileUseCase>(),
-        uploadAvatar: gh<_i970.UploadAvatarUseCase>(),
-        getWalletSummary: gh<_i226.GetWalletSummary>(),
-        checkAuthStatus: gh<_i578.CheckAuthStatusUseCase>(),
-        logout: gh<_i631.LogoutUseCase>(),
       ));
   return getIt;
 }

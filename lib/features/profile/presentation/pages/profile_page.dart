@@ -20,22 +20,44 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => GetIt.instance<ProfileBloc>()..add(CheckAuthStatusEvent()),
-      child: BlocBuilder<ProfileBloc, ProfileState>(
-        builder: (context, state) {
-          if (state is ProfileAuthStatusLoaded) {
-            if (state.isAuthenticated) {
-              // 如果已登录，获取用户资料和钱包摘要
-              context.read<ProfileBloc>().add(GetUserProfileEvent());
-              context.read<ProfileBloc>().add(GetWalletSummaryEvent());
-            } else {
-              // 如果未登录，显示登录页面
-              return _buildLoginPrompt(context);
-            }
+      child: BlocListener<ProfileBloc, ProfileState>(
+        listener: (context, state) {
+          if (state is ProfileAuthStatusLoaded && state.isAuthenticated) {
+            print('[ProfilePage] Auth confirmed, dispatching data load events.');
+            context.read<ProfileBloc>().add(GetUserProfileEvent());
+            // context.read<ProfileBloc>().add(GetWalletSummaryEvent());
+          } else if (state is ProfileAuthStatusLoaded && !state.isAuthenticated) {
+            // 可以在这里处理未认证的导航，如果需要的话
+            // context.go('/login');
+          } else if (state is ProfileLoggedOut) {
+            // 处理登出后的逻辑，例如导航到登录页
+            // context.go('/login');
           }
-
-          // 构建主页面
-          return _buildMainContent(context, state);
         },
+        child: BlocBuilder<ProfileBloc, ProfileState>(
+          builder: (context, state) {
+            print('[ProfilePage] BlocBuilder received state: ${state.runtimeType}');
+            
+            if (state is ProfileInitial || (state is ProfileAuthStatusLoaded && !state.isAuthenticated)) {
+              if (state is ProfileAuthStatusLoaded && !state.isAuthenticated) {
+                return _buildLoginPrompt(context);
+              }
+              return const Center(child: CircularProgressIndicator()); 
+            }
+
+            if (state is ProfileLoading) {
+                // 可以根据需要显示更精细的加载状态，或者统一处理
+                // 这里暂时继续显示之前的UI，避免页面跳跃
+                // return const Center(child: CircularProgressIndicator());
+            }
+
+            if (state is ProfileError) {
+              return Center(child: Text('加载失败: ${state.message}'));
+            }
+            
+            return _buildMainContent(context, state); 
+          },
+        ),
       ),
     );
   }
@@ -76,7 +98,7 @@ class _ProfilePageState extends State<ProfilePage> {
           onRefresh: () async {
             // 下拉刷新时重新加载数据
             context.read<ProfileBloc>().add(GetUserProfileEvent());
-            context.read<ProfileBloc>().add(GetWalletSummaryEvent());
+            // context.read<ProfileBloc>().add(GetWalletSummaryEvent());
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -89,9 +111,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 // 我的订单
                 const OrderStatusSection(),
 
-                // 我的关看
+                // 我的多看
                 ProfileMenuSection(
-                  title: '我的关看',
+                  title: '我的多看',
                   menuItems: [
                     MenuItem(
                       icon: Icons.star_border,

@@ -8,6 +8,8 @@ import '../../../../app/di/injection_container.dart';
 // Import Blocs needed for providing
 import '../bloc/order_list_bloc.dart';
 import '../seller/bloc/seller_order_list_bloc.dart';
+// Import OrderStatus and potentially an extension for parsing
+import '../../domain/entities/order_status.dart'; 
 
 // Import pages used in this module's routes
 import '../pages/order_list_page.dart';
@@ -28,11 +30,21 @@ class OrderRoutes {
     GoRoute(
       path: '/orders',
       name: 'orders',
-      // Wrap OrderListPage with BlocProvider
-      builder: (context, state) => BlocProvider(
-        create: (_) => getIt<OrderListBloc>(), // Use GetIt to create Bloc
-        child: const OrderListPage(),
-      ),
+      builder: (context, state) {
+        // Extract the 'status' query parameter
+        final statusString = state.uri.queryParameters['status']; 
+        print('[GoRoute /orders] Received raw status string from URL: $statusString'); 
+        
+        final parsedStatus = OrderStatusExtension.fromString(statusString);
+        print('[GoRoute /orders] Parsed status using OrderStatusExtension.fromString: $parsedStatus');
+        
+        // Assuming OrderListBloc should be provided here
+        return BlocProvider(
+          // Use the parsed status for the initial event
+          create: (_) => getIt<OrderListBloc>()..add(LoadOrders(status: parsedStatus)), 
+          child: OrderListPage(initialStatus: statusString), // Pass the original string
+        );
+      },
     ),
     GoRoute(
       path: '/orderDetail/:orderId',
@@ -74,5 +86,23 @@ class OrderRoutes {
       },
     ),
   ];
+}
+
+// Example Extension (Add this if you don't have one)
+// Place it in a relevant file, like near OrderStatus definition or in a utils file
+extension OrderStatusExtension on OrderStatus {
+  static OrderStatus? fromString(String? statusString) {
+    if (statusString == null) return null;
+    try {
+      // Find the enum value matching the string representation
+      return OrderStatus.values.firstWhere(
+        (e) => e.toString().split('.').last == statusString
+      );
+    } catch (e) {
+      print('Error parsing OrderStatus from string: $statusString - $e');
+      // Decide error handling: return null, a default, or throw
+      return null; // Returning null for now, adjust as needed
+    }
+  }
 }
 

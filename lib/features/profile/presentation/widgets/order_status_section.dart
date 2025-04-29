@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class OrderStatusSection extends StatelessWidget {
   const OrderStatusSection({Key? key}) : super(key: key);
@@ -104,12 +105,17 @@ class OrderStatusSection extends StatelessWidget {
   }
 
   void _navigateToOrders(BuildContext context, String status) {
-    // TODO: 使用导航服务
-    // navigationService.navigateToOrders(status: status);
+    const String basePath = '/orders';
+    final String pathWithQuery = '$basePath?status=$status';
 
-    // 临时解决方案：显示一个提示，说明导航到特定订单页面
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('导航到$status订单列表')),
-    );
+    try {
+      print('Navigating to: $pathWithQuery');
+      context.go(pathWithQuery);
+    } catch (e) {
+      print('Error navigating to $pathWithQuery: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('无法导航到订单列表: $e')),
+      );
+    }
   }
 }

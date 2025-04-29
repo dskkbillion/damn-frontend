@@ -140,6 +140,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
   // Define Buyer Order Detail Route
   final buyerOrderDetailRoute = OrderRoutes.routes.firstWhere((r) => r is GoRoute && r.path == '/orderDetail/:orderId'); 
+  
+  // !!! Get Buyer Order List Route !!!
+  final buyerOrderListRoute = OrderRoutes.routes.firstWhere((r) => r is GoRoute && r.path == '/orders');
 
   // Create the GoRouter instance
   final router = GoRouter(
@@ -222,6 +225,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       // --- Top-level routes (No Shell) ---
       ...AuthRoutes.routes, // Login etc.
       buyerOrderDetailRoute, 
+      buyerOrderListRoute,   // <--- ADD Buyer Order List Route HERE
       ...AfterSalesRoutes.routes,
       ...FavoritesRoutes.routes, 
       ...sellerNonShellRoutes, 

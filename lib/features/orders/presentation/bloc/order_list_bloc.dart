@@ -41,6 +41,8 @@ class OrderListBloc extends Bloc<OrderListEvent, OrderListState> {
   }
 
   Future<void> _onLoadOrders(LoadOrders event, Emitter<OrderListState> emit) async {
+    print('[OrderListBloc _onLoadOrders] Received event with status: ${event.status}');
+    
     currentPage = 1; // Reset page for new filter/refresh
     currentStatus = event.status;
     emit(OrderListLoading()); // Indicate loading

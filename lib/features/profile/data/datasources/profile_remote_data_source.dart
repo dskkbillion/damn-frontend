@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:injectable/injectable.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../models/transaction_dto.dart';
 import '../models/user_profile_dto.dart';
@@ -98,34 +99,50 @@ class ServerException implements Exception {
 @Injectable(as: ProfileRemoteDataSource)
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   final Dio dio;
+  final FlutterSecureStorage storage;
 
-  ProfileRemoteDataSourceImpl({required this.dio});
+  ProfileRemoteDataSourceImpl({required this.dio, required this.storage});
 
   @override
   Future<UserProfileDto> getUserProfile() async {
     try {
-      final response = await dio.get('/api/user/member/profile');
+      final commonUserId = await storage.read(key: 'common_user_id');
+      if (commonUserId == null || commonUserId.isEmpty) {
+        throw ServerException(message: '无法获取通用用户 ID', statusCode: 401);
+      }
+
+      final path = '/api/member/profile/$commonUserId';
+      print('Requesting user profile from: $path');
+
+      final response = await dio.get(path);
 
       if (response.statusCode == 200) {
         final data = response.data;
         if (data is Map<String, dynamic> && data.containsKey('code') && data['code'] == 200 && data['data'] != null) {
-          return UserProfileDto.fromJson(data['data']);
+          try {
+            return UserProfileDto.fromJson(data['data']);
+          } catch (e) {
+            print("Error parsing UserProfileDto: $e");
+            throw ServerException(message: "解析用户信息失败: ${e.toString()}");
+          }
         } else {
           throw ServerException(
-            message: (data is Map<String, dynamic> ? data['msg'] : null) ?? '获取用户信息失败',
+            message: (data is Map<String, dynamic> ? data['msg'] : null) ?? '获取用户信息失败(业务错误)',
             statusCode: (data is Map<String, dynamic> ? data['code'] : null),
           );
         }
       } else {
         throw ServerException(
-          message: '获取用户信息失败，状态码: ${response.statusCode}',
+          message: '获取用户信息失败，HTTP 状态码: ${response.statusCode}',
           statusCode: response.statusCode,
         );
       }
     } on DioException catch (e) {
+      print("DioException in getUserProfile: ${e.response?.data}");
       throw ServerException(message: e.message ?? '网络请求失败', statusCode: e.response?.statusCode);
     } catch (e) {
       if (e is ServerException) rethrow;
+      print("Unexpected error in getUserProfile: $e");
       throw ServerException(message: e.toString());
     }
   }
@@ -136,11 +153,16 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     bool? onlineFlag,
   }) async {
     try {
+      final userId = await storage.read(key: 'user_id');
+      if (userId == null || userId.isEmpty) {
+        throw ServerException(message: '无法获取用户 ID', statusCode: 401);
+      }
+
       final requestData = {
         'nickName': nickName,
         if (onlineFlag != null) 'onlineFlag': onlineFlag,
       };
-      final response = await dio.post('/api/user/member/update', data: requestData);
+      final response = await dio.post('/api/member/profile/$userId', data: requestData);
 
       if (response.statusCode == 200) {
         final responseData = response.data;
@@ -173,6 +195,11 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   @override
   Future<String> uploadAvatar({required String imageFilePath}) async {
     try {
+      final userId = await storage.read(key: 'user_id');
+      if (userId == null || userId.isEmpty) {
+        throw ServerException(message: '无法获取用户 ID', statusCode: 401);
+      }
+
       final file = File(imageFilePath);
       String fileName = file.path.split('/').last;
       FormData formData = FormData.fromMap({
@@ -183,7 +210,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         ),
       });
 
-      final response = await dio.post('/api/common/public/upload', data: formData);
+      final response = await dio.post('/api/member/profile/$userId/avatar', data: formData);
 
       if (response.statusCode == 200) {
         final responseData = response.data;

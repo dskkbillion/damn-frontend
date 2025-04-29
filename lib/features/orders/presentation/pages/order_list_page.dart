@@ -17,7 +17,10 @@ import 'package:dskk_flutter_refactor/features/after_sales/presentation/pages/af
 
 /// 订单列表页面
 class OrderListPage extends StatefulWidget {
-  const OrderListPage({super.key});
+  // Add optional initialStatus parameter
+  final String? initialStatus; 
+
+  const OrderListPage({super.key, this.initialStatus}); // Modify constructor
 
   @override
   State<OrderListPage> createState() => _OrderListPageState();
@@ -39,31 +42,63 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
     OrderStatus.afterSale, // Index 6: 售后中 (NEW)
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    // Initialize TabController with the new length
-    _tabController = TabController(length: _tabStatuses.length, vsync: this);
-    _tabController.addListener(_onTabChanged);
-    _scrollController.addListener(_onScroll);
-
-    // Initial load for the first tab (All)
-    _loadOrdersForCurrentTab();
-  }
-
-  void _onTabChanged() {
-    // Load orders only when the tab index actually changes and animation finished
-    if (_tabController.indexIsChanging || !_tabController.indexIsChanging && _tabController.previousIndex != _tabController.index) {
-       _loadOrdersForCurrentTab();
+  // Helper to find index for a given status string
+  int _findIndexForStatus(String? statusString) {
+    if (statusString == null) return 0; // Default to '全部'
+    try {
+      // Find the OrderStatus enum corresponding to the string
+      final statusEnum = OrderStatus.values.firstWhere(
+        (e) => e.toString().split('.').last == statusString,
+        orElse: () => OrderStatus.unknown // Or some default/fallback if string doesn't match
+      );
+      // Find the index in our tab list
+      final index = _tabStatuses.indexWhere((s) => s == statusEnum);
+      return index != -1 ? index : 0; // Return found index or default to 0
+    } catch (e) {
+      print("Error finding index for status '$statusString': $e");
+      return 0; // Default to '全部' on error
     }
   }
 
-   void _loadOrdersForCurrentTab() {
-     final selectedStatus = _tabStatuses[_tabController.index];
-     print('[OrderListPage] Loading orders for tab index: ${_tabController.index}, status: $selectedStatus');
+  @override
+  void initState() {
+    super.initState();
+
+    // Calculate initial index based on widget.initialStatus
+    final initialIndex = _findIndexForStatus(widget.initialStatus);
+    print('[OrderListPage initState] Received initialStatus: ${widget.initialStatus}, setting initialIndex: $initialIndex');
+
+    // Initialize TabController with the calculated initial index
+    _tabController = TabController(
+      length: _tabStatuses.length,
+      vsync: this,
+      initialIndex: initialIndex, // <-- Set initial index here
+    );
+
+    _tabController.addListener(_onTabChanged);
+    _scrollController.addListener(_onScroll);
+
+    // Initial load for the determined tab
+    // No need to call _loadOrdersForCurrentTab here explicitly, 
+    // as the TabController listener might fire initially, or we can load based on initialIndex.
+    // Let's be explicit to ensure it loads:
+    _loadOrdersForStatus(_tabStatuses[initialIndex]);
+  }
+
+  void _onTabChanged() {
+    // Load orders only when the tab index actually changes (manual swipe/tap)
+    // Check if the controller index matches the animation target
+    if (!_tabController.indexIsChanging && _tabController.previousIndex != _tabController.index) {
+        final selectedStatus = _tabStatuses[_tabController.index];
+        print('[OrderListPage _onTabChanged] Loading orders for tab index: ${_tabController.index}, status: $selectedStatus');
+        _loadOrdersForStatus(selectedStatus);
+    }
+  }
+
+   // Renamed function for clarity
+   void _loadOrdersForStatus(OrderStatus? status) {
       context.read<OrderListBloc>().add(
-            // Simplify event call, assuming LoadOrders only takes status
-            LoadOrders(status: selectedStatus),
+            LoadOrders(status: status),
           );
    }
 
@@ -102,7 +137,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
           ],
           bottom: TabBar(
             controller: _tabController,
-            isScrollable: true, // <-- Enable horizontal scrolling
+            isScrollable: true,
             tabs: const [
               Tab(text: '全部'),
               Tab(text: '待付款'),
@@ -110,7 +145,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
               Tab(text: '待交付'),
               Tab(text: '待收货'),
               Tab(text: '待评价'),
-              Tab(text: '售后中'), // <-- New Tab
+              Tab(text: '售后中'),
             ],
           ),
         ),
@@ -200,7 +235,8 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                           Text('加载失败: ${state.message}'),
                           const SizedBox(height: 16),
                           ElevatedButton(
-                            onPressed: _loadOrdersForCurrentTab,
+                            // Use the renamed function for retry
+                            onPressed: () => _loadOrdersForStatus(_tabStatuses[_tabController.index]), 
                             child: const Text('重试'),
                           )
                         ],

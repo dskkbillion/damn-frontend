@@ -66,7 +66,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     final result = await getUserProfile(NoParams());
     result.fold(
       (failure) => emit(ProfileError(message: failure.toString())),
-      (profile) => emit(ProfileLoaded(profile: profile)),
+      (profile) {
+        print('[ProfileBloc] Emitting ProfileLoaded with profile: ${profile.nickName}');
+        emit(ProfileLoaded(profile: profile));
+      },
     );
   }
 
