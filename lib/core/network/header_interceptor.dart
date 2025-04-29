@@ -1,19 +1,32 @@
 import 'package:dio/dio.dart';
+// import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart'; // Temporarily removed
+import 'package:get_it/get_it.dart'; 
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import FlutterSecureStorage directly
 
 class HeaderInterceptor extends Interceptor {
+  // Temporary: Directly use FlutterSecureStorage
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+
+  // Constructor no longer needs injection for this temporary fix
+  // HeaderInterceptor({required this.secureStorageRepository});
+
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+  Future<void> onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     // Add required headers here
     // TODO: Replace hardcoded values with actual app info later
     options.headers['clienttype'] = '1';       // Example value
     options.headers['client'] = 'android';   // Example value
     options.headers['version'] = '100';      // Example value
 
-    // Add Authorization header with the provided token
-    // WARNING: Hardcoding token here is NOT recommended for production.
-    // Token should ideally come from auth state/storage and be added via AuthInterceptor.
-    const String token = 'eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjA5NjhhMDNkLTM1NzYtNDkzZi1iMjA5LTc2YWEzMzMwYzYzMCJ9.AJ_IIJypohoKS_5EJa7bpE5erREM9qqbFXNoeaTaD0tpGSDhaqcdeccjU2y4z3Y_MuXWyzBCoq24HPna6itjJQ'; // UPDATE: New Token
-    options.headers['Authorization'] = token; // Assuming no "Bearer " prefix is needed based on OpenAPI examples
+    // Dynamically read token from secure storage using the correct key
+    // IMPORTANT: Use the key that main_chat_preview.dart writes!
+    final String? token = await _secureStorage.read(key: 'user_token'); 
+
+    if (token != null && token.isNotEmpty) {
+        options.headers['Authorization'] = token; // Assuming no "Bearer " prefix needed yet
+    } else {
+       print('[HeaderInterceptor] Warning: Token not found in secure storage using key: user_token');
+    }
 
     print('[HeaderInterceptor] Added headers: ${options.headers}'); 
     super.onRequest(options, handler);

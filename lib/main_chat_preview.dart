@@ -7,6 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:dartz/dartz.dart';
 import 'package:intl/date_symbol_data_local.dart'; // Import for date formatting initialization
 import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import Secure Storage
 
 // Core imports
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
@@ -431,6 +432,13 @@ class MockCreateChatRoom implements CreateChatRoom {
 // --- Dependency Injection Setup ---
 Future<void> setupLocator() async {
   print('Setting up locator...');
+  // !!! IMPORTANT: Ensure FlutterSecureStorage is registered if not already done globally !!!
+  // If FlutterSecureStorage is NOT registered by a higher-level setup (like configureDependencies),
+  // you MUST register it here for the credential injection to work.
+  if (!sl.isRegistered<FlutterSecureStorage>()) {
+     print('[setupLocator] Registering FlutterSecureStorage for chat preview...');
+     sl.registerLazySingleton<FlutterSecureStorage>(() => const FlutterSecureStorage());
+  }
   // Register Core Dependencies (if needed for preview, e.g., Theme)
   // sl.registerLazySingleton(() => AppTheme());
 
@@ -494,25 +502,29 @@ Future<void> setupLocator() async {
    sl.registerLazySingleton<NavigationService>(() => MockNavigationService());
 
    // Register Dio (use a simple one for preview, or configure as needed)
-   sl.registerLazySingleton<Dio>(() {
-      print('--- Creating Dio Instance (Preview Setup - Real API) ---');
-      // CONFIGURE DIO FOR REAL API
-      final dio = Dio(BaseOptions(
-         baseUrl: "https://app.duoshaokankan.com/prod-api", // UPDATE to HTTPS based on .env
-         connectTimeout: const Duration(seconds: 15),
-         receiveTimeout: const Duration(seconds: 30),
-         headers: {
-           'Accept': 'application/json',
-           // Auth header will be added by interceptor now
-         },
-      ));
-      // ADD INTERCEPTORS TO THIS PREVIEW INSTANCE AS WELL
-      dio.interceptors.add(HeaderInterceptor()); // Add the header interceptor
-      // dio.interceptors.add(LoggingInterceptor()); // Optional: Add logging
-      // dio.interceptors.add(AuthInterceptor(sl())); // TODO: Add Auth Interceptor if needed for preview
-      print('--- Dio Instance (Preview Setup - Real API) Created with Interceptors ---');
-      return dio;
-   });
+   // Ensure Dio is registered only once if setupLocator might be called multiple times
+   if (!sl.isRegistered<Dio>()) {
+     sl.registerLazySingleton<Dio>(() {
+        print('--- Creating Dio Instance (Preview Setup - Real API) ---');
+        // CONFIGURE DIO FOR REAL API
+        final dio = Dio(BaseOptions(
+           baseUrl: "https://app.duoshaokankan.com/prod-api", // UPDATE to HTTPS based on .env
+           connectTimeout: const Duration(seconds: 15),
+           receiveTimeout: const Duration(seconds: 30),
+           headers: {
+             'Accept': 'application/json',
+             // Auth header will be added by interceptor now
+           },
+        ));
+        // ADD INTERCEPTORS TO THIS PREVIEW INSTANCE AS WELL
+        // Use the modified HeaderInterceptor (no constructor args for temp fix)
+        dio.interceptors.add(HeaderInterceptor()); 
+        // dio.interceptors.add(LoggingInterceptor()); // Optional: Add logging
+        // dio.interceptors.add(AuthInterceptor(sl())); // TODO: Add Auth Interceptor if needed for preview
+        print('--- Dio Instance (Preview Setup - Real API) Created with Interceptors ---');
+        return dio;
+     });
+   }
 
    // --- REGISTER REAL DATASOURCES HERE SINCE MOCK REPOSITORY IS COMMENTED OUT --- 
    // Uncomment these lines if you want main_chat_preview to use REAL datasources
@@ -548,6 +560,35 @@ void main() async {
   // You might want to use a specific locale if needed, e.g., 'zh_CN'
   await initializeDateFormatting('en_US', null);
   await setupLocator();
+
+  // --- Manually Inject Test Token and User ID for Chat Preview ---
+  print('[main_chat_preview] Attempting to inject test credentials for chat...');
+  try {
+    // Ensure FlutterSecureStorage is registered before trying to get it
+    if (!sl.isRegistered<FlutterSecureStorage>()) {
+       print('[main_chat_preview] FlutterSecureStorage not registered in GetIt. Cannot inject credentials.');
+       // Optionally register it here if setupLocator failed to do so
+       // sl.registerLazySingleton<FlutterSecureStorage>(() => const FlutterSecureStorage());
+    }
+    final storage = sl<FlutterSecureStorage>();
+    // Use the same credentials as main_dev_preview or define specific ones
+    const testToken = "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6Ijk1NjBiODY2LWU2ZmUtNGYyOS04NjVjLTdmMjJjNDg0YjlmZCJ9.QCfx9k2Bu6H1yONyH5jGm_Pjy0DlPPGl9gP1_0p72c-4KjHwoRPIkxXrnJckC1g_UqudTufgjQvfYUCMGzNd9A"; // Example Buyer/General Token
+    const testUserId = "18888888888"; // Example Buyer/General ID as String
+    const testCommonUserId = "1"; // Example Common User ID
+
+    // IMPORTANT: Use the keys expected by HeaderInterceptor
+    // Assuming 'user_token' and 'user_id' based on main_dev_preview
+    await storage.write(key: 'user_token', value: testToken);
+    await storage.write(key: 'user_id', value: testUserId);
+    await storage.write(key: 'common_user_id', value: testCommonUserId); // Assuming this key is also needed
+
+    print('[main_chat_preview] Successfully injected test token, user ID (${testUserId}), and common_user_id (${testCommonUserId}) into secure storage.');
+  } catch (e) {
+     print('[main_chat_preview] ERROR injecting test credentials: $e');
+     // Decide how fatal this error should be. App might still work if APIs allow unauthenticated access for some parts.
+  }
+  // -------------------------------------------------------------
+
   runApp(const ChatPreviewApp());
 }
 
