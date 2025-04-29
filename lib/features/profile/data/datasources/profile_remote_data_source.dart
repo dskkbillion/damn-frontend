@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:injectable/injectable.dart';
 
 import '../models/transaction_dto.dart';
 import '../models/user_profile_dto.dart';
@@ -94,34 +95,25 @@ class ServerException implements Exception {
 }
 
 /// 用户资料远程数据源实现
+@Injectable(as: ProfileRemoteDataSource)
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   final Dio dio;
-  final String token;
-  final String userId;
 
-  ProfileRemoteDataSourceImpl({
-    required this.dio,
-    required this.token,
-    required this.userId,
-  }) {
-    // 添加认证token到请求头
-    dio.options.headers['Authorization'] = 'Bearer $token';
-  }
+  ProfileRemoteDataSourceImpl({required this.dio});
 
   @override
   Future<UserProfileDto> getUserProfile() async {
     try {
-      final response = await dio.get('/api/user/profile');
+      final response = await dio.get('/api/user/member/profile');
 
       if (response.statusCode == 200) {
         final data = response.data;
-
-        if (data['code'] == 200 && data['data'] != null) {
+        if (data is Map<String, dynamic> && data.containsKey('code') && data['code'] == 200 && data['data'] != null) {
           return UserProfileDto.fromJson(data['data']);
         } else {
           throw ServerException(
-            message: data['message'] ?? '获取用户信息失败',
-            statusCode: data['code'],
+            message: (data is Map<String, dynamic> ? data['msg'] : null) ?? '获取用户信息失败',
+            statusCode: (data is Map<String, dynamic> ? data['code'] : null),
           );
         }
       } else {
@@ -130,10 +122,10 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
           statusCode: response.statusCode,
         );
       }
+    } on DioException catch (e) {
+      throw ServerException(message: e.message ?? '网络请求失败', statusCode: e.response?.statusCode);
     } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
+      if (e is ServerException) rethrow;
       throw ServerException(message: e.toString());
     }
   }
@@ -144,22 +136,24 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     bool? onlineFlag,
   }) async {
     try {
-      final data = {
+      final requestData = {
         'nickName': nickName,
         if (onlineFlag != null) 'onlineFlag': onlineFlag,
       };
-
-      final response = await dio.put('/api/user/profile', data: data);
+      final response = await dio.post('/api/user/member/update', data: requestData);
 
       if (response.statusCode == 200) {
         final responseData = response.data;
-
-        if (responseData['code'] == 200 && responseData['data'] != null) {
-          return UserProfileDto.fromJson(responseData['data']);
+        if (responseData is Map<String, dynamic> && responseData.containsKey('code') && responseData['code'] == 200 && responseData['data'] != null) {
+          if (responseData['data'] != null) {
+            return UserProfileDto.fromJson(responseData['data']);
+          } else {
+            return await getUserProfile();
+          }
         } else {
           throw ServerException(
-            message: responseData['message'] ?? '更新用户信息失败',
-            statusCode: responseData['code'],
+            message: (responseData is Map<String, dynamic> ? responseData['msg'] : null) ?? '更新用户信息失败',
+            statusCode: (responseData is Map<String, dynamic> ? responseData['code'] : null),
           );
         }
       } else {
@@ -168,10 +162,10 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
           statusCode: response.statusCode,
         );
       }
+    } on DioException catch (e) {
+      throw ServerException(message: e.message ?? '网络请求失败', statusCode: e.response?.statusCode);
     } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
+      if (e is ServerException) rethrow;
       throw ServerException(message: e.toString());
     }
   }
@@ -180,54 +174,25 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   Future<String> uploadAvatar({required String imageFilePath}) async {
     try {
       final file = File(imageFilePath);
-
-      if (!await file.exists()) {
-        throw ServerException(message: '文件不存在: $imageFilePath');
-      }
-
-      final fileName = imageFilePath.split('/').last;
-      final fileExtension = fileName.split('.').last.toLowerCase();
-
-      // 确定文件类型
-      String contentType;
-      switch (fileExtension) {
-        case 'jpg':
-        case 'jpeg':
-          contentType = 'image/jpeg';
-          break;
-        case 'png':
-          contentType = 'image/png';
-          break;
-        case 'gif':
-          contentType = 'image/gif';
-          break;
-        default:
-          contentType = 'application/octet-stream';
-      }
-
-      // 创建FormData对象
-      final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(
-          imageFilePath,
+      String fileName = file.path.split('/').last;
+      FormData formData = FormData.fromMap({
+        "file": await MultipartFile.fromFile(
+          file.path,
           filename: fileName,
-          contentType: MediaType.parse(contentType),
+          contentType: MediaType("image", fileName.split('.').last),
         ),
       });
 
-      final response = await dio.post(
-        '/api/user/avatar',
-        data: formData,
-      );
+      final response = await dio.post('/api/common/public/upload', data: formData);
 
       if (response.statusCode == 200) {
         final responseData = response.data;
-
-        if (responseData['code'] == 200 && responseData['data'] != null) {
-          return responseData['data']['avatarUrl'] ?? '';
+        if (responseData is Map<String, dynamic> && responseData.containsKey('code') && responseData['code'] == 200 && responseData['data']?['url'] != null) {
+          return responseData['data']['url'];
         } else {
           throw ServerException(
-            message: responseData['message'] ?? '上传头像失败',
-            statusCode: responseData['code'],
+            message: (responseData is Map<String, dynamic> ? responseData['msg'] : null) ?? '上传头像失败',
+            statusCode: (responseData is Map<String, dynamic> ? responseData['code'] : null),
           );
         }
       } else {
@@ -236,10 +201,10 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
           statusCode: response.statusCode,
         );
       }
+    } on DioException catch (e) {
+      throw ServerException(message: e.message ?? '网络请求失败', statusCode: e.response?.statusCode);
     } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
+      if (e is ServerException) rethrow;
       throw ServerException(message: e.toString());
     }
   }
@@ -247,17 +212,16 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   @override
   Future<WalletSummaryDto> getWalletSummary() async {
     try {
-      final response = await dio.get('/api/wallet/summary');
+      final response = await dio.get('/api/user/member/wallet/info');
 
       if (response.statusCode == 200) {
         final data = response.data;
-
-        if (data['code'] == 200 && data['data'] != null) {
+        if (data is Map<String, dynamic> && data.containsKey('code') && data['code'] == 200 && data['data'] != null) {
           return WalletSummaryDto.fromJson(data['data']);
         } else {
           throw ServerException(
-            message: data['message'] ?? '获取钱包信息失败',
-            statusCode: data['code'],
+            message: (data is Map<String, dynamic> ? data['msg'] : null) ?? '获取钱包信息失败',
+            statusCode: (data is Map<String, dynamic> ? data['code'] : null),
           );
         }
       } else {
@@ -266,10 +230,10 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
           statusCode: response.statusCode,
         );
       }
+    } on DioException catch (e) {
+      throw ServerException(message: e.message ?? '网络请求失败', statusCode: e.response?.statusCode);
     } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
+      if (e is ServerException) rethrow;
       throw ServerException(message: e.toString());
     }
   }
@@ -284,30 +248,27 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   }) async {
     try {
       final queryParams = {
-        'page': page.toString(),
-        'size': pageSize.toString(),
-        'type': transactionType,
-        if (startDate != null) 'startDate': startDate,
-        if (endDate != null) 'endDate': endDate,
+        'pageNum': page,
+        'pageSize': pageSize,
+        'type': transactionType == 'all' ? null : transactionType,
+        'beginTime': startDate,
+        'endTime': endDate,
       };
+      queryParams.removeWhere((key, value) => value == null);
 
-      final response = await dio.get(
-        '/api/wallet/transactions',
-        queryParameters: queryParams,
-      );
+      final response = await dio.get('/api/user/member/wallet/record/page', queryParameters: queryParams);
 
       if (response.statusCode == 200) {
         final data = response.data;
-
-        if (data['code'] == 200 && data['data'] != null && data['data']['list'] != null) {
+        if (data is Map<String, dynamic> && data.containsKey('code') && data['code'] == 200 && data['data']?['list'] != null) {
           final List<dynamic> transactionsList = data['data']['list'];
           return transactionsList
               .map((json) => TransactionDto.fromJson(json))
               .toList();
         } else {
           throw ServerException(
-            message: data['message'] ?? '获取交易记录失败',
-            statusCode: data['code'],
+            message: (data is Map<String, dynamic> ? data['msg'] : null) ?? '获取交易记录失败',
+            statusCode: (data is Map<String, dynamic> ? data['code'] : null),
           );
         }
       } else {
@@ -316,10 +277,10 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
           statusCode: response.statusCode,
         );
       }
+    } on DioException catch (e) {
+      throw ServerException(message: e.message ?? '网络请求失败', statusCode: e.response?.statusCode);
     } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
+      if (e is ServerException) rethrow;
       throw ServerException(message: e.toString());
     }
   }
@@ -329,7 +290,6 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     int page = 1,
     int pageSize = 20,
   }) async {
-    // API实现待定
     throw UnimplementedError('getSavedItems API尚未实现');
   }
 
@@ -338,7 +298,6 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     int page = 1,
     int pageSize = 20,
   }) async {
-    // API实现待定
     throw UnimplementedError('getLikedStories API尚未实现');
   }
 }

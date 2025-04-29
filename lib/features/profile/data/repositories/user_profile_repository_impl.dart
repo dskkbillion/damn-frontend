@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
+import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/network/network_info.dart';
@@ -19,6 +20,7 @@ class ServerException implements Exception {
 }
 
 /// 用户个人资料仓库实现
+@Injectable(as: IUserProfileRepository)
 class UserProfileRepositoryImpl implements IUserProfileRepository {
   final ProfileRemoteDataSource remoteDataSource;
   final ProfileLocalDataSource localDataSource;

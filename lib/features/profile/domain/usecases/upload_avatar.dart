@@ -2,12 +2,14 @@ import 'dart:io';
 
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../repositories/i_user_profile_repository.dart';
 
 /// 上传用户头像
+@injectable
 class UploadAvatarUseCase implements UseCase<String, UploadAvatarParams> {
   final IUserProfileRepository repository;
 

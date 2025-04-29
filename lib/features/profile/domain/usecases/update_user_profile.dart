@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
@@ -7,6 +8,7 @@ import '../entities/user_profile.dart';
 import '../repositories/i_user_profile_repository.dart';
 
 /// 更新用户的个人资料
+@injectable
 class UpdateUserProfileUseCase implements UseCase<UserProfile, UpdateUserProfileParams> {
   final IUserProfileRepository repository;
 

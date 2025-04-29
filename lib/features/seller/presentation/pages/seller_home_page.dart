@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dskk_flutter_refactor/app/app_mode.dart';
 
 import '../bloc/seller_home/seller_home_bloc.dart';
 import '../bloc/seller_home/seller_home_event.dart';
@@ -11,14 +13,14 @@ import '../widgets/empty_state.dart';
 import '../widgets/loading_state.dart';
 
 /// 卖家中心首页
-class SellerHomePage extends StatefulWidget {
+class SellerHomePage extends ConsumerStatefulWidget {
   const SellerHomePage({Key? key}) : super(key: key);
 
   @override
-  State<SellerHomePage> createState() => _SellerHomePageState();
+  ConsumerState<SellerHomePage> createState() => _SellerHomePageState();
 }
 
-class _SellerHomePageState extends State<SellerHomePage> {
+class _SellerHomePageState extends ConsumerState<SellerHomePage> {
   @override
   void initState() {
     super.initState();
@@ -31,13 +33,15 @@ class _SellerHomePageState extends State<SellerHomePage> {
     print('[SellerHomePage] Build method called');
     return Scaffold(
       appBar: AppBar(
-        title: const Text('卖家中心'),
+        // title: const Text('卖家中心'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () => context.go(SellerRoutes.notifications),
-            tooltip: '通知',
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.settings),
+          //   onPressed: () => context.go(SellerRoutes.storeSettings),
+          //   tooltip: '店铺设置',
+          // ),
         ],
       ),
       body: RefreshIndicator(
@@ -132,7 +136,6 @@ class _SellerHomePageState extends State<SellerHomePage> {
       child: Stack(
         children: [
           Container(
-            height: 120,
             width: double.infinity,
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -145,134 +148,169 @@ class _SellerHomePageState extends State<SellerHomePage> {
               ),
             ),
             padding: const EdgeInsets.all(16.0),
-            child: Row(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 店铺logo
-                CircleAvatar(
-                  radius: 32,
-                  backgroundColor: Colors.white,
-                  backgroundImage: profile.logoUrl != null && profile.logoUrl!.isNotEmpty
-                      ? NetworkImage(profile.logoUrl!)
-                      : null,
-                  child: profile.logoUrl == null || profile.logoUrl!.isEmpty
-                      ? Icon(
-                          Icons.store_rounded,
-                          size: 36,
-                          color: Theme.of(context).primaryColor,
-                        )
-                      : null,
-                ),
-                const SizedBox(width: 16),
-                
-                // 店铺信息
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 店铺logo
+                    CircleAvatar(
+                      radius: 32,
+                      backgroundColor: Colors.white,
+                      backgroundImage: profile.logoUrl != null && profile.logoUrl!.isNotEmpty
+                          ? NetworkImage(profile.logoUrl!)
+                          : null,
+                      child: profile.logoUrl == null || profile.logoUrl!.isEmpty
+                          ? Icon(
+                              Icons.store_rounded,
+                              size: 36,
+                              color: Theme.of(context).primaryColor,
+                            )
+                          : null,
+                    ),
+                    const SizedBox(width: 16),
+                    
+                    // 店铺信息
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Text(
-                              profile.storeName,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (profile.onlineFlag != null)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
-                              decoration: BoxDecoration(
-                                color: profile.onlineFlag! ? Colors.green : Colors.grey,
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    profile.onlineFlag! ? Icons.circle : Icons.circle_outlined,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  profile.storeName,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
                                     color: Colors.white,
-                                    size: 12,
                                   ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    profile.onlineFlag! ? '在线' : '离线',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.white,
-                                    ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (profile.onlineFlag != null)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
+                                  decoration: BoxDecoration(
+                                    color: profile.onlineFlag! ? Colors.green : Colors.grey,
+                                    borderRadius: BorderRadius.circular(10.0),
                                   ),
-                                ],
-                              ),
-                            ),
-                        ],
-                      ),
-                      
-                      const SizedBox(height: 8),
-                      
-                      // 评分和完成率
-                      Row(
-                        children: [
-                          if (profile.averageRating != null) ...[
-                            const Icon(Icons.star, color: Colors.amber, size: 16),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${profile.averageRating!.toStringAsFixed(1)}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                          ],
-                          
-                          if (profile.completionRate != null) ...[
-                            const Icon(Icons.check_circle_outline, color: Colors.white, size: 16),
-                            const SizedBox(width: 4),
-                            Text(
-                              '完成率 ${profile.completionRate!.toStringAsFixed(1)}%',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      
-                      const SizedBox(height: 8),
-                      
-                      // 资质标签
-                      if (profile.certifications != null && profile.certifications!.isNotEmpty)
-                        Wrap(
-                          spacing: 4.0,
-                          runSpacing: 4.0,
-                          children: profile.certifications!
-                              .map((cert) => Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6.0,
-                                      vertical: 2.0,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(4.0),
-                                    ),
-                                    child: Text(
-                                      cert,
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: Theme.of(context).primaryColor,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        profile.onlineFlag! ? Icons.circle : Icons.circle_outlined,
+                                        color: Colors.white,
+                                        size: 12,
                                       ),
-                                    ),
-                                  ))
-                              .toList(),
-                        ),
-                    ],
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        profile.onlineFlag! ? '在线' : '离线',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                          
+                          const SizedBox(height: 8),
+                          
+                          // 评分和完成率
+                          Row(
+                            children: [
+                              if (profile.averageRating != null) ...[
+                                const Icon(Icons.star, color: Colors.amber, size: 16),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '${profile.averageRating!.toStringAsFixed(1)}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                              ],
+                              
+                              if (profile.completionRate != null) ...[
+                                const Icon(Icons.check_circle_outline, color: Colors.white, size: 16),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '完成率 ${profile.completionRate!.toStringAsFixed(1)}%',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          
+                          const SizedBox(height: 8),
+                          
+                          // 资质标签
+                          if (profile.certifications != null && profile.certifications!.isNotEmpty)
+                            Wrap(
+                              spacing: 4.0,
+                              runSpacing: 4.0,
+                              children: profile.certifications!
+                                  .map((cert) => Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6.0,
+                                          vertical: 2.0,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(4.0),
+                                        ),
+                                        child: Text(
+                                          cert,
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: Theme.of(context).primaryColor,
+                                          ),
+                                        ),
+                                      ))
+                                  .toList(),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.switch_account_outlined, size: 18),
+                    label: const Text('切换到买家模式'),
+                    onPressed: () {
+                      // 更新状态
+                      ref.read(appModeProvider.notifier).state = AppMode.buyer;
+                      // 执行导航
+                      try {
+                        context.go('/profile');
+                      } catch (e) {
+                        print('Error navigating to /profile: $e');
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('无法切换到买家模式: $e')),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      // 样式参考 ProfileHeader 的按钮，可以调整
+                      foregroundColor: Theme.of(context).primaryColorDark, 
+                      backgroundColor: Colors.white.withOpacity(0.9), 
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                    ),
                   ),
                 ),
               ],

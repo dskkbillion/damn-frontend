@@ -1,11 +1,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../bloc/profile_bloc.dart';
+import '../../domain/entities/user_profile.dart';
+import 'package:dskk_flutter_refactor/app/app_mode.dart';
 
-class ProfileHeader extends StatelessWidget {
+class ProfileHeader extends ConsumerWidget {
   final ProfileState state;
 
   const ProfileHeader({
@@ -14,118 +18,146 @@ class ProfileHeader extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    UserProfile? profile;
+    if (state is ProfileLoaded) {
+      profile = (state as ProfileLoaded).profile;
+    } else if (state is ProfileUpdated) {
+      profile = (state as ProfileUpdated).profile;
+    }
+
     return Container(
-      color: Theme.of(context).colorScheme.primary,
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          // 用户信息
-          _buildUserInfo(context, state),
-
-          const SizedBox(height: 16),
-
-          // 卖家模式切换
-          _buildSellerModeSwitch(context),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildUserInfo(BuildContext context, ProfileState state) {
-    // 从状态中获取用户资料
-    final profile = state is ProfileLoaded
-        ? state.profile
-        : (state is ProfileUpdated ? state.profile : null);
-
-    return Row(
-      children: [
-        // 头像
-        InkWell(
-          onTap: () => _showAvatarOptions(context),
-          child: CircleAvatar(
-            radius: 40,
-            backgroundColor: Colors.grey[300],
-            backgroundImage: profile?.avatarUrl != null
-                ? NetworkImage(profile!.avatarUrl!)
-                : null,
-            child: profile?.avatarUrl == null
-                ? const Icon(Icons.person, size: 40, color: Colors.white)
-                : null,
-          ),
-        ),
-        const SizedBox(width: 16),
-
-        // 用户名称和状态
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            InkWell(
-              onTap: () => _showEditNicknameDialog(context, profile?.nickName),
-              child: Text(
-                profile?.nickName ?? '用户',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: profile?.onlineFlag == true ? Colors.green : Colors.grey,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  profile?.onlineFlag == true ? '在线' : '离线',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white.withOpacity(0.8),
-                  ),
-                ),
-              ],
-            ),
+      margin: const EdgeInsets.all(12.0),
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12.0),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Theme.of(context).primaryColor.withOpacity(0.8),
+            Theme.of(context).primaryColor.withOpacity(0.6),
           ],
         ),
-      ],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                _buildAvatar(context, profile),
+                const SizedBox(width: 16),
+                _buildNameAndStatus(context, profile),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _buildSwitchToSellerButton(context, ref),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildSellerModeSwitch(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).primaryColorLight,
-        borderRadius: BorderRadius.circular(8),
+  Widget _buildAvatar(BuildContext context, UserProfile? profile) {
+    return InkWell(
+      onTap: () => _showAvatarOptions(context),
+      child: CircleAvatar(
+        radius: 35,
+        backgroundColor: Colors.white.withOpacity(0.8),
+        backgroundImage: profile?.avatarUrl != null && profile!.avatarUrl!.isNotEmpty
+            ? NetworkImage(profile.avatarUrl!)
+            : null,
+        child: profile?.avatarUrl == null || profile!.avatarUrl!.isEmpty
+            ? Icon(Icons.person, size: 35, color: Theme.of(context).primaryColor)
+            : null,
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    );
+  }
+
+  Widget _buildNameAndStatus(BuildContext context, UserProfile? profile) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '卖家模式',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.white,
+          InkWell(
+            onTap: () => _showEditNicknameDialog(context, profile?.nickName),
+            child: Text(
+              profile?.nickName ?? '用户',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          Switch(
-            value: false, // 默认为买家模式
-            onChanged: (value) {
-              if (value) {
-                // 切换到卖家模式
-                context.read<ProfileBloc>().add(SwitchToSellerModeEvent());
-              }
-            },
-            activeColor: Colors.green,
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: profile?.onlineFlag == true ? Colors.greenAccent : Colors.grey,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                     if (profile?.onlineFlag == true)
+                       BoxShadow(
+                         color: Colors.greenAccent.withOpacity(0.5),
+                         blurRadius: 4,
+                       ),
+                  ]
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                profile?.onlineFlag == true ? '在线' : '离线',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.white.withOpacity(0.9),
+                ),
+              ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSwitchToSellerButton(BuildContext context, WidgetRef ref) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        icon: const Icon(Icons.storefront_outlined, size: 18),
+        label: const Text('切换到卖家模式'),
+        onPressed: () {
+          ref.read(appModeProvider.notifier).state = AppMode.seller;
+          try {
+            context.go('/seller');
+          } catch (e) {
+            print('Error navigating to /seller: $e');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('无法切换到卖家模式: $e')),
+            );
+          }
+        },
+        style: ElevatedButton.styleFrom(
+          foregroundColor: Theme.of(context).primaryColor,
+          backgroundColor: Colors.white.withOpacity(0.9),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+        ),
       ),
     );
   }

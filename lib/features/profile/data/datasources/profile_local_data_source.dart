@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:injectable/injectable.dart';
 
 import '../models/user_profile_dto.dart';
 
@@ -23,6 +24,7 @@ abstract class ProfileLocalDataSource {
 }
 
 /// 本地数据源实现
+@Injectable(as: ProfileLocalDataSource)
 class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
   final SharedPreferences sharedPreferences;
 

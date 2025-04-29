@@ -8,12 +8,12 @@ import 'dart:async' as _i7;
 import 'package:dartz/dartz.dart' as _i3;
 import 'package:dskk_flutter_refactor/core/error/failures.dart' as _i8;
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart' as _i10;
+import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart'
+    as _i5;
 import 'package:dskk_flutter_refactor/features/profile/domain/entities/user_profile.dart'
     as _i9;
 import 'package:dskk_flutter_refactor/features/profile/domain/entities/wallet_summary.dart'
     as _i14;
-import 'package:dskk_flutter_refactor/features/profile/domain/repositories/i_auth_repository.dart'
-    as _i5;
 import 'package:dskk_flutter_refactor/features/profile/domain/repositories/i_user_profile_repository.dart'
     as _i2;
 import 'package:dskk_flutter_refactor/features/profile/domain/repositories/i_wallet_repository.dart'

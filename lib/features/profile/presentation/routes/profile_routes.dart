@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
-import '../pages/simple_profile_page.dart'; 
+import '../pages/profile_page.dart'; // 引入 ProfilePage
+// import '../pages/simple_profile_page.dart'; // 不再需要 SimpleProfilePage
 // import '../pages/edit_profile_page.dart'; // 如果有其他页面
 
 class ProfileRoutes {
@@ -13,7 +14,7 @@ class ProfileRoutes {
     GoRoute(
       path: '/profile', 
       name: 'profile', // 建议添加 name
-      builder: (context, state) => const SimpleProfilePage(),
+      builder: (context, state) => const ProfilePage(),
     ),
     // GoRoute(
     //   path: '/profile/edit', 

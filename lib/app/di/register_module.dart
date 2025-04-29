@@ -19,13 +19,6 @@ abstract class RegisterModule {
   @lazySingleton
   http.Client get httpClient => http.Client();
 
-  // 注册 baseUrl
-  @lazySingleton
-  @Named('baseUrl') // 使用 Named 注解指定实例名称
-  String get baseUrl =>
-      dotenv.env['API_BASE_URL'] ??
-      'http://47.113.230.11:5102'; // 使用与之前一致的 URL 或默认值
-
   // 注意：你可能还需要在这里注册其他在 main_cart.dart 或其他地方手动注册的依赖，
   // 例如 baseUrl, getToken, getUserId 的提供方式，以便 injectable 能够解析。
   // 例如，如果 baseUrl 来自 dotenv，你可能需要：

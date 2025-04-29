@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
 
 import '../../../../core/usecases/usecase.dart';
 import '../../domain/entities/user_profile.dart';
@@ -18,6 +19,7 @@ part 'profile_event.dart';
 part 'profile_state.dart';
 
 /// Profile 模块的 Bloc
+@injectable
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final GetUserProfileUseCase getUserProfile;
   final UpdateUserProfileUseCase updateUserProfile;

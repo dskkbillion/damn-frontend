@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/network/network_info.dart';
@@ -8,6 +9,7 @@ import '../datasources/profile_remote_data_source.dart';
 import '../models/transaction_dto.dart';
 
 /// 钱包仓库实现
+@Injectable(as: IWalletRepository)
 class WalletRepositoryImpl implements IWalletRepository {
   final ProfileRemoteDataSource remoteDataSource;
   final NetworkInfo networkInfo;

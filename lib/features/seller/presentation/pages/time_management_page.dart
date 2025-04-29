@@ -70,16 +70,16 @@ class TimeManagementBody extends StatelessWidget {
 
         if (state is TimeManagementLoaded || state is TimeManagementUpdating) {
           // No change needed here, state access is correct
-          final settings = state is TimeManagementLoaded
+          final settings = state is TimeManagementLoaded 
               ? state.settings
               : (state as TimeManagementUpdating).settings;
-
+          
           final isUpdating = state is TimeManagementUpdating;
-
+          
           // Pass the context (which has Bloc access) down
           return _buildContent(context, settings, isUpdating);
         }
-        
+
         if (state is TimeManagementError) { // Handle Error state more explicitly in builder
            return Center(
              child: Column(
@@ -114,12 +114,12 @@ class TimeManagementBody extends StatelessWidget {
         children: [
           // 在线状态切换
           _buildOnlineStatusSection(context, settings, isUpdating),
-
+          
           const SizedBox(height: 24),
-
+          
           // 状态说明
           _buildStatusDescription(settings.isOnline),
-
+          
           const SizedBox(height: 24),
 
           // 自动离线设置
@@ -166,8 +166,8 @@ class TimeManagementBody extends StatelessWidget {
                 Switch(
                   value: settings.isOnline,
                   activeColor: Colors.green,
-                  onChanged: isUpdating
-                      ? null
+                  onChanged: isUpdating 
+                      ? null 
                       : (value) {
                           // Context here has access to the Bloc
                           context.read<TimeManagementBloc>().add(UpdateOnlineStatus(value));
