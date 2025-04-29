@@ -32,85 +32,79 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
   Widget build(BuildContext context) {
     print('[SellerHomePage] Build method called');
     return Scaffold(
-      appBar: AppBar(
-        // title: const Text('卖家中心'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          // IconButton(
-          //   icon: const Icon(Icons.settings),
-          //   onPressed: () => context.go(SellerRoutes.storeSettings),
-          //   tooltip: '店铺设置',
-          // ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          print('[SellerHomePage] Refresh triggered: Dispatching RefreshDashboardData');
-          context.read<SellerHomeBloc>().add(RefreshDashboardData());
-          return Future.delayed(const Duration(milliseconds: 500));
-        },
-        child: BlocBuilder<SellerHomeBloc, SellerHomeState>(
-          builder: (context, state) {
-            print('[SellerHomePage] BlocBuilder received state: ${state.runtimeType}');
-            if (state.isLoading) {
-              return LoadingState.list();
-            }
-            
-            if (state.hasError) {
-              return EmptyState.error(
-                text: '加载失败',
-                subText: state.errorMessage,
-                onRetryPressed: () {
-                  context.read<SellerHomeBloc>().add(const LoadDashboardData(forceRefresh: true));
-                },
-              );
-            }
-            
-            if (state.dashboardData == null) {
-              return EmptyState.error(
-                text: '暂无数据',
-                onRetryPressed: () {
-                  context.read<SellerHomeBloc>().add(const LoadDashboardData(forceRefresh: true));
-                },
-              );
-            }
-            
-            final dashboardData = state.dashboardData!;
-            
-            return SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 店铺信息卡片
-                  _buildStoreProfileCard(context, state),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // 收入信息卡片
-                  _buildIncomeCard(context, dashboardData),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // 订单概览卡片
-                  _buildOrdersCard(context, dashboardData),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // 功能列表卡片
-                  _buildFunctionsCard(context),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // 统计信息卡片
-                  if (dashboardData.statistics.weeklyIncome.isNotEmpty)
-                    _buildStatisticsCard(context, dashboardData),
-                ],
-              ),
-            );
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
+      body: SafeArea(
+        top: true,
+        bottom: false,
+        child: RefreshIndicator(
+          onRefresh: () async {
+            print('[SellerHomePage] Refresh triggered: Dispatching RefreshDashboardData');
+            context.read<SellerHomeBloc>().add(RefreshDashboardData());
+            return Future.delayed(const Duration(milliseconds: 500));
           },
+          child: BlocBuilder<SellerHomeBloc, SellerHomeState>(
+            builder: (context, state) {
+              print('[SellerHomePage] BlocBuilder received state: ${state.runtimeType}');
+              if (state.isLoading) {
+                return LoadingState.list();
+              }
+              
+              if (state.hasError) {
+                return EmptyState.error(
+                  text: '加载失败',
+                  subText: state.errorMessage,
+                  onRetryPressed: () {
+                    context.read<SellerHomeBloc>().add(const LoadDashboardData(forceRefresh: true));
+                  },
+                );
+              }
+              
+              if (state.dashboardData == null) {
+                return EmptyState.error(
+                  text: '暂无数据',
+                  onRetryPressed: () {
+                    context.read<SellerHomeBloc>().add(const LoadDashboardData(forceRefresh: true));
+                  },
+                );
+              }
+              
+              final dashboardData = state.dashboardData!;
+              
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 店铺信息卡片
+                    _buildStoreProfileCard(context, state),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // 收入信息卡片
+                    _buildIncomeCard(context, dashboardData),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // 订单概览卡片
+                    _buildOrdersCard(context, dashboardData),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // 功能列表卡片
+                    _buildFunctionsCard(context),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // 统计信息卡片
+                    if (dashboardData.statistics.weeklyIncome.isNotEmpty)
+                      _buildStatisticsCard(context, dashboardData),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -518,27 +512,9 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                 ),
                 _buildFunctionItem(
                   context,
-                  icon: Icons.forum,
-                  label: '消息管理',
-                  onTap: () => context.go('/chat'),
-                ),
-                _buildFunctionItem(
-                  context,
                   icon: Icons.reply_all,
                   label: '自动回复',
                   onTap: () => context.go(SellerRoutes.autoReply),
-                ),
-                _buildFunctionItem(
-                  context,
-                  icon: Icons.notifications,
-                  label: '通知中心',
-                  onTap: () => context.go(SellerRoutes.notifications),
-                ),
-                _buildFunctionItem(
-                  context,
-                  icon: Icons.settings,
-                  label: '店铺设置',
-                  onTap: () => context.go(SellerRoutes.storeSettings),
                 ),
               ],
             ),

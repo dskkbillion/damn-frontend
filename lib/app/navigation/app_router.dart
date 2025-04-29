@@ -109,40 +109,37 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final sellerOrdersRoute = GoRoute(
       path: '/seller/orders', 
       builder: (context, state) => BlocProvider(
-        create: (_) => GetIt.I<SellerOrderListBloc>(), // <--- 确保 SellerOrderListBloc 被注册
+        create: (_) => GetIt.I<SellerOrderListBloc>(), 
         child: const SellerOrderListPage(),
       ),
   );
+  // 直接定义通知路由
   final sellerNotificationsRoute = GoRoute(
-      path: SellerRoutes.notifications, 
-      builder: (context, state) => const NotificationListPage(),
+      path: '/seller/notifications', // 使用完整路径
+      builder: (context, state) => const NotificationListPage(), 
   );
-  final sellerMyRoute = GoRoute(
-      path: SellerRoutes.home, 
-      builder: (context, state) => BlocProvider(
-        create: (context) => GetIt.I<SellerHomeBloc>(), // <--- 确保 SellerHomeBloc 被注册
-        child: const SellerHomePage(),
-      ),
-  );
+  // 获取 /seller 路由（作为"我的"Tab内容）
+  final sellerMyRoute = SellerRoutes.routes.firstWhere(
+    (r) => r is GoRoute && r.path == SellerRoutes.home
+  ); 
   
-  // Define Seller Non-Shell Routes 
+  // 定义 Seller Non-Shell Routes (保持不变或根据需要调整)
   final sellerNonShellRoutes = <RouteBase>[
-      GoRoute(path: SellerRoutes.productCreate, builder: (context, state) => const ProductEditPage()), // TODO: Add BlocProvider if needed
-      GoRoute(path: SellerRoutes.productEdit, builder: (context, state) => ProductEditPage(productId: state.pathParameters['id'])), // TODO: Add BlocProvider if needed
-      GoRoute(path: SellerRoutes.authentication, builder: (context, state) => AuthManagementPage()), // Assuming Page handles Bloc
-      GoRoute(path: SellerRoutes.authenticationApply, builder: (context, state) => AuthApplicationPage(type: state.pathParameters['type'] ?? 'other', authInfo: state.extra as SellerAuthenticationInfo?)), // TODO: Add BlocProvider if needed
-      GoRoute(path: SellerRoutes.authenticationDetail, builder: (context, state) => AuthStatusPage(authInfo: state.extra as SellerAuthenticationInfo)), // TODO: Add BlocProvider if needed
-      GoRoute(path: SellerRoutes.timeManagement, builder: (context, state) => const TimeManagementPage()), // Assuming Page handles Bloc
-      GoRoute(path: SellerRoutes.autoReply, builder: (context, state) => const AutoReplyPage()), // Assuming Page handles Bloc
+      GoRoute(path: SellerRoutes.productCreate, builder: (context, state) => const ProductEditPage()), 
+      GoRoute(path: SellerRoutes.productEdit, builder: (context, state) => ProductEditPage(productId: state.pathParameters['id'])), 
+      GoRoute(path: SellerRoutes.authentication, builder: (context, state) => AuthManagementPage()), 
+      GoRoute(path: SellerRoutes.authenticationApply, builder: (context, state) => AuthApplicationPage(type: state.pathParameters['type'] ?? 'other', authInfo: state.extra as SellerAuthenticationInfo?)), 
+      GoRoute(path: SellerRoutes.authenticationDetail, builder: (context, state) => AuthStatusPage(authInfo: state.extra as SellerAuthenticationInfo)), 
+      GoRoute(path: SellerRoutes.timeManagement, builder: (context, state) => const TimeManagementPage()), 
+      GoRoute(path: SellerRoutes.autoReply, builder: (context, state) => const AutoReplyPage()), 
       GoRoute(path: SellerRoutes.storeSettings, builder: (context, state) => const Placeholder(child: Center(child: Text('店铺设置')))), 
-      GoRoute(path: 'orders/:id/delivery', builder: (context, state) => OrderDeliveryPage(orderId: int.parse(state.pathParameters['id'] ?? '0'))), // TODO: Add BlocProvider if needed
-      // Add other non-shell routes from SellerRoutes.routes here
-      // Example for after-sales detail:
-      // GoRoute(path: SellerRoutes.afterSalesDetail, builder: (context, state) => AfterSalesDetailPage(id: int.tryParse(state.pathParameters['id'] ?? '0') ?? 0)),
+      GoRoute(path: 'orders/:id/delivery', builder: (context, state) => OrderDeliveryPage(orderId: int.parse(state.pathParameters['id'] ?? '0'))), 
+      // 确保所有非 Shell 路由都在这里或者在其父路由的 sub-routes 中
+      // 例如，'/seller/products' 本身可能不需要在这里，因为它可以通过 '/seller' 访问
   ];
 
   // Define Buyer Order Detail Route
-  final buyerOrderDetailRoute = OrderRoutes.routes.firstWhere((r) => r is GoRoute && r.path == '/orderDetail/:orderId'); // Keep this one for now
+  final buyerOrderDetailRoute = OrderRoutes.routes.firstWhere((r) => r is GoRoute && r.path == '/orderDetail/:orderId'); 
 
   // Create the GoRouter instance
   final router = GoRouter(
@@ -203,19 +200,19 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           return SellerShellPage(navigationShell: navigationShell);
         },
         branches: [
-          // Branch 0: 卖家数据 (Path: /seller/dashboard)
+          // Branch 0: 卖家数据
           StatefulShellBranch(
             routes: [ sellerDashboardRoute ], 
           ),
-          // Branch 1: 卖家订单 (Path: /seller/orders)
+          // Branch 1: 卖家订单
           StatefulShellBranch(
              routes: [ sellerOrdersRoute ], 
           ),
-          // Branch 2: 卖家消息 (Path: /seller/notifications)
+          // Branch 2: 卖家消息 (通知)
           StatefulShellBranch(
-            routes: [ sellerNotificationsRoute ],
+            routes: [ sellerNotificationsRoute ], // <--- 使用直接定义的路由
           ),
-          // Branch 3: 卖家我的 (Path: /seller)
+          // Branch 3: 卖家我的
           StatefulShellBranch(
             routes: [ sellerMyRoute ], 
           ),
@@ -227,7 +224,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       buyerOrderDetailRoute, 
       ...AfterSalesRoutes.routes,
       ...FavoritesRoutes.routes, 
-      // Add non-shell seller routes directly
       ...sellerNonShellRoutes, 
 
     ],
@@ -262,7 +258,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       }
 
       final location = state.matchedLocation;
-      // Define buyer and seller SHELL entry paths
       final List<String> buyerPaths = [
           HomeRoutes.homePath, 
           '/ai_chat', 
@@ -270,10 +265,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           '/profile', 
           '/dev_menu'
       ]; 
+      // 更新卖家 Shell 路径列表
       final List<String> sellerPaths = [
           '/seller/dashboard', 
           '/seller/orders', 
-          SellerRoutes.notifications, 
+          '/seller/notifications', // <--- 使用直接路径
           SellerRoutes.home, 
       ]; 
       
