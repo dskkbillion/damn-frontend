@@ -13,7 +13,7 @@ import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_file_remo
 final _dio = Dio(BaseOptions(baseUrl: "http://app.duoshaokankan.com/prod-api")); 
 // NOTE: Configure interceptors (auth, logging)
 
-@LazySingleton(as: IFileRemoteDataSource) // Add injectable annotation
+// @LazySingleton(as: IFileRemoteDataSource) // Add injectable annotation
 class FileRemoteDataSourceImpl implements IFileRemoteDataSource {
   final Dio dio; // Inject Dio
 

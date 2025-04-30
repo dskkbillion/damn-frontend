@@ -17,7 +17,7 @@ import 'package:injectable/injectable.dart'; // Add injectable import
 final _dio = Dio(BaseOptions(baseUrl: "http://app.duoshaokankan.com/prod-api")); 
 // NOTE: Replace with your actual base URL and configure interceptors (auth, logging)
 
-@LazySingleton(as: IChatRemoteDataSource) // Add injectable annotation
+// @LazySingleton(as: IChatRemoteDataSource) // Add injectable annotation
 class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
 
   final Dio dio; // Inject Dio

@@ -17,7 +17,7 @@ enum ConnectionStatus {
   error,
 }
 
-@LazySingleton(as: IChatWebSocketDataSource) // Add injectable annotation
+// @LazySingleton(as: IChatWebSocketDataSource) // Add injectable annotation
 class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
   WebSocketChannel? _channel;
   StreamSubscription? _channelSubscription;

@@ -10,7 +10,7 @@ import '../repositories/i_chat_repository.dart';
 abstract class GetChatRoomList extends UseCase<List<ChatRoom>, NoParams> {}
 
 // Implementation (can be in the same file for simplicity now, or separate later)
-@LazySingleton(as: GetChatRoomList) // Optional: for DI later
+// @LazySingleton(as: GetChatRoomList) // Optional: for DI later
 class GetChatRoomListImpl implements GetChatRoomList {
   final IChatRepository repository;
 

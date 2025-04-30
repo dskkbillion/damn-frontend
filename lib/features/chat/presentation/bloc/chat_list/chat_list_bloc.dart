@@ -16,7 +16,7 @@ import 'package:dskk_flutter_refactor/features/chat/domain/usecases/create_chat_
 part 'chat_list_event.dart';
 part 'chat_list_state.dart';
 
-@injectable // Optional: for DI later
+// @injectable // Optional: for DI later
 class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
   final GetChatRoomList getChatRoomList;
   final CreateChatRoom createChatRoom;
