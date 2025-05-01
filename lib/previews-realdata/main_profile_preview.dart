@@ -2,21 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 
-import 'features/profile/data/datasources/profile_remote_data_source.dart';
-import 'features/profile/data/models/user_profile_dto.dart';
-import 'features/profile/data/models/wallet_summary_dto.dart';
-import 'features/profile/data/models/transaction_dto.dart';
-import 'features/profile/data/models/saved_item_dto.dart';
-import 'features/profile/data/models/liked_story_dto.dart';
-import 'features/profile/presentation/pages/simple_profile_page.dart';
-import 'features/seller/presentation/pages/seller_profile_page.dart';
-import 'features/profile/presentation/bloc/profile_bloc.dart';
-import 'features/profile/presentation/bloc/wallet_bloc.dart';
-import 'features/profile/domain/usecases/get_wallet_summary.dart';
-import 'features/profile/domain/usecases/get_wallet_transactions.dart';
-import 'features/profile/domain/repositories/i_wallet_repository.dart';
-import 'features/profile/data/repositories/wallet_repository_impl.dart';
-import 'core/network/network_info.dart';
+import '../features/profile/data/datasources/profile_remote_data_source.dart';
+import '../features/profile/data/models/user_profile_dto.dart';
+import '../features/profile/data/models/wallet_summary_dto.dart';
+import '../features/profile/data/models/transaction_dto.dart';
+import '../features/profile/data/models/saved_item_dto.dart';
+import '../features/profile/data/models/liked_story_dto.dart';
+import '../features/profile/presentation/pages/simple_profile_page.dart';
+import '../features/seller/presentation/pages/seller_profile_page.dart';
+import '../features/profile/presentation/bloc/profile_bloc.dart';
+import '../features/profile/presentation/bloc/wallet_bloc.dart';
+import '../features/profile/domain/usecases/get_wallet_summary.dart';
+import '../features/profile/domain/usecases/get_wallet_transactions.dart';
+import '../features/profile/domain/repositories/i_wallet_repository.dart';
+import '../features/profile/data/repositories/wallet_repository_impl.dart';
+import '../core/network/network_info.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
