@@ -28,9 +28,13 @@ abstract class ICoreWebSocketService {
   /// This should typically be called on logout or when the app is terminated.
   Future<void> disconnect();
 
+  /// Disposes resources used by the service.
+  /// Call this when the service is no longer needed.
+  void dispose();
+
   // Optional: Method to explicitly send a message (like ping/pong if needed centrally)
   // void sendMessage(String message);
 
   // Optional: Method to get current status synchronously if needed
-  // CoreConnectionStatus getCurrentStatus();
+  CoreConnectionStatus getCurrentStatus();
 } 

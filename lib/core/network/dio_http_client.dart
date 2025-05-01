@@ -29,7 +29,8 @@ class DioHttpClient implements IHttpClient {
     _dio = Dio(options);
 
     // Add interceptors
-    _dio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true)); // Enable logging
+    _dio.interceptors.add(LogInterceptor(
+        requestBody: true, responseBody: true)); // Enable logging
     // _dio.interceptors.add(AuthInterceptor()); // Example auth interceptor
     // _dio.interceptors.add(ErrorInterceptor()); // Example error interceptor
 
@@ -37,9 +38,9 @@ class DioHttpClient implements IHttpClient {
     _httpClientForSse = http.Client();
   }
 
-  // --- Dispose the http client --- 
+  // --- Dispose the http client ---
   // (Alternatively, manage lifecycle with GetIt dispose method if using injectable)
-  void dispose() { 
+  void dispose() {
     _httpClientForSse.close();
     print("DioHttpClient disposed, SSE client closed.");
     // Dio doesn't require explicit close unless using adapters that need it.
@@ -53,7 +54,8 @@ class DioHttpClient implements IHttpClient {
     } on DioException catch (e) {
       throw _handleDioError(e);
     } catch (e) {
-      throw ServerException(message: 'Unexpected error during GET: ${e.toString()}');
+      throw ServerException(
+          message: 'Unexpected error during GET: ${e.toString()}');
     }
   }
 
@@ -65,7 +67,8 @@ class DioHttpClient implements IHttpClient {
     } on DioException catch (e) {
       throw _handleDioError(e);
     } catch (e) {
-      throw ServerException(message: 'Unexpected error during POST: ${e.toString()}');
+      throw ServerException(
+          message: 'Unexpected error during POST: ${e.toString()}');
     }
   }
 
@@ -95,125 +98,113 @@ class DioHttpClient implements IHttpClient {
 
   @override
   Future<Map<String, dynamic>> postMultipart(
-    String path, // Keep name as path for consistency within this file
+    String endpoint, // Using endpoint parameter name for consistency
     File file,
-   {String fileField = 'file', 
+    {String fileField = 'file', 
     Map<String, String>? fields}
   ) async {
-     try {
-       final fileName = file.path.split(Platform.pathSeparator).last;
-       
-       // --- Prepare FormData --- 
-       final formData = FormData.fromMap({
-         fileField: await MultipartFile.fromFile(file.path, filename: fileName),
-         ...?fields, 
-       });
+    try {
+      final fileName = file.path.split(Platform.pathSeparator).last;
+      
+      // --- Prepare FormData --- 
+      final formData = FormData.fromMap({
+        fileField: await MultipartFile.fromFile(file.path, filename: fileName),
+        ...?fields, 
+      });
 
-       // --- Prepare Headers --- 
-       // TODO: Replace hardcoded token and version with dynamic values from a config/auth service
-       const String hardcodedAuthToken = 'YOUR_AUTH_TOKEN_HERE'; // Replace with actual token logic
-       const String hardcodedVersion = '100'; // Replace with actual version logic
+      // --- Prepare Headers --- 
+      // TODO: Replace hardcoded token and version with dynamic values from a config/auth service
+      const String hardcodedAuthToken = 'YOUR_AUTH_TOKEN_HERE'; // Replace with actual token logic
+      const String hardcodedVersion = '100'; // Replace with actual version logic
 
-       final options = Options(
-          headers: {
-             'clienttype': '1',
-             'client': Platform.isAndroid ? 'android' : Platform.isIOS ? 'ios' : 'unknown',
-             'version': hardcodedVersion, 
-             'Authorization': hardcodedAuthToken, 
-          },
-       );
-       // --- End Headers --- 
+      final options = Options(
+        headers: {
+          'clienttype': '1',
+          'client': Platform.isAndroid ? 'android' : Platform.isIOS ? 'ios' : 'unknown',
+          'version': hardcodedVersion, 
+          'Authorization': hardcodedAuthToken, 
+        },
+      );
+      // --- End Headers --- 
 
-       // Use path (endpoint within base URL)
-       final response = await _dio.post(path, data: formData, options: options); 
-       // We expect Map<String, dynamic> but _handleResponse returns dynamic, need cast or adjust
-       final result = _handleResponse(response);
-       if (result is Map<String, dynamic>){
-         return result;
-       } else {
-         // Decide how to handle non-map results from multipart post
-         throw ServerException(message: 'Unexpected response format from multipart upload');
-       }
-     } on DioException catch (e) {
-        throw _handleDioError(e);
-     } catch (e) {
-       throw ServerException(message: 'Unexpected error during Multipart POST: ${e.toString()}');
-     }
+      // Use endpoint (path within base URL)
+      final response = await _dio.post(endpoint, data: formData, options: options); 
+      return _handleResponse(response);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    } catch (e) {
+      throw ServerException(message: 'Unexpected error during Multipart POST: ${e.toString()}');
+    }
   }
 
-  // --- Implement postAndStream using http package --- 
+  // --- Implement postAndStream using http package ---
   @override
-  Stream<String> postAndStream(String path, {Map<String, dynamic>? data}) async* { // Use async* for stream generation
+  Stream<String> postAndStream(String path,
+      {Map<String, dynamic>? body}) async* {
+    // Use async* for stream generation
     final url = Uri.parse('$_baseUrl$path');
     final request = http.Request('POST', url);
 
     // Set headers (add Auth later if needed)
-    request.headers[HttpHeaders.contentTypeHeader] = 'application/json; charset=utf-8';
+    request.headers[HttpHeaders.contentTypeHeader] =
+        'application/json; charset=utf-8';
     // request.headers[HttpHeaders.acceptHeader] = 'text/event-stream'; // Usually needed for SSE
     // TODO: Add Authorization header if required
-    // request.headers[HttpHeaders.authorizationHeader] = 'Bearer YOUR_TOKEN'; 
+    // request.headers[HttpHeaders.authorizationHeader] = 'Bearer YOUR_TOKEN';
 
-    if (data != null) {
-      request.body = jsonEncode(data); // Encode body as JSON string
+    if (body != null) {
+      request.body = jsonEncode(body); // Encode body as JSON string
     }
-    
+
     print("[HttpClient - SSE] Sending POST request to $url");
     print("[HttpClient - SSE] Body: ${request.body}");
 
     try {
       final streamedResponse = await _httpClientForSse.send(request);
-      
-      print("[HttpClient - SSE] Received response status: ${streamedResponse.statusCode}");
+
+      print(
+          "[HttpClient - SSE] Received response status: ${streamedResponse.statusCode}");
 
       if (streamedResponse.statusCode == 200) {
         // Decode the stream using UTF8 and yield each line/event
         await for (final chunkBytes in streamedResponse.stream) {
-           try {
-             // Assuming UTF8 encoding, adjust if different
-             final chunkString = utf8.decode(chunkBytes);
-             print("[HttpClient - SSE] Received chunk: $chunkString");
-             yield chunkString; // Yield the raw SSE chunk string
-           } catch (e) {
-              print("[HttpClient - SSE] Error decoding chunk: $e");
-              // Decide how to handle decoding error, maybe yield an error event?
-              yield 'event: error\ndata: { "message": "Error decoding stream chunk" }\n\n';
-           }
+          try {
+            // Assuming UTF8 encoding, adjust if different
+            final chunkString = utf8.decode(chunkBytes);
+            print("[HttpClient - SSE] Received chunk: $chunkString");
+            yield chunkString; // Yield the raw SSE chunk string
+          } catch (e) {
+            print("[HttpClient - SSE] Error decoding chunk: $e");
+            // Decide how to handle decoding error, maybe yield an error event?
+            yield 'event: error\ndata: { "message": "Error decoding stream chunk" }\n\n';
+          }
         }
-         print("[HttpClient - SSE] Stream finished.");
+        print("[HttpClient - SSE] Stream finished.");
       } else {
         // Handle non-200 status code for the initial stream request
         final responseBody = await streamedResponse.stream.bytesToString();
         print("[HttpClient - SSE] Error response body: $responseBody");
         throw ServerException(
-            statusCode: streamedResponse.statusCode,
-            message: 'Failed to initiate stream: ${streamedResponse.reasonPhrase} - $responseBody',
+          message:
+              'Failed to initiate stream (${streamedResponse.statusCode}): ${streamedResponse.reasonPhrase} - $responseBody',
         );
       }
     } catch (e, stacktrace) {
-       print("[HttpClient - SSE] Error sending request or reading stream: $e");
-       print(stacktrace);
-       // Throw or yield an error event, depending on desired behavior
-       // Throwing for now to indicate failure to establish/read stream
-       throw ServerException(message: 'Network error during streaming: ${e.toString()}');
+      print("[HttpClient - SSE] Error sending request or reading stream: $e");
+      print(stacktrace);
+      throw ServerException(
+          message: 'Network error during streaming: ${e.toString()}');
     }
   }
 
-  // --- Helper Methods --- 
+  // --- Helper Methods ---
 
   dynamic _handleResponse(Response response) { // Return dynamic as API might not always return Map
     // Basic response handling, assuming API returns JSON with status indication
     // TODO: Adapt this based on your actual API response structure
     if (response.statusCode! >= 200 && response.statusCode! < 300) {
-       // Just return the data directly, let the DataSource parse it
-       return response.data;
-      //  if (response.data is Map<String, dynamic>) {
-      //    // Assuming your API wraps data, e.g., { "code": 200, "message": "Success", "data": {...} }
-      //    // Or maybe it returns the data directly
-      //    return response.data;
-      //  } else {
-      //     // Handle cases where response is not JSON or has unexpected format
-      //     return {'data': response.data}; // Or throw an exception
-      //  }
+      // Just return the data directly, let the DataSource parse it
+      return response.data;
     } else {
       // Throw a ServerException for non-2xx responses
       String? message;
@@ -223,8 +214,8 @@ class DioHttpClient implements IHttpClient {
         message = response.statusMessage ?? 'Unknown server error';
       }
       throw ServerException(
-         statusCode: response.statusCode,
-         message: message,
+        statusCode: response.statusCode,
+        message: message,
       );
     }
   }
@@ -242,20 +233,21 @@ class DioHttpClient implements IHttpClient {
       case DioExceptionType.badResponse:
         // Try to get message from response data, fallback to status message
         if (error.response?.data is Map<String, dynamic> && error.response!.data['message'] != null) {
-           errorMessage = error.response!.data['message'];
+          errorMessage = error.response!.data['message'];
         } else {
-           errorMessage = error.response?.statusMessage ?? "Invalid response from server";
+          errorMessage = error.response?.statusMessage ?? "Invalid response from server";
         }
         break;
       case DioExceptionType.cancel:
         errorMessage = "Request cancelled";
         break;
       case DioExceptionType.connectionError:
-         errorMessage = "Connection error, please check your internet connection";
-         break;
+        errorMessage =
+            "Connection error, please check your internet connection";
+        break;
       case DioExceptionType.badCertificate:
-         errorMessage = "Bad certificate";
-         break;
+        errorMessage = "Bad certificate";
+        break;
       case DioExceptionType.unknown:
       default:
         errorMessage = "An unexpected network error occurred";
@@ -264,7 +256,9 @@ class DioHttpClient implements IHttpClient {
         }
         break;
     }
-     print("[DioError] Path: ${error.requestOptions.path}, Status: $statusCode, Type: ${error.type}, Message: $errorMessage, Data: ${error.response?.data}");
-    return ServerException(statusCode: statusCode, message: errorMessage);
+    print(
+        "[DioError] Path: ${error.requestOptions.path}, Status: $statusCode, Type: ${error.type}, Message: $errorMessage, Data: ${error.response?.data}");
+    return ServerException(
+        message: '${statusCode != null ? '$statusCode: ' : ''}$errorMessage');
   }
-} 
+}

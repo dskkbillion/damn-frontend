@@ -1,35 +1,40 @@
-import 'package:injectable/injectable.dart';
-import 'package:dartz/dartz.dart';
 import 'dart:async';
 
-import '../../../../core/error/failures.dart';
-// Ensure core network exceptions are importable if needed, though handled by datasource exceptions here
-// import '../../../../core/error/exceptions.dart'; 
-import '../../domain/entities/ai_chat_message_entity.dart';
-import '../../domain/entities/ai_conversation_entity.dart';
-import '../../domain/entities/chat_allocation_result_entity.dart';
-import '../../domain/entities/related_service_entity.dart';
-import '../../domain/repositories/i_ai_chat_repository.dart';
-import '../datasources/exceptions.dart' as ds_exceptions; // DataSource exceptions
-import '../datasources/i_ai_chat_remote_data_source.dart';
-import '../../../../core/error/exceptions.dart';
-import '../../../../core/network/network_info.dart';
+// Core Error Handling
+import 'package:dskk_flutter_refactor/core/error/failures.dart'; 
+import 'package:dskk_flutter_refactor/core/error/exceptions.dart'; // Import core exceptions
+
+// Domain Layer (Interfaces and Entities)
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/repositories/i_ai_chat_repository.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_chat_message_entity.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_conversation_entity.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/chat_allocation_result_entity.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/related_service_entity.dart';
+
+// Data Layer (Data Sources)
+import 'package:dskk_flutter_refactor/features/ai_docs/data/datasources/i_ai_chat_remote_data_source.dart';
+
+import 'package:dartz/dartz.dart';
+import 'package:injectable/injectable.dart';
 
 /// {@template ai_chat_repository_impl}
 /// Implementation of [IAiChatRepository] that uses [IAiChatRemoteDataSource]
-/// to fetch data and converts data models to domain entities.
-/// It also handles exceptions and maps them to domain [Failure] types.
+/// to fetch data from the backend and [IAiChatLocalDataSource] (if needed)
+/// for local caching.
+///
+/// It translates API models to domain entities and handles exceptions from
+/// data sources, converting them to domain [Failure] objects.
 /// {@endtemplate}
-@LazySingleton(as: IAiChatRepository) // Annotate for DI
+@LazySingleton(as: IAiChatRepository)
 class AiChatRepositoryImpl implements IAiChatRepository {
   final IAiChatRemoteDataSource _remoteDataSource;
-  final NetworkInfo _networkInfo;
   // Optional dependencies for future enhancements:
   // final INetworkInfo networkInfo; // For checking network status
   // final ILocalDataSource localDataSource; // For implementing caching
 
   /// {@macro ai_chat_repository_impl}
-  AiChatRepositoryImpl(this._remoteDataSource, this._networkInfo);
+  AiChatRepositoryImpl({required IAiChatRemoteDataSource remoteDataSource}) 
+      : _remoteDataSource = remoteDataSource;
 
   /// Helper function to execute a remote data source call safely.
   /// Handles specific data source exceptions and converts them to domain Failures.
@@ -39,25 +44,34 @@ class AiChatRepositoryImpl implements IAiChatRepository {
   ) async {
     // If network info check is needed:
     // if (!await networkInfo.isConnected) {
-    //   return Left(NetworkFailure(message: 'No internet connection'));
+    //   return Left(NetworkFailure());
     // }
+
     try {
       final result = await action();
       return Right(result);
-    } on ds_exceptions.ServerException catch (e) {
-      // Map ServerException from data source to ServerFailure for the domain
-      return Left(ServerFailure(message: e.message, statusCode: e.statusCode));
-    } on ds_exceptions.NetworkException catch (e) {
-      // Map NetworkException from data source to NetworkFailure for the domain
-      return Left(NetworkFailure(message: e.message));
-    } on ds_exceptions.DataSourceException catch (e) {
-      // Map generic DataSourceException to a GeneralFailure
-      print('DataSourceException in Repository: ${e.message}');
-      return Left(GeneralFailure(message: 'Data source error: ${e.message}'));
-    } catch (e, stacktrace) {
-      // Catch any other unexpected errors
-      print('Unexpected error in Repository: $e\n$stacktrace');
-      return Left(GeneralFailure(message: 'An unexpected error occurred: ${e.toString()}'));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message ?? 'Server error', code: e.statusCode?.toString()));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message ?? 'Cache error'));
+    } on Exception catch (e) {
+      print('Unexpected exception in AiChatRepository: $e');
+      return Left(ServerFailure(message: 'An unexpected error occurred: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, Stream<T>>> _tryCatchStream<T>(
+      Future<Stream<T>> Function() streamAction) async {
+    try {
+      final stream = await streamAction();
+      return Right(stream);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message ?? 'Server error', code: e.statusCode?.toString()));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message ?? 'Cache error'));
+    } on Exception catch (e) {
+      print('Unexpected exception in AiChatRepository stream operation: $e');
+      return Left(ServerFailure(message: 'An unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -66,10 +80,9 @@ class AiChatRepositoryImpl implements IAiChatRepository {
       {required int userId}) async {
     // Use the helper to wrap the data source call
     return _tryCatch<List<AiConversationEntity>>(() async {
-      // Call the remote data source
-      final models = await _remoteDataSource.fetchConversations(userId: userId);
-      // Convert the list of models to a list of entities
-      return models.map((model) => model.toEntity()).toList();
+      final conversationsData = await _remoteDataSource.fetchConversations(userId: userId);
+      // Map data model to entities
+      return conversationsData.map((model) => model.toEntity()).toList();
     });
   }
 
@@ -80,16 +93,15 @@ class AiChatRepositoryImpl implements IAiChatRepository {
     int? offset,
     int? limit,
   }) async {
-     return _tryCatch<List<AiChatMessageEntity>>(() async {
-       final models = await _remoteDataSource.loadHistory(
-         conversationId: conversationId,
-         userId: userId,
-         offset: offset,
-         limit: limit,
-       );
-       // Convert models to entities
-       return models.map((model) => model.toEntity()).toList();
-     });
+    return _tryCatch<List<AiChatMessageEntity>>(() async {
+      final messagesData = await _remoteDataSource.loadHistory(
+        conversationId: conversationId,
+        userId: userId,
+        offset: offset,
+        limit: limit,
+      );
+      return messagesData.map((model) => model.toEntity()).toList();
+    });
   }
 
   @override
@@ -97,7 +109,7 @@ class AiChatRepositoryImpl implements IAiChatRepository {
       {required int userId, String? title}) async {
     // Use helper, result is primitive, no conversion needed
     return _tryCatch<int>(() async {
-       return await _remoteDataSource.createConversation(userId: userId, title: title);
+      return await _remoteDataSource.createConversation(userId: userId, title: title);
     });
   }
 
@@ -106,12 +118,10 @@ class AiChatRepositoryImpl implements IAiChatRepository {
       {required int conversationId, required int userId}) async {
     // Use helper, result is void
     return _tryCatch<void>(() async {
-       // The await ensures the future completes or throws before _tryCatch proceeds
-       await _remoteDataSource.deleteConversation(
-         conversationId: conversationId,
-         userId: userId,
-       );
-       // No explicit return needed for void with _tryCatch Right side
+      await _remoteDataSource.deleteConversation(
+        conversationId: conversationId,
+        userId: userId,
+      );
     });
   }
 
@@ -122,29 +132,14 @@ class AiChatRepositoryImpl implements IAiChatRepository {
     required String message,
     required List<String> fileUrls,
   }) async {
-    // Streaming needs slightly different handling as the action itself returns the stream.
-    // Errors during stream *initiation* are caught here.
-    // Errors *during* streaming are handled by the stream consumer.
-    try {
-      // Directly call the data source method which should return the stream.
-      final stream = _remoteDataSource.streamChatCompletion(
-          conversationId: conversationId,
-          userId: userId,
-          message: message,
-          fileUrls: fileUrls);
-      // If the call succeeds, return the stream wrapped in Right.
-      return Right(stream);
-    } on ds_exceptions.ServerException catch (e) {
-      return Left(ServerFailure(message: e.message, statusCode: e.statusCode));
-    } on ds_exceptions.NetworkException catch (e) {
-      return Left(NetworkFailure(message: e.message));
-    } on ds_exceptions.DataSourceException catch (e) {
-      print('DataSourceException initiating stream: ${e.message}');
-      return Left(GeneralFailure(message: 'Data source error initiating stream: ${e.message}'));
-    } catch (e, stacktrace) {
-       print('Unexpected error initiating streamChatCompletion: $e\n$stacktrace');
-      return Left(GeneralFailure(message: 'An unexpected error occurred initiating stream: ${e.toString()}'));
-    }
+    return _tryCatchStream<String>(() async {
+      return _remoteDataSource.streamChatCompletion(
+        conversationId: conversationId,
+        userId: userId,
+        message: message,
+        fileUrls: fileUrls,
+      );
+    });
   }
 
   @override
@@ -153,15 +148,14 @@ class AiChatRepositoryImpl implements IAiChatRepository {
     required int userId,
     int? limit,
   }) async {
-     return _tryCatch<List<RelatedServiceEntity>>(() async {
-       final models = await _remoteDataSource.getRelatedServices(
-         conversationId: conversationId,
-         userId: userId,
-         limit: limit,
-       );
-       // Convert models to entities
-       return models.map((model) => model.toEntity()).toList();
-     });
+    return _tryCatch<List<RelatedServiceEntity>>(() async {
+      final servicesData = await _remoteDataSource.getRelatedServices(
+        conversationId: conversationId,
+        userId: userId,
+        limit: limit,
+      );
+      return servicesData.map((model) => model.toEntity()).toList();
+    });
   }
 
   @override
@@ -173,23 +167,22 @@ class AiChatRepositoryImpl implements IAiChatRepository {
     required int limit,
     required double similarityThreshold,
   }) async {
-     // Use helper, parse the Map result into an Entity
-     return _tryCatch<ChatAllocationResultEntity>(() async {
-       final resultMap = await _remoteDataSource.allocateChatResource(
-         conversationId: conversationId,
-         userId: userId,
-         item: item,
-         limit: limit,
-         similarityThreshold: similarityThreshold,
-       );
-       // Manual parsing of the Map into the Entity
-       // Add error handling for potentially missing keys if needed
-       return ChatAllocationResultEntity(
-         summary: resultMap['summary'] as String? ?? 'No summary provided', 
-         merchantId: resultMap['merchant_id'] as int? ?? 0, // Provide default or handle error
-         item: resultMap['item'] as Map<String, dynamic>?, // Allow null item
-       );
-     });
+    return _tryCatch<ChatAllocationResultEntity>(() async {
+      final resultData = await _remoteDataSource.allocateChatResource(
+        conversationId: conversationId,
+        userId: userId,
+        item: item,
+        limit: limit,
+        similarityThreshold: similarityThreshold,
+      );
+      // 假设服务器返回的数据需要转换为实体
+      // 如果返回的是Map，手动构造实体
+      return ChatAllocationResultEntity(
+        summary: resultData['summary'] as String? ?? 'No summary available',
+        merchantId: resultData['merchant_id'] as int? ?? 0,
+        item: resultData['item'] as Map<String, dynamic>?,
+      );
+    });
   }
 
   @override
@@ -197,141 +190,10 @@ class AiChatRepositoryImpl implements IAiChatRepository {
       {required String audioOssUrl, int? userId}) async {
     // Use helper, return String result directly
      return _tryCatch<String>(() async {
-       return await _remoteDataSource.transcribeAudio(
-         audioOssUrl: audioOssUrl,
-         userId: userId,
-       );
-     });
+      return await _remoteDataSource.transcribeAudio(
+        audioOssUrl: audioOssUrl,
+        userId: userId,
+      );
+    });
   }
-
-  @override
-  Future<Either<Failure, List<AiChatEntry>>> getAiChatHistory(String userId) async {
-     if (await _networkInfo.isConnected) {
-       try {
-         final remoteHistory = await _remoteDataSource.getAiChatHistory(userId);
-         // TODO: Cache the history locally if needed
-         // localDataSource.cacheAiChatHistory(remoteHistory);
-         return Right(remoteHistory.map((model) => model.toEntity()).toList());
-       } on ServerException catch (e) {
-         return Left(ServerFailure(message: e.message, code: e.statusCode)); // Use statusCode
-       } on Exception catch (e) {
-         print('getAiChatHistory Unexpected Exception: $e');
-         return Left(ServerFailure(message: e.toString()));
-       }
-     } else {
-       // TODO: Load from cache if offline
-       // try {
-       //   final localHistory = await localDataSource.getLastAiChatHistory();
-       //   return Right(localHistory.map((model) => model.toEntity()).toList());
-       // } on CacheException {
-       //   return Left(CacheFailure());
-       // }
-       return Left(const NetworkFailure()); // Return NetworkFailure
-     }
-  }
-
-   @override
-   Future<Either<Failure, String>> sendToAi(String sessionId, String message, String userId) async {
-      if (await _networkInfo.isConnected) {
-       try {
-         final result = await _remoteDataSource.sendToAi(sessionId, message, userId);
-         return Right(result);
-       } on ServerException catch (e) {
-          return Left(ServerFailure(message: e.message, code: e.statusCode)); // Use statusCode
-       } on Exception catch (e) {
-         print('sendToAi Unexpected Exception: $e');
-         return Left(ServerFailure(message: e.toString()));
-       }
-     } else {
-        return Left(const NetworkFailure()); // Return NetworkFailure
-     }
-   }
-
-   @override
-   Stream<Either<Failure, String>> streamAiResponse(String sessionId) async* {
-      if (await _networkInfo.isConnected) {
-       try {
-         final stream = _remoteDataSource.streamAiResponse(sessionId);
-         await for (final chunk in stream) {
-           yield Right(chunk);
-         }
-       } on ServerException catch (e) {
-          yield Left(ServerFailure(message: e.message, code: e.statusCode)); // Use statusCode
-       } on Exception catch (e) {
-         print('streamAiResponse Unexpected Exception: $e');
-         yield Left(ServerFailure(message: e.toString()));
-       }
-     } else {
-        yield Left(const NetworkFailure()); // Return NetworkFailure
-     }
-   }
-
-
-   @override
-   Future<Either<Failure, AiChatSetting>> getAiChatSetting(String userId) async {
-      if (await _networkInfo.isConnected) {
-       try {
-         final remoteSetting = await _remoteDataSource.getAiChatSetting(userId);
-         return Right(remoteSetting.toEntity());
-       } on ServerException catch (e) {
-         return Left(ServerFailure(message: e.message, code: e.statusCode)); // Use statusCode
-       } on Exception catch (e) {
-          print('getAiChatSetting Unexpected Exception: $e');
-          return Left(ServerFailure(message: e.toString()));
-       }
-     } else {
-        return Left(const NetworkFailure()); // Use NetworkFailure
-     }
-   }
-
-   @override
-   Future<Either<Failure, Unit>> saveAiChatSetting(String userId, AiChatSetting setting) async {
-      if (await _networkInfo.isConnected) {
-       try {
-         await _remoteDataSource.saveAiChatSetting(userId, AiChatSettingModel.fromEntity(setting));
-         return const Right(unit);
-       } on ServerException catch (e) {
-         return Left(ServerFailure(message: e.message, code: e.statusCode)); // Use statusCode
-       } on Exception catch (e) {
-         print('saveAiChatSetting Unexpected Exception: $e');
-         return Left(ServerFailure(message: e.toString()));
-       }
-     } else {
-        return Left(const NetworkFailure()); // Use NetworkFailure
-     }
-   }
-
-    @override
-    Future<Either<Failure, Unit>> deleteAiChatHistory(String sessionId) async {
-       if (await _networkInfo.isConnected) {
-       try {
-         await _remoteDataSource.deleteAiChatHistory(sessionId);
-         return const Right(unit);
-       } on ServerException catch (e) {
-         return Left(ServerFailure(message: e.message, code: e.statusCode)); // Use statusCode
-       } on Exception catch (e) {
-         print('deleteAiChatHistory Unexpected Exception: $e');
-         return Left(ServerFailure(message: e.toString()));
-       }
-     } else {
-        return Left(const NetworkFailure()); // Use NetworkFailure
-     }
-    }
-
-    @override
-    Future<Either<Failure, Unit>> clearAllAiChatHistory(String userId) async {
-       if (await _networkInfo.isConnected) {
-       try {
-         await _remoteDataSource.clearAllAiChatHistory(userId);
-         return const Right(unit);
-       } on ServerException catch (e) {
-         return Left(ServerFailure(message: e.message, code: e.statusCode)); // Use statusCode
-       } on Exception catch (e) {
-          print('clearAllAiChatHistory Unexpected Exception: $e');
-          return Left(ServerFailure(message: e.toString()));
-       }
-     } else {
-        return Left(const NetworkFailure()); // Use NetworkFailure
-     }
-    }
 } 

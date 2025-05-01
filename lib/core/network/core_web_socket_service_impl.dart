@@ -35,9 +35,8 @@ class CoreWebSocketServiceImpl implements ICoreWebSocketService {
 
   @override
   Future<void> connect(String commonUserId, String token) async {
-    // Prevent concurrent connections or connecting when already connected/connecting
-    if (_connectionStatusController.stream.valueOrNull == CoreConnectionStatus.connected ||
-        _connectionStatusController.stream.valueOrNull == CoreConnectionStatus.connecting) {
+    if (getCurrentStatus() == CoreConnectionStatus.connected ||
+        getCurrentStatus() == CoreConnectionStatus.connecting) {
       print("[CoreWebSocket] Already connected or connecting. Ignoring connect call.");
       return;
     }
@@ -63,6 +62,17 @@ class CoreWebSocketServiceImpl implements ICoreWebSocketService {
     print("[CoreWebSocket] Disconnected explicitly.");
     // Do NOT close stream controllers here, as the service might be long-lived
     // They should be closed when the service itself is disposed (e.g., app termination or user logout)
+  }
+
+  // 添加getCurrentStatus方法实现
+  @override
+  CoreConnectionStatus getCurrentStatus() {
+    // 如果连接对象存在且连接正常，返回已连接状态
+    if (_channel != null) {
+      return CoreConnectionStatus.connected;
+    }
+    // 否则返回断开状态
+    return CoreConnectionStatus.disconnected;
   }
 
   // --- Internal Logic (Migrated from ChatWebSocketDataSourceImpl) ---
@@ -211,7 +221,7 @@ class CoreWebSocketServiceImpl implements ICoreWebSocketService {
   void _startHeartbeat() {
     _heartbeatTimer?.cancel(); 
     _heartbeatTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
-      if (_channel != null && _connectionStatusController.stream.valueOrNull == CoreConnectionStatus.connected) {
+      if (_channel != null && getCurrentStatus() == CoreConnectionStatus.connected) {
          try {
             final pingMessage = jsonEncode({'type': 'ping'});
             print("[CoreWebSocket] Sending Ping (Heartbeat)");

@@ -40,7 +40,7 @@ class ChatRepositoryImpl implements IChatRepository {
               final chatRooms = chatRoomDtos.map<ChatRoom>((dto) => dto.toEntity(currentUserId: user.id)).toList();
               return Right(chatRooms);
             } on ServerException catch (e) {
-              return Left(ServerFailure(message: e.message, code: e.statusCode?.toString()));
+              return Left(ServerFailure(message: e.message ?? 'Server error', code: e.statusCode?.toString()));
             }
           },
         );
@@ -72,7 +72,7 @@ class ChatRepositoryImpl implements IChatRepository {
              }).toList();
              return Right(messages);
            } on ServerException catch (e) {
-             return Left(ServerFailure(message: e.message, code: e.statusCode?.toString()));
+             return Left(ServerFailure(message: e.message ?? 'Server error', code: e.statusCode?.toString()));
            }
          },
        );
@@ -94,7 +94,7 @@ class ChatRepositoryImpl implements IChatRepository {
              final roomDto = await remoteDataSource.getRoomDetails(chatId);
              return Right(roomDto.toEntity(currentUserId: user.id));
            } on ServerException catch (e) {
-             return Left(ServerFailure(message: e.message, code: e.statusCode?.toString()));
+             return Left(ServerFailure(message: e.message ?? 'Server error', code: e.statusCode?.toString()));
            }
          },
        );
@@ -128,7 +128,7 @@ class ChatRepositoryImpl implements IChatRepository {
              return Right(sentMessageEntity);
            } on ServerException catch (e) {
              // FIX: Use correct ServerFailure constructor
-             return Left(ServerFailure(message: e.message, code: e.statusCode.toString())); // Pass statusCode as string code
+             return Left(ServerFailure(message: e.message ?? 'Server error', code: e.statusCode.toString())); // Pass statusCode as string code
            }
          }
        );
@@ -147,7 +147,7 @@ class ChatRepositoryImpl implements IChatRepository {
        final chatId = await remoteDataSource.createRoom(participantId);
        return Right(chatId);
      } on ServerException catch (e) {
-       return Left(ServerFailure(message: e.message, code: e.statusCode?.toString()));
+       return Left(ServerFailure(message: e.message ?? 'Server error', code: e.statusCode?.toString()));
      } catch (e) {
        print("[Repository] Unexpected error creating room: $e");
        return Left(GeneralFailure());

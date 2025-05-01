@@ -54,7 +54,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     try {
       final responseData = await _httpClient.post(
         fullUrl, // Use full URL
-        data: {'user_id': userId}
+        body: {'user_id': userId}
       );
       final data = _handleResponse(responseData);
       if (data != null && data['conversations'] is List) {
@@ -93,7 +93,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     if (limit != null) requestData['limit'] = limit;
 
     try {
-      final responseData = await _httpClient.post(fullUrl, data: requestData);
+      final responseData = await _httpClient.post(fullUrl, body: requestData);
       final data = _handleResponse(responseData);
       
       if (data != null && data is List) { 
@@ -165,7 +165,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     final Map<String, dynamic> requestData = {'user_id': userId};
     if (title != null) requestData['title'] = title;
     try {
-      final responseData = await _httpClient.post(fullUrl, data: requestData);
+      final responseData = await _httpClient.post(fullUrl, body: requestData);
       final data = _handleResponse(responseData);
       if (data != null && data['conversation_id'] is int) {
         return data['conversation_id'];
@@ -195,7 +195,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       'user_id': userId,
     };
     try {
-      final responseData = await _httpClient.post(fullUrl, data: requestData);
+      final responseData = await _httpClient.post(fullUrl, body: requestData);
       _handleResponse(responseData); // Throws if code != 200
     } on ds_exceptions.ServerException {
       rethrow;
@@ -228,7 +228,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
 
     try {
       // Call the HttpClient method that returns the raw SSE stream
-      final rawSseStream = _httpClient.postAndStream(fullUrl, data: requestData);
+      final rawSseStream = _httpClient.postAndStream(fullUrl, body: requestData);
 
       // Transform the raw stream to extract relevant data chunks
       // Using StreamTransformer for cleaner separation of parsing logic
@@ -312,7 +312,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     };
     if (limit != null) requestData['limit'] = limit;
     try {
-      final responseData = await _httpClient.post(fullUrl, data: requestData);
+      final responseData = await _httpClient.post(fullUrl, body: requestData);
       final data = _handleResponse(responseData);
       if (data != null && data['services'] is List) {
         return (data['services'] as List).map((serviceJson) {
@@ -360,7 +360,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       'similarity_threshold': similarityThreshold,
     };
     try {
-      final responseData = await _httpClient.post(fullUrl, data: requestData);
+      final responseData = await _httpClient.post(fullUrl, body: requestData);
       return _handleResponse(responseData) as Map<String, dynamic>;
     } on ds_exceptions.ServerException {
       rethrow;
@@ -384,7 +384,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     if (userId != null) requestData['user_id'] = userId;
     try {
       // This method likely needs POST, not multipart if sending URL
-      final responseData = await _httpClient.post(path, data: requestData); 
+      final responseData = await _httpClient.post(path, body: requestData); 
       final data = _handleResponse(responseData);
       if (data != null && data['content'] is String) {
         return data['content'];

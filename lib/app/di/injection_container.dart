@@ -1,103 +1,98 @@
+import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
-import 'package:dio/dio.dart';
+import 'package:dskk_flutter_refactor/core/navigation/services/mocks/mock_navigation_service.dart';
+import 'package:dskk_flutter_refactor/core/navigation/services/i_navigation_service.dart';
+import 'package:dskk_flutter_refactor/core/payment/services/i_payment_service.dart';
+import 'package:dskk_flutter_refactor/core/payment/services/mocks/mock_payment_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import '../../core/config/app_config.dart'; // Assuming AppConfig holds the base API URL
-import '../../core/network/dio_interceptor.dart'; // Assuming you have/will create interceptors
-import 'package:dskk_flutter_refactor/core/network/header_interceptor.dart'; // Import the new header interceptor
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:dskk_flutter_refactor/core/network/interceptors/app_info_interceptor.dart';
+import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart'; // Import to access AuthInterceptor
+import 'package:dskk_flutter_refactor/core/network/header_interceptor.dart'; // Import the chat header interceptor
+
+// Import database and DAO
+import 'package:dskk_flutter_refactor/core/database/app_database.dart';
 
 // Import the generated file
-import 'injection_container.config.dart'; 
+import 'injection_container.config.dart' hide module; // Hide module from generated file
 
 final getIt = GetIt.instance;
 
 @InjectableInit(
-  initializerName: r'init', // default
-  preferRelativeImports: true, // default
-  asExtension: false, // default
+  initializerName: r'init',
+  preferRelativeImports: true,
+  asExtension: false,
 )
-Future<void> configureDependencies() async => init(getIt);
+Future<void> configureDependencies({required String backendBaseUrl}) async {
+  // Register backendBaseUrl as named instance 
+  getIt.registerSingleton<String>(backendBaseUrl, instanceName: 'backendBaseUrl');
+  print('[DI] Registered backendBaseUrl: $backendBaseUrl');
 
-// Register Connectivity using a top-level function
-@lazySingleton
-Connectivity get connectivity => Connectivity();
-
-// Register Dio using a top-level function (Simplified for debugging)
-@lazySingleton
-Dio get dio {
-  print('--- Creating Simple Dio Instance (Top-Level) --- '); // Add log
-  // Return a very basic Dio instance, without AppConfig or interceptors
-  final dio = Dio(
-    BaseOptions(
-      baseUrl: 'https://placeholder.base.url', // Use a placeholder
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 30),
-      headers: {
-        'Accept': 'application/json',
-      },
-    ),
-  );
-  // Temporarily remove interceptors
-  // dio.interceptors.add(LoggingInterceptor());
-  print('--- Simple Dio Instance (Top-Level) Created --- ');
-  return dio;
+  // Initialize injectable configurations (processes RegisterModule)
+  await init(getIt); 
+  print('[DI] Injectable initialization complete.');
 }
 
-// You might need to create interceptor files like:
-// lib/core/network/dio_interceptor.dart
-/*
-import 'package:dio/dio.dart';
+@module
+abstract class CoreRegisterModule {
+  // Dio factory method
+  @lazySingleton
+  Dio createDio(
+    @Named('backendBaseUrl') String baseUrl,
+    AppInfoInterceptor appInfoInterceptor,
+    FlutterSecureStorage secureStorage, // Inject SecureStorage
+  ) {
+    final dio = Dio();
+    dio.options.baseUrl = baseUrl;
+    print('Dio configured via CoreRegisterModule with Base URL: ${dio.options.baseUrl}');
+    dio.options.connectTimeout = const Duration(seconds: 15);
+    dio.options.receiveTimeout = const Duration(seconds: 15);
+    dio.options.contentType = 'application/json';
 
-class LoggingInterceptor extends Interceptor {
-  @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    print('REQUEST[${options.method}] => PATH: ${options.path}');
-    return super.onRequest(options, handler);
+    // Create and add AuthInterceptor using the injected storage
+    final authInterceptor = AuthInterceptor(secureStorage); 
+
+    dio.interceptors.add(appInfoInterceptor); // Add AppInfoInterceptor FIRST
+    dio.interceptors.add(authInterceptor);   // Add AuthInterceptor
+    dio.interceptors.add(HeaderInterceptor()); // Add HeaderInterceptor for chat module
+    
+    // ADDED LogInterceptor from profile branch logic (usually added last)
+    dio.interceptors.add(PrettyDioLogger(
+      requestHeader: true,
+      requestBody: true,
+      responseBody: true,
+      responseHeader: false,
+      error: true,
+      compact: true,
+      maxWidth: 90));
+    
+    return dio;
   }
 
-  @override
-  void onResponse(Response response, ResponseInterceptorHandler handler) {
-    print(
-      'RESPONSE[${response.statusCode}] => PATH: ${response.requestOptions.path}',
-    );
-    return super.onResponse(response, handler);
-  }
+  // PackageInfo factory method
+  @preResolve 
+  Future<PackageInfo> get packageInfo => PackageInfo.fromPlatform();
 
-  @override
-  void onError(DioException err, ErrorInterceptorHandler handler) {
-    print(
-      'ERROR[${err.response?.statusCode}] => PATH: ${err.requestOptions.path}',
-    );
-    return super.onError(err, handler);
-  }
+  // FlutterSecureStorage instance
+  @lazySingleton
+  FlutterSecureStorage get secureStorage => const FlutterSecureStorage();
+
+  // Connectivity instance
+  @lazySingleton
+  Connectivity get connectivity => Connectivity();
+
+  // AppDatabase instance
+  @lazySingleton
+  AppDatabase get appDatabase => AppDatabase();
+
+  // Navigation Service mock
+  @lazySingleton
+  INavigationService get navigationService => MockNavigationService();
+
+  // Payment Service mock
+  @lazySingleton
+  IPaymentService get paymentService => MockPaymentService();
 }
-*/
-
-// Later, you will register your modules/services like this:
-// @module
-// abstract class RegisterModule {
-//   @lazySingleton
-//   MyService get myService => MyServiceImpl();
-// } 
-
-// Updated Dio registration
-@lazySingleton
-Dio get realDio {
-  print('--- Creating Dio Instance (Preview Setup - Real API) ---');
-  // CONFIGURE DIO FOR REAL API
-  final dio = Dio(BaseOptions(
-    baseUrl: "http://app.duoshaokankan.com/prod-api", // Use REAL Base URL
-    connectTimeout: const Duration(seconds: 15),
-    receiveTimeout: const Duration(seconds: 30),
-    headers: {
-      'Accept': 'application/json',
-      // Authentication header should be added by AuthInterceptor typically
-    },
-  ));
-  // ADD INTERCEPTORS
-  dio.interceptors.add(HeaderInterceptor()); // Add the header interceptor
-  // dio.interceptors.add(LoggingInterceptor()); // Optional: Add logging
-  // dio.interceptors.add(AuthInterceptor(sl())); // TODO: Ensure AuthInterceptor is implemented and added
-  print('--- Dio Instance (Preview Setup - Real API) Created with Interceptors ---');
-  return dio;
-} 

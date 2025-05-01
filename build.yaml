@@ -1,5 +1,7 @@
 # build.yaml
 
+# Configuration for build_runner
+
 targets:
   $default:
     builders:
@@ -9,43 +11,47 @@ targets:
         generate_for:
           - lib/features/**/models/hive/**_hive_model.dart
 
-      # Exclude Hive models from other generators
-      json_serializable:
+      # Configure injectable_generator
+      injectable_generator:injectable_config_builder:
+        enabled: true
         generate_for:
           include:
             - lib/**/*.dart
           exclude:
             - lib/features/**/models/hive/**_hive_model.dart
-
-      riverpod_generator:riverpod_generator:
-        generate_for:
-          include:
-            - lib/**/*.dart
-          exclude:
-            - lib/features/**/models/hive/**_hive_model.dart
+            - test/** # Exclude ALL test files
+            - lib/features/auth/example/** # Keep excluding the example dir just in case
 
       injectable_generator:injectable_builder:
+        enabled: true
         generate_for:
           include:
             - lib/**/*.dart
           exclude:
             - lib/features/**/models/hive/**_hive_model.dart
+            - test/**
 
-      injectable_generator:injectable_config_builder:
+      # Configure json_serializable
+      json_serializable:
+        enabled: true
         generate_for:
           include:
             - lib/**/*.dart
           exclude:
             - lib/features/**/models/hive/**_hive_model.dart
+            - lib/features/auth/example/**
+            - test/** # Also exclude test directory for json_serializable
 
-      # Add similar exclude configurations for other conflicting builders if needed
-      # injectable_generator:injectable_builder:
-      #   generate_for:
-      #     include:
-      #       - lib/**/*.dart
-      #     exclude:
-      #     - lib/**/*.dart
-      #     - '!lib/features/**/models/hive/**.dart'
+      # Configure riverpod_generator
+      riverpod_generator:riverpod_generator:
+        enabled: true
+        generate_for:
+          include:
+            - lib/**/*.dart
+          exclude:
+            - lib/features/**/models/hive/**_hive_model.dart
+            - lib/features/auth/example/**
+            - test/**
 
       # 确保其他需要的生成器也在这里配置或保持默认
       # ...

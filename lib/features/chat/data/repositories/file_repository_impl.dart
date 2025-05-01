@@ -29,7 +29,7 @@ class FileRepositoryImpl implements IFileRepository {
       return Right(fileUrl);
     } on ServerException catch (e) {
       // FIX: Use correct ServerFailure constructor
-      return Left(ServerFailure(message: e.message, code: e.statusCode.toString())); // Pass statusCode as string code
+      return Left(ServerFailure(message: e.message ?? 'Server error', code: e.statusCode.toString())); // Pass statusCode as string code
     } catch (e) {
       // FIX: Use correct GeneralFailure constructor (no message)
       print("Unexpected error in uploadFile Repository: $e");

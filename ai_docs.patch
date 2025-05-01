@@ -1,0 +1,957 @@
+diff --git a/.gitignore b/.gitignore
+index 156b676..975ac92 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -46,3 +46,19 @@ app.*.map.json
+ /android/app/debug
+ /android/app/profile
+ /android/app/release
++
++# Flutter Generated files
++flutter_export_environment.sh
++.flutter-plugins
++.flutter-plugins-dependencies
++# Generated plugin registrant files.
++ios/Flutter/Generated.xcconfig
++ios/Flutter/GeneratedPluginRegistrant.*
++android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
++linux/flutter/generated_plugin_registrant.cc
++linux/flutter/generated_plugins.cmake
++macos/Flutter/GeneratedPluginRegistrant.swift
++windows/flutter/generated_plugin_registrant.cc
++windows/flutter/generated_plugins.cmake
++web/flutter_bootstrap.js
++web/plugins.dart
+diff --git a/docs/modular_routing_strategy_cn.md b/docs/modular_routing_strategy_cn.md
+new file mode 100644
+index 0000000..2d52a92
+--- /dev/null
++++ b/docs/modular_routing_strategy_cn.md
+@@ -0,0 +1,133 @@
++# 模块化路由策略 (GoRouter)
++
++## 1. 目标
++
++随着应用功能的增加，将所有路由规则都集中在单一的核心路由文件 (`lib/core/router/app_router.dart`) 中会导致该文件变得臃肿、难以维护和理解。为了提高代码的组织性、可维护性和可扩展性，我们采用模块化的路由策略。
++
++核心目标是：
++
++*   **解耦:** 每个功能模块（Feature）独立管理自己的路由，减少模块间的依赖。
++*   **代码组织:** 路由定义与其关联的页面（Pages）和状态管理逻辑（Blocs）位于同一模块内。
++*   **可扩展性:** 添加新模块时，只需创建并注册该模块的路由，核心路由文件改动最小。
++*   **可读性:** 核心路由文件更简洁，只负责组装和全局配置。
++
++## 2. 策略概述
++
++我们使用 `go_router` 包来实现路由。
++
++基本策略是：
++
++1.  **模块内定义:** 在每个功能模块（例如 `orders`, `after_sales`, `auth`）的 `presentation` 目录下，创建一个 `routes` 子目录。在此子目录中，创建一个路由文件（例如 `order_routes.dart`），用于定义该模块的所有 `GoRoute` 对象。
++2.  **暴露路由列表:** 该模块的路由文件通过一个静态 getter 或常量，将包含其所有 `GoRoute` 定义的列表 (`List<RouteBase>`) 暴露出来。
++3.  **核心路由聚合:** 在核心路由文件 (`lib/core/router/app_router.dart`) 中，导入各个功能模块的路由文件，并在 `GoRouter` 构造函数的 `routes` 参数中，使用列表扩展操作符 (`...`) 将所有模块的路由列表聚合进来。
++
++## 3. 目录结构示例
++
++```
++lib/
++├── core/
++│   └── router/
++│       └── app_router.dart      # 核心路由器，聚合模块路由
++├── features/
++│   ├── orders/
++│   │   └── presentation/
++│   │       ├── bloc/
++│   │       ├── pages/
++│   │       │   ├── order_list_page.dart
++│   │       │   └── order_detail_page.dart
++│   │       ├── routes/
++│   │       │   └── order_routes.dart    # 定义订单模块的路由
++│   │       └── widgets/
++│   ├── after_sales/
++│   │   └── presentation/
++│   │       ├── routes/
++│   │       │   └── after_sales_routes.dart # 定义售后模块的路由
++│   │       └── ...
++│   └── ... (其他模块)
++└── ...
++```
++
++## 4. 实现示例
++
++**模块路由文件 (`lib/features/orders/presentation/routes/order_routes.dart`)**
++
++```dart
++import 'package:flutter/material.dart';
++import 'package:go_router/go_router.dart';
++
++// 导入本模块需要用到的页面
++import '../pages/order_list_page.dart';
++import '../pages/order_detail_page.dart';
++// ... 其他订单相关页面 ...
++
++class OrderRoutes {
++  // 私有构造函数，防止实例化
++  OrderRoutes._();
++
++  // 通过静态 getter 暴露路由列表
++  static List<RouteBase> get routes => _routes;
++
++  // 模块内部路由定义
++  static final List<RouteBase> _routes = [
++    GoRoute(
++      path: '/orders',
++      name: 'orders',
++      builder: (context, state) => const OrderListPage(),
++    ),
++    GoRoute(
++      path: '/orderDetail/:orderId',
++      name: 'orderDetail',
++      builder: (BuildContext context, GoRouterState state) {
++        final String orderId = state.pathParameters['orderId'] ?? 'invalid';
++        // TODO: Add validation for orderId
++        return OrderDetailPage(orderId: orderId);
++      },
++    ),
++    // ... 其他订单模块路由 ...
++  ];
++}
++```
++
++**核心路由文件 (`lib/core/router/app_router.dart`)**
++
++```dart
++import 'package:flutter/material.dart';
++import 'package:go_router/go_router.dart';
++
++// 导入模块路由
++import 'package:dskk_flutter_refactor/features/orders/presentation/routes/order_routes.dart';
++import 'package:dskk_flutter_refactor/features/after_sales/presentation/routes/after_sales_routes.dart';
++// ... 导入其他模块路由 ...
++
++class AppRouter {
++  AppRouter._();
++
++  static final router = GoRouter(
++    initialLocation: '/', // 或者任何你想要的初始路径
++    routes: <RouteBase>[
++      // 使用扩展操作符聚合所有模块的路由
++      ...OrderRoutes.routes,
++      ...AfterSalesRoutes.routes,
++      // ... 其他模块路由 ...
++
++      // 这里可以放置不属于任何特定模块的全局路由，例如：
++      // GoRoute(path: '/settings', builder: ...),
++    ],
++    // 全局错误处理等配置
++    errorBuilder: (context, state) => Scaffold(
++      appBar: AppBar(title: const Text('Page Not Found')),
++      body: Center(child: Text('Error: ${state.error}')),
++    ),
++    // ... 其他 GoRouter 配置 ...
++  );
++}
++```
++
++## 5. 优点总结
++
++*   **高内聚:** 功能模块的路由、页面、逻辑保持在一起。
++*   **低耦合:** 模块间路由不直接依赖，核心路由只做聚合。
++*   **易维护:** 修改或添加模块内路由，只需关注模块自身文件。
++*   **可扩展:** 添加新模块对核心路由影响小。
++*   **职责清晰:** 核心路由负责全局配置和组装，模块路由负责具体实现。
++
+diff --git a/ai-docs-todo/02_boundary_definition.md b/docs/module_docs/ai_docs/02_boundary_definition.md
+similarity index 100%
+rename from ai-docs-todo/02_boundary_definition.md
+rename to docs/module_docs/ai_docs/02_boundary_definition.md
+diff --git a/ai-docs-todo/03_data_layer_analysis.md b/docs/module_docs/ai_docs/03_data_layer_analysis.md
+similarity index 100%
+rename from ai-docs-todo/03_data_layer_analysis.md
+rename to docs/module_docs/ai_docs/03_data_layer_analysis.md
+diff --git a/ai-docs-todo/04_api_config_and_boundaries.md b/docs/module_docs/ai_docs/04_api_config_and_boundaries.md
+similarity index 100%
+rename from ai-docs-todo/04_api_config_and_boundaries.md
+rename to docs/module_docs/ai_docs/04_api_config_and_boundaries.md
+diff --git a/ai-docs-todo/05_hardcoded_values.md b/docs/module_docs/ai_docs/05_hardcoded_values.md
+similarity index 100%
+rename from ai-docs-todo/05_hardcoded_values.md
+rename to docs/module_docs/ai_docs/05_hardcoded_values.md
+diff --git a/ai-docs-todo/06_INTEGRATION_POINTS.md b/docs/module_docs/ai_docs/06_INTEGRATION_POINTS.md
+similarity index 100%
+rename from ai-docs-todo/06_INTEGRATION_POINTS.md
+rename to docs/module_docs/ai_docs/06_INTEGRATION_POINTS.md
+diff --git a/ai-docs-todo/INTEGRATION_GUIDE.md b/docs/module_docs/ai_docs/INTEGRATION_GUIDE.md
+similarity index 100%
+rename from ai-docs-todo/INTEGRATION_GUIDE.md
+rename to docs/module_docs/ai_docs/INTEGRATION_GUIDE.md
+diff --git a/docs/module_docs/ai_docs/README.md b/docs/module_docs/ai_docs/README.md
+new file mode 100644
+index 0000000..599ea4c
+--- /dev/null
++++ b/docs/module_docs/ai_docs/README.md
+@@ -0,0 +1,119 @@
++# AI 文档/聊天模块 (AiDocs) 核心说明文档
++
++**最后更新:** YYYY-MM-DD (请根据实际日期修改)
++
++---
++
++## 1. 模块概述 (Brief Overview)
++
++*   **一句话描述:** 提供与 AI 进行交互式聊天（支持多会话管理）、处理文档附件（上传、关联）以及获取相关推荐等功能。
++*   **主要功能点:**
++    *   AI 对话界面 (`ChatPage`)
++    *   发送文本、文件（图片/音频）给 AI (文件通过 `/api/common/public/upload` 上传至 OSS)
++    *   通过 SSE 流式接收 AI 回复
++    *   管理历史对话列表 (获取、创建、删除)
++    *   获取相关服务推荐 (调用 `/recsys/conversation/recommend` API)
++    *   语音输入转文本 (调用 `/model/chat/audio` API)
++    *   (待实现) 聊天资源分配/一键派单 (调用 `/chat/allocate` API)
++
++## 2. 路由入口与参数 (Routing Entry Points & Parameters)
++
++*   **如何进入本模块:**
++    *   路径: `/ai_chat`, 名称: `aiChat` (AI 聊天主界面，当前实现默认进入新对话或上次对话状态)
++    *   (规划中) 路径: `/conversation/:conversationId`, 名称: `aiConversation` (进入指定对话，尚未在 `ai_docs_routes.dart` 实现)
++*   **必需参数:**
++    *   `/ai_chat`: 无需参数。
++    *   (规划中) `/conversation/:conversationId`: 需要路径参数 `conversationId` (类型待定)。
++*   **参考:** 路由定义在 `lib/features/ai_docs/presentation/routes/ai_docs_routes.dart`。遵循 `docs/modular_routing_strategy_cn.md` 规范。
++
++## 3. 外部依赖说明 (External Dependencies)
++
++*   **核心服务依赖:**
++    *   `CoreDioClient` (通过 Repository 间接依赖，用于网络请求)
++    *   `IAuthRepository` (或类似服务，用于获取当前用户 ID 和 Token，目前由入口文件硬编码注入)
++    *   (可能) `INavigationService` (仅当模块内部有多页面导航时需要，目前看主要为单页 `ChatPage`)
++*   **跨模块依赖:**
++    *   目前看无直接 Feature 模块依赖。主要依赖 Core 层的网络、认证(待集成)、文件/音频处理(待集成)。
++
++## 4. 调用的主要 API (APIs Consumed)
++
++*   **接口列表与目的:**
++    *   `/model/chat/list` (获取历史对话列表)
++    *   `/model/chat/messages` (加载指定对话的消息历史)
++    *   `/model/chat/create` (创建新对话)
++    *   `/model/chat/delete` (删除对话)
++    *   `/model/chat` (核心 SSE 端点，用于发送消息并流式接收回复)
++    *   `/model/chat/audio` (语音转文本)
++    *   `/api/common/public/upload` (文件上传至 OSS，由后端处理)
++    *   `/recsys/conversation/recommend` (获取相关服务推荐)
++    *   `/chat/allocate` (聊天分配/一键派单)
++    *   (待确认) `/model/chat/cancel` (中断流式生成，目前 Flutter 端未调用)
++*   **细节参考:** 详细信息请参考全局的 `docs/api_usage_summary_cn.md` 文档及模块内的 `03_data_layer_analysis.md`, `04_api_config_and_boundaries.md`。
++
++## 5. (可选) 对外暴露的服务/接口 (Exposed Services/Interfaces)
++
++*   该模块主要提供 UI 界面 (`ChatPage`)，目前不直接对外暴露服务或接口。
++
++## 6. (可选) 注意事项/配置要求
++
++*   **API Key/认证:** 需要有效的用户 Token (通过 `AuthInterceptor` 添加到请求头)，目前在预览入口硬编码。
++*   **文件存储:** 文件上传功能依赖于后端配置好的对象存储服务 (OSS)，前端通过 `/api/common/public/upload` 接口间接使用。
++*   **模型依赖:** 功能依赖于后端部署的特定 AI 模型。
++*   **.env 配置:** 需要在项目根目录 `.env` 文件中配置 `BACKEND_BASE_URL`。
++
++## 7. 依赖包使用说明 (Package Dependencies)
++
++*   **`flutter_bloc` / `bloc`**: 状态管理 (`AiChatBloc`)。
++*   **`get_it` / `injectable`**: 依赖注入。
++*   **`go_router`**: 路由管理。
++*   **`dio` / `pretty_dio_logger`**: 网络请求 (通过 `CoreDioClient`)。
++*   **`dartz` / `equatable`**: 函数式编程辅助、值比较。
++*   **`flutter_secure_storage`**: 安全存储 (用于 Token 和 User ID)。
++*   **`package_info_plus`**: 获取应用信息 (用于请求头)。
++*   **`flutter_dotenv`**: 加载环境变量。
++*   **`(可能)` `http`**: 用于 SSE 连接的底层实现。
++*   **`(可能)` `file_picker` / `image_picker`**: 用于文件选择 UI。
++*   **`(可能)` `record` / `audioplayers` / `permission_handler`**: 用于语音输入 UI 和处理。
++*   (版本请参考 `pubspec.yaml`)
++
++## 8. 资源管理说明 (Resource Management)
++
++*   **模块资源列表:** 尚未定义明确的本地资源 (图片、图标等)。可能需要聊天气泡背景、默认头像、加载/错误占位图。
++*   **资源命名规范:** 待定义。建议遵循全局规范，模块特定资源使用 `ai_docs_` 或 `ic_aichat_` 前缀。
++*   **资源存放位置:** 待定义。建议模块专属放 `assets/images/ai_docs/`。
++*   **资源使用方式:** 待定义。建议使用 `assets_gen`。
++
++## 9. 已知问题与解决方案 (Known Issues & Solutions)
++
++*   **已知限制/问题:**
++    *   流式输出在网络不稳定时可能中断 (需要健壮的错误处理和重连机制)。
++    *   文件上传大小和类型可能有限制 (需后端明确)。
++    *   `/chat/allocate` API 的确切请求参数未知。
++    *   `/api/common/public/upload` 成功响应的具体结构未知 (用于提取 OSS URL)。
++    *   当前使用**硬编码的用户 ID (`1`)** 在 `AiChatBloc` 中。
++    *   当前使用**硬编码的 Authorization Token 和 version (`'100'`)** 在 `dio_http_client.dart` 的 `postMultipart` 中。
++*   **临时解决方案/规避措施:**
++    *   在预览入口 (`main_dev_preview.dart` 等) 硬编码注入测试 Token 和 User ID 到 `FlutterSecureStorage`。
++*   **修复计划:**
++    *   **集成 Auth 模块**后，替换所有硬编码的 User ID 和 Token。
++    *   与后端确认 `/chat/allocate` 和 `/api/common/public/upload` 的细节。
++    *   完善 SSE 流的错误处理。
++    *   确认 `version` 请求头是否应动态获取。
++*   **开发者注意事项:**
++    *   处理 SSE 流时注意连接管理和错误处理 (解析 JSON、处理 done 事件)。
++    *   确保文件上传后，传递给 `/model/chat` 的 `files` 参数**仅包含有效的 OSS URL**，避免传递本地 URI。
++    *   避免在 Flutter 中重现 RN `fileSlice` 可能存在的状态重复问题（本地 URI 与 OSS URL 并存）。
++
++## 10. 跨模块通信机制 (Cross-Module Communication)
++
++*   **输出事件/通知:** 目前无明确的跨模块事件输出需求。
++*   **输入事件/通知:** 需要监听用户认证状态变化 (来自 Auth 模块) 以更新 User ID 和 Token。
++*   **通信方式:**
++    *   主要通过 GoRouter 进行页面导航。
++    *   通过 DI (GetIt) 获取核心服务 (如 `CoreDioClient`, `IAuthRepository`)。
++*   **直接依赖:**
++    *   不应直接依赖其他 Feature 模块。依赖 Core 服务和未来的 Auth 服务。
++
++---
++
++**请根据模块的实际开发情况，持续更新本文档。** 
+\ No newline at end of file
+diff --git a/ai-docs-todo/ai_docs_todo.md b/docs/module_docs/ai_docs/ai_docs_todo.md
+similarity index 100%
+rename from ai-docs-todo/ai_docs_todo.md
+rename to docs/module_docs/ai_docs/ai_docs_todo.md
+diff --git a/ai-docs-todo/hardcoded_values.md b/docs/module_docs/ai_docs/hardcoded_values.md
+similarity index 100%
+rename from ai-docs-todo/hardcoded_values.md
+rename to docs/module_docs/ai_docs/hardcoded_values.md
+diff --git "a/docs/\345\220\210\345\271\266\345\211\215\347\232\204\345\207\206\345\244\207.md" "b/docs/\345\220\210\345\271\266\345\211\215\347\232\204\345\207\206\345\244\207.md"
+new file mode 100644
+index 0000000..683ea5f
+--- /dev/null
++++ "b/docs/\345\220\210\345\271\266\345\211\215\347\232\204\345\207\206\345\244\207.md"
+@@ -0,0 +1,142 @@
++# 模块文档编写指南
++
++**目的:** 为了促进团队协作、方便模块集成、以及让其他开发者能快速理解和使用你负责的功能模块，我们要求每个功能模块（Feature）都需要编写并维护一些必要的说明文档。
++
++**要求:** 请将与你负责的功能模块相关的**所有**说明文档（Markdown格式 `.md`）集中放置在**项目根目录下的 `docs/module_docs/` 文件夹内，并以模块名创建子文件夹**进行归类。
++
++**文档存放结构示例:**
++
++```
++docs/
++├── module_docs/                # 模块专属文档的根目录（说明和todo什么的全放这）
++│   ├── orders/                 # 订单模块的文档
++│   │   ├── README.md           # (必需) 订单模块核心说明
++│   │   ├── order_list_caching_details_cn.md # (示例) 订单列表缓存说明
++│   │   └── ...                 # (其他订单模块相关文档)
++│   ├── aichat/                   # aichat模块的文档
++│   │   ├── README.md           # (必需) aichat模块核心说明
++│   │   └── ...
++│   ├── seller/            # seller模块的文档
++│   │   ├── README.md           # (必需) seller模块核心说明
++│   │   └── ...
++│   └── ...                     # 其他模块的文档目录
++├── BD/                         # 边界定义文档 (保持不变)
++├── api_usage_summary_cn.md     # 全局 API 总结 (保持不变)
++├── caching_and_local_storage_strategy_cn.md # 全局缓存策略 (保持不变)
++├── modular_routing_strategy_cn.md   # 全局路由策略 (保持不变)
++├── module_merge_checklist_cn.md # 模块合并清单 (保持不变)
++├── 合并前的准备.md # 本指南 (你正在阅读的文件)
++└── ... (其他全局文档)
++```
++
++---
++
++## 模块核心说明文档 (`<模块名>/README.md`)
++
++在 `docs/module_docs/<你的模块名>/` 目录下，**必须**包含一个 `README.md` 文件。此文件是其他开发者了解你模块的关键入口，请至少包含以下**核心内容**，重点说明**模块间耦合与集成**所需的信息：
++
++### 1. 模块概述 (Brief Overview)
++
++*   **一句话描述:** 简要说明这个模块的核心功能和职责。
++    *   *示例: "处理用户认证流程，包括登录、注册、Token管理。"*
++*   **(可选) 主要功能点:** 列出该模块包含的主要用户可见功能或子流程。
++    *   *示例:* 
++        *   *- 手机号+验证码登录*
++        *   *- 密码登录*
++        *   *- 用户注册*
++        *   *- 忘记密码*
++
++### 2. 路由入口与参数 (Routing Entry Points & Parameters)
++
++*   **如何进入本模块:** 列出从**外部**导航进入本模块**主要页面**的路由路径 (Path) 和名称 (Name)。
++*   **必需参数:** 清晰说明每个入口路由**必须**接收哪些路径参数 (`:id`)、查询参数 (`?key=value`) 或通过 `extra` 传递的对象及其类型。
++    *   *示例 (订单模块):*
++        *   *- 路径: `/orders`, 名称: `orders` (买家订单列表，无需参数)*
++        *   *- 路径: `/orderDetail/:orderId`, 名称: `orderDetail` (买家订单详情，需要路径参数 `orderId` (String))* 
++        *   *- 路径: `/seller/orders`, 名称: `sellerOrders` (卖家订单列表，无需参数)*
++        *   *- 路径: `/seller/orders/:orderId`, 名称: `sellerOrderDetail` (卖家订单详情，需要路径参数 `orderId` (String))* 
++        *   *- 路径: `/selectAfterSalesType/:orderItemId`, 名称: `selectAfterSalesType` (选择售后类型，需要路径参数 `orderItemId` (String) **和** `extra` 中的 `OrderItem` 对象)*
++*   **参考:** 路由定义应遵循 `docs/modular_routing_strategy_cn.md` 规范，具体实现在你模块的 `presentation/routes/` 目录下。
++
++### 3. 外部依赖说明 (External Dependencies)
++
++*   **核心服务依赖:** 列出本模块运行所**依赖**的 `lib/core/` 下的核心服务或接口。
++    *   *示例:*
++        *   *- `IAuthRepository` (用于获取当前用户状态)*
++        *   *- `CoreDioClient` (通过 Repository 间接依赖，用于网络请求)*
++        *   *- `INavigationService` (用于模块内部或跨模块导航)*
++*   **跨模块依赖:** 列出本模块是否直接依赖**其他 Feature 模块**提供的服务、Bloc 或数据实体？ (应尽量避免，若有需说明)
++    *   *示例: "依赖 `UserProfile` 模块获取用户昵称显示。" (这种情况需谨慎评估)*
++
++### 4. 调用的主要 API (APIs Consumed)
++
++*   **接口列表:** 列出本模块业务逻辑实现所调用的主要后端 API 端点 (Endpoint Path 即可)。
++*   **目的:** 简述每个 API 的主要用途。
++*   **细节参考:** 指明详细的请求/响应结构、认证要求等可以参考全局的 `docs/api_usage_summary_cn.md` 文档。
++    *   *示例 (订单模块):*
++        *   *- `POST /api/shop/order/list` (获取订单列表)*
++        *   *- `GET /api/shop/order/detail` (获取订单详情)*
++        *   *- `GET /api/shop/order/cancel` (取消订单)*
++        *   *- (更多接口...)*
++        *   *- (详细信息请参考 `docs/api_usage_summary_cn.md`)*
++
++### 5. (可选) 对外暴露的服务/接口 (Exposed Services/Interfaces)
++
++*   如果你的模块设计为向其他模块提供服务或数据 (例如，认证模块提供 `getCurrentUser()` 方法)，请在此说明暴露的接口或方法及其用法。
++    *   *(应尽量减少模块间的直接调用，优先通过核心服务或事件总线解耦)*
++
++### 6. (可选) 注意事项/配置要求
++
++*   运行或使用本模块是否有特殊的环境要求、配置步骤或注意事项？
++    *   *示例: "本模块功能需要设备开启定位权限。"*
++
++### 7. 依赖包使用说明 (Package Dependencies)
++
++*   **依赖包清单:** 列出本模块实现过程中使用的所有主要依赖包（不包括Flutter/Dart核心库）。
++*   **版本信息:** 标注每个依赖包所使用的版本。
++*   **用途说明:** 简要描述每个依赖包在模块中的主要用途。
++*   **使用位置:** 指明在模块的哪些文件或功能中使用了这些依赖包。
++    *   *示例 (订单模块):*
++        *   *- `flutter_bloc: ^8.1.3` - 用于状态管理，在所有Bloc文件中使用*
++        *   *- `equatable: ^2.0.5` - 用于简化相等性比较，在所有实体类和状态类中使用*
++        *   *- `cached_network_image: ^3.2.3` - 用于带缓存的图片加载，在`OrderItemCard`和`ProductDetailView`中使用*
++        *   *- `drift: ^2.10.0` - 用于订单列表本地缓存实现，在`OrderLocalDataSourceImpl`中使用*
++        *   *- `path_provider: ^2.0.15` - 配合drift提供数据库存储位置，在`AppDatabase`中使用*
++
++### 8. 资源管理说明 (Resource Management)
++
++*   **模块资源列表:** 列出本模块使用的所有特定资源文件（图片、图标、字体、JSON数据等）。
++*   **资源命名规范:** 说明模块资源的命名约定，以避免与其他模块资源冲突。
++    *   *示例: "所有订单模块的图片资源均使用 `order_` 前缀，如 `order_status_delivered.png`"*
++*   **资源存放位置:** 明确指出这些资源的存放路径，是在模块内部还是在全局资源目录。
++    *   *示例: "模块特有图标存放在 `assets/images/orders/` 目录下，共享图标使用 `assets/images/common/`"*
++*   **资源使用方式:** 简要描述如何在代码中正确引用这些资源。
++    *   *示例: "通过 `Assets.images.orders.statusDelivered.image()` 方式引用（使用了assets_gen生成的访问器）"*
++
++### 9. 已知问题与解决方案 (Known Issues & Solutions)
++
++*   **已知限制:** 列出模块当前存在的已知问题、限制或不完善之处。
++    *   *示例: "在网络极慢情况下，订单列表可能出现短暂白屏现象"*
++*   **临时解决方案:** 说明针对这些问题的临时解决方案或规避措施。
++    *   *示例: "使用loading占位图解决图片加载失败问题"*
++*   **修复计划:** 如果有计划在未来版本中修复的问题，请说明预计修复时间和方案。
++    *   *示例: "计划在v2.0版本通过预加载方式解决首次加载缓慢问题"*
++*   **开发者注意事项:** 提醒其他可能使用或维护此模块的开发者需要注意的事项。
++    *   *示例: "订单状态更新逻辑目前不支持部分发货状态，需等待后端API更新"*
++
++### 10. 跨模块通信机制 (Cross-Module Communication)
++
++*   **输出事件/通知:** 列出此模块可能发出的、其他模块可能需要响应的事件或通知。
++    *   *示例: "订单支付成功后，会发出 `OrderPaidEvent`，购物车模块需监听此事件以清空购物车"*
++*   **输入事件/通知:** 列出此模块需要响应的、由其他模块发出的事件或通知。
++    *   *示例: "本模块监听 `UserLogoutEvent` 以清除当前用户的订单缓存"*
++*   **通信方式:** 说明使用何种机制实现模块间通信（如事件总线、全局状态管理、服务注入等）。
++    *   *示例: "使用 `event_bus` 包实现跨模块事件传递，相关代码位于 `lib/core/event/app_events.dart`"*
++*   **直接依赖:** 明确说明本模块是否直接依赖其他模块的服务或数据（应尽量避免），若有则详细说明。
++    *   *示例: "订单确认页面需直接调用地址模块的 `AddressRepository` 获取用户地址信息"*
++
++---
++
++**请确保在模块开发完成后，及时更新此 `README.md` 文档，保持其准确性。** 这将极大地帮助其他同事理解和集成你的工作成果。
++
++
+diff --git a/lib/features/ai_docs/presentation/routes/ai_docs_routes.dart b/lib/features/ai_docs/presentation/routes/ai_docs_routes.dart
+new file mode 100644
+index 0000000..3ba5d36
+--- /dev/null
++++ b/lib/features/ai_docs/presentation/routes/ai_docs_routes.dart
+@@ -0,0 +1,50 @@
++import 'package:flutter/material.dart'; // Needed potentially for page transitions or builders
++import 'package:go_router/go_router.dart';
++import 'package:flutter_bloc/flutter_bloc.dart'; // For BlocProvider
++
++// Import the DI container instance
++import '../../../../app/di/injection_container.dart'; // Adjust path if needed
++
++// Correctly import the Bloc and Page for this route
++import '../bloc/ai_chat/ai_chat_bloc.dart'; // Corrected path
++import '../pages/chat_page.dart' hide getIt; // Hide getIt from chat_page if it exports it
++
++/// Defines routes specifically for the AiDocs feature module.
++class AiDocsRoutes {
++  // Private constructor to prevent instantiation
++  AiDocsRoutes._();
++
++  /// Static getter for the list of routes defined in this module.
++  static List<RouteBase> get routes => _routes;
++
++  // Define the routes for this module
++  static final List<RouteBase> _routes = [
++    GoRoute(
++      path: '/ai_chat', // Example path for the main chat interface
++      name: 'aiChat',   // Optional route name
++      // Wrap ChatPage with BlocProvider for AiChatBloc
++      builder: (context, state) => BlocProvider(
++        // Use GetIt (imported from injection_container) to create the AiChatBloc instance
++        create: (_) => getIt<AiChatBloc>(),
++        child: const ChatPage(), // Assuming ChatPage takes no initial parameters for this route
++      ),
++      // TODO: Add sub-routes if needed, e.g., for specific conversation IDs:
++      // routes: [
++      //   GoRoute(
++      //     path: ':conversationId', // e.g., /ai_chat/123
++      //     name: 'aiConversation',
++      //     builder: (context, state) {
++      //       final conversationId = state.pathParameters['conversationId'];
++      //       // Might need a different Bloc or pass ID to existing Bloc/Page
++      //       return BlocProvider(
++      //         create: (_) => getIt<AiChatBloc>()..add(LoadSpecificConversation(conversationId)), // Example
++      //         child: ChatPage(conversationId: conversationId), // Assuming ChatPage can take ID
++      //       );
++      //     },
++      //   ),
++      // ]
++    ),
++    // TODO: Add other routes for the ai_docs module if needed
++    // e.g., a route for conversation list page?
++  ];
++} 
+\ No newline at end of file
+diff --git a/lib/main_ai_docs_preview.dart b/lib/main_ai_docs_preview.dart
+new file mode 100644
+index 0000000..85c33bb
+--- /dev/null
++++ b/lib/main_ai_docs_preview.dart
+@@ -0,0 +1,108 @@
++import 'package:dskk_flutter_refactor/features/ai_docs/presentation/bloc/ai_chat/ai_chat_bloc.dart';
++import 'package:dskk_flutter_refactor/features/ai_docs/presentation/pages/chat_page.dart';
++import 'package:dskk_flutter_refactor/app/di/injection_container.dart' as di;
++import 'package:flutter/material.dart';
++import 'package:flutter_bloc/flutter_bloc.dart';
++import 'package:flutter_dotenv/flutter_dotenv.dart';
++import 'dart:io'; // Import dart:io for FileSystemException
++import 'package:package_info_plus/package_info_plus.dart';
++import 'package:flutter_secure_storage/flutter_secure_storage.dart';
++import 'package:get_it/get_it.dart';
++import 'package:go_router/go_router.dart';
++import 'features/ai_docs/presentation/routes/ai_docs_routes.dart';
++// import 'core/config/theme/app_theme.dart'; // Remove import for non-existent file
++
++// No need to import injectable here if not using Environment constants directly
++// import 'package:injectable/injectable.dart'; 
++
++// GetIt instance
++final getIt = GetIt.instance;
++
++// Temporary entry point for previewing the AI Docs Chat module.
++Future<void> main() async {
++  // 1. Ensure WidgetsBinding initialized
++  WidgetsFlutterBinding.ensureInitialized();
++
++  // 2. Load .env file BEFORE configuring dependencies
++  try {
++    // Try explicitly using the default filename again
++    await dotenv.load(fileName: ".env"); 
++    print(".env file loaded successfully.");
++    print("MODEL_BASE_URL from env: ${dotenv.env['MODEL_BASE_URL']}");
++    print("BACKEND_BASE_URL from env: ${dotenv.env['BACKEND_BASE_URL']}");
++  } catch (e) {
++      print("Error loading .env file: $e");
++      // Add more details about the error type
++      print("Error type: ${e.runtimeType}");
++      if (e is FileSystemException) {
++        print("FileSystemException Path: ${e.path}");
++        print("FileSystemException OS Error: ${e.osError}");
++      }
++  }
++
++  // 3. Configure dependencies AFTER loading .env
++  await di.configureDependencies(); 
++  print("Dependencies configured.");
++
++  // --- Register Core Singletons needed before configureDependencies ---
++  // Register baseUrl
++  try {
++    final baseUrl = dotenv.env['BACKEND_BASE_URL'];
++    if (baseUrl != null && baseUrl.isNotEmpty) {
++      getIt.registerSingleton<String>(baseUrl, instanceName: 'baseUrl');
++      print('[main_ai_docs_preview] Registered baseUrl: $baseUrl');
++    } else {
++      throw Exception('BACKEND_BASE_URL missing in .env');
++    }
++  } catch (e) {
++    print('[main_ai_docs_preview] ERROR registering baseUrl: $e');
++    throw Exception('Failed to load/register baseUrl');
++  }
++  // Register SecureStorage
++  getIt.registerLazySingleton<FlutterSecureStorage>(() => const FlutterSecureStorage());
++  print('[main_ai_docs_preview] Registered FlutterSecureStorage.');
++  // Register PackageInfo
++  try {
++    final packageInfo = await PackageInfo.fromPlatform();
++    getIt.registerSingleton<PackageInfo>(packageInfo);
++    print('[main_ai_docs_preview] Registered PackageInfo: ${packageInfo.packageName}');
++  } catch (e) {
++    print('[main_ai_docs_preview] ERROR registering PackageInfo: $e');
++    throw Exception('Failed to initialize PackageInfo');
++  }
++  // -------------------------------------------------------------------
++
++  // 4. Run the app
++  runApp(const AiDocsPreviewApp());
++  print("App running.");
++}
++
++// --- GoRouter instance specifically for this preview ---
++final GoRouter _previewRouter = GoRouter(
++  initialLocation: '/ai_chat', // Start directly at the AI chat page
++  debugLogDiagnostics: true,
++  routes: [
++    // Only include routes from the AiDocs module for this preview
++    ...AiDocsRoutes.routes,
++  ],
++  errorBuilder: (context, state) => Scaffold(
++    appBar: AppBar(title: const Text('Preview Error')),
++    body: Center(child: Text('Error loading preview route: ${state.error}')),
++  ),
++);
++// ----------------------------------------------------
++
++class AiDocsPreviewApp extends StatelessWidget {
++  const AiDocsPreviewApp({super.key});
++
++  @override
++  Widget build(BuildContext context) {
++    // Use MaterialApp.router with the preview-specific router
++    return MaterialApp.router(
++      title: 'AI Docs Preview',
++      // Use default light theme as AppTheme is not found in this branch
++      theme: ThemeData.light(useMaterial3: true),
++      routerConfig: _previewRouter, // Use the preview router
++    );
++  }
++}
+diff --git a/linux/flutter/generated_plugin_registrant.cc b/linux/flutter/generated_plugin_registrant.cc
+deleted file mode 100644
+index 64e0362..0000000
+--- a/linux/flutter/generated_plugin_registrant.cc
++++ /dev/null
+@@ -1,23 +0,0 @@
+-//
+-//  Generated file. Do not edit.
+-//
+-
+-// clang-format off
+-
+-#include "generated_plugin_registrant.h"
+-
+-#include <audioplayers_linux/audioplayers_linux_plugin.h>
+-#include <file_selector_linux/file_selector_plugin.h>
+-#include <record_linux/record_linux_plugin.h>
+-
+-void fl_register_plugins(FlPluginRegistry* registry) {
+-  g_autoptr(FlPluginRegistrar) audioplayers_linux_registrar =
+-      fl_plugin_registry_get_registrar_for_plugin(registry, "AudioplayersLinuxPlugin");
+-  audioplayers_linux_plugin_register_with_registrar(audioplayers_linux_registrar);
+-  g_autoptr(FlPluginRegistrar) file_selector_linux_registrar =
+-      fl_plugin_registry_get_registrar_for_plugin(registry, "FileSelectorPlugin");
+-  file_selector_plugin_register_with_registrar(file_selector_linux_registrar);
+-  g_autoptr(FlPluginRegistrar) record_linux_registrar =
+-      fl_plugin_registry_get_registrar_for_plugin(registry, "RecordLinuxPlugin");
+-  record_linux_plugin_register_with_registrar(record_linux_registrar);
+-}
+diff --git a/linux/flutter/generated_plugins.cmake b/linux/flutter/generated_plugins.cmake
+deleted file mode 100644
+index 081622c..0000000
+--- a/linux/flutter/generated_plugins.cmake
++++ /dev/null
+@@ -1,26 +0,0 @@
+-#
+-# Generated file, do not edit.
+-#
+-
+-list(APPEND FLUTTER_PLUGIN_LIST
+-  audioplayers_linux
+-  file_selector_linux
+-  record_linux
+-)
+-
+-list(APPEND FLUTTER_FFI_PLUGIN_LIST
+-)
+-
+-set(PLUGIN_BUNDLED_LIBRARIES)
+-
+-foreach(plugin ${FLUTTER_PLUGIN_LIST})
+-  add_subdirectory(flutter/ephemeral/.plugin_symlinks/${plugin}/linux plugins/${plugin})
+-  target_link_libraries(${BINARY_NAME} PRIVATE ${plugin}_plugin)
+-  list(APPEND PLUGIN_BUNDLED_LIBRARIES $<TARGET_FILE:${plugin}_plugin>)
+-  list(APPEND PLUGIN_BUNDLED_LIBRARIES ${${plugin}_bundled_libraries})
+-endforeach(plugin)
+-
+-foreach(ffi_plugin ${FLUTTER_FFI_PLUGIN_LIST})
+-  add_subdirectory(flutter/ephemeral/.plugin_symlinks/${ffi_plugin}/linux plugins/${ffi_plugin})
+-  list(APPEND PLUGIN_BUNDLED_LIBRARIES ${${ffi_plugin}_bundled_libraries})
+-endforeach(ffi_plugin)
+diff --git a/macos/Flutter/GeneratedPluginRegistrant.swift b/macos/Flutter/GeneratedPluginRegistrant.swift
+index 9097322..d4865b4 100644
+--- a/macos/Flutter/GeneratedPluginRegistrant.swift
++++ b/macos/Flutter/GeneratedPluginRegistrant.swift
+@@ -8,6 +8,7 @@ import Foundation
+ import audioplayers_darwin
+ import file_selector_macos
+ import flutter_image_compress_macos
++import flutter_secure_storage_macos
+ import package_info_plus
+ import path_provider_foundation
+ import record_darwin
+@@ -17,6 +18,7 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
+   AudioplayersDarwinPlugin.register(with: registry.registrar(forPlugin: "AudioplayersDarwinPlugin"))
+   FileSelectorPlugin.register(with: registry.registrar(forPlugin: "FileSelectorPlugin"))
+   FlutterImageCompressMacosPlugin.register(with: registry.registrar(forPlugin: "FlutterImageCompressMacosPlugin"))
++  FlutterSecureStoragePlugin.register(with: registry.registrar(forPlugin: "FlutterSecureStoragePlugin"))
+   FPPPackageInfoPlusPlugin.register(with: registry.registrar(forPlugin: "FPPPackageInfoPlusPlugin"))
+   PathProviderPlugin.register(with: registry.registrar(forPlugin: "PathProviderPlugin"))
+   RecordPlugin.register(with: registry.registrar(forPlugin: "RecordPlugin"))
+diff --git a/pubspec.lock b/pubspec.lock
+index c1c7d0d..208285f 100644
+--- a/pubspec.lock
++++ b/pubspec.lock
+@@ -37,10 +37,10 @@ packages:
+     dependency: transitive
+     description:
+       name: async
+-      sha256: d2872f9c19731c2e5f10444b14686eb7cc85c76274bd6c16e1816bff9a3bab63
++      sha256: "758e6d74e971c3e5aceb4110bfd6698efc7f501675bcfe0c775459a8140750eb"
+       url: "https://pub.dev"
+     source: hosted
+-    version: "2.12.0"
++    version: "2.13.0"
+   audioplayers:
+     dependency: "direct main"
+     description:
+@@ -475,6 +475,54 @@ packages:
+       url: "https://pub.dev"
+     source: hosted
+     version: "2.0.27"
++  flutter_secure_storage:
++    dependency: "direct main"
++    description:
++      name: flutter_secure_storage
++      sha256: "9cad52d75ebc511adfae3d447d5d13da15a55a92c9410e50f67335b6d21d16ea"
++      url: "https://pub.dev"
++    source: hosted
++    version: "9.2.4"
++  flutter_secure_storage_linux:
++    dependency: transitive
++    description:
++      name: flutter_secure_storage_linux
++      sha256: bf7404619d7ab5c0a1151d7c4e802edad8f33535abfbeff2f9e1fe1274e2d705
++      url: "https://pub.dev"
++    source: hosted
++    version: "1.2.2"
++  flutter_secure_storage_macos:
++    dependency: transitive
++    description:
++      name: flutter_secure_storage_macos
++      sha256: "6c0a2795a2d1de26ae202a0d78527d163f4acbb11cde4c75c670f3a0fc064247"
++      url: "https://pub.dev"
++    source: hosted
++    version: "3.1.3"
++  flutter_secure_storage_platform_interface:
++    dependency: transitive
++    description:
++      name: flutter_secure_storage_platform_interface
++      sha256: cf91ad32ce5adef6fba4d736a542baca9daf3beac4db2d04be350b87f69ac4a8
++      url: "https://pub.dev"
++    source: hosted
++    version: "1.1.2"
++  flutter_secure_storage_web:
++    dependency: transitive
++    description:
++      name: flutter_secure_storage_web
++      sha256: f4ebff989b4f07b2656fb16b47852c0aab9fed9b4ec1c70103368337bc1886a9
++      url: "https://pub.dev"
++    source: hosted
++    version: "1.2.1"
++  flutter_secure_storage_windows:
++    dependency: transitive
++    description:
++      name: flutter_secure_storage_windows
++      sha256: b20b07cb5ed4ed74fc567b78a72936203f587eba460af1df11281c9326cd3709
++      url: "https://pub.dev"
++    source: hosted
++    version: "3.1.2"
+   flutter_web_plugins:
+     dependency: transitive
+     description: flutter
+@@ -668,10 +716,10 @@ packages:
+     dependency: transitive
+     description:
+       name: js
+-      sha256: "53385261521cc4a0c4658fd0ad07a7d14591cf8fc33abbceae306ddb974888dc"
++      sha256: f2c445dce49627136094980615a031419f7f3eb393237e4ecd97ac15dea343f3
+       url: "https://pub.dev"
+     source: hosted
+-    version: "0.7.2"
++    version: "0.6.7"
+   json_annotation:
+     dependency: "direct main"
+     description:
+@@ -684,10 +732,10 @@ packages:
+     dependency: "direct dev"
+     description:
+       name: json_serializable
+-      sha256: "81f04dee10969f89f604e1249382d46b97a1ccad53872875369622b5bfc9e58a"
++      sha256: c50ef5fc083d5b5e12eef489503ba3bf5ccc899e487d691584699b4bdefeea8c
+       url: "https://pub.dev"
+     source: hosted
+-    version: "6.9.4"
++    version: "6.9.5"
+   lints:
+     dependency: transitive
+     description:
+@@ -852,10 +900,10 @@ packages:
+     dependency: transitive
+     description:
+       name: permission_handler_apple
+-      sha256: f84a188e79a35c687c132a0a0556c254747a08561e99ab933f12f6ca71ef3c98
++      sha256: f000131e755c54cf4d84a5d8bd6e4149e262cc31c5a8b1d698de1ac85fa41023
+       url: "https://pub.dev"
+     source: hosted
+-    version: "9.4.6"
++    version: "9.4.7"
+   permission_handler_html:
+     dependency: transitive
+     description:
+@@ -980,10 +1028,10 @@ packages:
+     dependency: transitive
+     description:
+       name: record_web
+-      sha256: ef6f5c7760f22d6785ee8d97a2133ff14cb839c65e525ad831eb7f891d83f592
++      sha256: "654c08113961051dcb5427e63f56315ba47c0752781ba990dac9313d0ec23c70"
+       url: "https://pub.dev"
+     source: hosted
+-    version: "1.1.5"
++    version: "1.1.6"
+   record_windows:
+     dependency: transitive
+     description:
+@@ -1289,10 +1337,10 @@ packages:
+     dependency: transitive
+     description:
+       name: vm_service
+-      sha256: "0968250880a6c5fe7edc067ed0a13d4bae1577fe2771dcf3010d52c4a9d3ca14"
++      sha256: ddfa8d30d89985b96407efce8acbdd124701f96741f2d981ca860662f1c0dc02
+       url: "https://pub.dev"
+     source: hosted
+-    version: "14.3.1"
++    version: "15.0.0"
+   watcher:
+     dependency: transitive
+     description:
+@@ -1313,18 +1361,18 @@ packages:
+     dependency: transitive
+     description:
+       name: web_socket
+-      sha256: "3c12d96c0c9a4eec095246debcea7b86c0324f22df69893d538fcc6f1b8cce83"
++      sha256: bfe6f435f6ec49cb6c01da1e275ae4228719e59a6b067048c51e72d9d63bcc4b
+       url: "https://pub.dev"
+     source: hosted
+-    version: "0.1.6"
++    version: "1.0.0"
+   web_socket_channel:
+     dependency: transitive
+     description:
+       name: web_socket_channel
+-      sha256: "0b8e2457400d8a859b7b2030786835a28a8e80836ef64402abef392ff4f1d0e5"
++      sha256: d645757fb0f4773d602444000a8131ff5d48c9e47adfe9772652dd1a4f2d45c8
+       url: "https://pub.dev"
+     source: hosted
+-    version: "3.0.2"
++    version: "3.0.3"
+   webkit_inspection_protocol:
+     dependency: transitive
+     description:
+diff --git a/pubspec.yaml b/pubspec.yaml
+index 43ef07f..4b041e3 100644
+--- a/pubspec.yaml
++++ b/pubspec.yaml
+@@ -56,6 +56,9 @@ dependencies:
+   freezed_annotation: ^2.4.1
+   json_annotation: ^4.8.1
+ 
++  # Secure Storage
++  flutter_secure_storage: ^9.2.2 # Add secure storage dependency
++
+   # --- Add audioplayers here ---
+   audioplayers: ^6.0.0 # For audio playback
+ 
+diff --git a/windows/flutter/generated_plugin_registrant.cc b/windows/flutter/generated_plugin_registrant.cc
+deleted file mode 100644
+index 0227ee6..0000000
+--- a/windows/flutter/generated_plugin_registrant.cc
++++ /dev/null
+@@ -1,23 +0,0 @@
+-//
+-//  Generated file. Do not edit.
+-//
+-
+-// clang-format off
+-
+-#include "generated_plugin_registrant.h"
+-
+-#include <audioplayers_windows/audioplayers_windows_plugin.h>
+-#include <file_selector_windows/file_selector_windows.h>
+-#include <permission_handler_windows/permission_handler_windows_plugin.h>
+-#include <record_windows/record_windows_plugin_c_api.h>
+-
+-void RegisterPlugins(flutter::PluginRegistry* registry) {
+-  AudioplayersWindowsPluginRegisterWithRegistrar(
+-      registry->GetRegistrarForPlugin("AudioplayersWindowsPlugin"));
+-  FileSelectorWindowsRegisterWithRegistrar(
+-      registry->GetRegistrarForPlugin("FileSelectorWindows"));
+-  PermissionHandlerWindowsPluginRegisterWithRegistrar(
+-      registry->GetRegistrarForPlugin("PermissionHandlerWindowsPlugin"));
+-  RecordWindowsPluginCApiRegisterWithRegistrar(
+-      registry->GetRegistrarForPlugin("RecordWindowsPluginCApi"));
+-}
+diff --git a/windows/flutter/generated_plugins.cmake b/windows/flutter/generated_plugins.cmake
+deleted file mode 100644
+index b5e4cd4..0000000
+--- a/windows/flutter/generated_plugins.cmake
++++ /dev/null
+@@ -1,27 +0,0 @@
+-#
+-# Generated file, do not edit.
+-#
+-
+-list(APPEND FLUTTER_PLUGIN_LIST
+-  audioplayers_windows
+-  file_selector_windows
+-  permission_handler_windows
+-  record_windows
+-)
+-
+-list(APPEND FLUTTER_FFI_PLUGIN_LIST
+-)
+-
+-set(PLUGIN_BUNDLED_LIBRARIES)
+-
+-foreach(plugin ${FLUTTER_PLUGIN_LIST})
+-  add_subdirectory(flutter/ephemeral/.plugin_symlinks/${plugin}/windows plugins/${plugin})
+-  target_link_libraries(${BINARY_NAME} PRIVATE ${plugin}_plugin)
+-  list(APPEND PLUGIN_BUNDLED_LIBRARIES $<TARGET_FILE:${plugin}_plugin>)
+-  list(APPEND PLUGIN_BUNDLED_LIBRARIES ${${plugin}_bundled_libraries})
+-endforeach(plugin)
+-
+-foreach(ffi_plugin ${FLUTTER_FFI_PLUGIN_LIST})
+-  add_subdirectory(flutter/ephemeral/.plugin_symlinks/${ffi_plugin}/windows plugins/${ffi_plugin})
+-  list(APPEND PLUGIN_BUNDLED_LIBRARIES ${${ffi_plugin}_bundled_libraries})
+-endforeach(ffi_plugin)

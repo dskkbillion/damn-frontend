@@ -3,8 +3,8 @@ import 'package:injectable/injectable.dart';
 import 'package:dio/dio.dart';
 import 'package:dskk_flutter_refactor/core/network/network_info.dart'; // Import NetworkInfo
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_repository.dart';
-// Import the MockAuthRepository which implements IUserRepository
-import 'package:dskk_flutter_refactor/core/auth/repositories/mocks/mock_auth_repository.dart';
+// 导入我们新创建的MockUserRepository
+import 'package:dskk_flutter_refactor/features/chat/data/repositories/mocks/mock_user_repository.dart';
 
 // Interfaces
 import '../domain/repositories/i_chat_repository.dart';
@@ -38,7 +38,16 @@ abstract class ChatInjectableModule {
 
   // --- Provide Mock IUserRepository for Chat Preview/Branch --- 
   @lazySingleton
-  IUserRepository get mockUserRepository => MockAuthRepository(); 
+  @Named('mockUserRepository')  // 使用Named注解来标识这是一个特定的mock实现
+  IUserRepository get mockUserRepository => MockUserRepository();
+  
+  // 添加默认的IUserRepository注册，确保没有其他模块注册时可以使用mock版本
+  @lazySingleton
+  IUserRepository provideUserRepository() {
+    // 直接返回MockUserRepository实例，避免循环依赖
+    print("注意: 使用聊天模块的Mock用户仓库 (避免循环依赖)");
+    return MockUserRepository();
+  }
 
   // --- DataSources ---
   @lazySingleton
@@ -57,10 +66,10 @@ abstract class ChatInjectableModule {
   @lazySingleton
   IChatRepository chatRepository(
     IChatRemoteDataSource remoteDataSource,
-    @Named('mockUserRepository') IUserRepository userRepository, // Inject the named mock
+    IUserRepository userRepository, // 直接使用注入的IUserRepository
   ) => ChatRepositoryImpl(
         remoteDataSource: remoteDataSource,
-        userRepository: userRepository,
+        userRepository: userRepository, // 使用注入的userRepository
       );
 
   @lazySingleton

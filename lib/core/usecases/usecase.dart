@@ -3,17 +3,13 @@ import 'package:equatable/equatable.dart';
 
 import '../error/failures.dart';
 
-/// {@template usecase}
-/// Base class for UseCases in the application.
+/// 定义 Use Case 的通用契约。
 ///
-/// Defines a standard way to execute a use case, typically involving a call method.
-/// [Type] represents the return type of the use case (the success type).
-/// [Params] represents the parameters required to execute the use case.
-/// {@endtemplate}
+/// [Type] 是 Use Case 成功执行时返回的数据类型。
+/// [Params] 是执行 Use Case 所需的输入参数类型。
+/// 如果 Use Case 不需要参数，可以使用 [NoParams]。
 abstract class UseCase<Type, Params> {
-  /// Executes the use case.
-  ///
-  /// Returns an [Either] containing either a [Failure] or the expected [Type].
+  /// 执行 Use Case 的核心方法。
   Future<Either<Failure, Type>> call(Params params);
 }
 
@@ -23,10 +19,11 @@ abstract class UseCaseWithoutParams<Type> {
   Future<Either<Failure, Type>> call();
 }
 
+/// 用于表示 Use Case 不需要任何输入参数的情况。
 /// {@template noparams}
 /// A helper class representing the absence of parameters for a use case.
 /// {@endtemplate}
 class NoParams extends Equatable {
   @override
   List<Object?> get props => [];
-} 
+}

@@ -5,29 +5,30 @@ import 'package:bloc/bloc.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import Secure Storage
 
 // Core
-import '../../../../../core/error/failures.dart';
+import 'package:dskk_flutter_refactor/core/error/failures.dart'; // Use package import
 
-// Domain Layer
-import '../../../domain/entities/ai_chat_message_entity.dart';
-import '../../../domain/entities/ai_conversation_entity.dart';
-import '../../../domain/entities/chat_allocation_result_entity.dart';
-import '../../../domain/entities/related_service_entity.dart';
-import '../../../domain/usecases/allocate_chat_resource_usecase.dart';
-import '../../../domain/usecases/create_conversation_usecase.dart';
-import '../../../domain/usecases/delete_conversation_usecase.dart';
-import '../../../domain/usecases/get_conversations_usecase.dart';
-import '../../../domain/usecases/get_related_services_usecase.dart';
-import '../../../domain/usecases/load_history_usecase.dart';
-import '../../../domain/usecases/stream_chat_completion_usecase.dart';
-import '../../../domain/usecases/transcribe_audio_usecase.dart';
-import '../../../domain/usecases/upload_file_usecase.dart';
+// Domain Layer - Use package imports
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_chat_message_entity.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_conversation_entity.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/chat_allocation_result_entity.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/related_service_entity.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/allocate_chat_resource_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/create_conversation_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/delete_conversation_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/get_conversations_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/get_related_services_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/load_history_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/stream_chat_completion_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/transcribe_audio_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/upload_file_usecase.dart';
 
-// Move Exports Before Parts
-export '../../../domain/entities/ai_conversation_entity.dart'; 
-export '../../../domain/entities/ai_chat_message_entity.dart'; 
-export '../../../domain/entities/related_service_entity.dart'; 
+// Move Exports Before Parts - Use package imports
+export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_conversation_entity.dart'; 
+export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_chat_message_entity.dart'; 
+export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/related_service_entity.dart'; 
 
 // Parts (No Duplicates)
 part 'ai_chat_event.dart';
@@ -50,9 +51,11 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   final AllocateChatResourceUseCase _allocateChatResource;
   final TranscribeAudioUseCase _transcribeAudio;
 
+  // --- Inject Secure Storage --- 
+  final FlutterSecureStorage _storage;
+
   // Internal state - Replace with state properties where possible
   // int? _currentConversationId; // REMOVE - Use state.selectedConversationId instead
-  final int _currentUserId = 1; // Set test userId to 1
   StreamSubscription<String>? _chatStreamSubscription;
 
   AiChatBloc(
@@ -65,6 +68,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     this._getRelatedServices,
     this._allocateChatResource,
     this._transcribeAudio,
+    this._storage, // Add storage to constructor
     // Start with initial state containing defaults for new properties
   ) : super(const AiChatState()) { 
     // --- Register event handlers ---
@@ -91,28 +95,61 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     on<RemovePendingImage>(_onRemovePendingImage);
   }
 
+  // --- Helper to get current user ID --- 
+  // Returns null if not found or not an int
+  Future<int?> _getCurrentUserId() async {
+    final userIdString = await _storage.read(key: 'user_id');
+    if (userIdString != null) {
+      // Parse the string to int
+      return int.tryParse(userIdString);
+    }
+    return null;
+  }
+
   // --- Conversation List Handlers ---
 
   Future<void> _onLoadConversations(
     LoadConversations event,
     Emitter<AiChatState> emit,
   ) async {
+     print("[AiChatBloc] _onLoadConversations triggered.");
      // Indicate loading state for the conversation list
      emit(state.copyWith(conversationsStatus: ConversationsStatus.loading));
-     final result = await _getConversations(GetConversationsParams(userId: _currentUserId));
+     final userId = await _getCurrentUserId();
+     print("[AiChatBloc] _onLoadConversations: Retrieved userId = $userId");
+
+     if (userId == null) {
+       print("[AiChatBloc] _onLoadConversations: userId is null. Emitting error.");
+       emit(state.copyWith(conversationsStatus: ConversationsStatus.error, conversationListErrorMessage: "User not authenticated or invalid ID format"));
+       return;
+     }
+
+     print("[AiChatBloc] _onLoadConversations: Calling _getConversations with userId: $userId");
+     // Pass int userId to Params
+     final result = await _getConversations(GetConversationsParams(userId: userId)); 
+     print("[AiChatBloc] _onLoadConversations: _getConversations result: $result");
+
      result.fold(
-       (failure) => emit(state.copyWith(
-           conversationsStatus: ConversationsStatus.error,
-           // Use the dedicated error message field for conversation list errors
-           conversationListErrorMessage: failure.toString(),
-        )),
-       (conversations) => emit(state.copyWith(
-           conversationsStatus: ConversationsStatus.loaded,
-           conversations: conversations,
-           // Clear conversation list error on success
-           clearConversationListErrorMessage: true,
-       )),
+       (failure) {
+         print("[AiChatBloc] _onLoadConversations: Failure - $failure. Emitting error state.");
+         emit(state.copyWith(
+             conversationsStatus: ConversationsStatus.error,
+             // Use the dedicated error message field for conversation list errors
+             conversationListErrorMessage: failure.toString(),
+          ));
+       },
+       (conversations) {
+         print("[AiChatBloc] _onLoadConversations: Success - Received ${conversations.length} conversations. Emitting loaded state.");
+         emit(state.copyWith(
+             conversationsStatus: ConversationsStatus.loaded,
+             conversations: conversations,
+             // Clear conversation list error on success
+             clearConversationListErrorMessage: true,
+         ));
+       },
      );
+     // Log the final emitted state for debugging
+     print("[AiChatBloc] _onLoadConversations: Final emitted state status = ${state.conversationsStatus}, count = ${state.conversations.length}"); 
   }
 
    Future<void> _onSelectConversation(
@@ -133,9 +170,14 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     ));
 
     // Load history for the selected conversation
+    final userId = await _getCurrentUserId();
+    if (userId == null) {
+       emit(state.copyWith(status: AiChatStatus.historyLoadFailure, errorMessage: 'User not authenticated or invalid ID format'));
+       return;
+    }
     final historyResult = await _loadHistory(LoadHistoryParams(
       conversationId: event.conversationId,
-      userId: _currentUserId,
+      userId: userId,
     ));
 
     historyResult.fold(
@@ -157,7 +199,12 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   ) async {
      // Indicate loading in the conversation list sidebar
      emit(state.copyWith(conversationsStatus: ConversationsStatus.loading)); 
-    final result = await _createConversation(CreateConversationParams(userId: _currentUserId, title: event.title));
+    final userId = await _getCurrentUserId();
+    if (userId == null) {
+      emit(state.copyWith(conversationsStatus: ConversationsStatus.error, conversationListErrorMessage: 'User not authenticated or invalid ID format'));
+      return;
+    }
+    final result = await _createConversation(CreateConversationParams(userId: userId, title: event.title));
 
     result.fold(
       (failure) => emit(state.copyWith(
@@ -191,7 +238,12 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
 
     // Indicate loading in the conversation list sidebar
     emit(state.copyWith(conversationsStatus: ConversationsStatus.loading));
-    final result = await _deleteConversation(DeleteConversationParams(conversationId: idToDelete, userId: _currentUserId));
+    final userId = await _getCurrentUserId();
+    if (userId == null) {
+      emit(state.copyWith(conversationsStatus: ConversationsStatus.error, conversationListErrorMessage: 'User not authenticated or invalid ID format'));
+      return;
+    }
+    final result = await _deleteConversation(DeleteConversationParams(conversationId: idToDelete, userId: userId));
 
     result.fold(
       (failure) => emit(state.copyWith(
@@ -242,6 +294,11 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     // 2. Start background upload
     print("[Bloc] Starting upload for: $imagePath");
     try {
+      final userId = await _getCurrentUserId();
+      if (userId == null) {
+        emit(state.copyWith(status: AiChatStatus.messageSendFailure, errorMessage: 'User not authenticated or invalid ID format'));
+        return;
+      }
       final uploadResult = await _uploadFile(UploadFileParams(file: imageFile));
       uploadResult.fold(
         (failure) {
@@ -363,6 +420,11 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     }
 
     // --- Add user message optimistically --- 
+    final userId = await _getCurrentUserId();
+    if (userId == null) {
+      emit(state.copyWith(status: AiChatStatus.messageSendFailure, errorMessage: 'User not authenticated or invalid ID format'));
+      return;
+    }
     final userMessage = AiChatMessageEntity(
       messageId: 'local_user_${DateTime.now().millisecondsSinceEpoch}',
       conversationId: currentConversationId,
@@ -393,7 +455,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     // --- Initiate the actual streaming call --- 
     final streamResult = await _streamChatCompletion(StreamChatCompletionParams(
       conversationId: currentConversationId,
-      userId: _currentUserId,
+      userId: userId,
       message: event.message,
       fileUrls: urlsToSend, // Pass ONLY the successfully uploaded URLs
     ));
@@ -437,6 +499,11 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     emit(state.copyWith(status: AiChatStatus.sendingMessage, clearErrorMessage: true));
 
     // 2. Upload the audio file
+    final userId = await _getCurrentUserId();
+    if (userId == null) {
+      emit(state.copyWith(status: AiChatStatus.messageSendFailure, errorMessage: 'User not authenticated or invalid ID format'));
+      return;
+    }
     final uploadResult = await _uploadFile(UploadFileParams(file: event.audioFile));
 
     await uploadResult.fold(
@@ -577,9 +644,14 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     ));
 
     // Call the use case
+    final userId = await _getCurrentUserId();
+    if (userId == null) {
+      emit(state.copyWith(recommendationsStatus: RecommendationsStatus.error, recommendationsErrorMessage: 'User not authenticated or invalid ID format'));
+      return;
+    }
     final result = await _getRelatedServices(GetRelatedServicesParams(
       conversationId: currentConvId,
-      userId: _currentUserId,
+      userId: userId,
       // limit: 10 // Optional: Add limit if needed
     ));
 
@@ -611,9 +683,14 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
      emit(state.copyWith(status: AiChatStatus.allocatingResource, clearErrorMessage: true));
 
      // Construct params using parameters from the event
+     final userId = await _getCurrentUserId();
+     if (userId == null) {
+       emit(state.copyWith(status: AiChatStatus.allocationFailure, errorMessage: 'User not authenticated or invalid ID format'));
+       return;
+     }
      final result = await _allocateChatResource(AllocateChatResourceParams(
         conversationId: currentConvId,
-        userId: _currentUserId,
+        userId: userId,
         item: event.item, // Use item from event
         limit: event.limit, // Use limit from event
         similarityThreshold: event.similarityThreshold, // Use threshold from event
