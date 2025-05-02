@@ -33,6 +33,32 @@ import '../domain/usecases/create_chat_room.dart';
 import '../presentation/bloc/chat_list/chat_list_bloc.dart';
 import '../presentation/bloc/chat_messages/chat_messages_bloc.dart';
 
+// 获取全局GetIt实例
+final sl = GetIt.instance;
+
+// 添加初始化函数
+void initChatDI() {
+  // 直接调用静态方法
+  registerChatMessagesBloc(sl);
+  print('[ChatDI] ChatMessagesBloc registered successfully');
+}
+
+// 将注册方法移到模块外部作为顶级函数
+void registerChatMessagesBloc(GetIt sl) {
+  sl.registerFactoryParam<ChatMessagesBloc, int, void>(
+    (chatId, _) => ChatMessagesBloc(
+      chatId: chatId,
+      getMessageList: sl<GetMessageList>(),
+      sendMessage: sl<SendMessage>(),
+      revokeMessage: sl<RevokeMessage>(),
+      getChatRoomDetails: sl<GetChatRoomDetails>(),
+      deleteChatMessage: sl<DeleteChatMessage>(),
+      userRepository: sl<IUserRepository>(),
+      webSocketDataSource: sl<IChatWebSocketDataSource>(),
+    ),
+  );
+}
+
 @module
 abstract class ChatInjectableModule {
 
@@ -114,8 +140,4 @@ abstract class ChatInjectableModule {
         getChatRoomList: getChatRoomList,
         createChatRoom: createChatRoom,
       );
-  
-  // Register ChatMessagesBloc as a factory that takes parameters
-  // This needs to be handled where it's used (e.g., in the route builder) or via GetIt.registerFactoryParam
-  // We register its non-parameter dependencies here indirectly by registering the use cases etc.
 } 
