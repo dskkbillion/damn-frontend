@@ -204,16 +204,24 @@ import '../../features/seller/data/datasources/i_seller_local_data_source.dart'
     as _i30;
 import '../../features/seller/data/datasources/i_seller_remote_data_source.dart'
     as _i703;
+import '../../features/seller/data/datasources/i_seller_statistics_data_source.dart'
+    as _i446;
 import '../../features/seller/data/datasources/seller_local_data_source_impl.dart'
     as _i507;
 import '../../features/seller/data/datasources/seller_remote_data_source_impl.dart'
     as _i741;
+import '../../features/seller/data/datasources/seller_statistics_data_source_impl.dart'
+    as _i704;
 import '../../features/seller/data/repositories/seller_repository_impl.dart'
     as _i927;
+import '../../features/seller/data/repositories/seller_statistics_repository_impl.dart'
+    as _i235;
 import '../../features/seller/domain/repositories/i_chat_repository.dart'
     as _i452;
 import '../../features/seller/domain/repositories/i_seller_repository.dart'
     as _i203;
+import '../../features/seller/domain/repositories/i_seller_statistics_repository.dart'
+    as _i634;
 import '../../features/seller/domain/usecases/add_order_delivery_usecase.dart'
     as _i655;
 import '../../features/seller/domain/usecases/audit_refund_usecase.dart'
@@ -234,12 +242,18 @@ import '../../features/seller/domain/usecases/get_seller_dashboard_data_usecase.
     as _i452;
 import '../../features/seller/domain/usecases/get_seller_draft_list_usecase.dart'
     as _i725;
+import '../../features/seller/domain/usecases/get_seller_index_statistics_usecase.dart'
+    as _i336;
 import '../../features/seller/domain/usecases/get_seller_notification_list_usecase.dart'
     as _i992;
+import '../../features/seller/domain/usecases/get_seller_percent_statistics_usecase.dart'
+    as _i411;
 import '../../features/seller/domain/usecases/get_seller_product_detail_usecase.dart'
     as _i475;
 import '../../features/seller/domain/usecases/get_seller_product_list_usecase.dart'
     as _i679;
+import '../../features/seller/domain/usecases/get_seller_upgrade_statistics_usecase.dart'
+    as _i75;
 import '../../features/seller/domain/usecases/get_store_profile_usecase.dart'
     as _i714;
 import '../../features/seller/domain/usecases/get_tenant_audit_list_usecase.dart'
@@ -276,6 +290,8 @@ import '../../features/seller/presentation/bloc/product_management/product_manag
     as _i781;
 import '../../features/seller/presentation/bloc/seller_home/seller_home_bloc.dart'
     as _i968;
+import '../../features/seller/presentation/bloc/seller_statistics/seller_statistics_bloc.dart'
+    as _i709;
 import '../../features/seller/presentation/blocs/after_sales_review/after_sales_review_bloc.dart'
     as _i72;
 import '../../features/seller/presentation/blocs/auth_management/auth_management_bloc.dart'
@@ -453,6 +469,8 @@ Future<_i174.GetIt> init(
       () => _i12.GetUserProfileUseCase(gh<_i671.IUserProfileRepository>()));
   gh.factory<_i618.IInviteEvaluationUseCase>(
       () => _i618.InviteEvaluationUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i446.ISellerStatisticsDataSource>(
+      () => _i704.SellerStatisticsDataSourceImpl(gh<_i361.Dio>()));
   gh.factory<_i618.IAddOrderDemandUseCase>(
       () => _i618.AddOrderDemandUseCase(gh<_i724.IOrderRepository>()));
   gh.lazySingleton<_i174.IChatRemoteDataSource>(
@@ -507,6 +525,11 @@ Future<_i174.GetIt> init(
       ));
   gh.lazySingleton<_i107.AuthRemoteDataSource>(
       () => _i123.AuthRemoteDataSourceImpl(dio: gh<_i361.Dio>()));
+  gh.factory<_i634.ISellerStatisticsRepository>(
+      () => _i235.SellerStatisticsRepositoryImpl(
+            gh<_i446.ISellerStatisticsDataSource>(),
+            gh<_i892.NetworkInfo>(),
+          ));
   gh.lazySingleton<_i253.IAfterSalesRemoteDataSource>(
       () => _i519.AfterSalesRemoteDataSource(gh<_i412.CoreDioClient>()));
   gh.lazySingleton<_i826.IFileRepository>(() =>
@@ -533,6 +556,15 @@ Future<_i174.GetIt> init(
       () => chatInjectableModule.deleteChatMessage(gh<_i81.IChatRepository>()));
   gh.lazySingleton<_i690.CreateChatRoom>(
       () => chatInjectableModule.createChatRoom(gh<_i81.IChatRepository>()));
+  gh.factory<_i336.GetSellerIndexStatisticsUseCase>(() =>
+      _i336.GetSellerIndexStatisticsUseCase(
+          gh<_i634.ISellerStatisticsRepository>()));
+  gh.factory<_i411.GetSellerPercentStatisticsUseCase>(() =>
+      _i411.GetSellerPercentStatisticsUseCase(
+          gh<_i634.ISellerStatisticsRepository>()));
+  gh.factory<_i75.GetSellerUpgradeStatisticsUseCase>(() =>
+      _i75.GetSellerUpgradeStatisticsUseCase(
+          gh<_i634.ISellerStatisticsRepository>()));
   gh.factory<_i655.AddOrderDeliveryUseCase>(() => _i655.AddOrderDeliveryUseCase(
         gh<_i203.ISellerRepository>(),
         gh<_i569.IFileUploadRepository>(),
@@ -576,6 +608,11 @@ Future<_i174.GetIt> init(
       () => _i512.OrderDeliveryBloc(gh<_i655.AddOrderDeliveryUseCase>()));
   gh.lazySingleton<_i226.GetWalletSummary>(
       () => _i226.GetWalletSummary(gh<_i636.IWalletRepository>()));
+  gh.factory<_i709.SellerStatisticsBloc>(() => _i709.SellerStatisticsBloc(
+        gh<_i75.GetSellerUpgradeStatisticsUseCase>(),
+        gh<_i336.GetSellerIndexStatisticsUseCase>(),
+        gh<_i411.GetSellerPercentStatisticsUseCase>(),
+      ));
   gh.lazySingleton<_i441.IAfterSalesRepository>(() =>
       _i363.AfterSalesRepositoryImpl(
           remoteDataSource: gh<_i253.IAfterSalesRemoteDataSource>()));

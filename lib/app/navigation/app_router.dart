@@ -48,6 +48,8 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_aut
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/time_management_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/auto_reply_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/order_delivery_page.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/pages/seller_statistics_page.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_statistics/seller_statistics_bloc.dart';
 // -----------------------------------------------
 
 // Placeholder page (defined once) - Only used if a module's routes aren't ready
@@ -106,7 +108,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   ];
 
   // Define Seller Shell Branch Routes explicitly
-  final sellerDashboardRoute = GoRoute(path: '/seller/dashboard', builder: (context, state) => const PlaceholderPage(title: '卖家数据'));
+  final sellerDashboardRoute = GoRoute(
+    path: '/seller/dashboard', 
+    builder: (context, state) => BlocProvider(
+      create: (context) => GetIt.I<SellerStatisticsBloc>(),
+      child: const SellerStatisticsPage(),
+    ),
+  );
   final sellerOrdersRoute = GoRoute(
       path: '/seller/orders', 
       builder: (context, state) => BlocProvider(
@@ -266,8 +274,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final List<String> sellerPaths = [
           '/seller/dashboard', 
           '/seller/orders', 
-          '/seller/notifications', // <--- 使用直接路径
-          SellerRoutes.home, 
+          '/seller/notifications',
+          SellerRoutes.home,
+          SellerRoutes.statistics,  // 添加新的统计路由路径
       ]; 
       
       bool isBuyerShellLocation = buyerPaths.any((p) => location.startsWith(p));

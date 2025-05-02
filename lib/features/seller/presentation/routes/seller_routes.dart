@@ -15,10 +15,12 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/pages/notific
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/order_delivery_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/after_sales_review_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/after_sales_detail_page.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/pages/seller_statistics_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_home/seller_home_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_management/product_management_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/after_sales_review/after_sales_review_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/auth_management/auth_management_bloc.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_statistics/seller_statistics_bloc.dart';
 
 /// 卖家模块路由配置
 class SellerRoutes {
@@ -39,6 +41,7 @@ class SellerRoutes {
   static const String afterSalesReview = '$basePath/after-sales';
   static const String afterSalesDetail = '$basePath/after-sales/:id';
   static const String storeSettings = '$basePath/settings';
+  static const String statistics = '$basePath/statistics';
   
   /// 获取卖家模块路由
   static List<RouteBase> get routes => [
@@ -206,6 +209,19 @@ class SellerRoutes {
             child: OrderDeliveryPage(
               orderId: int.parse(state.pathParameters['id'] ?? '0'),
               orderSn: state.extra != null ? (state.extra as Map<String, dynamic>)['orderSn'] as String? : null,
+            ),
+          ),
+        ),
+
+        // 统计页面路由
+        GoRoute(
+          path: 'statistics',
+          name: 'seller_statistics',
+          pageBuilder: (context, state) => MaterialPage(
+            key: state.pageKey,
+            child: BlocProvider(
+              create: (context) => GetIt.I<SellerStatisticsBloc>(),
+              child: const SellerStatisticsPage(),
             ),
           ),
         ),

@@ -12,6 +12,7 @@ import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_r
 import 'package:dskk_flutter_refactor/core/auth/repositories/mocks/mock_auth_repository.dart';
 import 'package:dskk_flutter_refactor/features/home/di/home_di.dart'; // Import Home DI
 import 'package:dskk_flutter_refactor/features/favorites/di/favorites_di.dart'; // Import Favorites DI
+import 'package:dskk_flutter_refactor/features/seller/di/seller_statistics_di.dart';
 // import 'package:dskk_flutter_refactor/features/profile/di/profile_di.dart'; // 不再需要引入
 
 /// Application entry point for running the app with the Dev Menu navigator tab.
@@ -60,6 +61,10 @@ Future<void> main() async {
   // Initialize Favorites module dependencies
   await FavoritesDI.init(getIt);
   print('[main_dev_preview] Favorites dependencies configured.');
+
+  // Initialize Seller Statistics module dependencies
+  SellerStatisticsDI.init(getIt);
+  print('[main_dev_preview] Seller Statistics dependencies configured.');
 
   // Initialize Profile module dependencies
   // await initProfileDi(); // <--- 删除或注释掉这一行
