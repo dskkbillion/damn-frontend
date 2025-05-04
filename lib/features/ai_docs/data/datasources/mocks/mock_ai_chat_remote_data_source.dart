@@ -167,12 +167,18 @@ class MockAiChatRemoteDataSource implements IAiChatRemoteDataSource {
     required int conversationId,
     required int userId,
     int? limit,
+    int? messageId,
   }) async {
      await _simulateDelay(600);
       if (_shouldFail) {
         throw Exception('Mock Network Error: Failed to get recommendations.');
       }
       final effectiveLimit = limit ?? 5;
+      
+      // 记录messageId的使用，方便调试
+      if (messageId != null) {
+        print('Mock: Getting recommendations for message $messageId in conversation $conversationId');
+      }
 
      return List.generate(effectiveLimit, (i) => RelatedServiceModel(
        id: _random.nextInt(10000) + 1, 
@@ -187,18 +193,18 @@ class MockAiChatRemoteDataSource implements IAiChatRemoteDataSource {
     required int conversationId,
     required int userId,
     required Map<String, dynamic> item,
-    required int limit,
-    required double similarityThreshold,
+    required int merchantId,
   }) async {
      await _simulateDelay(1200); 
      if (_shouldFail) {
         throw Exception('Mock Network Error: Failed to allocate resource.');
       }
-      print('Mock: Allocating resource for item ${item['id'] ?? 'unknown'} in conversation $conversationId.');
+      print('Mock: Allocating resource for item ${item['name'] ?? 'unknown'} in conversation $conversationId, merchant $merchantId');
       return {
         'success': true,
         'message': 'Mock resource allocated successfully.',
-        'matched_count': _random.nextInt(limit + 1),
+        'merchant_id': merchantId,
+        'item': item,
       };
   }
 

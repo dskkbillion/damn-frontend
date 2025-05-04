@@ -27,31 +27,26 @@ class AllocateChatResourceUseCase
       conversationId: params.conversationId,
       userId: params.userId,
       item: params.item,
-      limit: params.limit,
-      similarityThreshold: params.similarityThreshold,
+      merchantId: params.merchantId,
     );
   }
 }
 
 /// {@template allocate_chat_resource_params}
 /// Parameters required for allocating a chat resource.
-/// Note: These parameters are based on the old endpoint and need confirmation.
 /// {@endtemplate}
 class AllocateChatResourceParams extends Equatable {
   final int conversationId;
   final int userId;
-  // TODO: Confirm parameter structure
   final Map<String, dynamic> item;
-  final int limit;
-  final double similarityThreshold;
+  final int merchantId;
 
   /// {@macro allocate_chat_resource_params}
   const AllocateChatResourceParams({
     required this.conversationId,
     required this.userId,
     required this.item,
-    required this.limit,
-    required this.similarityThreshold,
+    required this.merchantId,
   });
 
   @override
@@ -59,7 +54,6 @@ class AllocateChatResourceParams extends Equatable {
         conversationId,
         userId,
         item,
-        limit,
-        similarityThreshold,
+        merchantId,
       ];
 } 

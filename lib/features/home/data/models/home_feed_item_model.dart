@@ -116,6 +116,25 @@ class HomeFeedItemModel extends HomeFeedItem {
     
     if (relativeUrl.isEmpty) return '';
     
+    // 尝试解析JSON格式的URL（如["https://example.com/image.jpg"]）
+    if (relativeUrl.trim().startsWith('[') && relativeUrl.trim().endsWith(']')) {
+      try {
+        // 移除外层引号和其他非必要字符，提取实际URL
+        final cleaned = relativeUrl
+            .replaceAll(RegExp(r'^\["'), '')
+            .replaceAll(RegExp(r'"\]$'), '')
+            .replaceAll(r'\"', '"');
+            
+        // 如果清理后的URL以http开头，直接返回
+        if (cleaned.startsWith('http')) {
+          print('解析JSON后的完整产品图片URL: $cleaned');
+          return cleaned;
+        }
+      } catch (e) {
+        print('解析JSON图片URL失败: $e');
+      }
+    }
+    
     // 如果是完整URL，直接返回
     if (relativeUrl.startsWith('http')) {
       print('完整产品图片URL: $relativeUrl');

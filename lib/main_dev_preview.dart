@@ -73,7 +73,10 @@ Future<void> main() async {
   // --- Override AuthRepository with Mock for Dev Preview --- 
   print('[main_dev_preview] Overriding IAuthRepository with MockAuthRepository...');
   getIt.allowReassignment = true; // Allow overriding registrations
-  getIt.registerLazySingleton<IAuthRepository>(() => MockAuthRepository());
+  // 传递FlutterSecureStorage到MockAuthRepository，以便它可以读取真实的token和ID
+  getIt.registerLazySingleton<IAuthRepository>(
+    () => MockAuthRepository(secureStorage: getIt<FlutterSecureStorage>())
+  );
   getIt.allowReassignment = false; // Optional: Disable reassignment after overriding
   print('[main_dev_preview] IAuthRepository overridden.');
   // ---------------------------------------------------------

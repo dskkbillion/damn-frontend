@@ -26,6 +26,7 @@ class GetRelatedServicesUseCase
       conversationId: params.conversationId,
       userId: params.userId,
       limit: params.limit,
+      messageId: params.messageId,
     );
   }
 }
@@ -37,14 +38,16 @@ class GetRelatedServicesParams extends Equatable {
   final int conversationId;
   final int userId;
   final int? limit;
+  final int? messageId;
 
   /// {@macro get_related_services_params}
   const GetRelatedServicesParams({
     required this.conversationId,
     required this.userId,
     this.limit,
+    this.messageId,
   });
 
   @override
-  List<Object?> get props => [conversationId, userId, limit];
+  List<Object?> get props => [conversationId, userId, limit, messageId];
 } 

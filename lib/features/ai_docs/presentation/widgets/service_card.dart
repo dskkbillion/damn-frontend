@@ -72,7 +72,7 @@ class ServiceCard extends StatelessWidget {
                     const SizedBox(height: 6), // Space between title and price
                     // Price
                     Text(
-                      '\$${service.price.toStringAsFixed(2)}', // Format price
+                      '￥${service.price.toStringAsFixed(2)}', // 修改价格符号为￥
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                          color: Theme.of(context).colorScheme.primary, // Use primary color for price
                          fontWeight: FontWeight.w600,
@@ -81,6 +81,23 @@ class ServiceCard extends StatelessWidget {
                      // TODO: Add other info like rating or description if needed
                   ],
                 ),
+              ),
+              
+              // --- "让ta看看" 按钮 ---
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: onTap,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      textStyle: const TextStyle(fontSize: 14),
+                    ),
+                    child: const Text('让ta看看'),
+                  ),
+                ],
               ),
             ],
           ),

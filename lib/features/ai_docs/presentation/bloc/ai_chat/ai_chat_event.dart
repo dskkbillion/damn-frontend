@@ -29,19 +29,17 @@ class FetchRelatedServices extends AiChatEvent {}
 
 /// Event to trigger the chat allocation action.
 class TriggerAllocationAction extends AiChatEvent {
-  // Match parameters needed by AllocateChatResourceParams
-  final Map<String, dynamic> item; // The selected service/item details
-  final int limit; // Placeholder, confirm if needed
-  final double similarityThreshold; // Placeholder, confirm if needed
+  // 只保留需要的参数
+  final Map<String, dynamic> item; // 服务/商品详情
+  final int merchantId; // 商家ID
 
   const TriggerAllocationAction({
     required this.item,
-    this.limit = 1, // Provide default or require from UI
-    this.similarityThreshold = 0.8, // Provide default or require from UI
+    required this.merchantId,
   }); 
 
   @override
-  List<Object?> get props => [item, limit, similarityThreshold];
+  List<Object?> get props => [item, merchantId];
 }
 
 /// Event triggered when the user finishes recording audio.

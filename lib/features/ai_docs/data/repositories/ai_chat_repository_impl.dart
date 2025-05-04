@@ -147,12 +147,14 @@ class AiChatRepositoryImpl implements IAiChatRepository {
     required int conversationId,
     required int userId,
     int? limit,
+    int? messageId,
   }) async {
     return _tryCatch<List<RelatedServiceEntity>>(() async {
       final servicesData = await _remoteDataSource.getRelatedServices(
         conversationId: conversationId,
         userId: userId,
         limit: limit,
+        messageId: messageId,
       );
       return servicesData.map((model) => model.toEntity()).toList();
     });
@@ -162,18 +164,15 @@ class AiChatRepositoryImpl implements IAiChatRepository {
   Future<Either<Failure, ChatAllocationResultEntity>> allocateChatResource({
     required int conversationId,
     required int userId,
-    // TODO: Confirm actual request parameters
     required Map<String, dynamic> item,
-    required int limit,
-    required double similarityThreshold,
+    required int merchantId,
   }) async {
     return _tryCatch<ChatAllocationResultEntity>(() async {
       final resultData = await _remoteDataSource.allocateChatResource(
         conversationId: conversationId,
         userId: userId,
         item: item,
-        limit: limit,
-        similarityThreshold: similarityThreshold,
+        merchantId: merchantId,
       );
       // 假设服务器返回的数据需要转换为实体
       // 如果返回的是Map，手动构造实体

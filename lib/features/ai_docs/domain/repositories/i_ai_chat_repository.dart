@@ -62,6 +62,7 @@ abstract class IAiChatRepository {
     required int conversationId,
     required int userId,
     int? limit,
+    int? messageId,
   });
 
   /// Triggers a chat allocation action (e.g., one-click dispatch).
@@ -71,11 +72,8 @@ abstract class IAiChatRepository {
   Future<Either<Failure, ChatAllocationResultEntity>> allocateChatResource({
     required int conversationId,
     required int userId,
-    // TODO: Confirm actual request parameters
     required Map<String, dynamic> item, 
-    required int limit,
-    required double similarityThreshold,
-    // Add/remove parameters once confirmed
+    required int merchantId,
   });
 
   /// Transcribes audio from a given URL.

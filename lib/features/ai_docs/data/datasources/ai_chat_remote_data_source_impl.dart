@@ -302,29 +302,63 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     required int conversationId,
     required int userId,
     int? limit,
+    int? messageId,
   }) async {
-    const String path = '/model/chat/related_services';
+    const String path = '/recsys/conversation/recommend';
     final String fullUrl = _getModelBaseUrl() + path;
     print("Fetching related services from: $fullUrl");
-    final Map<String, dynamic> requestData = {
-      'conversation_id': conversationId,
+    
+    Map<String, dynamic> requestData = {
       'user_id': userId,
     };
-    if (limit != null) requestData['limit'] = limit;
+    
+    if (conversationId > 0) {
+      requestData['conversation_id'] = conversationId;
+      
+      if (messageId != null) {
+        requestData['message_id'] = messageId;
+      } else {
+        requestData['message_id'] = 5;
+      }
+    }
+    
+    if (limit != null) {
+      requestData['limit'] = limit;
+    } else {
+      requestData['limit'] = 10;
+    }
+    
     try {
       final responseData = await _httpClient.post(fullUrl, body: requestData);
       final data = _handleResponse(responseData);
-      if (data != null && data['services'] is List) {
-        return (data['services'] as List).map((serviceJson) {
-           print('[DataSource] Item JSON: ${jsonEncode(serviceJson)}'); // Log each item
+      
+      print('[DataSource] Related services response: ${jsonEncode(data)}');
+      
+      if (data != null && data['items'] is List) {
+        return (data['items'] as List).map((serviceJson) {
+           print('[DataSource] Item JSON: ${jsonEncode(serviceJson)}');
            try {
-             return RelatedServiceModel.fromJson(serviceJson);
+             return RelatedServiceModel(
+               id: serviceJson['id'] as int? ?? 0,
+               title: serviceJson['name'] as String? ?? 'Unknown service',
+               imageUrl: serviceJson['mainImage'] as String? ?? '',
+               price: (serviceJson['price'] as num?)?.toDouble() ?? 0.0,
+             );
            } catch (e, stacktrace) {
               print('[DataSource] Error parsing item JSON: $e');
               print(stacktrace); 
-              // Optionally return a default/error model or rethrow
-              // For now, let it potentially fail to surface the issue
-              rethrow; // Rethrow to see the original error source
+              rethrow;
+           }
+         }).toList();
+      } else if (data != null && data['services'] is List) {
+        return (data['services'] as List).map((serviceJson) {
+           print('[DataSource] Service JSON: ${jsonEncode(serviceJson)}');
+           try {
+             return RelatedServiceModel.fromJson(serviceJson);
+           } catch (e, stacktrace) {
+              print('[DataSource] Error parsing service JSON: $e');
+              print(stacktrace); 
+              rethrow;
            }
          }).toList();
       } else {
@@ -346,8 +380,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     required int conversationId,
     required int userId,
     required Map<String, dynamic> item,
-    required int limit,
-    required double similarityThreshold,
+    required int merchantId,
   }) async {
     const String path = '/model/chat/allocate';
     final String fullUrl = _getModelBaseUrl() + path;
@@ -356,8 +389,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       'conversation_id': conversationId,
       'user_id': userId,
       'item': item,
-      'limit': limit,
-      'similarity_threshold': similarityThreshold,
+      'merchant_id': merchantId,
     };
     try {
       final responseData = await _httpClient.post(fullUrl, body: requestData);

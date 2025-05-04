@@ -236,7 +236,7 @@ class RecommendationBottomSheetContent extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-             'Related Services', 
+             '推荐服务', 
              style: Theme.of(context).textTheme.titleLarge,
            ),
           const SizedBox(height: 16),
@@ -273,14 +273,14 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                        service: service,
                        onTap: () {
                           print('Recommendation card tapped: ${service.title}');
+                          // 修改：调整为符合API要求的数据格式
                           final itemData = {
-                            'id': service.id,
-                            'title': service.title,
-                            'image_url': service.imageUrl,
-                            'price': service.price,
+                            'name': service.title,
+                            'description': '推荐服务: ${service.title}，价格: ￥${service.price}',
                           };
                           context.read<AiChatBloc>().add(TriggerAllocationAction(
                              item: itemData,
+                             merchantId: 1, // 固定商家ID值
                           ));
                           Navigator.pop(context);
                        },

@@ -98,11 +98,20 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   // --- Helper to get current user ID --- 
   // Returns null if not found or not an int
   Future<int?> _getCurrentUserId() async {
+    // 修改：使用common_user_id而不是user_id
+    final commonUserIdString = await _storage.read(key: 'common_user_id');
+    
+    // 调试日志
     final userIdString = await _storage.read(key: 'user_id');
-    if (userIdString != null) {
-      // Parse the string to int
-      return int.tryParse(userIdString);
+    print("[AiChatBloc] 用户ID信息: user_id = $userIdString, common_user_id = $commonUserIdString");
+    
+    if (commonUserIdString != null) {
+      // 转换为整数并返回
+      return int.tryParse(commonUserIdString);
     }
+    
+    // 不再回退使用user_id，如果没有common_user_id则直接返回null（错误）
+    print("[AiChatBloc] 错误: 未找到common_user_id，AI聊天功能需要正确的common_user_id");
     return null;
   }
 
@@ -649,10 +658,28 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       emit(state.copyWith(recommendationsStatus: RecommendationsStatus.error, recommendationsErrorMessage: 'User not authenticated or invalid ID format'));
       return;
     }
+    
+    // 获取当前会话的最新消息ID
+    int? latestMessageId;
+    if (state.messages.isNotEmpty) {
+      // 尝试从消息列表中获取最新的消息ID
+      for (var msg in state.messages.reversed) {
+        // 检查messageId是否可以转换为整数
+        if (msg.messageId != null && int.tryParse(msg.messageId!) != null) {
+          latestMessageId = int.parse(msg.messageId!);
+          break;
+        }
+      }
+    }
+    
+    print("[AiChatBloc] 推荐请求参数: userId=$userId, conversationId=$currentConvId, messageId=$latestMessageId");
+    
     final result = await _getRelatedServices(GetRelatedServicesParams(
       conversationId: currentConvId,
       userId: userId,
-      // limit: 10 // Optional: Add limit if needed
+      // 如果有最新消息ID，就用它，否则不传
+      messageId: latestMessageId,
+      limit: 10 // 设置默认限制
     ));
 
     // Handle the result
@@ -691,9 +718,8 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
      final result = await _allocateChatResource(AllocateChatResourceParams(
         conversationId: currentConvId,
         userId: userId,
-        item: event.item, // Use item from event
-        limit: event.limit, // Use limit from event
-        similarityThreshold: event.similarityThreshold, // Use threshold from event
+        item: event.item,
+        merchantId: event.merchantId,
      ));
 
      result.fold(

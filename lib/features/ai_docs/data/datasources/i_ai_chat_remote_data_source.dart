@@ -79,6 +79,7 @@ abstract class IAiChatRemoteDataSource {
   /// [conversationId] The ID of the conversation.
   /// [userId] The ID of the user.
   /// [limit] Optional limit for the number of recommendations.
+  /// [messageId] Optional message ID to get recommendations related to a specific message.
   ///
   /// Throws specific exceptions on failure.
   /// Returns a list of [RelatedServiceModel] on success.
@@ -87,6 +88,7 @@ abstract class IAiChatRemoteDataSource {
     required int conversationId,
     required int userId,
     int? limit,
+    int? messageId,
   });
 
   /// Triggers a chat allocation action (e.g., one-click dispatch).
@@ -97,11 +99,8 @@ abstract class IAiChatRemoteDataSource {
   Future<Map<String, dynamic>> allocateChatResource({
     required int conversationId,
     required int userId,
-    // Request parameters are still TBD, using placeholders based on old endpoint
     required Map<String, dynamic> item, 
-    required int limit,
-    required double similarityThreshold,
-    // Add/remove parameters once the actual API request is confirmed
+    required int merchantId,
   });
 
   /// Calls the `/model/chat/audio` endpoint for speech-to-text.
