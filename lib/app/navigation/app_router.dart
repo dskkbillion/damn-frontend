@@ -277,7 +277,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           '/seller/dashboard', 
           '/seller/orders', 
           '/seller/notifications',
-          SellerRoutes.home,
+          SellerRoutes.home, 
           SellerRoutes.statistics,  // 添加新的统计路由路径
       ]; 
       

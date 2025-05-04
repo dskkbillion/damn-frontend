@@ -16,6 +16,9 @@ import 'package:dskk_flutter_refactor/core/network/header_interceptor.dart'; // 
 // Import database and DAO
 import 'package:dskk_flutter_refactor/core/database/app_database.dart';
 
+// Import chat module DI
+import 'package:dskk_flutter_refactor/features/chat/di/chat_di.dart';
+
 // Import the generated file
 import 'injection_container.config.dart' hide module; // Hide module from generated file
 
@@ -34,6 +37,16 @@ Future<void> configureDependencies({required String backendBaseUrl}) async {
   // Initialize injectable configurations (processes RegisterModule)
   await init(getIt); 
   print('[DI] Injectable initialization complete.');
+  
+  // 注册聊天模块所需的额外依赖（特别是带参数的BLoC）
+  registerChatBlocs();
+  print('[DI] Chat module blocs registered.');
+}
+
+// 注册聊天模块的BLoC
+void registerChatBlocs() {
+  // 注册ChatMessagesBloc，需要额外的chatId参数
+  registerChatMessagesBloc(getIt);
 }
 
 @module

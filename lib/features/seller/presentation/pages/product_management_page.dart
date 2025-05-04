@@ -111,70 +111,70 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
           SizedBox(height: MediaQuery.of(context).padding.top + 8),
           // TabBar直接放在Column顶部
           TabBar(
-            controller: _tabController,
-            tabs: const [
-              Tab(text: '在售'),
-              Tab(text: '草稿箱'),
-              Tab(text: '已下架'),
-            ],
-            indicatorColor: Theme.of(context).primaryColor,
-            labelColor: Theme.of(context).primaryColor,
-            unselectedLabelColor: Colors.grey,
+          controller: _tabController,
+          tabs: const [
+            Tab(text: '在售'),
+            Tab(text: '草稿箱'),
+            Tab(text: '已下架'),
+          ],
+          indicatorColor: Theme.of(context).primaryColor,
+          labelColor: Theme.of(context).primaryColor,
+          unselectedLabelColor: Colors.grey,
             padding: const EdgeInsets.symmetric(vertical: 8),
           ),
           // BlocListener内容包装在Expanded中确保填充剩余空间
           Expanded(
             child: BlocListener<ProductManagementBloc, ProductManagementState>(
-              listenWhen: (previous, current) =>
-                  previous.navigationPath != current.navigationPath &&
-                  current.navigationPath != null,
-              listener: (context, state) {
-                // Use push for navigating to create/edit screens
-                // This keeps the management page in the stack
-                context.push(state.navigationPath!);
-              },
-              // Previous BlocListener for error messages
-              // We need to nest listeners or combine logic if needed
-              // For simplicity, let's nest them for now.
-              child: BlocListener<ProductManagementBloc, ProductManagementState>(
-                listenWhen: (previous, current) =>
-                    previous.errorMessage != current.errorMessage && current.errorMessage != null,
-                listener: (context, state) {
-                  if (state.errorMessage != null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(state.errorMessage!),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                },
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildProductList(
-                      context,
-                      0,
-                      ProductStatus.normal,
-                      _onSaleScrollController,
-                    ),
-                    
-                    _buildProductList(
-                      context,
-                      1,
-                      ProductStatus.draft,
-                      _draftScrollController,
-                    ),
-                    
-                    _buildProductList(
-                      context,
-                      2,
-                      ProductStatus.disabled,
-                      _offShelfScrollController,
-                    ),
-                  ],
+        listenWhen: (previous, current) =>
+            previous.navigationPath != current.navigationPath &&
+            current.navigationPath != null,
+        listener: (context, state) {
+          // Use push for navigating to create/edit screens
+          // This keeps the management page in the stack
+          context.push(state.navigationPath!);
+        },
+        // Previous BlocListener for error messages
+        // We need to nest listeners or combine logic if needed
+        // For simplicity, let's nest them for now.
+        child: BlocListener<ProductManagementBloc, ProductManagementState>(
+          listenWhen: (previous, current) =>
+              previous.errorMessage != current.errorMessage && current.errorMessage != null,
+          listener: (context, state) {
+            if (state.errorMessage != null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.errorMessage!),
+                  backgroundColor: Colors.red,
                 ),
+              );
+            }
+          },
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildProductList(
+                context,
+                0,
+                ProductStatus.normal,
+                _onSaleScrollController,
               ),
+              
+              _buildProductList(
+                context,
+                1,
+                ProductStatus.draft,
+                _draftScrollController,
+              ),
+              
+              _buildProductList(
+                context,
+                2,
+                ProductStatus.disabled,
+                _offShelfScrollController,
+              ),
+            ],
+          ),
+        ),
             ),
           ),
         ],

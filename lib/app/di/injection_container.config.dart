@@ -341,7 +341,7 @@ Future<_i174.GetIt> init(
       () => registerModule.internetConnectionChecker);
   gh.lazySingleton<_i519.Client>(() => registerModule.httpClient);
   gh.lazySingleton<_i223.IUserRepository>(
-      () => chatInjectableModule.provideUserRepository());
+      () => chatInjectableModule.provideChatUserRepository());
   gh.lazySingleton<_i998.IChatWebSocketDataSource>(
       () => chatInjectableModule.chatWebSocketDataSource());
   gh.factory<_i30.ISellerLocalDataSource>(

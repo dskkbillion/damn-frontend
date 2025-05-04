@@ -3,6 +3,10 @@ import 'package:injectable/injectable.dart';
 import 'package:dio/dio.dart';
 import 'package:dskk_flutter_refactor/core/network/network_info.dart'; // Import NetworkInfo
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_repository.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:dartz/dartz.dart';
+import 'package:dskk_flutter_refactor/core/error/failures.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/user.dart';
 // 导入我们新创建的MockUserRepository
 import 'package:dskk_flutter_refactor/features/chat/data/repositories/mocks/mock_user_repository.dart';
 
@@ -33,46 +37,60 @@ import '../domain/usecases/create_chat_room.dart';
 import '../presentation/bloc/chat_list/chat_list_bloc.dart';
 import '../presentation/bloc/chat_messages/chat_messages_bloc.dart';
 
-// 获取全局GetIt实例
-final sl = GetIt.instance;
-
-// 添加初始化函数
-void initChatDI() {
-  // 直接调用静态方法
-  registerChatMessagesBloc(sl);
-  print('[ChatDI] ChatMessagesBloc registered successfully');
-}
-
-// 将注册方法移到模块外部作为顶级函数
-void registerChatMessagesBloc(GetIt sl) {
-  sl.registerFactoryParam<ChatMessagesBloc, int, void>(
-    (chatId, _) => ChatMessagesBloc(
-      chatId: chatId,
-      getMessageList: sl<GetMessageList>(),
-      sendMessage: sl<SendMessage>(),
-      revokeMessage: sl<RevokeMessage>(),
-      getChatRoomDetails: sl<GetChatRoomDetails>(),
-      deleteChatMessage: sl<DeleteChatMessage>(),
-      userRepository: sl<IUserRepository>(),
-      webSocketDataSource: sl<IChatWebSocketDataSource>(),
-    ),
-  );
+/// 为聊天模块提供的临时用户信息仓库实现
+/// 从SecureStorage中读取真实的用户信息，而不是使用模拟数据
+class ChatUserRepositoryImpl implements IUserRepository {
+  final FlutterSecureStorage _secureStorage;
+  
+  ChatUserRepositoryImpl(this._secureStorage);
+  
+  @override
+  Future<Either<Failure, User>> getCurrentUser() async {
+    try {
+      // 从SecureStorage读取用户ID和CommonUserId
+      final userId = await _secureStorage.read(key: 'user_id');
+      final commonUserId = await _secureStorage.read(key: 'common_user_id') ?? '1';
+      
+      // 调试：检查auth_token是否存在
+      final authToken = await _secureStorage.read(key: 'auth_token');
+      print('[ChatUserRepository] userId: $userId, commonUserId: $commonUserId');
+      print('[ChatUserRepository] authToken存在: ${authToken != null}');
+      
+      if (userId == null) {
+        return Left(AuthFailure(message: '未找到用户ID'));
+      }
+      
+      // 修改：使用commonUserId作为User对象的id字段，而不是userId
+      // commonUserId对应聊天室中参与者的referId，这是关键的匹配字段
+      final user = User(
+        id: int.tryParse(commonUserId) ?? 0, // 修改：使用commonUserId
+        commonUserId: commonUserId,
+        nickName: '用户${userId.substring(userId.length - 4)}',
+        type: 'MEMBER',
+      );
+      
+      print('[ChatUserRepository] 创建用户: id=${user.id}, commonUserId=${user.commonUserId}'); // 添加日志确认
+      return Right(user);
+    } catch (e) {
+      print('[ChatUserRepository] 错误: $e'); // 添加更详细的错误日志
+      return Left(GeneralFailure(message: '获取用户信息失败: $e'));
+    }
+  }
 }
 
 @module
 abstract class ChatInjectableModule {
 
-  // --- Provide Mock IUserRepository for Chat Preview/Branch --- 
+  // --- 提供命名的Mock实现用于测试 --- 
   @lazySingleton
   @Named('mockUserRepository')  // 使用Named注解来标识这是一个特定的mock实现
   IUserRepository get mockUserRepository => MockUserRepository();
   
-  // 添加默认的IUserRepository注册，确保没有其他模块注册时可以使用mock版本
+  // 提供真实的IUserRepository实现
   @lazySingleton
-  IUserRepository provideUserRepository() {
-    // 直接返回MockUserRepository实例，避免循环依赖
-    print("注意: 使用聊天模块的Mock用户仓库 (避免循环依赖)");
-    return MockUserRepository();
+  IUserRepository provideChatUserRepository() {
+    print("注册聊天模块专用的用户仓库 (从SecureStorage读取真实数据)");
+    return ChatUserRepositoryImpl(const FlutterSecureStorage());
   }
 
   // --- DataSources ---
@@ -140,4 +158,39 @@ abstract class ChatInjectableModule {
         getChatRoomList: getChatRoomList,
         createChatRoom: createChatRoom,
       );
+  
+  // 注册ChatMessagesBloc
+  // 我们无法直接在这里使用registerFactoryParam，因为InjectableModule是抽象类
+  // 我们需要在初始化依赖时手动注册，添加下面这个方法作为注释提醒
+  // 
+  // 实际注册需要手动在main.dart或injection_container.dart中添加：
+  //
+  // getIt.registerFactoryParam<ChatMessagesBloc, int, void>(
+  //   (chatId, _) => ChatMessagesBloc(
+  //     chatId: chatId,
+  //     getMessageList: getIt<GetMessageList>(),
+  //     sendMessage: getIt<SendMessage>(),
+  //     revokeMessage: getIt<RevokeMessage>(),
+  //     getChatRoomDetails: getIt<GetChatRoomDetails>(),
+  //     deleteChatMessage: getIt<DeleteChatMessage>(),
+  //     userRepository: getIt<IUserRepository>(),
+  //     webSocketDataSource: getIt<IChatWebSocketDataSource>(),
+  //   ),
+  // );
+} 
+
+// ChatMessagesBloc 需要手动注册，因为 ChatMessagesBloc 需要额外的 chatId 参数
+void registerChatMessagesBloc(GetIt getIt) {
+  getIt.registerFactoryParam<ChatMessagesBloc, int, void>(
+    (chatId, _) => ChatMessagesBloc(
+      chatId: chatId,
+      getMessageList: getIt<GetMessageList>(),
+      sendMessage: getIt<SendMessage>(),
+      revokeMessage: getIt<RevokeMessage>(),
+      getChatRoomDetails: getIt<GetChatRoomDetails>(),
+      deleteChatMessage: getIt<DeleteChatMessage>(),
+      userRepository: getIt<IUserRepository>(),
+      webSocketDataSource: getIt<IChatWebSocketDataSource>(),
+    ),
+  );
 } 

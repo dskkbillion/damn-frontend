@@ -18,14 +18,21 @@ class HeaderInterceptor extends Interceptor {
     options.headers['client'] = 'android';   // Example value
     options.headers['version'] = '100';      // Example value
 
-    // Dynamically read token from secure storage using the correct key
-    // IMPORTANT: Use the key that main_chat_preview.dart writes!
-    final String? token = await _secureStorage.read(key: 'user_token'); 
-
+    // 修正：使用正确的auth_token键名
+    final String? token = await _secureStorage.read(key: 'auth_token'); 
+    
+    // 调试：检查token是否存在
     if (token != null && token.isNotEmpty) {
-        options.headers['Authorization'] = token; // Assuming no "Bearer " prefix needed yet
+        options.headers['Authorization'] = 'Bearer $token'; // 添加Bearer前缀
+        print('[HeaderInterceptor] 成功添加Authorization头: Bearer ${token.substring(0, 15)}...');
     } else {
-       print('[HeaderInterceptor] Warning: Token not found in secure storage using key: user_token');
+        print('[HeaderInterceptor] 警告: 在secure storage中未找到auth_token');
+        // 尝试查找是否有备用token
+        final userToken = await _secureStorage.read(key: 'user_token');
+        if (userToken != null && userToken.isNotEmpty) {
+            print('[HeaderInterceptor] 找到备用token (user_token)');
+            options.headers['Authorization'] = userToken; // 旧格式不添加Bearer
+        }
     }
 
     print('[HeaderInterceptor] Added headers: ${options.headers}'); 

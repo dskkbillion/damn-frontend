@@ -9,7 +9,14 @@ import 'package:dskk_flutter_refactor/features/chat/presentation/pages/chat_room
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_list/chat_list_bloc.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_messages/chat_messages_bloc.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_chat_room_list.dart'; // For ChatListBloc event
-// Import necessary use cases or dependencies if needed for Bloc creation, though usually handled by DI
+// Import necessary use cases or dependencies for ChatMessagesBloc
+import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_message_list.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/usecases/send_message.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/usecases/revoke_message.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_chat_room_details.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/usecases/delete_chat_message.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_repository.dart';
+import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_chat_web_socket_data_source.dart';
 
 final sl = GetIt.instance; // Assuming GetIt instance is globally accessible or passed
 
@@ -61,12 +68,18 @@ class ChatRoutes {
                   body: Center(child: Text("Invalid Chat ID '$chatIdString'. Please go back.")));
             }
 
-            // Provide the ChatMessagesBloc using BlocProvider
+            // 直接创建ChatMessagesBloc而不是尝试从GetIt获取
             return BlocProvider(
-              // Ensure ChatMessagesBloc factory is registered in DI (GetIt/sl)
-              // Use registerFactoryParam in GetIt to handle the chatId parameter
-              create: (_) => sl<ChatMessagesBloc>(param1: chatId)
-                             ..add(LoadChatMessages(chatId)), // Dispatch initial event
+              create: (_) => ChatMessagesBloc(
+                chatId: chatId,
+                getMessageList: sl<GetMessageList>(),
+                sendMessage: sl<SendMessage>(),
+                revokeMessage: sl<RevokeMessage>(),
+                getChatRoomDetails: sl<GetChatRoomDetails>(),
+                deleteChatMessage: sl<DeleteChatMessage>(),
+                userRepository: sl<IUserRepository>(),
+                webSocketDataSource: sl<IChatWebSocketDataSource>(),
+              )..add(LoadChatMessages(chatId)),
               child: ChatRoomPage(chatId: chatId), // Pass chatId to the page widget
             );
           },

@@ -6,10 +6,10 @@ import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_r
 /// Chat模块专用的MockUserRepository实现
 class MockUserRepository implements IUserRepository {
   final User _mockUser = const User(
-    id: 9999, // 示例开发用户ID
-    commonUserId: 'user-9999', // 系统通用ID
-    nickName: '测试用户',
-    avatar: 'https://example.com/avatar.jpg',
+    id: 1, // 修改为匹配main_dev_preview.dart中testCommonUserId的值
+    commonUserId: '1', // 与main_dev_preview.dart中的testCommonUserId一致
+    nickName: '瑞',
+    avatar: 'https://duoshaokankan.oss-cn-beijing.aliyuncs.com/20250309/9c09ca8f-59df-4cbf-8d45-c8edb66f8ba9.jpg',
     type: 'MEMBER',
   );
 
