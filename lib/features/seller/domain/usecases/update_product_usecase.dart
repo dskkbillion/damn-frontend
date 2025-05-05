@@ -35,8 +35,14 @@ class UpdateProductParams extends Equatable {
   /// 自定义材料问题（可选）
   final List<ProductMaterial>? productMaterials;
   
-  /// 待上传的商品图片本地路径列表（可选）
+  /// 待上传的商品主图本地路径列表（可选）
   final List<String>? imageFilePaths;
+  
+  /// 待上传的商品详情图本地路径列表（可选）
+  final List<String>? detailImageFilePaths;
+  
+  /// 详情内容HTML（可选）
+  final String? detailContent;
 
   /// 构造函数
   const UpdateProductParams({
@@ -49,6 +55,8 @@ class UpdateProductParams extends Equatable {
     this.variants,
     this.productMaterials,
     this.imageFilePaths,
+    this.detailImageFilePaths,
+    this.detailContent,
   });
 
   @override
@@ -61,7 +69,9 @@ class UpdateProductParams extends Equatable {
     categoryId, 
     variants, 
     productMaterials,
-    imageFilePaths
+    imageFilePaths,
+    detailImageFilePaths,
+    detailContent,
   ];
 }
 
@@ -89,45 +99,82 @@ class UpdateProductUseCase implements UseCase<bool, UpdateProductParams> {
       categoryId: params.categoryId,
       variants: params.variants,
       productMaterials: params.productMaterials,
+      detailContent: params.detailContent,
     );
     
-    // 如果需要更新商品图片
+    // 收集需要上传的所有图片
+    final allImagePaths = <Map<String, dynamic>>[];
+    
+    // 添加主图路径
     if (params.imageFilePaths != null && params.imageFilePaths!.isNotEmpty) {
-      final uploadedUrls = <String>[];
-      
-      // 逐个上传图片
       for (final path in params.imageFilePaths!) {
+        allImagePaths.add({
+          'path': path,
+          'type': 'main', // 主图
+        });
+      }
+    }
+    
+    // 添加详情图路径
+    if (params.detailImageFilePaths != null && params.detailImageFilePaths!.isNotEmpty) {
+      for (final path in params.detailImageFilePaths!) {
+        allImagePaths.add({
+          'path': path,
+          'type': 'detail', // 详情图
+        });
+      }
+    }
+    
+    // 如果有图片需要上传
+    if (allImagePaths.isNotEmpty) {
+      final uploadedMainUrls = <String>[];
+      final uploadedDetailUrls = <String>[];
+      
+      // 逐个上传所有图片
+      for (final imageData in allImagePaths) {
+        final path = imageData['path'] as String;
+        final type = imageData['type'] as String;
+        
         final file = File(path);
+        
+        // 短暂延迟，避免连续请求导致服务器压力过大
+        if (allImagePaths.indexOf(imageData) > 0) {
+          await Future.delayed(const Duration(milliseconds: 500));
+        }
+        
         final uploadResult = await _fileUploadRepository.uploadFile(file);
         
         // 如果有一个图片上传失败，则返回失败
         if (uploadResult.isLeft()) {
           return uploadResult.fold(
             (failure) => Left(failure),
-            (_) => throw Exception("Unexpected state"), // 这行永远不会执行，但需要满足类型要求
+            (_) => throw Exception("Unexpected state"),
           );
         }
         
-        // 添加上传成功的URL
+        // 根据图片类型，添加到相应的URL列表
         uploadResult.fold(
-          (_) => throw Exception("Unexpected state"), // 这行永远不会执行，但需要满足类型要求
-          (url) => uploadedUrls.add(url),
+          (_) => throw Exception("Unexpected state"),
+          (url) {
+            if (type == 'main') {
+              uploadedMainUrls.add(url);
+            } else {
+              uploadedDetailUrls.add(url);
+            }
+          },
         );
       }
       
-      // 设置商品图片URL
-      final imagesString = uploadedUrls.join(',');
-      productData = ProductUpdateData(
-        id: productData.id,
-        name: productData.name,
-        description: productData.description,
-        price: productData.price,
-        state: productData.state,
-        categoryId: productData.categoryId,
-        variants: productData.variants,
-        productMaterials: productData.productMaterials,
-        images: imagesString,
-      );
+      // 根据上传结果更新产品数据
+      if (uploadedMainUrls.isNotEmpty) {
+        final imagesString = uploadedMainUrls.join(',');
+        productData = productData.copyWith(images: imagesString);
+      }
+      
+      if (uploadedDetailUrls.isNotEmpty) {
+        final detailImagesString = uploadedDetailUrls.join(',');
+        productData = productData.copyWith(detailImages: detailImagesString);
+      }
     }
     
     // 更新商品

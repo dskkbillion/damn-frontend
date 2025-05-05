@@ -21,8 +21,11 @@ class ProductEditState extends Equatable {
   /// 编辑的商品数据
   final SellerManagedProduct? product;
   
-  /// 本地选择的图片路径列表
+  /// 本地选择的主图路径列表
   final List<String> selectedImagePaths;
+  
+  /// 本地选择的详情图路径列表
+  final List<String> selectedDetailImagePaths;
   
   /// 商品表单数据
   final ProductFormData formData;
@@ -42,6 +45,7 @@ class ProductEditState extends Equatable {
     this.isSubmitSuccess = false,
     this.product,
     this.selectedImagePaths = const [],
+    this.selectedDetailImagePaths = const [],
     this.formData = const ProductFormData(),
     this.isCreateMode = true,
     this.categories,
@@ -56,6 +60,7 @@ class ProductEditState extends Equatable {
     isSubmitSuccess,
     product,
     selectedImagePaths,
+    selectedDetailImagePaths,
     formData,
     isCreateMode,
     categories,
@@ -120,6 +125,7 @@ class ProductEditState extends Equatable {
   ProductEditState copyWithCategoriesLoaded(List<ProductCategory> categories) {
     return copyWith(
       categories: categories,
+      isLoading: false,
     );
   }
 
@@ -130,10 +136,17 @@ class ProductEditState extends Equatable {
     );
   }
 
-  /// 更新选中的图片
+  /// 更新选中的主图
   ProductEditState copyWithSelectedImages(List<String> imagePaths) {
     return copyWith(
       selectedImagePaths: imagePaths,
+    );
+  }
+
+  /// 更新选中的详情图
+  ProductEditState copyWithSelectedDetailImages(List<String> imagePaths) {
+    return copyWith(
+      selectedDetailImagePaths: imagePaths,
     );
   }
 
@@ -146,6 +159,7 @@ class ProductEditState extends Equatable {
     bool? isSubmitSuccess,
     SellerManagedProduct? product,
     List<String>? selectedImagePaths,
+    List<String>? selectedDetailImagePaths,
     ProductFormData? formData,
     bool? isCreateMode,
     List<ProductCategory>? categories,
@@ -158,6 +172,7 @@ class ProductEditState extends Equatable {
       isSubmitSuccess: isSubmitSuccess ?? this.isSubmitSuccess,
       product: product ?? this.product,
       selectedImagePaths: selectedImagePaths ?? this.selectedImagePaths,
+      selectedDetailImagePaths: selectedDetailImagePaths ?? this.selectedDetailImagePaths,
       formData: formData ?? this.formData,
       isCreateMode: isCreateMode ?? this.isCreateMode,
       categories: categories ?? this.categories,
@@ -184,6 +199,9 @@ class ProductFormData extends Equatable {
   
   /// 自定义材料问题
   final List<ProductMaterial> productMaterials;
+  
+  /// 详情图HTML内容（富文本格式）
+  final String detailContent;
 
   /// 构造函数
   const ProductFormData({
@@ -193,6 +211,7 @@ class ProductFormData extends Equatable {
     this.categoryId,
     this.variants = const [],
     this.productMaterials = const [],
+    this.detailContent = '',
   });
 
   @override
@@ -203,6 +222,7 @@ class ProductFormData extends Equatable {
     categoryId,
     variants,
     productMaterials,
+    detailContent,
   ];
 
   /// 从产品实体创建表单数据
@@ -214,6 +234,7 @@ class ProductFormData extends Equatable {
       categoryId: product.category?.id,
       variants: product.variants ?? [],
       productMaterials: product.productMaterials ?? [],
+      detailContent: '',  // 详情内容可能需要从其他字段获取
     );
   }
 
@@ -225,6 +246,7 @@ class ProductFormData extends Equatable {
     int? categoryId,
     List<ProductOptionValue>? variants,
     List<ProductMaterial>? productMaterials,
+    String? detailContent,
   }) {
     return ProductFormData(
       name: name ?? this.name,
@@ -233,6 +255,7 @@ class ProductFormData extends Equatable {
       categoryId: categoryId ?? this.categoryId,
       variants: variants ?? this.variants,
       productMaterials: productMaterials ?? this.productMaterials,
+      detailContent: detailContent ?? this.detailContent,
     );
   }
 

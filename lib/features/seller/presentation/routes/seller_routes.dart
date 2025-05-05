@@ -237,10 +237,7 @@ class SellerRoutes {
   }) {
     return MaterialPage(
       key: state.pageKey,
-      child: Scaffold(
-        appBar: AppBar(title: Text(title)),
-        body: child,
-      ),
+      child: child,
     );
   }
   

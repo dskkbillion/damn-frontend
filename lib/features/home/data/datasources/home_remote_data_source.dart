@@ -123,7 +123,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         url,
         headers: headers,
         body: json.encode({
-          "categoryId": 1,  // 首页轮播图分类ID
           "pageSize": 10,
           "pageNum": 1
         }),

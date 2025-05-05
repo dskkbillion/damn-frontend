@@ -23,28 +23,48 @@ class ProductOptionValue extends Equatable {
   /// 选项值ID
   final int id;
   
-  /// 选项名称
+  /// 名称（规格套餐名称）
+  final String name;
+  
+  /// 原选项名称字段（兼容旧代码）
   final String optionName;
   
-  /// 选项值
+  /// 原选项值字段（兼容旧代码）
   final String optionValue;
   
   /// 价格
   final double price;
   
+  /// 销售价格
+  final double sellingPrice;
+  
   /// 库存
   final int stock;
+  
+  /// 交付天数
+  final int deliveryDay;
+  
+  /// 修改次数
+  final int editNum;
+  
+  /// 特性列表 [{key: "学校数量", val: "3", type: "input"}, ...]
+  final List<Map<String, String>> feature;
 
   const ProductOptionValue({
     required this.id,
-    required this.optionName,
-    required this.optionValue,
-    required this.price,
-    required this.stock,
+    this.name = '',
+    this.optionName = '',
+    this.optionValue = '',
+    this.price = 0,
+    this.sellingPrice = 0,
+    this.stock = 0,
+    this.deliveryDay = 3,
+    this.editNum = 1,
+    this.feature = const [],
   });
 
   @override
-  List<Object?> get props => [id, optionName, optionValue, price, stock];
+  List<Object?> get props => [id, name, optionName, optionValue, price, sellingPrice, stock, deliveryDay, editNum, feature];
 }
 
 /// 商品材料问题
@@ -55,17 +75,21 @@ class ProductMaterial extends Equatable {
   /// 问题内容
   final String question;
   
-  /// 问题类型 (TEXT, FILE 等)
+  /// 答案/默认值
+  final String answer;
+  
+  /// 问题类型 (TEXT, FILE, PROBLEM, ATTACHMENT 等)
   final String type;
 
   const ProductMaterial({
     required this.id,
     required this.question,
+    this.answer = '',
     required this.type,
   });
 
   @override
-  List<Object?> get props => [id, question, type];
+  List<Object?> get props => [id, question, answer, type];
 }
 
 /// 卖家管理的商品实体
@@ -231,6 +255,15 @@ class ProductCreationData extends Equatable {
   
   /// 自定义材料问题
   final List<ProductMaterial>? productMaterials;
+  
+  /// 展示图片（win images）
+  final String? winImages;
+  
+  /// 详情图片
+  final String? detailImages;
+  
+  /// 详情内容（富文本HTML）
+  final String? detailContent;
 
   const ProductCreationData({
     required this.name,
@@ -240,6 +273,9 @@ class ProductCreationData extends Equatable {
     this.categoryId,
     this.variants,
     this.productMaterials,
+    this.winImages,
+    this.detailImages,
+    this.detailContent,
   });
 
   @override
@@ -251,27 +287,63 @@ class ProductCreationData extends Equatable {
     categoryId,
     variants,
     productMaterials,
+    winImages,
+    detailImages,
+    detailContent,
   ];
   
   /// 转换为API参数格式
   Map<String, dynamic> toJson() {
-    return {
+    final Map<String, dynamic> data = {
       'name': name,
-      'images': images,
       'description': description,
-      'price': price,
-      if (categoryId != null) 'categoryId': categoryId,
-      if (variants != null) 'variants': variants!.map((v) => {
-        'optionName': v.optionName,
-        'optionValue': v.optionValue,
-        'price': v.price,
-        'stock': v.stock,
-      }).toList(),
-      if (productMaterials != null) 'productMaterials': productMaterials!.map((m) => {
-        'question': m.question,
-        'type': m.type,
-      }).toList(),
+      'images': images.split(','),  // 将逗号分隔的字符串转为数组
     };
+    
+    // 添加成功案例图
+    if (winImages != null && winImages!.isNotEmpty) {
+      data['winImages'] = winImages!.split(',');
+    }
+    
+    // 添加详情图
+    if (detailImages != null && detailImages!.isNotEmpty) {
+      data['detailImages'] = detailImages!.split(',');
+    }
+    
+    // 添加详情HTML内容
+    if (detailContent != null && detailContent!.isNotEmpty) {
+      data['detailContent'] = detailContent;
+    }
+    
+    // 如果没有详情图，使用主图作为详情图
+    if ((detailImages == null || detailImages!.isEmpty) && 
+        (detailContent == null || detailContent!.isEmpty)) {
+      data['detailImages'] = images.split(',');
+    }
+    
+    if (categoryId != null) {
+      data['categoryId'] = categoryId;
+    }
+    
+    if (variants != null && variants!.isNotEmpty) {
+      data['variants'] = variants!.map((v) => {
+        'name': v.name.isNotEmpty ? v.name : v.optionName,
+        'sellingPrice': v.sellingPrice > 0 ? v.sellingPrice : v.price,
+        'deliveryDay': v.deliveryDay,
+        'editNum': v.editNum,
+        'feature': v.feature,
+      }).toList();
+    }
+    
+    if (productMaterials != null && productMaterials!.isNotEmpty) {
+      data['productMaterials'] = productMaterials!.map((m) => {
+        'question': m.question,
+        'answer': m.answer,
+        'type': m.type,
+      }).toList();
+    }
+    
+    return data;
   }
 }
 
@@ -303,6 +375,12 @@ class ProductUpdateData extends Equatable {
   
   /// 自定义材料问题
   final List<ProductMaterial>? productMaterials;
+  
+  /// 详情图片
+  final String? detailImages;
+  
+  /// 详情内容（富文本HTML）
+  final String? detailContent;
 
   const ProductUpdateData({
     required this.id,
@@ -314,6 +392,8 @@ class ProductUpdateData extends Equatable {
     this.categoryId,
     this.variants,
     this.productMaterials,
+    this.detailImages,
+    this.detailContent,
   });
 
   @override
@@ -327,7 +407,38 @@ class ProductUpdateData extends Equatable {
     categoryId,
     variants,
     productMaterials,
+    detailImages,
+    detailContent,
   ];
+  
+  /// 创建新实例，可选择性更新部分字段
+  ProductUpdateData copyWith({
+    int? id,
+    String? name,
+    String? images,
+    String? description,
+    double? price,
+    String? state,
+    int? categoryId,
+    List<ProductOptionValue>? variants,
+    List<ProductMaterial>? productMaterials,
+    String? detailImages,
+    String? detailContent,
+  }) {
+    return ProductUpdateData(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      images: images ?? this.images,
+      description: description ?? this.description,
+      price: price ?? this.price,
+      state: state ?? this.state,
+      categoryId: categoryId ?? this.categoryId,
+      variants: variants ?? this.variants,
+      productMaterials: productMaterials ?? this.productMaterials,
+      detailImages: detailImages ?? this.detailImages,
+      detailContent: detailContent ?? this.detailContent,
+    );
+  }
   
   /// 转换为API参数格式
   Map<String, dynamic> toJson() {
@@ -336,11 +447,25 @@ class ProductUpdateData extends Equatable {
     };
     
     if (name != null) data['name'] = name;
-    if (images != null) data['images'] = images;
     if (description != null) data['description'] = description;
     if (price != null) data['price'] = price;
     if (state != null) data['state'] = state;
     if (categoryId != null) data['categoryId'] = categoryId;
+    
+    // 添加图片，转为数组格式
+    if (images != null && images!.isNotEmpty) {
+      data['images'] = images!.split(',');
+    }
+    
+    // 添加详情图
+    if (detailImages != null && detailImages!.isNotEmpty) {
+      data['detailImages'] = detailImages!.split(',');
+    }
+    
+    // 添加详情内容
+    if (detailContent != null && detailContent!.isNotEmpty) {
+      data['detailContent'] = detailContent;
+    }
     
     if (variants != null) {
       data['variants'] = variants!.map((v) => {

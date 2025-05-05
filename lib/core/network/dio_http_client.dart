@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 import 'dart:io'; // For File
 import 'dart:convert'; // For jsonEncode
 import 'package:http/http.dart' as http; // Import http package
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'i_http_client.dart';
 import '../error/exceptions.dart'; // Assuming exceptions are in core/error
@@ -15,6 +16,7 @@ class DioHttpClient implements IHttpClient {
   late final Dio _dio;
   // Add an http client for SSE
   late final http.Client _httpClientForSse;
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   DioHttpClient() {
     final options = BaseOptions(
@@ -44,6 +46,16 @@ class DioHttpClient implements IHttpClient {
     _httpClientForSse.close();
     print("DioHttpClient disposed, SSE client closed.");
     // Dio doesn't require explicit close unless using adapters that need it.
+  }
+
+  // 获取认证令牌
+  Future<String?> _getAuthToken() async {
+    try {
+      return await _secureStorage.read(key: 'auth_token');
+    } catch (e) {
+      print('Error reading token from secure storage: $e');
+      return null;
+    }
   }
 
   @override
@@ -112,23 +124,38 @@ class DioHttpClient implements IHttpClient {
         ...?fields, 
       });
 
-      // --- Prepare Headers --- 
-      // TODO: Replace hardcoded token and version with dynamic values from a config/auth service
-      const String hardcodedAuthToken = 'YOUR_AUTH_TOKEN_HERE'; // Replace with actual token logic
-      const String hardcodedVersion = '100'; // Replace with actual version logic
+      // --- 获取实际令牌 --- 
+      final String? authToken = await _getAuthToken();
+      const String version = '100';
 
+      // 设置较长的超时时间，特别是针对大文件上传
       final options = Options(
         headers: {
           'clienttype': '1',
           'client': Platform.isAndroid ? 'android' : Platform.isIOS ? 'ios' : 'unknown',
-          'version': hardcodedVersion, 
-          'Authorization': hardcodedAuthToken, 
+          'version': version,
+          if (authToken != null && authToken.isNotEmpty)
+            'Authorization': 'Bearer $authToken',
         },
+        // 增加上传超时时间
+        sendTimeout: const Duration(seconds: 60),
+        receiveTimeout: const Duration(seconds: 60),
       );
       // --- End Headers --- 
 
+      // 创建一个带有超时设置的临时Dio实例，避免影响其他请求
+      final uploadDio = Dio(BaseOptions(
+        baseUrl: _baseUrl,
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 60),
+        sendTimeout: const Duration(seconds: 60),
+      ));
+      
+      // 添加日志拦截器，便于调试
+      uploadDio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
+
       // Use endpoint (path within base URL)
-      final response = await _dio.post(endpoint, data: formData, options: options); 
+      final response = await uploadDio.post(endpoint, data: formData, options: options); 
       return _handleResponse(response);
     } on DioException catch (e) {
       throw _handleDioError(e);

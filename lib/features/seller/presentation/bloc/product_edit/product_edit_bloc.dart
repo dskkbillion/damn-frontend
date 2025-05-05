@@ -38,6 +38,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     on<RemoveProductMaterial>(_onRemoveProductMaterial);
     on<UpdateProductMaterial>(_onUpdateProductMaterial);
     on<SelectProductImages>(_onSelectProductImages);
+    on<SelectDetailProductImages>(_onSelectDetailProductImages);
     on<SubmitProductForm>(_onSubmitProductForm);
     on<ResetProductForm>(_onResetProductForm);
   }
@@ -258,6 +259,14 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     emit(state.copyWithSelectedImages(event.imagePaths));
   }
 
+  /// 选择商品详情图片处理
+  void _onSelectDetailProductImages(
+    SelectDetailProductImages event,
+    Emitter<ProductEditState> emit,
+  ) {
+    emit(state.copyWithSelectedDetailImages(event.imagePaths));
+  }
+
   /// 提交表单处理
   Future<void> _onSubmitProductForm(
     SubmitProductForm event,
@@ -284,6 +293,8 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
         description: state.formData.description,
         price: state.formData.price,
         imageFilePaths: state.selectedImagePaths,
+        detailImageFilePaths: state.selectedDetailImagePaths,
+        detailContent: state.formData.detailContent,
         categoryId: state.formData.categoryId,
         variants: state.formData.variants.isNotEmpty ? state.formData.variants : null,
         productMaterials: state.formData.productMaterials.isNotEmpty ? state.formData.productMaterials : null,
@@ -314,6 +325,8 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
         description: state.formData.description,
         price: state.formData.price,
         imageFilePaths: state.selectedImagePaths.isNotEmpty ? state.selectedImagePaths : null,
+        detailImageFilePaths: state.selectedDetailImagePaths.isNotEmpty ? state.selectedDetailImagePaths : null,
+        detailContent: state.formData.detailContent.isNotEmpty ? state.formData.detailContent : null,
         categoryId: state.formData.categoryId,
         variants: state.formData.variants.isNotEmpty ? state.formData.variants : null,
         productMaterials: state.formData.productMaterials.isNotEmpty ? state.formData.productMaterials : null,

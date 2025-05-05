@@ -153,6 +153,19 @@ class SelectProductImages extends ProductEditEvent {
   List<Object> get props => [imagePaths];
 }
 
+/// 选择商品详情图片
+class SelectDetailProductImages extends ProductEditEvent {
+  /// 选择的详情图片路径列表
+  final List<String> imagePaths;
+
+  const SelectDetailProductImages({
+    required this.imagePaths,
+  });
+
+  @override
+  List<Object> get props => [imagePaths];
+}
+
 /// 提交表单
 class SubmitProductForm extends ProductEditEvent {
   const SubmitProductForm();

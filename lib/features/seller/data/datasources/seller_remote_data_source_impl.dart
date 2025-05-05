@@ -175,17 +175,49 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
   @override
   Future<bool> createProduct(ProductCreationData productData) async {
     try {
-      // 转换ProductCreationData为API需要的格式
-      Map<String, dynamic> data = {
-        // 根据ProductCreationData的结构填充
-      };
+      // 使用ProductCreationData的toJson()方法获取API需要的格式
+      final data = productData.toJson();
       
-      final response = await _dio.post('/api/shop/product/create', data: data);
+      // 打印请求数据，便于调试
+      print('Creating product with data: $data');
+
+      // 创建一个专用于商品创建的Dio实例，配置更长的超时时间
+      final productCreateDio = Dio(BaseOptions(
+        baseUrl: _dio.options.baseUrl,
+        connectTimeout: const Duration(seconds: 60),  // 1分钟连接超时
+        receiveTimeout: const Duration(seconds: 120), // 2分钟接收超时
+        sendTimeout: const Duration(seconds: 120),    // 2分钟发送超时
+      ));
+      
+      // 添加日志拦截器，便于调试
+      productCreateDio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
+      
+      // 添加相同的拦截器（如果原dio有的话）
+      try {
+        for (final interceptor in _dio.interceptors) {
+          if (interceptor is! LogInterceptor) { // 已经添加了日志拦截器
+            productCreateDio.interceptors.add(interceptor);
+          }
+        }
+      } catch (e) {
+        print('Warning: Error copying interceptors: $e');
+      }
+
+      // 创建设置更长超时的Options
+      final options = Options(
+        sendTimeout: const Duration(seconds: 120),
+        receiveTimeout: const Duration(seconds: 120),
+      );
+      
+      // 使用新的Dio实例和更长的超时设置发送请求
+      print('Sending product creation request with extended timeout (120s)');
+      final response = await productCreateDio.post('/api/shop/product/create', data: data, options: options);
       
       _checkResponse(response);
       
       return true;
     } catch (e) {
+      print('Error in createProduct: $e');
       _handleError(e);
       rethrow;
     }
@@ -194,17 +226,49 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
   @override
   Future<bool> updateProduct(ProductUpdateData productData) async {
     try {
-      // 转换ProductUpdateData为API需要的格式
-      Map<String, dynamic> data = {
-        // 根据ProductUpdateData的结构填充
-      };
+      // 使用ProductUpdateData的toJson()方法获取API需要的格式
+      final data = productData.toJson();
       
-      final response = await _dio.post('/api/shop/product/update', data: data);
+      // 打印请求数据，便于调试
+      print('Updating product with data: $data');
+      
+      // 创建一个专用于商品更新的Dio实例，配置更长的超时时间
+      final productUpdateDio = Dio(BaseOptions(
+        baseUrl: _dio.options.baseUrl,
+        connectTimeout: const Duration(seconds: 60),  // 1分钟连接超时
+        receiveTimeout: const Duration(seconds: 120), // 2分钟接收超时
+        sendTimeout: const Duration(seconds: 120),    // 2分钟发送超时
+      ));
+      
+      // 添加日志拦截器，便于调试
+      productUpdateDio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
+      
+      // 添加相同的拦截器（如果原dio有的话）
+      try {
+        for (final interceptor in _dio.interceptors) {
+          if (interceptor is! LogInterceptor) { // 已经添加了日志拦截器
+            productUpdateDio.interceptors.add(interceptor);
+          }
+        }
+      } catch (e) {
+        print('Warning: Error copying interceptors: $e');
+      }
+
+      // 创建设置更长超时的Options
+      final options = Options(
+        sendTimeout: const Duration(seconds: 120),
+        receiveTimeout: const Duration(seconds: 120),
+      );
+      
+      // 使用新的Dio实例和更长的超时设置发送请求
+      print('Sending product update request with extended timeout (120s)');
+      final response = await productUpdateDio.post('/api/shop/product/update', data: data, options: options);
       
       _checkResponse(response);
       
       return true;
     } catch (e) {
+      print('Error in updateProduct: $e');
       _handleError(e);
       rethrow;
     }

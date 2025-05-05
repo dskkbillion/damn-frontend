@@ -19,7 +19,7 @@ class FileUploadDataSourceImpl implements IFileUploadDataSource {
   // Helper to extract data or throw ServerException (can be shared or kept private)
   dynamic _handleResponse(Map<String, dynamic> responseData) {
     final int code = responseData['code'] ?? 500;
-    final String message = responseData['message'] ?? 'Unknown server error';
+    final String message = responseData['message'] ?? responseData['msg'] ?? 'Unknown server error';
     if (code == 200) {
       return responseData['data'];
     } else {
@@ -45,21 +45,52 @@ class FileUploadDataSourceImpl implements IFileUploadDataSource {
         file,
       );
 
-      // Assuming the response structure is { "code": 200, "data": { "file_url": "..." } }
-      // Add proper error handling based on _handleResponse or similar logic
+      // 打印响应内容，便于调试
+      print("File upload response: $response");
+
+      // 处理响应
       final int code = response['code'] ?? 500;
       final dynamic data = response['data'];
-      final String? message = response['message']?.toString();
+      final String? message = response['message']?.toString() ?? response['msg']?.toString();
 
-      if (code == 200 && data != null && data['file_url'] is String) {
-        return data['file_url'];
-      } else {
-        // Use extracted message or a default
-        throw ds_exceptions.ServerException(
-          message: message ?? 'File upload failed: Invalid response format',
-          statusCode: code
-        );
+      if (code == 200 && data != null) {
+        // 适配不同的响应格式
+        if (data is Map) {
+          // 尝试读取各种可能的URL字段名
+          if (data['url'] is String) {
+            return data['url'];
+          } else if (data['file_url'] is String) {
+            return data['file_url'];
+          } else if (data['fileUrl'] is String) {
+            return data['fileUrl'];
+          } else if (data['path'] is String) {
+            return data['path'];
+          } else {
+            // 如果找不到合适的字段，尝试寻找任何以url结尾的字段
+            for (var key in data.keys) {
+              if (key.toLowerCase().endsWith('url') && data[key] is String) {
+                return data[key];
+              }
+            }
+            
+            // 打印所有字段，帮助调试
+            print("Unable to find URL in data, available fields: ${data.keys.toList()}");
+            throw ds_exceptions.ServerException(
+              message: "File upload succeeded but couldn't locate URL in response",
+              statusCode: code
+            );
+          }
+        } else if (data is String && data.startsWith('http')) {
+          // 如果data直接是个URL字符串
+          return data;
+        }
       }
+      
+      // 如果没有返回，则抛出异常
+      throw ds_exceptions.ServerException(
+        message: message ?? 'File upload failed: Invalid response format',
+        statusCode: code
+      );
     } on ds_exceptions.NetworkException catch (e) {
       print("NetworkException during file upload to $fullUrl: $e");
       throw ds_exceptions.NetworkException(message: "Network error during file upload: ${e.message}");

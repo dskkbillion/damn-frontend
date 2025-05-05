@@ -29,8 +29,14 @@ class CreateProductParams extends Equatable {
   /// 自定义材料问题（可选）
   final List<ProductMaterial>? productMaterials;
   
-  /// 待上传的商品图片本地路径列表
+  /// 待上传的商品主图本地路径列表
   final List<String> imageFilePaths;
+  
+  /// 待上传的商品详情图本地路径列表
+  final List<String> detailImageFilePaths;
+  
+  /// 详情图HTML内容（可选，优先使用图片）
+  final String? detailContent;
 
   /// 构造函数
   const CreateProductParams({
@@ -38,9 +44,11 @@ class CreateProductParams extends Equatable {
     required this.description,
     required this.price,
     required this.imageFilePaths,
+    this.detailImageFilePaths = const [],
     this.categoryId,
     this.variants,
     this.productMaterials,
+    this.detailContent,
   });
 
   @override
@@ -49,9 +57,11 @@ class CreateProductParams extends Equatable {
     description, 
     price, 
     imageFilePaths, 
+    detailImageFilePaths,
     categoryId, 
     variants, 
-    productMaterials
+    productMaterials,
+    detailContent,
   ];
 }
 
@@ -72,24 +82,59 @@ class CreateProductUseCase implements UseCase<bool, CreateProductParams> {
     // 先上传商品图片
     if (params.imageFilePaths.isNotEmpty) {
       final uploadedUrls = <String>[];
+      final uploadedDetailUrls = <String>[];
       
-      // 逐个上传图片
+      // 创建合并的图片路径列表，并标记类型
+      final allImagePaths = <Map<String, dynamic>>[];
+      
+      // 添加主图路径
       for (final path in params.imageFilePaths) {
+        allImagePaths.add({
+          'path': path,
+          'type': 'main', // 主图
+        });
+      }
+      
+      // 添加详情图路径
+      for (final path in params.detailImageFilePaths) {
+        allImagePaths.add({
+          'path': path,
+          'type': 'detail', // 详情图
+        });
+      }
+      
+      // 逐个上传所有图片，而不是先上传所有主图再上传所有详情图
+      for (final imageData in allImagePaths) {
+        final path = imageData['path'] as String;
+        final type = imageData['type'] as String;
+        
         final file = File(path);
+        
+        // 短暂延迟，避免连续请求导致服务器压力过大
+        if (allImagePaths.indexOf(imageData) > 0) {
+          await Future.delayed(const Duration(milliseconds: 500));
+        }
+        
         final uploadResult = await _fileUploadRepository.uploadFile(file);
         
         // 如果有一个图片上传失败，则返回失败
         if (uploadResult.isLeft()) {
           return uploadResult.fold(
             (failure) => Left(failure),
-            (_) => throw Exception("Unexpected state"), // 这行永远不会执行，但需要满足类型要求
+            (_) => throw Exception("Unexpected state"),
           );
         }
         
-        // 添加上传成功的URL
+        // 根据图片类型，添加到相应的URL列表
         uploadResult.fold(
-          (_) => throw Exception("Unexpected state"), // 这行永远不会执行，但需要满足类型要求
-          (url) => uploadedUrls.add(url),
+          (_) => throw Exception("Unexpected state"),
+          (url) {
+            if (type == 'main') {
+              uploadedUrls.add(url);
+            } else {
+              uploadedDetailUrls.add(url);
+            }
+          },
         );
       }
       
@@ -102,6 +147,8 @@ class CreateProductUseCase implements UseCase<bool, CreateProductParams> {
         categoryId: params.categoryId,
         variants: params.variants,
         productMaterials: params.productMaterials,
+        detailImages: uploadedDetailUrls.isNotEmpty ? uploadedDetailUrls.join(',') : null,
+        detailContent: params.detailContent,
       );
       
       // 创建商品
