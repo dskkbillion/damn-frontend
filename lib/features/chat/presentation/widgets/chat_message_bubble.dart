@@ -57,6 +57,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       // Set player mode for consistency, especially on web
       _audioPlayer.setPlayerMode(PlayerMode.mediaPlayer);
 
+      // 预加载音频时长
+      _preloadAudioDuration(widget.message.context);
+
       _durationSubscription = _audioPlayer.onDurationChanged.listen((d) {
         if (mounted) setState(() => _duration = d);
       });
@@ -77,6 +80,27 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       _playerStateChangeSubscription = _audioPlayer.onPlayerStateChanged.listen((state) {
         if (mounted) setState(() => _playerState = state);
       });
+    }
+  }
+
+  // 预加载音频时长的方法
+  Future<void> _preloadAudioDuration(String audioUrl) async {
+    try {
+      if (audioUrl.isEmpty) return;
+      
+      print("[Audio] 预加载音频时长: $audioUrl");
+      
+      // 设置音频源但不播放
+      await _audioPlayer.setSourceUrl(audioUrl);
+      
+      // 获取音频时长
+      final duration = await _audioPlayer.getDuration();
+      if (mounted && duration != null) {
+        print("[Audio] 获取到时长: ${duration.inSeconds}秒");
+        setState(() => _duration = duration);
+      }
+    } catch (e) {
+      print("[Audio] 预加载音频时长出错: $e");
     }
   }
 
@@ -181,6 +205,23 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         )
       : const SizedBox(width: 44);
 
+    // 对于图片消息，直接返回图片而不是包裹在气泡中
+    if (widget.message.type == 'image' && !isRevoked) {
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 8.0),
+        child: Row(
+          mainAxisAlignment: alignment,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (!isCurrentUser) avatarWidget,
+            Flexible(child: _buildImageContent(context, widget.message.context ?? '')),
+            if (isCurrentUser) const SizedBox.shrink(),
+          ],
+        ),
+      );
+    }
+
+    // 其他类型消息使用标准气泡
     final bubbleContent = GestureDetector(
       onLongPressStart: (details) {
         if (!isRevoked) {
@@ -225,8 +266,6 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
      } else if (widget.message.type == 'text') {
        // Use the passed textColor
        return Text(messageContext, style: TextStyle(color: textColor, fontSize: 15)); // Ensure appropriate font size
-     } else if (widget.message.type == 'image') {
-       return _buildImageContent(context, messageContext);
      } else if (widget.message.type == 'audio') {
        // Pass textColor and isCurrentUser to audio content
        return _buildAudioContent(context, textColor, isCurrentUser, messageContext);
@@ -242,10 +281,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
        return Container(
          width: 150, // Define a reasonable size for the placeholder
          height: 150,
-         padding: const EdgeInsets.all(50), // Padding around the indicator
          decoration: BoxDecoration(
             color: Colors.grey[300], // Placeholder background
-            borderRadius: BorderRadius.circular(8.0),
+            borderRadius: BorderRadius.circular(16.0), // 使用与消息气泡相同的圆角
          ),
          child: const Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
        );
@@ -255,35 +293,77 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
      if (imageUrl.isEmpty) {
        return Container(
          width: 150, height: 150,
-         color: Colors.grey[300],
+         decoration: BoxDecoration(
+            color: Colors.grey[300],
+            borderRadius: BorderRadius.circular(16.0), // 使用与消息气泡相同的圆角
+         ),
          child: const Center(child: Icon(Icons.broken_image, color: Colors.red)),
        );
      }
+     
      return GestureDetector(
        onTap: () => _showImagePreview(context, imageUrl),
        child: Hero(
          tag: heroTag,
-         child: Container(
-            constraints: const BoxConstraints(
+         child: ConstrainedBox(
+            constraints: BoxConstraints(
                maxHeight: 200,
-               maxWidth: 200,
+               maxWidth: MediaQuery.of(context).size.width * 0.6, // 控制图片最大宽度
             ),
-           // Ensure image clip radius matches or is slightly less than bubble radius
            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12.0), // Slightly smaller radius for content
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-                placeholder: (context, url) => Container(
-                   width: 150, height: 150,
-                   color: Colors.grey[300],
-                   child: const Center(child: CircularProgressIndicator()),
-                 ),
-                errorWidget: (context, url, error) => Container(
-                   width: 150, height: 150,
-                   color: Colors.grey[300],
-                   child: const Center(child: Icon(Icons.error, color: Colors.red)),
+             borderRadius: BorderRadius.circular(16.0), // 给图片添加圆角，与消息气泡一致
+             child: CachedNetworkImage(
+               imageUrl: imageUrl,
+               placeholder: (context, url) => Container(
+                  width: 150, height: 150,
+                  color: Colors.grey[300],
+                  child: const Center(child: CircularProgressIndicator()),
                 ),
-                fit: BoxFit.cover,
+               errorWidget: (context, url, error) {
+                 print("[Image] 加载错误: $url, 错误: $error");
+                 // 提供更友好的错误显示并添加重试按钮
+                 return Container(
+                   width: 150, height: 150,
+                   decoration: BoxDecoration(
+                     color: Colors.grey[200],
+                     borderRadius: BorderRadius.circular(16.0), // 使用与消息气泡相同的圆角
+                   ),
+                   child: Column(
+                     mainAxisAlignment: MainAxisAlignment.center,
+                     children: [
+                       const Icon(Icons.broken_image, color: Colors.red, size: 40),
+                       const SizedBox(height: 8),
+                       const Text('图片加载失败', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                       const SizedBox(height: 8),
+                       // 重试按钮
+                       ElevatedButton(
+                         onPressed: () {
+                           // 强制刷新图片缓存
+                           final imageProvider = CachedNetworkImageProvider(imageUrl);
+                           imageProvider.evict().then((_) {
+                             // 触发重新构建
+                             if (mounted) setState(() {});
+                           });
+                         },
+                         style: ElevatedButton.styleFrom(
+                           minimumSize: const Size(30, 24),
+                           padding: const EdgeInsets.symmetric(horizontal: 8),
+                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                         ),
+                         child: const Text('重试', style: TextStyle(fontSize: 12)),
+                       ),
+                     ],
+                   ),
+                 );
+               },
+               fit: BoxFit.cover,
+               // 增加重试次数
+               maxHeightDiskCache: 300,
+               fadeOutDuration: const Duration(milliseconds: 300),
+               fadeInDuration: const Duration(milliseconds: 300),
+               // 修改缓存配置，可选
+               cacheKey: "chat_image_${widget.message.id}",
+               memCacheWidth: 300,
              ),
            ),
          ),

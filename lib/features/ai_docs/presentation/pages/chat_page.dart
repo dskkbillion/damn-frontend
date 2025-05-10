@@ -229,98 +229,130 @@ class RecommendationBottomSheetContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFFFFF8F0), // 米黄色底色
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
+    // 添加状态监听，显示分配成功提示
+    return BlocListener<AiChatBloc, AiChatState>(
+      listenWhen: (previous, current) => 
+          previous.status != current.status && 
+          current.status == AiChatStatus.allocationSuccess,
+      listener: (context, state) {
+        // 显示分配成功提示
+        if (state.errorMessage != null && state.errorMessage!.isNotEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.errorMessage!),
+              backgroundColor: 
+                state.errorMessage!.contains('失败') ? Colors.red : Colors.green,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      },
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFFFFF8F0), // 米黄色底色
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
+          children: [
+            // 标题栏
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // 标题栏
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text(
+          Text(
              '推荐服务', 
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  // 添加关闭按钮
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
               ),
-            ),
            ),
-          const Divider(height: 1),
-          
-          // 内容区域
+            const Divider(height: 1),
+            
+            // 内容区域
           Expanded( 
              child: BlocBuilder<AiChatBloc, AiChatState>(
                buildWhen: (prev, curr) => 
                    prev.recommendations != curr.recommendations || 
                    prev.recommendationsStatus != curr.recommendationsStatus, 
                builder: (context, state) {
-                // 加载中状态
+                  // 加载中状态
                  if (state.recommendationsStatus == RecommendationsStatus.loading) {
                     return const Center(child: CircularProgressIndicator());
                  }
-                
-                // 错误状态
+                  
+                  // 错误状态
                  if (state.recommendationsStatus == RecommendationsStatus.error) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                        const SizedBox(height: 16),
-                        Text(
-                          "加载推荐服务失败: ${state.recommendationsErrorMessage ?? '未知错误'}",
-                          style: const TextStyle(color: Colors.red),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  );
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                          const SizedBox(height: 16),
+                          Text(
+                            "加载推荐服务失败: ${state.recommendationsErrorMessage ?? '未知错误'}",
+                            style: const TextStyle(color: Colors.red),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    );
                  }
-                
-                // 空状态
+                  
+                  // 空状态
                  if (state.recommendations.isEmpty) {
-                  return const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.inbox, color: Colors.grey, size: 48),
-                        SizedBox(height: 16),
-                        Text('暂无推荐服务', style: TextStyle(color: Colors.grey)),
-                      ],
-                    ),
-                  );
-                }
+                    return const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.inbox, color: Colors.grey, size: 48),
+                          SizedBox(height: 16),
+                          Text('暂无推荐服务', style: TextStyle(color: Colors.grey)),
+                        ],
+                      ),
+                    );
+                   }
 
-                // 服务列表 - 改为两列网格布局
-                return GridView.builder(
-                  padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2, // 两列布局
-                    childAspectRatio: 0.6, // 进一步降低宽高比，让卡片更高
-                    crossAxisSpacing: 12, // 水平间距
-                    mainAxisSpacing: 12, // 垂直间距
-                  ),
+                  // 服务列表 - 改为两列网格布局
+                  return GridView.builder(
+                    padding: const EdgeInsets.all(16),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2, // 两列布局
+                      childAspectRatio: 0.6, // 进一步降低宽高比，让卡片更高
+                      crossAxisSpacing: 12, // 水平间距
+                      mainAxisSpacing: 12, // 垂直间距
+                    ),
                    itemCount: state.recommendations.length,
                    itemBuilder: (context, index) {
                      final service = state.recommendations[index];
-                    return _buildServiceGridItem(
-                      context, 
-                      service, 
-                      () {
-                        print('服务点击: ${service.title}');
+                       // 使用独立Widget而不是直接调用方法
+                       return ServiceGridItem(
+                       service: service,
+                       onTap: () {
+                          print('服务点击: ${service.title}');
                           final itemData = {
                             'name': service.title,
                             'description': '推荐服务: ${service.title}，价格: ￥${service.price}',
                           };
                           context.read<AiChatBloc>().add(TriggerAllocationAction(
                              item: itemData,
-                          merchantId: 1, // 固定商家ID
+                               merchantId: 1, // 固定商家ID
+                               serviceId: service.id, // 添加服务ID用于状态追踪
                           ));
-                          Navigator.pop(context);
-                      }
+                            // 移除Navigator.pop，让底部弹窗保持打开状态，用户可以看到按钮状态变化
+                            // Navigator.pop(context); 
+                       },
                      );
                    },
                  );
@@ -328,12 +360,35 @@ class RecommendationBottomSheetContent extends StatelessWidget {
              ),
            ),
         ],
+        ),
       ),
     );
   }
-  
-  // 网格项构建方法
-  Widget _buildServiceGridItem(BuildContext context, RelatedServiceEntity service, VoidCallback onTap) {
+}
+
+// 独立的服务网格项Widget
+class ServiceGridItem extends StatelessWidget {
+  final RelatedServiceEntity service;
+  final VoidCallback onTap;
+
+  const ServiceGridItem({
+    Key? key,
+    required this.service,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // 在独立Widget中使用context.select是安全的
+    final allocationStatus = context.select<AiChatBloc, AllocationStatus?>(
+      (bloc) => bloc.state.serviceAllocationStatus[service.id]
+    ) ?? AllocationStatus.initial;
+    
+    // 根据分发状态决定按钮颜色
+    final buttonColor = allocationStatus == AllocationStatus.success
+        ? Colors.grey[400] // 已分发状态使用灰色
+        : const Color(0xFFA86400); // 默认棕色
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -349,7 +404,9 @@ class RecommendationBottomSheetContent extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onTap,
+          onTap: allocationStatus == AllocationStatus.loading || allocationStatus == AllocationStatus.success 
+              ? null // 加载中或已分发状态禁用点击
+              : onTap,
           borderRadius: BorderRadius.circular(12),
           child: Padding(
             padding: const EdgeInsets.all(10.0),
@@ -401,31 +458,48 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                 
                 const SizedBox(height: 8),
                 
-                // 按钮独占一行
+                // 按钮独占一行 - 根据状态显示不同内容
                 Container(
                   width: double.infinity, // 占满整行
                   height: 32,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFA86400), // 使用截图中的棕色按钮
+                    color: buttonColor,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: TextButton(
-                    onPressed: onTap,
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      padding: EdgeInsets.zero,
-                    ),
-                    child: const Text(
-                      '让ta看看',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
+                  child: allocationStatus == AllocationStatus.loading
+                      // 加载中状态显示进度指示器
+                      ? Center(
+                          child: SizedBox(
+                            width: 20, // 限制加载指示器大小
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2, // 细线的进度指示器
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          ),
+                        )
+                      // 其他状态显示文本按钮
+                      : TextButton(
+                          onPressed: allocationStatus == AllocationStatus.success 
+                              ? null // 已分发状态禁用按钮
+                              : onTap,
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            padding: EdgeInsets.zero,
+                          ),
+                          child: Text(
+                            allocationStatus == AllocationStatus.success 
+                                ? '已分发' // 成功状态显示"已分发"
+                                : '让ta看看',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
                 ),
               ],
             ),

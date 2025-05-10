@@ -417,9 +417,16 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
   }
 
   @override
-  Future<List<NotificationDto>> getNotificationList({String? messageType}) async {
+  Future<List<NotificationDto>> getNotificationList({
+    String? messageType,
+    int pageNum = 1,
+    int pageSize = 10
+  }) async {
     try {
-      final params = <String, dynamic>{};
+      final params = <String, dynamic>{
+        'pageNum': pageNum,
+        'pageSize': pageSize
+      };
       if (messageType != null) {
         params['messageType'] = messageType;
       }
@@ -428,9 +435,48 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       
       _checkResponse(response);
       
-      final data = response.data['data'] as List<dynamic>;
-      return data.map((json) => NotificationDto.fromJson(json)).toList();
+      // 检查响应格式
+      if (response.data == null || response.data is String) {
+        print('Warning: Unexpected response format for notifications: ${response.data}');
+        return []; // 返回空列表
+      }
+      
+      // 通知列表在rows字段中，而不是data字段
+      if (response.data.containsKey('rows')) {
+        final rows = response.data['rows'];
+        if (rows == null) {
+          print('Warning: Notification rows is null');
+          return [];
+        }
+        
+        if (rows is! List) {
+          print('Warning: Notification rows is not a List: $rows');
+          return [];
+        }
+        
+        return rows.map((json) => NotificationDto.fromJson(json)).toList();
+      } 
+      // 向后兼容检查，可能有时会返回data字段
+      else if (response.data.containsKey('data')) {
+        final data = response.data['data'];
+        if (data == null) {
+          print('Warning: Notification data is null');
+          return [];
+        }
+        
+        if (data is! List) {
+          print('Warning: Notification data is not a List: $data');
+          return [];
+        }
+        
+        return data.map((json) => NotificationDto.fromJson(json)).toList();
+      } 
+      else {
+        print('Warning: Notification response has neither rows nor data field: ${response.data}');
+        return []; // 没有找到有效的数据字段
+      }
     } catch (e) {
+      print('Error in getNotificationList: $e');
       _handleError(e);
       rethrow;
     }
@@ -486,33 +532,64 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
   }
 
   @override
-  Future<List<SellerAuthenticationInfo>> getAuthenticationStatusList() async {
+  Future<List<SellerAuthenticationInfo>> getAuthenticationStatus() async {
     try {
-      final response = await _dio.get('/api/member/authentication/status');
+      // 更新API端点路径
+      final response = await _dio.get('/api/project/authentication/list');
       
       _checkResponse(response);
       
       // 根据API响应结构处理
-      final data = response.data['data'] as List<dynamic>;
+      final data = response.data['rows'] as List<dynamic>; // 注意这里使用rows字段
       // 转换为SellerAuthenticationInfo对象列表
       return data.map((json) {
-        // 导入的SellerAuthenticationInfo包含AuthenticationType和AuthenticationStatus嵌套类型
-        // 但在dart中嵌套类型通常不能直接访问，所以这里创建枚举值的逻辑可能需要调整
-        
         // 创建类型和状态
-        final typeValue = json['type'] ?? 'OTHER';
-        final statusValue = json['status'];
+        final typeValue = json['type'] ?? 'other';
+        final statusValue = json['status'] ?? 'SHUT'; // OPEN表示启用，SHUT表示禁用
+        
+        // 检查是否有审核信息
+        final hasAudit = json['authenticationAuditVo'] != null;
+        
+        // 确定认证状态
+        AuthenticationStatus status = AuthenticationStatus.notSubmitted;
+        String? rejectionReason;
+        DateTime? submittedAt;
+        Map<String, dynamic>? fields;
+        
+        if (hasAudit) {
+          final auditInfo = json['authenticationAuditVo'];
+          // 根据API返回解析审核状态
+          if (auditInfo['auditStatus'] == 'approved') {
+            status = AuthenticationStatus.approved;
+          } else if (auditInfo['auditStatus'] == 'rejected') {
+            status = AuthenticationStatus.rejected;
+            rejectionReason = auditInfo['rejectReason'];
+          } else if (auditInfo['auditStatus'] == 'pending') {
+            status = AuthenticationStatus.pending;
+          }
+          
+          // 解析提交时间
+          if (auditInfo['createTime'] != null) {
+            submittedAt = DateTime.tryParse(auditInfo['createTime']);
+          }
+          
+          // 解析提交的特殊字段
+          if (auditInfo['feature'] != null) {
+            fields = auditInfo['feature'];
+          }
+        }
         
         return SellerAuthenticationInfo(
           authenticationId: json['id'] ?? 0,
           type: _mapToAuthenticationType(typeValue),
-          status: _mapToAuthenticationStatus(statusValue),
-          name: json['name'] ?? '', // 使用接口返回的名称，如果没有则使用空字符串
-          enabled: json['enabled'] == 'OPEN' || json['enabled'] == true,
+          status: status,
+          name: json['name'] ?? '',
+          enabled: statusValue == 'OPEN',
           icon: json['icon'],
-          remarks: json['remark'],
-          rejectionReason: json['rejectionReason'],
-          submittedAt: json['submittedAt'] != null ? DateTime.tryParse(json['submittedAt']) : null,
+          remarks: json['remarks'],
+          fields: fields,
+          rejectionReason: rejectionReason,
+          submittedAt: submittedAt,
         );
       }).toList();
     } catch (e) {
@@ -524,36 +601,71 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
   // 辅助方法：将API值映射到AuthenticationType枚举
   AuthenticationType _mapToAuthenticationType(String value) {
     switch(value) {
-      case 'ID_CARD': return AuthenticationType.idCard;
-      case 'EDUCATION': return AuthenticationType.education;
-      case 'PROFESSION': return AuthenticationType.profession;
-      case 'COMPANY': return AuthenticationType.company;
+      case 'real_name': return AuthenticationType.idCard;
+      case 'background': return AuthenticationType.education;
+      case 'corporation': return AuthenticationType.company;
       default: return AuthenticationType.other;
     }
   }
   
-  // 辅助方法：将API值映射到AuthenticationStatus枚举
-  AuthenticationStatus _mapToAuthenticationStatus(String? value) {
-    switch(value) {
-      case 'PENDING': return AuthenticationStatus.pending;
-      case 'APPROVED': return AuthenticationStatus.approved;
-      case 'REJECTED': return AuthenticationStatus.rejected;
-      default: return AuthenticationStatus.notSubmitted;
+  // 辅助方法：将AuthenticationType枚举映射到API值
+  String _mapFromAuthenticationType(AuthenticationType type) {
+    switch(type) {
+      case AuthenticationType.idCard: return 'real_name';
+      case AuthenticationType.education: return 'background';
+      case AuthenticationType.company: return 'corporation';
+      case AuthenticationType.profession: return 'other'; // 可能需要调整
+      default: return 'other';
     }
   }
 
   @override
   Future<bool> submitAuthenticationApplication(AuthenticationApplicationData applicationData) async {
     try {
-      // 转换为API需要的格式
-      Map<String, dynamic> data = {
-        // 根据applicationData结构填充
+      // 创建不同认证类型的请求数据
+      final Map<String, dynamic> requestData = {
+        'authenticationId': applicationData.authenticationId,
+        'images': applicationData.images?.split(',').where((s) => s.isNotEmpty).toList() ?? [],
       };
       
-      final response = await _dio.post('/api/member/authentication/apply', data: data);
+      // 根据认证类型添加特定字段
+      switch (_mapToAuthenticationType(applicationData.authenticationType)) {
+        case AuthenticationType.idCard:
+          // 实名认证只需基本字段
+          break;
+        
+        case AuthenticationType.education:
+          // 学校认证需要remarks和feature
+          requestData['remarks'] = applicationData.remark;
+          requestData['feature'] = applicationData.feature ?? {};
+          break;
+        
+        case AuthenticationType.company:
+          // 公司认证需要name和feature
+          requestData['name'] = applicationData.name;
+          requestData['feature'] = applicationData.feature ?? {};
+          break;
+        
+        default:
+          // 其他类型认证
+          if (applicationData.name?.isNotEmpty == true) {
+            requestData['name'] = applicationData.name;
+          }
+          if (applicationData.remark?.isNotEmpty == true) {
+            requestData['remarks'] = applicationData.remark;
+          }
+          if (applicationData.feature != null) {
+            requestData['feature'] = applicationData.feature;
+          }
+      }
+      
+      // 发送请求
+      final response = await _dio.post(
+        '/api/project/authenticationAudit/add', 
+        data: requestData
+      );
       
       _checkResponse(response);
-      
       return true;
     } catch (e) {
       _handleError(e);
@@ -655,14 +767,6 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
   }
 
   @override
-  Future<List<SellerAuthenticationInfo>> getAuthenticationStatus() async {
-    // TODO: Implement actual API call for getAuthenticationStatus
-    print('WARNING: Using placeholder implementation for getAuthenticationStatus in SellerRemoteDataSourceImpl');
-    await Future.delayed(const Duration(milliseconds: 100)); // Simulate network delay
-    return []; // Return empty list as placeholder
-  }
-
-  @override
   Future<dynamic> getShopVerificationStatus() async {
     // TODO: Implement actual API call for getShopVerificationStatus
     // TODO: Define ShopVerificationStatus type and return correctly
@@ -674,13 +778,15 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
 
   /// 检查响应状态码
   void _checkResponse(Response response) {
-    if (response.statusCode != 200) {
-      throw ServerException(message: response.statusMessage ?? '服务器错误');
+    final data = response.data;
+    if (data == null) {
+      throw ServerException(message: '服务器返回空数据');
     }
     
-    final data = response.data;
-    if (data is Map<String, dynamic> && data.containsKey('code') && data['code'] != 200) {
-      throw ServerException(message: data['msg'] ?? '服务器错误');
+    final int? code = data['code'];
+    if (code != 200) {
+      final String message = data['msg'] ?? '未知错误';
+      throw ServerException(message: message);
     }
   }
 

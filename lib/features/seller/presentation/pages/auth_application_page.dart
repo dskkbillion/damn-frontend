@@ -627,14 +627,13 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
   /// 根据字符串获取认证类型
   AuthenticationType _getAuthenticationTypeFromString(String typeStr) {
     switch (typeStr.toLowerCase()) {
-      case 'id_card':
-      case 'idcard':
+      case 'real_name':
         return AuthenticationType.idCard;
-      case 'education':
+      case 'background':
         return AuthenticationType.education;
-      case 'profession':
+      case 'other':
         return AuthenticationType.profession;
-      case 'company':
+      case 'corporation':
         return AuthenticationType.company;
       default:
         return AuthenticationType.other;
@@ -643,34 +642,12 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
   
   /// 获取认证类型显示名称
   String _getAuthenticationTypeName(AuthenticationType type) {
-    switch (type) {
-      case AuthenticationType.idCard:
-        return '身份';
-      case AuthenticationType.education:
-        return '学历';
-      case AuthenticationType.profession:
-        return '职业';
-      case AuthenticationType.company:
-        return '公司';
-      default:
-        return '其他';
-    }
+    return type.displayName;
   }
   
   /// 获取认证类型描述
   String _getAuthenticationTypeDescription(AuthenticationType type) {
-    switch (type) {
-      case AuthenticationType.idCard:
-        return '身份认证可以增加您的账号可信度，保护您的账号安全。请上传您的身份证正反面照片。';
-      case AuthenticationType.education:
-        return '学历认证可以增加您的专业可信度，提升您的订单接单率。请上传您的学历证书照片。';
-      case AuthenticationType.profession:
-        return '职业认证可以展示您的专业能力，提高您的服务可信度。请上传您的职业资格证书照片。';
-      case AuthenticationType.company:
-        return '公司认证可以增加您的企业形象，提升您的品牌价值。请上传营业执照等相关证明材料。';
-      default:
-        return '认证可以增加您的账号可信度，提高您的服务质量评分。请上传相关证明材料。';
-    }
+    return type.description;
   }
   
   /// 获取上传提示文字

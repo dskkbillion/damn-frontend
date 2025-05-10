@@ -1,6 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart'; // Import GetIt
+import 'package:go_router/go_router.dart'; // 添加导入
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dskk_flutter_refactor/core/network/network_info.dart';
+import 'package:dskk_flutter_refactor/core/network/mock_network_info.dart' as mock;
+import 'dart:async'; // 添加Completer和StreamSubscription导入
+
+// 引入通知相关的类
+import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/notification_list/notification_list_bloc.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/pages/notification_list_page.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_notification_list_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/mark_notification_as_read_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/mark_all_notifications_as_read_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_unread_notification_count_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/data/repositories/seller_repository_impl.dart';
+import 'package:dskk_flutter_refactor/features/seller/data/datasources/seller_remote_data_source_impl.dart';
+import 'package:dskk_flutter_refactor/features/seller/data/datasources/seller_local_data_source_impl.dart';
+// 导入NotificationListContent，它是NotificationListPage的一部分
+import 'package:dskk_flutter_refactor/features/seller/presentation/pages/notification_list_page.dart' 
+    show NotificationListContent;
 
 import '../bloc/chat_list/chat_list_bloc.dart';
 import '../widgets/chat_list_item.dart';
@@ -9,6 +30,7 @@ import 'chat_room_page.dart'; // Import ChatRoomPage
 // Import domain entities needed for fake ChatRoom
 import '../../domain/entities/chat_room.dart';
 import '../../domain/entities/participant.dart';
+import '../../domain/entities/chat_message.dart'; // 添加导入ChatMessage
 
 final sl = GetIt.instance; // Get GetIt instance
 
@@ -54,6 +76,132 @@ class ChatListPage extends StatelessWidget {
           context.read<ChatListBloc>().add(StartAdminChatRequested());
         },
         // TODO: Add visual differentiation (e.g., different icon/background)
+      ),
+    );
+  }
+  
+  // 添加通知中心条目构建方法
+  Widget _buildNotificationItem(BuildContext context, int currentUserId) {
+    // 创建通知中心参与者
+    final notificationParticipant = Participant(
+      id: 2, // 使用不同于系统管理员的ID
+      referId: 2, // 使用不同于系统管理员的referId
+      nickName: '通知中心',
+      type: 'NOTIFICATION',
+      avatar: null, // 可以添加特定图标
+    );
+    
+    // 创建当前用户参与者（与系统管理员中相同）
+    final currentUserParticipant = Participant(
+      id: -1,
+      referId: currentUserId,
+      nickName: 'Me',
+      type: 'MEMBER',
+    );
+    
+    // 创建假的聊天室对象，与系统管理员类似
+    final fakeNotificationChatRoom = ChatRoom(
+      id: -2, // 使用不同于系统管理员的ID
+      participant1: currentUserParticipant,
+      participant2: notificationParticipant,
+      unreadCount: 0, // 可以从仓库获取未读数量
+      // 添加一条最后消息以显示更有吸引力
+      lastMessage: ChatMessage(
+        id: -1,
+        chatId: -2,
+        senderId: 2,
+        context: '系统、订单、评价等重要通知',
+        type: 'text',
+        createTime: DateTime.now(),
+        withdrawFlag: false,
+      ),
+    );
+    
+    return Material(
+      color: Colors.white,
+      child: ChatListItem(
+        key: const ValueKey('notification_entry'),
+        chatRoom: fakeNotificationChatRoom,
+        currentUserId: currentUserId,
+        onTap: () {
+          // 检查当前应用模式
+          // 注：这里我们使用临时方法，理想情况下应该使用Provider或其他状态管理方式来获取当前模式
+          // 判断是否为卖家模式（简单示例）
+          bool isSellerMode = false;
+          
+          try {
+            // 尝试检查当前路由
+            final currentPath = GoRouterState.of(context).matchedLocation;
+            isSellerMode = currentPath.startsWith('/seller');
+          } catch (e) {
+            print('Error detecting current mode: $e');
+          }
+          
+          if (isSellerMode) {
+            // 卖家模式 - 导航到卖家通知页面
+            context.go('/seller/notifications');
+          } else {
+            // 买家模式 - 使用Navigator.push保留底部导航栏
+            // 创建NotificationListPage所需的依赖
+            final getIt = GetIt.I;
+            final dio = getIt<Dio>();
+            final secureStorage = getIt<FlutterSecureStorage>();
+            final sharedPreferences = getIt<SharedPreferences>();
+            
+            // 创建网络信息服务
+            NetworkInfo networkInfo;
+            try {
+              networkInfo = getIt<NetworkInfo>();
+            } catch (e) {
+              print('NetworkInfo not found in GetIt, using mock');
+              networkInfo = mock.MockNetworkInfo();
+            }
+            
+            // 创建数据源
+            final remoteDataSource = SellerRemoteDataSourceImpl(dio);
+            final localDataSource = SellerLocalDataSourceImpl(sharedPreferences);
+            
+            // 创建仓库
+            final sellerRepository = SellerRepositoryImpl(
+              remoteDataSource,
+              localDataSource,
+              networkInfo,
+            );
+            
+            // 创建用例
+            final getSellerNotificationListUseCase = GetSellerNotificationListUseCase(sellerRepository);
+            final markNotificationAsReadUseCase = MarkNotificationAsReadUseCase(sellerRepository);
+            final markAllNotificationsAsReadUseCase = MarkAllNotificationsAsReadUseCase(sellerRepository);
+            final getUnreadNotificationCountUseCase = GetUnreadNotificationCountUseCase(sellerRepository);
+            
+            // 使用Navigator.push而不是context.go，这样可以保留底部导航栏
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => BlocProvider(
+                  create: (context) => NotificationListBloc(
+                    getSellerNotificationListUseCase,
+                    markNotificationAsReadUseCase,
+                    markAllNotificationsAsReadUseCase,
+                    getUnreadNotificationCountUseCase,
+                  )..add(LoadNotificationList()), // 加载初始数据
+                  child: Scaffold(
+                    appBar: AppBar(
+                      title: const Text('通知中心'),
+                      centerTitle: true,
+                      // 添加返回按钮
+                      leading: IconButton(
+                        icon: const Icon(Icons.arrow_back),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ),
+                    body: const NotificationListContent(),
+                  ),
+                ),
+              ),
+            );
+          }
+        },
       ),
     );
   }
@@ -112,19 +260,56 @@ class ChatListPage extends StatelessWidget {
           builder: (context, state) {
             if (state.status == ChatListStatus.loading && state.chatRooms.isEmpty) { // Show loading only initially
               return const Center(child: CircularProgressIndicator()); 
-            } else if (state.status == ChatListStatus.success || (state.status == ChatListStatus.loading && state.chatRooms.isNotEmpty)) {
+            } else if (state.chatRooms.isNotEmpty) {
               // Always show the list if we have rooms, even while loading more/refreshing
               // final itemCount = state.chatRooms.length + 1; // Add 1 for admin entry
-               return ListView.separated(
-                 // Add 1 to item count for the static admin entry
-                 itemCount: state.chatRooms.length + 1, 
+              
+              // 使用RefreshIndicator包装ListView实现下拉刷新
+              return RefreshIndicator(
+                onRefresh: () async {
+                  // 触发刷新事件
+                  print('[ChatListPage] Pull-to-refresh triggered');
+                  context.read<ChatListBloc>().add(RefreshChatList());
+                  
+                  // 创建一个Completer，等待刷新完成
+                  final completer = Completer();
+                  
+                  // 声明subscription变量
+                  late StreamSubscription subscription;
+                  
+                  // 订阅状态变化
+                  subscription = context.read<ChatListBloc>().stream.listen((newState) {
+                    // 当状态不再是loading，表示刷新完成
+                    if (newState.status != ChatListStatus.loading) {
+                      completer.complete();
+                      subscription.cancel();
+                    }
+                  });
+                  
+                  // 设置超时，防止无限等待
+                  Future.delayed(const Duration(seconds: 5), () {
+                    if (!completer.isCompleted) {
+                      completer.complete();
+                      subscription.cancel();
+                    }
+                  });
+                  
+                  return completer.future;
+                },
+                child: ListView.separated(
+                 // 修改为+2，包含管理员和通知中心两个固定条目
+                 itemCount: state.chatRooms.length + 2, 
                  itemBuilder: (context, index) {
-                   // First item is the admin chat entry
+                   // 第一个项是管理员聊天入口
                    if (index == 0) {
                      return _buildAdminListItem(context, currentUserId);
                    }
-                   // Subsequent items are regular chat rooms
-                   final chatRoom = state.chatRooms[index - 1]; // Adjust index
+                   // 第二个项是通知中心
+                   else if (index == 1) {
+                     return _buildNotificationItem(context, currentUserId);
+                   }
+                   // 后续项是常规聊天室
+                   final chatRoom = state.chatRooms[index - 2]; // 调整索引
                    return Material(
                      color: Colors.white, 
                      child: ChatListItem(
@@ -152,19 +337,20 @@ class ChatListPage extends StatelessWidget {
                    );
                  },
                  separatorBuilder: (context, index) {
-                   // Optionally add a different separator after the admin item
-                    if (index == 0) {
+                   // 系统管理员和通知中心后使用粗分隔线
+                   if (index < 2) {
                        return const Divider(height: 8, thickness: 8, color: Color(0xFFEDEDED)); // Thicker separator
-                    } 
-                    // Regular separator
-                    return Divider(
-                      height: 1,
-                      indent: 80, 
-                      endIndent: 16,
-                      color: Colors.grey[100], 
-                      thickness: 0.5, 
-                    );
+                   } 
+                   // Regular separator
+                   return Divider(
+                     height: 1,
+                     indent: 80, 
+                     endIndent: 16,
+                     color: Colors.grey[100], 
+                     thickness: 0.5, 
+                   );
                  },
+               ),
                );
             } else if (state.status == ChatListStatus.failure) {
               return Center(

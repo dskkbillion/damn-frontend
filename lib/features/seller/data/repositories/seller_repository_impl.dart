@@ -405,10 +405,18 @@ class SellerRepositoryImpl implements ISellerRepository {
 
   /// 获取通知列表
   @override
-  Future<Either<Failure, List<SellerNotification>>> getNotificationList({String? messageType}) async {
+  Future<Either<Failure, List<SellerNotification>>> getNotificationList({
+    String? messageType,
+    int pageNum = 1,
+    int pageSize = 10
+  }) async {
     if (await _networkInfo.isConnected) {
       try {
-        final notificationDtos = await _remoteDataSource.getNotificationList(messageType: messageType);
+        final notificationDtos = await _remoteDataSource.getNotificationList(
+          messageType: messageType,
+          pageNum: pageNum,
+          pageSize: pageSize
+        );
         
         // 将DTO转换为领域实体
         final notifications = notificationDtos.map((dto) => dto.toEntity()).toList();
@@ -490,9 +498,19 @@ class SellerRepositoryImpl implements ISellerRepository {
   /// 获取认证状态/信息列表
   @override
   Future<Either<Failure, List<SellerAuthenticationInfo>>> getAuthenticationStatus() async {
-    // 只返回占位符，移除错误的 remoteDataSource 调用逻辑
-    print('WARNING: Using placeholder implementation for getAuthenticationStatus in SellerRepositoryImpl');
-    return const Right([]);
+    if (await _networkInfo.isConnected) {
+      try {
+        // 调用远程数据源的getAuthenticationStatus方法
+        final authList = await _remoteDataSource.getAuthenticationStatus();
+        return Right(authList);
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message ?? '服务器异常'));
+      } catch (e) {
+        return Left(ServerFailure(message: e.toString()));
+      }
+    } else {
+      return Left(NetworkFailure(message: '网络连接失败，请检查网络设置'));
+    }
   }
 
   /// 提交认证申请

@@ -18,6 +18,10 @@ class NotificationListBloc extends Bloc<NotificationListEvent, NotificationListS
   final MarkNotificationAsReadUseCase _markNotificationAsReadUseCase;
   final MarkAllNotificationsAsReadUseCase _markAllNotificationsAsReadUseCase;
   final GetUnreadNotificationCountUseCase _getUnreadNotificationCountUseCase;
+  
+  // 追踪当前页码
+  int _currentPage = 1;
+  static const int _pageSize = 10;
 
   /// 构造函数
   NotificationListBloc(
@@ -38,6 +42,14 @@ class NotificationListBloc extends Bloc<NotificationListEvent, NotificationListS
     LoadNotificationList event,
     Emitter<NotificationListState> emit,
   ) async {
+    // 重置页码或加载下一页
+    if (event.refresh) {
+      _currentPage = 1;
+    } else if (state is NotificationListLoaded) {
+      // 加载更多时增加页码
+      _currentPage++;
+    }
+
     // 如果是刷新或者首次加载，显示加载状态
     if (event.refresh || state is NotificationListInitial) {
       emit(NotificationListLoading());
@@ -47,7 +59,14 @@ class NotificationListBloc extends Bloc<NotificationListEvent, NotificationListS
       emit(currentState.copyWith(isLoadingMore: true));
     }
 
-    // 构建参数
+    // 处理"全部"类型的通知查询
+    if (event.type == null) {
+      // "全部"类型 - 分别加载每种通知类型并合并结果
+      await _loadAllTypeNotifications(event, emit);
+      return;
+    }
+
+    // 构建单一类型的查询参数
     final params = GetSellerNotificationListParams(
       messageType: event.type == NotificationType.order
           ? 'ORDER'
@@ -62,6 +81,8 @@ class NotificationListBloc extends Bloc<NotificationListEvent, NotificationListS
                           : event.type == NotificationType.authentication
                               ? 'AUTHENTICATION'
                               : null,
+      pageNum: _currentPage,
+      pageSize: _pageSize,
     );
 
     // 调用用例获取通知列表
@@ -69,6 +90,11 @@ class NotificationListBloc extends Bloc<NotificationListEvent, NotificationListS
 
     result.fold(
       (failure) {
+        // 如果是加载更多失败，恢复页码
+        if (!event.refresh && state is NotificationListLoaded) {
+          _currentPage--;
+        }
+        
         // 处理失败情况
         if (state is NotificationListLoaded) {
           final currentState = state as NotificationListLoaded;
@@ -82,19 +108,109 @@ class NotificationListBloc extends Bloc<NotificationListEvent, NotificationListS
       },
       (notifications) {
         // 处理成功情况
-        emit(NotificationListLoaded(
-          notifications: notifications,
-          currentType: event.type,
-          hasMore: notifications.length >= 20, // 假设每页20条
-          unreadCount: null, // 待获取
-          error: null,
-          isLoadingMore: false,
-        ));
+        if (event.refresh || state is! NotificationListLoaded) {
+          // 刷新或第一次加载，直接替换通知列表
+          emit(NotificationListLoaded(
+            notifications: notifications,
+            currentType: event.type,
+            hasMore: notifications.length >= _pageSize, // 如果返回的数据量等于页大小，则可能有更多数据
+            unreadCount: null, // 待获取
+            error: null,
+            isLoadingMore: false,
+          ));
+        } else {
+          // 加载更多，追加通知列表
+          final currentState = state as NotificationListLoaded;
+          final updatedNotifications = [...currentState.notifications, ...notifications];
+          
+          emit(NotificationListLoaded(
+            notifications: updatedNotifications,
+            currentType: event.type,
+            hasMore: notifications.length >= _pageSize, // 如果返回的数据量等于页大小，则可能有更多数据
+            unreadCount: currentState.unreadCount,
+            error: null,
+            isLoadingMore: false,
+          ));
+        }
 
         // 获取未读数量
         add(GetUnreadNotificationCount());
       },
     );
+  }
+
+  /// 加载所有类型的通知(用于"全部"标签)
+  Future<void> _loadAllTypeNotifications(
+    LoadNotificationList event,
+    Emitter<NotificationListState> emit,
+  ) async {
+    // 需要加载的消息类型列表
+    final messageTypes = [
+      'SYSTEM',   // 系统通知
+      'ORDER',    // 订单通知
+      'MESSAGE',  // 消息通知
+      'REFUND',   // 售后通知
+      'REVIEW',   // 评价通知
+      'AUTHENTICATION', // 认证通知
+    ];
+
+    // 合并所有类型的通知
+    List<SellerNotification> allNotifications = [];
+    String? errorMessage;
+
+    // 分别加载每种类型的通知
+    for (final messageType in messageTypes) {
+      final params = GetSellerNotificationListParams(
+        messageType: messageType,
+        pageNum: 1,  // 始终从第一页加载
+        pageSize: _pageSize,
+      );
+
+      final result = await _getSellerNotificationListUseCase(params);
+      
+      result.fold(
+        (failure) {
+          // 记录错误，但继续加载其他类型
+          errorMessage = failure.message;
+          print('加载[$messageType]类型通知失败: ${failure.message}');
+        },
+        (notifications) {
+          // 添加到合并列表
+          allNotifications.addAll(notifications);
+        },
+      );
+    }
+
+    // 按时间排序，最新的在前面
+    allNotifications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    // 截取需要的数量，避免列表过长
+    if (allNotifications.length > _pageSize) {
+      allNotifications = allNotifications.sublist(0, _pageSize);
+    }
+
+    // 根据当前状态，决定是替换还是追加
+    if (event.refresh || state is! NotificationListLoaded) {
+      emit(NotificationListLoaded(
+        notifications: allNotifications,
+        currentType: null, // 全部类型
+        hasMore: allNotifications.length >= _pageSize,
+        unreadCount: null,
+        error: errorMessage,
+        isLoadingMore: false,
+      ));
+    } else {
+      // 对于"全部"类型，暂不支持加载更多，每次都重新加载
+      final currentState = state as NotificationListLoaded;
+      emit(currentState.copyWith(
+        notifications: allNotifications, 
+        error: errorMessage,
+        isLoadingMore: false
+      ));
+    }
+
+    // 获取未读数量
+    add(GetUnreadNotificationCount());
   }
 
   /// 切换通知类型
@@ -111,12 +227,16 @@ class NotificationListBloc extends Bloc<NotificationListEvent, NotificationListS
         return;
       }
       
+      // 重置页码
+      _currentPage = 1;
+      
       // 更新当前类型并重新加载
       final NotificationListLoaded newState = currentState.copyWith(currentType: event.type);
       emit(newState);
       add(LoadNotificationList(type: event.type, refresh: true));
     } else {
       // 如果当前不是已加载状态，直接加载新类型
+      _currentPage = 1;
       add(LoadNotificationList(type: event.type, refresh: true));
     }
   }

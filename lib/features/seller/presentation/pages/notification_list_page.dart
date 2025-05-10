@@ -5,6 +5,19 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/notific
 import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
 import 'package:intl/intl.dart';
 import 'package:get_it/get_it.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dskk_flutter_refactor/core/network/network_info.dart';
+import 'package:dskk_flutter_refactor/core/network/mock_network_info.dart' as mock;
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_notification_list_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/mark_notification_as_read_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/mark_all_notifications_as_read_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_unread_notification_count_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/repositories/i_seller_repository.dart';
+import 'package:dskk_flutter_refactor/features/seller/data/repositories/seller_repository_impl.dart';
+import 'package:dskk_flutter_refactor/features/seller/data/datasources/seller_remote_data_source_impl.dart';
+import 'package:dskk_flutter_refactor/features/seller/data/datasources/seller_local_data_source_impl.dart';
 
 /// 通知列表页面
 class NotificationListPage extends StatelessWidget {
@@ -16,18 +29,72 @@ class NotificationListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 在 build 方法中使用 BlocProvider 提供 Bloc
-    return BlocProvider<NotificationListBloc>(
-      // 在 create 回调中获取 Bloc 实例并触发初始事件
-      create: (context) => GetIt.I<NotificationListBloc>()..add(const LoadNotificationList(type: null, refresh: true)),
-      child: Scaffold(
+    try {
+      // 获取主应用的GetIt实例
+      final getIt = GetIt.I;
+            
+      // 尝试从GetIt获取主应用的Dio实例
+      final dio = getIt<Dio>();
+      
+      // 获取主应用的其他必要依赖
+      final secureStorage = getIt<FlutterSecureStorage>();
+      final sharedPreferences = getIt<SharedPreferences>();
+      
+      // 创建网络信息服务
+      NetworkInfo networkInfo;
+      try {
+        networkInfo = getIt<NetworkInfo>();
+      } catch (e) {
+        print('NetworkInfo not found in GetIt, using mock');
+        networkInfo = mock.MockNetworkInfo();
+      }
+      
+      // 创建数据源
+      final remoteDataSource = SellerRemoteDataSourceImpl(dio);
+      
+      final localDataSource = SellerLocalDataSourceImpl(sharedPreferences);
+      
+      // 创建仓库
+      final sellerRepository = SellerRepositoryImpl(
+        remoteDataSource,
+        localDataSource,
+        networkInfo,
+      );
+      
+      // 创建用例
+      final getSellerNotificationListUseCase = GetSellerNotificationListUseCase(sellerRepository);
+      final markNotificationAsReadUseCase = MarkNotificationAsReadUseCase(sellerRepository);
+      final markAllNotificationsAsReadUseCase = MarkAllNotificationsAsReadUseCase(sellerRepository);
+      final getUnreadNotificationCountUseCase = GetUnreadNotificationCountUseCase(sellerRepository);
+      
+      // 使用BlocProvider提供NotificationListBloc
+      return BlocProvider(
+        create: (context) => NotificationListBloc(
+          getSellerNotificationListUseCase,
+          markNotificationAsReadUseCase,
+          markAllNotificationsAsReadUseCase,
+          getUnreadNotificationCountUseCase,
+        )..add(LoadNotificationList()), // 加载初始数据
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('通知中心'),
+            centerTitle: true,
+          ),
+          body: const NotificationListContent(),
+        ),
+      );
+    } catch (e) {
+      print('Error creating NotificationListBloc: $e');
+      return Scaffold(
         appBar: AppBar(
           title: const Text('通知中心'),
           centerTitle: true,
         ),
-        body: const NotificationListContent(),
-      ),
-    );
+        body: Center(
+          child: Text('加载通知中心失败: $e'),
+        ),
+      );
+    }
   }
 }
 
@@ -273,10 +340,19 @@ class _NotificationListContentState extends State<NotificationListContent> with 
       );
     }
     
+    // 处理标题和内容，确保它们不是JSON格式字符串
+    String displayTitle = notification.title;
+    String displayContent = notification.content;
+    
+    // 如果标题或内容仍包含JSON格式，尝试提取
+    if (displayTitle.contains('{title:') || displayTitle.contains('content:')) {
+      displayTitle = '通知详情';
+    }
+    
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(notification.title),
+        title: Text(displayTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,7 +362,7 @@ class _NotificationListContentState extends State<NotificationListContent> with 
               style: const TextStyle(color: Colors.grey, fontSize: 12),
             ),
             const SizedBox(height: 16),
-            Text(notification.content),
+            Text(displayContent),
           ],
         ),
         actions: [
@@ -357,16 +433,35 @@ class _NotificationItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    notification.title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          notification.title.startsWith('{') 
+                            ? '通知'
+                            : notification.title,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      if (!notification.isRead)
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    notification.content,
+                    notification.content.startsWith('{') 
+                      ? '点击查看详情'
+                      : notification.content,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -385,15 +480,6 @@ class _NotificationItem extends StatelessWidget {
                 ],
               ),
             ),
-            if (!notification.isRead)
-              Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                  color: Colors.red,
-                  shape: BoxShape.circle,
-                ),
-              ),
           ],
         ),
       ),

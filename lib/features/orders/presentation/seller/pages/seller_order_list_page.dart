@@ -8,7 +8,10 @@ import 'package:dskk_flutter_refactor/features/orders/presentation/seller/widget
 import '../bloc/seller_order_list_bloc.dart';
 
 class SellerOrderListPage extends StatefulWidget {
-  const SellerOrderListPage({super.key});
+  /// 初始状态参数，可以为null
+  final String? initialStatus;
+  
+  const SellerOrderListPage({this.initialStatus, super.key});
 
   @override
   State<SellerOrderListPage> createState() => _SellerOrderListPageState();
@@ -39,18 +42,48 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
     OrderStatus.afterSale, // Combine relevant after-sale states here?
   ];
 
+  // 根据状态查找对应的Tab索引
+  int _findIndexForStatus(OrderStatus? status) {
+    if (status == null) return 0; // 默认返回"全部"索引
+    
+    final index = _tabStatuses.indexWhere((s) => s == status);
+    return index != -1 ? index : 0; // 如果找不到匹配项，返回默认索引
+  }
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _tabs.length, vsync: this);
+    
+    // 处理初始状态参数
+    OrderStatus? initialStatus;
+    
+    // 首先，从URL参数获取状态
+    if (widget.initialStatus != null) {
+      initialStatus = OrderStatus.fromString(widget.initialStatus);
+      print('[SellerOrderListPage] Using initialStatus from URL: ${widget.initialStatus}, parsed: $initialStatus');
+    } 
+    // 其次，尝试从Bloc状态获取
+    else if (context.read<SellerOrderListBloc>().state is SellerOrderListSuccess) {
+      initialStatus = (context.read<SellerOrderListBloc>().state as SellerOrderListSuccess).currentStatusFilter;
+      print('[SellerOrderListPage] Using initialStatus from Bloc state: $initialStatus');
+    }
+    
+    // 计算初始Tab索引
+    final initialIndex = _findIndexForStatus(initialStatus);
+    print('[SellerOrderListPage] Setting initial tab index: $initialIndex for status: $initialStatus');
+    
+    _tabController = TabController(
+      length: _tabs.length, 
+      vsync: this,
+      initialIndex: initialIndex
+    );
     _tabController.addListener(_handleTabSelection);
 
     // Add scroll listener for pagination
     _scrollController.addListener(_onScroll);
 
-    // Initial load (assuming Bloc is provided above this widget)
-    // Consider loading 'All' initially or the first tab status
-    context.read<SellerOrderListBloc>().add(const LoadSellerOrdersRequested());
+    // 不再需要初始加载，因为通过路由的Builder已经初始加载了
+    // context.read<SellerOrderListBloc>().add(const LoadSellerOrdersRequested());
   }
 
   void _handleTabSelection() {
@@ -88,6 +121,10 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/seller'), // 返回卖家首页
+        ),
         title: const Text('我的订单 (卖家)'),
         // TODO: Add Search Icon/Action?
         bottom: TabBar(
@@ -166,7 +203,7 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
             if (ordersToShow.isEmpty && !isLoading && !isActionInProgress) {
                // Use the current filter from successState if available
                final statusText = successState?.currentStatusFilter?.toString().split('.').last ?? '当前';
-               return Center(child: Text('没有找到 $statusText 状态的订单'));
+               return Center(child: Text('暂无此状态订单'));
             }
 
             return Stack( // Use Stack to overlay progress indicator

@@ -355,7 +355,8 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                 ),
                 TextButton(
                   onPressed: () {
-                    // TODO: 导航到收入明细页面
+                    // 导航到统计页面
+                    context.go(SellerRoutes.statistics);
                   },
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
@@ -406,8 +407,8 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                 ),
                 TextButton(
                   onPressed: () {
-                    // 导航到订单列表
-                    context.read<SellerHomeBloc>().add(const NavigateToOrders());
+                    // 导航到卖家订单列表页面（全部订单）
+                    context.go('/seller/order-list');
                   },
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
@@ -432,28 +433,28 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                   icon: Icons.receipt_long,
                   label: '全部',
                   count: dashboardData.orders.total.toString(),
-                  onTap: () => context.read<SellerHomeBloc>().add(const NavigateToOrders()),
+                  onTap: () => context.go('/seller/order-list'),
                 ),
                 _buildOrderStatusItem(
                   context,
                   icon: Icons.access_time,
-                  label: '待处理',
+                  label: '待确认',
                   count: dashboardData.orders.pending.toString(),
-                  onTap: () => context.read<SellerHomeBloc>().add(const NavigateToOrders(orderType: 'pending')),
+                  onTap: () => context.go('/seller/order-list?status=awaitingStart'),
                 ),
                 _buildOrderStatusItem(
                   context,
-                  icon: Icons.check_circle,
-                  label: '已完成',
+                  icon: Icons.loop,
+                  label: '进行中',
                   count: dashboardData.orders.completed.toString(),
-                  onTap: () => context.read<SellerHomeBloc>().add(const NavigateToOrders(orderType: 'completed')),
+                  onTap: () => context.go('/seller/order-list?status=awaitingDelivery'),
                 ),
                 _buildOrderStatusItem(
                   context,
-                  icon: Icons.cancel,
-                  label: '已取消',
+                  icon: Icons.support_agent,
+                  label: '售后中',
                   count: dashboardData.orders.canceled.toString(),
-                  onTap: () => context.read<SellerHomeBloc>().add(const NavigateToOrders(orderType: 'canceled')),
+                  onTap: () => context.go('/seller/order-list?status=afterSale'),
                 ),
               ],
             ),

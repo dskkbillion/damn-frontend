@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/features/home/presentation/bloc/home_bloc.dart';
+import 'package:dskk_flutter_refactor/features/home/presentation/bloc/seller_profile_bloc.dart';
 import 'package:dskk_flutter_refactor/features/home/di/home_di.dart';
 
 import '../pages/home_page.dart';
@@ -9,6 +10,7 @@ import '../pages/product_detail_page.dart';
 import '../pages/product_reviews_page.dart';
 import '../pages/search_page.dart';
 import '../pages/search_results_page.dart';
+import '../pages/seller_public_profile_page.dart';
 
 /// Home模块的路由定义
 /// 
@@ -109,6 +111,19 @@ class HomeRoutes {
         final String productIdStr = state.pathParameters['productId'] ?? '0';
         final int productId = int.tryParse(productIdStr) ?? 0;
         return ProductReviewsPage(productId: productId);
+      },
+    ),
+    // 添加卖家主页路由
+    GoRoute(
+      path: '/seller/:id/profile',
+      name: 'sellerProfile',
+      builder: (context, state) {
+        final String sellerIdStr = state.pathParameters['id'] ?? '0';
+        final int sellerId = int.tryParse(sellerIdStr) ?? 0;
+        return BlocProvider(
+          create: (context) => sl<SellerProfileBloc>()..add(LoadSellerProducts(sellerId: sellerId)),
+          child: SellerPublicProfilePage(sellerId: sellerId),
+        );
       },
     ),
   ];

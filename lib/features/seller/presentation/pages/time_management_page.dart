@@ -120,11 +120,6 @@ class TimeManagementBody extends StatelessWidget {
           // 状态说明
           _buildStatusDescription(settings.isOnline),
           
-          const SizedBox(height: 24),
-
-          // 自动离线设置
-          _buildAutoOfflineSection(context, settings, isUpdating),
-
           const SizedBox(height: 32),
 
           // 保存按钮 - Needs context for Bloc access
@@ -215,123 +210,6 @@ class TimeManagementBody extends StatelessWidget {
       ),
     );
   }
-
-  /// 构建自动离线设置部分
-  Widget _buildAutoOfflineSection(BuildContext context, TimeSettings settings, bool isUpdating) {
-    // The StatefulBuilder's context might be different, but the parent context passed
-    // to this method (`context`) still has access to the Bloc.
-    // If TimeSlotSelector or Add Button need Bloc access, pass the main `context`.
-    return StatefulBuilder(
-      builder: (statefulBuilderContext, setState) { // Use a different name for this context
-        // Check if availableTimeSlots is not null and not empty to determine if enabled
-        bool autoOfflineEnabled = settings.availableTimeSlots != null && settings.availableTimeSlots!.isNotEmpty;
-        // Get actual time slots from settings
-        List<TimeSlot> currentTimeSlots = settings.availableTimeSlots ?? [];
-
-        return Card(
-          elevation: 1,
-          margin: EdgeInsets.zero,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '可用时间设置',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                
-                // 自动离线开关
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      '设置可用时间段',
-                      style: TextStyle(
-                        fontSize: 15,
-                      ),
-                    ),
-                    Switch(
-                      value: autoOfflineEnabled,
-                      activeColor: Colors.green,
-                      onChanged: isUpdating
-                          ? null
-                          : (value) {
-                              setState(() {
-                                autoOfflineEnabled = value;
-                              });
-                              // Optionally dispatch an event immediately, or wait for Save button
-                              // context.read<TimeManagementBloc>().add(UpdateAutoOfflineEnabled(value));
-                            },
-                    ),
-                  ],
-                ),
-                
-                // 时间段设置（仅在启用时显示）
-                if (autoOfflineEnabled) ...[
-                  const SizedBox(height: 16),
-                  // Pass the main context if this widget needs Bloc access
-                  _buildTimeSlotSelector(context, settings, isUpdating),
-                  
-                  const SizedBox(height: 16),
-                  const Divider(),
-                  const SizedBox(height: 8),
-                  
-                  // 添加新时间段按钮
-                  Center(
-                    child: OutlinedButton.icon(
-                      onPressed: isUpdating
-                          ? null
-                          : () {
-                              // Pass the main context if Add logic needs Bloc access
-                              // _showAddTimeSlotDialog(context);
-                              print("Add time slot clicked"); // Placeholder
-                            },
-                      icon: const Icon(Icons.add, size: 18),
-                      label: const Text('添加时间段'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.green,
-                      ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 8),
-                  
-                  // 说明文字
-                  const Text(
-                    '注意：时间段设置将决定您每天对客户的可见状态。在设置的时间段内，您将被显示为在线状态，否则显示为离线状态。',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                      height: 1.5,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        );
-      }
-    );
-  }
-  
-  /// 构建时间段选择器 (Placeholder - Needs actual implementation)
-  Widget _buildTimeSlotSelector(BuildContext context, TimeSettings settings, bool isUpdating) {
-     // TODO: Implement time slot display and editing based on settings.autoOfflineSchedule?.slots
-     // This will likely involve iterating through slots and providing ways to modify/delete them.
-     // It might need access to the Bloc via `context`.
-     return Container(
-       padding: const EdgeInsets.symmetric(vertical: 8.0),
-       child: const Text(
-         "时间段选择器 (待实现)",
-         style: TextStyle(color: Colors.grey),
-       ),
-     );
-  }
   
   /// 构建保存按钮
   Widget _buildSaveButton(BuildContext context, bool isUpdating) {
@@ -341,14 +219,15 @@ class TimeManagementBody extends StatelessWidget {
         // Disable button if isUpdating
         onPressed: isUpdating ? null : () {
           // Dispatch Save event using the context with Bloc access
-          // TODO: Gather the current state from the UI (online status, auto-offline settings)
-          // and pass it to the SaveSettings event.
-          // final currentSettings = gatherCurrentSettingsFromUI();
-          // context.read<TimeManagementBloc>().add(SaveSettings(currentSettings));
-          print("Save button clicked"); // Placeholder
-           ScaffoldMessenger.of(context).showSnackBar(
-             const SnackBar(content: Text('保存功能待实现')),
-           );
+          // 只保存在线状态，不需要保存时间段设置
+          final currentSettings = TimeSettingsData(
+            isOnline: (context.read<TimeManagementBloc>().state as TimeManagementLoaded).settings.isOnline,
+          );
+          
+          // 显示保存成功提示
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('设置已保存')),
+          );
         },
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 14),

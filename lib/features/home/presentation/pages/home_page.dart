@@ -219,25 +219,25 @@ class _HomeViewState extends State<HomeView> {
         context.push('/home/search');
       },
       child: Container(
-        height: 40,
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
+      height: 40,
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
           children: const [
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              child: Icon(Icons.search, color: Colors.grey),
-            ),
-            Expanded(
+            padding: EdgeInsets.symmetric(horizontal: 12),
+            child: Icon(Icons.search, color: Colors.grey),
+          ),
+          Expanded(
               child: Text(
                 '搜索服务',
                 style: TextStyle(color: Colors.grey),
               ),
             ),
           ],
-        ),
+          ),
       ),
     );
   }

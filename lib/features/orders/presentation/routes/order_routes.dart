@@ -63,10 +63,21 @@ class OrderRoutes {
       path: '/seller/orders', // Seller list path
       name: 'sellerOrders', // Optional name
       // Wrap SellerOrderListPage with BlocProvider
-      builder: (context, state) => BlocProvider(
-        create: (_) => getIt<SellerOrderListBloc>(), // Use GetIt to create Seller Bloc
-        child: const SellerOrderListPage(),
-      ),
+      builder: (context, state) {
+        // 提取status查询参数
+        final statusString = state.uri.queryParameters['status'];
+        print('[GoRoute /seller/orders] Received raw status string from URL: $statusString');
+        
+        // 解析status为OrderStatus枚举
+        final parsedStatus = OrderStatusExtension.fromString(statusString);
+        print('[GoRoute /seller/orders] Parsed status using OrderStatusExtension.fromString: $parsedStatus');
+        
+        return BlocProvider(
+          create: (_) => getIt<SellerOrderListBloc>()
+            ..add(LoadSellerOrdersRequested(statusFilter: parsedStatus)),
+          child: const SellerOrderListPage(),
+        );
+      },
     ),
     GoRoute(
       path: '/seller/orders/:orderId', // Seller detail path with parameter

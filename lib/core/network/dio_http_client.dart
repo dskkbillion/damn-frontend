@@ -120,6 +120,8 @@ class DioHttpClient implements IHttpClient {
   ) async {
     try {
       final fileName = file.path.split(Platform.pathSeparator).last;
+      final fileSize = await file.length();
+      print("正在上传文件: $fileName, 大小: ${fileSize / 1024} KB, 目标: $endpoint");
       
       // --- Prepare FormData --- 
       final formData = FormData.fromMap({
@@ -131,7 +133,7 @@ class DioHttpClient implements IHttpClient {
       final String? authToken = await _getAuthToken();
       const String version = '100';
 
-      // 设置较长的超时时间，特别是针对大文件上传
+      // 设置更长的超时时间，特别是针对大文件上传
       final options = Options(
         headers: {
           'clienttype': '1',
@@ -140,9 +142,9 @@ class DioHttpClient implements IHttpClient {
           if (authToken != null && authToken.isNotEmpty)
             'Authorization': 'Bearer $authToken',
         },
-        // 增加上传超时时间
-        sendTimeout: const Duration(seconds: 60),
-        receiveTimeout: const Duration(seconds: 60),
+        // 增加上传超时时间 - 更长的超时时间
+        sendTimeout: const Duration(seconds: 120),     // 2分钟发送超时
+        receiveTimeout: const Duration(seconds: 120),  // 2分钟接收超时
       );
       // --- End Headers --- 
 
@@ -150,19 +152,42 @@ class DioHttpClient implements IHttpClient {
       final uploadDio = Dio(BaseOptions(
         baseUrl: _baseUrl,
         connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 60),
-        sendTimeout: const Duration(seconds: 60),
+        receiveTimeout: const Duration(seconds: 120), // 2分钟接收超时
+        sendTimeout: const Duration(seconds: 120),    // 2分钟发送超时
       ));
       
-      // 添加日志拦截器，便于调试
-      uploadDio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
-
-      // Use endpoint (path within base URL)
-      final response = await uploadDio.post(endpoint, data: formData, options: options); 
+      // 添加详细的日志拦截器，记录上传进度
+      uploadDio.interceptors.add(LogInterceptor(
+        requestBody: true, 
+        responseBody: true,
+        requestHeader: true,
+        responseHeader: true
+      ));
+      
+      // 添加进度记录器
+      final cancelToken = CancelToken();
+      final response = await uploadDio.post(
+        endpoint, 
+        data: formData, 
+        options: options,
+        cancelToken: cancelToken,
+        onSendProgress: (sent, total) {
+          if (total != -1) {
+            final progress = (sent / total * 100).toStringAsFixed(2);
+            print('文件上传进度: $progress% ($sent/$total bytes)');
+          }
+        }
+      );
+      
+      print("文件上传完成: 状态码=${response.statusCode}");
       return _handleResponse(response);
     } on DioException catch (e) {
+      print("文件上传DioException: 类型=${e.type}, 消息=${e.message}");
+      print("请求信息: ${e.requestOptions.uri}, 方法=${e.requestOptions.method}");
+      print("响应状态: ${e.response?.statusCode}, 数据=${e.response?.data}");
       throw _handleDioError(e);
     } catch (e) {
+      print("文件上传异常: ${e.runtimeType} - ${e.toString()}");
       throw ServerException(message: 'Unexpected error during Multipart POST: ${e.toString()}');
     }
   }

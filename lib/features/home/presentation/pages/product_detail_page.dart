@@ -11,6 +11,8 @@ import '../widgets/product_images_carousel.dart';
 import '../../../../features/favorites/presentation/bloc/favorites_bloc.dart';
 import '../../../../features/favorites/presentation/bloc/favorites_state.dart';
 import '../../../../features/favorites/presentation/bloc/favorites_event.dart';
+// 导入聊天模块
+import '../../../../features/chat/domain/repositories/i_chat_repository.dart';
 
 /// 商品详情页面
 class ProductDetailPage extends StatefulWidget {
@@ -28,6 +30,10 @@ class ProductDetailPage extends StatefulWidget {
 class _ProductDetailPageState extends State<ProductDetailPage> with SingleTickerProviderStateMixin {
   int _selectedVariantIndex = 0;
   late TabController _tabController;
+  // 获取聊天仓库
+  late final IChatRepository _chatRepository = GetIt.I<IChatRepository>();
+  // 加载状态
+  bool _isCreatingChat = false;
   
   @override
   void initState() {
@@ -48,12 +54,64 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
     super.dispose();
   }
 
+  // 咨询卖家方法
+  Future<void> _contactSeller(BuildContext context, int sellerId) async {
+    if (_isCreatingChat) return; // 防止重复点击
+    
+    setState(() {
+      _isCreatingChat = true;
+    });
+    
+    // 显示加载对话框
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+    
+    try {
+      // 调用创建聊天API
+      final result = await _chatRepository.createRoom(sellerId);
+      
+      // 关闭加载对话框
+      Navigator.of(context, rootNavigator: true).pop();
+      
+      // 处理结果
+      result.fold(
+        (failure) {
+          // 显示错误提示
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('创建聊天失败: ${failure.message}')),
+          );
+        },
+        (chatId) {
+          // 导航到聊天页面
+          GoRouter.of(context).push('/chat/$chatId');
+        },
+      );
+    } catch (e) {
+      // 关闭加载对话框
+      Navigator.of(context, rootNavigator: true).pop();
+      
+      // 显示错误提示
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('发生错误: $e')),
+      );
+    } finally {
+      setState(() {
+        _isCreatingChat = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => GetIt.I<ProductDetailCubit>()..getProductDetail(widget.productId),
+      create: (_) => GetIt.I<ProductDetailCubit>()..getProductDetail(widget.productId),
         ),
         BlocProvider(
           create: (_) => GetIt.I<FavoritesBloc>()
@@ -65,7 +123,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
       ],
       child: Scaffold(
         // 使用透明AppBar，只显示返回按钮和收藏按钮
-        appBar: AppBar(
+      appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
@@ -84,7 +142,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                     isFavorite ? Icons.favorite : Icons.favorite_border, 
                     color: Colors.amber,
                   ),
-                  onPressed: () {
+              onPressed: () {
                     final favoritesBloc = context.read<FavoritesBloc>();
                     if (isFavorite) {
                       // 如果已收藏，则移除收藏
@@ -201,87 +259,105 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
       padding: const EdgeInsets.all(16.0),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundImage: product.sellerAvatar != null
-                ? NetworkImage(product.sellerAvatar!)
-                : null,
-            child: product.sellerAvatar == null
-                ? Text(product.sellerName.isNotEmpty
-                    ? product.sellerName[0].toUpperCase()
-                    : '?')
-                : null,
+          // 头像，添加点击导航
+          GestureDetector(
+            onTap: () {
+              // 导航到卖家主页
+              GoRouter.of(context).push('/seller/${product.sellerId}/profile');
+            },
+            child: CircleAvatar(
+              radius: 20,
+              backgroundImage: product.sellerAvatar != null
+                  ? NetworkImage(product.sellerAvatar!)
+                  : null,
+              child: product.sellerAvatar == null
+                  ? Text(product.sellerName.isNotEmpty
+                      ? product.sellerName[0].toUpperCase()
+                      : '?')
+                  : null,
+            ),
           ),
           const SizedBox(width: 12),
+          // 卖家信息，添加点击导航
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 8,
-                  children: [
-                    Text(
-                      product.sellerName,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+            child: GestureDetector(
+              onTap: () {
+                // 导航到卖家主页
+                GoRouter.of(context).push('/seller/${product.sellerId}/profile');
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 8,
+                    children: [
+                      Text(
+                        product.sellerName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    // 添加验证标签
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(Icons.check_circle, color: Colors.green, size: 14),
-                          SizedBox(width: 2),
-                          Text(
-                            '多条数据json格式传',
-                            style: TextStyle(
-                              color: Colors.green,
-                              fontSize: 12,
+                      // 添加验证标签
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Icon(Icons.check_circle, color: Colors.green, size: 14),
+                            SizedBox(width: 2),
+                            Text(
+                              '多条数据json格式传',
+                              style: TextStyle(
+                                color: Colors.green,
+                                fontSize: 12,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    const Icon(Icons.star, color: Colors.amber, size: 16),
-                    Text(
-                      ' ${product.score}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const Icon(Icons.star, color: Colors.amber, size: 16),
+                      Text(
+                        ' ${product.score}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
-          // 咨询卖家按钮
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Icon(Icons.chat_bubble_outline, size: 16),
-                SizedBox(width: 4),
-                Text('咨询卖家'),
-              ],
+          
+          // 咨询卖家按钮，添加点击事件
+          GestureDetector(
+            onTap: () => _contactSeller(context, product.sellerId),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.chat_bubble_outline, size: 16),
+                  SizedBox(width: 4),
+                  Text('咨询卖家'),
+                ],
+              ),
             ),
           ),
         ],
@@ -325,8 +401,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
             onTap: () {
               // 点击"更多"
             },
-            child: Row(
-              children: [
+              child: Row(
+                children: [
                 Expanded(
                   child: Text(
                     product.description,
@@ -343,11 +419,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.blue[600],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -393,11 +469,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
+                  children: [
               const Text('交付周期', style: TextStyle(fontSize: 16)),
               Text('${variant.deliveryDay}', style: const TextStyle(fontSize: 16)),
             ],
-          ),
+            ),
         ],
       ),
     );
@@ -413,11 +489,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
       width: double.infinity,
       height: 50,
       child: ElevatedButton(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('立即购买功能待实现')),
-          );
-        },
+                  );
+                },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.black,
           shape: RoundedRectangleBorder(
@@ -443,37 +519,37 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
     
     return ExpansionTile(
       title: const Text(
-        '常见问题',
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
+                      '常见问题',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
       trailing: const Icon(Icons.keyboard_arrow_down),
       children: product.materials!.map((material) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              material.question,
-              style: const TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 15,
-              ),
-            ),
-            if (material.answer != null && material.answer!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 4.0),
-                child: Text(
-                  material.answer!,
-                  style: TextStyle(
-                    color: Colors.grey[700],
-                  ),
-                ),
-              ),
-          ],
-        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              material.question,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              ),
+                            ),
+                            if (material.answer != null && material.answer!.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4.0),
+                                child: Text(
+                                  material.answer!,
+                                  style: TextStyle(
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
       )).toList(),
     );
   }
@@ -490,8 +566,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
           const SizedBox(height: 12),
           Container(
             height: 150,
@@ -542,7 +618,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                     Text('查看全部', style: TextStyle(color: Colors.grey)),
                     Icon(Icons.chevron_right, color: Colors.grey, size: 20),
                   ],
-                ),
+          ),
               ),
             ],
           ),
@@ -567,9 +643,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                 const CircleAvatar(
                   radius: 20,
                   backgroundImage: NetworkImage('https://via.placeholder.com/40'),
-                ),
+          ),
                 const SizedBox(width: 12),
-                Expanded(
+          Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -595,14 +671,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                         children: const [
                           Text('基础', style: TextStyle(color: Colors.grey, fontSize: 12)),
                         ],
-                      ),
+              ),
                       const SizedBox(height: 4),
                       const Text('不错，很有耐心'),
                     ],
-                  ),
+            ),
                 ),
               ],
-            ),
+          ),
         ],
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../pages/home_page.dart';
+import '../pages/seller_public_profile_page.dart';
 
 /// Home模块的路由配置
 class HomeRouter {
@@ -20,6 +21,14 @@ class HomeRouter {
         path: '/home',
         name: 'home',
         builder: (context, state) => const HomePage(),
+      ),
+      // 添加卖家主页路由
+      GoRoute(
+        path: '/seller/:id/profile',
+        name: 'seller_profile',
+        builder: (context, state) => SellerPublicProfilePage(
+          sellerId: int.parse(state.pathParameters['id'] ?? '0'),
+        ),
       ),
     ],
     debugLogDiagnostics: true,

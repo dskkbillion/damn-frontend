@@ -17,6 +17,15 @@ import '../presentation/bloc/home_bloc.dart';
 import '../presentation/cubit/product_detail_cubit.dart';
 import '../presentation/cubit/search_cubit.dart';
 
+// 卖家主页相关导入
+import '../data/datasources/seller_products_data_source.dart';
+import '../data/repositories/seller_products_repository_impl.dart';
+import '../domain/repositories/seller_products_repository.dart';
+import '../domain/usecases/get_seller_products.dart';
+import '../domain/usecases/follow_seller.dart';
+import '../domain/usecases/unfollow_seller.dart';
+import '../presentation/bloc/seller_profile_bloc.dart';
+
 final sl = GetIt.instance;
 
 /// 初始化 Home 模块的依赖注入
@@ -49,6 +58,9 @@ Future<void> initHomeDi() async {
   } else {
     print('[home_di] SearchCubit 已经注册，跳过重复注册');
   }
+  
+  // 注册卖家主页相关依赖
+  _registerSellerProfileDependencies();
 
   // 注册 Use Cases
   if (!sl.isRegistered<GetHomePageDataUseCase>()) {
@@ -184,6 +196,73 @@ Future<void> initHomeDi() async {
     print('[home_di] 注册 NetworkInfo');
   } else {
     print('[home_di] NetworkInfo 已经注册，跳过重复注册');
+  }
+}
+
+// 卖家主页相关依赖注册
+void _registerSellerProfileDependencies() {
+  // 数据源
+  if (!sl.isRegistered<SellerProductsDataSource>()) {
+    sl.registerFactory<SellerProductsDataSource>(
+      () => SellerProductsDataSourceImpl(dio: sl()),
+    );
+    print('[home_di] 注册 SellerProductsDataSource');
+  } else {
+    print('[home_di] SellerProductsDataSource 已经注册，跳过重复注册');
+  }
+  
+  // 仓库
+  if (!sl.isRegistered<SellerProductsRepository>()) {
+    sl.registerFactory<SellerProductsRepository>(
+      () => SellerProductsRepositoryImpl(dataSource: sl()),
+    );
+    print('[home_di] 注册 SellerProductsRepository');
+  } else {
+    print('[home_di] SellerProductsRepository 已经注册，跳过重复注册');
+  }
+  
+  // 用例
+  if (!sl.isRegistered<GetSellerProducts>()) {
+    sl.registerFactory(
+      () => GetSellerProducts(sl<SellerProductsRepository>()),
+    );
+    print('[home_di] 注册 GetSellerProducts');
+  } else {
+    print('[home_di] GetSellerProducts 已经注册，跳过重复注册');
+  }
+  
+  // 收藏卖家用例
+  if (!sl.isRegistered<FollowSeller>()) {
+    sl.registerFactory(
+      () => FollowSeller(sl<SellerProductsRepository>()),
+    );
+    print('[home_di] 注册 FollowSeller');
+  } else {
+    print('[home_di] FollowSeller 已经注册，跳过重复注册');
+  }
+  
+  // 取消收藏卖家用例
+  if (!sl.isRegistered<UnfollowSeller>()) {
+    sl.registerFactory(
+      () => UnfollowSeller(sl<SellerProductsRepository>()),
+    );
+    print('[home_di] 注册 UnfollowSeller');
+  } else {
+    print('[home_di] UnfollowSeller 已经注册，跳过重复注册');
+  }
+  
+  // BLoC
+  if (!sl.isRegistered<SellerProfileBloc>()) {
+    sl.registerFactory(
+      () => SellerProfileBloc(
+        getSellerProducts: sl(),
+        followSeller: sl(),
+        unfollowSeller: sl(),
+      ),
+    );
+    print('[home_di] 注册 SellerProfileBloc');
+  } else {
+    print('[home_di] SellerProfileBloc 已经注册，跳过重复注册');
   }
 }
 

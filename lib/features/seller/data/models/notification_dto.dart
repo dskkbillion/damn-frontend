@@ -36,15 +36,75 @@ class NotificationDto {
 
   /// 从JSON构造
   factory NotificationDto.fromJson(Map<String, dynamic> json) {
-    return NotificationDto(
-      id: json['id']?.toString(),
-      messageType: json['messageType'],
-      title: json['title'],
-      content: json['content'],
-      read: json['read'] ?? false,
-      createTime: json['createTime'],
-      relatedId: json['relatedId']?.toString(),
-    );
+    try {
+      // 尝试从JSON字符串中解析标题和内容
+      String extractedTitle = '未知通知';
+      String extractedContent = '';
+      
+      // 先尝试直接从顶级字段获取title和content
+      if (json['title'] != null) {
+        extractedTitle = json['title'].toString();
+      }
+      
+      if (json['content'] != null) {
+        extractedContent = json['content'].toString();
+      }
+      
+      // 检查可能包含JSON结构的字段
+      final possibleJsonFields = ['message', 'content'];
+      
+      for (final field in possibleJsonFields) {
+        if (json[field] != null) {
+          final fieldValue = json[field].toString();
+          
+          // 检查是否包含{title: xxx, content: yyy}格式
+          if (fieldValue.contains('{title:') || fieldValue.contains('title:')) {
+            // 尝试解析title
+            final titleRegex = RegExp(r'[{]?title:\s*([^,}]+)');
+            final titleMatch = titleRegex.firstMatch(fieldValue);
+            
+            if (titleMatch != null && titleMatch.groupCount >= 1) {
+              final title = titleMatch.group(1)?.trim();
+              if (title != null && title.isNotEmpty) {
+                extractedTitle = title.replaceAll('"', '').replaceAll("'", "");
+              }
+            }
+            
+            // 尝试解析content
+            final contentRegex = RegExp(r'content:\s*([^}]+)');
+            final contentMatch = contentRegex.firstMatch(fieldValue);
+            
+            if (contentMatch != null && contentMatch.groupCount >= 1) {
+              final content = contentMatch.group(1)?.trim();
+              if (content != null && content.isNotEmpty) {
+                extractedContent = content.replaceAll('"', '').replaceAll("'", "");
+              }
+            }
+          }
+        }
+      }
+      
+      return NotificationDto(
+        id: json['id']?.toString(),
+        messageType: json['messageType']?.toString(),
+        title: extractedTitle,
+        content: extractedContent,
+        read: json['read'] == true || json['read'] == 1 || json['read'] == 'true',
+        createTime: json['createTime']?.toString(),
+        relatedId: json['relatedId']?.toString(),
+      );
+    } catch (e) {
+      print('Error parsing NotificationDto: $e for json: $json');
+      // 返回一个有默认值的对象而不是抛出异常
+      return NotificationDto(
+        id: '0',
+        messageType: 'OTHER',
+        title: '解析错误',
+        content: '无法解析通知数据',
+        read: false,
+        createTime: DateTime.now().toIso8601String(),
+      );
+    }
   }
 
   /// 转换为领域实体

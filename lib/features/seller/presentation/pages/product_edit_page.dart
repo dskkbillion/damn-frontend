@@ -38,16 +38,48 @@ class _ProductEditPageState extends State<ProductEditPage> {
   /// 商品价格控制器
   final TextEditingController _priceController = TextEditingController();
   
+  /// 交付周期控制器
+  final TextEditingController _deliveryDaysController = TextEditingController();
+  
+  /// 修改次数控制器
+  final TextEditingController _editCountController = TextEditingController();
+  
   /// 表单键
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   
   /// 图片选择器
   final ImagePicker _imagePicker = ImagePicker();
+  
+  /// 当前选中的价格类型（基础、进阶、豪华）
+  int _selectedPriceType = 0;
+  
+  /// 统一的输入框边框样式
+  InputDecoration get _lightBorderDecoration => InputDecoration(
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFBF7D2A), width: 1.5),
+    ),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+    filled: true,
+    fillColor: Colors.white,
+  );
 
   @override
   void initState() {
     super.initState();
     _bloc = getIt<ProductEditBloc>();
+    
+    // 设置默认值
+    _deliveryDaysController.text = '3';
+    _editCountController.text = '2';
     
     // 初始化页面
     _bloc.add(InitializeProductEdit(
@@ -67,6 +99,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
     _nameController.dispose();
     _descriptionController.dispose();
     _priceController.dispose();
+    _deliveryDaysController.dispose();
+    _editCountController.dispose();
     super.dispose();
   }
 
@@ -75,6 +109,11 @@ class _ProductEditPageState extends State<ProductEditPage> {
     _nameController.text = formData.name;
     _descriptionController.text = formData.description;
     _priceController.text = formData.price > 0 ? formData.price.toString() : '';
+    // 如果有第一个规格选项，设置交付周期和修改次数
+    if (formData.variants.isNotEmpty) {
+      _deliveryDaysController.text = formData.variants.first.deliveryDay.toString();
+      _editCountController.text = formData.variants.first.editNum.toString();
+    }
   }
 
   /// 选择图片
@@ -87,92 +126,57 @@ class _ProductEditPageState extends State<ProductEditPage> {
     }
   }
 
-  /// 选择详情图
-  Future<void> _pickDetailImages() async {
-    final List<XFile> pickedFiles = await _imagePicker.pickMultiImage();
-    
-    if (pickedFiles.isNotEmpty) {
-      final List<String> imagePaths = pickedFiles.map((file) => file.path).toList();
-      _bloc.add(SelectDetailProductImages(imagePaths: imagePaths));
-    }
-  }
-
-  /// 添加规格选项
-  void _addVariant() {
-    _bloc.add(const AddProductVariant());
-  }
-
-  /// 移除规格选项
-  void _removeVariant(int index) {
-    _bloc.add(RemoveProductVariant(index: index));
-  }
-
-  /// 更新规格选项
-  void _updateVariant(int index, String field, dynamic value) {
-    _bloc.add(UpdateProductVariant(
-      index: index,
-      variantData: {field: value},
-    ));
-  }
-
-  /// 添加材料问题
-  void _addMaterial() {
-    _bloc.add(const AddProductMaterial());
-  }
-
-  /// 移除材料问题
-  void _removeMaterial(int index) {
-    _bloc.add(RemoveProductMaterial(index: index));
-  }
-
-  /// 更新材料问题
-  void _updateMaterial(int index, String field, dynamic value) {
-    _bloc.add(UpdateProductMaterial(
-      index: index,
-      materialData: {field: value},
-    ));
-  }
-
   /// 提交表单
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
+      // 构建默认规格
+      _bloc.add(UpdateFormField(fieldName: 'variants', value: [
+        ProductOptionValue(
+          id: 0,
+          name: '基础套餐',
+          optionName: '基础套餐',
+          sellingPrice: double.tryParse(_priceController.text) ?? 0,
+          deliveryDay: int.tryParse(_deliveryDaysController.text) ?? 3,
+          editNum: int.tryParse(_editCountController.text) ?? 2,
+        )
+      ]));
+      
       _bloc.add(const SubmitProductForm());
     }
+  }
+  
+  /// 显示添加规格弹窗
+  void _showAddSpecificationDialog() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => _buildAddSpecificationDialog(),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.productId == null ? '创建商品' : '编辑商品'),
+        title: Text(widget.productId == null ? '发布服务' : '编辑服务'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         actions: [
-          if (widget.productId != null)
-            IconButton(
-              icon: const Icon(Icons.delete_outline),
-              onPressed: () {
-                // 确认删除对话框
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('确认删除'),
-                    content: const Text('确定要删除该商品吗？此操作不可撤销。'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('取消'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          // 调用删除逻辑
-                        },
-                        child: const Text('删除', style: TextStyle(color: Colors.red)),
-                      ),
-                    ],
-                  ),
-                );
-              },
+          TextButton(
+            onPressed: _submitForm,
+            style: TextButton.styleFrom(
+              backgroundColor: const Color(0xFFBF7D2A),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
             ),
+            child: const Text('发布'),
+          ),
+          const SizedBox(width: 16),
         ],
       ),
       body: BlocConsumer<ProductEditBloc, ProductEditState>(
@@ -190,7 +194,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             // 提交成功，显示提示并返回
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.isCreateMode ? '商品创建成功' : '商品更新成功'),
+                content: Text(state.isCreateMode ? '服务创建成功' : '服务更新成功'),
                 backgroundColor: Colors.green,
               ),
             );
@@ -216,163 +220,32 @@ class _ProductEditPageState extends State<ProductEditPage> {
     return Form(
       key: _formKey,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 基本信息表单
             _buildBasicInfoForm(state),
-            const SizedBox(height: 24),
             
-            // 商品图片
-            _buildImageSection(state),
-            const SizedBox(height: 24),
+            // 价格选项卡
+            _buildPriceTabsSection(),
             
-            // 详情图片
-            _buildDetailImageSection(state),
-            const SizedBox(height: 24),
+            // 交付信息
+            _buildDeliverySection(),
             
-            // 规格选项
-            _buildVariantsSection(state),
-            const SizedBox(height: 24),
+            // 自定义服务规格
+            _buildServiceSpecificationSection(state),
             
-            // 自定义材料问题
-            _buildMaterialsSection(state),
+            // 常见问题编辑
+            _buildCommonQuestionsSection(state),
+            
+            // 买家需要提供的信息
+            _buildBuyerInfoSection(state),
+            
+            // 成功案例
+            _buildSuccessCasesSection(state),
+            
             const SizedBox(height: 32),
-            
-            // 提交按钮
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: state.isSubmitting ? null : _submitForm,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: state.isSubmitting 
-                  ? const CircularProgressIndicator() 
-                  : Text(state.isCreateMode ? '创建商品' : '保存修改'),
-              ),
-            ),
           ],
-        ),
-      ),
-    );
-  }
-
-  /// 构建图片上传区域
-  Widget _buildImageSection(ProductEditState state) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          '商品主图',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        const Text('请上传清晰的商品主图，最多6张，将作为列表和预览展示'),
-        const SizedBox(height: 16),
-        
-        // 图片预览和上传按钮
-        SizedBox(
-          height: 120,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              // 已选择的本地图片
-              ...state.selectedImagePaths.map((path) => _buildImageItem(File(path), true)),
-              
-              // 数据库中已有的图片（如果是编辑模式且没有选择新图片）
-              if (state.selectedImagePaths.isEmpty && 
-                  state.product != null && 
-                  state.product!.images.isNotEmpty)
-                ...state.product!.images.split(',').map((url) => _buildImageItem(url, false)),
-              
-              // 添加图片按钮
-              if ((state.selectedImagePaths.length + 
-                  (state.selectedImagePaths.isEmpty && state.product != null 
-                      ? state.product!.images.split(',').length 
-                      : 0)) < 6)
-                _buildAddImageButton(_pickImages),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// 构建详情图上传区域
-  Widget _buildDetailImageSection(ProductEditState state) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          '商品详情图',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        const Text('请上传商品详情图，最多10张，将展示在商品详情页'),
-        const SizedBox(height: 16),
-        
-        // 图片预览和上传按钮
-        SizedBox(
-          height: 120,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              // 已选择的本地详情图片
-              ...state.selectedDetailImagePaths.map((path) => _buildImageItem(File(path), true)),
-              
-              // 添加图片按钮
-              if (state.selectedDetailImagePaths.length < 10)
-                _buildAddImageButton(_pickDetailImages),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// 构建图片项
-  Widget _buildImageItem(dynamic image, bool isLocal) {
-    return Container(
-      width: 100,
-      height: 100,
-      margin: const EdgeInsets.only(right: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: isLocal 
-            ? Image.file(image as File, fit: BoxFit.cover)
-            : Image.network(image as String, fit: BoxFit.cover),
-      ),
-    );
-  }
-
-  /// 构建添加图片按钮
-  Widget _buildAddImageButton(VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 100,
-        height: 100,
-        margin: const EdgeInsets.only(right: 8),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade300),
-        ),
-        child: const Icon(
-          Icons.add_photo_alternate_outlined,
-          size: 32,
-          color: Colors.grey,
         ),
       ),
     );
@@ -380,388 +253,745 @@ class _ProductEditPageState extends State<ProductEditPage> {
 
   /// 构建基本信息表单
   Widget _buildBasicInfoForm(ProductEditState state) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          '基本信息',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 服务名称
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12.0),
+            child: TextField(
+              controller: _nameController,
+              decoration: _lightBorderDecoration.copyWith(
+                hintText: '服务名称',
+                hintStyle: const TextStyle(color: Colors.grey),
+              ),
+              onChanged: (value) {
+                _bloc.add(UpdateFormField(fieldName: 'name', value: value));
+              },
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
-        
-        // 商品名称
-        TextFormField(
-          controller: _nameController,
-          decoration: const InputDecoration(
-            labelText: '商品名称',
-            hintText: '请输入商品名称',
-            border: OutlineInputBorder(),
+          
+          // 服务描述
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12.0),
+            child: TextField(
+              controller: _descriptionController,
+              decoration: _lightBorderDecoration.copyWith(
+                hintText: '描述一下您的服务的具体信息，如...',
+                hintStyle: const TextStyle(color: Colors.grey),
+              ),
+              maxLines: 3,
+              onChanged: (value) {
+                _bloc.add(UpdateFormField(fieldName: 'description', value: value));
+              },
+            ),
           ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return '请输入商品名称';
-            }
-            return null;
-          },
-          onChanged: (value) {
-            _bloc.add(UpdateFormField(fieldName: 'name', value: value));
-          },
-        ),
-        const SizedBox(height: 16),
-        
-        // 商品描述
-        TextFormField(
-          controller: _descriptionController,
-          decoration: const InputDecoration(
-            labelText: '商品描述',
-            hintText: '请输入商品描述',
-            border: OutlineInputBorder(),
+          
+          // 商品图片上传
+          Container(
+            width: double.infinity,
+            height: 180,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey[300]!),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: InkWell(
+              onTap: _pickImages,
+              child: state.selectedImagePaths.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/images/placeholder_image.png',
+                            width: 50,
+                            height: 50,
+                            errorBuilder: (context, error, stackTrace) => const Icon(
+                              Icons.image,
+                              size: 50,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(7),
+                      child: Image.file(
+                        File(state.selectedImagePaths.first),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+            ),
           ),
-          maxLines: 3,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return '请输入商品描述';
-            }
-            return null;
-          },
-          onChanged: (value) {
-            _bloc.add(UpdateFormField(fieldName: 'description', value: value));
-          },
-        ),
-        const SizedBox(height: 16),
-        
-        // 商品价格
-        TextFormField(
-          controller: _priceController,
-          decoration: const InputDecoration(
-            labelText: '商品价格',
-            hintText: '请输入商品价格',
-            border: OutlineInputBorder(),
-            prefixText: '¥ ',
-          ),
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return '请输入商品价格';
-            }
-            if (double.tryParse(value) == null) {
-              return '请输入有效的价格';
-            }
-            if (double.parse(value) <= 0) {
-              return '价格必须大于0';
-            }
-            return null;
-          },
-          onChanged: (value) {
-            final price = double.tryParse(value) ?? 0;
-            _bloc.add(UpdateFormField(fieldName: 'price', value: price));
-          },
-        ),
-        const SizedBox(height: 16),
-        
-        // 商品类别选择
-        DropdownButtonFormField<int>(
-          decoration: const InputDecoration(
-            labelText: '商品类别',
-            hintText: '请选择商品类别',
-            border: OutlineInputBorder(),
-          ),
-          value: state.formData.categoryId,
-          items: state.categories?.map((category) {
-            return DropdownMenuItem<int>(
-              value: category.id,
-              child: Text(category.name),
-            );
-          }).toList() ?? [],
-          onChanged: (value) {
-            if (value != null) {
-              _bloc.add(UpdateFormField(fieldName: 'categoryId', value: value));
-            }
-          },
-        ),
-      ],
+        ],
+      ),
     );
   }
-
-  /// 构建规格选项区域
-  Widget _buildVariantsSection(ProductEditState state) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              '规格选项',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            TextButton.icon(
-              onPressed: _addVariant,
-              icon: const Icon(Icons.add),
-              label: const Text('添加规格'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        const Text('添加商品的不同规格选项，例如颜色、尺寸等'),
-        const SizedBox(height: 16),
-        
-        // 规格选项列表
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: state.formData.variants.length,
-          itemBuilder: (context, index) {
-            final variant = state.formData.variants[index];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 16),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '规格 #${index + 1}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
+  
+  /// 构建价格选项卡
+  Widget _buildPriceTabsSection() {
+    return Container(
+      color: Colors.white,
+      margin: const EdgeInsets.only(top: 12),
+      child: Column(
+        children: [
+          // 价格标签切换
+          Row(
+            children: [
+              Expanded(
+                child: InkWell(
+                  onTap: () => setState(() => _selectedPriceType = 0),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: _selectedPriceType == 0
+                              ? const Color(0xFFBF7D2A)
+                              : Colors.transparent,
+                          width: 2,
                         ),
-                        IconButton(
-                          onPressed: () => _removeVariant(index),
-                          icon: const Icon(Icons.delete_outline),
-                          color: Colors.red,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    
-                    // 规格名称
-                    TextFormField(
-                      initialValue: variant.optionName,
-                      decoration: const InputDecoration(
-                        labelText: '规格名称',
-                        hintText: '例如：基础、标准、高级',
-                        border: OutlineInputBorder(),
-                      ),
-                      onChanged: (value) => _updateVariant(index, 'name', value),
-                    ),
-                    const SizedBox(height: 8),
-                    
-                    // 规格值 (不再显示，使用name代替)
-                    
-                    // 规格价格和交付时间
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            initialValue: variant.sellingPrice > 0 ? variant.sellingPrice.toString() : variant.price.toString(),
-                            decoration: const InputDecoration(
-                              labelText: '价格',
-                              hintText: '0',
-                              border: OutlineInputBorder(),
-                              prefixText: '¥ ',
-                            ),
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            onChanged: (value) {
-                              final price = double.tryParse(value) ?? 0;
-                              _updateVariant(index, 'sellingPrice', price);
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextFormField(
-                            initialValue: variant.deliveryDay.toString(),
-                            decoration: const InputDecoration(
-                              labelText: '交付天数',
-                              hintText: '3',
-                              border: OutlineInputBorder(),
-                            ),
-                            keyboardType: TextInputType.number,
-                            onChanged: (value) {
-                              final days = int.tryParse(value) ?? 3;
-                              _updateVariant(index, 'deliveryDay', days);
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    
-                    // 修改次数和库存
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            initialValue: variant.editNum.toString(),
-                            decoration: const InputDecoration(
-                              labelText: '修改次数',
-                              hintText: '1',
-                              border: OutlineInputBorder(),
-                            ),
-                            keyboardType: TextInputType.number,
-                            onChanged: (value) {
-                              final editNum = int.tryParse(value) ?? 1;
-                              _updateVariant(index, 'editNum', editNum);
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextFormField(
-                            initialValue: variant.stock.toString(),
-                            decoration: const InputDecoration(
-                              labelText: '库存',
-                              hintText: '0',
-                              border: OutlineInputBorder(),
-                            ),
-                            keyboardType: TextInputType.number,
-                            onChanged: (value) {
-                              final stock = int.tryParse(value) ?? 0;
-                              _updateVariant(index, 'stock', stock);
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    
-                    // 功能特性（这里可以添加功能特性的管理，但为简化起见，暂时不实现）
-                    const SizedBox(height: 8),
-                    const Text(
-                      '功能特性在创建后可以编辑',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                        fontStyle: FontStyle.italic,
                       ),
                     ),
-                  ],
+                    child: const Text(
+                      '基础金额',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                  ),
                 ),
               ),
-            );
-          },
-        ),
-      ],
+              Expanded(
+                child: InkWell(
+                  onTap: () => setState(() => _selectedPriceType = 1),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: _selectedPriceType == 1
+                              ? const Color(0xFFBF7D2A)
+                              : Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    child: const Text(
+                      '进阶金额',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: InkWell(
+                  onTap: () => setState(() => _selectedPriceType = 2),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: _selectedPriceType == 2
+                              ? const Color(0xFFBF7D2A)
+                              : Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    child: const Text(
+                      '豪华金额',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          
+          // 价格输入框
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _priceController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: _lightBorderDecoration.copyWith(
+                hintText: '输入价格',
+                prefixText: '¥ ',
+              ),
+              onChanged: (value) {
+                final price = double.tryParse(value) ?? 0;
+                _bloc.add(UpdateFormField(fieldName: 'price', value: price));
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
-
-  /// 构建自定义材料问题区域
-  Widget _buildMaterialsSection(ProductEditState state) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              '自定义材料问题',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+  
+  /// 构建交付信息部分
+  Widget _buildDeliverySection() {
+    return Container(
+      color: Colors.white,
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 交付周期
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12.0),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Text('交付周期(天)', 
+                    style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                  ),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: TextField(
+                    controller: _deliveryDaysController,
+                    textAlign: TextAlign.left,
+                    keyboardType: TextInputType.number,
+                    decoration: _lightBorderDecoration.copyWith(
+                      hintText: '天数 (如: 3)',
+                    ),
+                    onChanged: (value) {
+                      // 更新默认交付周期
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // 修改次数
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: Text('修改次数', 
+                  style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                ),
+              ),
+              Expanded(
+                flex: 3,
+                child: TextField(
+                  controller: _editCountController,
+                  textAlign: TextAlign.left,
+                  keyboardType: TextInputType.number,
+                  decoration: _lightBorderDecoration.copyWith(
+                    hintText: '次数 (如: 2)',
+                  ),
+                  onChanged: (value) {
+                    // 更新默认修改次数
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// 构建服务规格部分
+  Widget _buildServiceSpecificationSection(ProductEditState state) {
+    return Container(
+      color: Colors.white,
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '自定义服务规格',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            '个性化服务规格',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey,
+            ),
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // 如果没有规格，显示提示
+          if (state.formData.variants.isEmpty || state.formData.variants.length <= 1)
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Text(
+                  '还没有添加自定义规格。',
+                  style: TextStyle(color: Colors.grey),
+                ),
               ),
             ),
-            TextButton.icon(
-              onPressed: _addMaterial,
-              icon: const Icon(Icons.add),
-              label: const Text('添加问题'),
+          
+          // 如果有规格，显示规格列表
+          if (state.formData.variants.length > 1)
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: state.formData.variants.length - 1, // 减1是因为第一个是基础规格
+                separatorBuilder: (context, index) => Divider(color: Colors.grey[300]),
+                itemBuilder: (context, index) {
+                  final variant = state.formData.variants[index + 1]; // +1跳过基础规格
+                  return ListTile(
+                    title: Text(variant.name),
+                    subtitle: Text('¥${variant.sellingPrice}'),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete_outline),
+                      onPressed: () => _bloc.add(RemoveProductVariant(index: index + 1)),
+                    ),
+                  );
+                },
+              ),
             ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        const Text('添加商品定制所需的材料问题，顾客下单时需要回答'),
-        const SizedBox(height: 16),
-        
-        // 材料问题列表
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: state.formData.productMaterials.length,
-          itemBuilder: (context, index) {
-            final material = state.formData.productMaterials[index];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 16),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '问题 #${index + 1}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () => _removeMaterial(index),
-                          icon: const Icon(Icons.delete_outline),
-                          color: Colors.red,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    
-                    // 问题内容
-                    TextFormField(
-                      initialValue: material.question,
-                      decoration: const InputDecoration(
-                        labelText: '问题内容',
-                        hintText: '例如：请提供定制内容、请上传参考图片',
-                        border: OutlineInputBorder(),
+          
+          // 添加规格按钮
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(top: 16),
+            child: ElevatedButton.icon(
+              onPressed: _showAddSpecificationDialog,
+              icon: const Icon(Icons.add),
+              label: const Text('添加新规格'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFBF7D2A),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// 构建常见问题部分
+  Widget _buildCommonQuestionsSection(ProductEditState state) {
+    return Container(
+      color: Colors.white,
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                '常见问题编辑',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.expand_more),
+                onPressed: () {
+                  // 折叠/展开逻辑
+                },
+              ),
+            ],
+          ),
+          
+          TextField(
+            decoration: _lightBorderDecoration.copyWith(
+              hintText: '添加买家可能的问题',
+              hintStyle: const TextStyle(color: Colors.grey),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// 构建买家需要提供的信息部分
+  Widget _buildBuyerInfoSection(ProductEditState state) {
+    return Container(
+      color: Colors.white,
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                '需要买家提供',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.expand_more),
+                onPressed: () {
+                  // 折叠/展开逻辑
+                },
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 8),
+          
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey[300]!),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Text(
+              '选择你需要买家提供的信息类型（该信息将展示在订单详情页）',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// 构建成功案例部分
+  Widget _buildSuccessCasesSection(ProductEditState state) {
+    return Container(
+      color: Colors.white,
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '成功案例',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // 添加案例图片按钮
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey[300]!),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: IconButton(
+                icon: const Icon(Icons.add, size: 32),
+                onPressed: () {
+                  // 添加成功案例图片
+                },
+                color: Colors.black54,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// 构建添加规格弹窗
+  Widget _buildAddSpecificationDialog() {
+    final specNameController = TextEditingController();
+    bool isTextType = true; // 文本型或选项型
+    
+    return StatefulBuilder(
+      builder: (context, setState) => Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  '添加新规格',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // 规格类型选择
+            const Text('规格类型', style: TextStyle(fontSize: 16)),
+            
+            const SizedBox(height: 8),
+            
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => setState(() => isTextType = true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isTextType ? const Color(0xFFBF7D2A) : Colors.grey[200],
+                      foregroundColor: isTextType ? Colors.white : Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      onChanged: (value) => _updateMaterial(index, 'question', value),
                     ),
-                    const SizedBox(height: 8),
-                    
-                    // 默认答案
-                    TextFormField(
-                      initialValue: material.answer,
-                      decoration: const InputDecoration(
-                        labelText: '默认答案/提示',
-                        hintText: '可选，为买家提供参考答案或提示',
-                        border: OutlineInputBorder(),
+                    child: const Text('文本型'),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => setState(() => isTextType = false),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: !isTextType ? const Color(0xFFBF7D2A) : Colors.grey[200],
+                      foregroundColor: !isTextType ? Colors.white : Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      onChanged: (value) => _updateMaterial(index, 'answer', value),
                     ),
-                    const SizedBox(height: 8),
-                    
-                    // 问题类型
-                    DropdownButtonFormField<String>(
-                      decoration: const InputDecoration(
-                        labelText: '回答类型',
-                        border: OutlineInputBorder(),
+                    child: const Text('选项型'),
+                  ),
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // 规格名称
+            const Text('规格名称', style: TextStyle(fontSize: 16)),
+            
+            const SizedBox(height: 8),
+            
+            TextField(
+              controller: specNameController,
+              decoration: InputDecoration(
+                hintText: '例如: 源码、加急处理',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: Color(0xFFBF7D2A), width: 1.5),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // 各套餐规格值
+            const Text('各套餐规格值', style: TextStyle(fontSize: 16)),
+            
+            const SizedBox(height: 16),
+            
+            // 基础套餐
+            const Text('基础套餐:', style: TextStyle(fontSize: 14)),
+            
+            const SizedBox(height: 8),
+            
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(color: Colors.grey[300]!),
                       ),
-                      value: material.type,
-                      items: const [
-                        DropdownMenuItem(value: 'TEXT', child: Text('文本')),
-                        DropdownMenuItem(value: 'FILE', child: Text('文件上传')),
-                        DropdownMenuItem(value: 'PROBLEM', child: Text('问题')),
-                        DropdownMenuItem(value: 'ATTACHMENT', child: Text('附件')),
-                      ],
-                      onChanged: (value) {
-                        if (value != null) {
-                          _updateMaterial(index, 'type', value);
-                        }
+                    ),
+                    child: const Text('包含'),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[200],
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text('不包含'),
+                  ),
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // 标准套餐
+            const Text('标准套餐:', style: TextStyle(fontSize: 14)),
+            
+            const SizedBox(height: 8),
+            
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(color: Colors.grey[300]!),
+                      ),
+                    ),
+                    child: const Text('包含'),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[200],
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text('不包含'),
+                  ),
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // 豪华套餐
+            const Text('豪华套餐:', style: TextStyle(fontSize: 14)),
+            
+            const SizedBox(height: 8),
+            
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(color: Colors.grey[300]!),
+                      ),
+                    ),
+                    child: const Text('包含'),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[200],
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text('不包含'),
+                  ),
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 24),
+            
+            // 底部按钮
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('取消'),
+                ),
+                const SizedBox(width: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    if (specNameController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('请输入规格名称')),
+                      );
+                      return;
+                    }
+                    
+                    // 添加规格
+                    _bloc.add(AddProductVariant());
+                    // 更新最新添加的规格
+                    _bloc.add(UpdateProductVariant(
+                      index: _bloc.state.formData.variants.length - 1,
+                      variantData: {
+                        'name': specNameController.text,
+                        'optionName': specNameController.text,
                       },
+                    ));
+                    
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFBF7D2A),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ],
+                  ),
+                  child: const Text('添加规格'),
                 ),
-              ),
-            );
-          },
+              ],
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

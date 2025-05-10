@@ -22,7 +22,6 @@ class TimeManagementBloc extends Bloc<TimeManagementEvent, TimeManagementState> 
   ) : super(TimeManagementInitial()) {
     on<LoadTimeSettings>(_onLoadTimeSettings);
     on<UpdateOnlineStatus>(_onUpdateOnlineStatus);
-    on<UpdateAvailableTimeSlots>(_onUpdateAvailableTimeSlots);
   }
 
   /// 加载时间设置
@@ -70,46 +69,6 @@ class TimeManagementBloc extends Bloc<TimeManagementEvent, TimeManagementState> 
     final params = UpdateTimeSettingsParams(
       settings: TimeSettingsData(
         isOnline: event.isOnline,
-      ),
-    );
-
-    // 调用更新用例
-    final result = await _updateTimeSettingsUseCase(params);
-
-    result.fold(
-      (failure) => emit(TimeManagementError(failure.message)),
-      (success) {
-        // 更新成功后重新获取时间设置
-        add(LoadTimeSettings());
-      },
-    );
-  }
-
-  /// 更新可用时间段
-  Future<void> _onUpdateAvailableTimeSlots(
-    UpdateAvailableTimeSlots event,
-    Emitter<TimeManagementState> emit,
-  ) async {
-    // 确保当前状态为已加载状态
-    if (state is! TimeManagementLoaded) {
-      return;
-    }
-
-    final currentState = state as TimeManagementLoaded;
-    final currentSettings = currentState.settings;
-
-    // 显示更新中状态
-    emit(TimeManagementUpdating(
-      TimeSettings(
-        isOnline: currentSettings.isOnline,
-        availableTimeSlots: event.timeSlots,
-      ),
-    ));
-
-    // 构建更新参数
-    final params = UpdateTimeSettingsParams(
-      settings: TimeSettingsData(
-        availableTimeSlots: event.timeSlots,
       ),
     );
 

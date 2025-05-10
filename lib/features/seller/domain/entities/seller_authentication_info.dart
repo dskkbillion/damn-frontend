@@ -3,19 +3,19 @@ import 'package:equatable/equatable.dart';
 /// 认证类型枚举
 enum AuthenticationType {
   /// 身份证认证
-  idCard('ID_CARD', '身份认证', '上传身份证正反面进行认证'),
+  idCard('real_name', '实名认证', '上传身份证正反面进行认证'),
   
   /// 学历认证
-  education('EDUCATION', '学历认证', '上传学历证明进行认证'),
+  education('background', '学历认证', '上传学历证明进行认证'),
   
   /// 职业认证
-  profession('PROFESSION', '职业认证', '上传职业资格证书进行认证'),
+  profession('other', '职业认证', '上传职业资格证书进行认证'),
   
   /// 公司认证
-  company('COMPANY', '公司认证', '上传营业执照等进行认证'),
+  company('corporation', '公司认证', '上传营业执照等进行认证'),
   
   /// 其他认证
-  other('OTHER', '其他认证', '');
+  other('other', '其他认证', '');
 
   /// 认证类型的API值
   final String value;
@@ -152,14 +152,14 @@ class AuthenticationApplicationData extends Equatable {
   /// 认证类型
   final String authenticationType;
   
-  /// 认证名称 (申请人姓名等)
-  final String name;
+  /// 认证名称 (申请人姓名/公司名称等)
+  final String? name;
   
   /// 备注说明
   final String? remark;
   
   /// 图片列表 (逗号分隔的图片URL)
-  final String images;
+  final String? images;
   
   /// 附加字段 (JSON对象)
   final Map<String, dynamic>? feature;
@@ -167,8 +167,8 @@ class AuthenticationApplicationData extends Equatable {
   const AuthenticationApplicationData({
     required this.authenticationId,
     required this.authenticationType,
-    required this.name,
-    required this.images,
+    this.name,
+    this.images,
     this.remark,
     this.feature,
   });
@@ -187,13 +187,34 @@ class AuthenticationApplicationData extends Equatable {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = {
       'authenticationId': authenticationId,
-      'authenticationType': authenticationType,
-      'name': name,
-      'images': images,
     };
     
-    if (remark != null) data['remark'] = remark;
-    if (feature != null) data['feature'] = feature;
+    // 添加图片数组 - 将逗号分隔的字符串拆分为数组
+    if (images != null && images!.isNotEmpty) {
+      data['images'] = images!.split(',').where((s) => s.isNotEmpty).toList();
+    } else {
+      data['images'] = [];
+    }
+    
+    // 根据认证类型添加不同字段
+    final authType = authenticationType;
+    
+    if (authType == 'real_name') {
+      // 实名认证只需要基本字段
+    } else if (authType == 'background') {
+      // 学校认证需要备注
+      if (remark != null) data['remarks'] = remark;
+      if (feature != null) data['feature'] = feature;
+    } else if (authType == 'corporation') {
+      // 公司认证需要名称
+      if (name != null) data['name'] = name;
+      if (feature != null) data['feature'] = feature;
+    } else {
+      // 其他类型认证
+      if (name != null) data['name'] = name;
+      if (remark != null) data['remarks'] = remark;
+      if (feature != null) data['feature'] = feature;
+    }
     
     return data;
   }

@@ -154,18 +154,11 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
     try {
       // Prepare request data
       final Map<String, dynamic> requestData = {
-        'doctorId': participantId.toString() // Send participantId as string
+        'doctorId': participantId.toString(), // Send participantId as string
+        'type': 'MEMBER' // 始终使用'MEMBER'作为type值，用于创建与普通卖家的聊天
       };
       
-      // FIX: Add type field based on participantId
-      if (participantId == 1) {
-         requestData['type'] = 'ADMIN';
-         print("[API Call] Added type: ADMIN for admin chat creation.");
-      } else {
-         // Assuming any other ID represents a standard member/doctor chat
-         requestData['type'] = 'MEMBER'; 
-         print("[API Call] Added type: MEMBER for chat creation.");
-      }
+      print("[API Call] Using type: MEMBER for seller chat creation.");
 
       final response = await dio.post(
         '/api/chat/addChat',

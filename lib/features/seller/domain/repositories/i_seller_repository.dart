@@ -64,7 +64,11 @@ abstract class ISellerRepository {
   Future<Either<Failure, bool>> updateTimeSettings(TimeSettingsData settings);
 
   /// 获取通知列表
-  Future<Either<Failure, List<SellerNotification>>> getNotificationList({String? messageType});
+  Future<Either<Failure, List<SellerNotification>>> getNotificationList({
+    String? messageType,
+    int pageNum = 1,
+    int pageSize = 10
+  });
 
   /// 标记通知为已读
   Future<Either<Failure, bool>> markNotificationAsRead(String notificationId);

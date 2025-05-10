@@ -53,12 +53,22 @@ class AuthApplicationBloc extends Bloc<AuthApplicationEvent, AuthApplicationStat
 
     // 构建应用数据
     final applicationData = AuthenticationApplicationData(
-      authenticationId: event.authInfo?.authenticationId ?? 0,
+      // 使用已有认证ID或新的认证ID
+      authenticationId: event.authInfo?.authenticationId ?? 
+        _getAuthenticationIdByType(event.authenticationType),
+      // 使用API需要的类型值
       authenticationType: event.authenticationType.value,
-      name: event.name,
-      images: '', // 图片URL会在UseCase中处理
-      remark: event.description,
-      feature: {'id': event.identifier}, // 将标识放入feature字段
+      // 根据认证类型决定是否包含name
+      name: event.authenticationType == AuthenticationType.company ? event.name : null,
+      // 构建逗号分隔的图片路径
+      images: event.filePaths.join(','),
+      // 根据认证类型决定是否包含remark
+      remark: event.authenticationType == AuthenticationType.education ? event.description : null,
+      // 构建feature对象
+      feature: {
+        'id': event.identifier,
+        'description': event.description,
+      },
     );
 
     // 调用提交UseCase
@@ -76,6 +86,20 @@ class AuthApplicationBloc extends Bloc<AuthApplicationEvent, AuthApplicationStat
     );
   }
   
+  /// 根据认证类型获取认证ID
+  int _getAuthenticationIdByType(AuthenticationType type) {
+    switch (type) {
+      case AuthenticationType.idCard:
+        return 1; // 实名认证ID
+      case AuthenticationType.education:
+        return 2; // 学校认证ID
+      case AuthenticationType.company:
+        return 3; // 公司认证ID
+      default:
+        return 4; // 其他认证ID
+    }
+  }
+
   /// 验证表单
   Map<String, String> _validateForm({
     required String name,

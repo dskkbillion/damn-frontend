@@ -19,16 +19,4 @@ class UpdateOnlineStatus extends TimeManagementEvent {
 
   @override
   List<Object?> get props => [isOnline];
-}
-
-/// 更新可用时间段事件
-class UpdateAvailableTimeSlots extends TimeManagementEvent {
-  /// 新的时间段列表
-  final List<TimeSlot> timeSlots;
-
-  /// 构造函数
-  UpdateAvailableTimeSlots(this.timeSlots);
-
-  @override
-  List<Object?> get props => [timeSlots];
 } 

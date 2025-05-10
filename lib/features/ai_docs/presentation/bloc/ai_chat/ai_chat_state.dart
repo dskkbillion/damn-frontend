@@ -38,6 +38,14 @@ enum RecommendationsStatus {
   error,
 }
 
+/// Represents the status of a service allocation.
+enum AllocationStatus {
+  initial, // 初始状态
+  loading, // 正在分发中
+  success, // 分发成功
+  failure, // 分发失败
+}
+
 // --- Define Image Upload State --- 
 enum ImageUploadStatus { uploading, success, failure }
 
@@ -101,6 +109,10 @@ class AiChatState extends Equatable {
   final RecommendationsStatus recommendationsStatus;
   final String? recommendationsErrorMessage;
 
+  /// --- New field for service allocation status ---
+  /// 用于跟踪每个服务的分发状态，键为服务ID，值为分发状态
+  final Map<int, AllocationStatus> serviceAllocationStatus;
+
   // --- Fields for image handling (Updated) ---
   /// Locally selected image files for preview before sending.
   final List<File>? pendingImageFiles;
@@ -123,6 +135,7 @@ class AiChatState extends Equatable {
     this.recommendationsStatus = RecommendationsStatus.initial,
     this.recommendations = const [],
     this.recommendationsErrorMessage,
+    this.serviceAllocationStatus = const {}, // 默认为空映射
     this.pendingImageFiles = const [],
     this.imageUploadStates = const {}, // Default to empty map
     // this.uploadedImageUrls = const [], // Removed
@@ -143,6 +156,7 @@ class AiChatState extends Equatable {
     RecommendationsStatus? recommendationsStatus,
     List<RelatedServiceEntity>? recommendations,
     String? recommendationsErrorMessage,
+    Map<int, AllocationStatus>? serviceAllocationStatus,
     List<File>? pendingImageFiles,
     Map<String, ImageUploadState>? imageUploadStates,
     // List<String>? uploadedImageUrls, // Removed
@@ -173,6 +187,7 @@ class AiChatState extends Equatable {
       recommendationsErrorMessage: clearRecommendationsErrorMessage
                                         ? null
                                         : recommendationsErrorMessage ?? this.recommendationsErrorMessage,
+      serviceAllocationStatus: serviceAllocationStatus ?? this.serviceAllocationStatus,
       pendingImageFiles: clearPendingImages ? [] : pendingImageFiles ?? this.pendingImageFiles,
       imageUploadStates: clearImageUploadStates ? {} : imageUploadStates ?? this.imageUploadStates,
       // uploadedImageUrls: clearUploadedUrls ? [] : uploadedImageUrls ?? this.uploadedImageUrls, // Removed
@@ -193,6 +208,7 @@ class AiChatState extends Equatable {
         recommendationsStatus,
         recommendations,
         recommendationsErrorMessage,
+        serviceAllocationStatus,
         pendingImageFiles,
         imageUploadStates, // Add new map to props
         // uploadedImageUrls, // Removed

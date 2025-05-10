@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:dskk_flutter_refactor/core/network/network_info.dart';
+import 'package:dskk_flutter_refactor/core/network/mock_network_info.dart' as mock;
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_authentication_info.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/seller_home_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/product_management_page.dart';
@@ -23,6 +27,10 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/auth_ma
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_statistics/seller_statistics_bloc.dart';
 import 'package:dskk_flutter_refactor/features/profile/presentation/pages/wallet_page.dart';
 import 'package:dskk_flutter_refactor/features/profile/presentation/bloc/wallet_bloc.dart';
+import 'package:dskk_flutter_refactor/features/profile/data/datasources/profile_remote_data_source.dart';
+import 'package:dskk_flutter_refactor/features/profile/data/repositories/wallet_repository_impl.dart';
+import 'package:dskk_flutter_refactor/features/profile/domain/usecases/get_wallet_summary.dart';
+import 'package:dskk_flutter_refactor/features/profile/domain/usecases/get_wallet_transactions.dart';
 
 /// 卖家模块路由配置
 class SellerRoutes {
@@ -233,13 +241,80 @@ class SellerRoutes {
         GoRoute(
           path: 'wallet',
           name: 'seller_wallet',
-          pageBuilder: (context, state) => MaterialPage(
-            key: state.pageKey,
-            child: BlocProvider(
-              create: (context) => GetIt.I<WalletBloc>(),
-              child: const WalletPage(),
-            ),
-          ),
+          pageBuilder: (context, state) {
+            try {
+              // 获取主应用的GetIt实例
+              final getIt = GetIt.I;
+            
+              // 尝试从GetIt获取主应用的Dio实例
+              final dio = getIt<Dio>();
+              
+              // 获取主应用的其他必要依赖
+              final secureStorage = getIt<FlutterSecureStorage>();
+              
+              // 创建网络信息服务
+              NetworkInfo networkInfo;
+              try {
+                networkInfo = getIt<NetworkInfo>();
+              } catch (e) {
+                print('NetworkInfo not found in GetIt, using mock');
+                networkInfo = mock.MockNetworkInfo();
+              }
+              
+              // 创建远程数据源
+              final remoteDataSource = ProfileRemoteDataSourceImpl(
+                dio: dio,
+                storage: secureStorage,
+              );
+              
+              // 创建钱包仓库
+              final walletRepository = WalletRepositoryImpl(
+                remoteDataSource: remoteDataSource,
+                networkInfo: networkInfo,
+              );
+              
+              // 创建用例
+              final getWalletSummary = GetWalletSummary(walletRepository);
+              final getWalletTransactions = GetWalletTransactions(walletRepository);
+              
+              // 创建BLoC
+              final walletBloc = WalletBloc(
+                getWalletSummary: getWalletSummary,
+                getWalletTransactions: getWalletTransactions,
+              );
+              
+              return MaterialPage(
+                key: state.pageKey,
+                child: BlocProvider(
+                  create: (context) => walletBloc,
+                  child: const WalletPage(),
+                ),
+              );
+            } catch (e) {
+              print('Error creating WalletBloc: $e');
+              return MaterialPage(
+                key: state.pageKey,
+                child: Scaffold(
+                  appBar: AppBar(title: const Text('钱包')),
+                  body: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('初始化钱包页面失败'),
+                        const SizedBox(height: 16),
+                        Text('错误: $e', style: const TextStyle(fontSize: 12, color: Colors.red)),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('返回'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+          },
         ),
       ],
     ),

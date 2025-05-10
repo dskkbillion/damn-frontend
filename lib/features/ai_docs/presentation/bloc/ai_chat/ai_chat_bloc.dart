@@ -6,6 +6,7 @@ import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import Secure Storage
+import 'package:dio/dio.dart';
 
 // Core
 import 'package:dskk_flutter_refactor/core/error/failures.dart'; // Use package import
@@ -506,54 +507,116 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     SendVoiceMessage event,
     Emitter<AiChatState> emit,
   ) async {
-    // 1. Set status to indicate processing (maybe still transcribing, or a new 'uploadingAudio'?) 
-    // Using sendingMessage for now, maybe refine later.
+    // 1. Set status to indicate processing
     emit(state.copyWith(status: AiChatStatus.sendingMessage, clearErrorMessage: true));
 
-    // 2. Upload the audio file
+    // 获取文件大小并记录
+    final fileSize = await event.audioFile.length();
+    print('准备上传的音频文件大小: ${fileSize / 1024} KB, 路径: ${event.audioFile.path}');
+    
+    // 检查文件大小，如果过大则给出警告
+    if (fileSize > 3 * 1024 * 1024) { // 超过3MB
+      print('警告: 音频文件大小超过3MB，可能导致上传超时');
+    }
+
+    // 2. 获取用户ID
     final userId = await _getCurrentUserId();
     if (userId == null) {
-      emit(state.copyWith(status: AiChatStatus.messageSendFailure, errorMessage: 'User not authenticated or invalid ID format'));
+      emit(state.copyWith(status: AiChatStatus.messageSendFailure, errorMessage: '用户ID未找到，无法上传音频'));
       return;
     }
-    final uploadResult = await _uploadFile(UploadFileParams(file: event.audioFile));
 
+    // 3. 上传音频文件 - 添加重试逻辑
+    int retryCount = 0;
+    const maxRetries = 2;
+    late Either<Failure, String> uploadResult;
+    
+    while (retryCount <= maxRetries) {
+      if (retryCount > 0) {
+        print('正在重试音频上传 (${retryCount}/${maxRetries})...');
+        emit(state.copyWith(status: AiChatStatus.sendingMessage, errorMessage: '正在重试音频上传 (${retryCount}/${maxRetries})...'));
+        // 在重试前等待一段时间
+        await Future.delayed(Duration(seconds: 1));
+      }
+      
+      try {
+        // 尝试上传文件
+        uploadResult = await _uploadFile(UploadFileParams(file: event.audioFile));
+
+        // 如果上传成功，跳出循环
+        if (uploadResult.isRight()) {
+          break;
+        } else {
+          // 如果是超时错误，重试
+          final failure = uploadResult.fold(
+            (failure) => failure,
+            (_) => null, // 不可能运行到这里
+          );
+          
+          if (failure.toString().contains('系统请求超时') || 
+              failure.toString().contains('timeout') ||
+              failure.toString().contains('500')) {
+            print('音频上传超时，准备重试');
+            retryCount++;
+            continue;
+          } else {
+            // 其他类型的错误不重试
+            break;
+          }
+        }
+      } catch (e) {
+        print('音频上传异常: $e');
+        uploadResult = Left(GeneralFailure(message: e.toString()));
+        retryCount++;
+        continue;
+      }
+    }
+
+    // 4. 处理上传结果
     await uploadResult.fold(
-      // 2.1 Handle Upload Failure
+      // 4.1 处理上传失败
       (failure) async {
-        print('Audio upload failed: $failure');
-        // Use messageSendFailure as the final state for sending attempt
+        print('音频上传失败: $failure');
+        
+        // 显示友好的错误提示
+        String errorMessage;
+        if (failure.toString().contains('系统请求超时') || failure.toString().contains('timeout')) {
+          errorMessage = '上传超时，请尝试录制更短的语音';
+        } else if (failure.toString().contains('500')) {
+          errorMessage = '服务器错误，请稍后再试';
+        } else {
+          errorMessage = '上传失败: ${failure.toString()}';
+        }
+        
         emit(state.copyWith(
           status: AiChatStatus.messageSendFailure, 
-          errorMessage: 'Failed to upload audio: ${failure.toString()}',
+          errorMessage: errorMessage,
         ));
       },
-      // 2.2 Handle Upload Success -> Add Audio Message to State
+      // 4.2 处理上传成功
       (audioOssUrl) async {
-        print('Audio uploaded: $audioOssUrl');
+        print('音频上传成功，URL: $audioOssUrl');
         
-        // 3. Create the Audio Message Entity
+        // 创建音频消息实体
         final audioMessage = AiChatMessageEntity(
-           // Generate a temporary unique ID
            messageId: 'audio_user_${DateTime.now().millisecondsSinceEpoch}',
-           sender: MessageSender.user, // Assuming user sent the voice message
-           conversationId: state.selectedConversationId ?? -1, // Use current conv ID
+          sender: MessageSender.user,
+          conversationId: state.selectedConversationId ?? -1,
            timestamp: DateTime.now(),
            messageType: MessageType.audio,
-           // Store the URL in fileUrls list
            fileUrls: [audioOssUrl], 
-           // Content can be empty or a placeholder like "[Voice Message]"
-           content: '' 
+          content: '[语音消息]' // 添加占位符文本
         );
 
-        // 4. Add the message to the list and reset status
+        // 更新UI显示音频消息
         emit(state.copyWith(
-           // Add to the *end* of the list, ListView will reverse it
            messages: List.from(state.messages)..add(audioMessage), 
-           // Set status back to indicate success/idle after sending
-           status: AiChatStatus.historyLoadSuccess, // Or messageSendSuccess?
+          status: AiChatStatus.historyLoadSuccess,
            clearErrorMessage: true,
         ));
+        
+        // 可选：尝试调用语音转文字服务
+        // TODO: 实现语音转文字
       },
     );
   }
@@ -714,14 +777,32 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
        emit(state.copyWith(status: AiChatStatus.allocationFailure, errorMessage: 'No conversation selected for allocation'));
        return;
      }
-     emit(state.copyWith(status: AiChatStatus.allocatingResource, clearErrorMessage: true));
+     
+     // 更新特定服务的分发状态为加载中
+     final updatedAllocationStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
+     updatedAllocationStatus[event.serviceId] = AllocationStatus.loading;
+     
+     emit(state.copyWith(
+       status: AiChatStatus.allocatingResource, 
+       clearErrorMessage: true,
+       serviceAllocationStatus: updatedAllocationStatus
+     ));
 
-     // Construct params using parameters from the event
+     // 获取用户ID
      final userId = await _getCurrentUserId();
      if (userId == null) {
-       emit(state.copyWith(status: AiChatStatus.allocationFailure, errorMessage: 'User not authenticated or invalid ID format'));
+       // 更新分发状态为失败
+       updatedAllocationStatus[event.serviceId] = AllocationStatus.failure;
+       
+       emit(state.copyWith(
+         status: AiChatStatus.allocationFailure, 
+         errorMessage: 'User not authenticated or invalid ID format',
+         serviceAllocationStatus: updatedAllocationStatus
+       ));
        return;
      }
+     
+     // 调用分配资源用例
      final result = await _allocateChatResource(AllocateChatResourceParams(
         conversationId: currentConvId,
         userId: userId,
@@ -730,20 +811,140 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
      ));
 
      result.fold(
-       (failure) => emit(state.copyWith(
+       (failure) {
+         // 更新分发状态为失败
+         final updatedStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
+         updatedStatus[event.serviceId] = AllocationStatus.failure;
+         
+         emit(state.copyWith(
          status: AiChatStatus.allocationFailure,
          errorMessage: failure.toString(),
-       )),
-       (allocationResult) {
-         // Access the correct field from ChatAllocationResultEntity
-         print('Allocation successful: ${allocationResult.summary}'); 
+           serviceAllocationStatus: updatedStatus
+         ));
+       },
+       (allocationResult) async {
+         // 分发成功，更新状态
+         final updatedStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
+         updatedStatus[event.serviceId] = AllocationStatus.success;
+         
+         // 获取AI生成的专业需求总结
+         final summary = allocationResult.summary;
+         print('Allocation successful: $summary'); 
+         
          emit(state.copyWith(
             status: AiChatStatus.allocationSuccess,
-            // Optionally store summary or merchantId if needed
-            // errorMessage: allocationResult.summary, // Example: Show summary as info message
+            serviceAllocationStatus: updatedStatus,
+            errorMessage: '服务已成功分发给商家'
          ));
-         // Optionally transition back to a stable state
-         // Future.delayed(Duration(seconds: 2), () => emit(state.copyWith(status: AiChatStatus.historyLoadSuccess))); 
+         
+         // 在这里调用消息发送API给商家
+         String finalMessage = '服务已成功分发给商家';
+         
+         try {
+           print('准备发送消息给商家ID: ${event.merchantId}, 商品: ${event.item['name']}');
+           
+           // 创建新的Dio实例并设置基础URL
+           final dio = Dio();
+           dio.options.baseUrl = "http://app.duoshaokankan.com/prod-api";
+           
+           // 获取认证令牌
+           final String? authToken = await _storage.read(key: 'auth_token');
+           if (authToken == null || authToken.isEmpty) {
+             throw Exception('认证令牌不存在或为空');
+           }
+           
+           // 添加必要的请求头信息 (关键修复)
+           final options = Options(
+             contentType: Headers.jsonContentType,
+             responseType: ResponseType.json,
+             headers: {
+               'Content-Type': 'application/json',
+               'clienttype': '1',  // 添加必要的请求头
+               'client': Platform.isAndroid ? 'android' : 'ios',
+               'version': '100',
+               'packageName': 'com.duoshaokankan.dskk', // 包名添加到请求头
+               'versionCode': '1.0.0', // 版本号添加到请求头
+               'versionName': '1.0.0', // 版本名称添加到请求头
+               'Authorization': 'Bearer $authToken', // 添加认证令牌
+             },
+           );
+           
+           // 第一步：创建聊天室
+           print("发送创建聊天室请求...");
+           
+           // 构建创建聊天室的请求参数 (只保留必要参数)
+           final createRoomParams = {
+             'doctorId': event.merchantId.toString(),
+             'type': 'MEMBER',
+           };
+           
+           print("创建聊天室请求参数: $createRoomParams");
+           
+           final createRoomResponse = await dio.post(
+             '/api/chat/addChat',
+             data: createRoomParams,
+             options: options
+           );
+           
+           print("创建聊天室响应状态码: ${createRoomResponse.statusCode}");
+           print("创建聊天室响应数据: ${createRoomResponse.data}");
+           
+           if (createRoomResponse.statusCode == 200 && 
+               createRoomResponse.data != null && 
+               createRoomResponse.data['code'] == 200) {
+             
+             final chatId = createRoomResponse.data['data'];
+             print('成功创建聊天室，ID: $chatId');
+             
+             // 第二步：发送消息
+             print("发送消息请求...");
+             
+             // 构建一个更丰富的消息，包含服务名称和AI分析的总结
+             String messageContent = "用户对\"${event.item['name']}\"服务感兴趣。\n\n专业需求分析:\n$summary";
+             
+             // 构建发送消息的请求参数
+             final sendMessageParams = {
+               'chatId': chatId,
+               'context': messageContent, // 使用分发返回的专业总结作为消息内容
+               'type': 'text',
+             };
+             
+             print("发送消息请求参数: $sendMessageParams");
+             
+             final sendMsgResponse = await dio.post(
+               '/common/chat/message/add',
+               data: sendMessageParams,
+               options: options
+             );
+             
+             print("发送消息响应状态码: ${sendMsgResponse.statusCode}");
+             print("发送消息响应数据: ${sendMsgResponse.data}");
+             
+             if (sendMsgResponse.statusCode == 200 && 
+                 sendMsgResponse.data != null && 
+                 sendMsgResponse.data['code'] == 200) {
+               print('消息已成功发送给商家!');
+               finalMessage = '消息已发送到商家的聊天窗口，请到"聊天"页面查看';
+             } else {
+               print('发送消息API返回错误: ${sendMsgResponse.data}');
+               finalMessage = '分发成功，但发送消息失败: ${sendMsgResponse.data?['msg'] ?? '未知错误'}';
+             }
+           } else {
+             print('创建聊天室API返回错误: ${createRoomResponse.data}');
+             finalMessage = '分发成功，但创建聊天失败: ${createRoomResponse.data?['msg'] ?? '未知错误'}';
+           }
+         } catch (e) {
+           print('向商家发送消息失败: $e');
+           finalMessage = '分发成功，但发送消息时发生错误: $e';
+         }
+         
+         // 只有当emitter没有完成时才发送最终状态
+         if (!emit.isDone) {
+           emit(state.copyWith(
+             status: AiChatStatus.allocationSuccess,
+             errorMessage: finalMessage
+           ));
+         }
        },
      );
    }

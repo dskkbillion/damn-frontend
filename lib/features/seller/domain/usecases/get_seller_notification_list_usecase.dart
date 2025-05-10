@@ -10,14 +10,22 @@ import 'package:injectable/injectable.dart';
 class GetSellerNotificationListParams extends Equatable {
   /// 通知类型（可选）
   final String? messageType;
+  
+  /// 页码
+  final int pageNum;
+  
+  /// 每页数量
+  final int pageSize;
 
   /// 构造函数
   const GetSellerNotificationListParams({
     this.messageType,
+    this.pageNum = 1,
+    this.pageSize = 10,
   });
 
   @override
-  List<Object?> get props => [messageType];
+  List<Object?> get props => [messageType, pageNum, pageSize];
 }
 
 /// 获取卖家通知列表UseCase
@@ -34,6 +42,8 @@ class GetSellerNotificationListUseCase
       GetSellerNotificationListParams params) {
     return _sellerRepository.getNotificationList(
       messageType: params.messageType,
+      pageNum: params.pageNum,
+      pageSize: params.pageSize,
     );
   }
 } 

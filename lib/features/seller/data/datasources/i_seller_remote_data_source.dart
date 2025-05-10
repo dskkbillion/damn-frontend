@@ -63,7 +63,11 @@ abstract class ISellerRemoteDataSource {
   Future<bool> updateTimeSettings(TimeSettingsData settings);
 
   /// 获取通知列表
-  Future<List<NotificationDto>> getNotificationList({String? messageType});
+  Future<List<NotificationDto>> getNotificationList({
+    String? messageType,
+    int pageNum = 1,
+    int pageSize = 10
+  });
 
   /// 标记通知为已读
   Future<bool> markNotificationAsRead(String notificationId);

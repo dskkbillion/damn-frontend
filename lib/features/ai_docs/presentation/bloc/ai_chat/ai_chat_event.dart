@@ -32,14 +32,16 @@ class TriggerAllocationAction extends AiChatEvent {
   // 只保留需要的参数
   final Map<String, dynamic> item; // 服务/商品详情
   final int merchantId; // 商家ID
+  final int serviceId; // 服务ID，用于状态追踪
 
   const TriggerAllocationAction({
     required this.item,
     required this.merchantId,
+    required this.serviceId,
   }); 
 
   @override
-  List<Object?> get props => [item, merchantId];
+  List<Object?> get props => [item, merchantId, serviceId];
 }
 
 /// Event triggered when the user finishes recording audio.
