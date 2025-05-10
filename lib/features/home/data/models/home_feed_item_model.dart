@@ -2,7 +2,7 @@ import '../../domain/entities/home_feed_item.dart';
 
 /// HomeFeedItem 模型，用于序列化和反序列化 API 响应
 class HomeFeedItemModel extends HomeFeedItem {
-  const HomeFeedItemModel({
+  HomeFeedItemModel({
     required String id,
     required String type,
     required String name,

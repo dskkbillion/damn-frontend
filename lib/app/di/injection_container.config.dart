@@ -30,6 +30,7 @@ import '../../core/network/interceptors/app_info_interceptor.dart' as _i405;
 import '../../core/network/network_info.dart' as _i892;
 import '../../core/network/network_info_impl.dart' as _i678;
 import '../../core/payment/services/i_payment_service.dart' as _i395;
+import '../../core/platform/network_info.dart' as _i50;
 import '../../core/platform/token_validator.dart' as _i691;
 import '../../core/storage/secure_storage_repository.dart' as _i822;
 import '../../core/storage/secure_storage_repository_impl.dart' as _i912;
@@ -134,6 +135,25 @@ import '../../features/chat/domain/usecases/revoke_message.dart' as _i344;
 import '../../features/chat/domain/usecases/send_message.dart' as _i76;
 import '../../features/chat/presentation/bloc/chat_list/chat_list_bloc.dart'
     as _i505;
+import '../../features/home/data/datasources/home_local_data_source.dart'
+    as _i299;
+import '../../features/home/data/datasources/home_remote_data_source.dart'
+    as _i362;
+import '../../features/home/data/datasources/product_reviews_remote_data_source.dart'
+    as _i832;
+import '../../features/home/data/repositories/home_repository_impl.dart'
+    as _i76;
+import '../../features/home/data/repositories/product_reviews_repository_impl.dart'
+    as _i1049;
+import '../../features/home/domain/repositories/home_repository.dart' as _i0;
+import '../../features/home/domain/repositories/product_reviews_repository.dart'
+    as _i511;
+import '../../features/home/domain/usecases/get_product_reviews_use_case.dart'
+    as _i877;
+import '../../features/home/presentation/cubit/product_detail_cubit.dart'
+    as _i431;
+import '../../features/home/presentation/cubit/product_reviews_cubit.dart'
+    as _i604;
 import '../../features/orders/data/datasources/i_order_local_data_source.dart'
     as _i406;
 import '../../features/orders/data/datasources/i_order_remote_data_source.dart'
@@ -355,6 +375,8 @@ Future<_i174.GetIt> init(
   gh.lazySingleton<_i493.IHttpClient>(() => _i962.DioHttpClient());
   gh.lazySingleton<_i607.IAiChatRemoteDataSource>(
       () => _i404.AiChatRemoteDataSourceImpl(gh<_i493.IHttpClient>()));
+  gh.lazySingleton<_i832.ProductReviewsRemoteDataSource>(
+      () => _i832.ProductReviewsRemoteDataSourceImpl(gh<_i493.IHttpClient>()));
   gh.lazySingleton<_i592.ICoreWebSocketService>(
     () => _i327.CoreWebSocketServiceImpl(),
     dispose: (i) => i.dispose(),
@@ -386,15 +408,27 @@ Future<_i174.GetIt> init(
       () => _i558.StreamChatCompletionUseCase(gh<_i319.IAiChatRepository>()));
   gh.lazySingleton<_i309.TranscribeAudioUseCase>(
       () => _i309.TranscribeAudioUseCase(gh<_i319.IAiChatRepository>()));
+  gh.factory<_i0.IHomeRepository>(() => _i76.HomeRepositoryImpl(
+        remoteDataSource: gh<_i362.HomeRemoteDataSource>(),
+        localDataSource: gh<_i299.HomeLocalDataSource>(),
+        networkInfo: gh<_i892.NetworkInfo>(),
+      ));
   gh.factory<_i405.AppInfoInterceptor>(
       () => _i405.AppInfoInterceptor(gh<_i655.PackageInfo>()));
   gh.lazySingleton<_i436.IFileUploadDataSource>(
       () => _i478.FileUploadDataSourceImpl(gh<_i493.IHttpClient>()));
+  gh.lazySingleton<_i511.ProductReviewsRepository>(
+      () => _i1049.ProductReviewsRepositoryImpl(
+            gh<_i832.ProductReviewsRemoteDataSource>(),
+            gh<_i50.NetworkInfo>(),
+          ));
   gh.lazySingleton<_i569.IFileUploadRepository>(() =>
       _i43.FileUploadRepositoryImpl(
           dataSource: gh<_i436.IFileUploadDataSource>()));
   gh.lazySingleton<_i798.UploadFileUseCase>(
       () => _i798.UploadFileUseCase(gh<_i569.IFileUploadRepository>()));
+  gh.factory<_i877.GetProductReviewsUseCase>(() =>
+      _i877.GetProductReviewsUseCase(gh<_i511.ProductReviewsRepository>()));
   gh.factory<_i412.CoreDioClient>(() => _i412.CoreDioClient(
         gh<String>(instanceName: 'baseUrl'),
         gh<_i558.FlutterSecureStorage>(),
@@ -417,6 +451,8 @@ Future<_i174.GetIt> init(
         gh<_i405.AppInfoInterceptor>(),
         gh<_i558.FlutterSecureStorage>(),
       ));
+  gh.factory<_i604.ProductReviewsCubit>(
+      () => _i604.ProductReviewsCubit(gh<_i877.GetProductReviewsUseCase>()));
   gh.lazySingleton<_i346.IOrderRemoteDataSource>(() =>
       _i230.OrderRemoteDataSourceImpl(
           coreDioClient: gh<_i412.CoreDioClient>()));
@@ -429,6 +465,8 @@ Future<_i174.GetIt> init(
         remoteDataSource: gh<_i346.IOrderRemoteDataSource>(),
         localDataSource: gh<_i406.IOrderLocalDataSource>(),
       ));
+  gh.factory<_i431.ProductDetailCubit>(
+      () => _i431.ProductDetailCubit(gh<_i0.IHomeRepository>()));
   gh.factory<_i1.CancelOrderUseCase>(
       () => _i1.CancelOrderUseCase(gh<_i724.IOrderRepository>()));
   gh.factory<_i449.ConfirmOrderAcceptanceUseCase>(

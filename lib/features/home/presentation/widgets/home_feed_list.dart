@@ -32,6 +32,9 @@ class HomeFeedList extends StatefulWidget {
   
   /// 行之间的间距
   final double runSpacing;
+  
+  /// 是否显示"让ta看看"按钮
+  final bool showRecommendButton;
 
   const HomeFeedList({
     Key? key,
@@ -44,6 +47,7 @@ class HomeFeedList extends StatefulWidget {
     this.crossAxisCount = 2,
     this.spacing = 10.0,
     this.runSpacing = 16.0,
+    this.showRecommendButton = false, // 默认不显示"让ta看看"按钮
   }) : super(key: key);
 
   @override
@@ -117,6 +121,7 @@ class _HomeFeedListState extends State<HomeFeedList> {
                     widget.onRecommendClicked!(item);
                   }
                 },
+                showRecommendButton: widget.showRecommendButton, // 传递显示设置
               );
             },
           ),

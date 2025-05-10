@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../domain/entities/common_user.dart';
 import '../../domain/entities/favorite.dart';
@@ -92,12 +93,27 @@ class _FavoritesPageState extends State<FavoritesPage> with SingleTickerProvider
     // 当滚动到距离底部100像素时，触发加载更多
     return currentScroll >= (maxScroll - 100);
   }
+  
+  /// 安全返回处理
+  void _handleBack() {
+    // 使用Router获取重定向到个人中心页面
+    try {
+      context.pop();
+    } catch (e) {
+      // 如果无法返回，则跳转到首页或个人中心页
+      context.go('/profile');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('我的收藏'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: _handleBack,
+        ),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [

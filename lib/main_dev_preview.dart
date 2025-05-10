@@ -15,6 +15,10 @@ import 'package:dskk_flutter_refactor/features/favorites/di/favorites_di.dart'; 
 import 'package:dskk_flutter_refactor/features/seller/di/seller_statistics_di.dart';
 // import 'package:dskk_flutter_refactor/features/profile/di/profile_di.dart'; // 不再需要引入
 
+// 导入Home模块的导航配置
+import 'package:dskk_flutter_refactor/features/home/presentation/navigation/home_navigation_di.dart';
+import 'package:dskk_flutter_refactor/app/navigation/app_router.dart'; // GoRouter provider
+
 /// Application entry point for running the app with the Dev Menu navigator tab.
 /// Use this for convenient testing of different module entry points during development.
 Future<void> main() async {
@@ -67,8 +71,8 @@ Future<void> main() async {
   print('[main_dev_preview] Seller Statistics dependencies configured.');
 
   // Initialize Profile module dependencies
-  // await initProfileDi(); // <--- 删除或注释掉这一行
-  // print('[main_dev_preview] Profile dependencies configured.'); // <--- 删除或注释掉这一行
+  // await profileDI.initProfileDependencies(getIt);
+  // print('[main_dev_preview] Profile dependencies configured.');
 
   // --- Override AuthRepository with Mock for Dev Preview --- 
   print('[main_dev_preview] Overriding IAuthRepository with MockAuthRepository...');
@@ -87,7 +91,7 @@ Future<void> main() async {
   try {
     final storage = getIt<FlutterSecureStorage>(); 
     // Use a generic test token and ID for buyer/general use
-    const testToken = "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6Ijk1NjBiODY2LWU2ZmUtNGYyOS04NjVjLTdmMjJjNDg0YjlmZCJ9.QCfx9k2Bu6H1yONyH5jGm_Pjy0DlPPGl9gP1_0p72c-4KjHwoRPIkxXrnJckC1g_UqudTufgjQvfYUCMGzNd9A"; // Example Buyer/General Token
+    const testToken = "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6ImEyOGQyNjZjLTY3M2EtNDdmMy04ZWJhLWM0MWEyMTczMzU2YiJ9.vzm4Z6GK_X6wv3d93B7L8qOy0ODS-t0aNeekdhVZW5Qan0fTnhfC92JjIliaKALLUZLkwPvznoOfrC2VgIv_Lw"; // Example Buyer/General Token
     const testUserId = "18888888888"; // Example Buyer/General ID as String representation of an int
     const testCommonUserId = "1"; // Example Common User ID as String
 
@@ -106,7 +110,28 @@ Future<void> main() async {
   // MyApp contains the GoRouter setup which includes the Dev Menu tab
   runApp(
     ProviderScope( // Wrap with ProviderScope to enable Riverpod providers
-      child: const MyApp(),
+      child: Builder(
+        builder: (context) {
+          // 在应用运行时注册实际的导航服务
+          // 注意：这段代码需要在Provider初始化后执行
+          return Consumer(
+            builder: (context, ref, child) {
+              // 获取GoRouter实例并注册导航服务
+              final router = ref.read(goRouterProvider);
+              
+              // 注册真实的导航服务
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                // 等待框架完成首次构建后注册导航服务
+                print('[main_dev_preview] 开始注册实际的导航服务...');
+                HomeNavigationDI.registerRealNavigationService(getIt, router);
+                print('[main_dev_preview] 导航服务注册完成');
+              });
+              
+              return const MyApp();
+            },
+          );
+        },
+      ),
     ),
   );
 } 

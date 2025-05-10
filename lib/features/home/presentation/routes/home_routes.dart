@@ -6,6 +6,9 @@ import 'package:dskk_flutter_refactor/features/home/di/home_di.dart';
 
 import '../pages/home_page.dart';
 import '../pages/product_detail_page.dart';
+import '../pages/product_reviews_page.dart';
+import '../pages/search_page.dart';
+import '../pages/search_results_page.dart';
 
 /// Home模块的路由定义
 /// 
@@ -65,17 +68,22 @@ class HomeRoutes {
           },
         ),
         
-        // 搜索路由（占位，将来实现）
+        // 搜索路由
         GoRoute(
           path: searchPath,
           name: searchName,
           builder: (context, state) {
-            final query = state.uri.queryParameters['q'];
-            // 占位实现，将来替换为实际的搜索页面
-            return Scaffold(
-              appBar: AppBar(title: const Text('搜索')),
-              body: Center(child: Text('搜索: ${query ?? "全部"}')),
-            );
+            return const SearchPage();
+          },
+        ),
+        
+        // 搜索结果路由
+        GoRoute(
+          path: 'search-results',
+          name: 'searchResults',
+          builder: (context, state) {
+            final keyword = state.uri.queryParameters['keyword'] ?? '';
+            return SearchResultsPage(keyword: keyword);
           },
         ),
         
@@ -93,6 +101,15 @@ class HomeRoutes {
           },
         ),
       ],
+    ),
+    GoRoute(
+      path: '/product/:productId/reviews',
+      name: 'productReviews',
+      builder: (BuildContext context, GoRouterState state) {
+        final String productIdStr = state.pathParameters['productId'] ?? '0';
+        final int productId = int.tryParse(productIdStr) ?? 0;
+        return ProductReviewsPage(productId: productId);
+      },
     ),
   ];
 }

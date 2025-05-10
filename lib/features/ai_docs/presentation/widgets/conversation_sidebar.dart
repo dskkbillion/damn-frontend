@@ -38,7 +38,7 @@ class ConversationSidebar extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.add_circle_outline),
-                    label: const Text('New Chat'),
+                    label: const Text('新建聊天'),
                     style: ElevatedButton.styleFrom(
                        minimumSize: const Size(double.infinity, 40), 
                     ),
@@ -85,14 +85,14 @@ class ConversationSidebar extends StatelessWidget {
                  const Icon(Icons.error_outline, color: Colors.red, size: 32),
                  const SizedBox(height: 8),
                  Text(
-                   state.conversationListErrorMessage ?? "Failed to load conversations", 
+                   state.conversationListErrorMessage ?? "加载会话失败", 
                    textAlign: TextAlign.center,
                    style: const TextStyle(color: Colors.red)
                  ),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                      icon: const Icon(Icons.refresh), 
-                     label: const Text('Retry'),
+                     label: const Text('重试'),
                      onPressed: () => context.read<AiChatBloc>().add(LoadConversations()),
                   )
                ],
@@ -103,7 +103,7 @@ class ConversationSidebar extends StatelessWidget {
         case ConversationsStatus.initial: // Treat initial as loaded (or show loading initially)
         default:
           if (state.conversations.isEmpty) {
-             return const Center(child: Text("No conversations yet."));
+             return const Center(child: Text("暂无会话"));
           }
           return _buildList(context, state.conversations, state.selectedConversationId);
      }
@@ -117,14 +117,14 @@ class ConversationSidebar extends StatelessWidget {
           final conv = conversations[index];
           return ListTile(
               title: Text(
-                  conv.title?.isNotEmpty ?? false ? conv.title! : 'Untitled Conversation', 
+                  conv.title?.isNotEmpty ?? false ? conv.title! : '未命名会话', 
                   overflow: TextOverflow.ellipsis,
               ),
-              // TODO: Show last message snippet or formatted timestamp?
-              subtitle: Text(
-                  'ID: ${conv.id}', 
-                   overflow: TextOverflow.ellipsis,
-              ),
+              // 移除ID展示
+              // subtitle: Text(
+              //     'ID: ${conv.id}', 
+              //      overflow: TextOverflow.ellipsis,
+              // ),
               selected: selectedId == conv.id,
               selectedTileColor: Colors.blue.withOpacity(0.1),
               onTap: () {
@@ -136,7 +136,7 @@ class ConversationSidebar extends StatelessWidget {
               // Add delete button
                trailing: IconButton(
                  icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey), // Subtle color
-                 tooltip: 'Delete Conversation',
+                 tooltip: '删除会话',
                  onPressed: () => _confirmDelete(context, conv.id), // Show confirmation
                ),
             );
@@ -150,16 +150,16 @@ class ConversationSidebar extends StatelessWidget {
         context: context,
         builder: (BuildContext dialogContext) {
           return AlertDialog(
-            title: const Text('Delete Conversation?'),
-            content: const Text('Are you sure you want to permanently delete this conversation?'),
+            title: const Text('删除会话？'),
+            content: const Text('确定要永久删除此会话吗？'),
             actions: <Widget>[
               TextButton(
-                child: const Text('Cancel'),
+                child: const Text('取消'),
                 onPressed: () => Navigator.of(dialogContext).pop(false), // Return false
               ),
               TextButton(
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('Delete'),
+                child: const Text('删除'),
                 onPressed: () => Navigator.of(dialogContext).pop(true), // Return true
               ),
             ],
@@ -181,10 +181,9 @@ class ConversationSidebar extends StatelessWidget {
            // Maybe add DeleteConversationById(id) event?
            print("Deletion requested for non-selected conversation ID: $conversationId. Ignoring for now.");
            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Select the conversation first to delete it.')),
+              const SnackBar(content: Text('请先选择要删除的会话')),
            );
         }
       }
   }
-
 } 

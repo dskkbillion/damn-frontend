@@ -1,94 +1,152 @@
 import 'package:dartz/dartz.dart';
+import 'package:dskk_flutter_refactor/core/error/exceptions.dart';
+import 'package:dskk_flutter_refactor/core/error/failures.dart';
+import 'package:dskk_flutter_refactor/core/network/network_info.dart';
+import 'package:dskk_flutter_refactor/features/home/domain/entities/home_feed_item.dart';
+import 'package:dskk_flutter_refactor/features/home/domain/entities/home_page_data.dart';
+import 'package:dskk_flutter_refactor/features/home/domain/entities/product_detail.dart';
+import 'package:dskk_flutter_refactor/features/home/domain/entities/banner.dart';
+import 'package:dskk_flutter_refactor/features/home/domain/repositories/home_repository.dart';
+import 'package:injectable/injectable.dart';
 
-import '../../../../../core/error/exceptions.dart';
-import '../../../../../core/error/failures.dart';
-import '../../../../../core/network/network_info.dart';
-import '../../domain/entities/home_feed_item.dart';
-import '../../domain/entities/home_page_data.dart';
-import '../../domain/repositories/home_repository.dart';
 import '../datasources/home_local_data_source.dart';
 import '../datasources/home_remote_data_source.dart';
 
+@Injectable(as: IHomeRepository)
 class HomeRepositoryImpl implements IHomeRepository {
   final HomeRemoteDataSource remoteDataSource;
-  final HomeLocalDataSource? localDataSource;
-  final NetworkInfo? networkInfo;
+  final HomeLocalDataSource localDataSource;
+  final NetworkInfo networkInfo;
 
   HomeRepositoryImpl({
     required this.remoteDataSource,
-    this.localDataSource,
-    this.networkInfo,
+    required this.localDataSource,
+    required this.networkInfo,
   });
 
   @override
   Future<Either<Failure, HomePageData>> getHomePageData() async {
-    // 简化版：如果 networkInfo 为 null，则假设网络已连接
-    if (networkInfo == null || await networkInfo!.isConnected) {
+    if (await networkInfo.isConnected) {
       try {
-        final remoteHomePageData = await remoteDataSource.getHomePageData();
-        // 如果 localDataSource 不为 null，则缓存数据
-        if (localDataSource != null) {
-          await localDataSource!.cacheHomePageData(remoteHomePageData);
-        }
-        return Right(remoteHomePageData);
+        final remoteData = await remoteDataSource.getHomePageData();
+        localDataSource.cacheHomePageData(remoteData);
+        // 临时解决方案：直接转换为同类型数据
+        final homePageData = HomePageData(
+          banners: remoteData.banners.map((b) => Banner(
+            id: b.id, 
+            imageUrl: b.imageUrl,
+            title: b.title ?? '',
+            linkUrl: b.linkUrl ?? '',
+          )).toList(),
+          categories: [], // 暂时返回空列表
+          feedItems: remoteData.feedItems.map((item) => HomeFeedItem(
+            id: item.id.toString(),
+            name: item.name,
+            images: item.images,
+            sellingPrice: item.sellingPrice,
+            description: '',
+          )).toList(),
+        );
+        return Right(homePageData);
       } on ServerException catch (e) {
-        // Provide a default message if e.message is null
-        return Left(ServerFailure(message: e.message ?? '获取首页数据时发生服务器错误'));
-      } catch (e) {
-        return Left(ServerFailure(message: e.toString()));
+        return Left(ServerFailure(message: e.message ?? "服务器错误"));
       }
     } else {
-      // 如果 localDataSource 为 null，则返回服务器错误
-      if (localDataSource == null) {
-        return Left(ServerFailure(message: '网络未连接且没有本地缓存'));
-      }
-      
       try {
-        final localHomePageData = await localDataSource!.getLastHomePageData();
-        return Right(localHomePageData);
+        final localData = await localDataSource.getLastHomePageData();
+        // 临时解决方案：直接转换为同类型数据
+        final homePageData = HomePageData(
+          banners: localData.banners.map((b) => Banner(
+            id: b.id, 
+            imageUrl: b.imageUrl,
+            title: b.title ?? '',
+            linkUrl: b.linkUrl ?? '',
+          )).toList(),
+          categories: [], // 暂时返回空列表
+          feedItems: localData.feedItems.map((item) => HomeFeedItem(
+            id: item.id.toString(),
+            name: item.name,
+            images: item.images,
+            sellingPrice: item.sellingPrice,
+            description: '',
+          )).toList(),
+        );
+        return Right(homePageData);
       } on CacheException {
-        // Add a message for CacheFailure
-        return Left(const CacheFailure(message: '未能从本地缓存加载首页数据'));
-      } catch (e) {
-        // Add a message for other cache-related errors
-        return Left(CacheFailure(message: '加载本地首页数据时发生错误: ${e.toString()}'));
+        return Left(CacheFailure());
       }
     }
   }
 
   @override
   Future<Either<Failure, List<HomeFeedItem>>> getHomeFeed(int page, int limit) async {
-    // 简化版：如果 networkInfo 为 null，则假设网络已连接
-    if (networkInfo == null || await networkInfo!.isConnected) {
+    if (await networkInfo.isConnected) {
       try {
-        final remoteHomeFeed = await remoteDataSource.getHomeFeed(page, limit);
-        // 如果 localDataSource 不为 null，则缓存数据
-        if (localDataSource != null) {
-          await localDataSource!.cacheHomeFeed(page, remoteHomeFeed);
-        }
-        return Right(remoteHomeFeed);
+        final remoteData = await remoteDataSource.getHomeFeed(page, limit);
+        // 转换为领域实体
+        final feedItems = remoteData.map((item) => HomeFeedItem(
+          id: item.id.toString(),
+          name: item.name,
+          images: item.images,
+          sellingPrice: item.sellingPrice,
+          description: '',
+        )).toList();
+        return Right(feedItems);
       } on ServerException catch (e) {
-        // Provide a default message if e.message is null
-        return Left(ServerFailure(message: e.message ?? '获取首页Feed时发生服务器错误'));
-      } catch (e) {
-        return Left(ServerFailure(message: e.toString()));
+        return Left(ServerFailure(message: e.message ?? "服务器错误"));
       }
     } else {
-      // 如果 localDataSource 为 null，则返回服务器错误
-      if (localDataSource == null) {
-        return Left(ServerFailure(message: '网络未连接且没有本地缓存'));
-      }
-      
       try {
-        final localHomeFeed = await localDataSource!.getLastHomeFeed(page);
-        return Right(localHomeFeed);
+        final localData = await localDataSource.getLastHomeFeed(page);
+        // 转换为领域实体
+        final feedItems = localData.map((item) => HomeFeedItem(
+          id: item.id.toString(),
+          name: item.name,
+          images: item.images,
+          sellingPrice: item.sellingPrice,
+          description: '',
+        )).toList();
+        return Right(feedItems);
       } on CacheException {
-        // Add a message for CacheFailure
-        return Left(const CacheFailure(message: '未能从本地缓存加载首页Feed'));
-      } catch (e) {
-        // Add a message for other cache-related errors
-        return Left(CacheFailure(message: '加载本地首页Feed时发生错误: ${e.toString()}'));
+        return Left(CacheFailure());
       }
+    }
+  }
+
+  @override
+  Future<Either<Failure, ProductDetail>> getProductDetail(String productId) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final remoteData = await remoteDataSource.getProductDetail(productId);
+        // 可以添加缓存逻辑，这里暂时不实现
+        return Right(remoteData.toEntity());
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message ?? "服务器错误"));
+      }
+    } else {
+      // 离线状态暂时不支持获取商品详情
+      return Left(NetworkFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<HomeFeedItem>>> searchProducts(
+    String keyword, 
+    {int page = 1, int pageSize = 20}
+  ) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final searchResults = await remoteDataSource.searchProducts(
+          keyword, 
+          page: page,
+          pageSize: pageSize,
+        );
+        return Right(searchResults);
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message ?? "搜索失败"));
+      }
+    } else {
+      return Left(NetworkFailure());
     }
   }
 }

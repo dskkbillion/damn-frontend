@@ -1,8 +1,10 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../../../core/error/failures.dart';
+import '../entities/banner.dart';
 import '../entities/home_feed_item.dart';
 import '../entities/home_page_data.dart';
+import '../entities/product_detail.dart';
 
 /// 定义为 `Home` 模块获取聚合数据的数据访问接口
 abstract class IHomeRepository {
@@ -20,4 +22,20 @@ abstract class IHomeRepository {
   /// 返回 [List<HomeFeedItem>] 包含分页的信息流数据
   /// 或者返回 [Failure] 表示获取数据失败
   Future<Either<Failure, List<HomeFeedItem>>> getHomeFeed(int page, int limit);
+
+  /// 获取商品详情
+  Future<Either<Failure, ProductDetail>> getProductDetail(String productId);
+  
+  /// 搜索产品
+  /// 
+  /// [keyword] 搜索关键词
+  /// [page] 页码，从1开始
+  /// [pageSize] 每页数量
+  /// 
+  /// 返回 [List<HomeFeedItem>] 包含搜索结果
+  /// 或者返回 [Failure] 表示搜索失败
+  Future<Either<Failure, List<HomeFeedItem>>> searchProducts(
+    String keyword, 
+    {int page = 1, int pageSize = 20}
+  );
 }

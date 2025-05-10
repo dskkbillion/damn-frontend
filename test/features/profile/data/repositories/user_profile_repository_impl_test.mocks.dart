@@ -146,11 +146,11 @@ class MockProfileRemoteDataSource extends _i1.Mock
 
   @override
   _i5.Future<List<_i7.TransactionDto>> getWalletTransactions({
-    int? page = 1,
-    int? pageSize = 20,
+    required int? page,
+    required int? pageSize,
     String? startDate,
     String? endDate,
-    String? transactionType = 'all',
+    required String? transactionType,
   }) =>
       (super.noSuchMethod(
         Invocation.method(

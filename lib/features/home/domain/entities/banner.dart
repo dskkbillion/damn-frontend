@@ -8,6 +8,12 @@ class Banner extends Equatable {
   /// 图片 URL
   final String imageUrl;
   
+  /// 横幅标题
+  final String title;
+  
+  /// 链接URL
+  final String linkUrl;
+  
   /// 点击后的目标类型
   /// 可能的值: post, product, category, url, none
   final String targetType;
@@ -24,12 +30,14 @@ class Banner extends Equatable {
   const Banner({
     required this.id,
     required this.imageUrl,
-    required this.targetType,
-    required this.targetValue,
-    required this.createTime,
-    required this.updateTime,
+    this.title = '',
+    this.linkUrl = '',
+    this.targetType = '',
+    this.targetValue = '',
+    this.createTime = '',
+    this.updateTime = '',
   });
 
   @override
-  List<Object?> get props => [id, imageUrl, targetType, targetValue, createTime, updateTime];
+  List<Object?> get props => [id, imageUrl, title, linkUrl, targetType, targetValue, createTime, updateTime];
 }

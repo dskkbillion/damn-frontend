@@ -13,91 +13,114 @@ class ServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.antiAlias, // Clip the image to the card shape
-      margin: const EdgeInsets.symmetric(vertical: 6.0), // Add vertical margin
-      child: InkWell( // Make the card tappable
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(16.0),
         child: Padding(
           padding: const EdgeInsets.all(12.0),
-          child: Row( // Use Row for Image | Text Column layout
-            crossAxisAlignment: CrossAxisAlignment.start, 
+          child: Row(
             children: [
-              // --- Image --- 
+              // --- 左侧图片 ---
               ClipRRect(
-                borderRadius: BorderRadius.circular(8.0), // Rounded corners for image
+                borderRadius: BorderRadius.circular(8.0),
                 child: Image.network(
                   service.imageUrl,
-                  width: 80, // Fixed width for image
-                  height: 80, // Fixed height for image
+                  width: 60,
+                  height: 60,
                   fit: BoxFit.cover,
-                  // Add loading and error placeholders for robustness
+                  // 加载占位符
                   loadingBuilder: (context, child, loadingProgress) {
-                     if (loadingProgress == null) return child;
-                     return Container(
-                         width: 80,
-                         height: 80,
-                         alignment: Alignment.center,
-                         child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            value: loadingProgress.expectedTotalBytes != null
-                                   ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                   : null,
-                         ),
-                     );
-                  },
-                  errorBuilder: (context, error, stackTrace) => Container(
-                     width: 80,
-                     height: 80,
-                     color: Colors.grey[200],
-                     alignment: Alignment.center,
-                     child: const Icon(Icons.broken_image, color: Colors.grey, size: 40),
-                  ), 
-                ),
-              ),
-              const SizedBox(width: 12), // Space between image and text
-
-              // --- Text Column ---
-              Expanded( // Allow text column to take remaining space
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Title
-                    Text(
-                      service.title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 6), // Space between title and price
-                    // Price
-                    Text(
-                      '￥${service.price.toStringAsFixed(2)}', // 修改价格符号为￥
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                         color: Theme.of(context).colorScheme.primary, // Use primary color for price
-                         fontWeight: FontWeight.w600,
+                    if (loadingProgress == null) return child;
+                    return Container(
+                      width: 60,
+                      height: 60,
+                      color: Colors.grey[200],
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded / 
+                                loadingProgress.expectedTotalBytes!
+                              : null,
+                        ),
                       ),
-                    ),
-                     // TODO: Add other info like rating or description if needed
-                  ],
+                    );
+                  },
+                  // 错误占位符
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    width: 60,
+                    height: 60,
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                  ),
                 ),
               ),
               
-              // --- "让ta看看" 按钮 ---
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: onTap,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      textStyle: const TextStyle(fontSize: 14),
-                    ),
-                    child: const Text('让ta看看'),
+              // --- 中间文本 ---
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        service.title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '￥${service.price.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
+              ),
+              
+              // --- 右侧按钮 ---
+              Container(
+                height: 36,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: TextButton(
+                  onPressed: onTap,
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                  ),
+                  child: const Text(
+                    '让ta看看',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                ),
               ),
             ],
           ),

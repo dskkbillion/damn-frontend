@@ -483,13 +483,16 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         
         _chatStreamSubscription = contentStream.listen(
           (chunk) {
+            print("[Bloc] Received stream chunk: '$chunk'");
             add(_ReceiveStreamChunk(chunk)); 
           },
           onError: (error) {
+            print("[Bloc] Stream error: $error");
             add(_HandleStreamError(error.toString()));
             _chatStreamSubscription = null; 
           },
           onDone: () {
+            print("[Bloc] Stream completed");
             add(const _HandleStreamDone()); 
              _chatStreamSubscription = null; 
           },
@@ -558,6 +561,8 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
 
   // --- Internal Stream Handlers (Updated) ---
   void _onReceiveStreamChunk(_ReceiveStreamChunk event, Emitter<AiChatState> emit) {
+    print("[AiChatBloc] 收到流式数据块: ${event.chunk}");
+    
     if (event.isDone) {
        // Finalize the AI message only if streaming was in progress
        if (state.status == AiChatStatus.streamingResponse) {
@@ -579,10 +584,12 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
                 streamingResponseText: '', // Clear placeholder
                 messages: currentMessages,
             ));
+            print("[AiChatBloc] 流式响应结束，添加最终消息到列表");
        } // else: Stream might finish due to cancellation, state already handled by _onCancelStreaming
     } else {
       // Append chunk to current generation
       final newGeneration = (state.streamingResponseText == '...' ? '' : state.streamingResponseText) + event.chunk;
+      print("[AiChatBloc] 更新流式文本: '$newGeneration'");
       emit(state.copyWith(
         streamingResponseText: newGeneration,
         status: AiChatStatus.streamingResponse, // Ensure status remains streaming
@@ -744,13 +751,18 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   // --- Internal Event Handlers for Stream ---
 
   void _onHandleStreamDone(_HandleStreamDone event, Emitter<AiChatState> emit) {
+      print("[AiChatBloc] 流式响应结束，当前状态: ${state.status}, 文本长度: ${state.streamingResponseText.length}");
+      
       // Add the complete streamed message as a final AI message
      _addFinalAiMessageFromStream(emit);
+      
      // Set success state (or idle if preferred)
      emit(state.copyWith(
          status: AiChatStatus.messageSendSuccess, // Or AiChatStatus.idle
          streamingResponseText: '', // Clear stream text on completion
      ));
+      
+      print("[AiChatBloc] 流式响应处理完成，最终状态: ${state.status}, 消息数: ${state.messages.length}");
   }
 
   // Helper to add the final AI message from the accumulated stream text

@@ -21,6 +21,8 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/after_sales_review/after_sales_review_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/auth_management/auth_management_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_statistics/seller_statistics_bloc.dart';
+import 'package:dskk_flutter_refactor/features/profile/presentation/pages/wallet_page.dart';
+import 'package:dskk_flutter_refactor/features/profile/presentation/bloc/wallet_bloc.dart';
 
 /// 卖家模块路由配置
 class SellerRoutes {
@@ -42,6 +44,7 @@ class SellerRoutes {
   static const String afterSalesDetail = '$basePath/after-sales/:id';
   static const String storeSettings = '$basePath/settings';
   static const String statistics = '$basePath/statistics';
+  static const String wallet = '$basePath/wallet';
   
   /// 获取卖家模块路由
   static List<RouteBase> get routes => [
@@ -222,6 +225,19 @@ class SellerRoutes {
             child: BlocProvider(
               create: (context) => GetIt.I<SellerStatisticsBloc>(),
               child: const SellerStatisticsPage(),
+            ),
+          ),
+        ),
+        
+        // 钱包页面路由
+        GoRoute(
+          path: 'wallet',
+          name: 'seller_wallet',
+          pageBuilder: (context, state) => MaterialPage(
+            key: state.pageKey,
+            child: BlocProvider(
+              create: (context) => GetIt.I<WalletBloc>(),
+              child: const WalletPage(),
             ),
           ),
         ),

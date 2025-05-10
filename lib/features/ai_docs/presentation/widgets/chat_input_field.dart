@@ -103,14 +103,14 @@ class _ChatInputFieldState extends State<ChatInputField> {
                         icon: const Icon(Icons.add_photo_alternate_outlined),
                         // Use internal method _pickAndDispatchImage
                         onPressed: isBusy || _isRecording ? null : _pickAndDispatchImage, 
-                        tooltip: 'Attach Image',
+                        tooltip: '添加图片',
                       ),
                       // Attach Voice Button (Stateful)
                       IconButton(
                          icon: Icon(_isRecording ? Icons.stop_circle_outlined : Icons.mic_none_outlined, 
                                     color: _isRecording ? Colors.red : null),
                          onPressed: isBusy ? null : _handleVoiceButtonPress, 
-                         tooltip: _isRecording ? 'Stop Recording' : 'Record Voice',
+                         tooltip: _isRecording ? '停止录音' : '录制语音',
                        ),
                       // Text Input Field
                       Expanded(
@@ -118,7 +118,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                           controller: widget.textController,
                           enabled: !isBusy && !_isRecording, 
                           decoration: InputDecoration(
-                            hintText: _isRecording ? 'Recording... Tap stop to send' : 'Type a message...',
+                            hintText: _isRecording ? '正在录音...点击停止发送' : '输入消息...',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(24.0),
                               borderSide: BorderSide.none,
@@ -138,7 +138,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                        if (isStreaming)
                           IconButton(
                             icon: const Icon(Icons.stop_circle, color: Colors.red),
-                            tooltip: 'Stop Generation',
+                            tooltip: '停止生成',
                             onPressed: () => context.read<AiChatBloc>().add(CancelStreaming()),
                           )
                        else
@@ -159,7 +159,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                                              }
                                            }
                                          : null,
-                            tooltip: 'Send Message',
+                            tooltip: '发送消息',
                           ),
                     ],
                   ),
@@ -287,7 +287,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
         print("Error picking image: $e");
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error picking image: $e')),
+            SnackBar(content: Text('选择图片出错: $e')),
           );
         }
     }
@@ -306,7 +306,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
          if (!status.isGranted) {
             if (mounted) {
                ScaffoldMessenger.of(context).showSnackBar(
-                 const SnackBar(content: Text('Microphone permission denied.')),
+                 const SnackBar(content: Text('麦克风权限被拒绝')),
                );
             }
             return; // Stop if permission is not granted
@@ -337,7 +337,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
          print("Error starting recording: $e");
          if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Error starting recording: $e')),
+              SnackBar(content: Text('开始录音出错: $e')),
             );
          }
       }
@@ -366,7 +366,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                print("Error: Recorded file not found at path: $path");
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Error: Recorded file not found.')),
+                    const SnackBar(content: Text('错误：未找到录音文件')),
                   );
                }
              }
@@ -374,7 +374,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
             print("Error: Stopping recording failed, path is null.");
             if (mounted) {
                ScaffoldMessenger.of(context).showSnackBar(
-                 const SnackBar(content: Text('Error stopping recording.')),
+                 const SnackBar(content: Text('停止录音出错')),
                );
             }
          }
@@ -382,7 +382,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
          print("Error stopping recording: $e");
          if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Error stopping recording: $e')),
+              SnackBar(content: Text('停止录音出错: $e')),
             );
          }
           // Ensure recording state is reset even if stopping fails

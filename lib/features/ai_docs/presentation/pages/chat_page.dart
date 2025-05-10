@@ -81,7 +81,7 @@ class _ChatPageState extends State<ChatPage> {
          leading: Builder(
            builder: (context) => IconButton(
              icon: const Icon(Icons.menu),
-             tooltip: 'Conversations',
+             tooltip: '会话列表',
              onPressed: () => Scaffold.of(context).openDrawer(),
            ),
          ),
@@ -92,7 +92,7 @@ class _ChatPageState extends State<ChatPage> {
                 previous.conversations != current.conversations,
            builder: (context, state) {
               final selectedId = state.selectedConversationId;
-              String title = 'AI Chat'; // Default title
+              String title = 'AI 助手'; // Default title
               if (selectedId != null) {
                 // Use firstWhereOrNull from collection package
                 final selectedConversation = state.conversations.firstWhereOrNull(
@@ -100,10 +100,10 @@ class _ChatPageState extends State<ChatPage> {
                 );
                 if (selectedConversation != null) {
                    // Use ?? to provide default if title is null
-                  title = selectedConversation.title ?? 'Conversation $selectedId';
+                  title = selectedConversation.title ?? '未命名会话';
                 } else {
                   // Conversation ID exists but object not found yet (list updating?)
-                  title = 'Loading...'; // Or keep 'Conversation $selectedId'
+                  title = '加载中...'; // Or keep 'Conversation $selectedId'
                 }
               }
               return Text(title);
@@ -131,7 +131,7 @@ class _ChatPageState extends State<ChatPage> {
                   } else {
                      // Optionally show a message if no conversation is selected
                      ScaffoldMessenger.of(context).showSnackBar(
-                       const SnackBar(content: Text('Please select a conversation first.')),
+                       const SnackBar(content: Text('请先选择一个会话')),
                      );
                      return; // Don't show bottom sheet if no conversation
                   }
@@ -188,7 +188,7 @@ class _ChatPageState extends State<ChatPage> {
        // Optionally provide feedback to the user.
        print("Send button pressed, but message text is empty. Not sending.");
        ScaffoldMessenger.of(context).showSnackBar(
-         const SnackBar(content: Text('Please enter a message to send with the image(s).')),
+         const SnackBar(content: Text('请输入消息内容')),
        );
     }
   }
@@ -229,61 +229,98 @@ class RecommendationBottomSheetContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFFFFF8F0), // 米黄色底色
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
+          // 标题栏
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
              '推荐服务', 
-             style: Theme.of(context).textTheme.titleLarge,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
            ),
-          const SizedBox(height: 16),
+          const Divider(height: 1),
+          
+          // 内容区域
           Expanded( 
              child: BlocBuilder<AiChatBloc, AiChatState>(
-               // Add recommendationsStatus to buildWhen
                buildWhen: (prev, curr) => 
                    prev.recommendations != curr.recommendations || 
                    prev.recommendationsStatus != curr.recommendationsStatus, 
                builder: (context, state) {
-                 // Handle Loading state
+                // 加载中状态
                  if (state.recommendationsStatus == RecommendationsStatus.loading) {
                     return const Center(child: CircularProgressIndicator());
                  }
-                 // Handle Error state
+                
+                // 错误状态
                  if (state.recommendationsStatus == RecommendationsStatus.error) {
-                   return Center(child: Text(
-                     "Error loading recommendations: ${state.recommendationsErrorMessage ?? 'Unknown error'}", 
-                     style: const TextStyle(color: Colors.red)
-                   ));
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                        const SizedBox(height: 16),
+                        Text(
+                          "加载推荐服务失败: ${state.recommendationsErrorMessage ?? '未知错误'}",
+                          style: const TextStyle(color: Colors.red),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  );
                  }
-                 // Handle Empty state
+                
+                // 空状态
                  if (state.recommendations.isEmpty) {
-                   return const Center(child: Text('No recommendations available.'));
-                 }
+                  return const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.inbox, color: Colors.grey, size: 48),
+                        SizedBox(height: 16),
+                        Text('暂无推荐服务', style: TextStyle(color: Colors.grey)),
+                      ],
+                    ),
+                  );
+                }
 
-                 // Display the list using ServiceCard
-                 return ListView.builder( // Use ListView.builder for potentially long lists
+                // 服务列表 - 改为两列网格布局
+                return GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2, // 两列布局
+                    childAspectRatio: 0.6, // 进一步降低宽高比，让卡片更高
+                    crossAxisSpacing: 12, // 水平间距
+                    mainAxisSpacing: 12, // 垂直间距
+                  ),
                    itemCount: state.recommendations.length,
                    itemBuilder: (context, index) {
                      final service = state.recommendations[index];
-                     // Use ServiceCard instead of ListTile
-                     return ServiceCard(
-                       service: service,
-                       onTap: () {
-                          print('Recommendation card tapped: ${service.title}');
-                          // 修改：调整为符合API要求的数据格式
+                    return _buildServiceGridItem(
+                      context, 
+                      service, 
+                      () {
+                        print('服务点击: ${service.title}');
                           final itemData = {
                             'name': service.title,
                             'description': '推荐服务: ${service.title}，价格: ￥${service.price}',
                           };
                           context.read<AiChatBloc>().add(TriggerAllocationAction(
                              item: itemData,
-                             merchantId: 1, // 固定商家ID值
+                          merchantId: 1, // 固定商家ID
                           ));
                           Navigator.pop(context);
-                       },
+                      }
                      );
                    },
                  );
@@ -291,6 +328,109 @@ class RecommendationBottomSheetContent extends StatelessWidget {
              ),
            ),
         ],
+      ),
+    );
+  }
+  
+  // 网格项构建方法
+  Widget _buildServiceGridItem(BuildContext context, RelatedServiceEntity service, VoidCallback onTap) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 3,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 图片区域占据更多空间
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: AspectRatio(
+                    aspectRatio: 1.0, // 保持正方形比例
+                    child: Image.network(
+                      service.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: Colors.grey[200],
+                        child: const Center(
+                          child: Icon(Icons.image_not_supported, color: Colors.grey, size: 40),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 8),
+                
+                // 标题
+                Text(
+                  service.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15, // 增大字体
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                
+                const SizedBox(height: 6),
+                
+                // 价格
+                Text(
+                  '￥${service.price.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14, // 增大字体
+                  ),
+                ),
+                
+                const SizedBox(height: 8),
+                
+                // 按钮独占一行
+                Container(
+                  width: double.infinity, // 占满整行
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFA86400), // 使用截图中的棕色按钮
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: TextButton(
+                    onPressed: onTap,
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      padding: EdgeInsets.zero,
+                    ),
+                    child: const Text(
+                      '让ta看看',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

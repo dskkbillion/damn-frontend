@@ -231,7 +231,37 @@ class _WalletPageState extends State<WalletPage> {
               // 交易记录列表
               Expanded(
                 child: transactions.isEmpty
-                    ? const Center(child: Text('暂无交易记录'))
+                    ? Center(
+                        child: SingleChildScrollView(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.receipt_long, size: 48, color: Colors.grey),
+                                const SizedBox(height: 16),
+                                const Text('暂无交易记录', style: TextStyle(color: Colors.grey)),
+                                if (loadMoreError != null) const SizedBox(height: 8),
+                                if (loadMoreError != null)
+                                  Text(
+                                    '加载失败: $loadMoreError',
+                                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                const SizedBox(height: 16),
+                                if (loadMoreError != null)
+                                  ElevatedButton(
+                                    onPressed: _loadTransactions,
+                                    child: const Text('重试'),
+                                  ),
+                                const SizedBox(height: 8),
+                              ],
+                            ),
+                          ),
+                        ),
+                      )
                     : ListView.builder(
                         controller: _scrollController,
                         itemCount: transactions.length + (isLoadingMore ? 1 : 0) + (loadMoreError != null ? 1 : 0),

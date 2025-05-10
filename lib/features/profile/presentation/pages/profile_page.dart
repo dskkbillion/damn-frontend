@@ -7,6 +7,7 @@ import '../bloc/profile_bloc.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/order_status_section.dart';
 import '../widgets/profile_menu_section.dart';
+import '../routes/profile_routes.dart'; // 导入路由常量
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -30,8 +31,9 @@ class _ProfilePageState extends State<ProfilePage> {
             // 可以在这里处理未认证的导航，如果需要的话
             // context.go('/login');
           } else if (state is ProfileLoggedOut) {
-            // 处理登出后的逻辑，例如导航到登录页
-            // context.go('/login');
+            // 处理登出后的逻辑，导航到登录页面
+            print('[ProfilePage] User logged out, redirecting to login page.');
+            context.go('/auth/login');
           }
         },
         child: BlocBuilder<ProfileBloc, ProfileState>(
@@ -123,14 +125,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         context.go('/favorites');
                       },
                     ),
-                    MenuItem(
-                      icon: Icons.favorite_border,
-                      text: '点赞的故事',
-                      onTap: () {
-                        // TODO: 导航到点赞故事列表
-                        // navigationService.navigateToLikedStories();
-                      },
-                    ),
                   ],
                 ),
 
@@ -142,8 +136,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       icon: Icons.account_balance_wallet,
                       text: '钱包',
                       onTap: () {
-                        // TODO: 导航到钱包页面
-                        // navigationService.navigateToWallet();
+                        // 使用go_router导航到钱包页面
+                        context.go(ProfileRoutes.walletPath);
                       },
                     ),
                   ],
@@ -157,8 +151,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       icon: Icons.security,
                       text: '账号与安全',
                       onTap: () {
-                        // TODO: 导航到账号安全页面
-                        // navigationService.navigateToAccountSafety();
+                        // 使用go_router导航到账号安全页面
+                        context.go(ProfileRoutes.accountSecurityPath);
                       },
                     ),
                     MenuItem(
@@ -185,45 +179,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       },
                     ),
                   ],
-                ),
-
-                // 登出按钮
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // 弹出确认对话框
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('确认登出'),
-                            content: const Text('您确定要退出登录吗？'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('取消'),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                  context.read<ProfileBloc>().add(LogoutEvent());
-                                },
-                                child: const Text('确定'),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red[50],
-                        foregroundColor: Colors.red,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      child: const Text('退出登录'),
-                    ),
-                  ),
                 ),
 
                 // 底部空间

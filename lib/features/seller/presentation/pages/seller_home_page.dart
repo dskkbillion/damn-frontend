@@ -488,15 +488,9 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
               children: [
                 _buildFunctionItem(
                   context,
-                  icon: Icons.inventory_2,
-                  label: '商品管理',
-                  onTap: () => context.go(SellerRoutes.products),
-                ),
-                _buildFunctionItem(
-                  context,
-                  icon: Icons.assignment_return,
-                  label: '售后管理',
-                  onTap: () => context.go(SellerRoutes.afterSalesReview),
+                  icon: Icons.account_balance_wallet_outlined,
+                  label: '钱包',
+                  onTap: () => context.go('/seller/wallet'),
                 ),
                 _buildFunctionItem(
                   context,

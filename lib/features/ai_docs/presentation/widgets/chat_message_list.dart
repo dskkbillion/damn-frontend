@@ -20,7 +20,7 @@ class ChatMessageList extends StatelessWidget {
              return Center(
                  child: Padding(
                      padding: const EdgeInsets.all(16.0),
-                     child: Text("Error loading history: ${state.errorMessage ?? 'Unknown error'}", 
+                     child: Text("加载历史记录失败: ${state.errorMessage ?? '未知错误'}", 
                                 style: const TextStyle(color: Colors.red)),
                  )
              );
@@ -30,7 +30,7 @@ class ChatMessageList extends StatelessWidget {
               state.status != AiChatStatus.streamingResponse && 
               state.status != AiChatStatus.loadingHistory) {
              return const Center(
-                 child: Text("No messages yet. Start chatting!")
+                 child: Text("暂无消息，开始聊天吧！")
              );
          }
 

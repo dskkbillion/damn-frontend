@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../bloc/profile_bloc.dart';
 import '../../domain/entities/user_profile.dart';
 import 'package:dskk_flutter_refactor/app/app_mode.dart';
+import '../routes/profile_routes.dart'; // 导入路由常量
 
 class ProfileHeader extends ConsumerWidget {
   final ProfileState state;
@@ -73,15 +74,17 @@ class ProfileHeader extends ConsumerWidget {
     final hasUrl = imageUrl != null && imageUrl.isNotEmpty;
     print('[ProfileHeader] Avatar URL: $imageUrl, Has URL: $hasUrl');
 
+    // 使用InkWell使头像可点击，点击后跳转到账号与安全页面
     return InkWell(
-      onTap: () => _showAvatarOptions(context),
+      onTap: () => context.go(ProfileRoutes.accountSecurityPath), // 点击时导航到账号与安全页面
       child: CircleAvatar(
         radius: 35,
         backgroundColor: Colors.white.withOpacity(0.8),
         backgroundImage: hasUrl ? NetworkImage(imageUrl) : null,
+        // 只有在没有URL时才显示默认用户图标，有URL时不显示任何图标
         child: !hasUrl
             ? Icon(Icons.person, size: 35, color: Theme.of(context).primaryColor)
-            : Icon(Icons.image_not_supported_outlined, size: 30, color: Colors.grey[400]),
+            : null,
       ),
     );
   }
@@ -164,50 +167,6 @@ class ProfileHeader extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  void _showAvatarOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            leading: const Icon(Icons.photo_library),
-            title: const Text('从相册选择'),
-            onTap: () {
-              Navigator.pop(context);
-              _pickImage(context, ImageSource.gallery);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.camera_alt),
-            title: const Text('拍照'),
-            onTap: () {
-              Navigator.pop(context);
-              _pickImage(context, ImageSource.camera);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _pickImage(BuildContext context, ImageSource source) async {
-    try {
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: source);
-
-      if (pickedFile != null) {
-        context.read<ProfileBloc>().add(
-          UploadAvatarEvent(imageFile: File(pickedFile.path))
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('选择图片失败: ${e.toString()}')),
-      );
-    }
   }
 
   void _showEditNicknameDialog(BuildContext context, String? currentNickname) {

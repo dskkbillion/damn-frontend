@@ -61,64 +61,107 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     FetchWalletTransactions event,
     Emitter<WalletState> emit,
   ) async {
-    // 保存当前状态的钱包摘要信息（如果有）
-    WalletSummary? currentSummary;
     if (state is WalletSummaryLoaded) {
-      currentSummary = (state as WalletSummaryLoaded).walletSummary;
-    }
+      final walletSummary = (state as WalletSummaryLoaded).walletSummary;
+      emit(WalletTransactionsLoading(walletSummary, []));
 
-    // 如果没有加载摘要，先显示加载中
-    if (currentSummary == null) {
-      emit(const WalletLoading());
-    } else {
-      emit(WalletTransactionsLoading(currentSummary, const []));
-    }
-
-    // 构建请求参数
-    final params = TransactionsParams(
-      page: event.page,
+      final result = await getWalletTransactions(TransactionsParams(
+        page: 1,
       pageSize: event.pageSize,
+        transactionType: event.transactionType,
       startDate: event.startDate,
       endDate: event.endDate,
-      transactionType: event.transactionType,
-    );
-
-    // 执行请求
-    final result = await getWalletTransactions(params);
+      ));
 
     result.fold(
       (failure) {
-        // 如果有摘要信息，保留摘要但显示交易记录错误
-        if (currentSummary != null) {
-          emit(WalletTransactionsError(
-            currentSummary,
-            const [],
-            _mapFailureToMessage(failure),
+          // 当交易记录API返回失败时，仍然保留钱包摘要信息
+          print('获取交易记录失败: ${failure.toString()}');
+          emit(WalletLoaded(
+            walletSummary,
+            [], // 空交易记录列表
+            1,
+            false,
+            loadMoreError: failure.toString(),
           ));
-        } else {
-          // 否则显示普通错误
-          emit(WalletError(_mapFailureToMessage(failure)));
-        }
       },
       (transactions) {
-        if (currentSummary != null) {
-          // 如果有摘要信息，同时展示摘要和交易记录
           emit(WalletLoaded(
-            currentSummary,
+            walletSummary,
             transactions,
-            event.page,
-            transactions.length < event.pageSize, // 如果返回数量小于请求数量，表示没有更多数据
-          ));
-        } else {
-          // 如果只获取了交易记录但没有摘要，也展示交易记录
-          emit(WalletTransactionsOnly(
-            transactions,
-            event.page,
+            1,
             transactions.length < event.pageSize,
           ));
-        }
-      },
-    );
+        },
+      );
+        } else {
+      // 如果摘要未加载，先尝试获取摘要
+      emit(const WalletLoading());
+      
+      final summaryResult = await getWalletSummary(NoParams());
+      
+      await summaryResult.fold(
+        (failure) async {
+          // 如果获取摘要失败，尝试只获取交易记录
+          print('获取钱包摘要失败，尝试只获取交易记录: ${failure.toString()}');
+          
+          final transactionsResult = await getWalletTransactions(TransactionsParams(
+            page: 1,
+            pageSize: event.pageSize,
+            transactionType: event.transactionType,
+            startDate: event.startDate,
+            endDate: event.endDate,
+          ));
+          
+          transactionsResult.fold(
+            (transactionsFailure) {
+              emit(WalletError(transactionsFailure.toString()));
+            },
+            (transactions) {
+          emit(WalletTransactionsOnly(
+            transactions,
+                1,
+            transactions.length < event.pageSize,
+          ));
+            },
+          );
+        },
+        (walletSummary) async {
+          // 如果获取摘要成功，再获取交易记录
+          emit(WalletTransactionsLoading(walletSummary, []));
+          
+          final transactionsResult = await getWalletTransactions(TransactionsParams(
+            page: 1,
+            pageSize: event.pageSize,
+            transactionType: event.transactionType,
+            startDate: event.startDate,
+            endDate: event.endDate,
+          ));
+          
+          transactionsResult.fold(
+            (failure) {
+              // 即使获取交易记录失败，也保留钱包摘要
+              print('获取交易记录失败: ${failure.toString()}');
+              emit(WalletLoaded(
+                walletSummary,
+                [], // 空交易记录列表
+                1,
+                false,
+                loadMoreError: failure.toString(),
+              ));
+            },
+            (transactions) {
+              emit(WalletLoaded(
+                walletSummary,
+                transactions,
+                1,
+                transactions.length < event.pageSize,
+              ));
+            },
+          );
+        },
+      );
+    }
   }
 
   /// 处理加载更多钱包交易记录事件

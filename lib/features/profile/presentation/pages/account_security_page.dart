@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:go_router/go_router.dart';
 import 'dart:io';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/profile_bloc.dart';
+import '../../domain/entities/user_profile.dart';
+import 'package:get_it/get_it.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class AccountSecurityPage extends StatefulWidget {
   const AccountSecurityPage({Key? key}) : super(key: key);
@@ -10,36 +16,100 @@ class AccountSecurityPage extends StatefulWidget {
 }
 
 class _AccountSecurityPageState extends State<AccountSecurityPage> {
-  // 模拟用户信息
-  final String nickname = '瑞';
-  final String phoneNumber = '18888888888';
-  File? avatarFile;
+  File? avatarFile; // 仅用于本地选择的头像
+  late ProfileBloc _profileBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _profileBloc = GetIt.instance<ProfileBloc>();
+    // 立即加载用户资料
+    _profileBloc.add(GetUserProfileEvent());
+  }
 
   @override
   Widget build(BuildContext context) {
+    return BlocProvider<ProfileBloc>.value(
+      value: _profileBloc, // 使用已初始化的bloc实例
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<ProfileBloc, ProfileState>(
+            listenWhen: (previous, current) => current is ProfileLoggedOut,
+            listener: (context, state) {
+              if (state is ProfileLoggedOut) {
+                // 登出成功后导航到登录页面，并清除导航栈
+                print('【退出登录】用户已成功登出，正在重定向到登录页面...');
+                context.go('/auth/login');
+              }
+            },
+          ),
+          BlocListener<ProfileBloc, ProfileState>(
+            listenWhen: (previous, current) => current is ProfileLoggingOut,
+            listener: (context, state) {
+              if (state is ProfileLoggingOut) {
+                print('【退出登录】正在处理登出请求...');
+              }
+            },
+          ),
+          BlocListener<ProfileBloc, ProfileState>(
+            listenWhen: (previous, current) => current is ProfileError,
+            listener: (context, state) {
+              if (state is ProfileError) {
+                print('【退出登录】发生错误: ${state.message}');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('退出登录时发生错误: ${state.message}')),
+                );
+              }
+            },
+          ),
+        ],
+        child: BlocBuilder<ProfileBloc, ProfileState>(
+          builder: (context, state) {
+            // 从state中提取用户资料
+            UserProfile? profile;
+            if (state is ProfileLoaded) {
+              profile = state.profile;
+            } else if (state is ProfileUpdated) {
+              profile = state.profile;
+            }
+            
     return Scaffold(
       appBar: AppBar(
         title: const Text('账号与安全'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.pop(context),
+                  onPressed: () => context.pop(),
         ),
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            _buildProfileAvatar(),
+                    _buildProfileAvatar(profile),
             const SizedBox(height: 10),
-            _buildMenuItems(),
+                    _buildMenuItems(profile),
             const SizedBox(height: 20),
             _buildLogoutButton(),
           ],
         ),
       ),
     );
+          },
+        ),
+      ),
+    );
   }
 
-  Widget _buildProfileAvatar() {
+  @override
+  void dispose() {
+    // 不要关闭_profileBloc，因为它可能在别处被使用
+    super.dispose();
+  }
+
+  Widget _buildProfileAvatar(UserProfile? profile) {
+    final String nickname = profile?.nickName ?? '用户';
+    final String? avatarUrl = profile?.avatarUrl;
+    final bool hasAvatarUrl = avatarUrl != null && avatarUrl.isNotEmpty;
+    
     return Container(
       width: double.infinity,
       color: Colors.white,
@@ -57,6 +127,17 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                   ? Image.file(
                       avatarFile!,
                       fit: BoxFit.cover,
+                    )
+                  : hasAvatarUrl
+                    ? CachedNetworkImage(
+                        imageUrl: avatarUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => const CircularProgressIndicator(),
+                        errorWidget: (context, url, error) => const Icon(
+                          Icons.person,
+                          size: 60,
+                          color: Colors.white,
+                        ),
                     )
                   : const Icon(
                       Icons.person,
@@ -102,7 +183,11 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
     }
   }
 
-  Widget _buildMenuItems() {
+  Widget _buildMenuItems(UserProfile? profile) {
+    final String nickname = profile?.nickName ?? '用户';
+    // UserProfile中没有phoneNumber属性，使用硬编码的示例号码
+    final String phoneNumber = '18888888888';
+    
     return Container(
       color: Colors.white,
       child: Column(
@@ -160,24 +245,18 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
   }
 
   Widget _buildLogoutButton() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+      child: SizedBox(
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () => _showLogoutConfirmation(context),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.grey.shade800,
+            backgroundColor: Colors.red[50],
+            foregroundColor: Colors.red,
           padding: const EdgeInsets.symmetric(vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
-          ),
         ),
-        child: const Text(
-          '退出登录',
-          style: TextStyle(
-            fontSize: 16,
-          ),
+          child: const Text('退出登录'),
         ),
       ),
     );
@@ -207,13 +286,16 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
           content: const Text('确定要退出登录吗？'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => context.pop(),
               child: const Text('取消'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
-                _showFeatureNotImplemented('退出登录');
+                context.pop(); // 关闭对话框
+                
+                print('【退出登录】用户确认退出登录，即将发送LogoutEvent...');
+                // 直接使用_profileBloc实例触发登出事件
+                _profileBloc.add(LogoutEvent());
               },
               child: const Text('确定'),
             ),
@@ -260,7 +342,7 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
         title: const Text('编辑昵称'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.pop(),
         ),
       ),
       body: Padding(

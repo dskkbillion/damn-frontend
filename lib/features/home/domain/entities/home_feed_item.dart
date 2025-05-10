@@ -12,11 +12,23 @@ class HomeFeedItem extends Equatable {
   /// 标题/名称
   final String name;
   
+  /// 标题（兼容旧代码）
+  final String title;
+  
+  /// 描述信息
+  final String description;
+  
   /// 图片 URL 列表，第一张作为封面
   final List<String> images;
   
+  /// 单张图片链接（兼容旧代码）
+  final String imageUrl;
+  
   /// 售价
   final double sellingPrice;
+  
+  /// 价格（兼容旧代码）
+  final double price;
   
   /// 评分，默认为 5.0
   final double score;
@@ -24,16 +36,23 @@ class HomeFeedItem extends Equatable {
   /// 评价数量
   final int evaluateNum;
 
-  const HomeFeedItem({
+  HomeFeedItem({
     required this.id,
-    required this.type,
+    this.type = 'product',
     required this.name,
+    String? title,
+    this.description = '',
     required this.images,
+    String? imageUrl,
     required this.sellingPrice,
-    required this.score,
-    required this.evaluateNum,
-  });
+    double? price,
+    this.score = 5.0,
+    this.evaluateNum = 0,
+  }) : 
+    this.title = title ?? name,
+    this.imageUrl = imageUrl ?? (images.isNotEmpty ? images[0] : ''),
+    this.price = price ?? sellingPrice;
 
   @override
-  List<Object?> get props => [id, type, name, images, sellingPrice, score, evaluateNum];
+  List<Object?> get props => [id, type, name, title, description, images, imageUrl, sellingPrice, price, score, evaluateNum];
 }

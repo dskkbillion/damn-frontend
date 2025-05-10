@@ -4,12 +4,10 @@ import 'dart:io'; // For File
 import 'dart:convert'; // For jsonEncode
 import 'package:http/http.dart' as http; // Import http package
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // Import dotenv
 
 import 'i_http_client.dart';
 import '../error/exceptions.dart'; // Assuming exceptions are in core/error
-
-// Configure base URL
-const String _baseUrl = 'http://47.113.230.11:5102'; // Set the actual base URL
 
 @LazySingleton(as: IHttpClient) // Use LazySingleton or Singleton based on needs
 class DioHttpClient implements IHttpClient {
@@ -17,8 +15,13 @@ class DioHttpClient implements IHttpClient {
   // Add an http client for SSE
   late final http.Client _httpClientForSse;
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  late final String _baseUrl;
 
   DioHttpClient() {
+    // 从环境变量获取BASE_URL，有默认值
+    _baseUrl = dotenv.env['MODEL_BASE_URL'] ?? 'http://47.113.230.11:5102';
+    print("使用MODEL_BASE_URL: $_baseUrl");
+    
     final options = BaseOptions(
       baseUrl: _baseUrl,
       connectTimeout: const Duration(seconds: 15), // Example timeout
@@ -169,7 +172,25 @@ class DioHttpClient implements IHttpClient {
   Stream<String> postAndStream(String path,
       {Map<String, dynamic>? body}) async* {
     // Use async* for stream generation
-    final url = Uri.parse('$_baseUrl$path');
+    
+    // 确保path中不含http前缀
+    if (path.startsWith('http')) {
+      throw ServerException(message: 'Path不应包含完整URL，只需包含路径部分');
+    }
+    
+    // 确保_baseUrl不含末尾斜杠，path不含开头斜杠，再拼接，避免双斜杠问题
+    String baseUrl = _baseUrl;
+    if (baseUrl.endsWith('/')) {
+      baseUrl = baseUrl.substring(0, baseUrl.length - 1);
+    }
+    String pathWithoutLeadingSlash = path;
+    if (path.startsWith('/')) {
+      pathWithoutLeadingSlash = path.substring(1);
+    }
+    
+    final url = Uri.parse('$baseUrl/$pathWithoutLeadingSlash');
+    print("[HttpClient - SSE] 完整URL: $url");
+    
     final request = http.Request('POST', url);
 
     // Set headers (add Auth later if needed)

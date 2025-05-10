@@ -198,11 +198,34 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
       final jsonResponse = json.decode(response.body);
       if (jsonResponse['code'] == 200 && jsonResponse['data'] != null) {
         final data = jsonResponse['data'];
+        
+        // 解析图片URL
+        String? imageUrl;
+        if (data['images'] != null) {
+          try {
+            // 处理服务器返回的复杂图片格式
+            if (data['images'] is List && data['images'].isNotEmpty) {
+              String rawImage = data['images'][0];
+              if (rawImage.startsWith('[') && rawImage.endsWith(']')) {
+                // 嵌套的JSON字符串
+                List<dynamic> parsedImages = json.decode(rawImage);
+                if (parsedImages.isNotEmpty) {
+                  imageUrl = parsedImages[0];
+                }
+              } else {
+                imageUrl = rawImage;
+              }
+            }
+          } catch (e) {
+            print('解析图片URL失败: $e');
+          }
+        }
+        
         return FavoriteServiceModel(
           id: data['id'],
           title: data['name'] ?? '未知服务',
           description: data['description'] ?? '',
-          imageUrl: data['mainImage'] ?? '',
+          imageUrl: imageUrl,
           price: data['sellingPrice'] != null
               ? (data['sellingPrice'] is int
                   ? data['sellingPrice'].toDouble()

@@ -4,14 +4,18 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/storage/secure_storage_repository.dart';
+import '../../../core/network/network_info.dart';
 import '../data/datasources/home_local_data_source.dart';
 import '../data/datasources/home_remote_data_source.dart';
 import '../data/repositories/home_repository_impl.dart';
 import '../domain/repositories/home_repository.dart';
 import '../domain/usecases/get_home_feed_usecase.dart';
 import '../domain/usecases/get_home_page_data_usecase.dart';
+import '../domain/usecases/search_products_usecase.dart';
 import '../presentation/navigation/home_navigation_service.dart';
 import '../presentation/bloc/home_bloc.dart';
+import '../presentation/cubit/product_detail_cubit.dart';
+import '../presentation/cubit/search_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -19,23 +23,69 @@ final sl = GetIt.instance;
 Future<void> initHomeDi() async {
   // Register HomeBloc itself
   // Use registerFactory for Blocs/Cubits as they often have state
-  sl.registerFactory(() => HomeBloc(
-        getHomePageData: sl(),
-        getHomeFeed: sl(),
-        navigationService: sl(),
-      ));
+  if (!sl.isRegistered<HomeBloc>()) {
+    sl.registerFactory(() => HomeBloc(
+          getHomePageData: sl(),
+          getHomeFeed: sl(),
+          navigationService: sl(),
+        ));
+    print('[home_di] 注册 HomeBloc');
+  } else {
+    print('[home_di] HomeBloc 已经注册，跳过重复注册');
+  }
+      
+  // 注册ProductDetailCubit，避免重复注册
+  if (!sl.isRegistered<ProductDetailCubit>()) {
+    sl.registerFactory(() => ProductDetailCubit(sl()));
+    print('[home_di] 注册 ProductDetailCubit');
+  } else {
+    print('[home_di] ProductDetailCubit 已经注册，跳过重复注册');
+  }
+  
+  // 注册SearchCubit，避免重复注册
+  if (!sl.isRegistered<SearchCubit>()) {
+    sl.registerFactory(() => SearchCubit(searchProductsUsecase: sl()));
+    print('[home_di] 注册 SearchCubit');
+  } else {
+    print('[home_di] SearchCubit 已经注册，跳过重复注册');
+  }
 
   // 注册 Use Cases
-  sl.registerLazySingleton(() => GetHomePageDataUseCase(sl()));
-  sl.registerLazySingleton(() => GetHomeFeedUseCase(sl()));
+  if (!sl.isRegistered<GetHomePageDataUseCase>()) {
+    sl.registerLazySingleton(() => GetHomePageDataUseCase(sl()));
+    print('[home_di] 注册 GetHomePageDataUseCase');
+  } else {
+    print('[home_di] GetHomePageDataUseCase 已经注册，跳过重复注册');
+  }
+  
+  if (!sl.isRegistered<GetHomeFeedUseCase>()) {
+    sl.registerLazySingleton(() => GetHomeFeedUseCase(sl()));
+    print('[home_di] 注册 GetHomeFeedUseCase');
+  } else {
+    print('[home_di] GetHomeFeedUseCase 已经注册，跳过重复注册');
+  }
+  
+  // 注册搜索产品用例
+  if (!sl.isRegistered<SearchProductsUsecase>()) {
+    sl.registerLazySingleton(() => SearchProductsUsecase(sl()));
+    print('[home_di] 注册 SearchProductsUsecase');
+  } else {
+    print('[home_di] SearchProductsUsecase 已经注册，跳过重复注册');
+  }
 
   // 注册 Repository
-  sl.registerLazySingleton<IHomeRepository>(
-    () => HomeRepositoryImpl(
-      remoteDataSource: sl(),
-      localDataSource: sl(),
-    ),
-  );
+  if (!sl.isRegistered<IHomeRepository>()) {
+    sl.registerLazySingleton<IHomeRepository>(
+      () => HomeRepositoryImpl(
+        remoteDataSource: sl(),
+        localDataSource: sl(),
+        networkInfo: sl(),
+      ),
+    );
+    print('[home_di] 注册 IHomeRepository');
+  } else {
+    print('[home_di] IHomeRepository 已经注册，跳过重复注册');
+  }
 
   // 检查这些依赖是否已经存在，避免重复注册
   // 'baseUrl' 可能已经在 injection_container.dart 中注册
@@ -64,6 +114,7 @@ Future<void> initHomeDi() async {
       },
       instanceName: 'getAuthToken',
     );
+    print('[home_di] 注册 getAuthToken 函数');
   }
   
   if (!sl.isRegistered<Future<String?> Function()>(instanceName: 'getUserId')) {
@@ -75,37 +126,64 @@ Future<void> initHomeDi() async {
       },
       instanceName: 'getUserId',
     );
+    print('[home_di] 注册 getUserId 函数');
   }
 
   // 注册 Data Sources
-  sl.registerLazySingleton<HomeRemoteDataSource>(
-    () => HomeRemoteDataSourceImpl(
-      client: sl<http.Client>(),
-      baseUrl: sl(instanceName: 'baseUrl'),
-      getToken: () async {
-        final tokenGetter = sl<Future<String?> Function()>(instanceName: 'getAuthToken');
-        return await tokenGetter() ?? '';
-      },
-      getUserId: () async {
-        final userIdGetter = sl<Future<String?> Function()>(instanceName: 'getUserId');
-        return await userIdGetter() ?? '';
-      },
-    ),
-  );
+  if (!sl.isRegistered<HomeRemoteDataSource>()) {
+    sl.registerLazySingleton<HomeRemoteDataSource>(
+      () => HomeRemoteDataSourceImpl(
+        client: sl<http.Client>(),
+        baseUrl: sl(instanceName: 'baseUrl'),
+        getToken: () async {
+          final tokenGetter = sl<Future<String?> Function()>(instanceName: 'getAuthToken');
+          return await tokenGetter() ?? '';
+        },
+        getUserId: () async {
+          final userIdGetter = sl<Future<String?> Function()>(instanceName: 'getUserId');
+          return await userIdGetter() ?? '';
+        },
+      ),
+    );
+    print('[home_di] 注册 HomeRemoteDataSource');
+  } else {
+    print('[home_di] HomeRemoteDataSource 已经注册，跳过重复注册');
+  }
 
   // 注册本地数据源，使用已注册的 SharedPreferences
-  sl.registerLazySingleton<HomeLocalDataSource>(
-    () => HomeLocalDataSourceImpl(sharedPreferences: sl<SharedPreferences>()),
-  );
+  if (!sl.isRegistered<HomeLocalDataSource>()) {
+    sl.registerLazySingleton<HomeLocalDataSource>(
+      () => HomeLocalDataSourceImpl(sharedPreferences: sl<SharedPreferences>()),
+    );
+    print('[home_di] 注册 HomeLocalDataSource');
+  } else {
+    print('[home_di] HomeLocalDataSource 已经注册，跳过重复注册');
+  }
 
   // 注册简单的导航服务
-  sl.registerLazySingleton<HomeNavigationService>(
-    () => SimpleHomeNavigationService(),
-  );
+  if (!sl.isRegistered<HomeNavigationService>()) {
+    sl.registerLazySingleton<HomeNavigationService>(
+      () => SimpleHomeNavigationService(),
+    );
+    print('[home_di] 注册 HomeNavigationService');
+  } else {
+    print('[home_di] HomeNavigationService 已经注册，跳过重复注册');
+  }
 
   // http.Client 可能已经注册，避免重复注册
   if (!sl.isRegistered<http.Client>()) {
     sl.registerLazySingleton(() => http.Client());
+    print('[home_di] 注册 http.Client');
+  } else {
+    print('[home_di] http.Client 已经注册，跳过重复注册');
+  }
+  
+  // 确保NetworkInfo已注册
+  if (!sl.isRegistered<NetworkInfo>()) {
+    sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
+    print('[home_di] 注册 NetworkInfo');
+  } else {
+    print('[home_di] NetworkInfo 已经注册，跳过重复注册');
   }
 }
 

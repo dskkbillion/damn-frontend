@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../domain/entities/banner.dart' as home_banner;
 import '../../domain/entities/home_category.dart';
@@ -212,37 +213,31 @@ class _HomeViewState extends State<HomeView> {
   
   /// 构建搜索栏
   Widget _buildSearchBar(BuildContext context) {
-    return Container(
-      height: 40,
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: Icon(Icons.search, color: Colors.grey),
-          ),
-          Expanded(
-            child: TextField(
-              decoration: const InputDecoration(
-                hintText: '搜索服务',
-                border: InputBorder.none,
-                hintStyle: TextStyle(color: Colors.grey),
-              ),
-              onSubmitted: (value) {
-                // 显示搜索信息
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('搜索: $value'),
-                    duration: const Duration(seconds: 1),
-                  ),
-                );
-              },
+    return GestureDetector(
+      onTap: () {
+        // 跳转到搜索页面
+        context.push('/home/search');
+      },
+      child: Container(
+        height: 40,
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: const [
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Icon(Icons.search, color: Colors.grey),
             ),
-          ),
-        ],
+            Expanded(
+              child: Text(
+                '搜索服务',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

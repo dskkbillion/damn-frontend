@@ -156,11 +156,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
               if (widget.message.messageType == MessageType.text)
                  _buildTextContent(context, isUser)
               else if (widget.message.messageType == MessageType.image)
-                 _buildImageContent(context) // Still placeholder
+                 _buildImageContent(context) // 改为实际图片渲染
               else if (widget.message.messageType == MessageType.audio)
                  _buildAudioContent(context, isUser) // Use the new stateful player
               else // Default or unknown type
-                 const Text("[Unsupported Message Type]"),
+                 const Text("不支持的消息类型"),
 
               // --- Display Timestamp (Optional) ---
               // Don't show timestamp for streaming text message
@@ -213,9 +213,71 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
   // --- Image content builder (uses widget.message) ---
   Widget _buildImageContent(BuildContext context) {
      if (widget.message.fileUrls?.isNotEmpty ?? false) {
-       return Text("[Image: ${widget.message.fileUrls!.first}]"); 
+       final imageUrl = widget.message.fileUrls!.first;
+       // 实现图片展示，添加错误处理和加载状态
+       return Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         mainAxisSize: MainAxisSize.min,
+         children: [
+           ClipRRect(
+             borderRadius: BorderRadius.circular(8.0),
+             child: Image.network(
+               imageUrl,
+               errorBuilder: (context, error, stackTrace) {
+                 // 图片加载失败时显示错误提示
+                 return Container(
+                   width: 200,
+                   height: 150,
+                   color: Colors.grey[200],
+                   child: Column(
+                     mainAxisAlignment: MainAxisAlignment.center,
+                     children: [
+                       Icon(Icons.error_outline, color: Colors.grey[500]),
+                       const SizedBox(height: 8),
+                       Text('图片加载失败', style: TextStyle(color: Colors.grey[600])),
+                     ],
+                   ),
+                 );
+               },
+               loadingBuilder: (context, child, loadingProgress) {
+                 if (loadingProgress == null) return child;
+                 // 图片加载中显示进度
+                 return Container(
+                   width: 200,
+                   height: 150,
+                   color: Colors.grey[100],
+                   child: Center(
+                     child: CircularProgressIndicator(
+                       value: loadingProgress.expectedTotalBytes != null
+                           ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                           : null,
+                     ),
+                   ),
+                 );
+               },
+               fit: BoxFit.cover,
+               // 限制图片大小以避免过大
+               width: 200,
+               // 高度可以自适应，也可以设置固定值
+               // height: 150,
+             ),
+           ),
+           
+           if (widget.message.content.isNotEmpty)
+             Padding(
+               padding: const EdgeInsets.only(top: 8.0),
+               child: Text(
+                 widget.message.content,
+                 style: TextStyle(
+                   fontSize: 15.0,
+                   color: Theme.of(context).colorScheme.onSecondaryContainer,
+                 ),
+               ),
+             ),
+         ],
+       );
      } else {
-       return Text("[Missing Image URL]");
+       return Text("图片链接缺失");
      }
   }
 
@@ -233,7 +295,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
           children: [
              Icon(Icons.error_outline, color: Colors.red, size: 20),
              const SizedBox(width: 8),
-             Text("[Audio Unavailable]", style: TextStyle(color: iconColor)),
+             Text("音频不可用", style: TextStyle(color: iconColor)),
            ],
         );
      }

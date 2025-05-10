@@ -137,10 +137,24 @@ class MockAuthRepository implements IAuthRepository {
   // Simulate logout, clearing cached values
   @override
   Future<Either<Failure, void>> logout() async {
-    print('[MockAuthRepository] logout called');
+    print('[MockAuthRepository] logout called - 正在清除用户认证信息');
+    
     // 清除缓存
     _cachedUserId = null;
     _cachedToken = null;
+    
+    // 清除secure storage中的认证信息
+    try {
+      await _secureStorage.delete(key: 'user_id');
+      await _secureStorage.delete(key: 'auth_token');
+      await _secureStorage.delete(key: 'common_user_id');
+      await _secureStorage.delete(key: 'user_token');
+      print('[MockAuthRepository] 成功清除secure storage中的认证信息');
+    } catch (e) {
+      print('[MockAuthRepository] 清除secure storage数据失败: $e');
+      return Left(CacheFailure(message: '清除认证信息失败: $e'));
+    }
+    
     return const Right(null);
   }
 
