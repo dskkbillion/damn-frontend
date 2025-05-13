@@ -1,0 +1,582 @@
+[
+  {
+    "id": 1001,
+    "name": "高级算法题解析服务",
+    "description": "针对计算机科学专业学生的算法难题提供详细解析",
+    "content": "由ACM金牌得主提供的算法解题服务，包括动态规划、图论、网络流等高级算法题目的解析和思路指导。每次服务包含书面解析和30分钟在线讲解。",
+    "mainImage": "https://images.unsplash.com/photo-1580894732444-8ecded7900cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1516259762381-22954d7d3ad2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 299.99,
+    "sellingPrice": 199.99,
+    "costPrice": 120.00,
+    "inventory": 50,
+    "selectionMode": "CONFIGURABLE",
+    "state": "NORMAL",
+    "productType": "product",
+    "options": [
+      {
+        "id": 1,
+        "name": "难度级别",
+        "values": [
+          {
+            "id": 101,
+            "name": "大学本科"
+          },
+          {
+            "id": 102,
+            "name": "研究生"
+          },
+          {
+            "id": 103,
+            "name": "竞赛级"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 1002,
+    "name": "高等数学题目辅导",
+    "description": "针对大学微积分、线性代数等高数难题的一对一辅导",
+    "content": "由数学专业博士生提供的高等数学题目讲解服务，可覆盖微积分、线性代数、概率论与数理统计等课程内容。每次服务包含题目解析和45分钟一对一在线辅导。",
+    "mainImage": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1509228468518-180dd4864904?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 249.99,
+    "sellingPrice": 179.99,
+    "costPrice": 100.00,
+    "inventory": 100,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 1003,
+    "name": "论文润色与修改",
+    "description": "为学术论文提供专业的语言润色和内容修改服务",
+    "content": "由具有丰富学术背景的教授和博士提供的论文润色服务，包括语言表达优化、逻辑结构调整、引用格式规范等。适用于本科论文、硕博论文及学术期刊投稿。",
+    "mainImage": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 399.99,
+    "sellingPrice": 299.99,
+    "costPrice": 150.00,
+    "inventory": 30,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 1004,
+    "name": "物理实验数据分析",
+    "description": "为物理、化学等实验课程提供数据处理与分析服务",
+    "content": "由实验教学助教提供的实验数据分析服务，包括数据整理、误差分析、图表绘制、结论撰写等。适用于大学各类理工科实验课程。",
+    "mainImage": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1576086213369-97a306d36557?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 199.99,
+    "sellingPrice": 149.99,
+    "costPrice": 80.00,
+    "inventory": 80,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 1005,
+    "name": "编程作业指导",
+    "description": "针对各类编程语言和框架的作业辅导服务",
+    "content": "由资深软件工程师提供的编程作业指导，覆盖Java、Python、C++等主流语言，以及Web开发、机器学习等热门方向。提供代码审查、调试指导和最佳实践建议。",
+    "mainImage": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 259.99,
+    "sellingPrice": 189.99,
+    "costPrice": 110.00,
+    "inventory": 60,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 1006,
+    "name": "考研数学冲刺辅导",
+    "description": "针对考研数学的重点题型讲解与模拟训练",
+    "content": "由考研数学满分得主提供的高强度辅导服务，包含历年真题分析、重点题型突破、解题技巧传授和模拟测试。适用于考研数学一、数学二和数学三。",
+    "mainImage": "https://images.unsplash.com/photo-1596496181871-9681eacf9764?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1518133910546-b6c2fb7d79e3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 499.99,
+    "sellingPrice": 399.99,
+    "costPrice": 200.00,
+    "inventory": 20,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 1007,
+    "name": "学术英语写作指导",
+    "description": "为非英语母语者提供学术英语写作指导与训练",
+    "content": "由TESOL认证教师提供的学术英语写作指导，帮助学生掌握学术论文、报告的写作规范和技巧，提高英语学术表达能力。包含写作示范、个性化反馈和修改建议。",
+    "mainImage": "https://images.unsplash.com/photo-1455390582262-044cdead277a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 349.99,
+    "sellingPrice": 269.99,
+    "costPrice": 130.00,
+    "inventory": 40,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 1008,
+    "name": "科研项目设计咨询",
+    "description": "为本科生和研究生提供科研项目设计和执行指导",
+    "content": "由经验丰富的研究员提供的科研项目咨询服务，包括研究问题设计、方法学选择、实验方案制定、数据收集与分析建议等。适用于各学科的科研入门者。",
+    "mainImage": "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1507668077129-56e32842fceb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 599.99,
+    "sellingPrice": 499.99,
+    "costPrice": 250.00,
+    "inventory": 15,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 2001,
+    "name": "西北大学校园导览",
+    "description": "由在校生提供的个性化校园参观向导服务",
+    "content": "由西北大学在校生提供的2小时校园导览服务，带您游览校园标志性建筑、学院、图书馆、体育设施等，分享校园生活趣事和实用信息，提供拍照留念服务。",
+    "mainImage": "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 199.99,
+    "sellingPrice": 149.99,
+    "costPrice": 70.00,
+    "inventory": 100,
+    "selectionMode": "CONFIGURABLE",
+    "state": "NORMAL",
+    "productType": "product"
+  },
+  {
+    "id": 2002,
+    "name": "新生选课指导",
+    "description": "由高年级学生提供的专业选课建议与规划",
+    "content": "由3-4年级学生提供的个性化选课指导服务，根据您的兴趣、职业规划和学术背景，推荐合适的课程组合，分享不同教授的教学风格和考核方式，帮助制定理想的学习计划。",
+    "mainImage": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 149.99,
+    "sellingPrice": 99.99,
+    "costPrice": 50.00,
+    "inventory": 50,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 2003,
+    "name": "留学生活适应指南",
+    "description": "为国际学生提供的校园和城市生活适应服务",
+    "content": "由有丰富留学经验的学长学姐提供的留学适应服务，包括文化差异应对、生活必备用品购买指南、银行账户开设、手机卡办理、社交活动推荐等实用信息，帮助您快速融入校园和当地生活。",
+    "mainImage": "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1517486808906-6ca8b3f8e1c1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 249.99,
+    "sellingPrice": 199.99,
+    "costPrice": 90.00,
+    "inventory": 30,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 2004,
+    "name": "学术资源利用指导",
+    "description": "帮助新生高效利用校内外学术资源的咨询服务",
+    "content": "由图书馆学生助理提供的学术资源使用指导，包括图书馆资源检索技巧、数据库使用方法、学术软件应用、研究支持服务介绍等，帮助您充分利用学校提供的学术资源，提高研究和学习效率。",
+    "mainImage": "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 179.99,
+    "sellingPrice": 129.99,
+    "costPrice": 60.00,
+    "inventory": 40,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 2005,
+    "name": "学生社团和活动介绍",
+    "description": "校内各类社团组织和活动的详细介绍与参与指导",
+    "content": "由学生会成员提供的社团活动咨询服务，根据您的兴趣爱好推荐适合的学生组织和社团，介绍重要的校园活动和传统，提供加入方式和联系人信息，帮助您拓展社交圈并丰富校园生活。",
+    "mainImage": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1511632765486-a01980e01a18?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 129.99,
+    "sellingPrice": 89.99,
+    "costPrice": 40.00,
+    "inventory": 60,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 2006,
+    "name": "实习和就业指导",
+    "description": "由就业中心学生顾问提供的求职准备与实习申请指导",
+    "content": "由就业中心资深学生顾问提供的就业和实习咨询服务，包括简历和求职信修改、面试技巧培训、实习机会推荐、行业信息分享等，针对您的专业领域和职业目标提供个性化建议。",
+    "mainImage": "https://images.unsplash.com/photo-1551836022-d5d88e9218df?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 299.99,
+    "sellingPrice": 249.99,
+    "costPrice": 120.00,
+    "inventory": 25,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 2007,
+    "name": "校外住宿选择咨询",
+    "description": "为计划搬离校园的学生提供周边住宿选择建议",
+    "content": "由有丰富校外住宿经验的高年级学生提供的住宿咨询服务，包括各社区安全状况评估、租金水平比较、交通便利性分析、房东信誉调查、签约注意事项等实用信息，帮助您找到理想的校外住所。",
+    "mainImage": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 219.99,
+    "sellingPrice": 169.99,
+    "costPrice": 80.00,
+    "inventory": 35,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 2008,
+    "name": "学术诚信与论文写作规范",
+    "description": "帮助国际学生理解西方学术规范与避免学术不端",
+    "content": "由写作中心导师提供的学术诚信指导服务，详细讲解西方学术规范、引用格式、剽窃界定标准，提供论文写作建议和学术资源引用方法，帮助您有效避免学术不端问题并提高论文质量。",
+    "mainImage": "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1471107340929-a87cd0f5b5f3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 189.99,
+    "sellingPrice": 139.99,
+    "costPrice": 65.00,
+    "inventory": 45,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 3001,
+    "name": "巴黎深度文化之旅",
+    "description": "由本地艺术历史专家带领的巴黎小众景点探索",
+    "content": "跳过人山人海的埃菲尔铁塔和卢浮宫，跟随巴黎本地艺术史专家探索鲜为人知的博物馆、历史街区和艺术空间。6小时行程包含3处小众景点参观、地道法式午餐体验和专业文化讲解，限制4人小团，确保深度体验。",
+    "mainImage": "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 399.99,
+    "sellingPrice": 349.99,
+    "costPrice": 180.00,
+    "inventory": 20,
+    "selectionMode": "CONFIGURABLE",
+    "state": "NORMAL",
+    "productType": "product",
+    "options": [
+      {
+        "id": 1,
+        "name": "语言选择",
+        "values": [
+          {
+            "id": 101,
+            "name": "英语"
+          },
+          {
+            "id": 102,
+            "name": "中文"
+          },
+          {
+            "id": 103,
+            "name": "法语"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 3002,
+    "name": "京都传统工艺体验",
+    "description": "体验传统日本手工艺制作的私人工作坊",
+    "content": "在京都本地匠人的工作室中，体验传统和纸制作、木版画或和服染色工艺。3小时工作坊包含专业指导、全部材料费用、成品邮寄服务和茶道体验，带您领略日本工匠精神的精髓。",
+    "mainImage": "https://images.unsplash.com/photo-1528360983277-13d401cdc186?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 299.99,
+    "sellingPrice": 249.99,
+    "costPrice": 120.00,
+    "inventory": 15,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 3003,
+    "name": "纽约地下音乐现场探索",
+    "description": "深入纽约地下音乐场景的夜间导览",
+    "content": "由资深音乐记者带领，探索纽约布鲁克林和皇后区鲜为人知的地下音乐现场。5小时行程包含3个独立音乐场所的VIP入场券、与本地音乐人交流机会、特色鸡尾酒品尝和通宵交通安排。",
+    "mainImage": "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 349.99,
+    "sellingPrice": 299.99,
+    "costPrice": 150.00,
+    "inventory": 12,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 3004,
+    "name": "摩洛哥撒哈拉星空露营",
+    "description": "正宗撒哈拉沙漠深度露营体验",
+    "content": "在真正的撒哈拉沙漠中体验原汁原味的柏柏尔人露营生活。2天1夜行程包含骆驼骑行、传统帐篷住宿、地道摩洛哥晚餐、星空摄影指导、清晨沙丘日出观赏和篝火音乐表演。",
+    "mainImage": "https://images.unsplash.com/photo-1489493887464-892be6d1daae?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1509529711801-deac231925ac?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 599.99,
+    "sellingPrice": 499.99,
+    "costPrice": 250.00,
+    "inventory": 10,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 3005,
+    "name": "威尼斯贡多拉修复工作坊",
+    "description": "参观并参与传统贡多拉船只修复过程",
+    "content": "在威尼斯传统造船工坊中，亲眼见证并参与贡多拉船的修复过程。3小时体验包含船匠技艺展示、木工基础教学、实际修复工作参与和私人贡多拉游览，由家族经营造船厂第三代传人亲自指导。",
+    "mainImage": "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1534113414509-0eec2bfb493f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 449.99,
+    "sellingPrice": 399.99,
+    "costPrice": 200.00,
+    "inventory": 8,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 3006,
+    "name": "泰国清迈街头美食厨艺课",
+    "description": "从市场采购到烹饪的全程泰式美食体验",
+    "content": "跟随当地厨师从清迈传统市场开始，学习挑选新鲜食材，然后在户外厨房学习制作4道正宗泰北美食。6小时行程包含市场导览、烹饪教学、成品享用、食谱手册和特色香料礼包。",
+    "mainImage": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 249.99,
+    "sellingPrice": 199.99,
+    "costPrice": 90.00,
+    "inventory": 25,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 3007,
+    "name": "冰岛极光追踪私人向导",
+    "description": "专业摄影师带领的极光观测与拍摄",
+    "content": "由专业极光摄影师带领，根据当天气象和极光预测数据，前往冰岛最佳观测点。4-6小时行程包含保暖装备、热饮供应、摄影指导、三脚架租赁和专业拍摄后期修图服务。",
+    "mainImage": "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1579033385971-a7bc8c6f8c64?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 499.99,
+    "sellingPrice": 429.99,
+    "costPrice": 200.00,
+    "inventory": 15,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 3008,
+    "name": "里约热内卢嘉年华舞蹈工作坊",
+    "description": "参与巴西桑巴舞学校的嘉年华准备过程",
+    "content": "在真正的桑巴舞学校体验里约嘉年华的准备过程。3小时工作坊包含桑巴基本舞步教学、嘉年华服装试穿体验、鼓点节奏训练和小型游行表演，由专业舞者教授并提供视频记录服务。",
+    "mainImage": "https://images.unsplash.com/photo-1551972873-b7e8754e8e26?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1519120126473-8be7aedcd6c6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 349.99,
+    "sellingPrice": 299.99,
+    "costPrice": 140.00,
+    "inventory": 20,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 4001,
+    "name": "疯狂夸夸服务",
+    "description": "专业级别的吹捧和赞美，让你的自信爆棚",
+    "content": "由专业\"彩虹屁\"制造师提供的30分钟狂夸服务，无论你今天做了什么、失败了什么，我们都能从100个角度告诉你为什么你是最棒的。包含定制赞美、创意比喻、声情并茂的朗诵和个性化夸奖证书。",
+    "mainImage": "https://images.unsplash.com/photo-1531747118685-ca8fa6e08806?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 99.99,
+    "sellingPrice": 69.99,
+    "costPrice": 30.00,
+    "inventory": 999,
+    "selectionMode": "CONFIGURABLE",
+    "state": "NORMAL",
+    "productType": "product",
+    "options": [
+      {
+        "id": 1,
+        "name": "夸夸风格",
+        "values": [
+          {
+            "id": 101,
+            "name": "诗意浪漫派"
+          },
+          {
+            "id": 102,
+            "name": "科学数据派"
+          },
+          {
+            "id": 103,
+            "name": "哲学思考派"
+          },
+          {
+            "id": 104,
+            "name": "搞笑段子派"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 4002,
+    "name": "专业吐槽倾听师",
+    "description": "让你畅所欲言，倾诉一切烦恼而不被打断",
+    "content": "由经验丰富的\"职业倾听员\"提供的45分钟吐槽服务，你可以毫无顾忌地抱怨一切：工作、学习、人际关系、生活琐事...我们只负责倾听和共情，绝不打断，绝不评判，还提供专属情绪宣泄玩偶和虚拟打卡证明。",
+    "mainImage": "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1544027993-37dbfe43562a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 129.99,
+    "sellingPrice": 89.99,
+    "costPrice": 40.00,
+    "inventory": 500,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 4003,
+    "name": "荒谬理由生成器",
+    "description": "为你的失误和拖延提供创意十足的借口",
+    "content": "由资深创意写手提供的借口定制服务，无论是错过deadline、忘记约会还是没完成任务，我们都能提供5个令人信服又富有创意的借口，包含必要的细节描述和应对质疑的话术建议，让你的解释无懈可击。",
+    "mainImage": "https://images.unsplash.com/photo-1517842645767-c639042777db?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1455849318743-b2233052fcff?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 59.99,
+    "sellingPrice": 39.99,
+    "costPrice": 15.00,
+    "inventory": 1000,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 4004,
+    "name": "反向意见提供者",
+    "description": "无论什么决定，我们都会支持相反的选择",
+    "content": "由专业'唱反调'专家提供的30分钟咨询服务，无论你倾向于哪种选择，我们都会极力论证相反的决定为什么更好。帮助你全面审视问题，考虑可能忽略的因素，或者单纯满足你喜欢辩论的心理需求。",
+    "mainImage": "https://images.unsplash.com/photo-1552581234-26160f608093?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1453738773917-9c3eff1db985?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 79.99,
+    "sellingPrice": 59.99,
+    "costPrice": 25.00,
+    "inventory": 300,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 4005,
+    "name": "专业错怪服务",
+    "description": "把所有问题都归咎于我们，释放你的内疚感",
+    "content": "由'职业背锅侠'提供的情绪宣泄服务，无论什么问题都可以怪罪于我们，我们会真诚地接受指责并道歉，帮你释放负罪感和压力。包含书面道歉信、语音致歉和'我错了'的50种创意表达方式。",
+    "mainImage": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 69.99,
+    "sellingPrice": 49.99,
+    "costPrice": 20.00,
+    "inventory": 800,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 4006,
+    "name": "成就放大镜",
+    "description": "把你的小成就包装成惊天动地的大成功",
+    "content": "由市场营销专家提供的个人成就包装服务，将你的日常小胜利(如按时起床、完成家务)包装成媲美诺贝尔奖的重大成就。包含专业修辞、数据可视化、成就证书和社交媒体宣传文案，让你的自我认可感爆棚。",
+    "mainImage": "https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 89.99,
+    "sellingPrice": 69.99,
+    "costPrice": 30.00,
+    "inventory": 400,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 4007,
+    "name": "虚拟朋友圈点赞大队",
+    "description": "为你的社交媒体提供真实互动和热烈反馈",
+    "content": "由10名真人组成的社交媒体互动团队，为你的任何社交媒体内容提供点赞、评论和分享。无论内容多么平凡，我们都会提供热情洋溢的评论和真诚的互动，让你体验'网红'般的关注度和认可感。",
+    "mainImage": "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1563986768609-322da13575f3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 149.99,
+    "sellingPrice": 119.99,
+    "costPrice": 60.00,
+    "inventory": 100,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  },
+  {
+    "id": 4008,
+    "name": "人生剧本重写服务",
+    "description": "为你的过去创造令人羡慕的平行宇宙版本",
+    "content": "由创意写作专家提供的'假如人生重来'叙事服务，根据你的真实经历，创作一个完全不同但合理可信的人生剧本，满足你对'如果当初我选择了...'的好奇心。包含详细的人生轨迹描述、关键决策点分析和精美的人生分支图谱。",
+    "mainImage": "https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1519682577862-22b62b24e493?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+    ],
+    "originalPrice": 199.99,
+    "sellingPrice": 159.99,
+    "costPrice": 70.00,
+    "inventory": 50,
+    "selectionMode": "CONFIGURABLE",
+    "productType": "product"
+  }
+]

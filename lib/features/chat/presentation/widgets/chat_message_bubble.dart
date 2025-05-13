@@ -294,7 +294,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
        return Container(
          width: 150, height: 150,
          decoration: BoxDecoration(
-            color: Colors.grey[300],
+         color: Colors.grey[300],
             borderRadius: BorderRadius.circular(16.0), // 使用与消息气泡相同的圆角
          ),
          child: const Center(child: Icon(Icons.broken_image, color: Colors.red)),
@@ -312,13 +312,13 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
             ),
            child: ClipRRect(
              borderRadius: BorderRadius.circular(16.0), // 给图片添加圆角，与消息气泡一致
-             child: CachedNetworkImage(
-               imageUrl: imageUrl,
-               placeholder: (context, url) => Container(
-                  width: 150, height: 150,
-                  color: Colors.grey[300],
-                  child: const Center(child: CircularProgressIndicator()),
-                ),
+              child: CachedNetworkImage(
+                imageUrl: imageUrl,
+                placeholder: (context, url) => Container(
+                   width: 150, height: 150,
+                   color: Colors.grey[300],
+                   child: const Center(child: CircularProgressIndicator()),
+                 ),
                errorWidget: (context, url, error) {
                  print("[Image] 加载错误: $url, 错误: $error");
                  // 提供更友好的错误显示并添加重试按钮
@@ -356,7 +356,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                    ),
                  );
                },
-               fit: BoxFit.cover,
+                fit: BoxFit.cover,
                // 增加重试次数
                maxHeightDiskCache: 300,
                fadeOutDuration: const Duration(milliseconds: 300),
