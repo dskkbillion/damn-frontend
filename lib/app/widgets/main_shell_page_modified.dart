@@ -3,19 +3,19 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart';
 
-/// 主壳页面，支持可配置的开发tab
+/// 修改后的主壳页面，支持可配置的开发tab
 class MainShellPage extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
-  
+
   const MainShellPage({required this.navigationShell, super.key});
-  
+
   void _onTap(BuildContext context, int index) {
     navigationShell.goBranch(
       index,
       initialLocation: index == navigationShell.currentIndex,
     );
   }
-  
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 读取是否显示开发tab的配置

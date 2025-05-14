@@ -5,15 +5,15 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 
-import '../core/error/failures.dart';
-import '../core/storage/secure_storage_repository.dart';
-import '../core/storage/secure_storage_repository_impl.dart';
-import '../features/home/di/home_di.dart';
-import '../features/home/domain/usecases/get_home_feed_usecase.dart';
-import '../features/home/domain/usecases/get_home_page_data_usecase.dart';
-import '../features/home/presentation/bloc/home_bloc.dart';
-import '../features/home/presentation/navigation/home_navigation_service.dart';
-import '../features/home/presentation/navigation/home_router.dart';
+import '../../core/error/failures.dart';
+import '../../core/storage/secure_storage_repository.dart';
+import '../../core/storage/secure_storage_repository_impl.dart';
+import '../../features/home/di/home_di.dart';
+import '../../features/home/domain/usecases/get_home_feed_usecase.dart';
+import '../../features/home/domain/usecases/get_home_page_data_usecase.dart';
+import '../../features/home/presentation/bloc/home_bloc.dart';
+import '../../features/home/presentation/navigation/home_navigation_service.dart';
+import '../../features/home/presentation/navigation/home_router.dart';
 
 /// 获取依赖注入实例
 final sl = GetIt.instance;

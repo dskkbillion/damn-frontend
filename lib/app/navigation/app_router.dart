@@ -34,6 +34,8 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/routes/seller
 
 // Import AppMode
 import 'package:dskk_flutter_refactor/app/app_mode.dart';
+// Import AppRouterConfig
+import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart';
 
 // Import Shell Pages
 import 'package:dskk_flutter_refactor/app/widgets/main_shell_page.dart'; // 使用正确的名字和路径
@@ -90,11 +92,14 @@ class PlaceholderPage extends StatelessWidget {
 }
 
 // Provider for the GoRouter instance (from HEAD/auth-module)
-final goRouterProvider = Provider<GoRouter>((ref) {
-  final authRepository = GetIt.instance<IAuthRepository>();
-  final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
-  // Navigation keys for ShellRoutes
-  final buyerShellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'buyer_shell');
+final goRouterProvider = Provider<GoRouter>((ref) {  
+  // 读取是否显示开发tab的配置  
+  final showDevTab = ref.watch(showDevTabProvider);    
+  
+  final authRepository = GetIt.instance<IAuthRepository>();  
+  final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');  
+  // Navigation keys for ShellRoutes  
+  final buyerShellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'buyer_shell');  
   final sellerShellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'seller_shell');
 
   // Helper function to filter routes by path prefix
@@ -240,8 +245,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: ProfileRoutes.routes, 
           ),
-          // Branch 4: 开发 (Path: /dev_menu)
-          StatefulShellBranch(
+          // Branch 4: 开发 (Path: /dev_menu) - 根据配置决定是否显示
+          if (showDevTab) StatefulShellBranch(
             routes: [
               GoRoute(
                 path: '/dev_menu',
