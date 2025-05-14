@@ -1,3 +1,5 @@
+adb connect 192.168.8.139:xxxxx
+
 # DSKK Flutter 重构项目
 
 本项目旨在将现有的 React Native 应用（参考代码位于 `design-info/demo-repository`）逐步重构为基于 Flutter 的新应用，同时采用清晰的架构模式。
@@ -53,6 +55,11 @@ flutter run -t lib/main_ai_docs_preview.dart
 要运行聊天模块的预览：
 ```bash
 flutter run -t lib/main_chat_preview.dart
+```
+
+预览入口：
+```bash
+flutter run -t lib/main_dev_preview.dart
 ```
 
 ## 模块开发核心工作流

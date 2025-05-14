@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod
 import 'package:dskk_flutter_refactor/app/navigation/app_router.dart'; // Import the provider
 import 'package:dskk_flutter_refactor/core/config/theme/app_theme.dart';
+import 'package:dskk_flutter_refactor/core/widgets/global_message_notification.dart'; // 导入全局消息通知组件
 
 // Remove direct import of MainShellPage, navigation is handled by router
 // import 'package:dskk_flutter_refactor/app/widgets/main_shell_page.dart';
@@ -20,22 +21,21 @@ class MyApp extends ConsumerWidget { // Changed to ConsumerWidget
     // Get the GoRouter instance from the provider
     final router = ref.watch(goRouterProvider); // Use ref.watch
 
-    // Use MaterialApp.router and provide the router configuration
-    return MaterialApp.router(
-      // Use the router instance obtained from the provider
-      routerConfig: router, 
+    // 使用GlobalMessageNotification包装MaterialApp
+    return GlobalMessageNotification(
+      child: MaterialApp.router(
+        // Use the router instance obtained from the provider
+        routerConfig: router, 
 
-      title: 'DSKK Flutter Refactor',
+        title: 'DSKK Flutter Refactor',
 
-      // Use the centralized light theme
-      theme: AppTheme.lightTheme,
+        // Use the centralized light theme
+        theme: AppTheme.lightTheme,
 
-      // Optionally configure dark theme and theme mode
-      // darkTheme: AppTheme.darkTheme,
-      // themeMode: ThemeMode.system, // Or ThemeMode.light, ThemeMode.dark
-
-      // Remove the home property, router handles the initial route
-      // home: const MainShellPage(),
+        // Optionally configure dark theme and theme mode
+        // darkTheme: AppTheme.darkTheme,
+        // themeMode: ThemeMode.system, // Or ThemeMode.light, ThemeMode.dark
+      ),
     );
   }
 } 

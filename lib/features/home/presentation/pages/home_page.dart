@@ -11,7 +11,8 @@ import '../bloc/home_event.dart';
 import '../bloc/home_state.dart';
 import '../widgets/banner_carousel.dart';
 import '../widgets/category_list.dart';
-import '../widgets/home_feed_list.dart';
+import '../widgets/product_card.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 /// 首页
 class HomePage extends StatelessWidget {
@@ -35,11 +36,52 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
+  final ScrollController _scrollController = ScrollController();
+  
   @override
   void initState() {
     super.initState();
     // 加载首页数据
     context.read<HomeBloc>().add(const LoadHomeData());
+    
+    // 添加滚动监听
+    _scrollController.addListener(_onScroll);
+  }
+  
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+  
+  void _onScroll() {
+    final state = context.read<HomeBloc>().state;
+    if (state is HomeLoaded || state is HomeLoadingMore) {
+      if (_isBottom && !_isLoadingMore(state) && _hasMore(state)) {
+        final currentPage = state is HomeLoaded ? state.currentPage : 1;
+        context.read<HomeBloc>().add(LoadMoreFeed(
+          page: currentPage + 1,
+          limit: HomeBloc.defaultLimit,
+        ));
+      }
+    }
+  }
+  
+  bool get _isBottom {
+    if (!_scrollController.hasClients) return false;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+    // 当滚动到距离底部 200 像素时触发加载更多
+    return currentScroll >= (maxScroll - 200);
+  }
+  
+  bool _isLoadingMore(HomeState state) {
+    return state is HomeLoadingMore;
+  }
+  
+  bool _hasMore(HomeState state) {
+    return state is HomeLoaded ? state.hasMore : true;
   }
 
   @override
@@ -58,136 +100,138 @@ class _HomeViewState extends State<HomeView> {
             );
           } else if (state is HomeLoaded || state is HomeRefreshing || state is HomeLoadingMore) {
             final banners = _getBanners(state);
-          final categories = _getCategories(state);
-          final feedItems = _getFeedItems(state);
-          final isLoadingMore = state is HomeLoadingMore;
-          final hasMore = state is HomeLoaded ? state.hasMore : true;
-          final currentPage = state is HomeLoaded ? state.currentPage : 1;
+            final categories = _getCategories(state);
+            final feedItems = _getFeedItems(state);
+            final isLoadingMore = state is HomeLoadingMore;
+            final hasMore = state is HomeLoaded ? state.hasMore : true;
 
-          return RefreshIndicator(
-            onRefresh: () async {
-              context.read<HomeBloc>().add(const RefreshHomeData());
-            },
-            child: ListView(
-              children: [
-                // 轮播图
-                Padding(
-                  padding: const EdgeInsets.only(top: 16.0),
-                  child: BannerCarousel(
-                    banners: banners,
-                    onBannerClicked: (banner) {
-                      context.read<HomeBloc>().add(BannerClicked(
-                            bannerId: banner.id,
-                            targetType: banner.targetType,
-                            targetValue: banner.targetValue,
-                          ));
-                      // 显示点击信息
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('点击了轮播图: ${banner.targetType} - ${banner.targetValue}'),
-                          duration: const Duration(seconds: 1),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-
-                // 信息流标题 - 直接放在轮播图下方
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 8.0,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        '推荐服务',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
+            return RefreshIndicator(
+              onRefresh: () async {
+                context.read<HomeBloc>().add(const RefreshHomeData());
+              },
+              child: CustomScrollView(
+                controller: _scrollController,
+                slivers: [
+                  // 轮播图
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 16.0),
+                      child: BannerCarousel(
+                        banners: banners,
+                        onBannerClicked: (banner) {
+                          context.read<HomeBloc>().add(BannerClicked(
+                                bannerId: banner.id,
+                                targetType: banner.targetType,
+                                targetValue: banner.targetValue,
+                              ));
                           // 显示点击信息
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('点击了查看更多'),
-                              duration: Duration(seconds: 1),
+                            SnackBar(
+                              content: Text('点击了轮播图: ${banner.targetType} - ${banner.targetValue}'),
+                              duration: const Duration(seconds: 1),
                             ),
                           );
                         },
-                        child: const Text('查看更多'),
                       ),
-                    ],
+                    ),
                   ),
-                ),
 
-                // 信息流列表
-                SizedBox(
-                  height: 600, // 固定高度，简化实现
-                  child: HomeFeedList(
-                    feedItems: feedItems,
-                    isLoadingMore: isLoadingMore,
-                    hasMore: hasMore,
-                    onProductCardClicked: (item) {
-                      context.read<HomeBloc>().add(ProductCardClicked(
-                            productId: item.id,
-                          ));
-                      // 显示点击信息
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('点击了服务卡片: ${item.name}'),
-                          duration: const Duration(seconds: 1),
-                        ),
-                      );
-                    },
-                    onRecommendClicked: (item) {
-                      context.read<HomeBloc>().add(RecommendButtonClicked(
-                            productId: item.id,
-                            productName: item.name,
-                          ));
-                      // 显示点击信息
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('点击了"让ta看看"按钮: ${item.name}'),
-                          duration: const Duration(seconds: 1),
-                        ),
-                      );
-                    },
-                    onLoadMore: () {
-                      if (!isLoadingMore && hasMore) {
-                        context.read<HomeBloc>().add(LoadMoreFeed(
-                              page: currentPage + 1,
-                              limit: HomeBloc.defaultLimit,
-                            ));
-                      }
-                    },
+                  // 信息流列表 - 使用SliverPadding和SliverMasonryGrid
+                  SliverPadding(
+                    padding: const EdgeInsets.all(16.0),
+                    sliver: SliverMasonryGrid.count(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 16.0,
+                      crossAxisSpacing: 10.0,
+                      childCount: feedItems.length,
+                      itemBuilder: (context, index) {
+                        final item = feedItems[index];
+                        // 根据索引生成不同的宽高比，使瀑布流更自然
+                        final aspectRatio = 0.8 + (index % 3) * 0.2;
+                        
+                        return ProductCard(
+                          item: item,
+                          aspectRatio: aspectRatio,
+                          onCardClicked: () {
+                            context.read<HomeBloc>().add(ProductCardClicked(
+                                  productId: item.id,
+                                ));
+                            // 显示点击信息
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('点击了服务卡片: ${item.name}'),
+                                duration: const Duration(seconds: 1),
+                              ),
+                            );
+                          },
+                          onRecommendClicked: () {
+                            context.read<HomeBloc>().add(RecommendButtonClicked(
+                                  productId: item.id,
+                                  productName: item.name,
+                                ));
+                            // 显示点击信息
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('点击了"让ta看看"按钮: ${item.name}'),
+                                duration: const Duration(seconds: 1),
+                              ),
+                            );
+                          },
+                          showRecommendButton: false,
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
-            ),
-          );
-        } else if (state is HomeError) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '加载失败: ${state.message}',
-                  style: const TextStyle(color: Colors.red),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    context.read<HomeBloc>().add(const LoadHomeData());
-                  },
-                  child: const Text('重试'),
-                ),
-              ],
-            ),
-          );
+                  
+                  // 加载更多指示器
+                  if (isLoadingMore)
+                    const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
+                    ),
+                  
+                  // 到底了提示
+                  if (!hasMore)
+                    const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Center(
+                          child: Text(
+                            '已经到底了',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          } else if (state is HomeError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '加载失败: ${state.message}',
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      context.read<HomeBloc>().add(const LoadHomeData());
+                    },
+                    child: const Text('重试'),
+                  ),
+                ],
+              ),
+            );
           }
 
           // 默认返回空白页面

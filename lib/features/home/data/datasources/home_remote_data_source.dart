@@ -44,19 +44,31 @@ abstract class HomeRemoteDataSource {
     String keyword, 
     {int page = 1, int pageSize = 20}
   );
+  
+  /// 从推荐系统获取推荐产品
+  /// 
+  /// [limit] 请求的数量
+  /// 
+  /// 返回 [List<HomeFeedItemModel>] 包含推荐产品
+  /// 抛出 [ServerException] 表示获取推荐失败
+  Future<List<HomeFeedItemModel>> getRecommendedProducts(int limit);
 }
 
 class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   final http.Client client;
   final String baseUrl;
+  final String modelBaseUrl; // 添加MODEL_BASE_URL
   final Future<String> Function() getToken; // 获取认证令牌的函数
   final Future<String> Function() getUserId; // 获取用户ID的函数
+  final Future<String> Function() getCommonUserId; // 获取common_user_id的函数
 
   HomeRemoteDataSourceImpl({
     required this.client,
     required this.baseUrl,
+    required this.modelBaseUrl, // 注入MODEL_BASE_URL
     required this.getToken,
     required this.getUserId,
+    required this.getCommonUserId, // 注入获取common_user_id的方法
   });
 
   /// 获取请求头
@@ -89,6 +101,12 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
 
   @override
   Future<List<HomeFeedItemModel>> getHomeFeed(int page, int limit) async {
+    // 如果是第一页，使用推荐系统API
+    if (page == 1) {
+      return getRecommendedProducts(limit);
+    }
+    
+    // 后续页使用原有API（也可以选择继续使用推荐系统API）
     final url = Uri.parse('$baseUrl/api/shop/product/recommend/detail?code=home&page=$page&limit=$limit');
     
     try {
@@ -225,7 +243,56 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
 
   /// 获取推荐商品列表
   Future<List<HomeFeedItemModel>> _getRecommendProducts() async {
-    return getHomeFeed(1, 10);  // 获取第一页，每页10条数据
+    return getRecommendedProducts(10);  // 获取第一页，10条数据
+  }
+  
+  /// 从推荐系统获取推荐产品
+  @override
+  Future<List<HomeFeedItemModel>> getRecommendedProducts(int limit) async {
+    try {
+      final commonUserId = await getCommonUserId();
+      final url = Uri.parse('$modelBaseUrl/recsys/conversation/recommend');
+      
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': await getToken(),
+      };
+      
+      final body = json.encode({
+        'user_id': int.tryParse(commonUserId) ?? 1,
+        'limit': limit
+      });
+      
+      print('推荐系统API请求URL: $url');
+      print('推荐系统API请求体: $body');
+      
+      final response = await client.post(
+        url,
+        headers: headers,
+        body: body,
+      );
+      
+      print('推荐系统API响应状态码: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        print('推荐系统API响应内容: $jsonData');
+        
+        if (jsonData['code'] == 200 && jsonData['data'] != null && jsonData['data']['items'] != null) {
+          final items = jsonData['data']['items'] as List<dynamic>;
+          
+          return items.map((item) => HomeFeedItemModel.fromJson(item)).toList();
+        } else {
+          throw ServerException(message: jsonData['message'] ?? 'Unknown error');
+        }
+      } else {
+        throw ServerException(message: 'Failed to get recommended products');
+      }
+    } catch (e) {
+      print('获取推荐产品出错: $e');
+      if (e is ServerException) rethrow;
+      throw ServerException(message: e.toString());
+    }
   }
 
   @override

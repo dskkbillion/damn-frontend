@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io'; // For Platform check
 
+import 'package:dskk_flutter_refactor/core/events/event_bus.dart'; // 导入事件总线
 import 'package:dskk_flutter_refactor/features/chat/data/models/chat_message_dto.dart'; // Import DTO
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -115,7 +116,10 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
                  if (messageData is Map<String, dynamic>) {
                    final chatMessageDto = ChatMessageDto.fromJson(messageData);
                    _messageStreamController.add(chatMessageDto);
-                    print("[WebSocket] Parsed ChatMessageDto: ${chatMessageDto.id}");
+                   print("[WebSocket] Parsed ChatMessageDto: ${chatMessageDto.id}");
+                   
+                   // 触发全局消息通知事件
+                   _triggerChatNotification(chatMessageDto);
                  } else {
                      print("[WebSocket] Error: Unexpected format for 'data' field: ${messageData.runtimeType}");
                  }
@@ -148,6 +152,35 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
       cancelOnError: true, // Cancel subscription on error
     );
      print("[WebSocket] Listening for messages.");
+  }
+  
+  // 触发聊天消息全局通知
+  void _triggerChatNotification(ChatMessageDto messageDto) {
+    try {
+      // 假设我们只对别人发给我们的消息触发通知
+      if (messageDto.memberId != int.tryParse(_commonUserId ?? '0') &&
+          messageDto.doctorId != int.tryParse(_commonUserId ?? '0')) {
+        
+        // 获取发送者信息（根据ChatMessageDto实际结构）
+        String senderName = "新消息";  // 没有名称字段，使用默认值
+        String content = messageDto.context;
+        String senderId = messageDto.memberId?.toString() ?? messageDto.doctorId?.toString() ?? "0";
+        String chatId = messageDto.chatId.toString();
+        
+        // 创建消息事件并触发
+        final chatEvent = ChatMessageEvent(
+          senderName: senderName,
+          content: content,
+          senderId: senderId,
+          chatId: chatId,
+        );
+        
+        EventBus().fireChatMessageEvent(chatEvent);
+        print("[WebSocket] 已触发全局消息通知: $senderName - $content");
+      }
+    } catch (e) {
+      print("[WebSocket] 触发全局消息通知失败: $e");
+    }
   }
 
   void _sendAuthMessage() {

@@ -117,6 +117,23 @@ Future<void> initHomeDi() async {
     print('[home_di] 名为 baseUrl 的实例已被注册，值为: $existingBaseUrl');
   }
   
+  // 注册 MODEL_BASE_URL
+  if (!sl.isRegistered<String>(instanceName: 'modelBaseUrl')) {
+    sl.registerLazySingleton<String>(
+      () {
+        final modelUrlFromEnv = dotenv.env['MODEL_BASE_URL'];
+        print('[home_di] 读取到的 MODEL_BASE_URL: $modelUrlFromEnv');
+        final modelUrlToRegister = modelUrlFromEnv ?? 'http://47.113.230.11:5102';
+        print('[home_di] 最终注册为 modelBaseUrl 的值: $modelUrlToRegister');
+        return modelUrlToRegister;
+      },
+      instanceName: 'modelBaseUrl',
+    );
+  } else {
+    final existingModelBaseUrl = sl<String>(instanceName: 'modelBaseUrl');
+    print('[home_di] 名为 modelBaseUrl 的实例已被注册，值为: $existingModelBaseUrl');
+  }
+  
   // 使用安全存储服务获取token和userId
   if (!sl.isRegistered<Future<String?> Function()>(instanceName: 'getAuthToken')) {
     sl.registerLazySingleton<Future<String?> Function()>(
@@ -140,6 +157,19 @@ Future<void> initHomeDi() async {
     );
     print('[home_di] 注册 getUserId 函数');
   }
+  
+  // 注册获取 CommonUserId 的函数
+  if (!sl.isRegistered<Future<String?> Function()>(instanceName: 'getCommonUserId')) {
+    sl.registerLazySingleton<Future<String?> Function()>(
+      () => () async {
+        final secureStorage = sl<ISecureStorageRepository>();
+        final commonUserId = await secureStorage.getCommonUserId();
+        return commonUserId?.toString();
+      },
+      instanceName: 'getCommonUserId',
+    );
+    print('[home_di] 注册 getCommonUserId 函数');
+  }
 
   // 注册 Data Sources
   if (!sl.isRegistered<HomeRemoteDataSource>()) {
@@ -147,6 +177,7 @@ Future<void> initHomeDi() async {
       () => HomeRemoteDataSourceImpl(
         client: sl<http.Client>(),
         baseUrl: sl(instanceName: 'baseUrl'),
+        modelBaseUrl: sl(instanceName: 'modelBaseUrl'),
         getToken: () async {
           final tokenGetter = sl<Future<String?> Function()>(instanceName: 'getAuthToken');
           return await tokenGetter() ?? '';
@@ -154,6 +185,10 @@ Future<void> initHomeDi() async {
         getUserId: () async {
           final userIdGetter = sl<Future<String?> Function()>(instanceName: 'getUserId');
           return await userIdGetter() ?? '';
+        },
+        getCommonUserId: () async {
+          final commonUserIdGetter = sl<Future<String?> Function()>(instanceName: 'getCommonUserId');
+          return await commonUserIdGetter() ?? '1';
         },
       ),
     );

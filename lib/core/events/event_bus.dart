@@ -1,0 +1,56 @@
+import 'dart:async';
+
+/// 聊天消息事件类，表示一个新的聊天消息通知
+class ChatMessageEvent {
+  /// 发送者名称
+  final String senderName;
+  
+  /// 消息内容
+  final String content;
+  
+  /// 发送者ID
+  final String senderId;
+  
+  /// 聊天ID，用于导航到对应的聊天页面
+  final String chatId;
+  
+  /// 发送者头像URL
+  final String? avatarUrl;
+  
+  /// 构造函数
+  ChatMessageEvent({
+    required this.senderName,
+    required this.content,
+    required this.senderId,
+    required this.chatId,
+    this.avatarUrl,
+  });
+}
+
+/// 事件总线单例类，负责全局消息事件的分发
+class EventBus {
+  /// 私有构造函数
+  EventBus._();
+  
+  /// 单例实例
+  static final EventBus _instance = EventBus._();
+  
+  /// 工厂构造函数返回单例
+  factory EventBus() => _instance;
+  
+  /// 消息事件的广播控制器
+  final _messageStreamController = StreamController<ChatMessageEvent>.broadcast();
+  
+  /// 消息事件流
+  Stream<ChatMessageEvent> get messageStream => _messageStreamController.stream;
+  
+  /// 发送一个聊天消息事件
+  void fireChatMessageEvent(ChatMessageEvent event) {
+    _messageStreamController.add(event);
+  }
+  
+  /// 关闭事件总线
+  void dispose() {
+    _messageStreamController.close();
+  }
+} 
