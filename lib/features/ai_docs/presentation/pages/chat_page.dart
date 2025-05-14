@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:get_it/get_it.dart'; // Import GetIt
 import 'package:collection/collection.dart'; // Import collection package
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 // Import Bloc and State/Event files
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/bloc/ai_chat/ai_chat_bloc.dart'; // Use package import
@@ -69,6 +70,9 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     return Scaffold(
       // Add a drawer for the conversation sidebar
       drawer: const Drawer(
@@ -81,7 +85,7 @@ class _ChatPageState extends State<ChatPage> {
          leading: Builder(
            builder: (context) => IconButton(
              icon: const Icon(Icons.menu),
-             tooltip: '会话列表',
+             tooltip: s.ai_docs_conversation_list, // 使用国际化文本
              onPressed: () => Scaffold.of(context).openDrawer(),
            ),
          ),
@@ -92,7 +96,7 @@ class _ChatPageState extends State<ChatPage> {
                 previous.conversations != current.conversations,
            builder: (context, state) {
               final selectedId = state.selectedConversationId;
-              String title = 'AI 助手'; // Default title
+              String title = s.ai_docs_assistant_title; // 使用国际化文本
               if (selectedId != null) {
                 // Use firstWhereOrNull from collection package
                 final selectedConversation = state.conversations.firstWhereOrNull(
@@ -100,10 +104,10 @@ class _ChatPageState extends State<ChatPage> {
                 );
                 if (selectedConversation != null) {
                    // Use ?? to provide default if title is null
-                  title = selectedConversation.title ?? '未命名会话';
+                  title = selectedConversation.title ?? s.ai_docs_unnamed_conversation; // 使用国际化文本
                 } else {
                   // Conversation ID exists but object not found yet (list updating?)
-                  title = '加载中...'; // Or keep 'Conversation $selectedId'
+                  title = s.ai_docs_loading; // 使用国际化文本
                 }
               }
               return Text(title);
@@ -131,29 +135,22 @@ class _ChatPageState extends State<ChatPage> {
                   } else {
                      // Optionally show a message if no conversation is selected
                      ScaffoldMessenger.of(context).showSnackBar(
-                       const SnackBar(content: Text('请先选择一个会话')),
+                       SnackBar(content: Text(s.ai_docs_select_conversation_first)), // 使用国际化文本
                      );
                      return; // Don't show bottom sheet if no conversation
                   }
                   // Then show the bottom sheet (it will initially show loading)
                   _showRecommendationsBottomSheet(context);
                },
-               child: const Text(
-                  '匹配', // Set the text to "匹配"
-                  style: TextStyle(
+               child: Text(
+                  s.ai_docs_match_button, // 使用国际化文本
+                  style: const TextStyle(
                      fontWeight: FontWeight.bold, // Make text bold
                      fontSize: 16, // Adjust font size if needed
                   ),
                ),
              ),
            ),
-            // IconButton(
-            //    icon: const Icon(Icons.recommend_outlined), 
-            //    tooltip: 'Recommend/Dispatch', 
-            //    onPressed: () {
-            //       _showRecommendationsBottomSheet(context);
-            //    },
-            // ),
          ],
       ),
       // The body is now just the chat area (Column)
@@ -174,6 +171,9 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _sendMessage(String message) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     // Check if there's text OR pending images in the Bloc state
     // final hasPendingImages = context.read<AiChatBloc>().state.pendingImageFiles?.isNotEmpty ?? false;
 
@@ -188,7 +188,7 @@ class _ChatPageState extends State<ChatPage> {
        // Optionally provide feedback to the user.
        print("Send button pressed, but message text is empty. Not sending.");
        ScaffoldMessenger.of(context).showSnackBar(
-         const SnackBar(content: Text('请输入消息内容')),
+         SnackBar(content: Text(s.ai_docs_please_enter_message)), // 使用国际化文本
        );
     }
   }
@@ -229,6 +229,9 @@ class RecommendationBottomSheetContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     // 添加状态监听，显示分配成功提示
     return BlocListener<AiChatBloc, AiChatState>(
       listenWhen: (previous, current) => 
@@ -261,9 +264,9 @@ class RecommendationBottomSheetContent extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-             '推荐服务', 
+                children: [
+                  Text(
+                    s.ai_docs_recommended_services, // 使用国际化文本
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -301,7 +304,7 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                           const Icon(Icons.error_outline, color: Colors.red, size: 48),
                           const SizedBox(height: 16),
                           Text(
-                            "加载推荐服务失败: ${state.recommendationsErrorMessage ?? '未知错误'}",
+                            s.ai_docs_recommendations_error(state.recommendationsErrorMessage ?? ''), // 使用国际化文本
                             style: const TextStyle(color: Colors.red),
                             textAlign: TextAlign.center,
                           ),
@@ -312,19 +315,19 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                   
                   // 空状态
                  if (state.recommendations.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.inbox, color: Colors.grey, size: 48),
-                          SizedBox(height: 16),
-                          Text('暂无推荐服务', style: TextStyle(color: Colors.grey)),
+                          const Icon(Icons.inbox, color: Colors.grey, size: 48),
+                          const SizedBox(height: 16),
+                          Text(s.ai_docs_no_recommendations, style: const TextStyle(color: Colors.grey)), // 使用国际化文本
                         ],
                       ),
                     );
                    }
 
-                  // 服务列表 - 改为两列网格布局
+                  // 服务列表 - 保持不变
                   return GridView.builder(
                     padding: const EdgeInsets.all(16),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -379,6 +382,9 @@ class ServiceGridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     // 在独立Widget中使用context.select是安全的
     final allocationStatus = context.select<AiChatBloc, AllocationStatus?>(
       (bloc) => bloc.state.serviceAllocationStatus[service.id]
@@ -492,8 +498,8 @@ class ServiceGridItem extends StatelessWidget {
                           ),
                           child: Text(
                             allocationStatus == AllocationStatus.success 
-                                ? '已分发' // 成功状态显示"已分发"
-                                : '让ta看看',
+                                ? s.ai_docs_dispatched // 使用国际化文本
+                                : s.ai_docs_let_them_see, // 使用国际化文本
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 14,

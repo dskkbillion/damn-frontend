@@ -163,6 +163,14 @@ class _ProfilePageState extends State<ProfilePage> {
                         // navigationService.navigateToNotifications();
                       },
                     ),
+                    // 添加语言设置选项
+                    MenuItem(
+                      icon: Icons.language,
+                      text: '语言设置',
+                      onTap: () {
+                        context.go(ProfileRoutes.languageSettingsPath);
+                      },
+                    ),
                   ],
                 ),
 

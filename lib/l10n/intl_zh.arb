@@ -1,0 +1,68 @@
+{
+    "@@locale": "zh",
+    
+    "language_settings": "语言设置",
+    "system_language": "跟随系统",
+    "system_language_description": "自动使用设备的语言设置",
+    
+    "ai_docs_assistant_title": "AI 助手",
+    "ai_docs_unnamed_conversation": "未命名会话",
+    "ai_docs_loading": "加载中...",
+    "ai_docs_match_button": "匹配",
+    "ai_docs_select_conversation_first": "请先选择一个会话",
+    "ai_docs_please_enter_message": "请输入消息内容",
+    "ai_docs_recommended_services": "推荐服务",
+    "ai_docs_recommendations_error": "加载推荐服务失败: {error}",
+    "@ai_docs_recommendations_error": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "网络错误"
+        }
+      }
+    },
+    "ai_docs_no_recommendations": "暂无推荐服务",
+    "ai_docs_dispatched": "已分发",
+    "ai_docs_let_them_see": "让ta看看",
+    
+    "ai_docs_add_image": "添加图片",
+    "ai_docs_stop_recording": "停止录音",
+    "ai_docs_start_recording": "录制语音", 
+    "ai_docs_recording": "正在录音...点击停止发送",
+    "ai_docs_enter_message": "输入消息...",
+    "ai_docs_stop_generation": "停止生成",
+    "ai_docs_send_message": "发送消息",
+    "ai_docs_uploading_images": "图片正在上传中，请稍候...",
+    "ai_docs_mic_permission_denied": "麦克风权限被拒绝",
+    "ai_docs_recording_error": "开始录音出错: {error}",
+    "@ai_docs_recording_error": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "权限错误"
+        }
+      }
+    },
+    "ai_docs_recording_file_not_found": "错误：未找到录音文件",
+    "ai_docs_stop_recording_error": "停止录音出错",
+    "ai_docs_stop_recording_error_with_reason": "停止录音出错: {error}",
+    "@ai_docs_stop_recording_error_with_reason": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "文件保存失败"
+        }
+      }
+    },
+    "ai_docs_image_picking_error": "选择图片出错: {error}",
+    "@ai_docs_image_picking_error": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "文件过大"
+        }
+      }
+    },
+    "ai_docs_conversation_list": "会话列表",
+    "ai_docs_no_messages": "暂无消息，开始聊天吧！"
+}

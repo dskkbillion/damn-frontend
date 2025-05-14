@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 import '../bloc/ai_chat/ai_chat_bloc.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_chat_message_entity.dart';
@@ -10,6 +11,9 @@ class ChatMessageList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     return BlocBuilder<AiChatBloc, AiChatState>(
       builder: (context, state) {
         // --- Handle Loading/Error/Empty States ---
@@ -20,8 +24,10 @@ class ChatMessageList extends StatelessWidget {
              return Center(
                  child: Padding(
                      padding: const EdgeInsets.all(16.0),
-                     child: Text("加载历史记录失败: ${state.errorMessage ?? '未知错误'}", 
-                                style: const TextStyle(color: Colors.red)),
+                     child: Text(
+                       s.ai_docs_recommendations_error(state.errorMessage ?? '未知错误'),
+                       style: const TextStyle(color: Colors.red)
+                     ),
                  )
              );
          }
@@ -29,8 +35,8 @@ class ChatMessageList extends StatelessWidget {
           if (state.messages.isEmpty && 
               state.status != AiChatStatus.streamingResponse && 
               state.status != AiChatStatus.loadingHistory) {
-             return const Center(
-                 child: Text("暂无消息，开始聊天吧！")
+             return Center(
+                 child: Text(s.ai_docs_no_messages) // 使用国际化文本
              );
          }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // 导入SharedPreferences
 
 // Import the root App Widget
 import 'package:dskk_flutter_refactor/app/app.dart';
@@ -20,6 +21,7 @@ import 'package:dskk_flutter_refactor/features/home/presentation/navigation/home
 import 'package:dskk_flutter_refactor/app/navigation/app_router.dart'; // GoRouter provider
 import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart'; // 导入路由配置
 import 'package:dskk_flutter_refactor/app/app_mode.dart'; // 导入应用模式
+import 'package:dskk_flutter_refactor/core/config/locale_provider.dart'; // 导入语言提供者
 
 /// 卖家演示入口
 /// 用于演示展示卖家界面
@@ -41,6 +43,10 @@ Future<void> main() async {
       print("[main_seller_preview] Error loading .env file: $e. Using fallback.");
       backendBaseUrl = 'https://app.duoshaokankan.com/prod-api'; // Fallback on error
   }
+
+  // 初始化SharedPreferences
+  final prefs = await SharedPreferences.getInstance();
+  print('[main_seller_preview] SharedPreferences initialized.');
 
   // Initialize dependencies (using the same configuration as the main app)
   await configureDependencies(backendBaseUrl: backendBaseUrl!);
@@ -94,6 +100,8 @@ Future<void> main() async {
       overrides: [
         // 设置为卖家模式
         appModeProvider.overrideWith((ref) => AppMode.seller),
+        // 添加SharedPreferences提供者覆盖
+        sharedPreferencesProvider.overrideWithValue(prefs),
       ],
       child: Builder(
         builder: (context) {

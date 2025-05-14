@@ -1,0 +1,36 @@
+{
+    "@@locale": "en",
+    
+    "language_settings": "Language Settings",
+    "system_language": "System Language",
+    "system_language_description": "Automatically use device language settings",
+    
+    "ai_docs_assistant_title": "AI Assistant",
+    "ai_docs_unnamed_conversation": "Unnamed Conversation",
+    "ai_docs_loading": "Loading...",
+    "ai_docs_match_button": "Match",
+    "ai_docs_select_conversation_first": "Please select a conversation first",
+    "ai_docs_please_enter_message": "Please enter a message",
+    "ai_docs_recommended_services": "Recommended Services",
+    "ai_docs_recommendations_error": "Failed to load recommendations: {error}",
+    "ai_docs_no_recommendations": "No recommendations available",
+    "ai_docs_dispatched": "Dispatched",
+    "ai_docs_let_them_see": "Let them see",
+    
+    "ai_docs_add_image": "Add Image",
+    "ai_docs_stop_recording": "Stop Recording",
+    "ai_docs_start_recording": "Record Voice",
+    "ai_docs_recording": "Recording... tap to stop",
+    "ai_docs_enter_message": "Enter message...",
+    "ai_docs_stop_generation": "Stop Generation",
+    "ai_docs_send_message": "Send Message",
+    "ai_docs_uploading_images": "Images uploading, please wait...",
+    "ai_docs_mic_permission_denied": "Microphone permission denied",
+    "ai_docs_recording_error": "Error starting recording: {error}",
+    "ai_docs_recording_file_not_found": "Error: Recording file not found",
+    "ai_docs_stop_recording_error": "Error stopping recording",
+    "ai_docs_stop_recording_error_with_reason": "Error stopping recording: {error}",
+    "ai_docs_image_picking_error": "Error selecting image: {error}",
+    "ai_docs_conversation_list": "Conversation List",
+    "ai_docs_no_messages": "No messages yet. Start chatting!"
+}

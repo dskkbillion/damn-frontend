@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart'; // Import dotenv
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import ProviderScope (from auth-module)
 import 'package:package_info_plus/package_info_plus.dart'; // Import PackageInfo (from HEAD)
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import FlutterSecureStorage (from HEAD)
+import 'package:shared_preferences/shared_preferences.dart'; // 导入SharedPreferences
 
 // Import the root App Widget
 import 'package:dskk_flutter_refactor/app/app.dart';
@@ -10,6 +11,8 @@ import 'package:dskk_flutter_refactor/app/app.dart';
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart'; // Exports getIt
 // Import necessary for accessing the repository interface (from auth-module)
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
+// 导入语言提供者
+import 'package:dskk_flutter_refactor/core/config/locale_provider.dart';
 
 Future<void> main() async { // Make main async
   // Ensure Flutter binding is initialized (required for async operations before runApp)
@@ -32,18 +35,8 @@ Future<void> main() async { // Make main async
     print('Using fallback Base URL due to error: $backendBaseUrl');
   }
 
-  // --- Register PackageInfo (needed before configureDependencies) (from HEAD) ---
-  // try {
-  //   final packageInfo = await PackageInfo.fromPlatform();
-  //   getIt.registerSingleton<PackageInfo>(packageInfo); // Use the global getIt instance
-  //   print('[main] Registered PackageInfo: ${packageInfo.packageName} v${packageInfo.version}');
-  // } catch (e) {
-  //   print('[main] ERROR: Failed to get or register PackageInfo: $e');
-  //   // Decide if the app can run without PackageInfo or should throw
-  //   throw Exception('Failed to initialize PackageInfo');
-  // }
-  // Registration will be handled by @preResolve in RegisterModule
-  // --------------------------------------------------------------------------
+  // 初始化SharedPreferences
+  final prefs = await SharedPreferences.getInstance();
 
   // Initialize dependencies, passing the Base URL (from auth-module)
   await configureDependencies(backendBaseUrl: backendBaseUrl!); // Pass the non-null URL
@@ -82,7 +75,11 @@ Future<void> main() async { // Make main async
 
   // Run the application, wrapped in ProviderScope (from auth-module)
   runApp(
-    ProviderScope( // Wrap the root widget with ProviderScope
+    ProviderScope(
+      overrides: [
+        // 覆盖sharedPreferencesProvider
+        sharedPreferencesProvider.overrideWithValue(prefs),
+      ],
       child: const MyApp(), // Use MyApp as the root widget name
     ),
   );
