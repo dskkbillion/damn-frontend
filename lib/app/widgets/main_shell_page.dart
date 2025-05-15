@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart'; // 导入SVG插件
 import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 /// 主壳页面，支持可配置的开发tab
 class MainShellPage extends ConsumerWidget {
@@ -20,37 +22,49 @@ class MainShellPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // 读取是否显示开发tab的配置
     final showDevTab = ref.watch(showDevTabProvider);
+    // 获取国际化资源
+    final s = S.of(context);
     
     // 根据配置构建导航栏项目
     final List<BottomNavigationBarItem> items = [
-      const BottomNavigationBarItem(
-        icon: Icon(Icons.auto_awesome_outlined),
-        activeIcon: Icon(Icons.auto_awesome),
-        label: 'AI助手',
+      BottomNavigationBarItem(
+        icon: SvgPicture.asset(
+          'assets/icons/nav/dskk_logo.svg',
+          width: 24,
+          height: 24,
+          colorFilter: const ColorFilter.mode(Colors.grey, BlendMode.srcIn),
+        ),
+        activeIcon: SvgPicture.asset(
+          'assets/icons/nav/dskk_logo.svg',
+          width: 24,
+          height: 24,
+          colorFilter: ColorFilter.mode(const Color(0xFFD0903D), BlendMode.srcIn),
+        ),
+        label: s.nav_ai_assistant,
       ),
-      const BottomNavigationBarItem(
-        icon: Icon(Icons.home_outlined),
-        activeIcon: Icon(Icons.home),
-        label: '主页',
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.home_outlined),
+        activeIcon: const Icon(Icons.home),
+        label: s.nav_home,
       ),
-      const BottomNavigationBarItem(
-        icon: Icon(Icons.chat_bubble_outline),
-        activeIcon: Icon(Icons.chat_bubble),
-        label: '消息',
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.chat_bubble_outline),
+        activeIcon: const Icon(Icons.chat_bubble),
+        label: s.nav_messages,
       ),
-      const BottomNavigationBarItem(
-        icon: Icon(Icons.person_outline),
-        activeIcon: Icon(Icons.person),
-        label: '我的',
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.person_outline),
+        activeIcon: const Icon(Icons.person),
+        label: s.nav_profile,
       ),
     ];
     
     // 仅在配置为显示开发tab时添加
     if (showDevTab) {
-      items.add(const BottomNavigationBarItem(
-        icon: Icon(Icons.developer_mode_outlined),
-        activeIcon: Icon(Icons.developer_mode),
-        label: '开发',
+      items.add(BottomNavigationBarItem(
+        icon: const Icon(Icons.developer_mode_outlined),
+        activeIcon: const Icon(Icons.developer_mode),
+        label: s.nav_dev,
       ));
     }
 

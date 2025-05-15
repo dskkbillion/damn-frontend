@@ -13,6 +13,14 @@
     "ai_docs_please_enter_message": "Please enter a message",
     "ai_docs_recommended_services": "Recommended Services",
     "ai_docs_recommendations_error": "Failed to load recommendations: {error}",
+    "@ai_docs_recommendations_error": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "Network error"
+        }
+      }
+    },
     "ai_docs_no_recommendations": "No recommendations available",
     "ai_docs_dispatched": "Dispatched",
     "ai_docs_let_them_see": "Let them see",
@@ -27,10 +35,258 @@
     "ai_docs_uploading_images": "Images uploading, please wait...",
     "ai_docs_mic_permission_denied": "Microphone permission denied",
     "ai_docs_recording_error": "Error starting recording: {error}",
+    "@ai_docs_recording_error": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "Permission error"
+        }
+      }
+    },
     "ai_docs_recording_file_not_found": "Error: Recording file not found",
     "ai_docs_stop_recording_error": "Error stopping recording",
     "ai_docs_stop_recording_error_with_reason": "Error stopping recording: {error}",
+    "@ai_docs_stop_recording_error_with_reason": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "File save failed"
+        }
+      }
+    },
     "ai_docs_image_picking_error": "Error selecting image: {error}",
+    "@ai_docs_image_picking_error": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "File too large"
+        }
+      }
+    },
     "ai_docs_conversation_list": "Conversation List",
-    "ai_docs_no_messages": "No messages yet. Start chatting!"
+    "ai_docs_no_messages": "No messages yet. Start chatting!",
+    
+    "ai_docs_new_chat": "New Chat",
+    "ai_docs_load_conversations_failed": "Failed to load conversations",
+    "ai_docs_retry": "Retry",
+    "ai_docs_no_conversations": "No conversations yet",
+    "ai_docs_delete_conversation_tooltip": "Delete conversation",
+    "ai_docs_delete_conversation_title": "Delete conversation?",
+    "ai_docs_delete_conversation_content": "Are you sure you want to permanently delete this conversation?",
+    "ai_docs_cancel": "Cancel",
+    "ai_docs_delete": "Delete",
+    "ai_docs_please_select_conversation_to_delete": "Please select the conversation to delete first",
+    
+    "nav_ai_assistant": "DSKK",
+    "nav_home": "Home",
+    "nav_messages": "Messages",
+    "nav_profile": "Profile",
+    "nav_dev": "Dev",
+    
+    "nav_seller_analytics": "Analytics",
+    "nav_seller_products": "Products",
+    "nav_seller_messages": "Messages",
+    "nav_seller_profile": "Profile",
+    
+    "chat_list_title": "Chat List",
+    "chat_loading": "Loading...",
+    "chat_error_loading": "Loading failed: {error}",
+    "@chat_error_loading": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "Network error"
+        }
+      }
+    },
+    "chat_no_messages": "No messages yet. Start chatting!",
+    "chat_admin_title": "System Admin",
+    "chat_notification_center": "Notification Center",
+    "chat_notification_description": "System, orders, reviews and important notifications",
+    "chat_enter_message": "Enter message...",
+    "chat_yesterday": "Yesterday",
+    "chat_image_message": "[Image]",
+    "chat_audio_message": "[Audio]",
+    "chat_revoked_message": "[Message withdrawn]",
+    "chat_unknown_message": "[Unknown message]",
+    "chat_unknown_user": "Unknown User",
+    "chat_invalid_session": "Invalid session",
+    "chat_opponent_not_found": "Cannot find the other party's information",
+    
+    "chat_pick_from_gallery": "Pick from Gallery",
+    "chat_take_photo": "Take Photo",
+    "chat_send_markdown": "Send Markdown Example",
+    "chat_switch_to_text": "Switch to Text Input",
+    "chat_switch_to_voice": "Switch to Voice Input",
+    "chat_send": "Send",
+    "chat_attach": "Send Image/File",
+    "chat_press_to_talk": "Press to Talk",
+    "chat_release_to_send": "Release to Send ({duration}s)",
+    "@chat_release_to_send": {
+      "placeholders": {
+        "duration": {
+          "type": "int",
+          "example": "5"
+        }
+      }
+    },
+    
+    "chat_camera_permission_denied_title": "Camera Permission Denied",
+    "chat_camera_permission_denied_message": "Please enable camera permission in system settings to use the photo feature.",
+    "chat_mic_permission_denied_title": "Microphone Permission Denied",
+    "chat_mic_permission_denied_message": "Please enable microphone permission in system settings to use the recording feature.",
+    "chat_permission_denied_cancel": "Cancel",
+    "chat_permission_denied_settings": "Settings",
+    "chat_mic_permission_denied": "Microphone permission denied, cannot record",
+    "chat_camera_permission_denied": "Camera permission denied, cannot take photo",
+    "chat_recording_error": "Error starting recording: {error}",
+    "@chat_recording_error": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "Permission error"
+        }
+      }
+    },
+    "chat_stop_recording_error": "Error stopping recording: {error}",
+    "@chat_stop_recording_error": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "File save failed"
+        }
+      }
+    },
+    "chat_image_picking_error": "Error selecting image: {error}",
+    "@chat_image_picking_error": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "File too large"
+        }
+      }
+    },
+    "chat_web_recording_not_supported": "Recording is not supported on Web platform",
+    
+    "profile_personal_center": "Personal Center",
+    "profile_login_prompt": "Please login to view your profile",
+    "profile_login_button": "Login",
+    "profile_loading_error": "Loading failed: {error}",
+    "@profile_loading_error": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "Network error"
+        }
+      }
+    },
+    
+    "profile_my_dskk": "My DSKK",
+    "profile_favorites": "Favorites",
+    "profile_my_wallet": "My Wallet",
+    "profile_wallet": "Wallet",
+    "profile_settings": "Settings",
+    "profile_account_security": "Account & Security",
+    "profile_message_notifications": "Message Notifications",
+    "profile_about_us": "About Us",
+    "profile_assistant_mission": "Assistant's Mission",
+    
+    "profile_switch_to_seller": "Switch to Seller Mode",
+    "profile_switch_error": "Unable to switch to seller mode: {error}",
+    "@profile_switch_error": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "Network error"
+        }
+      }
+    },
+    
+    "profile_edit_nickname": "Edit Nickname",
+    "profile_nickname_hint": "Please enter new nickname",
+    "profile_cancel": "Cancel",
+    "profile_save": "Save",
+    "profile_default_name": "User",
+    "profile_online": "Online",
+    "profile_offline": "Offline",
+    
+    "profile_orders": "My Orders",
+    "profile_pending_payment": "Pending",
+    "profile_in_progress": "Processing",
+    "profile_completed": "Completed",
+    "profile_refund": "Support",
+    "profile_navigation_error": "Unable to navigate to order list: {error}",
+    "@profile_navigation_error": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "Navigation error"
+        }
+      }
+    },
+
+    "home_title": "Home",
+    "home_search_hint": "Search services",
+    "home_loading": "Loading...",
+    "home_loading_failed": "Loading failed: {error}",
+    "@home_loading_failed": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "Network error"
+        }
+      }
+    },
+    "home_retry": "Retry",
+    "home_end_of_list": "End of list",
+    "home_banner_clicked": "Banner clicked: {targetType} - {targetValue}",
+    "@home_banner_clicked": {
+      "placeholders": {
+        "targetType": {
+          "type": "String",
+          "example": "Product"
+        },
+        "targetValue": {
+          "type": "String",
+          "example": "12345"
+        }
+      }
+    },
+    "home_product_card_clicked": "Service card clicked: {name}",
+    "@home_product_card_clicked": {
+      "placeholders": {
+        "name": {
+          "type": "String",
+          "example": "Design service"
+        }
+      }
+    },
+    "home_recommend_clicked": "Let them see button clicked: {name}",
+    "@home_recommend_clicked": {
+      "placeholders": {
+        "name": {
+          "type": "String",
+          "example": "Design service"
+        }
+      }
+    },
+    
+    "product_recommend_button": "Let them see",
+    "product_image_loading_failed": "Image loading failed",
+    "product_default_name": "Product",
+    
+    "search_title": "Search",
+    "search_button": "Search",
+    "search_hot_keywords": "Hot Keywords",
+    "search_history": "Search History",
+    "search_no_results": "No relevant services found",
+    "search_failed": "Search failed: {error}",
+    "@search_failed": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "Network error"
+        }
+      }
+    }
 }

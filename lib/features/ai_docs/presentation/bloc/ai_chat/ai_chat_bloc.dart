@@ -906,7 +906,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
              final sendMessageParams = {
                'chatId': chatId,
                'context': messageContent, // 使用分发返回的专业总结作为消息内容
-               'type': 'text',
+               'type': 'allocate',
              };
              
              print("发送消息请求参数: $sendMessageParams");

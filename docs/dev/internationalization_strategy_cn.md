@@ -322,8 +322,34 @@ Text(s.ai_docs_assistant_title)
 1. `lib/features/ai_docs/presentation/pages/chat_page.dart`
 2. `lib/features/ai_docs/presentation/widgets/chat_message_list.dart`
 3. `lib/features/ai_docs/presentation/widgets/chat_input_field.dart`
+4. `lib/features/ai_docs/presentation/widgets/conversation_sidebar.dart`
+
+此外，我们还对以下组件进行了国际化：
+
+1. `lib/app/widgets/main_shell_page.dart` - 主底部导航栏
+2. `lib/features/seller/presentation/widgets/seller_bottom_navigation_bar.dart` - 卖家模式底部导航栏
+
+我们还对聊天模块进行了国际化处理，主要文件有：
+
+1. `lib/features/chat/presentation/pages/chat_list_page.dart` - 聊天列表页面
+2. `lib/features/chat/presentation/pages/chat_room_page.dart` - 聊天室页面
+3. `lib/features/chat/presentation/widgets/message_input_bar.dart` - 消息输入栏组件
+4. `lib/features/chat/presentation/widgets/chat_list_item.dart` - 聊天列表项组件
+
+我们又对个人中心模块进行了国际化处理，主要文件有：
+
+1. `lib/features/profile/presentation/pages/profile_page.dart` - 个人中心页面
+2. `lib/features/profile/presentation/widgets/profile_header.dart` - 个人中心头部组件
+3. `lib/features/profile/presentation/widgets/order_status_section.dart` - 订单状态部分组件
 
 这些文件已从硬编码中文转换为使用国际化资源。
+
+## 使用规范
+
+1. **使用前缀组织文本**：以模块名称作为前缀，如`ai_docs_assistant_title`、`nav_home`
+2. **添加参数描述**：对于有参数的文本，在ARB文件中添加详细描述
+3. **分模块处理**：逐个模块进行国际化，确保完整测试
+4. **命名规范**：使用一致的命名规范，如`feature_component_action`或`common_component_name`
 
 ## 最佳实践
 

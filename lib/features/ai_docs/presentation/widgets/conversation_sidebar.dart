@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 // Import necessary Bloc (which exports State, Event, and Entities it imports)
 import '../bloc/ai_chat/ai_chat_bloc.dart';
@@ -13,6 +14,8 @@ class ConversationSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context); // 获取国际化资源
+    
     // Wrap the content in SafeArea to avoid status bar overlap
     return SafeArea(
       child: Container(
@@ -38,7 +41,7 @@ class ConversationSidebar extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.add_circle_outline),
-                    label: const Text('新建聊天'),
+                    label: Text(s.ai_docs_new_chat), // 使用国际化文本
                     style: ElevatedButton.styleFrom(
                        minimumSize: const Size(double.infinity, 40), 
                     ),
@@ -66,6 +69,8 @@ class ConversationSidebar extends StatelessWidget {
 
   // Helper method to build the list based on status
   Widget _buildConversationList(BuildContext context, AiChatState state) {
+     final s = S.of(context); // 获取国际化资源
+     
      switch (state.conversationsStatus) {
        case ConversationsStatus.loading:
        // Show loading indicator only if list is initially empty
@@ -85,14 +90,14 @@ class ConversationSidebar extends StatelessWidget {
                  const Icon(Icons.error_outline, color: Colors.red, size: 32),
                  const SizedBox(height: 8),
                  Text(
-                   state.conversationListErrorMessage ?? "加载会话失败", 
+                   state.conversationListErrorMessage ?? s.ai_docs_load_conversations_failed, // 使用国际化文本
                    textAlign: TextAlign.center,
                    style: const TextStyle(color: Colors.red)
                  ),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                      icon: const Icon(Icons.refresh), 
-                     label: const Text('重试'),
+                     label: Text(s.ai_docs_retry), // 使用国际化文本
                      onPressed: () => context.read<AiChatBloc>().add(LoadConversations()),
                   )
                ],
@@ -103,7 +108,7 @@ class ConversationSidebar extends StatelessWidget {
         case ConversationsStatus.initial: // Treat initial as loaded (or show loading initially)
         default:
           if (state.conversations.isEmpty) {
-             return const Center(child: Text("暂无会话"));
+             return Center(child: Text(s.ai_docs_no_conversations)); // 使用国际化文本
           }
           return _buildList(context, state.conversations, state.selectedConversationId);
      }
@@ -111,13 +116,15 @@ class ConversationSidebar extends StatelessWidget {
 
   // Helper method to build the actual ListView
   Widget _buildList(BuildContext context, List<AiConversationEntity> conversations, int? selectedId) {
+    final s = S.of(context); // 获取国际化资源
+    
     return ListView.builder(
        itemCount: conversations.length,
        itemBuilder: (context, index) {
           final conv = conversations[index];
           return ListTile(
               title: Text(
-                  conv.title?.isNotEmpty ?? false ? conv.title! : '未命名会话', 
+                  conv.title?.isNotEmpty ?? false ? conv.title! : s.ai_docs_unnamed_conversation, // 使用国际化文本
                   overflow: TextOverflow.ellipsis,
               ),
               // 移除ID展示
@@ -136,7 +143,7 @@ class ConversationSidebar extends StatelessWidget {
               // Add delete button
                trailing: IconButton(
                  icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey), // Subtle color
-                 tooltip: '删除会话',
+                 tooltip: s.ai_docs_delete_conversation_tooltip, // 使用国际化文本
                  onPressed: () => _confirmDelete(context, conv.id), // Show confirmation
                ),
             );
@@ -146,20 +153,22 @@ class ConversationSidebar extends StatelessWidget {
 
   // Helper method to show delete confirmation dialog
   Future<void> _confirmDelete(BuildContext context, int conversationId) async {
+     final s = S.of(context); // 获取国际化资源
+     
      final bool? confirm = await showDialog<bool>(
         context: context,
         builder: (BuildContext dialogContext) {
           return AlertDialog(
-            title: const Text('删除会话？'),
-            content: const Text('确定要永久删除此会话吗？'),
+            title: Text(s.ai_docs_delete_conversation_title), // 使用国际化文本
+            content: Text(s.ai_docs_delete_conversation_content), // 使用国际化文本
             actions: <Widget>[
               TextButton(
-                child: const Text('取消'),
+                child: Text(s.ai_docs_cancel), // 使用国际化文本
                 onPressed: () => Navigator.of(dialogContext).pop(false), // Return false
               ),
               TextButton(
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('删除'),
+                child: Text(s.ai_docs_delete), // 使用国际化文本
                 onPressed: () => Navigator.of(dialogContext).pop(true), // Return true
               ),
             ],
@@ -181,7 +190,7 @@ class ConversationSidebar extends StatelessWidget {
            // Maybe add DeleteConversationById(id) event?
            print("Deletion requested for non-selected conversation ID: $conversationId. Ignoring for now.");
            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('请先选择要删除的会话')),
+              SnackBar(content: Text(s.ai_docs_please_select_conversation_to_delete)), // 使用国际化文本
            );
         }
       }

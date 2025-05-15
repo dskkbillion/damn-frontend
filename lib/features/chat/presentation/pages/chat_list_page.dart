@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dskk_flutter_refactor/core/network/network_info.dart';
 import 'package:dskk_flutter_refactor/core/network/mock_network_info.dart' as mock;
 import 'dart:async'; // 添加Completer和StreamSubscription导入
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 // 引入通知相关的类
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/notification_list/notification_list_bloc.dart';
@@ -39,12 +40,15 @@ class ChatListPage extends StatelessWidget {
 
   // Helper to build the static admin list item
   Widget _buildAdminListItem(BuildContext context, int currentUserId) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     // Create a fake ChatRoom representing the admin chat
     // Use placeholder IDs and potentially a specific icon/avatar later
     final adminParticipant = Participant(
       id: 1, // Admin's internal ID (assuming 1 based on doctorId parameter)
       referId: 1, // Admin's referId (assuming 1, adjust if known)
-      nickName: '系统管理员',
+      nickName: s.chat_admin_title,
       type: 'ADMIN',
       avatar: null, // TODO: Add a specific admin icon/avatar URL later
     );
@@ -82,11 +86,14 @@ class ChatListPage extends StatelessWidget {
   
   // 添加通知中心条目构建方法
   Widget _buildNotificationItem(BuildContext context, int currentUserId) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     // 创建通知中心参与者
     final notificationParticipant = Participant(
       id: 2, // 使用不同于系统管理员的ID
       referId: 2, // 使用不同于系统管理员的referId
-      nickName: '通知中心',
+      nickName: s.chat_notification_center,
       type: 'NOTIFICATION',
       avatar: null, // 可以添加特定图标
     );
@@ -110,7 +117,7 @@ class ChatListPage extends StatelessWidget {
         id: -1,
         chatId: -2,
         senderId: 2,
-        context: '系统、订单、评价等重要通知',
+        context: s.chat_notification_description,
         type: 'text',
         createTime: DateTime.now(),
         withdrawFlag: false,
@@ -187,7 +194,7 @@ class ChatListPage extends StatelessWidget {
                   )..add(LoadNotificationList()), // 加载初始数据
                   child: Scaffold(
                     appBar: AppBar(
-                      title: const Text('通知中心'),
+                      title: Text(s.chat_notification_center),
                       centerTitle: true,
                       // 添加返回按钮
                       leading: IconButton(
@@ -208,13 +215,16 @@ class ChatListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     // TODO: Replace this placeholder with actual user ID from state/provider
     const int currentUserId = 10307; // Temporary fix, use actual referId
 
     return Scaffold(
       backgroundColor: const Color(0xFFEDEDED),
       appBar: AppBar(
-        title: const Text('聊天列表'),
+        title: Text(s.chat_list_title),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black, 
         elevation: 0.5, 
@@ -259,7 +269,7 @@ class ChatListPage extends StatelessWidget {
         child: BlocBuilder<ChatListBloc, ChatListState>(
           builder: (context, state) {
             if (state.status == ChatListStatus.loading && state.chatRooms.isEmpty) { // Show loading only initially
-              return const Center(child: CircularProgressIndicator()); 
+              return Center(child: CircularProgressIndicator()); 
             } else if (state.chatRooms.isNotEmpty) {
               // Always show the list if we have rooms, even while loading more/refreshing
               // final itemCount = state.chatRooms.length + 1; // Add 1 for admin entry
@@ -356,14 +366,14 @@ class ChatListPage extends StatelessWidget {
               return Center(
                  // Display error, but potentially still show the Admin entry above it?
                  // For now, just show the error.
-                child: Text('加载失败: ${state.errorMessage ?? "未知错误"}'), 
+                child: Text(s.chat_error_loading(state.errorMessage ?? s.chat_unknown_message)), 
               );
             } else { // Initial state
-               return const Center(child: Text('正在加载...')); 
+               return Center(child: Text(s.chat_loading)); 
             }
           },
         ),
       ),
     );
   }
-} 
+}

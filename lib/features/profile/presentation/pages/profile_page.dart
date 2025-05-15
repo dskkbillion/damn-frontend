@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 import '../bloc/profile_bloc.dart';
 import '../widgets/profile_header.dart';
@@ -38,6 +39,9 @@ class _ProfilePageState extends State<ProfilePage> {
         },
         child: BlocBuilder<ProfileBloc, ProfileState>(
           builder: (context, state) {
+            // 获取国际化资源
+            final s = S.of(context);
+            
             print('[ProfilePage] BlocBuilder received state: ${state.runtimeType}');
             
             if (state is ProfileInitial || (state is ProfileAuthStatusLoaded && !state.isAuthenticated)) {
@@ -54,7 +58,7 @@ class _ProfilePageState extends State<ProfilePage> {
             }
 
             if (state is ProfileError) {
-              return Center(child: Text('加载失败: ${state.message}'));
+              return Center(child: Text(s.profile_loading_error(state.message)));
             }
             
             return _buildMainContent(context, state); 
@@ -65,18 +69,21 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildLoginPrompt(BuildContext context) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('个人中心'),
+        title: Text(s.profile_personal_center),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              '请登录以查看您的个人资料',
-              style: TextStyle(fontSize: 18),
+            Text(
+              s.profile_login_prompt,
+              style: const TextStyle(fontSize: 18),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
@@ -85,7 +92,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 // TODO: 使用导航服务
                 // navigationService.navigateToLogin();
               },
-              child: const Text('去登录'),
+              child: Text(s.profile_login_button),
             ),
           ],
         ),
@@ -94,6 +101,9 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildMainContent(BuildContext context, ProfileState state) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
@@ -115,11 +125,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 // 我的多看
                 ProfileMenuSection(
-                  title: '我的多看',
+                  title: s.profile_my_dskk,
                   menuItems: [
                     MenuItem(
                       icon: Icons.star_border,
-                      text: '收藏',
+                      text: s.profile_favorites,
                       onTap: () {
                         // 导航到收藏列表
                         context.go('/favorites');
@@ -130,11 +140,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 // 我的钱包
                 ProfileMenuSection(
-                  title: '我的钱包',
+                  title: s.profile_my_wallet,
                   menuItems: [
                     MenuItem(
                       icon: Icons.account_balance_wallet,
-                      text: '钱包',
+                      text: s.profile_wallet,
                       onTap: () {
                         // 使用go_router导航到钱包页面
                         context.go(ProfileRoutes.walletPath);
@@ -145,11 +155,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 // 设置
                 ProfileMenuSection(
-                  title: '设置',
+                  title: s.profile_settings,
                   menuItems: [
                     MenuItem(
                       icon: Icons.security,
-                      text: '账号与安全',
+                      text: s.profile_account_security,
                       onTap: () {
                         // 使用go_router导航到账号安全页面
                         context.go(ProfileRoutes.accountSecurityPath);
@@ -157,7 +167,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     MenuItem(
                       icon: Icons.notifications_none,
-                      text: '消息通知',
+                      text: s.profile_message_notifications,
                       onTap: () {
                         // TODO: 导航到消息通知页面
                         // navigationService.navigateToNotifications();
@@ -166,7 +176,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     // 添加语言设置选项
                     MenuItem(
                       icon: Icons.language,
-                      text: '语言设置',
+                      text: s.language_settings,
                       onTap: () {
                         context.go(ProfileRoutes.languageSettingsPath);
                       },
@@ -176,11 +186,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 // 关于我们
                 ProfileMenuSection(
-                  title: '关于我们',
+                  title: s.profile_about_us,
                   menuItems: [
                     MenuItem(
                       icon: Icons.smart_toy_outlined,
-                      text: '小帮手的使命',
+                      text: s.profile_assistant_mission,
                       onTap: () {
                         // TODO: 导航到关于我们页面
                         // navigationService.navigateToAboutUs();

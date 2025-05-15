@@ -264,8 +264,8 @@ class RecommendationBottomSheetContent extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
+        children: [
+          Text(
                     s.ai_docs_recommended_services, // 使用国际化文本
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,

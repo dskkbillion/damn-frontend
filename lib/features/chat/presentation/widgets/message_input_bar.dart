@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart'; // Import image_picker
 import 'package:record/record.dart'; // Import record
 import 'package:permission_handler/permission_handler.dart'; // Import permission_handler
 import 'package:path_provider/path_provider.dart'; // Import path_provider
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 import '../bloc/chat_messages/chat_messages_bloc.dart';
 
@@ -63,10 +64,13 @@ class _MessageInputBarState extends State<MessageInputBar> {
   }
 
   Future<void> _startRecording() async {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     // --- Add Web Check --- 
     if (kIsWeb) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Web 平台暂不支持录音功能')),
+        SnackBar(content: Text(s.chat_web_recording_not_supported)),
       );
       return;
     }
@@ -82,15 +86,15 @@ class _MessageInputBarState extends State<MessageInputBar> {
         showDialog(
             context: context,
             builder: (context) => AlertDialog(
-                title: const Text('麦克风权限已被禁用'),
-                content: const Text('请在系统设置中手动开启麦克风权限才能使用录音功能。'),
+                title: Text(s.chat_mic_permission_denied_title),
+                content: Text(s.chat_mic_permission_denied_message),
                 actions: <Widget>[
                     TextButton(
-                        child: const Text('取消'),
+                        child: Text(s.chat_permission_denied_cancel),
                         onPressed: () => Navigator.of(context).pop(),
                     ),
                     TextButton(
-                        child: const Text('去设置'),
+                        child: Text(s.chat_permission_denied_settings),
                         onPressed: () {
                             Navigator.of(context).pop();
                             openAppSettings(); // Open app settings
@@ -112,7 +116,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
     if (!status.isGranted) {
       // FIX: Provide slightly more context if denied after request
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('未获得麦克风权限，无法录音')),
+        SnackBar(content: Text(s.chat_mic_permission_denied)),
       );
       return;
     }
@@ -141,7 +145,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
     } catch (e) {
       print('Error starting recording: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('无法开始录音: $e')),
+        SnackBar(content: Text(s.chat_recording_error('$e'))),
       );
       _resetRecordingState();
     }
@@ -159,6 +163,9 @@ class _MessageInputBarState extends State<MessageInputBar> {
   }
 
   Future<void> _stopRecordingAndSend() async {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     _recordingTimer?.cancel();
     try {
       final path = await _audioRecorder.stop();
@@ -178,7 +185,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
     } catch (e) {
       print('Error stopping recording: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('停止录音失败: $e')),
+        SnackBar(content: Text(s.chat_stop_recording_error('$e'))),
       );
     } finally {
       if(mounted) {
@@ -217,6 +224,9 @@ class _MessageInputBarState extends State<MessageInputBar> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     // --- Camera Permission Check --- 
     if (source == ImageSource.camera) {
       var status = await Permission.camera.status;
@@ -227,15 +237,15 @@ class _MessageInputBarState extends State<MessageInputBar> {
         showDialog(
             context: context,
             builder: (context) => AlertDialog(
-                title: const Text('相机权限已被禁用'),
-                content: const Text('请在系统设置中手动开启相机权限才能使用拍照功能。'),
+                title: Text(s.chat_camera_permission_denied_title),
+                content: Text(s.chat_camera_permission_denied_message),
                 actions: <Widget>[
                     TextButton(
-                        child: const Text('取消'),
+                        child: Text(s.chat_permission_denied_cancel),
                         onPressed: () => Navigator.of(context).pop(),
                     ),
                     TextButton(
-                        child: const Text('去设置'),
+                        child: Text(s.chat_permission_denied_settings),
                         onPressed: () {
                             Navigator.of(context).pop();
                             openAppSettings(); // Open app settings
@@ -256,7 +266,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
       // Check final status
       if (!status.isGranted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('未获得相机权限，无法拍照')),
+          SnackBar(content: Text(s.chat_camera_permission_denied)),
         );
         return;
       }
@@ -279,13 +289,57 @@ class _MessageInputBarState extends State<MessageInputBar> {
     } catch (e) {
        print('Error picking image: $e');
        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('选择图片出错: $e')),
+          SnackBar(content: Text(s.chat_image_picking_error('$e'))), 
       ); 
     }
   }
 
+  // 添加一个示例Markdown消息快捷发送方法
+  void _sendMarkdownExample() {
+    // 关闭底部菜单
+    Navigator.of(context).pop();
+    
+    // 示例Markdown消息，包含多种Markdown元素
+    const String markdownExample = """
+# 这是一级标题
+## 这是二级标题
+
+这是**粗体**文本和*斜体*文本。
+
+- 这是列表项1
+- 这是列表项2
+  - 这是嵌套列表项
+
+> 这是引用文本，支持多行显示
+> 第二行引用
+
+[这是一个链接](https://flutter.dev)
+
+下面是代码示例:
+```dart
+void main() {
+  print('Hello, Markdown!');
+}
+```
+
+表格示例:
+| 列1 | 列2 |
+|-----|-----|
+| 内容1 | 内容2 |
+| 内容3 | 内容4 |
+""";
+
+    // 发送Markdown消息
+    context.read<ChatMessagesBloc>().add(
+      SendMessageRequested(type: 'text', text: markdownExample),
+    );
+  }
+
   void _showAttachmentMenu(BuildContext context) {
-     showModalBottomSheet(
+    // 获取国际化资源
+    final s = S.of(context);
+     
+    showModalBottomSheet(
         context: context,
         builder: (BuildContext bc) {
           return SafeArea(
@@ -293,18 +347,24 @@ class _MessageInputBarState extends State<MessageInputBar> {
               children: <Widget>[
                 ListTile(
                     leading: const Icon(Icons.photo_library),
-                    title: const Text('从相册选择'),
+                    title: Text(s.chat_pick_from_gallery),
                     onTap: () {
                       Navigator.of(context).pop(); // Close bottom sheet
                       _pickImage(ImageSource.gallery);
                     }),
                 ListTile(
                   leading: const Icon(Icons.photo_camera),
-                  title: const Text('拍照'),
+                  title: Text(s.chat_take_photo),
                   onTap: () {
                      Navigator.of(context).pop(); // Close bottom sheet
                     _pickImage(ImageSource.camera);
                   },
+                ),
+                // 添加Markdown消息示例按钮
+                ListTile(
+                  leading: const Icon(Icons.text_format),
+                  title: Text(s.chat_send_markdown),
+                  onTap: _sendMarkdownExample,
                 ),
                  // TODO: Add options for file selection etc. later
               ],
@@ -315,6 +375,9 @@ class _MessageInputBarState extends State<MessageInputBar> {
 
   // Helper widget builders
   Widget _buildVoiceKeyboardButton() {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     return IconButton(
       icon: Icon(_isVoiceMode ? Icons.keyboard_alt_outlined : Icons.mic_none_outlined),
       onPressed: () {
@@ -324,19 +387,22 @@ class _MessageInputBarState extends State<MessageInputBar> {
         // Hide keyboard if switching to voice mode
         if (_isVoiceMode) FocusScope.of(context).unfocus();
       },
-      tooltip: _isVoiceMode ? '切换到文本输入' : '切换到语音输入',
+      tooltip: _isVoiceMode ? s.chat_switch_to_text : s.chat_switch_to_voice,
       color: Colors.grey[700],
     );
   }
 
   Widget _buildTextField() {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     return TextField(
       controller: _controller,
       maxLines: 5, // Allow multi-line input
       minLines: 1,
       textInputAction: TextInputAction.newline, // Or send on enter? Decide behavior
       decoration: InputDecoration(
-        hintText: '输入消息...',
+        hintText: s.chat_enter_message,
         filled: true,
         fillColor: Colors.grey[100],
         contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
@@ -358,8 +424,11 @@ class _MessageInputBarState extends State<MessageInputBar> {
   }
 
   Widget _buildPressToTalkButton() {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     Color buttonColor = _isRecording ? Colors.red : Theme.of(context).primaryColor;
-    String buttonText = _isRecording ? '松开 发送 (${_recordingDuration}s)' : '按住 说话';
+    String buttonText = _isRecording ? s.chat_release_to_send(_recordingDuration) : s.chat_press_to_talk;
 
     return GestureDetector(
       // Use LongPressDraggable or simple LongPress handlers based on complexity needed
@@ -399,21 +468,27 @@ class _MessageInputBarState extends State<MessageInputBar> {
   }
 
   Widget _buildAttachmentButton() {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     return IconButton(
       icon: const Icon(Icons.add_circle_outline),
       onPressed: () => _showAttachmentMenu(context),
-      tooltip: '发送图片/文件',
+      tooltip: s.chat_attach,
       color: Colors.grey[700],
     );
   }
 
   Widget _buildSendButton() {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     return Visibility(
       visible: _canSend && !_isVoiceMode, // Show only if text entered and not in voice mode
       child: IconButton(
         icon: const Icon(Icons.send),
         onPressed: _sendMessage,
-        tooltip: '发送',
+        tooltip: s.chat_send,
         color: Theme.of(context).primaryColor, // Use theme color
       ),
     );

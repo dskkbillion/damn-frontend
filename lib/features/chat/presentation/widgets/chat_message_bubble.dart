@@ -5,10 +5,14 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
+import 'package:flutter_markdown/flutter_markdown.dart'; // 导入Markdown渲染包
+import 'package:url_launcher/url_launcher.dart'; // 导入URL处理包
 
 import '../../domain/entities/chat_message.dart';
 import '../bloc/chat_messages/chat_messages_bloc.dart'; // Import ChatMessagesBloc
 import '../../domain/entities/participant.dart'; // Import Participant
+import 'allocate_message_bubble.dart'; // 导入新创建的allocate消息气泡组件
+import '../utils/markdown_style_helper.dart'; // 导入Markdown样式助手
 
 // Helper function to format duration (e.g., 0:05, 1:23)
 String _formatDuration(Duration? duration) {
@@ -205,6 +209,15 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         )
       : const SizedBox(width: 44);
 
+    // 对于allocate类型的消息，使用专门的组件
+    if (widget.message.type == 'allocate' && !isRevoked) {
+      return AllocateMessageBubble(
+        message: widget.message,
+        sellerName: _getSellerName(),
+        isCurrentUserMessage: isCurrentUser,
+      );
+    }
+
     // 对于图片消息，直接返回图片而不是包裹在气泡中
     if (widget.message.type == 'image' && !isRevoked) {
       return Container(
@@ -264,11 +277,27 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           style: TextStyle(color: Colors.grey[500], fontStyle: FontStyle.italic),
         );
      } else if (widget.message.type == 'text') {
-       // Use the passed textColor
-       return Text(messageContext, style: TextStyle(color: textColor, fontSize: 15)); // Ensure appropriate font size
+       // 替换Text组件为Markdown渲染组件
+       return MarkdownBody(
+         data: messageContext,
+         selectable: true, // 允许用户选择文本
+         styleSheet: MarkdownStyleHelper.buildChatBubbleStyle(context, textColor),
+         onTapLink: (text, href, title) {
+           // 处理链接点击
+           if (href != null) {
+             launchUrl(Uri.parse(href), mode: LaunchMode.externalApplication);
+           }
+         },
+         // 确保内容自适应并限制在消息气泡内
+         shrinkWrap: true,
+       );
      } else if (widget.message.type == 'audio') {
        // Pass textColor and isCurrentUser to audio content
        return _buildAudioContent(context, textColor, isCurrentUser, messageContext);
+     } else if (widget.message.type == 'allocate') {
+       // allocate类型消息已经在build方法中直接返回特定组件，这里不应该被调用
+       // 但为了安全，还是提供一个处理
+       return Text(messageContext, style: TextStyle(color: textColor, fontSize: 15));
      } else {
        // Keep handling for unsupported types
        return Text('[不受支持的消息类型: ${widget.message.type}]', style: TextStyle(color: Colors.red));
@@ -467,5 +496,23 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 break;
         }
     });
+  }
+
+  // 添加一个方法用于获取allocate消息的显示名称
+  String _getSellerName() {
+    final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
+    
+    // 如果当前用户是消息发送者（买家），显示"我"
+    if (isCurrentUser) {
+      return "我";
+    }
+    
+    // 如果当前用户是消息接收者（卖家），显示对方名称（买家）
+    if (widget.opponent != null && widget.opponent!.nickName != null) {
+      return widget.opponent!.nickName!;
+    }
+    
+    // 如果无法获取对方名称，返回默认值
+    return "买家";
   }
 } 

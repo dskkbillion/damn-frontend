@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart'; // Import intl for date formatting
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_messages/chat_messages_bloc.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/chat_message_bubble.dart';
@@ -52,6 +53,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   // Helper to build the timestamp separator widget
   Widget _buildTimestampSeparator(DateTime timestamp, bool isFirstMessage) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     String formattedTime;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -82,6 +86,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   @override
   Widget build(BuildContext context) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     return Scaffold(
       backgroundColor: const Color(0xFFEDEDED), // Set background color here
       appBar: AppBar(
@@ -102,17 +109,17 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         title: BlocBuilder<ChatMessagesBloc, ChatMessagesState>(
           builder: (context, state) {
             if (state is ChatMessagesLoaded) {
-              return Text(state.opponent.nickName ?? 'Chat');
+              return Text(state.opponent.nickName ?? s.chat_unknown_user);
             } else if (state is ChatMessagesLoading && state is! ChatMessagesInitial) {
                  final bloc = context.read<ChatMessagesBloc>();
                  if (bloc.state is ChatMessagesLoaded) {
-                     return Text((bloc.state as ChatMessagesLoaded).opponent.nickName ?? 'Chat');
+                     return Text((bloc.state as ChatMessagesLoaded).opponent.nickName ?? s.chat_unknown_user);
                  }
-                  return const Text('Loading...');
+                  return Text(s.chat_loading);
             } else if (state is ChatMessagesInitial) {
-                 return const Text('Loading...');
+                 return Text(s.chat_loading);
             } else {
-              return const Text('Chat');
+              return Text(s.chat_unknown_user);
             }
           },
         ),
@@ -133,10 +140,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               builder: (context, state) {
                 if (state is ChatMessagesLoading && state is! ChatMessagesLoaded) {
                   // Show loading only if messages aren't loaded yet
-                  return const Center(child: CircularProgressIndicator());
+                  return Center(child: CircularProgressIndicator());
                 } else if (state is ChatMessagesLoaded) {
                   if (state.messages.isEmpty) {
-                    return const Center(child: Text('No messages yet. Start chatting!'));
+                    return Center(child: Text(s.chat_no_messages));
                   }
                   return ListView.builder(
                     controller: _scrollController,
@@ -190,11 +197,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   );
                 } else if (state is ChatMessagesError) {
                   return Center(
-                    child: Text('Error: ${state.message}'),
+                    child: Text(s.chat_error_loading(state.message)),
                   );
                 } else {
                   // Initial state or unexpected state
-                  return const Center(child: Text('Loading chat...'));
+                  return Center(child: Text(s.chat_loading));
                 }
               },
             ),

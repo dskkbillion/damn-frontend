@@ -36,7 +36,7 @@ class MyApp extends ConsumerWidget { // Changed to ConsumerWidget
 
         // Use the centralized light theme
         theme: AppTheme.lightTheme,
-        
+
         // 添加国际化配置
         localizationsDelegates: const [
           S.delegate, // 使用生成的S.delegate

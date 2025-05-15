@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 class OrderStatusSection extends StatelessWidget {
   const OrderStatusSection({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     return Container(
       margin: const EdgeInsets.only(top: 16),
       padding: const EdgeInsets.all(20),
@@ -23,9 +27,9 @@ class OrderStatusSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '我的订单',
-            style: TextStyle(
+          Text(
+            s.profile_orders,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
@@ -37,25 +41,25 @@ class OrderStatusSection extends StatelessWidget {
               _buildOrderStatusItem(
                 context,
                 Icons.access_time,
-                '待付款',
+                s.profile_pending_payment,
                 onTap: () => _navigateToOrders(context, 'pending'),
               ),
               _buildOrderStatusItem(
                 context,
                 Icons.sync,
-                '进行中',
+                s.profile_in_progress,
                 onTap: () => _navigateToOrders(context, 'processing'),
               ),
               _buildOrderStatusItem(
                 context,
                 Icons.check_circle_outline,
-                '已完成',
+                s.profile_completed,
                 onTap: () => _navigateToOrders(context, 'completed'),
               ),
               _buildOrderStatusItem(
                 context,
                 Icons.undo,
-                '退款/售后',
+                s.profile_refund,
                 onTap: () => _navigateToOrders(context, 'refund'),
               ),
             ],
@@ -105,6 +109,9 @@ class OrderStatusSection extends StatelessWidget {
   }
 
   void _navigateToOrders(BuildContext context, String status) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     const String basePath = '/orders';
     final String pathWithQuery = '$basePath?status=$status';
 
@@ -114,7 +121,7 @@ class OrderStatusSection extends StatelessWidget {
     } catch (e) {
       print('Error navigating to $pathWithQuery: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('无法导航到订单列表: $e')),
+        SnackBar(content: Text(s.profile_navigation_error('$e'))),
       );
     }
   }

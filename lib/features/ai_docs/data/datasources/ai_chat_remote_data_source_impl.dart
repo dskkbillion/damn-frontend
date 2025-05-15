@@ -16,6 +16,7 @@ import '../models/related_service_model.dart';
 // import '../models/chat_allocation_result_model.dart'; // Not directly used in return types
 import 'i_ai_chat_remote_data_source.dart';
 import 'exceptions.dart' as ds_exceptions;
+import 'package:dio/dio.dart';
 
 /// {@template ai_chat_remote_data_source_impl}
 /// Implementation of [IAiChatRemoteDataSource] that uses an [IHttpClient]
@@ -36,7 +37,12 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
   }
 
   // Helper to extract data or throw ServerException
-  dynamic _handleResponse(Map<String, dynamic> responseData) {
+  dynamic _handleResponse(dynamic responseData) {
+    // 处理Dio直接响应的格式
+    if (responseData is Response) {
+      responseData = responseData.data;
+    }
+    
     final int code = responseData['code'] ?? 500;
     final String message = responseData['message'] ?? 'Unknown server error';
     if (code == 200) {
@@ -404,9 +410,23 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       'item': item,
       'merchant_id': merchantId,
     };
+    
     try {
-      final responseData = await _httpClient.post(path, body: requestData);
-      return _handleResponse(responseData) as Map<String, dynamic>;
+      // 创建一个带有更长超时设置的请求选项
+      final options = Options(
+        // 设置更长的超时时间（60秒接收超时）
+        receiveTimeout: const Duration(seconds: 60),
+      );
+      
+      print("使用60秒超时发起allocate请求");
+      
+      // 使用带选项的post方法发送请求
+      final response = await _httpClient.getDioInstance().post(path, 
+        data: requestData,
+        options: options,
+      );
+      
+      return _handleResponse(response) as Map<String, dynamic>;
     } on ds_exceptions.ServerException {
       rethrow;
     } on ds_exceptions.NetworkException {

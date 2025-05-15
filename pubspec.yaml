@@ -53,6 +53,8 @@ dependencies:
 
   # UI Helpers
   cached_network_image: ^3.3.1 # Added for image caching
+  flutter_markdown: ^0.6.19 # 添加Markdown渲染支持
+  url_launcher: ^6.2.5 # 用于处理Markdown链接点击
 
   # Networking - Merged
   dio: ^5.8.0+1
@@ -121,6 +123,8 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
+    - assets/icons/
+    - assets/icons/nav/
     - .env
   #   - images/a_dot_burr.jpeg
   # An image asset can refer to one or more resolution-specific "variants", see

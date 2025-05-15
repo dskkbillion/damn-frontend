@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 import '../../domain/entities/home_feed_item.dart';
 
@@ -71,7 +72,7 @@ class ProductCard extends StatelessWidget {
               ),
               child: AspectRatio(
                 aspectRatio: aspectRatio!,
-                child: _buildImage(),
+                child: _buildImage(context),
               ),
             ),
             
@@ -149,7 +150,7 @@ class ProductCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12.0),
                             ),
                             child: Text(
-                              '让ta看看',
+                              S.of(context).product_recommend_button,
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Theme.of(context).primaryColor,
@@ -169,7 +170,10 @@ class ProductCard extends StatelessWidget {
   }
   
   /// 构建图片组件
-  Widget _buildImage() {
+  Widget _buildImage(BuildContext context) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     // 检查是否有图片URL
     if (item.images.isNotEmpty) {
       return CachedNetworkImage(
@@ -194,7 +198,7 @@ class ProductCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '图片加载失败',
+                  s.product_image_loading_failed,
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontWeight: FontWeight.bold,
@@ -223,7 +227,7 @@ class ProductCard extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                item.name.isNotEmpty ? item.name.substring(0, item.name.length > 10 ? 10 : item.name.length) : '商品',
+                item.name.isNotEmpty ? item.name.substring(0, item.name.length > 10 ? 10 : item.name.length) : s.product_default_name,
                 style: TextStyle(
                   color: Colors.grey[600],
                   fontWeight: FontWeight.bold,

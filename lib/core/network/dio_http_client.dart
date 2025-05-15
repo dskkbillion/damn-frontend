@@ -334,4 +334,10 @@ class DioHttpClient implements IHttpClient {
     return ServerException(
         message: '${statusCode != null ? '$statusCode: ' : ''}$errorMessage');
   }
+
+  // 实现获取Dio实例的方法
+  @override
+  Dio getDioInstance() {
+    return _dio;
+  }
 }
