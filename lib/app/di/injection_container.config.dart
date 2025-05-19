@@ -338,17 +338,20 @@ Future<_i174.GetIt> init(
     environment,
     environmentFilter,
   );
-  final coreRegisterModule = _$CoreRegisterModule();
   final registerModule = _$RegisterModule();
+  final coreRegisterModule = _$CoreRegisterModule();
   final chatInjectableModule = _$ChatInjectableModule();
-  await gh.factoryAsync<_i655.PackageInfo>(
-    () => coreRegisterModule.packageInfo,
-    preResolve: true,
-  );
   await gh.factoryAsync<_i460.SharedPreferences>(
     () => registerModule.prefs,
     preResolve: true,
   );
+  await gh.factoryAsync<_i655.PackageInfo>(
+    () => coreRegisterModule.packageInfo,
+    preResolve: true,
+  );
+  gh.lazySingleton<_i973.InternetConnectionChecker>(
+      () => registerModule.internetConnectionChecker);
+  gh.lazySingleton<_i519.Client>(() => registerModule.httpClient);
   gh.lazySingleton<_i558.FlutterSecureStorage>(
       () => coreRegisterModule.secureStorage);
   gh.lazySingleton<_i895.Connectivity>(() => coreRegisterModule.connectivity);
@@ -357,9 +360,6 @@ Future<_i174.GetIt> init(
       () => coreRegisterModule.navigationService);
   gh.lazySingleton<_i395.IPaymentService>(
       () => coreRegisterModule.paymentService);
-  gh.lazySingleton<_i973.InternetConnectionChecker>(
-      () => registerModule.internetConnectionChecker);
-  gh.lazySingleton<_i519.Client>(() => registerModule.httpClient);
   gh.lazySingleton<_i223.IUserRepository>(
       () => chatInjectableModule.provideChatUserRepository());
   gh.lazySingleton<_i998.IChatWebSocketDataSource>(
@@ -392,22 +392,22 @@ Future<_i174.GetIt> init(
       () => _i678.NetworkInfoImpl(gh<_i895.Connectivity>()));
   gh.factory<_i481.LegacyGetChatRoomListUseCase>(
       () => _i481.LegacyGetChatRoomListUseCase(gh<_i452.IChatRepository>()));
-  gh.lazySingleton<_i234.AllocateChatResourceUseCase>(
-      () => _i234.AllocateChatResourceUseCase(gh<_i319.IAiChatRepository>()));
-  gh.lazySingleton<_i567.CreateConversationUseCase>(
-      () => _i567.CreateConversationUseCase(gh<_i319.IAiChatRepository>()));
-  gh.lazySingleton<_i63.DeleteConversationUseCase>(
-      () => _i63.DeleteConversationUseCase(gh<_i319.IAiChatRepository>()));
   gh.lazySingleton<_i257.GetConversationsUseCase>(
       () => _i257.GetConversationsUseCase(gh<_i319.IAiChatRepository>()));
-  gh.lazySingleton<_i598.GetRelatedServicesUseCase>(
-      () => _i598.GetRelatedServicesUseCase(gh<_i319.IAiChatRepository>()));
-  gh.lazySingleton<_i830.LoadHistoryUseCase>(
-      () => _i830.LoadHistoryUseCase(gh<_i319.IAiChatRepository>()));
   gh.lazySingleton<_i558.StreamChatCompletionUseCase>(
       () => _i558.StreamChatCompletionUseCase(gh<_i319.IAiChatRepository>()));
   gh.lazySingleton<_i309.TranscribeAudioUseCase>(
       () => _i309.TranscribeAudioUseCase(gh<_i319.IAiChatRepository>()));
+  gh.lazySingleton<_i234.AllocateChatResourceUseCase>(
+      () => _i234.AllocateChatResourceUseCase(gh<_i319.IAiChatRepository>()));
+  gh.lazySingleton<_i598.GetRelatedServicesUseCase>(
+      () => _i598.GetRelatedServicesUseCase(gh<_i319.IAiChatRepository>()));
+  gh.lazySingleton<_i567.CreateConversationUseCase>(
+      () => _i567.CreateConversationUseCase(gh<_i319.IAiChatRepository>()));
+  gh.lazySingleton<_i63.DeleteConversationUseCase>(
+      () => _i63.DeleteConversationUseCase(gh<_i319.IAiChatRepository>()));
+  gh.lazySingleton<_i830.LoadHistoryUseCase>(
+      () => _i830.LoadHistoryUseCase(gh<_i319.IAiChatRepository>()));
   gh.factory<_i0.IHomeRepository>(() => _i76.HomeRepositoryImpl(
         remoteDataSource: gh<_i362.HomeRemoteDataSource>(),
         localDataSource: gh<_i299.HomeLocalDataSource>(),
@@ -467,30 +467,30 @@ Future<_i174.GetIt> init(
       ));
   gh.factory<_i431.ProductDetailCubit>(
       () => _i431.ProductDetailCubit(gh<_i0.IHomeRepository>()));
-  gh.factory<_i1.CancelOrderUseCase>(
-      () => _i1.CancelOrderUseCase(gh<_i724.IOrderRepository>()));
-  gh.factory<_i449.ConfirmOrderAcceptanceUseCase>(
-      () => _i449.ConfirmOrderAcceptanceUseCase(gh<_i724.IOrderRepository>()));
-  gh.factory<_i708.ConfirmOrderReceiptUseCase>(
-      () => _i708.ConfirmOrderReceiptUseCase(gh<_i724.IOrderRepository>()));
-  gh.factory<_i577.DeleteOrderUseCase>(
-      () => _i577.DeleteOrderUseCase(gh<_i724.IOrderRepository>()));
-  gh.factory<_i258.DeleteSellerRecordUseCase>(
-      () => _i258.DeleteSellerRecordUseCase(gh<_i724.IOrderRepository>()));
-  gh.factory<_i176.DeliverOrderUseCase>(
-      () => _i176.DeliverOrderUseCase(gh<_i724.IOrderRepository>()));
   gh.factory<_i691.GetOrderDetailUseCase>(
       () => _i691.GetOrderDetailUseCase(gh<_i724.IOrderRepository>()));
-  gh.factory<_i1015.GetOrderListUseCase>(
-      () => _i1015.GetOrderListUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i449.ConfirmOrderAcceptanceUseCase>(
+      () => _i449.ConfirmOrderAcceptanceUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i1.CancelOrderUseCase>(
+      () => _i1.CancelOrderUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i258.DeleteSellerRecordUseCase>(
+      () => _i258.DeleteSellerRecordUseCase(gh<_i724.IOrderRepository>()));
   gh.factory<_i696.InviteEvaluationUseCase>(
       () => _i696.InviteEvaluationUseCase(gh<_i724.IOrderRepository>()));
-  gh.factory<_i194.RejectOrderUseCase>(
-      () => _i194.RejectOrderUseCase(gh<_i724.IOrderRepository>()));
   gh.factory<_i40.SubmitEvaluationUseCase>(
       () => _i40.SubmitEvaluationUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i1015.GetOrderListUseCase>(
+      () => _i1015.GetOrderListUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i708.ConfirmOrderReceiptUseCase>(
+      () => _i708.ConfirmOrderReceiptUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i176.DeliverOrderUseCase>(
+      () => _i176.DeliverOrderUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i194.RejectOrderUseCase>(
+      () => _i194.RejectOrderUseCase(gh<_i724.IOrderRepository>()));
   gh.factory<_i51.SubmitRequirementsUseCase>(
       () => _i51.SubmitRequirementsUseCase(gh<_i724.IOrderRepository>()));
+  gh.factory<_i577.DeleteOrderUseCase>(
+      () => _i577.DeleteOrderUseCase(gh<_i724.IOrderRepository>()));
   gh.lazySingleton<_i691.TokenValidator>(
       () => _i691.TokenValidatorImpl(gh<_i361.Dio>()));
   gh.factory<_i671.IUserProfileRepository>(
@@ -594,34 +594,34 @@ Future<_i174.GetIt> init(
       () => chatInjectableModule.deleteChatMessage(gh<_i81.IChatRepository>()));
   gh.lazySingleton<_i690.CreateChatRoom>(
       () => chatInjectableModule.createChatRoom(gh<_i81.IChatRepository>()));
-  gh.factory<_i336.GetSellerIndexStatisticsUseCase>(() =>
-      _i336.GetSellerIndexStatisticsUseCase(
+  gh.factory<_i75.GetSellerUpgradeStatisticsUseCase>(() =>
+      _i75.GetSellerUpgradeStatisticsUseCase(
           gh<_i634.ISellerStatisticsRepository>()));
   gh.factory<_i411.GetSellerPercentStatisticsUseCase>(() =>
       _i411.GetSellerPercentStatisticsUseCase(
           gh<_i634.ISellerStatisticsRepository>()));
-  gh.factory<_i75.GetSellerUpgradeStatisticsUseCase>(() =>
-      _i75.GetSellerUpgradeStatisticsUseCase(
+  gh.factory<_i336.GetSellerIndexStatisticsUseCase>(() =>
+      _i336.GetSellerIndexStatisticsUseCase(
           gh<_i634.ISellerStatisticsRepository>()));
-  gh.factory<_i655.AddOrderDeliveryUseCase>(() => _i655.AddOrderDeliveryUseCase(
-        gh<_i203.ISellerRepository>(),
-        gh<_i569.IFileUploadRepository>(),
-      ));
   gh.factory<_i779.CreateProductUseCase>(() => _i779.CreateProductUseCase(
         gh<_i203.ISellerRepository>(),
         gh<_i569.IFileUploadRepository>(),
       ));
-  gh.factory<_i626.SubmitAuthenticationApplicationUseCase>(
-      () => _i626.SubmitAuthenticationApplicationUseCase(
-            gh<_i203.ISellerRepository>(),
-            gh<_i569.IFileUploadRepository>(),
-          ));
   gh.factory<_i267.UpdateProductUseCase>(() => _i267.UpdateProductUseCase(
+        gh<_i203.ISellerRepository>(),
+        gh<_i569.IFileUploadRepository>(),
+      ));
+  gh.factory<_i655.AddOrderDeliveryUseCase>(() => _i655.AddOrderDeliveryUseCase(
         gh<_i203.ISellerRepository>(),
         gh<_i569.IFileUploadRepository>(),
       ));
   gh.factory<_i172.UpdateStoreProfileUseCase>(
       () => _i172.UpdateStoreProfileUseCase(
+            gh<_i203.ISellerRepository>(),
+            gh<_i569.IFileUploadRepository>(),
+          ));
+  gh.factory<_i626.SubmitAuthenticationApplicationUseCase>(
+      () => _i626.SubmitAuthenticationApplicationUseCase(
             gh<_i203.ISellerRepository>(),
             gh<_i569.IFileUploadRepository>(),
           ));
@@ -668,45 +668,45 @@ Future<_i174.GetIt> init(
         gh<_i974.GetChatRoomList>(),
         gh<_i690.CreateChatRoom>(),
       ));
-  gh.factory<_i363.AuditRefundUseCase>(
-      () => _i363.AuditRefundUseCase(gh<_i203.ISellerRepository>()));
-  gh.factory<_i172.DeleteProductUseCase>(
-      () => _i172.DeleteProductUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i452.GetSellerDashboardDataUseCase>(
+      () => _i452.GetSellerDashboardDataUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i321.MarkNotificationAsReadUseCase>(
+      () => _i321.MarkNotificationAsReadUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i680.GetUnreadNotificationCountUseCase>(() =>
+      _i680.GetUnreadNotificationCountUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i725.GetSellerDraftListUseCase>(
+      () => _i725.GetSellerDraftListUseCase(gh<_i203.ISellerRepository>()));
   gh.factory<_i129.GetAutoReplyUseCase>(
       () => _i129.GetAutoReplyUseCase(gh<_i203.ISellerRepository>()));
   gh.factory<_i405.GetSellerAuthenticationStatusUseCase>(() =>
       _i405.GetSellerAuthenticationStatusUseCase(
           gh<_i203.ISellerRepository>()));
-  gh.factory<_i452.GetSellerDashboardDataUseCase>(
-      () => _i452.GetSellerDashboardDataUseCase(gh<_i203.ISellerRepository>()));
-  gh.factory<_i725.GetSellerDraftListUseCase>(
-      () => _i725.GetSellerDraftListUseCase(gh<_i203.ISellerRepository>()));
-  gh.factory<_i992.GetSellerNotificationListUseCase>(() =>
-      _i992.GetSellerNotificationListUseCase(gh<_i203.ISellerRepository>()));
-  gh.factory<_i475.GetSellerProductDetailUseCase>(
-      () => _i475.GetSellerProductDetailUseCase(gh<_i203.ISellerRepository>()));
-  gh.factory<_i679.GetSellerProductListUseCase>(
-      () => _i679.GetSellerProductListUseCase(gh<_i203.ISellerRepository>()));
-  gh.factory<_i714.GetStoreProfileUseCase>(
-      () => _i714.GetStoreProfileUseCase(gh<_i203.ISellerRepository>()));
-  gh.factory<_i237.GetTenantAuditListUseCase>(
-      () => _i237.GetTenantAuditListUseCase(gh<_i203.ISellerRepository>()));
-  gh.factory<_i1030.GetTimeSettingsUseCase>(
-      () => _i1030.GetTimeSettingsUseCase(gh<_i203.ISellerRepository>()));
-  gh.factory<_i680.GetUnreadNotificationCountUseCase>(() =>
-      _i680.GetUnreadNotificationCountUseCase(gh<_i203.ISellerRepository>()));
-  gh.factory<_i665.MarkAllNotificationsAsReadUseCase>(() =>
-      _i665.MarkAllNotificationsAsReadUseCase(gh<_i203.ISellerRepository>()));
-  gh.factory<_i321.MarkNotificationAsReadUseCase>(
-      () => _i321.MarkNotificationAsReadUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i363.AuditRefundUseCase>(
+      () => _i363.AuditRefundUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i172.DeleteProductUseCase>(
+      () => _i172.DeleteProductUseCase(gh<_i203.ISellerRepository>()));
   gh.factory<_i610.SetAutoReplyUseCase>(
       () => _i610.SetAutoReplyUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i665.MarkAllNotificationsAsReadUseCase>(() =>
+      _i665.MarkAllNotificationsAsReadUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i475.GetSellerProductDetailUseCase>(
+      () => _i475.GetSellerProductDetailUseCase(gh<_i203.ISellerRepository>()));
   gh.factory<_i311.UpdateProductStatusUseCase>(
       () => _i311.UpdateProductStatusUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i237.GetTenantAuditListUseCase>(
+      () => _i237.GetTenantAuditListUseCase(gh<_i203.ISellerRepository>()));
   gh.factory<_i528.UpdateSellerOnlineStatusUseCase>(() =>
       _i528.UpdateSellerOnlineStatusUseCase(gh<_i203.ISellerRepository>()));
   gh.factory<_i1002.UpdateTimeSettingsUseCase>(
       () => _i1002.UpdateTimeSettingsUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i679.GetSellerProductListUseCase>(
+      () => _i679.GetSellerProductListUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i992.GetSellerNotificationListUseCase>(() =>
+      _i992.GetSellerNotificationListUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i1030.GetTimeSettingsUseCase>(
+      () => _i1030.GetTimeSettingsUseCase(gh<_i203.ISellerRepository>()));
+  gh.factory<_i714.GetStoreProfileUseCase>(
+      () => _i714.GetStoreProfileUseCase(gh<_i203.ISellerRepository>()));
   gh.factory<_i110.ProductEditBloc>(() => _i110.ProductEditBloc(
         gh<_i475.GetSellerProductDetailUseCase>(),
         gh<_i779.CreateProductUseCase>(),
@@ -733,12 +733,12 @@ Future<_i174.GetIt> init(
       ));
   gh.lazySingleton<_i1057.GetAfterSalesDetailUseCase>(() =>
       _i1057.GetAfterSalesDetailUseCase(gh<_i441.IAfterSalesRepository>()));
-  gh.factory<_i970.ApplyForAfterSalesUseCase>(
-      () => _i970.ApplyForAfterSalesUseCase(gh<_i441.IAfterSalesRepository>()));
-  gh.factory<_i773.CancelAfterSalesUseCase>(
-      () => _i773.CancelAfterSalesUseCase(gh<_i441.IAfterSalesRepository>()));
   gh.factory<_i88.DeleteAfterSalesUseCase>(
       () => _i88.DeleteAfterSalesUseCase(gh<_i441.IAfterSalesRepository>()));
+  gh.factory<_i773.CancelAfterSalesUseCase>(
+      () => _i773.CancelAfterSalesUseCase(gh<_i441.IAfterSalesRepository>()));
+  gh.factory<_i970.ApplyForAfterSalesUseCase>(
+      () => _i970.ApplyForAfterSalesUseCase(gh<_i441.IAfterSalesRepository>()));
   gh.factory<_i953.GetAfterSalesListUseCase>(
       () => _i953.GetAfterSalesListUseCase(gh<_i441.IAfterSalesRepository>()));
   gh.factory<_i1060.AutoReplyBloc>(() => _i1060.AutoReplyBloc(
@@ -775,8 +775,8 @@ Future<_i174.GetIt> init(
   return getIt;
 }
 
-class _$CoreRegisterModule extends _i809.CoreRegisterModule {}
-
 class _$RegisterModule extends _i291.RegisterModule {}
+
+class _$CoreRegisterModule extends _i809.CoreRegisterModule {}
 
 class _$ChatInjectableModule extends _i559.ChatInjectableModule {}
