@@ -127,3 +127,30 @@ flutter run -t lib/main_dev_preview.dart
 
 *如有任何疑问，请随时沟通。*
 
+## iOS构建问题解决方案
+
+在M1/M2 Mac上运行iOS版本时可能遇到的常见问题及解决方案：
+
+### CocoaPods错误：`undefined method 'source_tree'`
+
+这个错误通常与CocoaPods和Xcode版本兼容性有关。解决步骤：
+
+1. **修改Podfile配置**：
+   - 设置iOS平台版本为14.0（而非更高版本）
+   - 添加`use_modular_headers!`
+   - 添加M1/M2 Mac特定的架构设置：`config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'`
+
+2. **签名问题**：
+   - 在Xcode中打开项目（`open ios/Runner.xcworkspace`）
+   - 启用"Automatically manage signing"
+   - 选择开发团队
+
+如果问题持续存在，可以尝试完全重建iOS项目：
+```bash
+rm -rf ios
+flutter clean
+flutter create --platforms=ios .
+```
+
+然后按上述步骤配置新生成的Podfile。
+
