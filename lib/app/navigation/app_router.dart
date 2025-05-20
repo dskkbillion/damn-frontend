@@ -31,6 +31,8 @@ import 'package:dskk_flutter_refactor/features/favorites/presentation/routes/fav
 import 'package:dskk_flutter_refactor/features/chat/presentation/routes/chat_routes.dart';
 // Import Seller routes
 import 'package:dskk_flutter_refactor/features/seller/presentation/routes/seller_routes.dart';
+// Import Payment routes
+import 'package:dskk_flutter_refactor/features/payment/presentation/routes/payment_routes.dart';
 
 // Import AppMode
 import 'package:dskk_flutter_refactor/app/app_mode.dart';
@@ -75,6 +77,15 @@ import 'package:dskk_flutter_refactor/features/seller/data/datasources/seller_lo
 
 // Import new page
 import 'package:dskk_flutter_refactor/features/home/presentation/pages/seller_public_profile_page.dart';
+
+// Import payment related pages and blocs
+import '../../features/payment/presentation/bloc/payment_bloc.dart';
+import '../../features/payment/presentation/pages/order_confirm_page.dart';
+import '../../features/payment/presentation/pages/payment_result_page.dart';
+
+// Import ProductDetailPage and cubit
+import '../../features/home/presentation/pages/product_detail_page.dart';
+import '../../features/home/presentation/cubit/product_detail_cubit.dart';
 
 // Placeholder page (defined once) - Only used if a module's routes aren't ready
 class PlaceholderPage extends StatelessWidget {
@@ -292,12 +303,22 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ...AfterSalesRoutes.routes,
       ...FavoritesRoutes.routes, 
       ...sellerNonShellRoutes, 
+      ...PaymentRoutes.routes, // 添加支付模块路由
 
       // 添加卖家主页路由
       GoRoute(
         path: '/seller/:id/profile',
         builder: (context, state) => SellerPublicProfilePage(
           sellerId: int.parse(state.pathParameters['id'] ?? '0'),
+        ),
+      ),
+
+      // 商品详情路由
+      GoRoute(
+        path: '/products/:id',
+        builder: (context, state) => BlocProvider(
+          create: (context) => GetIt.I<ProductDetailCubit>(),
+          child: ProductDetailPage(productId: state.pathParameters['id']!),
         ),
       ),
 

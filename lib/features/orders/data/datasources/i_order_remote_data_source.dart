@@ -1,6 +1,9 @@
 import '../../domain/entities/order_status.dart';
 import '../models/order_model.dart';
 import '../../domain/repositories/i_order_repository.dart';
+import '../../domain/entities/order.dart';
+import '../../domain/entities/order_creation_result.dart';
+import '../../domain/usecases/submit_requirements_use_case.dart';
 
 /// 定义订单远程数据源的契约。
 ///
@@ -67,12 +70,7 @@ abstract class IOrderRemoteDataSource {
   });
 
   /// Submits the final order requirements/materials.
-  Future<void> submitRequirements({
-    required String orderId,
-    required int productId,
-    required List<Map<String, String>> feature,
-    required List<String> attachmentPaths,
-  });
+  Future<void> submitRequirements(SubmitRequirementsParams params);
 
   // --- Seller specific actions ---
 
@@ -95,6 +93,15 @@ abstract class IOrderRemoteDataSource {
   /// Seller invites the buyer to evaluate the order.
   /// API endpoint needs confirmation.
   Future<void> inviteEvaluation(int orderId);
+
+  /// 创建订单
+  Future<OrderCreationResult> createOrder({
+    required int productId,
+    required int variantId,
+    required int quantity,
+    required int sellerId,
+    required double price,
+  });
 
   // TODO: Add other seller API call signatures as needed
 } 

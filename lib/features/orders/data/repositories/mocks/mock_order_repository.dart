@@ -9,6 +9,7 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/address.da
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_price_summary.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_payment_info.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_shipping_info.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_creation_result.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/repositories/i_order_repository.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_requirements_use_case.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_evaluation_use_case.dart';
@@ -406,5 +407,31 @@ class MockOrderRepository implements IOrderRepository {
     await Future.delayed(const Duration(milliseconds: 150));
     // Just simulate success
     return const Right(null);
+  }
+
+  @override
+  Future<Either<Failure, OrderCreationResult>> createOrder({
+    required int productId,
+    required int variantId,
+    required int quantity,
+    required int sellerId,
+    required double price,
+  }) async {
+    print('[MockOrderRepository] Creating order for product: $productId, variant: $variantId, quantity: $quantity');
+    await Future.delayed(const Duration(milliseconds: 300)); // 模拟网络延迟
+    
+    // 生成模拟订单ID (使用随机数)
+    final Random random = Random();
+    final String mockOrderId = 'ORDER-${DateTime.now().millisecondsSinceEpoch}-${random.nextInt(10000)}';
+    
+    // 生成模拟支付信息
+    final String mockOrderInfo = 'app_id=2021000000000000&biz_content={"timeout_express":"30m","product_code":"QUICK_MSECURITY_PAY","total_amount":"${price * quantity}","subject":"商品付款","body":"商品ID: $productId, 规格ID: $variantId","out_trade_no":"$mockOrderId"}&charset=utf-8&format=JSON&method=alipay.trade.app.pay&sign=MOCK_SIGN&timestamp=${DateTime.now().toIso8601String()}&version=1.0';
+    
+    // 返回模拟创建结果
+    return Right(OrderCreationResult(
+      orderId: mockOrderId,
+      orderInfo: mockOrderInfo,
+      totalAmount: price * quantity,
+    ));
   }
 }

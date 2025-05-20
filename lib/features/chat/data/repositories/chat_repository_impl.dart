@@ -47,7 +47,7 @@ class ChatRepositoryImpl implements IChatRepository {
       } catch (e) {
         // Catch unexpected errors during user fetch or API call
         print("Unexpected error in getChatRooms Repository: $e");
-        return Left(GeneralFailure());
+        return Left(GeneralFailure(message: '读取聊天室列表失败'));
       }
     // } else {
     //   // Handle no network connection case if needed
@@ -78,7 +78,7 @@ class ChatRepositoryImpl implements IChatRepository {
        );
     } catch (e) {
        print("Unexpected error in getMessages Repository: $e");
-       return Left(GeneralFailure());
+       return Left(GeneralFailure(message: '读取聊天消息失败'));
     }
   }
 
@@ -100,7 +100,7 @@ class ChatRepositoryImpl implements IChatRepository {
        );
     } catch (e) {
        print("Unexpected error in getRoomDetails Repository: $e");
-       return Left(GeneralFailure());
+       return Left(GeneralFailure(message: '读取聊天室详情失败'));
     }
   }
 
@@ -135,7 +135,7 @@ class ChatRepositoryImpl implements IChatRepository {
     } catch (e) {
        print("Unexpected error in sendMessage Repository: $e");
        // FIX: Use correct GeneralFailure constructor (no message)
-       return Left(GeneralFailure());
+       return Left(GeneralFailure(message: '发送消息失败'));
     }
   }
 
@@ -150,7 +150,7 @@ class ChatRepositoryImpl implements IChatRepository {
        return Left(ServerFailure(message: e.message ?? 'Server error', code: e.statusCode?.toString()));
      } catch (e) {
        print("[Repository] Unexpected error creating room: $e");
-       return Left(GeneralFailure());
+       return Left(GeneralFailure(message: '创建聊天室失败'));
      }
   }
 

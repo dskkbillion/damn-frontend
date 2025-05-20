@@ -6,6 +6,7 @@ import '../entities/order.dart';
 import '../entities/order_status.dart';
 // 导入 UseCase 中的 Params 定义
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_requirements_use_case.dart';
+import '../entities/order_creation_result.dart';
 
 // Define Params classes for complex operations
 
@@ -122,6 +123,24 @@ abstract class IOrderRepository {
   /// Seller invites the buyer to evaluate the order.
   /// API endpoint needs confirmation.
   Future<Either<Failure, void>> inviteEvaluation(int orderId);
+
+  /// 创建订单
+  /// 
+  /// 参数：
+  /// [productId] - 商品ID
+  /// [variantId] - 商品变体ID
+  /// [quantity] - 数量
+  /// [sellerId] - 卖家ID
+  /// [price] - 价格
+  /// 
+  /// 返回 [OrderCreationResult] 或 [Failure]
+  Future<Either<Failure, OrderCreationResult>> createOrder({
+    required int productId,
+    required int variantId,
+    required int quantity,
+    required int sellerId,
+    required double price,
+  });
 
   // 可选：根据需要添加其他接口方法，例如：
   // Future<Either<Failure, void>> submitMaterials(int orderId, ...);

@@ -4,14 +4,16 @@ import 'package:injectable/injectable.dart';
 import 'package:dskk_flutter_refactor/core/navigation/services/mocks/mock_navigation_service.dart';
 import 'package:dskk_flutter_refactor/core/navigation/services/i_navigation_service.dart';
 import 'package:dskk_flutter_refactor/core/payment/services/i_payment_service.dart';
-import 'package:dskk_flutter_refactor/core/payment/services/mocks/mock_payment_service.dart';
+import 'package:dskk_flutter_refactor/core/payment/services/alipay_payment_service.dart';
+import 'package:dskk_flutter_refactor/core/network/network_info.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:dskk_flutter_refactor/core/network/interceptors/app_info_interceptor.dart';
-import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart'; // Import to access AuthInterceptor
-import 'package:dskk_flutter_refactor/core/network/header_interceptor.dart'; // Import the chat header interceptor
+import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
+import 'package:dskk_flutter_refactor/core/network/header_interceptor.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 // Import database and DAO
 import 'package:dskk_flutter_refactor/core/database/app_database.dart';
@@ -19,24 +21,38 @@ import 'package:dskk_flutter_refactor/core/database/app_database.dart';
 // Import chat module DI
 import 'package:dskk_flutter_refactor/features/chat/di/chat_di.dart';
 
-// Import the generated file
-import 'injection_container.config.dart' hide module; // Hide module from generated file
+// Import payment related modules
+import '../../features/payment/presentation/bloc/payment_bloc.dart';
+import '../../features/orders/domain/usecases/create_order_use_case.dart';
 
 final getIt = GetIt.instance;
 
-@InjectableInit(
-  initializerName: r'init',
-  preferRelativeImports: true,
-  asExtension: false,
-)
+// 初始化函数，用于替代generated文件中的init函数
+Future<void> configurePaymentDependencies() async {
+  // 注册PaymentBloc
+  if (!getIt.isRegistered<PaymentBloc>()) {
+    getIt.registerFactory<PaymentBloc>(() => PaymentBloc(
+          createOrderUseCase: getIt<CreateOrderUseCase>(),
+          paymentService: getIt<IPaymentService>(),
+        ));
+    print('[DI] Registered PaymentBloc');
+  } else {
+    print('[DI] PaymentBloc already registered, skipping registration');
+  }
+}
+
 Future<void> configureDependencies({required String backendBaseUrl}) async {
   // Register backendBaseUrl as named instance 
   getIt.registerSingleton<String>(backendBaseUrl, instanceName: 'backendBaseUrl');
   print('[DI] Registered backendBaseUrl: $backendBaseUrl');
 
-  // Initialize injectable configurations (processes RegisterModule)
-  await init(getIt); 
-  print('[DI] Injectable initialization complete.');
+  // 手动初始化配置，代替generated文件
+  await registerCoreDependencies();
+  print('[DI] Core dependencies initialization complete.');
+  
+  // 注册支付模块依赖
+  await configurePaymentDependencies();
+  print('[DI] Payment dependencies initialization complete.');
   
   // 注册聊天模块所需的额外依赖（特别是带参数的BLoC）
   registerChatBlocs();
@@ -49,30 +65,46 @@ void registerChatBlocs() {
   registerChatMessagesBloc(getIt);
 }
 
-@module
-abstract class CoreRegisterModule {
-  // Dio factory method
-  @lazySingleton
-  Dio createDio(
-    @Named('backendBaseUrl') String baseUrl,
-    AppInfoInterceptor appInfoInterceptor,
-    FlutterSecureStorage secureStorage, // Inject SecureStorage
-  ) {
+// 注册核心依赖
+Future<void> registerCoreDependencies() async {
+  final packageInfo = await PackageInfo.fromPlatform();
+  getIt.registerSingleton<PackageInfo>(packageInfo);
+  
+  // 注册FlutterSecureStorage
+  getIt.registerLazySingleton<FlutterSecureStorage>(() => const FlutterSecureStorage());
+  
+  // 注册Connectivity
+  getIt.registerLazySingleton<Connectivity>(() => Connectivity());
+  
+  // 注册InternetConnectionChecker
+  getIt.registerLazySingleton<InternetConnectionChecker>(() => InternetConnectionChecker());
+  
+  // 注册NetworkInfo
+  getIt.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(getIt<InternetConnectionChecker>()));
+  
+  // 注册AppDatabase
+  getIt.registerLazySingleton<AppDatabase>(() => AppDatabase());
+  
+  // 注册AppInfoInterceptor
+  getIt.registerLazySingleton<AppInfoInterceptor>(() => AppInfoInterceptor(getIt<PackageInfo>()));
+  
+  // 注册Dio
+  getIt.registerLazySingleton<Dio>(() {
     final dio = Dio();
-    dio.options.baseUrl = baseUrl;
-    print('Dio configured via CoreRegisterModule with Base URL: ${dio.options.baseUrl}');
+    dio.options.baseUrl = getIt<String>(instanceName: 'backendBaseUrl');
+    print('Dio configured with Base URL: ${dio.options.baseUrl}');
     dio.options.connectTimeout = const Duration(seconds: 15);
     dio.options.receiveTimeout = const Duration(seconds: 15);
     dio.options.contentType = 'application/json';
 
-    // Create and add AuthInterceptor using the injected storage
-    final authInterceptor = AuthInterceptor(secureStorage); 
+    // 创建并添加AuthInterceptor
+    final authInterceptor = AuthInterceptor(getIt<FlutterSecureStorage>()); 
 
-    dio.interceptors.add(appInfoInterceptor); // Add AppInfoInterceptor FIRST
-    dio.interceptors.add(authInterceptor);   // Add AuthInterceptor
-    dio.interceptors.add(HeaderInterceptor()); // Add HeaderInterceptor for chat module
+    dio.interceptors.add(getIt<AppInfoInterceptor>()); // 添加AppInfoInterceptor
+    dio.interceptors.add(authInterceptor);   // 添加AuthInterceptor
+    dio.interceptors.add(HeaderInterceptor()); // 添加HeaderInterceptor
     
-    // ADDED LogInterceptor from profile branch logic (usually added last)
+    // 添加日志拦截器
     dio.interceptors.add(PrettyDioLogger(
       requestHeader: true,
       requestBody: true,
@@ -83,29 +115,65 @@ abstract class CoreRegisterModule {
       maxWidth: 90));
     
     return dio;
+  });
+  
+  // 注册CoreDioClient
+  getIt.registerFactory<CoreDioClient>(() => CoreDioClient(
+    getIt<String>(instanceName: 'backendBaseUrl'),
+    getIt<FlutterSecureStorage>(),
+    getIt<AppInfoInterceptor>(),
+  ));
+  
+  // 注册Navigation Service mock
+  getIt.registerLazySingleton<INavigationService>(() => MockNavigationService());
+
+  // 注册AlipayPaymentService (使用实际实现替代Mock)
+  getIt.registerLazySingleton<IPaymentService>(() => AlipayPaymentService(
+    getIt<Dio>(),
+    getIt<NetworkInfo>(),
+  ));
+}
+
+// Auth Interceptor using FlutterSecureStorage
+class AuthInterceptor extends Interceptor {
+  final FlutterSecureStorage _storage;
+
+  AuthInterceptor(this._storage);
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+    // Skip adding token for auth endpoints
+    if (options.path.contains('/api/auth/login') || 
+        options.path.contains('/api/auth/register') ||
+        options.path.contains('/api/auth/sms')) {
+      print('[AuthInterceptor] Skipping token for auth path: ${options.path}');
+      return handler.next(options);
+    }
+
+    String? token = await _getAuthToken();
+    if (token != null && token.isNotEmpty) {
+      options.headers['Authorization'] = 'Bearer $token'; 
+      print('[AuthInterceptor] Added Bearer token to Authorization header.');
+    } else {
+       print('[AuthInterceptor] No token found. Request proceeding without Authorization header.');
+    }
+    
+    handler.next(options); 
   }
 
-  // PackageInfo factory method
-  @preResolve 
-  Future<PackageInfo> get packageInfo => PackageInfo.fromPlatform();
-
-  // FlutterSecureStorage instance
-  @lazySingleton
-  FlutterSecureStorage get secureStorage => const FlutterSecureStorage();
-
-  // Connectivity instance
-  @lazySingleton
-  Connectivity get connectivity => Connectivity();
-
-  // AppDatabase instance
-  @lazySingleton
-  AppDatabase get appDatabase => AppDatabase();
-
-  // Navigation Service mock
-  @lazySingleton
-  INavigationService get navigationService => MockNavigationService();
-
-  // Payment Service mock
-  @lazySingleton
-  IPaymentService get paymentService => MockPaymentService();
+  Future<String?> _getAuthToken() async {
+    try {
+      const storageKey = 'auth_token';
+      final token = await _storage.read(key: storageKey);
+      if (token != null) {
+        print('[AuthInterceptor] Token retrieved from secure storage.');
+      } else {
+        print('[AuthInterceptor] Token not found in secure storage (key: $storageKey).');
+      }
+      return token;
+    } catch (e) {
+      print('[AuthInterceptor] Error reading token from secure storage: $e');
+      return null;
+    }
+  }
 }

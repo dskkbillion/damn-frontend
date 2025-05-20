@@ -14,6 +14,10 @@ import 'package:dskk_flutter_refactor/core/auth/repositories/mocks/mock_auth_rep
 import 'package:dskk_flutter_refactor/features/home/di/home_di.dart'; // Import Home DI
 import 'package:dskk_flutter_refactor/features/favorites/di/favorites_di.dart'; // Import Favorites DI
 import 'package:dskk_flutter_refactor/features/seller/di/seller_statistics_di.dart';
+import 'package:dskk_flutter_refactor/features/payment/di/payment_di.dart'; // 导入支付模块DI
+// 导入安全存储仓库
+import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
+import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository_impl.dart';
 // import 'package:dskk_flutter_refactor/features/profile/di/profile_di.dart'; // 不再需要引入
 
 // 导入Home模块的导航配置
@@ -47,6 +51,18 @@ Future<void> main() async {
   // 初始化SharedPreferences
   final prefs = await SharedPreferences.getInstance();
   print('[main_seller_preview] SharedPreferences initialized.');
+  
+  // 注册SharedPreferences到GetIt容器中
+  getIt.registerSingleton<SharedPreferences>(prefs);
+  print('[main_seller_preview] Registered SharedPreferences to GetIt container.');
+  
+  // 注册SecureStorageRepository
+  if (!getIt.isRegistered<ISecureStorageRepository>()) {
+    getIt.registerLazySingleton<ISecureStorageRepository>(
+      () => SecureStorageRepositoryImpl(getIt<FlutterSecureStorage>()),
+    );
+    print('[main_seller_preview] Registered ISecureStorageRepository to GetIt container.');
+  }
 
   // Initialize dependencies (using the same configuration as the main app)
   await configureDependencies(backendBaseUrl: backendBaseUrl!);
@@ -63,6 +79,10 @@ Future<void> main() async {
   // Initialize Seller Statistics module dependencies
   SellerStatisticsDI.init(getIt);
   print('[main_seller_preview] Seller Statistics dependencies configured.');
+
+  // Initialize Payment module dependencies
+  await PaymentDI.init(getIt);
+  print('[main_seller_preview] Payment dependencies configured.');
 
   // --- Override AuthRepository with Mock for Preview --- 
   print('[main_seller_preview] Overriding IAuthRepository with MockAuthRepository...');

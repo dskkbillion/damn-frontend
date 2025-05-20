@@ -37,7 +37,7 @@ class FileUploadRepositoryImpl implements IFileUploadRepository {
       return Left(ServerFailure(message: e.message ?? '文件上传服务器错误')); 
     } on NetworkException {
       // Corrected: Use NetworkFailure from core
-      return Left(NetworkFailure()); 
+      return Left(NetworkFailure(message: '网络连接失败，无法上传文件')); 
     } on CacheException {
       // Corrected: Add message
       return Left(CacheFailure(message: '文件上传缓存错误')); 

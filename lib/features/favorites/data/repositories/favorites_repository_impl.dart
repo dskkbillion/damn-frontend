@@ -99,7 +99,7 @@ class FavoritesRepositoryImpl implements IFavoritesRepository {
         return Left(ServerFailure(message: '添加收藏失败，服务器错误'));
       }
     } else {
-      return Left(NetworkFailure());
+      return Left(NetworkFailure(message: '网络连接失败，无法添加收藏'));
     }
   }
 
@@ -114,7 +114,7 @@ class FavoritesRepositoryImpl implements IFavoritesRepository {
         return Left(ServerFailure(message: '移除收藏失败，服务器错误'));
       }
     } else {
-      return Left(NetworkFailure());
+      return Left(NetworkFailure(message: '网络连接失败，无法移除收藏'));
     }
   }
 
@@ -132,7 +132,7 @@ class FavoritesRepositoryImpl implements IFavoritesRepository {
         return Left(ServerFailure(message: '检查收藏状态失败，服务器错误'));
       }
     } else {
-      return Left(NetworkFailure());
+      return Left(NetworkFailure(message: '网络连接失败，无法检查收藏状态'));
     }
   }
 
@@ -161,7 +161,7 @@ class FavoritesRepositoryImpl implements IFavoritesRepository {
         return Left(ServerFailure(message: '关注卖家失败，服务器错误'));
       }
     } else {
-      return Left(NetworkFailure());
+      return Left(NetworkFailure(message: '网络连接失败，无法关注卖家'));
     }
   }
 
@@ -190,7 +190,7 @@ class FavoritesRepositoryImpl implements IFavoritesRepository {
         return Left(ServerFailure(message: '取消关注卖家失败，服务器错误'));
       }
     } else {
-      return Left(NetworkFailure());
+      return Left(NetworkFailure(message: '网络连接失败，无法取消关注卖家'));
     }
   }
 }

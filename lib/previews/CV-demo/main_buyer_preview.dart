@@ -11,9 +11,19 @@ import 'package:dskk_flutter_refactor/app/di/injection_container.dart'; // Expor
 // Import the IAuthRepository interface and the Mock implementation
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
 import 'package:dskk_flutter_refactor/core/auth/repositories/mocks/mock_auth_repository.dart';
+// 导入安全存储仓库
+import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
+import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository_impl.dart';
+// 导入订单相关类
+import 'package:dskk_flutter_refactor/features/orders/domain/repositories/i_order_repository.dart';
+import 'package:dskk_flutter_refactor/features/orders/data/repositories/mocks/mock_order_repository.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/usecases/create_order_use_case.dart';
 import 'package:dskk_flutter_refactor/features/home/di/home_di.dart'; // Import Home DI
 import 'package:dskk_flutter_refactor/features/favorites/di/favorites_di.dart'; // Import Favorites DI
 import 'package:dskk_flutter_refactor/features/seller/di/seller_statistics_di.dart';
+import 'package:dskk_flutter_refactor/features/payment/presentation/bloc/payment_bloc.dart'; // 导入PaymentBloc
+import 'package:dskk_flutter_refactor/core/payment/services/i_payment_service.dart'; // 导入IPaymentService
+import 'package:dskk_flutter_refactor/features/payment/di/payment_di.dart'; // 导入支付模块DI
 // import 'package:dskk_flutter_refactor/features/profile/di/profile_di.dart'; // 不再需要引入
 
 // 导入Home模块的导航配置
@@ -50,6 +60,40 @@ Future<void> main() async {
   // 初始化SharedPreferences
   final prefs = await SharedPreferences.getInstance();
   print('[main_buyer_preview] SharedPreferences initialized.');
+  
+  // 注册SharedPreferences到GetIt容器中
+  getIt.registerSingleton<SharedPreferences>(prefs);
+  print('[main_buyer_preview] Registered SharedPreferences to GetIt container.');
+  
+  // 注册SecureStorageRepository
+  if (!getIt.isRegistered<ISecureStorageRepository>()) {
+    getIt.registerLazySingleton<ISecureStorageRepository>(
+      () => SecureStorageRepositoryImpl(getIt<FlutterSecureStorage>()),
+    );
+    print('[main_buyer_preview] Registered ISecureStorageRepository to GetIt container.');
+  }
+  
+  // 注册订单相关依赖
+  if (!getIt.isRegistered<IOrderRepository>()) {
+    getIt.registerLazySingleton<IOrderRepository>(() => MockOrderRepository());
+    print('[main_buyer_preview] Registered IOrderRepository to GetIt container.');
+  }
+  
+  if (!getIt.isRegistered<CreateOrderUseCase>()) {
+    getIt.registerLazySingleton<CreateOrderUseCase>(
+      () => CreateOrderUseCase(getIt<IOrderRepository>()),
+    );
+    print('[main_buyer_preview] Registered CreateOrderUseCase to GetIt container.');
+  }
+
+  // 注册PaymentBloc
+  if (!getIt.isRegistered<PaymentBloc>()) {
+    getIt.registerFactory<PaymentBloc>(() => PaymentBloc(
+      createOrderUseCase: getIt<CreateOrderUseCase>(),
+      paymentService: getIt<IPaymentService>(),
+    ));
+    print('[main_buyer_preview] Registered PaymentBloc to GetIt container.');
+  }
 
   // Initialize dependencies (using the same configuration as the main app)
   await configureDependencies(backendBaseUrl: backendBaseUrl!);
@@ -66,6 +110,10 @@ Future<void> main() async {
   // Initialize Seller Statistics module dependencies
   SellerStatisticsDI.init(getIt);
   print('[main_buyer_preview] Seller Statistics dependencies configured.');
+  
+  // 初始化支付模块依赖
+  await PaymentDI.init(getIt);
+  print('[main_buyer_preview] Payment dependencies configured.');
 
   // --- Override AuthRepository with Mock for Preview --- 
   print('[main_buyer_preview] Overriding IAuthRepository with MockAuthRepository...');
