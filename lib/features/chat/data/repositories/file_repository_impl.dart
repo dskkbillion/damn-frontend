@@ -33,7 +33,7 @@ class FileRepositoryImpl implements IFileRepository {
     } catch (e) {
       // FIX: Use correct GeneralFailure constructor (no message)
       print("Unexpected error in uploadFile Repository: $e");
-      return Left(GeneralFailure());
+      return Left(GeneralFailure(message: '上传文件失败'));
     }
   }
 } 

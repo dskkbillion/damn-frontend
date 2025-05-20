@@ -1,0 +1,153 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get_it/get_it.dart';
+import 'package:dio/dio.dart';
+
+import '../presentation/bloc/ai_chat/ai_chat_bloc.dart';
+import '../domain/usecases/get_conversations_usecase.dart';
+import '../domain/usecases/load_history_usecase.dart';
+import '../domain/usecases/create_conversation_usecase.dart';
+import '../domain/usecases/delete_conversation_usecase.dart';
+import '../domain/usecases/stream_chat_completion_usecase.dart';
+import '../domain/usecases/upload_file_usecase.dart';
+import '../domain/usecases/get_related_services_usecase.dart';
+import '../domain/usecases/allocate_chat_resource_usecase.dart';
+import '../domain/usecases/transcribe_audio_usecase.dart';
+import '../domain/repositories/i_ai_chat_repository.dart';
+import '../domain/repositories/i_file_upload_repository.dart';
+import '../data/repositories/ai_chat_repository_impl.dart';
+import '../data/repositories/file_upload_repository_impl.dart';
+import '../data/datasources/i_ai_chat_remote_data_source.dart';
+import '../data/datasources/ai_chat_remote_data_source_impl.dart';
+import '../data/datasources/i_file_upload_data_source.dart';
+import '../data/datasources/file_upload_data_source_impl.dart';
+import '../../../core/network/network_info.dart';
+import '../../../core/network/i_http_client.dart';
+
+/// AI文档模块的依赖注入类
+class AiDocsDI {
+  /// 初始化AI文档模块的所有依赖
+  static Future<void> init(GetIt getIt) async {
+    print('[AiDocsDI] Initializing AI Docs module dependencies');
+
+    // 数据源
+    if (!getIt.isRegistered<IAiChatRemoteDataSource>()) {
+      getIt.registerLazySingleton<IAiChatRemoteDataSource>(
+        () => AiChatRemoteDataSourceImpl(getIt<IHttpClient>()),
+      );
+      print('[AiDocsDI] Registered IAiChatRemoteDataSource');
+    }
+    
+    // 文件上传数据源
+    if (!getIt.isRegistered<IFileUploadDataSource>()) {
+      getIt.registerLazySingleton<IFileUploadDataSource>(
+        () => FileUploadDataSourceImpl(getIt<IHttpClient>()),
+      );
+      print('[AiDocsDI] Registered IFileUploadDataSource');
+    }
+
+    // 仓库
+    if (!getIt.isRegistered<IAiChatRepository>()) {
+      getIt.registerLazySingleton<IAiChatRepository>(
+        () => AiChatRepositoryImpl(
+          remoteDataSource: getIt<IAiChatRemoteDataSource>(),
+        ),
+      );
+      print('[AiDocsDI] Registered IAiChatRepository');
+    }
+    
+    // 文件上传仓库
+    if (!getIt.isRegistered<IFileUploadRepository>()) {
+      getIt.registerLazySingleton<IFileUploadRepository>(
+        () => FileUploadRepositoryImpl(
+          dataSource: getIt<IFileUploadDataSource>(),
+        ),
+      );
+      print('[AiDocsDI] Registered IFileUploadRepository');
+    }
+
+    // 用例
+    if (!getIt.isRegistered<GetConversationsUseCase>()) {
+      getIt.registerLazySingleton<GetConversationsUseCase>(
+        () => GetConversationsUseCase(getIt<IAiChatRepository>()),
+      );
+      print('[AiDocsDI] Registered GetConversationsUseCase');
+    }
+
+    if (!getIt.isRegistered<LoadHistoryUseCase>()) {
+      getIt.registerLazySingleton<LoadHistoryUseCase>(
+        () => LoadHistoryUseCase(getIt<IAiChatRepository>()),
+      );
+      print('[AiDocsDI] Registered LoadHistoryUseCase');
+    }
+
+    if (!getIt.isRegistered<CreateConversationUseCase>()) {
+      getIt.registerLazySingleton<CreateConversationUseCase>(
+        () => CreateConversationUseCase(getIt<IAiChatRepository>()),
+      );
+      print('[AiDocsDI] Registered CreateConversationUseCase');
+    }
+
+    if (!getIt.isRegistered<DeleteConversationUseCase>()) {
+      getIt.registerLazySingleton<DeleteConversationUseCase>(
+        () => DeleteConversationUseCase(getIt<IAiChatRepository>()),
+      );
+      print('[AiDocsDI] Registered DeleteConversationUseCase');
+    }
+
+    if (!getIt.isRegistered<StreamChatCompletionUseCase>()) {
+      getIt.registerLazySingleton<StreamChatCompletionUseCase>(
+        () => StreamChatCompletionUseCase(getIt<IAiChatRepository>()),
+      );
+      print('[AiDocsDI] Registered StreamChatCompletionUseCase');
+    }
+
+    if (!getIt.isRegistered<UploadFileUseCase>()) {
+      getIt.registerLazySingleton<UploadFileUseCase>(
+        () => UploadFileUseCase(getIt<IFileUploadRepository>()),
+      );
+      print('[AiDocsDI] Registered UploadFileUseCase');
+    }
+
+    if (!getIt.isRegistered<GetRelatedServicesUseCase>()) {
+      getIt.registerLazySingleton<GetRelatedServicesUseCase>(
+        () => GetRelatedServicesUseCase(getIt<IAiChatRepository>()),
+      );
+      print('[AiDocsDI] Registered GetRelatedServicesUseCase');
+    }
+
+    if (!getIt.isRegistered<AllocateChatResourceUseCase>()) {
+      getIt.registerLazySingleton<AllocateChatResourceUseCase>(
+        () => AllocateChatResourceUseCase(getIt<IAiChatRepository>()),
+      );
+      print('[AiDocsDI] Registered AllocateChatResourceUseCase');
+    }
+
+    if (!getIt.isRegistered<TranscribeAudioUseCase>()) {
+      getIt.registerLazySingleton<TranscribeAudioUseCase>(
+        () => TranscribeAudioUseCase(getIt<IAiChatRepository>()),
+      );
+      print('[AiDocsDI] Registered TranscribeAudioUseCase');
+    }
+
+    // Bloc
+    if (!getIt.isRegistered<AiChatBloc>()) {
+      getIt.registerFactory<AiChatBloc>(() => AiChatBloc(
+            getIt<GetConversationsUseCase>(),
+            getIt<LoadHistoryUseCase>(),
+            getIt<CreateConversationUseCase>(),
+            getIt<DeleteConversationUseCase>(),
+            getIt<StreamChatCompletionUseCase>(),
+            getIt<UploadFileUseCase>(),
+            getIt<GetRelatedServicesUseCase>(),
+            getIt<AllocateChatResourceUseCase>(),
+            getIt<TranscribeAudioUseCase>(),
+            getIt<FlutterSecureStorage>(),
+          ));
+      print('[AiDocsDI] Registered AiChatBloc');
+    } else {
+      print('[AiDocsDI] AiChatBloc already registered, skipping');
+    }
+
+    print('[AiDocsDI] AI Docs module dependencies initialized');
+  }
+} 

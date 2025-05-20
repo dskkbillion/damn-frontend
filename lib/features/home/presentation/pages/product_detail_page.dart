@@ -484,23 +484,37 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
         ? product.variants![_selectedVariantIndex]
         : null;
     
+    if (variant == null) {
+      return const SizedBox.shrink();
+    }
+    
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
       width: double.infinity,
       height: 50,
       child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('立即购买功能待实现')),
-                  );
-                },
+        onPressed: () {
+          // 导航到订单确认页面
+          context.go(
+            '/products/${product.id}/confirm',
+            extra: {
+              'productId': product.id,
+              'variantId': variant.id,
+              'quantity': 1, // 默认购买数量为1
+              'sellerId': product.sellerId,
+              'productName': product.name,
+              'price': variant.sellingPrice,
+              'imageUrl': product.images?.isNotEmpty == true ? product.images!.first : null,
+            },
+          );
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.black,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
         ),
-        child: Text(
+        child: const Text(
           '一键购买(1)',
           style: TextStyle(
             fontSize: 18,

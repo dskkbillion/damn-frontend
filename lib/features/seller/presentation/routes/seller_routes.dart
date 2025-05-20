@@ -61,10 +61,7 @@ class SellerRoutes {
       name: 'seller_home',
       pageBuilder: (context, state) => MaterialPage(
         key: state.pageKey,
-        child: BlocProvider(
-          create: (context) => GetIt.I<SellerHomeBloc>(), 
-          child: const SellerHomePage(),
-        ),
+        child: const SellerHomePage(),
       ),
       routes: [
         // 商品管理
@@ -73,10 +70,7 @@ class SellerRoutes {
           name: 'seller_products',
           pageBuilder: (context, state) => MaterialPage(
             key: state.pageKey,
-            child: BlocProvider(
-              create: (context) => GetIt.I<ProductManagementBloc>(),
-              child: const ProductManagementPage(),
-            ),
+            child: const ProductManagementPage(),
           ),
           routes: [
             // 创建商品

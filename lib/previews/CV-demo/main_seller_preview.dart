@@ -14,7 +14,17 @@ import 'package:dskk_flutter_refactor/core/auth/repositories/mocks/mock_auth_rep
 import 'package:dskk_flutter_refactor/features/home/di/home_di.dart'; // Import Home DI
 import 'package:dskk_flutter_refactor/features/favorites/di/favorites_di.dart'; // Import Favorites DI
 import 'package:dskk_flutter_refactor/features/seller/di/seller_statistics_di.dart';
-// import 'package:dskk_flutter_refactor/features/profile/di/profile_di.dart'; // 不再需要引入
+import 'package:dskk_flutter_refactor/features/payment/di/payment_di.dart'; // 导入支付模块DI
+// 导入安全存储仓库
+import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
+import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository_impl.dart';
+// 导入AI文档和聊天模块DI
+import 'package:dskk_flutter_refactor/features/ai_docs/di/ai_docs_di.dart';
+import 'package:dskk_flutter_refactor/features/chat/di/chat_di.dart';
+// 导入Profile模块DI
+import 'package:dskk_flutter_refactor/features/profile/di/profile_di.dart';
+// 导入卖家模块DI
+import 'package:dskk_flutter_refactor/features/seller/di/seller_di.dart';
 
 // 导入Home模块的导航配置
 import 'package:dskk_flutter_refactor/features/home/presentation/navigation/home_navigation_di.dart';
@@ -47,24 +57,32 @@ Future<void> main() async {
   // 初始化SharedPreferences
   final prefs = await SharedPreferences.getInstance();
   print('[main_seller_preview] SharedPreferences initialized.');
+  
+  // 注册SharedPreferences到GetIt容器中
+  getIt.registerSingleton<SharedPreferences>(prefs);
+  print('[main_seller_preview] Registered SharedPreferences to GetIt container.');
+  
+  // 注册SecureStorageRepository
+  if (!getIt.isRegistered<ISecureStorageRepository>()) {
+    getIt.registerLazySingleton<ISecureStorageRepository>(
+      () => SecureStorageRepositoryImpl(getIt<FlutterSecureStorage>()),
+    );
+    print('[main_seller_preview] Registered ISecureStorageRepository to GetIt container.');
+  }
 
-  // Initialize dependencies (using the same configuration as the main app)
+  // 1. 初始化核心依赖
   await configureDependencies(backendBaseUrl: backendBaseUrl!);
   print('[main_seller_preview] Core dependencies configured.');
 
-  // Initialize Home module dependencies AFTER core dependencies
+  // 2. 初始化Home模块依赖 AFTER core dependencies
   await initHomeDi();
   print('[main_seller_preview] Home dependencies configured.');
 
-  // Initialize Favorites module dependencies
+  // 3. 初始化Favorites模块依赖 
   await FavoritesDI.init(getIt);
   print('[main_seller_preview] Favorites dependencies configured.');
 
-  // Initialize Seller Statistics module dependencies
-  SellerStatisticsDI.init(getIt);
-  print('[main_seller_preview] Seller Statistics dependencies configured.');
-
-  // --- Override AuthRepository with Mock for Preview --- 
+  // 4. 覆盖AuthRepository
   print('[main_seller_preview] Overriding IAuthRepository with MockAuthRepository...');
   getIt.allowReassignment = true; // Allow overriding registrations
   // 传递FlutterSecureStorage到MockAuthRepository，以便它可以读取真实的token和ID
@@ -73,9 +91,32 @@ Future<void> main() async {
   );
   getIt.allowReassignment = false; // Optional: Disable reassignment after overriding
   print('[main_seller_preview] IAuthRepository overridden.');
-  // ---------------------------------------------------------
 
-  // --- Manually Inject Seller Token and User ID --- 
+  // 5. 初始化AI文档模块依赖 - 卖家模块依赖于IFileUploadRepository
+  await AiDocsDI.init(getIt);
+  print('[main_seller_preview] AI Docs dependencies configured.');
+  
+  // 6. 初始化聊天模块依赖 - 依赖于认证模块
+  await ChatDI.init(getIt);
+  print('[main_seller_preview] Chat dependencies configured.');
+  
+  // 7. 初始化Profile模块依赖
+  await ProfileDI.init(getIt);
+  print('[main_seller_preview] Profile dependencies configured.');
+
+  // 8. 初始化卖家统计模块
+  SellerStatisticsDI.init(getIt);
+  print('[main_seller_preview] Seller Statistics dependencies configured.');
+
+  // 9. 初始化卖家核心模块依赖 - 需要在AI文档模块之后，因为依赖IFileUploadRepository
+  await SellerDI.init(getIt);
+  print('[main_seller_preview] Seller dependencies configured.');
+
+  // 10. 初始化支付模块依赖
+  await PaymentDI.init(getIt);
+  print('[main_seller_preview] Payment dependencies configured.');
+
+  // 11. 手动注入卖家认证信息
   print('[main_seller_preview] Injecting seller credentials...');
   try {
     final storage = getIt<FlutterSecureStorage>(); 

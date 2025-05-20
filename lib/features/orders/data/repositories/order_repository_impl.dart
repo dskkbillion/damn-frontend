@@ -3,6 +3,8 @@ import 'package:dio/dio.dart'; // Import DioException if needed for error handli
 import 'package:injectable/injectable.dart' hide Order;
 
 import '../../../../core/error/failures.dart';
+import '../../../../core/error/exceptions.dart';
+import '../../../../core/network/network_info.dart';
 // import '../../../../core/platform/network_info.dart'; // 可选：用于检查网络状态
 import '../../domain/entities/order.dart';
 import '../../domain/entities/order_status.dart';
@@ -13,27 +15,28 @@ import '../models/order_model.dart'; // 导入 OrderModel 以便调用 toEntity
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart' hide OrderModel;
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_requirements_use_case.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_evaluation_use_case.dart'; // If AddEvaluationParams is defined there
+import '../../domain/entities/order_creation_result.dart';
 
 /// 订单仓库接口的实现类。
 @LazySingleton(as: IOrderRepository) // Add injectable annotation
 class OrderRepositoryImpl implements IOrderRepository {
   final IOrderRemoteDataSource remoteDataSource;
   final IOrderLocalDataSource localDataSource; // Add LocalDataSource dependency
-  // final NetworkInfo networkInfo; // 可选的网络状态检查器
+  final NetworkInfo networkInfo;
 
   OrderRepositoryImpl({
     required this.remoteDataSource,
     required this.localDataSource, // Inject LocalDataSource
-    // required this.networkInfo,
+    required this.networkInfo,
   });
 
   /// 辅助函数，用于执行网络请求并处理通用错误。
   Future<Either<Failure, T>> _handleApiCall<T>(
       Future<T> Function() apiCall) async {
     // 可选：检查网络连接
-    // if (!await networkInfo.isConnected) {
-    //   return Left(NetworkFailure()); // 假设定义了 NetworkFailure
-    // }
+    if (!await networkInfo.isConnected) {
+      return Left(NetworkFailure(message: '网络未连接'));
+    }
     try {
       final result = await apiCall();
       return Right(result);
@@ -213,12 +216,7 @@ class OrderRepositoryImpl implements IOrderRepository {
   @override
   Future<Either<Failure, void>> submitRequirements(
       SubmitRequirementsParams params) async {
-    return _handleApiCall(() => remoteDataSource.submitRequirements(
-          orderId: params.orderId.toString(), // Convert int orderId to string if API expects string
-          productId: params.productId,
-          feature: params.feature,
-          attachmentPaths: params.attachmentPaths,
-        ));
+    return _handleApiCall(() => remoteDataSource.submitRequirements(params));
   }
 
   @override
@@ -261,5 +259,34 @@ class OrderRepositoryImpl implements IOrderRepository {
   Future<Either<Failure, void>> inviteEvaluation(int orderId) async {
     // DataSource currently throws UnimplementedError for this
     return _handleApiCall(() => remoteDataSource.inviteEvaluation(orderId));
+  }
+
+  @override
+  Future<Either<Failure, OrderCreationResult>> createOrder({
+    required int productId,
+    required int variantId,
+    required int quantity,
+    required int sellerId,
+    required double price,
+  }) async {
+    if (!await networkInfo.isConnected) {
+      return Left(NetworkFailure(message: '网络未连接'));
+    }
+    
+    try {
+      final result = await remoteDataSource.createOrder(
+        productId: productId,
+        variantId: variantId,
+        quantity: quantity,
+        sellerId: sellerId,
+        price: price,
+      );
+      
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message ?? '创建订单失败'));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
   }
 } 
