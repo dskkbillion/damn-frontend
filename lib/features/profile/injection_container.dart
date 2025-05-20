@@ -3,7 +3,9 @@ import 'package:dartz/dartz.dart';
 import 'package:get_it/get_it.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
 import '../../core/error/failures.dart';
 import '../../core/network/network_info.dart';
 import '../../core/network/mock_network_info.dart';
@@ -13,7 +15,6 @@ import 'data/repositories/liked_story_repository_impl.dart';
 import 'data/repositories/saved_item_repository_impl.dart';
 import 'data/repositories/user_profile_repository_impl.dart';
 import 'data/repositories/wallet_repository_impl.dart';
-import 'domain/repositories/i_auth_repository.dart';
 import 'domain/repositories/i_liked_story_repository.dart';
 import 'domain/repositories/i_saved_item_repository.dart';
 import 'domain/repositories/i_user_profile_repository.dart';
@@ -95,16 +96,15 @@ Future<void> initProfileDependencies(GetIt locator) async {
   // 注册 AuthRepository (假设这是由 Auth 模块提供的)
   // 这里只是做一个检查，如果 Auth 模块已经注册了这个服务，就不再重复注册
   if (!locator.isRegistered<IAuthRepository>()) {
-    // 在集成阶段，应该移除这部分代码，并依赖 Auth 模块提供的实现
-    locator.registerLazySingleton<IAuthRepository>(() => MockAuthRepository());
+    // 这里不再定义MockAuthRepository，而是使用Auth模块提供的实现
+    print("IAuthRepository expected to be registered by auth module");
   }
 
-  // Data sources
+  // Data sources - 修正构造函数参数，使用FlutterSecureStorage
   locator.registerLazySingleton<ProfileRemoteDataSource>(
     () => ProfileRemoteDataSourceImpl(
       dio: locator<Dio>(),
-      token: '用户给定的token', // 这里应该使用用户之前提供的token
-      userId: '用户ID', // 这里应该使用用户之前提供的userID
+      storage: locator<FlutterSecureStorage>(), // 正确传递FlutterSecureStorage而不是token和userId
     ),
   );
 
@@ -129,26 +129,5 @@ Future<void> initProfileDependencies(GetIt locator) async {
 
   if (!locator.isRegistered<Dio>()) {
     locator.registerLazySingleton(() => Dio());
-  }
-}
-
-/// Auth 模块的 Mock 实现，仅用于预览/测试
-class MockAuthRepository implements IAuthRepository {
-  bool _isLoggedIn = true;
-
-  @override
-  Future<String?> getCurrentUserId() async {
-    return _isLoggedIn ? 'mock_user_id' : null;
-  }
-
-  @override
-  Future<bool> isLoggedIn() async {
-    return _isLoggedIn;
-  }
-
-  @override
-  Future<Either<Failure, void>> logout() async {
-    _isLoggedIn = false;
-    return Right(null);
   }
 }

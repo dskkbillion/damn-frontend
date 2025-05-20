@@ -64,13 +64,21 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_s
 import 'package:dskk_flutter_refactor/features/chat/presentation/pages/chat_list_page.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_list/chat_list_bloc.dart';
 
+// 导入卖家模块相关依赖
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_dashboard_data_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_store_profile_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_product_list_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_draft_list_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/update_product_status_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/delete_product_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/repositories/i_seller_repository.dart';
+
 // Import necessary classes
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/notification_list/notification_list_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_notification_list_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/mark_notification_as_read_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/mark_all_notifications_as_read_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_unread_notification_count_usecase.dart';
-import 'package:dskk_flutter_refactor/features/seller/domain/repositories/i_seller_repository.dart';
 import 'package:dskk_flutter_refactor/features/seller/data/repositories/seller_repository_impl.dart';
 import 'package:dskk_flutter_refactor/features/seller/data/datasources/seller_remote_data_source_impl.dart';
 import 'package:dskk_flutter_refactor/features/seller/data/datasources/seller_local_data_source_impl.dart';
@@ -86,6 +94,12 @@ import '../../features/payment/presentation/pages/payment_result_page.dart';
 // Import ProductDetailPage and cubit
 import '../../features/home/presentation/pages/product_detail_page.dart';
 import '../../features/home/presentation/cubit/product_detail_cubit.dart';
+
+// Import seller statistics related classes
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_upgrade_statistics_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_index_statistics_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_percent_statistics_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/repositories/i_seller_statistics_repository.dart';
 
 // Placeholder page (defined once) - Only used if a module's routes aren't ready
 class PlaceholderPage extends StatelessWidget {
@@ -145,21 +159,65 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       '/seller/profile' // Placeholder
   ];
 
+  // 获取卖家相关依赖，用于手动创建BLoC
+  final getIt = GetIt.instance;
+  final sellerRepository = getIt<ISellerRepository>();
+
+  // 创建卖家相关的BLoC实例，而不是从GetIt获取
+  final sellerHomeBloc = SellerHomeBloc(
+    GetSellerDashboardDataUseCase(sellerRepository),
+    GetStoreProfileUseCase(sellerRepository),
+  );
+
+  final productManagementBloc = ProductManagementBloc(
+    GetSellerProductListUseCase(sellerRepository),
+    GetSellerDraftListUseCase(sellerRepository),
+    UpdateProductStatusUseCase(sellerRepository),
+    DeleteProductUseCase(sellerRepository),
+  );
+
   // Define Seller Shell Branch Routes explicitly
   final sellerDashboardRoute = GoRoute(
     path: '/seller/dashboard', 
     builder: (context, state) => BlocProvider(
-      create: (context) => GetIt.I<SellerStatisticsBloc>(),
+      create: (context) {
+        try {
+          // 尝试从GetIt获取
+          return GetIt.I<SellerStatisticsBloc>();
+        } catch (e) {
+          print('[GoRouter] 无法从GetIt获取SellerStatisticsBloc，创建新实例: $e');
+          // 如果从GetIt获取失败，则手动创建
+          try {
+            // 尝试获取仓库和usecase
+            final repo = GetIt.I<ISellerStatisticsRepository>();
+            final upgradeUseCase = GetSellerUpgradeStatisticsUseCase(repo);
+            final indexUseCase = GetSellerIndexStatisticsUseCase(repo);
+            final percentUseCase = GetSellerPercentStatisticsUseCase(repo);
+            
+            return SellerStatisticsBloc(
+              upgradeUseCase,
+              indexUseCase,
+              percentUseCase,
+            );
+          } catch (e2) {
+            print('[GoRouter] 无法创建SellerStatisticsBloc的依赖: $e2');
+            // 回退使用GetIt获取
+            return GetIt.I<SellerStatisticsBloc>();
+          }
+        }
+      },
       child: const SellerStatisticsPage(),
     ),
   );
+  
   final sellerOrdersRoute = GoRoute(
       path: '/seller/orders', 
       builder: (context, state) => BlocProvider(
-        create: (_) => GetIt.I<ProductManagementBloc>(), 
+        create: (_) => productManagementBloc, // 使用手动创建的BLoC
         child: const ProductManagementPage(),
       ),
   );
+  
   // 直接定义卖家聊天列表路由
   final sellerChatRoute = GoRoute(
       path: '/seller/chat', // 使用聊天路径
@@ -168,10 +226,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         child: const ChatListPage(), // 使用ChatListPage
       ), 
   );
-  // 获取 /seller 路由（作为"我的"Tab内容）
-  final sellerMyRoute = SellerRoutes.routes.firstWhere(
-    (r) => r is GoRoute && r.path == SellerRoutes.home
-  ); 
+  
+  // 定义卖家主页路由
+  final sellerHomeRoute = GoRoute(
+    path: SellerRoutes.home,
+    name: 'seller_home',
+    builder: (context, state) => BlocProvider(
+      create: (context) => sellerHomeBloc, // 使用手动创建的BLoC
+      child: const SellerHomePage(),
+    ),
+  );
   
   // 定义 Seller Non-Shell Routes (保持不变或根据需要调整)
   final sellerNonShellRoutes = <RouteBase>[
@@ -290,7 +354,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           ),
           // Branch 3: 卖家我的
           StatefulShellBranch(
-            routes: [ sellerMyRoute ], 
+            routes: [ sellerHomeRoute ], // 使用手动创建的路由替代从SellerRoutes.routes获取的路由
           ),
         ],
       ),

@@ -24,7 +24,11 @@ import 'package:dskk_flutter_refactor/features/seller/di/seller_statistics_di.da
 import 'package:dskk_flutter_refactor/features/payment/presentation/bloc/payment_bloc.dart'; // 导入PaymentBloc
 import 'package:dskk_flutter_refactor/core/payment/services/i_payment_service.dart'; // 导入IPaymentService
 import 'package:dskk_flutter_refactor/features/payment/di/payment_di.dart'; // 导入支付模块DI
-// import 'package:dskk_flutter_refactor/features/profile/di/profile_di.dart'; // 不再需要引入
+// 导入AI文档和聊天模块的DI
+import 'package:dskk_flutter_refactor/features/ai_docs/di/ai_docs_di.dart';
+import 'package:dskk_flutter_refactor/features/chat/di/chat_di.dart';
+// 导入Profile模块DI
+import 'package:dskk_flutter_refactor/features/profile/di/profile_di.dart';
 
 // 导入Home模块的导航配置
 import 'package:dskk_flutter_refactor/features/home/presentation/navigation/home_navigation_di.dart';
@@ -95,27 +99,27 @@ Future<void> main() async {
     print('[main_buyer_preview] Registered PaymentBloc to GetIt container.');
   }
 
-  // Initialize dependencies (using the same configuration as the main app)
+  // 1. 初始化核心依赖
   await configureDependencies(backendBaseUrl: backendBaseUrl!);
   print('[main_buyer_preview] Core dependencies configured.');
 
-  // Initialize Home module dependencies AFTER core dependencies
+  // 2. 初始化Home模块依赖
   await initHomeDi();
   print('[main_buyer_preview] Home dependencies configured.');
 
-  // Initialize Favorites module dependencies
+  // 3. 初始化Favorites模块依赖
   await FavoritesDI.init(getIt);
   print('[main_buyer_preview] Favorites dependencies configured.');
 
-  // Initialize Seller Statistics module dependencies
+  // 8. 初始化卖家统计模块
   SellerStatisticsDI.init(getIt);
   print('[main_buyer_preview] Seller Statistics dependencies configured.');
   
-  // 初始化支付模块依赖
+  // 10. 初始化支付模块依赖
   await PaymentDI.init(getIt);
   print('[main_buyer_preview] Payment dependencies configured.');
-
-  // --- Override AuthRepository with Mock for Preview --- 
+  
+  // 4. 覆盖AuthRepository
   print('[main_buyer_preview] Overriding IAuthRepository with MockAuthRepository...');
   getIt.allowReassignment = true; // Allow overriding registrations
   // 传递FlutterSecureStorage到MockAuthRepository，以便它可以读取真实的token和ID
@@ -124,9 +128,20 @@ Future<void> main() async {
   );
   getIt.allowReassignment = false; // Optional: Disable reassignment after overriding
   print('[main_buyer_preview] IAuthRepository overridden.');
-  // ---------------------------------------------------------
+  
+  // 5. 初始化AI文档模块依赖 - 卖家模块依赖于IFileUploadRepository
+  await AiDocsDI.init(getIt);
+  print('[main_buyer_preview] AI Docs dependencies configured.');
+  
+  // 6. 初始化聊天模块依赖 - 依赖于认证模块
+  await ChatDI.init(getIt);
+  print('[main_buyer_preview] Chat dependencies configured.');
+  
+  // 7. 初始化Profile模块依赖
+  await ProfileDI.init(getIt);
+  print('[main_buyer_preview] Profile dependencies configured.');
 
-  // --- Manually Inject Buyer Token and User ID --- 
+  // 11. 手动注入买家认证信息
   print('[main_buyer_preview] Injecting buyer credentials...');
   try {
     final storage = getIt<FlutterSecureStorage>(); 
@@ -143,7 +158,6 @@ Future<void> main() async {
   } catch (e) {
      print('[main_buyer_preview] ERROR injecting buyer credentials: $e');
   }
-  // -------------------------------------------------------------
 
   // Run the main application widget
   runApp(

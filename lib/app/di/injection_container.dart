@@ -15,11 +15,20 @@ import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
 import 'package:dskk_flutter_refactor/core/network/header_interceptor.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
+// 添加缺失的依赖
+import 'package:dskk_flutter_refactor/core/network/i_http_client.dart';
+import 'package:dskk_flutter_refactor/core/network/dio_http_client.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_repository.dart';
+import 'package:dskk_flutter_refactor/features/chat/di/chat_di.dart';
+
 // Import database and DAO
 import 'package:dskk_flutter_refactor/core/database/app_database.dart';
 
 // Import chat module DI
 import 'package:dskk_flutter_refactor/features/chat/di/chat_di.dart';
+
+// Import seller module DI
+import 'package:dskk_flutter_refactor/features/seller/di/seller_di.dart';
 
 // Import payment related modules
 import '../../features/payment/presentation/bloc/payment_bloc.dart';
@@ -41,6 +50,19 @@ Future<void> configurePaymentDependencies() async {
   }
 }
 
+// 注册用户仓库依赖
+Future<void> registerAuthDependencies() async {
+  // 注册IUserRepository（使用Chat模块的实现）
+  if (!getIt.isRegistered<IUserRepository>()) {
+    getIt.registerLazySingleton<IUserRepository>(() => ChatUserRepositoryImpl(
+      getIt<FlutterSecureStorage>()
+    ));
+    print('[DI] Registered IUserRepository (ChatUserRepositoryImpl)');
+  } else {
+    print('[DI] IUserRepository already registered, skipping registration');
+  }
+}
+
 Future<void> configureDependencies({required String backendBaseUrl}) async {
   // Register backendBaseUrl as named instance 
   getIt.registerSingleton<String>(backendBaseUrl, instanceName: 'backendBaseUrl');
@@ -50,6 +72,10 @@ Future<void> configureDependencies({required String backendBaseUrl}) async {
   await registerCoreDependencies();
   print('[DI] Core dependencies initialization complete.');
   
+  // 注册用户仓库依赖 - 这一步要在其他模块之前
+  await registerAuthDependencies();
+  print('[DI] Auth dependencies initialization complete.');
+  
   // 注册支付模块依赖
   await configurePaymentDependencies();
   print('[DI] Payment dependencies initialization complete.');
@@ -57,6 +83,16 @@ Future<void> configureDependencies({required String backendBaseUrl}) async {
   // 注册聊天模块所需的额外依赖（特别是带参数的BLoC）
   registerChatBlocs();
   print('[DI] Chat module blocs registered.');
+  
+  // 注册卖家模块依赖
+  try {
+    print('[DI] Starting Seller module initialization...');
+    await SellerDI.init(getIt);
+    print('[DI] Seller module dependencies initialization complete.');
+  } catch (e) {
+    print('[DI] Failed to initialize Seller module: $e');
+    // 不抛出异常，允许应用继续启动，但记录错误信息
+  }
 }
 
 // 注册聊天模块的BLoC
@@ -116,6 +152,10 @@ Future<void> registerCoreDependencies() async {
     
     return dio;
   });
+  
+  // 添加：注册IHttpClient实现
+  getIt.registerLazySingleton<IHttpClient>(() => DioHttpClient());
+  print('[DI] Registered IHttpClient (DioHttpClient)');
   
   // 注册CoreDioClient
   getIt.registerFactory<CoreDioClient>(() => CoreDioClient(
