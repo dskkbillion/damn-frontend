@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart'; // Import audioplayers
+import 'package:flutter_markdown/flutter_markdown.dart'; // 导入Markdown渲染包
+import 'package:url_launcher/url_launcher.dart'; // 导入URL处理包
+import '../../../../features/chat/presentation/utils/markdown_style_helper.dart'; // 复用已有的样式助手
 import '../../domain/entities/ai_chat_message_entity.dart';
 import '../../domain/entities/related_service_entity.dart'; // Import RelatedServiceEntity
 import 'blinking_cursor.dart'; // Import the blinking cursor widget
@@ -185,27 +188,49 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
 
   // --- Text content builder (uses widget.message and widget.isStreaming) ---
   Widget _buildTextContent(BuildContext context, bool isUser) {
+     final textColor = isUser 
+          ? Theme.of(context).colorScheme.onPrimaryContainer 
+          : Theme.of(context).colorScheme.onSecondaryContainer;
+         
+     // 处理流式响应或空消息的特殊情况
+     if (widget.isStreaming && widget.message.content.isEmpty) {
+       return Row(
+         mainAxisSize: MainAxisSize.min,
+         crossAxisAlignment: CrossAxisAlignment.end,
+         children: [
+           Text(
+             "...",
+             style: TextStyle(
+               fontSize: 15.0,
+               color: textColor,
+             ),
+           ),
+           BlinkingCursor(cursorColor: textColor),
+         ],
+       );
+     }
+     
+     // 使用Markdown渲染组件替代普通Text
      return Row(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Flexible(
-            child: Text(
-               (widget.isStreaming && widget.message.content.isEmpty) ? "..." : widget.message.content,
-                style: TextStyle(
-                  fontSize: 15.0, 
-                  color: isUser 
-                      ? Theme.of(context).colorScheme.onPrimaryContainer 
-                      : Theme.of(context).colorScheme.onSecondaryContainer,
-                ),
-             ),
+            child: MarkdownBody(
+              data: widget.message.content,
+              selectable: true, // 允许用户选择文本
+              styleSheet: MarkdownStyleHelper.buildChatBubbleStyle(context, textColor),
+              onTapLink: (text, href, title) {
+                // 处理链接点击
+                if (href != null) {
+                  launchUrl(Uri.parse(href), mode: LaunchMode.externalApplication);
+                }
+              },
+              shrinkWrap: true, // 确保内容自适应并限制在消息气泡内
+            ),
           ),
           if (widget.isStreaming)
-              BlinkingCursor( 
-                cursorColor: isUser 
-                      ? Theme.of(context).colorScheme.onPrimaryContainer 
-                      : Theme.of(context).colorScheme.onSecondaryContainer,
-              ),
+              BlinkingCursor(cursorColor: textColor),
         ],
       );
   }

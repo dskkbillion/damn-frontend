@@ -163,12 +163,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final getIt = GetIt.instance;
   final sellerRepository = getIt<ISellerRepository>();
 
-  // 创建卖家相关的BLoC实例，而不是从GetIt获取
-  final sellerHomeBloc = SellerHomeBloc(
-    GetSellerDashboardDataUseCase(sellerRepository),
-    GetStoreProfileUseCase(sellerRepository),
-  );
-
   final productManagementBloc = ProductManagementBloc(
     GetSellerProductListUseCase(sellerRepository),
     GetSellerDraftListUseCase(sellerRepository),
@@ -232,7 +226,20 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     path: SellerRoutes.home,
     name: 'seller_home',
     builder: (context, state) => BlocProvider(
-      create: (context) => sellerHomeBloc, // 使用手动创建的BLoC
+      create: (context) {
+        try {
+          // 使用GetIt工厂获取SellerHomeBloc，而不是使用手动创建的实例
+          return GetIt.I<SellerHomeBloc>();
+        } catch (e) {
+          print('[GoRouter] 无法从GetIt获取SellerHomeBloc: $e');
+          // 仅在获取失败时备用的手动创建方法
+          final repo = GetIt.I<ISellerRepository>();
+          return SellerHomeBloc(
+            GetSellerDashboardDataUseCase(repo),
+            GetStoreProfileUseCase(repo),
+          );
+        }
+      },
       child: const SellerHomePage(),
     ),
   );
