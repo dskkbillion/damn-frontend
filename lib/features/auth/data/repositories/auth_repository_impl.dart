@@ -125,7 +125,7 @@ class AuthRepositoryImpl implements IAuthRepository {
         return Left(UnknownFailure(message: 'An unknown error occurred'));
       }
     } else {
-      return Left(NetworkFailure());
+      return Left(NetworkFailure(message: 'No internet connection'));
     }
   }
 

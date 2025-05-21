@@ -12,6 +12,7 @@ import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化�
 // Import Bloc and State/Event files
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/bloc/ai_chat/ai_chat_bloc.dart'; // Use package import
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat_message_widget.dart'; // Use package import
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/animated_allocation_button.dart'; // 导入动画按钮组件
 
 // Import domain interfaces and usecases (Use package imports)
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/repositories/i_ai_chat_repository.dart';
@@ -385,15 +386,18 @@ class ServiceGridItem extends StatelessWidget {
     // 获取国际化资源
     final s = S.of(context);
     
-    // 在独立Widget中使用context.select是安全的
-    final allocationStatus = context.select<AiChatBloc, AllocationStatus?>(
-      (bloc) => bloc.state.serviceAllocationStatus[service.id]
-    ) ?? AllocationStatus.initial;
-    
-    // 根据分发状态决定按钮颜色
-    final buttonColor = allocationStatus == AllocationStatus.success
-        ? Colors.grey[400] // 已分发状态使用灰色
-        : const Color(0xFFA86400); // 默认棕色
+    // 使用BlocBuilder来监听状态变化，确保按钮状态能被正确更新
+    return BlocBuilder<AiChatBloc, AiChatState>(
+      buildWhen: (previous, current) =>
+        // 只有在服务分配状态变化或总体状态变化时才重建
+        previous.serviceAllocationStatus[service.id] != current.serviceAllocationStatus[service.id] ||
+        (previous.status != current.status && 
+         (current.status == AiChatStatus.allocatingResource || 
+          current.status == AiChatStatus.allocationSuccess || 
+          current.status == AiChatStatus.allocationFailure)),
+      builder: (context, state) {
+        // 获取当前服务的分配状态
+        final allocationStatus = state.serviceAllocationStatus[service.id] ?? AllocationStatus.initial;
 
     return Container(
       decoration: BoxDecoration(
@@ -464,54 +468,18 @@ class ServiceGridItem extends StatelessWidget {
                 
                 const SizedBox(height: 8),
                 
-                // 按钮独占一行 - 根据状态显示不同内容
-                Container(
-                  width: double.infinity, // 占满整行
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: buttonColor,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: allocationStatus == AllocationStatus.loading
-                      // 加载中状态显示进度指示器
-                      ? Center(
-                          child: SizedBox(
-                            width: 20, // 限制加载指示器大小
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2, // 细线的进度指示器
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          ),
-                        )
-                      // 其他状态显示文本按钮
-                      : TextButton(
-                          onPressed: allocationStatus == AllocationStatus.success 
-                              ? null // 已分发状态禁用按钮
-                              : onTap,
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            padding: EdgeInsets.zero,
-                          ),
-                          child: Text(
-                            allocationStatus == AllocationStatus.success 
-                                ? s.ai_docs_dispatched // 使用国际化文本
-                                : s.ai_docs_let_them_see, // 使用国际化文本
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
+                    // 使用新的动画按钮替换原有按钮
+                    AnimatedAllocationButton(
+                      status: allocationStatus,
+                      onTap: onTap,
                 ),
               ],
             ),
           ),
         ),
       ),
+        );
+      },
     );
   }
 }

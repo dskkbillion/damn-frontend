@@ -30,6 +30,9 @@ import 'package:dskk_flutter_refactor/features/chat/di/chat_di.dart';
 // Import seller module DI
 import 'package:dskk_flutter_refactor/features/seller/di/seller_di.dart';
 
+// Import auth module DI
+import 'package:dskk_flutter_refactor/features/auth/di/auth_di.dart';
+
 // Import payment related modules
 import '../../features/payment/presentation/bloc/payment_bloc.dart';
 import '../../features/orders/domain/usecases/create_order_use_case.dart';
@@ -75,6 +78,16 @@ Future<void> configureDependencies({required String backendBaseUrl}) async {
   // 注册用户仓库依赖 - 这一步要在其他模块之前
   await registerAuthDependencies();
   print('[DI] Auth dependencies initialization complete.');
+  
+  // 初始化Auth模块依赖
+  try {
+    print('[DI] Starting Auth module initialization...');
+    await AuthDI.init(getIt);
+    print('[DI] Auth module dependencies initialization complete.');
+  } catch (e) {
+    print('[DI] Failed to initialize Auth module: $e');
+    // 不抛出异常，允许应用继续启动，但记录错误信息
+  }
   
   // 注册支付模块依赖
   await configurePaymentDependencies();

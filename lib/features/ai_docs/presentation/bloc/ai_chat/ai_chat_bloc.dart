@@ -7,6 +7,7 @@ import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import Secure Storage
 import 'package:dio/dio.dart';
+import 'package:dskk_flutter_refactor/core/utils/haptic_utils.dart'; // 导入震动工具类
 
 // Core
 import 'package:dskk_flutter_refactor/core/error/failures.dart'; // Use package import
@@ -772,9 +773,13 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
      TriggerAllocationAction event,
      Emitter<AiChatState> emit,
    ) async {
+     try {
      final currentConvId = state.selectedConversationId;
      if (currentConvId == null) {
-       emit(state.copyWith(status: AiChatStatus.allocationFailure, errorMessage: 'No conversation selected for allocation'));
+         emit(state.copyWith(
+           status: AiChatStatus.allocationFailure, 
+           errorMessage: 'No conversation selected for allocation'
+         ));
        return;
      }
      
@@ -792,12 +797,13 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
      final userId = await _getCurrentUserId();
      if (userId == null) {
        // 更新分发状态为失败
-       updatedAllocationStatus[event.serviceId] = AllocationStatus.failure;
+         final failureStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
+         failureStatus[event.serviceId] = AllocationStatus.failure;
        
        emit(state.copyWith(
          status: AiChatStatus.allocationFailure, 
-         errorMessage: 'User not authenticated or invalid ID format',
-         serviceAllocationStatus: updatedAllocationStatus
+           errorMessage: '用户未认证或ID格式无效',
+           serviceAllocationStatus: failureStatus
        ));
        return;
      }
@@ -810,38 +816,85 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         merchantId: event.merchantId,
      ));
 
-     result.fold(
-       (failure) {
+       // 处理结果
+       if (result.isLeft()) {
+         // 处理失败情况
+         final failure = result.fold(
+           (l) => l,
+           (r) => null,
+         );
+         
          // 更新分发状态为失败
-         final updatedStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
-         updatedStatus[event.serviceId] = AllocationStatus.failure;
+         final failureStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
+         failureStatus[event.serviceId] = AllocationStatus.failure;
          
          emit(state.copyWith(
          status: AiChatStatus.allocationFailure,
          errorMessage: failure.toString(),
-           serviceAllocationStatus: updatedStatus
+           serviceAllocationStatus: failureStatus
          ));
-       },
-       (allocationResult) async {
-         // 分发成功，更新状态
-         final updatedStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
-         updatedStatus[event.serviceId] = AllocationStatus.success;
+       } else {
+         // 处理成功情况
+         final allocationResult = result.fold(
+           (l) => null,
+           (r) => r,
+         );
+         
+         if (allocationResult == null) {
+           throw Exception("结果处理错误");
+         }
+         
+         // 分发成功，触发中度双震
+         await HapticUtils.allocationSuccessFeedback();
+         
+         // 立即更新成功状态，确保UI更新
+         final successStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
+         successStatus[event.serviceId] = AllocationStatus.success;
          
          // 获取AI生成的专业需求总结
          final summary = allocationResult.summary;
          print('Allocation successful: $summary'); 
          
+         // 发射成功状态
          emit(state.copyWith(
             status: AiChatStatus.allocationSuccess,
-            serviceAllocationStatus: updatedStatus,
+           serviceAllocationStatus: successStatus,
             errorMessage: '服务已成功分发给商家'
          ));
          
-         // 在这里调用消息发送API给商家
-         String finalMessage = '服务已成功分发给商家';
-         
-         try {
-           print('准备发送消息给商家ID: ${event.merchantId}, 商品: ${event.item['name']}');
+         // 后台异步处理发送消息，不再使用结果更新UI状态
+         _sendAllocationMessageToMerchant(
+           event.merchantId, 
+           event.item, 
+           summary
+         ).catchError((e) {
+           print('向商家发送消息失败(不影响UI状态): $e');
+         });
+       }
+     } catch (e, stackTrace) {
+       print('分发处理中发生未处理异常: $e');
+       print(stackTrace);
+       
+       // 异常情况下，确保按钮状态正确
+       final errorStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
+       errorStatus[event.serviceId] = AllocationStatus.failure;
+       
+       emit(state.copyWith(
+         status: AiChatStatus.allocationFailure,
+         serviceAllocationStatus: errorStatus,
+         errorMessage: '服务分发过程中发生错误: $e'
+       ));
+     }
+   }
+   
+   // 提取发送消息给商家的逻辑到单独的方法
+   Future<void> _sendAllocationMessageToMerchant(
+     int merchantId, 
+     Map<String, dynamic> item,
+     String summary
+   ) async {
+     try {
+       print('准备发送消息给商家ID: $merchantId, 商品: ${item['name']}');
            
            // 创建新的Dio实例并设置基础URL
            final dio = Dio();
@@ -853,28 +906,28 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
              throw Exception('认证令牌不存在或为空');
            }
            
-           // 添加必要的请求头信息 (关键修复)
+       // 添加必要的请求头信息
            final options = Options(
              contentType: Headers.jsonContentType,
              responseType: ResponseType.json,
              headers: {
                'Content-Type': 'application/json',
-               'clienttype': '1',  // 添加必要的请求头
+           'clienttype': '1',
                'client': Platform.isAndroid ? 'android' : 'ios',
                'version': '100',
-               'packageName': 'com.duoshaokankan.dskk', // 包名添加到请求头
-               'versionCode': '1.0.0', // 版本号添加到请求头
-               'versionName': '1.0.0', // 版本名称添加到请求头
-               'Authorization': 'Bearer $authToken', // 添加认证令牌
+           'packageName': 'com.duoshaokankan.dskk',
+           'versionCode': '1.0.0',
+           'versionName': '1.0.0',
+           'Authorization': 'Bearer $authToken',
              },
            );
            
            // 第一步：创建聊天室
            print("发送创建聊天室请求...");
            
-           // 构建创建聊天室的请求参数 (只保留必要参数)
+       // 构建创建聊天室的请求参数
            final createRoomParams = {
-             'doctorId': event.merchantId.toString(),
+         'doctorId': merchantId.toString(),
              'type': 'MEMBER',
            };
            
@@ -900,12 +953,12 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
              print("发送消息请求...");
              
              // 构建一个更丰富的消息，包含服务名称和AI分析的总结
-             String messageContent = "用户对\"${event.item['name']}\"服务感兴趣。\n\n专业需求分析:\n$summary";
+         String messageContent = "用户对\"${item['name']}\"服务感兴趣。\n\n专业需求分析:\n$summary";
              
              // 构建发送消息的请求参数
              final sendMessageParams = {
                'chatId': chatId,
-               'context': messageContent, // 使用分发返回的专业总结作为消息内容
+           'context': messageContent,
                'type': 'allocate',
              };
              
@@ -924,29 +977,15 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
                  sendMsgResponse.data != null && 
                  sendMsgResponse.data['code'] == 200) {
                print('消息已成功发送给商家!');
-               finalMessage = '消息已发送到商家的聊天窗口，请到"聊天"页面查看';
              } else {
                print('发送消息API返回错误: ${sendMsgResponse.data}');
-               finalMessage = '分发成功，但发送消息失败: ${sendMsgResponse.data?['msg'] ?? '未知错误'}';
              }
            } else {
              print('创建聊天室API返回错误: ${createRoomResponse.data}');
-             finalMessage = '分发成功，但创建聊天失败: ${createRoomResponse.data?['msg'] ?? '未知错误'}';
            }
          } catch (e) {
            print('向商家发送消息失败: $e');
-           finalMessage = '分发成功，但发送消息时发生错误: $e';
-         }
-         
-         // 只有当emitter没有完成时才发送最终状态
-         if (!emit.isDone) {
-           emit(state.copyWith(
-             status: AiChatStatus.allocationSuccess,
-             errorMessage: finalMessage
-           ));
-         }
-       },
-     );
+     }
    }
 
   // --- Internal Event Handlers for Stream ---

@@ -25,6 +25,11 @@
     "ai_docs_dispatched": "Dispatched",
     "ai_docs_let_them_see": "Let them see",
     
+    "allocating_step1": "Allocating",
+    "allocating_step2": "Allocating.",
+    "allocating_step3": "Allocating..",
+    "allocating_step4": "Allocating...",
+    
     "ai_docs_add_image": "Add Image",
     "ai_docs_stop_recording": "Stop Recording",
     "ai_docs_start_recording": "Record Voice",

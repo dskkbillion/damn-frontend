@@ -145,6 +145,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "ai_docs_uploading_images": MessageLookupByLibrary.simpleMessage(
       "Images uploading, please wait...",
     ),
+    "allocating_step1": MessageLookupByLibrary.simpleMessage("Allocating"),
+    "allocating_step2": MessageLookupByLibrary.simpleMessage("Allocating."),
+    "allocating_step3": MessageLookupByLibrary.simpleMessage("Allocating.."),
+    "allocating_step4": MessageLookupByLibrary.simpleMessage("Allocating..."),
     "chat_admin_title": MessageLookupByLibrary.simpleMessage("System Admin"),
     "chat_attach": MessageLookupByLibrary.simpleMessage("Send Image/File"),
     "chat_audio_message": MessageLookupByLibrary.simpleMessage("[Audio]"),

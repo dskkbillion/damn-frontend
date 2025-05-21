@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart'; // 导入SVG插件
 import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart';
 import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/core/utils/haptic_utils.dart'; // 导入震动工具类
 
 /// 主壳页面，支持可配置的开发tab
 class MainShellPage extends ConsumerWidget {
@@ -12,6 +13,9 @@ class MainShellPage extends ConsumerWidget {
   const MainShellPage({required this.navigationShell, super.key});
   
   void _onTap(BuildContext context, int index) {
+    // 添加轻微震动反馈
+    HapticUtils.lightTabFeedback();
+    
     navigationShell.goBranch(
       index,
       initialLocation: index == navigationShell.currentIndex,
