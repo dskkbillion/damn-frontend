@@ -1,13 +1,20 @@
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dartz/dartz.dart';
+import 'dart:io';
 
 // 核心依赖
 import 'package:dskk_flutter_refactor/core/network/network_info.dart';
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart';
+import 'package:dskk_flutter_refactor/core/error/failures.dart';
+import 'package:dskk_flutter_refactor/core/network/i_http_client.dart';
 
 // 文件上传
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/repositories/i_file_upload_repository.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/data/repositories/file_upload_repository_impl.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/data/datasources/file_upload_data_source_impl.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/data/datasources/i_file_upload_data_source.dart';
 
 // 数据源
 import 'package:dskk_flutter_refactor/features/seller/data/datasources/i_seller_remote_data_source.dart';
@@ -34,16 +41,28 @@ import 'package:dskk_flutter_refactor/features/seller/domain/usecases/create_pro
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/update_product_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_product_detail_usecase.dart';
 
+// 用例 - 认证管理
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_authentication_status.dart';
+
 // Bloc - 卖家主页和产品管理
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_home/seller_home_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_management/product_management_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_bloc.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/auth_management/auth_management_bloc.dart';
 
 // 统计模块依赖注入
 import 'package:dskk_flutter_refactor/features/seller/di/seller_statistics_di.dart';
 
 /// 文件上传模拟实现
 class MockFileUploadRepository implements IFileUploadRepository {
+  @override
+  Future<Either<Failure, String>> uploadFile(File file) async {
+    print('[MockFileUploadRepository] 模拟上传文件: ${file.path}');
+    // 返回模拟的成功结果，使用本地文件路径作为"上传URL"
+    // 在开发/测试环境中，我们假装文件已上传并返回路径
+    return Right('https://mock-upload-server.com/images/${file.path.split('/').last}');
+  }
+
   @override
   dynamic noSuchMethod(Invocation invocation) {
     print('[MockFileUploadRepository] 调用未实现的方法: ${invocation.memberName}');
@@ -153,12 +172,38 @@ class SellerDI {
         );
         print('[SellerDI] 已注册 GetStoreProfileUseCase');
       }
+      
+      // 用例 - 认证管理
+      if (!sl.isRegistered<GetAuthenticationStatus>()) {
+        sl.registerLazySingleton<GetAuthenticationStatus>(
+          () => GetAuthenticationStatus(sl<ISellerRepository>())
+        );
+        print('[SellerDI] 已注册 GetAuthenticationStatus');
+      }
 
       // 注册文件上传仓库（如果尚未注册）
       if (!sl.isRegistered<IFileUploadRepository>()) {
-        print('[SellerDI] 警告: IFileUploadRepository未注册，使用模拟实现');
-        sl.registerLazySingleton<IFileUploadRepository>(() => MockFileUploadRepository());
-        print('[SellerDI] 已注册临时的 MockFileUploadRepository');
+        // 检查是否有必要的依赖项
+        if (!sl.isRegistered<IHttpClient>()) {
+          print('[SellerDI] 错误: IHttpClient未注册，需要先注册IHttpClient');
+          throw Exception('IHttpClient dependency not registered');
+        }
+        
+        // 注册文件上传数据源
+        if (!sl.isRegistered<IFileUploadDataSource>()) {
+          sl.registerLazySingleton<IFileUploadDataSource>(
+            () => FileUploadDataSourceImpl(sl<IHttpClient>())
+          );
+          print('[SellerDI] 已注册 FileUploadDataSourceImpl');
+        }
+        
+        // 注册文件上传仓库
+        sl.registerLazySingleton<IFileUploadRepository>(
+          () => FileUploadRepositoryImpl(dataSource: sl<IFileUploadDataSource>())
+        );
+        print('[SellerDI] 已注册 FileUploadRepositoryImpl');
+      } else {
+        print('[SellerDI] IFileUploadRepository 已存在，跳过注册');
       }
 
       // 用例 - 产品编辑
@@ -235,11 +280,23 @@ class SellerDI {
           sl<GetSellerProductDetailUseCase>(),
           sl<CreateProductUseCase>(),
           sl<UpdateProductUseCase>(),
+          sl<IFileUploadRepository>(),
+          sl<ISellerRepository>(),
         )
       );
       print('[SellerDI] 已注册 ProductEditBloc');
     } else {
       print('[SellerDI] ProductEditBloc 已存在，跳过注册');
+    }
+    
+    // BLoC - 认证管理
+    if (!sl.isRegistered<AuthManagementBloc>()) {
+      sl.registerFactory<AuthManagementBloc>(
+        () => AuthManagementBloc(sl<GetAuthenticationStatus>())
+      );
+      print('[SellerDI] 已注册 AuthManagementBloc');
+    } else {
+      print('[SellerDI] AuthManagementBloc 已存在，跳过注册');
     }
   }
 } 

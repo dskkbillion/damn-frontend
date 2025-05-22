@@ -20,6 +20,8 @@ import '../data/datasources/i_ai_chat_remote_data_source.dart';
 import '../data/datasources/ai_chat_remote_data_source_impl.dart';
 import '../data/datasources/i_file_upload_data_source.dart';
 import '../data/datasources/file_upload_data_source_impl.dart';
+import '../data/datasources/ai_docs_file_upload_data_source_impl.dart';
+import '../data/repositories/ai_docs_file_upload_repository_impl.dart';
 import '../../../core/network/network_info.dart';
 import '../../../core/network/i_http_client.dart';
 
@@ -38,11 +40,14 @@ class AiDocsDI {
     }
     
     // 文件上传数据源
-    if (!getIt.isRegistered<IFileUploadDataSource>()) {
+    if (!getIt.isRegistered<IFileUploadDataSource>(instanceName: 'ai_docs_file_upload_data_source')) {
       getIt.registerLazySingleton<IFileUploadDataSource>(
-        () => FileUploadDataSourceImpl(getIt<IHttpClient>()),
+        () => AiDocsFileUploadDataSourceImpl(getIt<IHttpClient>()),
+        instanceName: 'ai_docs_file_upload_data_source'
       );
-      print('[AiDocsDI] Registered IFileUploadDataSource');
+      print('[AiDocsDI] Registered AiDocsFileUploadDataSourceImpl as ai_docs_file_upload_data_source');
+    } else {
+      print('[AiDocsDI] Instance named ai_docs_file_upload_data_source for IFileUploadDataSource already registered.');
     }
 
     // 仓库
@@ -56,13 +61,16 @@ class AiDocsDI {
     }
     
     // 文件上传仓库
-    if (!getIt.isRegistered<IFileUploadRepository>()) {
+    if (!getIt.isRegistered<IFileUploadRepository>(instanceName: 'ai_docs_file_upload_repository')) {
       getIt.registerLazySingleton<IFileUploadRepository>(
-        () => FileUploadRepositoryImpl(
-          dataSource: getIt<IFileUploadDataSource>(),
+        () => AiDocsFileUploadRepositoryImpl(
+          dataSource: getIt<IFileUploadDataSource>(instanceName: 'ai_docs_file_upload_data_source'),
         ),
+        instanceName: 'ai_docs_file_upload_repository'
       );
-      print('[AiDocsDI] Registered IFileUploadRepository');
+      print('[AiDocsDI] Registered AiDocsFileUploadRepositoryImpl as ai_docs_file_upload_repository');
+    } else {
+      print('[AiDocsDI] Instance named ai_docs_file_upload_repository for IFileUploadRepository already registered.');
     }
 
     // 用例
@@ -103,9 +111,11 @@ class AiDocsDI {
 
     if (!getIt.isRegistered<UploadFileUseCase>()) {
       getIt.registerLazySingleton<UploadFileUseCase>(
-        () => UploadFileUseCase(getIt<IFileUploadRepository>()),
+        () => UploadFileUseCase(getIt<IFileUploadRepository>(instanceName: 'ai_docs_file_upload_repository')),
       );
-      print('[AiDocsDI] Registered UploadFileUseCase');
+      print('[AiDocsDI] Registered UploadFileUseCase with AI Docs specific repository');
+    } else {
+      print('[AiDocsDI] UploadFileUseCase already registered.');
     }
 
     if (!getIt.isRegistered<GetRelatedServicesUseCase>()) {

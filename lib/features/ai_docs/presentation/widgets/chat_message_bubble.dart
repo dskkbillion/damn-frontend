@@ -141,49 +141,134 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
 
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 14.0),
-        decoration: BoxDecoration(
-          color: bubbleColor,
-          borderRadius: BorderRadius.circular(16.0),
-        ),
-        constraints: BoxConstraints(
-           maxWidth: MediaQuery.of(context).size.width * 0.75
-        ),
-        child: Column(
-           crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-           mainAxisSize: MainAxisSize.min,
-           children: [
-              // --- Display content based on messageType ---
-              if (widget.message.messageType == MessageType.text)
-                 _buildTextContent(context, isUser)
-              else if (widget.message.messageType == MessageType.image)
-                 _buildImageContent(context) // 改为实际图片渲染
-              else if (widget.message.messageType == MessageType.audio)
-                 _buildAudioContent(context, isUser) // Use the new stateful player
-              else // Default or unknown type
-                 const Text("不支持的消息类型"),
+      child: Column(
+        crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          // 消息气泡
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+            padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 14.0),
+            decoration: BoxDecoration(
+              color: bubbleColor,
+              borderRadius: BorderRadius.circular(16.0),
+            ),
+            constraints: BoxConstraints(
+               maxWidth: MediaQuery.of(context).size.width * 0.75
+            ),
+            child: Column(
+               crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+               mainAxisSize: MainAxisSize.min,
+               children: [
+                  // --- Display content based on messageType ---
+                  if (widget.message.messageType == MessageType.text)
+                     _buildTextContent(context, isUser)
+                  else if (widget.message.messageType == MessageType.image)
+                     _buildImageContent(context) // 改为实际图片渲染
+                  else if (widget.message.messageType == MessageType.audio)
+                     _buildAudioContent(context, isUser) // Use the new stateful player
+                  else // Default or unknown type
+                     const Text("不支持的消息类型"),
 
-              // --- Display Timestamp (Optional) ---
-              // Don't show timestamp for streaming text message
-              if (widget.message.timestamp != null && !(widget.isStreaming && widget.message.messageType == MessageType.text))
-               Padding(
-                 padding: const EdgeInsets.only(top: 4.0),
-                 child: Text(
-                    _formatTimestamp(widget.message.timestamp!), 
-                    style: TextStyle(
-                        fontSize: 10.0, 
-                        color: isUser 
-                           ? Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.7) 
-                           : Theme.of(context).colorScheme.onSecondaryContainer.withOpacity(0.7),
-                    ),
-                 ),
-               )
-           ],
-        ),
+                  // --- Display Timestamp (Optional) ---
+                  // Don't show timestamp for streaming text message
+                  if (widget.message.timestamp != null && !(widget.isStreaming && widget.message.messageType == MessageType.text))
+                   Padding(
+                     padding: const EdgeInsets.only(top: 4.0),
+                     child: Text(
+                        _formatTimestamp(widget.message.timestamp!), 
+                        style: TextStyle(
+                            fontSize: 10.0, 
+                            color: isUser 
+                               ? Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.7) 
+                               : Theme.of(context).colorScheme.onSecondaryContainer.withOpacity(0.7),
+                        ),
+                     ),
+                   )
+               ],
+            ),
+          ),
+          
+          // 语音转录状态和结果（仅对音频消息）
+          if (_isAudioMessage) _buildTranscriptionContent(context, isUser),
+        ],
       ),
     );
+  }
+
+  // 添加新的方法：构建转录状态和结果
+  Widget _buildTranscriptionContent(BuildContext context, bool isUser) {
+    // 转录中状态
+    if (widget.message.isTranscribing) {
+      return Padding(
+        padding: const EdgeInsets.only(left: 12.0, right: 12.0, top: 4.0),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 12,
+              height: 12,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  isUser ? Colors.blue : Colors.grey,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '转录中...',
+              style: TextStyle(
+                fontSize: 12,
+                color: isUser ? Colors.blue.shade700 : Colors.grey.shade700,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    // 转录结果
+    if (widget.message.transcription != null && widget.message.transcription!.isNotEmpty) {
+      return Container(
+        margin: const EdgeInsets.only(top: 4.0, left: 8.0, right: 8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+        decoration: BoxDecoration(
+          color: isUser 
+              ? Colors.blue.withOpacity(0.1) 
+              : Colors.grey.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12.0),
+          border: Border.all(
+            color: isUser 
+                ? Colors.blue.withOpacity(0.2) 
+                : Colors.grey.withOpacity(0.2),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '转录文本:',
+              style: TextStyle(
+                fontSize: 10,
+                color: isUser ? Colors.blue.shade800 : Colors.grey.shade800,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              widget.message.transcription!,
+              style: TextStyle(
+                fontSize: 13,
+                color: isUser ? Colors.blue.shade900 : Colors.grey.shade900,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    // 既不是转录中，也没有转录结果，则不显示任何内容
+    return const SizedBox.shrink();
   }
 
   // --- Text content builder (uses widget.message and widget.isStreaming) ---

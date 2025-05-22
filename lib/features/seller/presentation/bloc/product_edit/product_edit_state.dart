@@ -1,6 +1,21 @@
 import 'package:equatable/equatable.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_managed_product.dart';
 
+/// 上传状态枚举
+enum UploadStatus {
+  /// 未上传
+  idle,
+  
+  /// 上传中
+  uploading,
+  
+  /// 上传成功
+  success,
+  
+  /// 上传失败
+  failure,
+}
+
 /// 商品编辑状态
 class ProductEditState extends Equatable {
   /// 是否处于加载状态
@@ -27,6 +42,27 @@ class ProductEditState extends Equatable {
   /// 本地选择的详情图路径列表
   final List<String> selectedDetailImagePaths;
   
+  /// 图片上传状态
+  final UploadStatus uploadStatus;
+  
+  /// 已上传图片数量
+  final int uploadedCount;
+  
+  /// 总共需要上传的图片数量
+  final int totalUploadCount;
+  
+  /// 已上传的主图URL列表
+  final List<String> uploadedImageUrls;
+  
+  /// 已上传的详情图URL列表
+  final List<String> uploadedDetailImageUrls;
+  
+  /// 上传进度百分比 (0-100)
+  double get uploadProgress {
+    if (totalUploadCount == 0) return 0;
+    return (uploadedCount / totalUploadCount) * 100;
+  }
+  
   /// 商品表单数据
   final ProductFormData formData;
   
@@ -46,6 +82,11 @@ class ProductEditState extends Equatable {
     this.product,
     this.selectedImagePaths = const [],
     this.selectedDetailImagePaths = const [],
+    this.uploadStatus = UploadStatus.idle,
+    this.uploadedCount = 0,
+    this.totalUploadCount = 0,
+    this.uploadedImageUrls = const [],
+    this.uploadedDetailImageUrls = const [],
     this.formData = const ProductFormData(),
     this.isCreateMode = true,
     this.categories,
@@ -61,6 +102,11 @@ class ProductEditState extends Equatable {
     product,
     selectedImagePaths,
     selectedDetailImagePaths,
+    uploadStatus,
+    uploadedCount,
+    totalUploadCount,
+    uploadedImageUrls,
+    uploadedDetailImageUrls,
     formData,
     isCreateMode,
     categories,
@@ -160,6 +206,11 @@ class ProductEditState extends Equatable {
     SellerManagedProduct? product,
     List<String>? selectedImagePaths,
     List<String>? selectedDetailImagePaths,
+    UploadStatus? uploadStatus,
+    int? uploadedCount,
+    int? totalUploadCount,
+    List<String>? uploadedImageUrls,
+    List<String>? uploadedDetailImageUrls,
     ProductFormData? formData,
     bool? isCreateMode,
     List<ProductCategory>? categories,
@@ -173,6 +224,11 @@ class ProductEditState extends Equatable {
       product: product ?? this.product,
       selectedImagePaths: selectedImagePaths ?? this.selectedImagePaths,
       selectedDetailImagePaths: selectedDetailImagePaths ?? this.selectedDetailImagePaths,
+      uploadStatus: uploadStatus ?? this.uploadStatus,
+      uploadedCount: uploadedCount ?? this.uploadedCount,
+      totalUploadCount: totalUploadCount ?? this.totalUploadCount,
+      uploadedImageUrls: uploadedImageUrls ?? this.uploadedImageUrls,
+      uploadedDetailImageUrls: uploadedDetailImageUrls ?? this.uploadedDetailImageUrls,
       formData: formData ?? this.formData,
       isCreateMode: isCreateMode ?? this.isCreateMode,
       categories: categories ?? this.categories,

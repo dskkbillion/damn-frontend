@@ -322,14 +322,13 @@ class _ChatInputFieldState extends State<ChatInputField> {
 
        // 2. Start recording to a temporary path
       final Directory tempDir = await getTemporaryDirectory();
-      final String filePath = '${tempDir.path}/audio_${DateTime.now().millisecondsSinceEpoch}.aac'; // Unique filename, AAC format
+      final String filePath = '${tempDir.path}/audio_${DateTime.now().millisecondsSinceEpoch}.wav'; // 使用WAV格式
       
-      // Prepare recorder config (AAC-LC is a common choice, check backend requirements)
-      // TODO: Revisit encoder and bitrate settings based on final requirements
+      // 修改录音配置，使用WAV格式，16kbps码率
        const recordConfig = RecordConfig(
-         encoder: AudioEncoder.aacLc, // Example: AAC-LC
-         // bitRate: 16000, // TODO: Confirm if record package allows this directly
-         // sampleRate: 16000, // Sample rate often related to quality/bitrate
+         encoder: AudioEncoder.wav, // 使用WAV格式
+         bitRate: 16000, // 设置码率为16kbps
+         sampleRate: 16000, // 设置采样率为16kHz
        );
 
       try {

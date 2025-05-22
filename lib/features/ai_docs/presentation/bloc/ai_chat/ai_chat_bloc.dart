@@ -598,26 +598,90 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       (audioOssUrl) async {
         print('音频上传成功，URL: $audioOssUrl');
         
-        // 创建音频消息实体
+        // 生成唯一的消息ID
+        final String messageId = 'audio_user_${DateTime.now().millisecondsSinceEpoch}';
+        
+        // 创建音频消息实体，设置转录状态为进行中
         final audioMessage = AiChatMessageEntity(
-           messageId: 'audio_user_${DateTime.now().millisecondsSinceEpoch}',
+          messageId: messageId,
           sender: MessageSender.user,
           conversationId: state.selectedConversationId ?? -1,
-           timestamp: DateTime.now(),
-           messageType: MessageType.audio,
-           fileUrls: [audioOssUrl], 
-          content: '[语音消息]' // 添加占位符文本
+          timestamp: DateTime.now(),
+          messageType: MessageType.audio,
+          fileUrls: [audioOssUrl],
+          content: '[语音消息]', // 添加占位符文本
+          isTranscribing: true, // 标记为转录中
         );
 
         // 更新UI显示音频消息
         emit(state.copyWith(
-           messages: List.from(state.messages)..add(audioMessage), 
+          messages: List.from(state.messages)..add(audioMessage), 
           status: AiChatStatus.historyLoadSuccess,
-           clearErrorMessage: true,
+          clearErrorMessage: true,
         ));
         
-        // 可选：尝试调用语音转文字服务
-        // TODO: 实现语音转文字
+        // 调用语音转文字服务
+        if (userId != null) {
+          print('开始调用语音转文字服务, URL: $audioOssUrl');
+          final transcriptionResult = await _transcribeAudio(
+            TranscribeAudioParams(
+              audioOssUrl: audioOssUrl,
+              userId: userId,
+            )
+          );
+          
+          // 处理转录结果
+          transcriptionResult.fold(
+            (failure) {
+              // 转录失败
+              print('语音转文字失败: $failure');
+              
+              // 更新消息，标记为不再转录中，但无转录结果
+              final updatedMessages = List<AiChatMessageEntity>.from(state.messages);
+              final index = updatedMessages.indexWhere((msg) => msg.messageId == messageId);
+              
+              if (index != -1) {
+                updatedMessages[index] = updatedMessages[index].copyWith(
+                  isTranscribing: false,
+                );
+                
+                emit(state.copyWith(
+                  messages: updatedMessages,
+                  status: AiChatStatus.transcriptionFailure,
+                  errorMessage: '语音转文字失败: ${failure.toString()}',
+                ));
+              }
+            },
+            (transcription) {
+              // 转录成功
+              print('语音转文字成功: $transcription');
+              
+              // 更新消息，添加转录文本
+              final updatedMessages = List<AiChatMessageEntity>.from(state.messages);
+              final index = updatedMessages.indexWhere((msg) => msg.messageId == messageId);
+              
+              if (index != -1) {
+                updatedMessages[index] = updatedMessages[index].copyWith(
+                  isTranscribing: false,
+                  transcription: transcription,
+                );
+                
+                emit(state.copyWith(
+                  messages: updatedMessages,
+                  status: AiChatStatus.transcriptionSuccess,
+                ));
+                
+                // 将转录文本作为新的文本消息发送到聊天中
+                if (transcription.isNotEmpty) {
+                  // 使用短延迟确保UI更新后再发送文本消息
+                  Future.delayed(const Duration(milliseconds: 500), () {
+                    add(SendMessage(message: transcription));
+                  });
+                }
+              }
+            }
+          );
+        }
       },
     );
   }
