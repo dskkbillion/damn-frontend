@@ -162,6 +162,8 @@ class _ChatInputFieldState extends State<ChatInputField> {
                                              }
                                            }
                                          : null,
+                            // 添加长按操作显示Markdown示例菜单
+                            onLongPress: isBusy ? null : _showMarkdownExampleMenu,
                             tooltip: s.ai_docs_send_message, // 使用国际化文本
                           ),
                     ],
@@ -320,14 +322,13 @@ class _ChatInputFieldState extends State<ChatInputField> {
 
        // 2. Start recording to a temporary path
       final Directory tempDir = await getTemporaryDirectory();
-      final String filePath = '${tempDir.path}/audio_${DateTime.now().millisecondsSinceEpoch}.aac'; // Unique filename, AAC format
+      final String filePath = '${tempDir.path}/audio_${DateTime.now().millisecondsSinceEpoch}.wav'; // 使用WAV格式
       
-      // Prepare recorder config (AAC-LC is a common choice, check backend requirements)
-      // TODO: Revisit encoder and bitrate settings based on final requirements
+      // 修改录音配置，使用WAV格式，16kbps码率
        const recordConfig = RecordConfig(
-         encoder: AudioEncoder.aacLc, // Example: AAC-LC
-         // bitRate: 16000, // TODO: Confirm if record package allows this directly
-         // sampleRate: 16000, // Sample rate often related to quality/bitrate
+         encoder: AudioEncoder.wav, // 使用WAV格式
+         bitRate: 16000, // 设置码率为16kbps
+         sampleRate: 16000, // 设置采样率为16kHz
        );
 
       try {
@@ -396,5 +397,157 @@ class _ChatInputFieldState extends State<ChatInputField> {
          }
       }
     }
+  }
+
+  // 添加长按操作显示Markdown示例菜单
+  void _showMarkdownExampleMenu() {
+    final s = S.of(context);
+    
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.title),
+                title: const Text('Markdown 标题示例'),
+                onTap: () {
+                  _sendMarkdownExample("""
+# 一级标题
+## 二级标题
+### 三级标题
+                  """);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.format_list_bulleted),
+                title: const Text('Markdown 列表示例'),
+                onTap: () {
+                  _sendMarkdownExample("""
+- 列表项 1
+- 列表项 2
+  - 子列表项 2.1
+  - 子列表项 2.2
+- 列表项 3
+
+1. 有序列表 1
+2. 有序列表 2
+   1. 子列表 2.1
+   2. 子列表 2.2
+3. 有序列表 3
+                  """);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.format_quote),
+                title: const Text('Markdown 引用和代码示例'),
+                onTap: () {
+                  _sendMarkdownExample("""
+> 这是一段引用文本
+> 这是引用的第二行
+
+代码块示例:
+```dart
+void main() {
+  print('Hello, Markdown!');
+}
+```
+                  """);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.table_chart),
+                title: const Text('Markdown 表格示例'),
+                onTap: () {
+                  _sendMarkdownExample("""
+| 列1 | 列2 | 列3 |
+|-----|-----|-----|
+| 单元格1 | 单元格2 | 单元格3 |
+| 单元格4 | 单元格5 | 单元格6 |
+                  """);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.format_bold),
+                title: const Text('Markdown 格式化和链接示例'),
+                onTap: () {
+                  _sendMarkdownExample("""
+**粗体文本** 和 *斜体文本*
+
+~~删除线文本~~
+
+[Flutter官网链接](https://flutter.dev)
+
+![图片描述](https://picsum.photos/200/100)
+                  """);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.view_agenda),
+                title: const Text('Markdown 完整示例'),
+                onTap: () {
+                  _sendMarkdownExample("""
+# Markdown 完整示例
+
+## 标题与格式
+
+这是正文内容。**这是粗体** 和 *这是斜体*。
+
+## 列表
+
+- 无序列表项 1
+- 无序列表项 2
+  - 子项 2.1
+  - 子项 2.2
+
+1. 有序列表项 1
+2. 有序列表项 2
+
+## 引用与代码
+
+> 这是一段引用文本
+> 第二行引用
+
+代码示例:
+```dart
+void main() {
+  print('Hello, Markdown!');
+}
+```
+
+## 表格
+
+| 商品 | 价格 | 库存 |
+|-----|-----|-----|
+| 商品A | ¥100 | 20 |
+| 商品B | ¥200 | 10 |
+
+[更多Markdown语法](https://www.markdownguide.org/)
+                  """);
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+  
+  // 发送Markdown示例
+  void _sendMarkdownExample(String markdownText) {
+    // 清理不必要的前导和尾随空白，但保留内部格式
+    final cleanedText = markdownText.trim();
+    // 设置到输入框
+    widget.textController.text = cleanedText;
+    // 发送消息
+    widget.onSendMessage(cleanedText);
   }
 } 

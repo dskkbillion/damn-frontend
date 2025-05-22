@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/core/utils/haptic_utils.dart'; // 导入震动工具类
 // import 'package:dskk_flutter_refactor/app/app_mode.dart'; // 不再需要 AppMode
 
 class SellerBottomNavigationBar extends ConsumerWidget {
@@ -42,6 +43,9 @@ class SellerBottomNavigationBar extends ConsumerWidget {
       ],
       currentIndex: navigationShell.currentIndex, // <--- 直接使用 shell 的 index
       onTap: (index) {
+        // 添加轻微震动反馈
+        HapticUtils.lightTabFeedback();
+        
         // 使用 navigationShell.goBranch 进行导航
         navigationShell.goBranch(
           index,

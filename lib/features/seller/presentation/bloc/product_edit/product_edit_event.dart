@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_state.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_managed_product.dart';
 
 /// 商品编辑事件基类
 abstract class ProductEditEvent extends Equatable {
@@ -32,7 +33,7 @@ class LoadProductData extends ProductEditEvent {
   });
 
   @override
-  List<Object> get props => [productId];
+  List<Object?> get props => [productId];
 }
 
 /// 加载商品类别数据
@@ -67,7 +68,7 @@ class UpdateFormData extends ProductEditEvent {
   });
 
   @override
-  List<Object> get props => [formData];
+  List<Object?> get props => [formData];
 }
 
 /// 添加规格选项
@@ -85,7 +86,7 @@ class RemoveProductVariant extends ProductEditEvent {
   });
 
   @override
-  List<Object> get props => [index];
+  List<Object?> get props => [index];
 }
 
 /// 更新规格选项
@@ -102,7 +103,7 @@ class UpdateProductVariant extends ProductEditEvent {
   });
 
   @override
-  List<Object> get props => [index, variantData];
+  List<Object?> get props => [index, variantData];
 }
 
 /// 添加自定义材料问题
@@ -120,7 +121,7 @@ class RemoveProductMaterial extends ProductEditEvent {
   });
 
   @override
-  List<Object> get props => [index];
+  List<Object?> get props => [index];
 }
 
 /// 更新自定义材料问题
@@ -137,7 +138,7 @@ class UpdateProductMaterial extends ProductEditEvent {
   });
 
   @override
-  List<Object> get props => [index, materialData];
+  List<Object?> get props => [index, materialData];
 }
 
 /// 选择商品图片
@@ -150,7 +151,7 @@ class SelectProductImages extends ProductEditEvent {
   });
 
   @override
-  List<Object> get props => [imagePaths];
+  List<Object?> get props => [imagePaths];
 }
 
 /// 选择商品详情图片
@@ -163,7 +164,59 @@ class SelectDetailProductImages extends ProductEditEvent {
   });
 
   @override
-  List<Object> get props => [imagePaths];
+  List<Object?> get props => [imagePaths];
+}
+
+/// 上传单个图片
+class UploadProductImage extends ProductEditEvent {
+  final String imagePath;
+  final bool isDetailImage;
+  final List<String>? remainingPaths;
+  
+  const UploadProductImage({
+    required this.imagePath,
+    this.isDetailImage = false,
+    this.remainingPaths,
+  });
+  
+  @override
+  List<Object?> get props => [imagePath, isDetailImage, remainingPaths];
+}
+
+/// 图片上传成功
+class ProductImageUploadSuccess extends ProductEditEvent {
+  final String imagePath;
+  final String imageUrl;
+  final bool isDetailImage;
+  final List<String>? remainingPaths;
+  
+  const ProductImageUploadSuccess({
+    required this.imagePath,
+    required this.imageUrl,
+    this.isDetailImage = false,
+    this.remainingPaths,
+  });
+  
+  @override
+  List<Object?> get props => [imagePath, imageUrl, isDetailImage, remainingPaths];
+}
+
+/// 图片上传失败
+class ProductImageUploadFailure extends ProductEditEvent {
+  final String imagePath;
+  final String errorMessage;
+  final bool isDetailImage;
+  final List<String>? remainingPaths;
+  
+  const ProductImageUploadFailure({
+    required this.imagePath,
+    required this.errorMessage,
+    this.isDetailImage = false,
+    this.remainingPaths,
+  });
+  
+  @override
+  List<Object?> get props => [imagePath, errorMessage, isDetailImage, remainingPaths];
 }
 
 /// 提交表单

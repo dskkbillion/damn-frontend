@@ -195,6 +195,46 @@ class S {
     );
   }
 
+  /// `Allocating`
+  String get allocating_step1 {
+    return Intl.message(
+      'Allocating',
+      name: 'allocating_step1',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Allocating.`
+  String get allocating_step2 {
+    return Intl.message(
+      'Allocating.',
+      name: 'allocating_step2',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Allocating..`
+  String get allocating_step3 {
+    return Intl.message(
+      'Allocating..',
+      name: 'allocating_step3',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Allocating...`
+  String get allocating_step4 {
+    return Intl.message(
+      'Allocating...',
+      name: 'allocating_step4',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Add Image`
   String get ai_docs_add_image {
     return Intl.message(

@@ -121,6 +121,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "ai_docs_uploading_images": MessageLookupByLibrary.simpleMessage(
       "图片正在上传中，请稍候...",
     ),
+    "allocating_step1": MessageLookupByLibrary.simpleMessage("分发中"),
+    "allocating_step2": MessageLookupByLibrary.simpleMessage("分发中."),
+    "allocating_step3": MessageLookupByLibrary.simpleMessage("分发中.."),
+    "allocating_step4": MessageLookupByLibrary.simpleMessage("分发中..."),
     "chat_admin_title": MessageLookupByLibrary.simpleMessage("系统管理员"),
     "chat_attach": MessageLookupByLibrary.simpleMessage("发送图片/文件"),
     "chat_audio_message": MessageLookupByLibrary.simpleMessage("[语音]"),

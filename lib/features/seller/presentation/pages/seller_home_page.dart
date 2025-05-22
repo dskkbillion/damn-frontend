@@ -491,7 +491,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                   context,
                   icon: Icons.account_balance_wallet_outlined,
                   label: '钱包',
-                  onTap: () => context.go('/seller/wallet'),
+                  onTap: () => context.goNamed('seller_wallet'),
                 ),
                 _buildFunctionItem(
                   context,

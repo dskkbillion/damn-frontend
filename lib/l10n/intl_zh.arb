@@ -25,6 +25,11 @@
     "ai_docs_dispatched": "已分发",
     "ai_docs_let_them_see": "让ta看看",
     
+    "allocating_step1": "分发中",
+    "allocating_step2": "分发中.",
+    "allocating_step3": "分发中..",
+    "allocating_step4": "分发中...",
+    
     "ai_docs_add_image": "添加图片",
     "ai_docs_stop_recording": "停止录音",
     "ai_docs_start_recording": "录制语音", 
