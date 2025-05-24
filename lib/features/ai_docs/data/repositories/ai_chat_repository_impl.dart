@@ -195,4 +195,17 @@ class AiChatRepositoryImpl implements IAiChatRepository {
       );
     });
   }
+
+  @override
+  Future<Either<Failure, void>> cancelChatGeneration({
+    required int conversationId,
+    required int userId,
+  }) async {
+    return _tryCatch<void>(() async {
+      await _remoteDataSource.cancelChatGeneration(
+        conversationId: conversationId,
+        userId: userId,
+      );
+    });
+  }
 } 

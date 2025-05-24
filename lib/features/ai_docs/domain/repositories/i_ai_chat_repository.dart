@@ -83,6 +83,15 @@ abstract class IAiChatRepository {
   Future<Either<Failure, String>> transcribeAudio(
       {required String audioOssUrl, int? userId});
 
+  /// Cancels an ongoing chat generation.
+  /// (Corresponds to /model/chat/cancel endpoint).
+  ///
+  /// Returns [Either<Failure, void>].
+  Future<Either<Failure, void>> cancelChatGeneration({
+    required int conversationId,
+    required int userId,
+  });
+
   // TODO: Consider adding methods for uploading files if that logic belongs here
   // Future<Either<Failure, String>> uploadFile(File file);
 } 

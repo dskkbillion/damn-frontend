@@ -224,4 +224,19 @@ class MockAiChatRemoteDataSource implements IAiChatRemoteDataSource {
        return "This is the mock transcription result for the audio file located at $audioOssUrl. It might contain pauses... or specific keywords.";
   }
 
+  @override
+  Future<void> cancelChatGeneration({
+    required int conversationId,
+    required int userId,
+  }) async {
+    await _simulateDelay(300);
+    if (_shouldFail) {
+      throw Exception('Mock Network Error: Failed to cancel chat generation.');
+    }
+    if (conversationId < 1) {
+      throw Exception('Mock Error: Cannot cancel chat generation for invalid conversation ID');
+    }
+    print('Mock: Chat generation cancelled for conversation $conversationId, user $userId.');
+  }
+
 }

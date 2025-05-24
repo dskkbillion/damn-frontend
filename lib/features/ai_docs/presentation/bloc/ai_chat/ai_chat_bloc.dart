@@ -26,6 +26,7 @@ import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/load_hist
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/stream_chat_completion_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/transcribe_audio_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/upload_file_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/cancel_chat_generation_usecase.dart';
 
 // Move Exports Before Parts - Use package imports
 export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_conversation_entity.dart'; 
@@ -52,6 +53,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   final GetRelatedServicesUseCase _getRelatedServices;
   final AllocateChatResourceUseCase _allocateChatResource;
   final TranscribeAudioUseCase _transcribeAudio;
+  final CancelChatGenerationUseCase _cancelChatGeneration;
 
   // --- Inject Secure Storage --- 
   final FlutterSecureStorage _storage;
@@ -70,6 +72,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     this._getRelatedServices,
     this._allocateChatResource,
     this._transcribeAudio,
+    this._cancelChatGeneration,
     this._storage, // Add storage to constructor
     // Start with initial state containing defaults for new properties
   ) : super(const AiChatState()) { 
@@ -87,6 +90,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     on<SendMessage>(_onSendMessage);
     on<SendVoiceMessage>(_onSendVoiceMessage); 
     on<CancelStreaming>(_onCancelStreaming); 
+    on<CancelChatGeneration>(_onCancelChatGeneration);
     on<FetchRecommendations>(_onFetchRecommendations); 
     on<TriggerAllocationAction>(_onTriggerAllocationAction); 
     // Internal Stream Handling
@@ -398,9 +402,13 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       print("Cannot send message while streaming");
       return;
     }
-    // --- Require non-empty text message --- 
-    if (event.message.trim().isEmpty) {
-        print("Cannot send empty message text.");
+
+    // --- 检查是否有内容可发送（文本或图片） --- 
+    final hasText = event.message.trim().isNotEmpty;
+    final hasPendingImages = state.pendingImageFiles?.isNotEmpty == true;
+    
+    if (!hasText && !hasPendingImages) {
+        print("Cannot send empty message (no text and no images).");
         // Optionally show snackbar feedback from here or rely on UI logic
         return; 
     }
@@ -691,6 +699,42 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   void _onReceiveStreamChunk(_ReceiveStreamChunk event, Emitter<AiChatState> emit) {
     print("[AiChatBloc] 收到流式数据块: ${event.chunk}");
     
+    // 检查是否是特殊控制标记
+    final chunk = event.chunk.trim();
+    
+    // 过滤特殊标记，这些标记用于内部控制，不应显示给用户
+    if (chunk == '[COMPLETED]' || 
+        chunk == '[DONE]' || 
+        chunk == '[CANCELLED]') {
+      print("[AiChatBloc] 收到控制标记: $chunk，完成流式响应");
+      // 这些标记表示流完成，直接完成消息而不添加内容
+      if (state.status == AiChatStatus.streamingResponse) {
+        final currentMessages = List<AiChatMessageEntity>.from(state.messages);
+        // 只有当有实际内容时才添加消息
+        if (state.streamingResponseText.isNotEmpty && 
+            state.streamingResponseText != '...' &&
+            !state.streamingResponseText.contains('[COMPLETED]') &&
+            !state.streamingResponseText.contains('[DONE]') &&
+            !state.streamingResponseText.contains('[CANCELLED]')) {
+          final aiMessage = AiChatMessageEntity(
+            messageId: 'ai_${DateTime.now().millisecondsSinceEpoch}', 
+            content: state.streamingResponseText,
+            sender: MessageSender.ai,
+            timestamp: DateTime.now(),
+            conversationId: state.selectedConversationId!, 
+          );
+          currentMessages.add(aiMessage);
+        }
+        emit(state.copyWith(
+          status: AiChatStatus.messageSendSuccess,
+          streamingResponseText: '',
+          messages: currentMessages,
+        ));
+        print("[AiChatBloc] 流式响应完成，添加最终消息到列表");
+      }
+      return;
+    }
+    
     if (event.isDone) {
        // Finalize the AI message only if streaming was in progress
        if (state.status == AiChatStatus.streamingResponse) {
@@ -715,7 +759,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
             print("[AiChatBloc] 流式响应结束，添加最终消息到列表");
        } // else: Stream might finish due to cancellation, state already handled by _onCancelStreaming
     } else {
-      // Append chunk to current generation
+      // 只添加非控制标记的内容
       final newGeneration = (state.streamingResponseText == '...' ? '' : state.streamingResponseText) + event.chunk;
       print("[AiChatBloc] 更新流式文本: '$newGeneration'");
       emit(state.copyWith(
@@ -762,6 +806,90 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
           streamingResponseText: '', 
           messages: currentMessages,
         ));
+     }
+   }
+
+   Future<void> _onCancelChatGeneration(
+     CancelChatGeneration event,
+     Emitter<AiChatState> emit,
+   ) async {
+     // 只有在正在流式响应时才能取消
+     if (state.status != AiChatStatus.streamingResponse) {
+       print("[AiChatBloc] Cannot cancel: not in streaming state. Current status: ${state.status}");
+       return;
+     }
+
+     final currentConversationId = state.selectedConversationId;
+     if (currentConversationId == null) {
+       print("[AiChatBloc] Cannot cancel: no conversation selected");
+       return;
+     }
+
+     // 设置取消状态
+     emit(state.copyWith(status: AiChatStatus.cancellingGeneration));
+
+     try {
+       // 获取用户ID
+       final userId = await _getCurrentUserId();
+       if (userId == null) {
+         emit(state.copyWith(
+           status: AiChatStatus.messageSendFailure,
+           errorMessage: 'User not authenticated or invalid ID format'
+         ));
+         return;
+       }
+
+       // 调用取消聊天生成用例
+       final result = await _cancelChatGeneration(CancelChatGenerationParams(
+         conversationId: currentConversationId,
+         userId: userId,
+       ));
+
+       result.fold(
+         (failure) {
+           print("[AiChatBloc] Cancel chat generation failed: $failure");
+           // 如果取消失败，恢复到流式响应状态
+           emit(state.copyWith(
+             status: AiChatStatus.streamingResponse,
+             errorMessage: 'Failed to cancel generation: ${failure.toString()}'
+           ));
+         },
+         (_) {
+           print("[AiChatBloc] Chat generation cancelled successfully");
+           
+           // 取消本地流订阅
+           _chatStreamSubscription?.cancel();
+           _chatStreamSubscription = null;
+           
+           // 添加部分生成的消息（如果有的话）
+           final currentMessages = List<AiChatMessageEntity>.from(state.messages);
+           if (state.streamingResponseText.isNotEmpty && state.streamingResponseText != '...') {
+             final aiMessage = AiChatMessageEntity(
+               messageId: 'ai_${DateTime.now().millisecondsSinceEpoch}_cancelled',
+               content: state.streamingResponseText + " (用户取消)",
+               sender: MessageSender.ai,
+               timestamp: DateTime.now(),
+               conversationId: currentConversationId,
+               messageType: MessageType.text,
+             );
+             currentMessages.add(aiMessage);
+           }
+
+           // 设置成功状态
+           emit(state.copyWith(
+             status: AiChatStatus.messageSendSuccess,
+             streamingResponseText: '',
+             messages: currentMessages,
+             clearErrorMessage: true,
+           ));
+         }
+       );
+     } catch (e) {
+       print("[AiChatBloc] Exception while cancelling chat generation: $e");
+       emit(state.copyWith(
+         status: AiChatStatus.messageSendFailure,
+         errorMessage: 'Exception while cancelling: ${e.toString()}'
+       ));
      }
    }
 

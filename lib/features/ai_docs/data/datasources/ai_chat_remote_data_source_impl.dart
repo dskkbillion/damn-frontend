@@ -306,13 +306,36 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
   }) {
     const String path = '/model/chat';
     print("Streaming chat completion using path: $path");
+    
+    // 构建请求数据，支持新的 image_urls 参数
     final Map<String, dynamic> requestData = {
       'conversation_id': conversationId,
       'user_id': userId,
       'message': message,
-      // Only include 'files' if not empty, assuming API expects this
-      if (fileUrls.isNotEmpty) 'files': fileUrls, 
+      'stream': true, // 确保启用流式响应
     };
+    
+    // 支持多模态：判断是否为图像URL并使用相应的参数名
+    if (fileUrls.isNotEmpty) {
+      // 简单的图像URL判断逻辑（可以根据实际需求调整）
+      final isImageUrls = fileUrls.any((url) => 
+        url.toLowerCase().contains('.jpg') || 
+        url.toLowerCase().contains('.jpeg') || 
+        url.toLowerCase().contains('.png') || 
+        url.toLowerCase().contains('.gif') || 
+        url.toLowerCase().contains('.webp') ||
+        url.toLowerCase().contains('image') ||
+        url.toLowerCase().contains('img'));
+      
+      if (isImageUrls) {
+        requestData['image_urls'] = fileUrls; // 使用新的 image_urls 参数
+        print('[DataSource] Adding image_urls: $fileUrls');
+      } else {
+        requestData['files'] = fileUrls; // 保持向后兼容（用于其他文件类型）
+        print('[DataSource] Adding files: $fileUrls');
+      }
+    }
+    
     print('[DataSource] Calling streamChatCompletion with data: $requestData');
 
     try {
@@ -321,7 +344,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       final token = storage.read(key: 'auth_token').then((token) {
         print("[AiDocs] 流式聊天，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
         
-        // 创建完整的URL，包括基础URL和路径
+        // 创建完整的URL
         final String baseUrl = _getModelBaseUrl();
         String fullUrl = baseUrl.endsWith('/') ? baseUrl + path.substring(1) : baseUrl + path;
         if (!fullUrl.startsWith('http')) {
@@ -345,49 +368,22 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
         // 发送请求并获取流式响应
         return http.Client().send(request).then((streamedResponse) {
           if (streamedResponse.statusCode == 200) {
-            // 处理流式响应
+            // 处理流式响应，支持新的事件类型
             return streamedResponse.stream
               .transform(utf8.decoder)
               .transform(StreamTransformer.fromHandlers(
                 handleData: (String data, EventSink<String> sink) {
-                  // 处理SSE数据，类似原始方法中的逻辑
-                  final lines = data.split('\n');
-                  String? currentEvent;
-                  String currentData = '';
-
-                  for (final line in lines) {
-                    if (line.startsWith('event:')) {
-                      currentEvent = line.substring(6).trim();
-                    } else if (line.startsWith('data:')) {
-                      currentData += line.substring(5).trim();
-                    } else if (line.trim().isEmpty) {
-                      if ((currentEvent == 'conversation.reasoning.delta' || 
-                          currentEvent == 'conversation.message.delta') && 
-                          currentData.isNotEmpty) {
-                        try {
-                          final jsonData = jsonDecode(currentData);
-                          if (jsonData is Map<String, dynamic>) {
-                            String? contentChunk;
-                            if (jsonData.containsKey('reason_content')) {
-                              contentChunk = jsonData['reason_content'] as String?;
-                            } else if (jsonData.containsKey('content')) {
-                              contentChunk = jsonData['content'] as String?;
-                            }
-                            
-                            if (contentChunk != null && contentChunk.isNotEmpty) {
-                              print('[DataSource - SSE Parser] Yielding chunk: $contentChunk');
-                              sink.add(contentChunk);
-                            }
-                          }
-                        } catch (e) {
-                          print('[DataSource - SSE Parser] Error decoding data JSON: $e. Data: $currentData');
-                          sink.addError(ds_exceptions.DataSourceException(message: "Failed to parse SSE data chunk: $e"));
-                        }
-                      }
-                      currentEvent = null;
-                      currentData = '';
-                    }
-                  }
+                  _processSSEData(data, sink);
+                },
+                handleError: (error, stackTrace, sink) {
+                  print('[DataSource - SSE Stream] Error: $error');
+                  sink.addError(ds_exceptions.NetworkException(
+                    message: "Network error during stream: ${error.toString()}"
+                  ));
+                },
+                handleDone: (sink) {
+                  print('[DataSource - SSE Stream] Stream completed.');
+                  sink.close();
                 },
               ));
           } else {
@@ -409,8 +405,98 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       if (e is ds_exceptions.ServerException || e is ds_exceptions.NetworkException) {
         return Stream.error(e);
       } else {
-        return Stream.error(ds_exceptions.DataSourceException(message: "Failed to initiate SSE stream: ${e.toString()}"));
+        return Stream.error(ds_exceptions.DataSourceException(
+          message: "Failed to initiate SSE stream: ${e.toString()}"
+        ));
       }
+    }
+  }
+
+  // 新增：处理SSE数据的方法，支持更多事件类型
+  void _processSSEData(String data, EventSink<String> sink) {
+    final lines = data.split('\n');
+    String? currentEvent;
+    String currentData = '';
+
+    for (final line in lines) {
+      if (line.startsWith('event:')) {
+        currentEvent = line.substring(6).trim();
+      } else if (line.startsWith('data:')) {
+        currentData += line.substring(5).trim();
+      } else if (line.trim().isEmpty && currentEvent != null) {
+        // 处理不同类型的SSE事件
+        _handleSSEEvent(currentEvent, currentData, sink);
+        
+        // 重置状态
+        currentEvent = null;
+        currentData = '';
+      }
+    }
+  }
+
+  // 新增：处理不同类型的SSE事件
+  void _handleSSEEvent(String event, String data, EventSink<String> sink) {
+    try {
+      switch (event) {
+        case 'conversation.message.delta':
+        case 'conversation.reasoning.delta':
+          if (data.isNotEmpty) {
+            final jsonData = jsonDecode(data);
+            if (jsonData is Map<String, dynamic>) {
+              String? contentChunk;
+              // 支持多种内容字段名称
+              if (jsonData.containsKey('reason_content')) {
+                contentChunk = jsonData['reason_content'] as String?;
+              } else if (jsonData.containsKey('content')) {
+                contentChunk = jsonData['content'] as String?;
+              }
+              
+              if (contentChunk != null && contentChunk.isNotEmpty) {
+                print('[DataSource - SSE] Content chunk: $contentChunk');
+                sink.add(contentChunk);
+              }
+            }
+          }
+          break;
+          
+        case 'conversation.message.completed':
+          print('[DataSource - SSE] Message completed');
+          if (data.isNotEmpty) {
+            final jsonData = jsonDecode(data);
+            print('[DataSource - SSE] Completion data: $jsonData');
+          }
+          // 发送特殊标记表示消息完成
+          sink.add('[COMPLETED]');
+          break;
+          
+        case 'conversation.message.cancelled':
+          print('[DataSource - SSE] Message cancelled by user');
+          sink.add('[CANCELLED]');
+          break;
+          
+        case 'conversation.message.error':
+          print('[DataSource - SSE] Message error');
+          if (data.isNotEmpty) {
+            final jsonData = jsonDecode(data);
+            final errorMsg = jsonData['error'] ?? 'Unknown error';
+            sink.addError(ds_exceptions.ServerException(message: errorMsg));
+          }
+          break;
+          
+        case 'done':
+          print('[DataSource - SSE] Stream done');
+          sink.add('[DONE]');
+          break;
+          
+        default:
+          print('[DataSource - SSE] Unknown event type: $event');
+          break;
+      }
+    } catch (e) {
+      print('[DataSource - SSE] Error processing event $event: $e. Data: $data');
+      sink.addError(ds_exceptions.DataSourceException(
+        message: "Failed to parse SSE event: $e"
+      ));
     }
   }
 
@@ -613,6 +699,63 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } catch (e) {
       print('Unexpected error in transcribeAudio: $e');
       throw ds_exceptions.DataSourceException(message: 'Failed to transcribe audio: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> cancelChatGeneration({
+    required int conversationId,
+    required int userId,
+  }) async {
+    const String path = '/model/chat/cancel';
+    print("Cancelling chat generation for conversation $conversationId");
+    
+    final Map<String, dynamic> requestData = {
+      'conversation_id': conversationId,
+      'user_id': userId,
+    };
+    
+    try {
+      // 获取token
+      final storage = const FlutterSecureStorage();
+      final token = await storage.read(key: 'auth_token');
+      print("[AiDocs] 取消聊天，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      
+      // 创建包含认证头的选项
+      final options = Options(
+        headers: {
+          if (token != null && token.isNotEmpty)
+            'Authorization': token, // 直接使用token
+        }
+      );
+      
+      // 发送取消请求
+      final response = await _httpClient.getDioInstance().post(
+        path,
+        data: requestData,
+        options: options
+      );
+      
+      final responseData = response.data;
+      final result = responseData is Map ? responseData : {};
+      
+      if (result['status'] == 'success') {
+        print('[AiDocs] Chat generation cancelled successfully');
+      } else {
+        throw ds_exceptions.ServerException(
+          message: result['message'] ?? 'Failed to cancel chat generation'
+        );
+      }
+      
+    } on ds_exceptions.ServerException {
+      rethrow;
+    } on ds_exceptions.NetworkException {
+      rethrow;
+    } catch (e) {
+      print('Unexpected error in cancelChatGeneration: $e');
+      throw ds_exceptions.DataSourceException(
+        message: 'Failed to cancel chat generation: ${e.toString()}'
+      );
     }
   }
 

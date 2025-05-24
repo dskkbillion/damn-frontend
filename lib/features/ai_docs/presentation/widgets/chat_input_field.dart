@@ -53,10 +53,12 @@ class _ChatInputFieldState extends State<ChatInputField> {
           previous.imageUploadStates != current.imageUploadStates, // Also rebuild on upload state changes
       builder: (context, state) {
         final bool isStreaming = state.status == AiChatStatus.streamingResponse;
+        final bool isCancelling = state.status == AiChatStatus.cancellingGeneration;
         final bool isBusy = state.status == AiChatStatus.sendingMessage ||
                            state.status == AiChatStatus.transcribingAudio ||
                            state.status == AiChatStatus.allocatingResource ||
-                           isStreaming;
+                           isStreaming ||
+                           isCancelling;
         final List<File> pendingImages = state.pendingImageFiles ?? [];
         // Get the upload states map
         final Map<String, ImageUploadState> uploadStates = state.imageUploadStates ?? {}; 
@@ -74,8 +76,10 @@ class _ChatInputFieldState extends State<ChatInputField> {
         return ValueListenableBuilder<TextEditingValue>(
           valueListenable: widget.textController,
           builder: (context, textValue, child) {
-             // Base condition: Not busy/recording AND text is not empty
-             final bool baseCanSendMessage = !isBusy && !(_isRecording ?? false) && textValue.text.trim().isNotEmpty;
+             // Base condition: Not busy/recording AND (text is not empty OR has images)
+             final bool hasText = textValue.text.trim().isNotEmpty;
+             final bool hasImages = pendingImages.isNotEmpty;
+             final bool baseCanSendMessage = !isBusy && !(_isRecording ?? false) && (hasText || hasImages);
 
              return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
@@ -138,11 +142,24 @@ class _ChatInputFieldState extends State<ChatInputField> {
                         ),
                       ),
                       // Send / Stop Generation Button
-                       if (isStreaming)
+                       if (isStreaming || isCancelling)
                           IconButton(
-                            icon: const Icon(Icons.stop_circle, color: Colors.red),
-                            tooltip: s.ai_docs_stop_generation, // 使用国际化文本
-                            onPressed: () => context.read<AiChatBloc>().add(CancelStreaming()),
+                            icon: isCancelling 
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2)
+                                  )
+                                : const Icon(Icons.stop_circle, color: Colors.red),
+                            tooltip: isCancelling 
+                                ? '正在取消生成中...'  // TODO: 添加到国际化文件
+                                : s.ai_docs_stop_generation, // 使用国际化文本
+                            onPressed: isCancelling 
+                                ? null // 取消中时禁用按钮
+                                : () {
+                                    // 使用新的CancelChatGeneration事件，这会调用后端API
+                                    context.read<AiChatBloc>().add(const CancelChatGeneration());
+                                  },
                           )
                        else
                           IconButton(
