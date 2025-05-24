@@ -16,16 +16,26 @@ class GetMessageListImpl implements GetMessageList {
 
   @override
   Future<Either<Failure, List<ChatMessage>>> call(GetMessageListParams params) async {
-    return await repository.getMessages(params.chatId);
+    return await repository.getMessages(
+      params.chatId, 
+      pageNum: params.pageNum, 
+      pageSize: params.pageSize
+    );
   }
 }
 
 // Parameters
 class GetMessageListParams extends Equatable {
   final int chatId;
+  final int pageNum;
+  final int pageSize;
 
-  const GetMessageListParams({required this.chatId});
+  const GetMessageListParams({
+    required this.chatId,
+    this.pageNum = 1,
+    this.pageSize = 20,
+  });
 
   @override
-  List<Object?> get props => [chatId];
+  List<Object?> get props => [chatId, pageNum, pageSize];
 } 

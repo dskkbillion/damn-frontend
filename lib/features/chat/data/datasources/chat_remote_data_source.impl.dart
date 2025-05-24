@@ -130,15 +130,34 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
   }
 
   @override
-  Future<List<ChatMessageDto>> getMessages(int chatId) async {
-    print("[API Call] Fetching messages for chatId: $chatId...");
+  Future<List<ChatMessageDto>> getMessages(int chatId, {int pageNum = 1, int pageSize = 20}) async {
+    print("[API Call] Fetching messages for chatId: $chatId, pageNum: $pageNum, pageSize: $pageSize...");
     try {
-      final response = await dio.post('/api/chat/message/list', data: {'chatId': chatId});
+      final response = await dio.post('/api/chat/message/list', data: {
+        'chatId': chatId,
+        'pageNum': pageNum,
+        'pageSize': pageSize
+      });
       final List<dynamic> messagesJson = _handleListResponse(response, "load messages");
-       // API likely returns newest first, reverse here to get chronological order (oldest first)
-       // Let the Bloc handle the final ordering if needed based on UI requirements.
-       // For now, return as received.
-      return messagesJson.map((json) => ChatMessageDto.fromJson(json)).toList();
+      
+      // 转换为DTO对象
+      final List<ChatMessageDto> messageDtos = messagesJson.map((json) => ChatMessageDto.fromJson(json)).toList();
+      
+      // 打印日志以便了解排序情况
+      if (messageDtos.isNotEmpty) {
+        final firstMsg = messageDtos.first;
+        final lastMsg = messageDtos.last;
+        print("[API Response] First message time: ${firstMsg.createTime}, last message time: ${lastMsg.createTime}");
+      }
+      
+      // 确保按时间升序（从旧到新）排序
+      messageDtos.sort((a, b) {
+        final DateTime aTime = (a.createTime as DateTime?) ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final DateTime bTime = (b.createTime as DateTime?) ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return aTime.compareTo(bTime); // 升序排列 (旧->新)
+      });
+      
+      return messageDtos;
     } on DioException catch (e) {
       print("DioException fetching messages: ${e.message}, Response: ${e.response?.data}");
       throw ServerException(message: e.message ?? "Network error fetching messages", statusCode: e.response?.statusCode);
@@ -250,5 +269,4 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
       throw ServerException(message: "An unexpected error occurred while deleting messages");
     }
   }
-
 } 

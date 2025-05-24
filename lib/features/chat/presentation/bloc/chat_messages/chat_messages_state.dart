@@ -22,24 +22,33 @@ class ChatMessagesLoaded extends ChatMessagesState {
   final int currentUserId; // Need current user ID to determine message alignment
   final int currentUserParticipantId; // FIX: Add current user's Participant ID
   final String? error; // Optional error message
+  final bool isInitialLoad; // 标记是否是初始加载
+  final bool hasNewMessage; // 标记是否有新消息
+  final bool hasMore; // 标记是否有更多历史消息可加载
 
   const ChatMessagesLoaded({
     required this.messages,
     required this.opponent,
     required this.currentUserId,
-    required this.currentUserParticipantId, // FIX: Add to constructor
+    required this.currentUserParticipantId,
     this.error,
+    this.isInitialLoad = true,
+    this.hasNewMessage = false,
+    this.hasMore = true,
   });
 
   @override
-  List<Object?> get props => [messages, opponent, currentUserId, currentUserParticipantId, error];
+  List<Object?> get props => [messages, opponent, currentUserId, currentUserParticipantId, error, isInitialLoad, hasNewMessage, hasMore];
 
   ChatMessagesLoaded copyWith({
     List<ChatMessage>? messages,
     Participant? opponent,
     int? currentUserId,
-    int? currentUserParticipantId, // FIX: Add to copyWith
+    int? currentUserParticipantId,
     ValueGetter<String?>? error,
+    bool? isInitialLoad,
+    bool? hasNewMessage,
+    bool? hasMore,
   }) {
     return ChatMessagesLoaded(
       messages: messages ?? this.messages,
@@ -47,6 +56,9 @@ class ChatMessagesLoaded extends ChatMessagesState {
       currentUserId: currentUserId ?? this.currentUserId,
       currentUserParticipantId: currentUserParticipantId ?? this.currentUserParticipantId,
       error: error != null ? error() : this.error,
+      isInitialLoad: isInitialLoad ?? this.isInitialLoad,
+      hasNewMessage: hasNewMessage ?? this.hasNewMessage,
+      hasMore: hasMore ?? this.hasMore,
     );
   }
 }
