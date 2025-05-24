@@ -700,6 +700,226 @@ class S {
     );
   }
 
+  /// `Message recalled`
+  String get chat_message_recalled {
+    return Intl.message(
+      'Message recalled',
+      name: 'chat_message_recalled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Copy`
+  String get chat_copy {
+    return Intl.message('Copy', name: 'chat_copy', desc: '', args: []);
+  }
+
+  /// `Recall`
+  String get chat_recall {
+    return Intl.message('Recall', name: 'chat_recall', desc: '', args: []);
+  }
+
+  /// `Copied to clipboard`
+  String get chat_copied_to_clipboard {
+    return Intl.message(
+      'Copied to clipboard',
+      name: 'chat_copied_to_clipboard',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Me`
+  String get chat_me {
+    return Intl.message('Me', name: 'chat_me', desc: '', args: []);
+  }
+
+  /// `Buyer`
+  String get chat_buyer {
+    return Intl.message('Buyer', name: 'chat_buyer', desc: '', args: []);
+  }
+
+  /// `I want the seller to see`
+  String get chat_i_want_seller_to_see {
+    return Intl.message(
+      'I want the seller to see',
+      name: 'chat_i_want_seller_to_see',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `wants to see`
+  String get chat_wants_to_see {
+    return Intl.message(
+      'wants to see',
+      name: 'chat_wants_to_see',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Collapse`
+  String get chat_collapse {
+    return Intl.message('Collapse', name: 'chat_collapse', desc: '', args: []);
+  }
+
+  /// `Expand`
+  String get chat_expand {
+    return Intl.message('Expand', name: 'chat_expand', desc: '', args: []);
+  }
+
+  /// `Unable to connect to system admin`
+  String get chat_admin_connection_error {
+    return Intl.message(
+      'Unable to connect to system admin',
+      name: 'chat_admin_connection_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pause`
+  String get chat_audio_pause {
+    return Intl.message('Pause', name: 'chat_audio_pause', desc: '', args: []);
+  }
+
+  /// `Play`
+  String get chat_audio_play {
+    return Intl.message('Play', name: 'chat_audio_play', desc: '', args: []);
+  }
+
+  /// `This is a level 1 heading`
+  String get chat_markdown_example_title1 {
+    return Intl.message(
+      'This is a level 1 heading',
+      name: 'chat_markdown_example_title1',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This is a level 2 heading`
+  String get chat_markdown_example_title2 {
+    return Intl.message(
+      'This is a level 2 heading',
+      name: 'chat_markdown_example_title2',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This is **bold** text and *italic* text.`
+  String get chat_markdown_example_bold_italic {
+    return Intl.message(
+      'This is **bold** text and *italic* text.',
+      name: 'chat_markdown_example_bold_italic',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This is list item 1`
+  String get chat_markdown_example_list1 {
+    return Intl.message(
+      'This is list item 1',
+      name: 'chat_markdown_example_list1',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This is list item 2`
+  String get chat_markdown_example_list2 {
+    return Intl.message(
+      'This is list item 2',
+      name: 'chat_markdown_example_list2',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This is a nested list item`
+  String get chat_markdown_example_list3 {
+    return Intl.message(
+      'This is a nested list item',
+      name: 'chat_markdown_example_list3',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This is a quote text, supporting multiple lines`
+  String get chat_markdown_example_quote {
+    return Intl.message(
+      'This is a quote text, supporting multiple lines',
+      name: 'chat_markdown_example_quote',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Column 1`
+  String get chat_markdown_example_table_col1 {
+    return Intl.message(
+      'Column 1',
+      name: 'chat_markdown_example_table_col1',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Column 2`
+  String get chat_markdown_example_table_col2 {
+    return Intl.message(
+      'Column 2',
+      name: 'chat_markdown_example_table_col2',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Content 1`
+  String get chat_markdown_example_table_content1 {
+    return Intl.message(
+      'Content 1',
+      name: 'chat_markdown_example_table_content1',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Content 2`
+  String get chat_markdown_example_table_content2 {
+    return Intl.message(
+      'Content 2',
+      name: 'chat_markdown_example_table_content2',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Content 3`
+  String get chat_markdown_example_table_content3 {
+    return Intl.message(
+      'Content 3',
+      name: 'chat_markdown_example_table_content3',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Content 4`
+  String get chat_markdown_example_table_content4 {
+    return Intl.message(
+      'Content 4',
+      name: 'chat_markdown_example_table_content4',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Pick from Gallery`
   String get chat_pick_from_gallery {
     return Intl.message(

@@ -195,6 +195,9 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+    // 记录进入拦截器前的Headers状态
+    print('[AuthInterceptor] 进入拦截器，当前path: ${options.path}, headers: ${options.headers}');
+    
     // Skip adding token for auth endpoints
     if (options.path.contains('/api/auth/login') || 
         options.path.contains('/api/auth/register') ||
@@ -205,11 +208,14 @@ class AuthInterceptor extends Interceptor {
 
     String? token = await _getAuthToken();
     if (token != null && token.isNotEmpty) {
-      options.headers['Authorization'] = 'Bearer $token'; 
-      print('[AuthInterceptor] Added Bearer token to Authorization header.');
+      options.headers['Authorization'] = token; // 直接使用token，不添加Bearer前缀
+      print('[AuthInterceptor] Added token to Authorization header: ${token.substring(0, 15)}...');
     } else {
        print('[AuthInterceptor] No token found. Request proceeding without Authorization header.');
     }
+    
+    // 记录最终的Headers状态
+    print('[AuthInterceptor] 最终headers: ${options.headers}');
     
     handler.next(options); 
   }

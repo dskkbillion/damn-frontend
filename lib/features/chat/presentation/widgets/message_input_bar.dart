@@ -299,34 +299,35 @@ class _MessageInputBarState extends State<MessageInputBar> {
     // 关闭底部菜单
     Navigator.of(context).pop();
     
-    // 示例Markdown消息，包含多种Markdown元素
-    const String markdownExample = """
-# 这是一级标题
-## 这是二级标题
+    // 获取国际化资源
+    final s = S.of(context);
+    
+    // 使用国际化字符串构建Markdown示例
+    final String markdownExample = """
+# ${s.chat_markdown_example_title1}
+## ${s.chat_markdown_example_title2}
 
-这是**粗体**文本和*斜体*文本。
+${s.chat_markdown_example_bold_italic}
 
-- 这是列表项1
-- 这是列表项2
-  - 这是嵌套列表项
+- ${s.chat_markdown_example_list1}
+- ${s.chat_markdown_example_list2}
+  - ${s.chat_markdown_example_list3}
 
-> 这是引用文本，支持多行显示
-> 第二行引用
+> ${s.chat_markdown_example_quote}
+> ${s.chat_markdown_example_quote}
 
-[这是一个链接](https://flutter.dev)
+[This is a link](https://flutter.dev)
 
-下面是代码示例:
 ```dart
 void main() {
   print('Hello, Markdown!');
 }
 ```
 
-表格示例:
-| 列1 | 列2 |
+${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
 |-----|-----|
-| 内容1 | 内容2 |
-| 内容3 | 内容4 |
+| ${s.chat_markdown_example_table_content1} | ${s.chat_markdown_example_table_content2} |
+| ${s.chat_markdown_example_table_content3} | ${s.chat_markdown_example_table_content4} |
 """;
 
     // 发送Markdown消息

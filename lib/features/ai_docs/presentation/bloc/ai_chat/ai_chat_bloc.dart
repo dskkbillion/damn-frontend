@@ -1017,7 +1017,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
              print("发送消息请求...");
              
              // 构建一个更丰富的消息，包含服务名称和AI分析的总结
-         String messageContent = "用户对\"${item['name']}\"服务感兴趣。\n\n专业需求分析:\n$summary";
+         String messageContent = summary;
              
              // 构建发送消息的请求参数
              final sendMessageParams = {
