@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io'; // 添加这个import来支持File类型
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Import for Clipboard
 import 'package:audioplayers/audioplayers.dart';
@@ -178,6 +179,29 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     );
   }
 
+  // 构建消息时间显示
+  Widget _buildMessageTime() {
+    if (widget.message.createTime == null) return const SizedBox.shrink();
+    
+    final timeString = DateFormat('HH:mm').format(widget.message.createTime!);
+    final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
+    
+    return Padding(
+      padding: EdgeInsets.only(
+        top: 4.0,
+        left: isCurrentUser ? 8.0 : 0.0,
+        right: isCurrentUser ? 0.0 : 8.0,
+      ),
+      child: Text(
+        timeString,
+        style: TextStyle(
+          color: Colors.grey[500],
+          fontSize: 11.0,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
@@ -219,16 +243,26 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       );
     }
 
-    // 对于图片消息，直接返回图片而不是包裹在气泡中
+    // 对于图片消息，包含时间显示
     if (widget.message.type == 'image' && !isRevoked) {
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 8.0),
         child: Row(
           mainAxisAlignment: alignment,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             if (!isCurrentUser) avatarWidget,
-            Flexible(child: _buildImageContent(context, widget.message.context ?? '')),
+            Flexible(
+              child: Column(
+                crossAxisAlignment: isCurrentUser 
+                    ? CrossAxisAlignment.end 
+                    : CrossAxisAlignment.start,
+                children: [
+                  _buildImageContent(context, widget.message.context ?? ''),
+                  _buildMessageTime(),
+                ],
+              ),
+            ),
             if (isCurrentUser) const SizedBox.shrink(),
           ],
         ),
@@ -260,10 +294,20 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 8.0),
       child: Row(
         mainAxisAlignment: alignment,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end, // 改为end对齐
         children: [
           if (!isCurrentUser) avatarWidget,
-          Flexible(child: bubbleContent),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: isCurrentUser 
+                  ? CrossAxisAlignment.end 
+                  : CrossAxisAlignment.start,
+              children: [
+                bubbleContent,
+                _buildMessageTime(), // 添加时间显示
+              ],
+            ),
+          ),
           if (isCurrentUser) const SizedBox.shrink(),
         ],
       ),
@@ -309,16 +353,60 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   }
 
   Widget _buildImageContent(BuildContext context, String imageUrl) {
-     // FIX: Show loading indicator if the image message is still sending
+     // 如果消息正在发送，显示上传进度
      if (widget.message.status == MessageStatus.sending) {
        return Container(
-         width: 150, // Define a reasonable size for the placeholder
+         width: 150,
          height: 150,
          decoration: BoxDecoration(
-            color: Colors.grey[300], // Placeholder background
-            borderRadius: BorderRadius.circular(16.0), // 使用与消息气泡相同的圆角
+            color: Colors.grey[300],
+            borderRadius: BorderRadius.circular(16.0),
          ),
-         child: const Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
+         child: const Column(
+           mainAxisAlignment: MainAxisAlignment.center,
+           children: [
+             CircularProgressIndicator(strokeWidth: 2.0),
+             SizedBox(height: 8),
+             Text('上传中...', style: TextStyle(fontSize: 12, color: Colors.grey)),
+           ],
+         ),
+       );
+     }
+     
+     // 如果上传失败，显示重试按钮
+     if (widget.message.status == MessageStatus.failed) {
+       return Container(
+         width: 150,
+         height: 150,
+         decoration: BoxDecoration(
+           color: Colors.grey[300],
+           borderRadius: BorderRadius.circular(16.0),
+         ),
+         child: Column(
+           mainAxisAlignment: MainAxisAlignment.center,
+           children: [
+             const Icon(Icons.error_outline, color: Colors.red, size: 40),
+             const SizedBox(height: 8),
+             const Text('上传失败', style: TextStyle(fontSize: 12)),
+             const SizedBox(height: 8),
+             ElevatedButton(
+               onPressed: () {
+                 // 重新发送消息
+                 context.read<ChatMessagesBloc>().add(
+                   SendMessageRequested(
+                     type: 'image', 
+                     file: File(widget.message.context), // 需要保存原始文件路径
+                   ),
+                 );
+               },
+               style: ElevatedButton.styleFrom(
+                 minimumSize: const Size(60, 24),
+                 padding: const EdgeInsets.symmetric(horizontal: 8),
+               ),
+               child: const Text('重试', style: TextStyle(fontSize: 12)),
+             ),
+           ],
+         ),
        );
      }
 
@@ -350,7 +438,14 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 placeholder: (context, url) => Container(
                    width: 150, height: 150,
                    color: Colors.grey[300],
-                   child: const Center(child: CircularProgressIndicator()),
+                   child: const Column(
+                     mainAxisAlignment: MainAxisAlignment.center,
+                     children: [
+                       CircularProgressIndicator(strokeWidth: 2),
+                       SizedBox(height: 8),
+                       Text('加载中...', style: TextStyle(fontSize: 12)),
+                     ],
+                   ),
                  ),
                errorWidget: (context, url, error) {
                  print("[Image] 加载错误: $url, 错误: $error");
@@ -366,7 +461,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                      children: [
                        const Icon(Icons.broken_image, color: Colors.red, size: 40),
                        const SizedBox(height: 8),
-                       Text(S.of(context).product_image_loading_failed, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                       const Text('加载失败', style: TextStyle(fontSize: 12, color: Colors.grey)),
                        const SizedBox(height: 8),
                        // 重试按钮
                        ElevatedButton(
@@ -379,11 +474,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                            });
                          },
                          style: ElevatedButton.styleFrom(
-                           minimumSize: const Size(30, 24),
+                           minimumSize: const Size(50, 24),
                            padding: const EdgeInsets.symmetric(horizontal: 8),
                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                          ),
-                         child: Text(S.of(context).ai_docs_retry, style: const TextStyle(fontSize: 12)),
+                         child: const Text('重试', style: TextStyle(fontSize: 12)),
                        ),
                      ],
                    ),
@@ -409,27 +504,81 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     final Color effectiveIconColor = isCurrentUser ? Colors.black54 : Colors.black54; // Example: use greyish for both
     final Color effectiveTextColor = isCurrentUser ? Colors.black54 : Colors.black54; // Example: use greyish for both
 
-    return Row(
-      mainAxisSize: MainAxisSize.min, // Prevent Row from expanding unnecessarily
-      children: [
-        IconButton(
-          icon: Icon(
-            _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
-            color: effectiveIconColor,
-            size: 28, // Adjust size as needed
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 播放按钮
+          Container(
+            decoration: BoxDecoration(
+              color: effectiveIconColor.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: Icon(
+                _isPlaying ? Icons.pause : Icons.play_arrow,
+                color: effectiveIconColor,
+                size: 24,
+              ),
+              padding: const EdgeInsets.all(8),
+              constraints: const BoxConstraints(),
+              onPressed: _playPauseAudio,
+              tooltip: _isPlaying ? '暂停' : '播放',
+            ),
           ),
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(), // Remove extra padding around icon
-          onPressed: _playPauseAudio,
-          tooltip: _isPlaying ? S.of(context).chat_audio_pause : S.of(context).chat_audio_play,
-        ),
-        const SizedBox(width: 8), // Space between icon and duration
-        // TODO: Add waveform visualization here later
-        Text(
-          _formatDuration(_duration ?? Duration.zero), // Display formatted duration
-          style: TextStyle(color: effectiveTextColor, fontSize: 14),
-        ),
-      ],
+          
+          const SizedBox(width: 12),
+          
+          // 音频波形或进度条
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 简单的进度条
+                Container(
+                  height: 3,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(1.5),
+                  ),
+                  child: FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: _duration != null && _position != null
+                        ? (_position!.inMilliseconds / _duration!.inMilliseconds).clamp(0.0, 1.0)
+                        : 0.0,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: effectiveIconColor,
+                        borderRadius: BorderRadius.circular(1.5),
+                      ),
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 4),
+                
+                // 时间显示
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _formatDuration(_position ?? Duration.zero),
+                      style: TextStyle(color: effectiveTextColor, fontSize: 12),
+                    ),
+                    Text(
+                      _formatDuration(_duration ?? Duration.zero),
+                      style: TextStyle(color: effectiveTextColor, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(width: 8),
+        ],
+      ),
     );
   }
 

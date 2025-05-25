@@ -379,4 +379,4 @@ class ChatListPage extends StatelessWidget {
       ),
     );
   }
-}
+} 

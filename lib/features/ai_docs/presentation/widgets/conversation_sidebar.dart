@@ -176,23 +176,10 @@ class ConversationSidebar extends StatelessWidget {
         },
       );
 
-      // If user confirmed, dispatch the delete event
-      // Note: This deletes the currently selected conversation in the Bloc,
-      // which might not be the one the user clicked delete on if selection changed fast.
-      // A safer approach might be to pass the ID to the delete event.
+      // If user confirmed, dispatch the delete event with the specific conversationId
       if (confirm == true) {
-        // Check if the one to be deleted is currently selected before dispatching
-        final currentState = context.read<AiChatBloc>().state;
-        if (currentState.selectedConversationId == conversationId) {
-           context.read<AiChatBloc>().add(DeleteSelectedConversation());
-        } else {
-           // TODO: Implement deleting a non-selected conversation?
-           // Maybe add DeleteConversationById(id) event?
-           print("Deletion requested for non-selected conversation ID: $conversationId. Ignoring for now.");
-           ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(s.ai_docs_please_select_conversation_to_delete)), // 使用国际化文本
-           );
-        }
+        // 直接传递conversationId，不再需要检查是否选中
+        context.read<AiChatBloc>().add(DeleteSelectedConversation(conversationId: conversationId));
       }
   }
 } 

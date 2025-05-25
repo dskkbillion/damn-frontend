@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:intl/intl.dart'; // 添加日期格式化导入
 import '../utils/markdown_style_helper.dart';
 import '../../domain/entities/chat_message.dart';
 import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
@@ -72,13 +73,24 @@ class _AllocateMessageBubbleState extends State<AllocateMessageBubble> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  _titleText, // 使用动态生成的标题
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    _titleText, // 使用动态生成的标题
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
+                // 在标题行右侧添加时间
+                if (widget.message.createTime != null)
+                  Text(
+                    DateFormat('HH:mm').format(widget.message.createTime!),
+                    style: TextStyle(
+                      color: Colors.grey[500],
+                      fontSize: 12.0,
+                    ),
+                  ),
               ],
             ),
           ),

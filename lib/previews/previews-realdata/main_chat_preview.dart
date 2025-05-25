@@ -130,8 +130,8 @@ class MockChatRepository implements IChatRepository {
   }
 
   @override
-  Future<Either<Failure, List<ChatMessage>>> getMessages(int chatId) async {
-    print('[MockChatRepository] Getting mock messages for chatId: $chatId');
+  Future<Either<Failure, List<ChatMessage>>> getMessages(int chatId, {int pageNum = 1, int pageSize = 20}) async {
+    print('[MockChatRepository] Getting mock messages for chatId: $chatId, pageNum: $pageNum, pageSize: $pageSize');
     await Future.delayed(const Duration(milliseconds: 500));
     if (_mockMessages.containsKey(chatId)) {
       print('[MockChatRepository] Found ${_mockMessages[chatId]!.length} messages.');

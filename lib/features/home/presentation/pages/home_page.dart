@@ -132,12 +132,12 @@ class _HomeViewState extends State<HomeView> {
                                 targetValue: banner.targetValue,
                               ));
                           // 显示点击信息
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(s.home_banner_clicked(banner.targetType, banner.targetValue)),
-                              duration: const Duration(seconds: 1),
-                            ),
-                          );
+                          // ScaffoldMessenger.of(context).showSnackBar(
+                          //   SnackBar(
+                          //     content: Text(s.home_banner_clicked(banner.targetType, banner.targetValue)),
+                          //     duration: const Duration(seconds: 1),
+                          //   ),
+                          // );
                         },
                       ),
                     ),
@@ -164,12 +164,12 @@ class _HomeViewState extends State<HomeView> {
                                   productId: item.id,
                                 ));
                             // 显示点击信息
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(s.home_product_card_clicked(item.name)),
-                                duration: const Duration(seconds: 1),
-                              ),
-                            );
+                            // ScaffoldMessenger.of(context).showSnackBar(
+                            //   SnackBar(
+                            //     content: Text(s.home_product_card_clicked(item.name)),
+                            //     duration: const Duration(seconds: 1),
+                            //   ),
+                            // );
                           },
                           onRecommendClicked: () {
                             context.read<HomeBloc>().add(RecommendButtonClicked(
@@ -177,12 +177,12 @@ class _HomeViewState extends State<HomeView> {
                                   productName: item.name,
                                 ));
                             // 显示点击信息
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(s.home_recommend_clicked(item.name)),
-                                duration: const Duration(seconds: 1),
-                              ),
-                            );
+                            // ScaffoldMessenger.of(context).showSnackBar(
+                            //   SnackBar(
+                            //     content: Text(s.home_recommend_clicked(item.name)),
+                            //     duration: const Duration(seconds: 1),
+                            //   ),
+                            // );
                           },
                           showRecommendButton: false,
                         );
