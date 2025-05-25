@@ -248,17 +248,26 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     DeleteSelectedConversation event,
     Emitter<AiChatState> emit,
   ) async {
-    final idToDelete = state.selectedConversationId;
-    if (idToDelete == null) return; // Nothing selected
+    // 使用传入的conversationId，如果没有则使用当前选中的
+    final idToDelete = event.conversationId ?? state.selectedConversationId;
+    if (idToDelete == null) return; // Nothing to delete
 
     // Indicate loading in the conversation list sidebar
     emit(state.copyWith(conversationsStatus: ConversationsStatus.loading));
+    
     final userId = await _getCurrentUserId();
     if (userId == null) {
-      emit(state.copyWith(conversationsStatus: ConversationsStatus.error, conversationListErrorMessage: 'User not authenticated or invalid ID format'));
+      emit(state.copyWith(
+        conversationsStatus: ConversationsStatus.error, 
+        conversationListErrorMessage: 'User not authenticated or invalid ID format'
+      ));
       return;
     }
-    final result = await _deleteConversation(DeleteConversationParams(conversationId: idToDelete, userId: userId));
+    
+    final result = await _deleteConversation(DeleteConversationParams(
+      conversationId: idToDelete, 
+      userId: userId
+    ));
 
     result.fold(
       (failure) => emit(state.copyWith(
@@ -266,16 +275,20 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         conversationListErrorMessage: 'Failed to delete conversation: ${failure.toString()}',
       )),
       (_) {
-        // Successfully deleted, clear selection and main chat area
-        emit(state.copyWith(
-          selectedConversationIdOrNull: null, // Clear selection
-          status: AiChatStatus.initial, // Reset main chat status
-          messages: [], 
-          recommendations: [],
-          streamingResponseText: '',
-          clearErrorMessage: true,
-          // Keep conversation list status loading until refreshed
-        ));
+        // Successfully deleted
+        // 只有当删除的是当前选中的对话时，才清空主聊天区域
+        if (state.selectedConversationId == idToDelete) {
+          emit(state.copyWith(
+            selectedConversationIdOrNull: null, // Clear selection
+            status: AiChatStatus.initial, // Reset main chat status
+            messages: [], 
+            recommendations: [],
+            streamingResponseText: '',
+            clearErrorMessage: true,
+          ));
+        }
+        // 如果删除的不是当前选中的对话，保持当前状态不变
+        
         // Refresh conversation list to remove the deleted one
         add(LoadConversations()); 
       },

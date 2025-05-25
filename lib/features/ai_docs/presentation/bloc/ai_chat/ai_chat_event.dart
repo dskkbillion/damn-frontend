@@ -82,9 +82,16 @@ class CreateNewConversation extends AiChatEvent {
    @override List<Object?> get props => [title];
 }
 
-/// Event to delete the currently selected conversation.
-/// Alternatively, could take a conversationId to delete any conversation.
-class DeleteSelectedConversation extends AiChatEvent {}
+/// Event to delete a conversation by ID.
+/// If no conversationId is provided, deletes the currently selected conversation.
+class DeleteSelectedConversation extends AiChatEvent {
+  final int? conversationId; // 添加可选的conversationId参数
+  
+  const DeleteSelectedConversation({this.conversationId});
+  
+  @override
+  List<Object?> get props => [conversationId];
+}
 
 /// Event triggered when the AI stream updates the response text.
 /// (Internal event dispatched by the Bloc while listening to the stream)
