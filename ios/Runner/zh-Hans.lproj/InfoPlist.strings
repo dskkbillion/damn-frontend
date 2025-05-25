@@ -1,0 +1,10 @@
+/* 
+  InfoPlist.strings
+  Runner
+  
+  Chinese (Simplified) localization for iOS permission descriptions
+*/
+
+NSMicrophoneUsageDescription = "需要访问麦克风以便录制语音消息";
+NSCameraUsageDescription = "需要访问相机以便拍摄照片";
+NSPhotoLibraryUsageDescription = "需要访问相册以便选择照片";

@@ -1,0 +1,10 @@
+/* 
+  InfoPlist.strings
+  Runner
+  
+  English localization for iOS permission descriptions
+*/
+
+NSMicrophoneUsageDescription = "Need microphone access to record voice messages";
+NSCameraUsageDescription = "Need camera access to take photos";
+NSPhotoLibraryUsageDescription = "Need photo library access to select images";
