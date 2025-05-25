@@ -53,6 +53,8 @@ abstract class IAiChatRepository {
     required int userId,
     required String message,
     required List<String> fileUrls, // URLs of uploaded files
+    List<String>? audioUrls,
+    String? transcription,
   });
 
   /// Fetches related service recommendations for a conversation.

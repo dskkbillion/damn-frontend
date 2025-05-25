@@ -303,17 +303,30 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     required int userId,
     required String message,
     required List<String> fileUrls,
+    List<String>? audioUrls,
+    String? transcription,
   }) {
     const String path = '/model/chat';
     print("Streaming chat completion using path: $path");
     
-    // 构建请求数据，支持新的 image_urls 参数
+    // 构建请求数据，支持新的语音消息参数
     final Map<String, dynamic> requestData = {
       'conversation_id': conversationId,
       'user_id': userId,
       'message': message,
       'stream': true, // 确保启用流式响应
     };
+    
+    // 添加音频URL和转录文本参数
+    if (audioUrls != null && audioUrls.isNotEmpty) {
+      requestData['audio_urls'] = audioUrls;
+      print('[DataSource] Adding audio_urls: $audioUrls');
+    }
+    
+    if (transcription != null && transcription.isNotEmpty) {
+      requestData['transcription'] = transcription;
+      print('[DataSource] Adding transcription: $transcription');
+    }
     
     // 支持多模态：判断是否为图像URL并使用相应的参数名
     if (fileUrls.isNotEmpty) {
@@ -486,6 +499,22 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
         case 'done':
           print('[DataSource - SSE] Stream done');
           sink.add('[DONE]');
+          break;
+          
+        case 'conversation.message.meta':
+          // 处理元数据事件，检测是否跳过用户消息显示
+          if (data.isNotEmpty) {
+            final jsonData = jsonDecode(data);
+            print('[DataSource - SSE] Meta data: $jsonData');
+            if (jsonData is Map<String, dynamic>) {
+              final skipUserMessage = jsonData['skip_user_message_display'] as bool?;
+              if (skipUserMessage == true) {
+                print('[DataSource - SSE] Received skip_user_message_display = true');
+                // 发送特殊标记给BLoC，表示需要跳过用户消息显示
+                sink.add('[SKIP_USER_MESSAGE]');
+              }
+            }
+          }
           break;
           
         default:

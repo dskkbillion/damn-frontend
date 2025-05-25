@@ -63,6 +63,8 @@ abstract class IAiChatRemoteDataSource {
   /// [userId] The current user ID.
   /// [message] The text message content.
   /// [fileUrls] List of file URLs (should be valid OSS URLs).
+  /// [audioUrls] List of audio URLs for voice messages.
+  /// [transcription] Pre-transcribed text for audio messages.
   ///
   /// Throws specific exceptions on connection failure.
   /// Returns a [Stream] of raw SSE event data strings.
@@ -72,6 +74,8 @@ abstract class IAiChatRemoteDataSource {
     required int userId,
     required String message,
     required List<String> fileUrls,
+    List<String>? audioUrls,
+    String? transcription,
   });
 
   /// Fetches related service recommendations from `/recsys/conversation/recommend`.

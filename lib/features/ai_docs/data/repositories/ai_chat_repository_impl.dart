@@ -131,6 +131,8 @@ class AiChatRepositoryImpl implements IAiChatRepository {
     required int userId,
     required String message,
     required List<String> fileUrls,
+    List<String>? audioUrls,
+    String? transcription,
   }) async {
     return _tryCatchStream<String>(() async {
       return _remoteDataSource.streamChatCompletion(
@@ -138,6 +140,8 @@ class AiChatRepositoryImpl implements IAiChatRepository {
         userId: userId,
         message: message,
         fileUrls: fileUrls,
+        audioUrls: audioUrls,
+        transcription: transcription,
       );
     });
   }
