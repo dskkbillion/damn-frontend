@@ -46,10 +46,21 @@ class ChatMessageDto with _$ChatMessageDto {
   ChatMessage toEntity({required int currentUserId, required int senderId}) {
      DateTime parsedCreateTime;
      try {
-        // Handle potential null or invalid date string from API
-        parsedCreateTime = createTime != null ? DateTime.parse(createTime!) : DateTime.now();
+        if (createTime != null && createTime!.isNotEmpty) {
+          // 处理API返回的时间格式："2025-05-14 09:49:46"
+          // 将空格替换为T，使其符合ISO 8601格式
+          String isoTimeString = createTime!;
+          if (createTime!.contains(' ') && !createTime!.contains('T')) {
+            isoTimeString = createTime!.replaceFirst(' ', 'T');
+          }
+          parsedCreateTime = DateTime.parse(isoTimeString);
+          print("[ChatMessageDto] Successfully parsed createTime: $createTime -> $parsedCreateTime");
+        } else {
+          print("[ChatMessageDto] createTime is null or empty, using current time");
+          parsedCreateTime = DateTime.now();
+        }
      } catch (e) {
-        print("Error parsing createTime '$createTime': $e");
+        print("[ChatMessageDto] Error parsing createTime '$createTime': $e, using current time");
         parsedCreateTime = DateTime.now(); // Fallback to now
      }
 

@@ -28,9 +28,16 @@ class ChatRoomDto with _$ChatRoomDto {
      DateTime? lastActivity;
      if (chatMessageNewVo?.createTime != null) {
        try {
-         lastActivity = DateTime.parse(chatMessageNewVo!.createTime!);
+         // 处理API返回的时间格式："2025-05-14 09:49:46"
+         // 将空格替换为T，使其符合ISO 8601格式
+         String timeString = chatMessageNewVo!.createTime!;
+         if (timeString.contains(' ') && !timeString.contains('T')) {
+           timeString = timeString.replaceFirst(' ', 'T');
+         }
+         lastActivity = DateTime.parse(timeString);
+         print("[ChatRoomDto] Successfully parsed lastActivity: ${chatMessageNewVo!.createTime} -> $lastActivity");
        } catch (e) {
-         print("Error parsing last activity time: ${chatMessageNewVo!.createTime}");
+         print("[ChatRoomDto] Error parsing last activity time: ${chatMessageNewVo!.createTime}, error: $e");
          lastActivity = null; // Fallback
        }
      }

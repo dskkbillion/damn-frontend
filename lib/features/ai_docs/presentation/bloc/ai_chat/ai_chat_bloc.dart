@@ -1114,7 +1114,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
          emit(state.copyWith(
             status: AiChatStatus.allocationSuccess,
            serviceAllocationStatus: successStatus,
-            errorMessage: '服务已成功分发给商家'
+            // errorMessage: '服务已成功分发给商家'
          ));
          
          // 后台异步处理发送消息，不再使用结果更新UI状态

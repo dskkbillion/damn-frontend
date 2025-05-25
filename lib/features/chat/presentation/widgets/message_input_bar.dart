@@ -12,6 +12,19 @@ import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化�
 
 import '../bloc/chat_messages/chat_messages_bloc.dart';
 
+// 文件上传状态定义
+enum FileUploadStatus { uploading, success, failure }
+
+class FileUploadState {
+  final FileUploadStatus status;
+  final String? url;
+  final String? error;
+  
+  const FileUploadState.uploading() : status = FileUploadStatus.uploading, url = null, error = null;
+  const FileUploadState.success(this.url) : status = FileUploadStatus.success, error = null;
+  const FileUploadState.failure(this.error) : status = FileUploadStatus.failure, url = null;
+}
+
 class MessageInputBar extends StatefulWidget {
   final int chatId; // Needed to potentially associate input with the chat
 
@@ -30,6 +43,10 @@ class _MessageInputBarState extends State<MessageInputBar> {
   String? _recordingPath;
   Timer? _recordingTimer;
   int _recordingDuration = 0;
+  
+  // 新增：文件上传状态管理
+  List<File> _pendingFiles = [];
+  Map<String, FileUploadState> _fileUploadStates = {};
 
   @override
   void initState() {
@@ -124,11 +141,16 @@ class _MessageInputBarState extends State<MessageInputBar> {
     // --- Permission Granted - Proceed with recording --- 
     try {
       final Directory tempDir = await getTemporaryDirectory();
-      _recordingPath = '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.m4a'; // Use m4a for broader compatibility
+      // 修改为WAV格式，与AI docs保持一致
+      _recordingPath = '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.wav';
 
-      // Start recording
+      // 使用与AI docs相同的录音配置
       await _audioRecorder.start(
-        const RecordConfig(encoder: AudioEncoder.aacLc), // Specify encoder
+        const RecordConfig(
+          encoder: AudioEncoder.wav, // 使用WAV格式
+          bitRate: 16000, // 设置码率为16kbps
+          sampleRate: 16000, // 设置采样率为16kHz
+        ),
         path: _recordingPath!,
       );
 
@@ -276,13 +298,32 @@ class _MessageInputBarState extends State<MessageInputBar> {
     // --- Permission Granted (or Gallery source) - Proceed with picking --- 
     final ImagePicker picker = ImagePicker();
     try {
-      final XFile? pickedFile = await picker.pickImage(source: source);
+      final XFile? pickedFile = await picker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85, // 压缩图片质量
+      );
 
       if (pickedFile != null) {
+        final file = File(pickedFile.path);
+        
+        // 1. 添加到待上传列表，显示上传状态
+        setState(() {
+          _pendingFiles.add(file);
+          _fileUploadStates[file.path] = const FileUploadState.uploading();
+        });
+
         print('Image picked: ${pickedFile.path}');
+        
+        // 2. 发送消息（会触发上传）
         context.read<ChatMessagesBloc>().add(
-          SendMessageRequested(type: 'image', file: File(pickedFile.path)),
+          SendMessageRequested(type: 'image', file: file),
         );
+        
+        // 3. 监听上传结果
+        _listenToUploadResult(file);
+        
       } else {
         print('No image selected.');
       }
@@ -292,6 +333,190 @@ class _MessageInputBarState extends State<MessageInputBar> {
           SnackBar(content: Text(s.chat_image_picking_error('$e'))), 
       ); 
     }
+  }
+  
+  // 支持多图片选择
+  Future<void> _pickMultipleImages() async {
+    final ImagePicker picker = ImagePicker();
+    try {
+      final List<XFile> pickedFiles = await picker.pickMultiImage(
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+
+      if (pickedFiles.isNotEmpty) {
+        for (final pickedFile in pickedFiles) {
+          final file = File(pickedFile.path);
+          
+          setState(() {
+            _pendingFiles.add(file);
+            _fileUploadStates[file.path] = const FileUploadState.uploading();
+          });
+          
+          // 逐个发送
+          context.read<ChatMessagesBloc>().add(
+            SendMessageRequested(type: 'image', file: file),
+          );
+          
+          _listenToUploadResult(file);
+        }
+      }
+    } catch (e) {
+      print('Error picking multiple images: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('选择图片出错: $e')),
+      );
+    }
+  }
+  
+  // 监听上传结果
+  void _listenToUploadResult(File file) {
+    // 模拟上传过程，实际应该监听Bloc状态变化
+    Timer(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _fileUploadStates[file.path] = const FileUploadState.success('uploaded_url');
+          // 3秒后清除状态
+          Timer(const Duration(seconds: 2), () {
+            if (mounted) {
+              setState(() {
+                _pendingFiles.remove(file);
+                _fileUploadStates.remove(file.path);
+              });
+            }
+          });
+        });
+      }
+    });
+  }
+  
+  // 构建文件预览区域
+  Widget _buildFilePreviewArea() {
+    if (_pendingFiles.isEmpty) return const SizedBox.shrink();
+    
+    return Container(
+      height: 80,
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _pendingFiles.length,
+        itemBuilder: (context, index) {
+          final file = _pendingFiles[index];
+          final uploadState = _fileUploadStates[file.path];
+          
+          return Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Stack(
+              children: [
+                // 文件预览
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: _buildFilePreview(file),
+                ),
+                
+                // 上传状态覆盖层
+                if (uploadState != null)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8.0),
+                        color: uploadState.status == FileUploadStatus.uploading
+                            ? Colors.black.withOpacity(0.5)
+                            : uploadState.status == FileUploadStatus.failure
+                                ? Colors.red.withOpacity(0.6)
+                                : Colors.transparent,
+                      ),
+                      child: Center(
+                        child: _buildUploadStatusIcon(uploadState),
+                      ),
+                    ),
+                  ),
+                
+                // 删除按钮
+                Positioned(
+                  top: -4,
+                  right: -4,
+                  child: GestureDetector(
+                    onTap: () => _removeFile(index),
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.black54,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+  
+  Widget _buildFilePreview(File file) {
+    final extension = file.path.toLowerCase();
+    
+    if (extension.endsWith('.jpg') || 
+        extension.endsWith('.jpeg') || 
+        extension.endsWith('.png') || 
+        extension.endsWith('.gif')) {
+      // 图片预览
+      return Image.file(
+        file,
+        width: 64,
+        height: 64,
+        fit: BoxFit.cover,
+      );
+    } else {
+      // 其他文件类型显示图标
+      return Container(
+        width: 64,
+        height: 64,
+        color: Colors.grey[300],
+        child: const Icon(Icons.insert_drive_file, size: 32),
+      );
+    }
+  }
+  
+  Widget _buildUploadStatusIcon(FileUploadState uploadState) {
+    switch (uploadState.status) {
+      case FileUploadStatus.uploading:
+        return const SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: Colors.white,
+          ),
+        );
+      case FileUploadStatus.success:
+        return const Icon(
+          Icons.check_circle,
+          color: Colors.green,
+          size: 24,
+        );
+      case FileUploadStatus.failure:
+        return const Icon(
+          Icons.error_outline,
+          color: Colors.white,
+          size: 24,
+        );
+    }
+  }
+  
+  void _removeFile(int index) {
+    final file = _pendingFiles[index];
+    setState(() {
+      _pendingFiles.removeAt(index);
+      _fileUploadStates.remove(file.path);
+    });
   }
 
   // 添加一个示例Markdown消息快捷发送方法
@@ -359,6 +584,15 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
                   onTap: () {
                      Navigator.of(context).pop(); // Close bottom sheet
                     _pickImage(ImageSource.camera);
+                  },
+                ),
+                // 新增多图片选择
+                ListTile(
+                  leading: const Icon(Icons.photo_library_outlined),
+                  title: const Text('选择多张图片'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _pickMultipleImages();
                   },
                 ),
                 // 添加Markdown消息示例按钮
@@ -505,23 +739,32 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
         // boxShadow removed for flatter design, adjust if needed
       ),
       child: SafeArea(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center, // Align items vertically
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            _buildVoiceKeyboardButton(),
-            const SizedBox(width: 4), // Spacing
-            Expanded(
-              // Switch between TextField and PressToTalk button
-              child: _isVoiceMode ? _buildPressToTalkButton() : _buildTextField(),
-            ),
-            const SizedBox(width: 4), // Spacing
-            // Show attachment button only when not recording
-            // Or always show? Decide based on UX preference
-            if (!_isRecording)
-               _buildAttachmentButton(), 
+            // 文件预览区域
+            _buildFilePreviewArea(),
             
-            // Send button is conditionally visible inside its builder
-            _buildSendButton(),
+            // 输入区域
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center, // Align items vertically
+              children: [
+                _buildVoiceKeyboardButton(),
+                const SizedBox(width: 4), // Spacing
+                Expanded(
+                  // Switch between TextField and PressToTalk button
+                  child: _isVoiceMode ? _buildPressToTalkButton() : _buildTextField(),
+                ),
+                const SizedBox(width: 4), // Spacing
+                // Show attachment button only when not recording
+                // Or always show? Decide based on UX preference
+                if (!_isRecording)
+                   _buildAttachmentButton(), 
+                
+                // Send button is conditionally visible inside its builder
+                _buildSendButton(),
+              ],
+            ),
           ],
         ),
       ),

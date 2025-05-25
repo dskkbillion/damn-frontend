@@ -82,9 +82,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
       result.fold(
         (failure) {
           // 显示错误提示
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('创建聊天失败: ${failure.message}')),
-          );
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   SnackBar(content: Text('创建聊天失败: ${failure.message}')),
+          // );
         },
         (chatId) {
           // 导航到聊天页面
@@ -96,9 +96,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
       Navigator.of(context, rootNavigator: true).pop();
       
       // 显示错误提示
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('发生错误: $e')),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text('发生错误: $e')),
+      // );
     } finally {
       setState(() {
         _isCreatingChat = false;
