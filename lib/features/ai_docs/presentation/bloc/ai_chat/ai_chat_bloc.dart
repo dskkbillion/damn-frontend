@@ -26,6 +26,7 @@ import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/load_hist
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/stream_chat_completion_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/transcribe_audio_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/upload_file_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/cancel_chat_generation_usecase.dart';
 
 // Move Exports Before Parts - Use package imports
 export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_conversation_entity.dart'; 
@@ -52,6 +53,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   final GetRelatedServicesUseCase _getRelatedServices;
   final AllocateChatResourceUseCase _allocateChatResource;
   final TranscribeAudioUseCase _transcribeAudio;
+  final CancelChatGenerationUseCase _cancelChatGeneration;
 
   // --- Inject Secure Storage --- 
   final FlutterSecureStorage _storage;
@@ -70,6 +72,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     this._getRelatedServices,
     this._allocateChatResource,
     this._transcribeAudio,
+    this._cancelChatGeneration,
     this._storage, // Add storage to constructor
     // Start with initial state containing defaults for new properties
   ) : super(const AiChatState()) { 
@@ -87,6 +90,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     on<SendMessage>(_onSendMessage);
     on<SendVoiceMessage>(_onSendVoiceMessage); 
     on<CancelStreaming>(_onCancelStreaming); 
+    on<CancelChatGeneration>(_onCancelChatGeneration);
     on<FetchRecommendations>(_onFetchRecommendations); 
     on<TriggerAllocationAction>(_onTriggerAllocationAction); 
     // Internal Stream Handling
@@ -398,9 +402,13 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       print("Cannot send message while streaming");
       return;
     }
-    // --- Require non-empty text message --- 
-    if (event.message.trim().isEmpty) {
-        print("Cannot send empty message text.");
+
+    // --- 检查是否有内容可发送（文本或图片） --- 
+    final hasText = event.message.trim().isNotEmpty;
+    final hasPendingImages = state.pendingImageFiles?.isNotEmpty == true;
+    
+    if (!hasText && !hasPendingImages) {
+        print("Cannot send empty message (no text and no images).");
         // Optionally show snackbar feedback from here or rely on UI logic
         return; 
     }
@@ -508,26 +516,48 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     SendVoiceMessage event,
     Emitter<AiChatState> emit,
   ) async {
-    // 1. Set status to indicate processing
-    emit(state.copyWith(status: AiChatStatus.sendingMessage, clearErrorMessage: true));
-
-    // 获取文件大小并记录
-    final fileSize = await event.audioFile.length();
-    print('准备上传的音频文件大小: ${fileSize / 1024} KB, 路径: ${event.audioFile.path}');
-    
-    // 检查文件大小，如果过大则给出警告
-    if (fileSize > 3 * 1024 * 1024) { // 超过3MB
-      print('警告: 音频文件大小超过3MB，可能导致上传超时');
-    }
-
-    // 2. 获取用户ID
+    // 1. 获取基础信息
     final userId = await _getCurrentUserId();
+    final currentConversationId = state.selectedConversationId;
+    
     if (userId == null) {
       emit(state.copyWith(status: AiChatStatus.messageSendFailure, errorMessage: '用户ID未找到，无法上传音频'));
       return;
     }
+    
+    if (currentConversationId == null) {
+      emit(state.copyWith(status: AiChatStatus.messageSendFailure, errorMessage: '请先选择一个对话'));
+      return;
+    }
 
-    // 3. 上传音频文件 - 添加重试逻辑
+    // 2. 立即创建并显示语音消息（转录中状态）
+    final tempVoiceMessageId = 'temp_voice_${DateTime.now().millisecondsSinceEpoch}';
+    final voiceMessage = AiChatMessageEntity(
+      messageId: tempVoiceMessageId,
+      conversationId: currentConversationId,
+      sender: MessageSender.user,
+      content: "转录中...", // 初始显示转录中
+      messageType: MessageType.audio, // 明确设置为音频类型
+      timestamp: DateTime.now(),
+      fileUrls: null, // 转录中时先不设置URL
+      isTranscribing: true, // 设置转录中状态
+    );
+    
+    final currentMessages = List<AiChatMessageEntity>.from(state.messages);
+    currentMessages.add(voiceMessage);
+    
+    // 3. 设置转录中状态，显示语音消息
+    emit(state.copyWith(
+      status: AiChatStatus.transcribingAudio,
+      messages: currentMessages,
+      clearErrorMessage: true,
+    ));
+
+    // 4. 上传音频文件
+    final fileSize = await event.audioFile.length();
+    print('准备上传的音频文件大小: ${fileSize / 1024} KB, 路径: ${event.audioFile.path}');
+    
+    // 添加重试逻辑
     int retryCount = 0;
     const maxRetries = 2;
     late Either<Failure, String> uploadResult;
@@ -535,51 +565,48 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     while (retryCount <= maxRetries) {
       if (retryCount > 0) {
         print('正在重试音频上传 (${retryCount}/${maxRetries})...');
-        emit(state.copyWith(status: AiChatStatus.sendingMessage, errorMessage: '正在重试音频上传 (${retryCount}/${maxRetries})...'));
-        // 在重试前等待一段时间
+        // 在重试时不改变消息状态，保持转录中状态
         await Future.delayed(Duration(seconds: 1));
       }
       
       try {
-        // 尝试上传文件
         uploadResult = await _uploadFile(UploadFileParams(file: event.audioFile));
-
-        // 如果上传成功，跳出循环
         if (uploadResult.isRight()) {
           break;
         } else {
-          // 如果是超时错误，重试
-          final failure = uploadResult.fold(
-            (failure) => failure,
-            (_) => null, // 不可能运行到这里
-          );
-          
+          final failure = uploadResult.fold((failure) => failure, (_) => null);
           if (failure.toString().contains('系统请求超时') || 
               failure.toString().contains('timeout') ||
               failure.toString().contains('500')) {
-            print('音频上传超时，准备重试');
             retryCount++;
             continue;
           } else {
-            // 其他类型的错误不重试
             break;
           }
         }
       } catch (e) {
-        print('音频上传异常: $e');
         uploadResult = Left(GeneralFailure(message: e.toString()));
         retryCount++;
         continue;
       }
     }
 
-    // 4. 处理上传结果
     await uploadResult.fold(
-      // 4.1 处理上传失败
+      // 5. 上传失败
       (failure) async {
         print('音频上传失败: $failure');
         
-        // 显示友好的错误提示
+        // 更新消息状态为上传失败
+        final updatedMessages = state.messages.map((msg) {
+          if (msg.messageId == tempVoiceMessageId) {
+            return msg.copyWith(
+              content: '[语音上传失败]',
+              isTranscribing: false,
+            );
+          }
+          return msg;
+        }).toList();
+        
         String errorMessage;
         if (failure.toString().contains('系统请求超时') || failure.toString().contains('timeout')) {
           errorMessage = '上传超时，请尝试录制更短的语音';
@@ -590,106 +617,186 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         }
         
         emit(state.copyWith(
-          status: AiChatStatus.messageSendFailure, 
+          status: AiChatStatus.messageSendFailure,
+          messages: updatedMessages,
           errorMessage: errorMessage,
         ));
       },
-      // 4.2 处理上传成功
+      // 6. 上传成功
       (audioOssUrl) async {
         print('音频上传成功，URL: $audioOssUrl');
         
-        // 生成唯一的消息ID
-        final String messageId = 'audio_user_${DateTime.now().millisecondsSinceEpoch}';
+        // 5. 转录成功，更新语音消息显示转录结果
+        final updatedMessages = state.messages.map((msg) {
+          if (msg.messageId == tempVoiceMessageId) {
+            print('[语音消息] 更新消息 - 设置音频URL: $audioOssUrl');
+            return msg.copyWith(
+              content: "转录中...", // 上传成功后显示转录中状态
+              fileUrls: [audioOssUrl], // 设置音频URL到fileUrls
+              messageType: MessageType.audio, // 确保类型正确
+              isTranscribing: true, // 保持转录中状态
+            );
+          }
+          return msg;
+        }).toList();
         
-        // 创建音频消息实体，设置转录状态为进行中
-        final audioMessage = AiChatMessageEntity(
-          messageId: messageId,
-          sender: MessageSender.user,
-          conversationId: state.selectedConversationId ?? -1,
-          timestamp: DateTime.now(),
-          messageType: MessageType.audio,
-          fileUrls: [audioOssUrl],
-          content: '[语音消息]', // 添加占位符文本
-          isTranscribing: true, // 标记为转录中
-        );
-
-        // 更新UI显示音频消息
         emit(state.copyWith(
-          messages: List.from(state.messages)..add(audioMessage), 
-          status: AiChatStatus.historyLoadSuccess,
+          status: AiChatStatus.sendingMessage,
+          messages: updatedMessages,
           clearErrorMessage: true,
         ));
         
-        // 调用语音转文字服务
-        if (userId != null) {
-          print('开始调用语音转文字服务, URL: $audioOssUrl');
-          final transcriptionResult = await _transcribeAudio(
-            TranscribeAudioParams(
-              audioOssUrl: audioOssUrl,
-              userId: userId,
-            )
-          );
-          
-          // 处理转录结果
-          transcriptionResult.fold(
-            (failure) {
-              // 转录失败
-              print('语音转文字失败: $failure');
-              
-              // 更新消息，标记为不再转录中，但无转录结果
-              final updatedMessages = List<AiChatMessageEntity>.from(state.messages);
-              final index = updatedMessages.indexWhere((msg) => msg.messageId == messageId);
-              
-              if (index != -1) {
-                updatedMessages[index] = updatedMessages[index].copyWith(
-                  isTranscribing: false,
+        // 8. 开始转录
+        print('开始调用语音转文字服务, URL: $audioOssUrl');
+        final transcriptionResult = await _transcribeAudio(
+          TranscribeAudioParams(
+            audioOssUrl: audioOssUrl,
+            userId: userId,
+          )
+        );
+        
+        await transcriptionResult.fold(
+          // 转录失败
+          (failure) async {
+            print('语音转录失败: $failure');
+            
+            // 更新消息状态为转录失败
+            final updatedMessages = state.messages.map((msg) {
+              if (msg.messageId == tempVoiceMessageId) {
+                return msg.copyWith(
+                  content: '[转录失败，但可播放原音频]', // 显示转录失败信息
+                  isTranscribing: false, // 清除转录中状态
+                  messageType: MessageType.audio, // 保持音频类型
                 );
-                
-                emit(state.copyWith(
-                  messages: updatedMessages,
-                  status: AiChatStatus.transcriptionFailure,
-                  errorMessage: '语音转文字失败: ${failure.toString()}',
-                ));
               }
-            },
-            (transcription) {
-              // 转录成功
-              print('语音转文字成功: $transcription');
-              
-              // 更新消息，添加转录文本
-              final updatedMessages = List<AiChatMessageEntity>.from(state.messages);
-              final index = updatedMessages.indexWhere((msg) => msg.messageId == messageId);
-              
-              if (index != -1) {
-                updatedMessages[index] = updatedMessages[index].copyWith(
-                  isTranscribing: false,
-                  transcription: transcription,
+              return msg;
+            }).toList();
+            
+            emit(state.copyWith(
+              status: AiChatStatus.transcriptionFailure,
+              messages: updatedMessages,
+              errorMessage: '语音转录失败',
+            ));
+            
+            // 仍然尝试发送音频消息到后端（不带转录）
+            await _sendVoiceToBackend(currentConversationId, userId, audioOssUrl, null, emit);
+          },
+          // 转录成功
+          (transcription) async {
+            print('语音转录成功: $transcription');
+            
+            // 更新消息显示转录结果 - content设置为转录文本，保持音频类型
+            final updatedMessages = state.messages.map((msg) {
+              if (msg.messageId == tempVoiceMessageId) {
+                return msg.copyWith(
+                  content: transcription, // 设置转录文本到content
+                  messageType: MessageType.audio, // 保持音频类型
+                  isTranscribing: false, // 清除转录中状态
+                  // fileUrls已经在上传成功时设置，保持不变
                 );
-                
-                emit(state.copyWith(
-                  messages: updatedMessages,
-                  status: AiChatStatus.transcriptionSuccess,
-                ));
-                
-                // 将转录文本作为新的文本消息发送到聊天中
-                if (transcription.isNotEmpty) {
-                  // 使用短延迟确保UI更新后再发送文本消息
-                  Future.delayed(const Duration(milliseconds: 500), () {
-                    add(SendMessage(message: transcription));
-                  });
-                }
               }
-            }
-          );
-        }
+              return msg;
+            }).toList();
+            
+            emit(state.copyWith(
+              status: AiChatStatus.transcriptionSuccess,
+              messages: updatedMessages,
+            ));
+            
+            // 发送音频消息到后端（带转录）
+            await _sendVoiceToBackend(currentConversationId, userId, audioOssUrl, transcription, emit);
+          },
+        );
       },
     );
   }
 
+  // 新增辅助方法：发送语音消息到后端
+  Future<void> _sendVoiceToBackend(
+    int conversationId,
+    int userId,
+    String audioUrl,
+    String? transcription,
+    Emitter<AiChatState> emit,
+  ) async {
+    final streamResult = await _streamChatCompletion(StreamChatCompletionParams(
+      conversationId: conversationId,
+      userId: userId,
+      message: transcription ?? '[语音消息]',
+      fileUrls: const [],
+      audioUrls: [audioUrl],
+      transcription: transcription,
+    ));
+    
+    streamResult.fold(
+      (failure) {
+        print('音频消息发送失败: $failure');
+        emit(state.copyWith(
+          status: AiChatStatus.messageSendFailure,
+          errorMessage: '音频消息发送失败: ${failure.toString()}',
+        ));
+      },
+      (contentStream) {
+        print('音频消息发送成功，开始AI响应');
+        emit(state.copyWith(status: AiChatStatus.streamingResponse));
+        
+        _chatStreamSubscription = contentStream.listen(
+          (chunk) => add(_ReceiveStreamChunk(chunk)),
+          onError: (error) => add(_HandleStreamError(error.toString())),
+          onDone: () => add(const _HandleStreamDone()),
+        );
+      },
+    );
+  }
 
   // --- Internal Stream Handlers (Updated) ---
   void _onReceiveStreamChunk(_ReceiveStreamChunk event, Emitter<AiChatState> emit) {
     print("[AiChatBloc] 收到流式数据块: ${event.chunk}");
+    
+    // 检查是否是特殊控制标记
+    final chunk = event.chunk.trim();
+    
+    // 处理跳过用户消息显示的标识
+    if (chunk == '[SKIP_USER_MESSAGE]') {
+      print("[AiChatBloc] 收到跳过用户消息显示标识");
+      // 对于语音消息，我们已经在前端显示了语音消息气泡（包含转录状态和结果）
+      // 这个标识只是确认后端已经处理了用户消息，不需要额外显示
+      // 我们只需要继续等待AI响应即可
+      return;
+    }
+    
+    // 过滤特殊标记，这些标记用于内部控制，不应显示给用户
+    if (chunk == '[COMPLETED]' || 
+        chunk == '[DONE]' || 
+        chunk == '[CANCELLED]') {
+      print("[AiChatBloc] 收到控制标记: $chunk，完成流式响应");
+      // 这些标记表示流完成，直接完成消息而不添加内容
+      if (state.status == AiChatStatus.streamingResponse) {
+        final currentMessages = List<AiChatMessageEntity>.from(state.messages);
+        // 只有当有实际内容时才添加消息
+        if (state.streamingResponseText.isNotEmpty && 
+            state.streamingResponseText != '...' &&
+            !state.streamingResponseText.contains('[COMPLETED]') &&
+            !state.streamingResponseText.contains('[DONE]') &&
+            !state.streamingResponseText.contains('[CANCELLED]')) {
+          final aiMessage = AiChatMessageEntity(
+            messageId: 'ai_${DateTime.now().millisecondsSinceEpoch}', 
+            content: state.streamingResponseText,
+            sender: MessageSender.ai,
+            timestamp: DateTime.now(),
+            conversationId: state.selectedConversationId!, 
+          );
+          currentMessages.add(aiMessage);
+        }
+        emit(state.copyWith(
+          status: AiChatStatus.messageSendSuccess,
+          streamingResponseText: '',
+          messages: currentMessages,
+        ));
+        print("[AiChatBloc] 流式响应完成，添加最终消息到列表");
+      }
+      return;
+    }
     
     if (event.isDone) {
        // Finalize the AI message only if streaming was in progress
@@ -715,7 +822,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
             print("[AiChatBloc] 流式响应结束，添加最终消息到列表");
        } // else: Stream might finish due to cancellation, state already handled by _onCancelStreaming
     } else {
-      // Append chunk to current generation
+      // 只添加非控制标记的内容
       final newGeneration = (state.streamingResponseText == '...' ? '' : state.streamingResponseText) + event.chunk;
       print("[AiChatBloc] 更新流式文本: '$newGeneration'");
       emit(state.copyWith(
@@ -762,6 +869,90 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
           streamingResponseText: '', 
           messages: currentMessages,
         ));
+     }
+   }
+
+   Future<void> _onCancelChatGeneration(
+     CancelChatGeneration event,
+     Emitter<AiChatState> emit,
+   ) async {
+     // 只有在正在流式响应时才能取消
+     if (state.status != AiChatStatus.streamingResponse) {
+       print("[AiChatBloc] Cannot cancel: not in streaming state. Current status: ${state.status}");
+       return;
+     }
+
+     final currentConversationId = state.selectedConversationId;
+     if (currentConversationId == null) {
+       print("[AiChatBloc] Cannot cancel: no conversation selected");
+       return;
+     }
+
+     // 设置取消状态
+     emit(state.copyWith(status: AiChatStatus.cancellingGeneration));
+
+     try {
+       // 获取用户ID
+       final userId = await _getCurrentUserId();
+       if (userId == null) {
+         emit(state.copyWith(
+           status: AiChatStatus.messageSendFailure,
+           errorMessage: 'User not authenticated or invalid ID format'
+         ));
+         return;
+       }
+
+       // 调用取消聊天生成用例
+       final result = await _cancelChatGeneration(CancelChatGenerationParams(
+         conversationId: currentConversationId,
+         userId: userId,
+       ));
+
+       result.fold(
+         (failure) {
+           print("[AiChatBloc] Cancel chat generation failed: $failure");
+           // 如果取消失败，恢复到流式响应状态
+           emit(state.copyWith(
+             status: AiChatStatus.streamingResponse,
+             errorMessage: 'Failed to cancel generation: ${failure.toString()}'
+           ));
+         },
+         (_) {
+           print("[AiChatBloc] Chat generation cancelled successfully");
+           
+           // 取消本地流订阅
+           _chatStreamSubscription?.cancel();
+           _chatStreamSubscription = null;
+           
+           // 添加部分生成的消息（如果有的话）
+           final currentMessages = List<AiChatMessageEntity>.from(state.messages);
+           if (state.streamingResponseText.isNotEmpty && state.streamingResponseText != '...') {
+             final aiMessage = AiChatMessageEntity(
+               messageId: 'ai_${DateTime.now().millisecondsSinceEpoch}_cancelled',
+               content: state.streamingResponseText + " (用户取消)",
+               sender: MessageSender.ai,
+               timestamp: DateTime.now(),
+               conversationId: currentConversationId,
+               messageType: MessageType.text,
+             );
+             currentMessages.add(aiMessage);
+           }
+
+           // 设置成功状态
+           emit(state.copyWith(
+             status: AiChatStatus.messageSendSuccess,
+             streamingResponseText: '',
+             messages: currentMessages,
+             clearErrorMessage: true,
+           ));
+         }
+       );
+     } catch (e) {
+       print("[AiChatBloc] Exception while cancelling chat generation: $e");
+       emit(state.copyWith(
+         status: AiChatStatus.messageSendFailure,
+         errorMessage: 'Exception while cancelling: ${e.toString()}'
+       ));
      }
    }
 
@@ -1017,7 +1208,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
              print("发送消息请求...");
              
              // 构建一个更丰富的消息，包含服务名称和AI分析的总结
-         String messageContent = "用户对\"${item['name']}\"服务感兴趣。\n\n专业需求分析:\n$summary";
+         String messageContent = summary;
              
              // 构建发送消息的请求参数
              final sendMessageParams = {

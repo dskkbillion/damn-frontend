@@ -12,6 +12,7 @@ import '../domain/usecases/upload_file_usecase.dart';
 import '../domain/usecases/get_related_services_usecase.dart';
 import '../domain/usecases/allocate_chat_resource_usecase.dart';
 import '../domain/usecases/transcribe_audio_usecase.dart';
+import '../domain/usecases/cancel_chat_generation_usecase.dart';
 import '../domain/repositories/i_ai_chat_repository.dart';
 import '../domain/repositories/i_file_upload_repository.dart';
 import '../data/repositories/ai_chat_repository_impl.dart';
@@ -139,6 +140,13 @@ class AiDocsDI {
       print('[AiDocsDI] Registered TranscribeAudioUseCase');
     }
 
+    if (!getIt.isRegistered<CancelChatGenerationUseCase>()) {
+      getIt.registerLazySingleton<CancelChatGenerationUseCase>(
+        () => CancelChatGenerationUseCase(getIt<IAiChatRepository>()),
+      );
+      print('[AiDocsDI] Registered CancelChatGenerationUseCase');
+    }
+
     // Bloc
     if (!getIt.isRegistered<AiChatBloc>()) {
       getIt.registerFactory<AiChatBloc>(() => AiChatBloc(
@@ -151,6 +159,7 @@ class AiDocsDI {
             getIt<GetRelatedServicesUseCase>(),
             getIt<AllocateChatResourceUseCase>(),
             getIt<TranscribeAudioUseCase>(),
+            getIt<CancelChatGenerationUseCase>(),
             getIt<FlutterSecureStorage>(),
           ));
       print('[AiDocsDI] Registered AiChatBloc');

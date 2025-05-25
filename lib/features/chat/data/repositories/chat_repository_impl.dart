@@ -56,7 +56,7 @@ class ChatRepositoryImpl implements IChatRepository {
   }
 
   @override
-  Future<Either<Failure, List<ChatMessage>>> getMessages(int chatId) async {
+  Future<Either<Failure, List<ChatMessage>>> getMessages(int chatId, {int pageNum = 1, int pageSize = 20}) async {
     // TODO: Implement getMessages similar to getChatRooms
     // Need to fetch current user ID to pass to toEntity
     try {
@@ -65,7 +65,7 @@ class ChatRepositoryImpl implements IChatRepository {
          (failure) => Left(failure),
          (user) async {
            try {
-             final messageDtos = await remoteDataSource.getMessages(chatId);
+             final messageDtos = await remoteDataSource.getMessages(chatId, pageNum: pageNum, pageSize: pageSize);
              final messages = messageDtos.map((dto) {
                final senderId = dto.memberId ?? dto.doctorId ?? 0;
                return dto.toEntity(currentUserId: user.id, senderId: senderId);

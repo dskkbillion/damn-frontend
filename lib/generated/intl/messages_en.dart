@@ -149,9 +149,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "allocating_step2": MessageLookupByLibrary.simpleMessage("Allocating."),
     "allocating_step3": MessageLookupByLibrary.simpleMessage("Allocating.."),
     "allocating_step4": MessageLookupByLibrary.simpleMessage("Allocating..."),
+    "chat_admin_connection_error": MessageLookupByLibrary.simpleMessage(
+      "Unable to connect to system admin",
+    ),
     "chat_admin_title": MessageLookupByLibrary.simpleMessage("System Admin"),
     "chat_attach": MessageLookupByLibrary.simpleMessage("Send Image/File"),
     "chat_audio_message": MessageLookupByLibrary.simpleMessage("[Audio]"),
+    "chat_audio_pause": MessageLookupByLibrary.simpleMessage("Pause"),
+    "chat_audio_play": MessageLookupByLibrary.simpleMessage("Play"),
+    "chat_buyer": MessageLookupByLibrary.simpleMessage("Buyer"),
     "chat_camera_permission_denied": MessageLookupByLibrary.simpleMessage(
       "Camera permission denied, cannot take photo",
     ),
@@ -161,10 +167,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "chat_camera_permission_denied_title": MessageLookupByLibrary.simpleMessage(
       "Camera Permission Denied",
     ),
+    "chat_collapse": MessageLookupByLibrary.simpleMessage("Collapse"),
+    "chat_copied_to_clipboard": MessageLookupByLibrary.simpleMessage(
+      "Copied to clipboard",
+    ),
+    "chat_copy": MessageLookupByLibrary.simpleMessage("Copy"),
     "chat_enter_message": MessageLookupByLibrary.simpleMessage(
       "Enter message...",
     ),
     "chat_error_loading": m4,
+    "chat_expand": MessageLookupByLibrary.simpleMessage("Expand"),
+    "chat_i_want_seller_to_see": MessageLookupByLibrary.simpleMessage(
+      "I want the seller to see",
+    ),
     "chat_image_message": MessageLookupByLibrary.simpleMessage("[Image]"),
     "chat_image_picking_error": m5,
     "chat_invalid_session": MessageLookupByLibrary.simpleMessage(
@@ -172,6 +187,45 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "chat_list_title": MessageLookupByLibrary.simpleMessage("Chat List"),
     "chat_loading": MessageLookupByLibrary.simpleMessage("Loading..."),
+    "chat_markdown_example_bold_italic": MessageLookupByLibrary.simpleMessage(
+      "This is **bold** text and *italic* text.",
+    ),
+    "chat_markdown_example_list1": MessageLookupByLibrary.simpleMessage(
+      "This is list item 1",
+    ),
+    "chat_markdown_example_list2": MessageLookupByLibrary.simpleMessage(
+      "This is list item 2",
+    ),
+    "chat_markdown_example_list3": MessageLookupByLibrary.simpleMessage(
+      "This is a nested list item",
+    ),
+    "chat_markdown_example_quote": MessageLookupByLibrary.simpleMessage(
+      "This is a quote text, supporting multiple lines",
+    ),
+    "chat_markdown_example_table_col1": MessageLookupByLibrary.simpleMessage(
+      "Column 1",
+    ),
+    "chat_markdown_example_table_col2": MessageLookupByLibrary.simpleMessage(
+      "Column 2",
+    ),
+    "chat_markdown_example_table_content1":
+        MessageLookupByLibrary.simpleMessage("Content 1"),
+    "chat_markdown_example_table_content2":
+        MessageLookupByLibrary.simpleMessage("Content 2"),
+    "chat_markdown_example_table_content3":
+        MessageLookupByLibrary.simpleMessage("Content 3"),
+    "chat_markdown_example_table_content4":
+        MessageLookupByLibrary.simpleMessage("Content 4"),
+    "chat_markdown_example_title1": MessageLookupByLibrary.simpleMessage(
+      "This is a level 1 heading",
+    ),
+    "chat_markdown_example_title2": MessageLookupByLibrary.simpleMessage(
+      "This is a level 2 heading",
+    ),
+    "chat_me": MessageLookupByLibrary.simpleMessage("Me"),
+    "chat_message_recalled": MessageLookupByLibrary.simpleMessage(
+      "Message recalled",
+    ),
     "chat_mic_permission_denied": MessageLookupByLibrary.simpleMessage(
       "Microphone permission denied, cannot record",
     ),
@@ -203,6 +257,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Pick from Gallery",
     ),
     "chat_press_to_talk": MessageLookupByLibrary.simpleMessage("Press to Talk"),
+    "chat_recall": MessageLookupByLibrary.simpleMessage("Recall"),
     "chat_recording_error": m6,
     "chat_release_to_send": m7,
     "chat_revoked_message": MessageLookupByLibrary.simpleMessage(
@@ -224,6 +279,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "[Unknown message]",
     ),
     "chat_unknown_user": MessageLookupByLibrary.simpleMessage("Unknown User"),
+    "chat_wants_to_see": MessageLookupByLibrary.simpleMessage("wants to see"),
     "chat_web_recording_not_supported": MessageLookupByLibrary.simpleMessage(
       "Recording is not supported on Web platform",
     ),

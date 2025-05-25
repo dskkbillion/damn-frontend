@@ -131,6 +131,8 @@ class AiChatRepositoryImpl implements IAiChatRepository {
     required int userId,
     required String message,
     required List<String> fileUrls,
+    List<String>? audioUrls,
+    String? transcription,
   }) async {
     return _tryCatchStream<String>(() async {
       return _remoteDataSource.streamChatCompletion(
@@ -138,6 +140,8 @@ class AiChatRepositoryImpl implements IAiChatRepository {
         userId: userId,
         message: message,
         fileUrls: fileUrls,
+        audioUrls: audioUrls,
+        transcription: transcription,
       );
     });
   }
@@ -191,6 +195,19 @@ class AiChatRepositoryImpl implements IAiChatRepository {
      return _tryCatch<String>(() async {
       return await _remoteDataSource.transcribeAudio(
         audioOssUrl: audioOssUrl,
+        userId: userId,
+      );
+    });
+  }
+
+  @override
+  Future<Either<Failure, void>> cancelChatGeneration({
+    required int conversationId,
+    required int userId,
+  }) async {
+    return _tryCatch<void>(() async {
+      await _remoteDataSource.cancelChatGeneration(
+        conversationId: conversationId,
         userId: userId,
       );
     });

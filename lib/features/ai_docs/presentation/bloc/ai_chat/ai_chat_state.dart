@@ -9,6 +9,7 @@ enum AiChatStatus {
   sendingMessage, // Uploading files (if any) and sending message
   waitingForResponse, // <-- Add this status
   streamingResponse, // AI is generating and streaming response
+  cancellingGeneration, // User requested cancellation of ongoing generation
   messageSendSuccess, // AI finished responding successfully
   messageSendFailure, // Failed to send message or stream response
   loadingRecommendations, // Loading related services

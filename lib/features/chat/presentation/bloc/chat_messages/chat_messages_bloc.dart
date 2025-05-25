@@ -61,6 +61,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     required this.webSocketDataSource,
   }) : super(ChatMessagesInitial()) {
     on<LoadChatMessages>(_onLoadChatMessages);
+    on<LoadMoreChatMessages>(_onLoadMoreChatMessages);
     on<SendMessageRequested>(_onSendMessageRequested);
     on<_MessageReceived>(_onInternalMessageReceived);
     on<RevokeMessageRequested>(_onRevokeMessageRequested);
@@ -92,7 +93,11 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
 
       // 2. Fetch initial messages and room details concurrently
       final results = await Future.wait([
-        getMessageList(GetMessageListParams(chatId: chatId)),
+        getMessageList(GetMessageListParams(
+          chatId: chatId,
+          pageNum: 1,
+          pageSize: 20,
+        )),
         getChatRoomDetails(GetChatRoomDetailsParams(chatId: chatId)),
       ]);
 
@@ -155,6 +160,9 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
             opponent: opponentParticipant!,
             currentUserId: currentReferId, // Pass referId as currentUserId
             currentUserParticipantId: currentUserParticipantId!, // Pass internal ID
+            isInitialLoad: true, // 标记为初始加载
+            hasNewMessage: false,
+            hasMore: messages.length >= 20 // 假设默认页大小为20
           ));
 
           // 4. Connect to WebSocket using the INTERNAL participant ID
@@ -177,6 +185,72 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
       emit(ChatMessagesError('An unexpected error occurred: ${e.toString()}'));
       print("[ChatMessagesBloc] Error loading chat: $e\n$stacktrace");
     }
+  }
+
+  Future<void> _onLoadMoreChatMessages(
+    LoadMoreChatMessages event,
+    Emitter<ChatMessagesState> emit
+  ) async {
+    if (state is! ChatMessagesLoaded) return;
+    final currentState = state as ChatMessagesLoaded;
+    
+    try {
+      // 调用用例加载更多消息
+      final result = await getMessageList(GetMessageListParams(
+        chatId: event.chatId,
+        pageNum: event.pageNum,
+        pageSize: event.pageSize
+      ));
+      
+      await result.fold(
+        (failure) {
+          emit(currentState.copyWith(
+            error: () => failure.message,
+            isInitialLoad: false,
+            hasNewMessage: false
+          ));
+        },
+        (moreMessages) {
+          // 检查是否有更多消息
+          final hasMore = moreMessages.isNotEmpty && moreMessages.length >= event.pageSize;
+          
+          // 合并消息并去重
+          final allMessages = [...moreMessages, ...currentState.messages];
+          final uniqueMessages = _removeDuplicateMessages(allMessages);
+          
+          emit(currentState.copyWith(
+            messages: uniqueMessages,
+            isInitialLoad: false,
+            hasNewMessage: false,
+            hasMore: hasMore,
+            error: () => null
+          ));
+        },
+      );
+    } catch (e) {
+      emit(currentState.copyWith(
+        error: () => '加载更多消息失败: ${e.toString()}',
+        isInitialLoad: false,
+        hasNewMessage: false
+      ));
+    }
+  }
+
+  List<ChatMessage> _removeDuplicateMessages(List<ChatMessage> messages) {
+    final uniqueMessages = <ChatMessage>[];
+    final messageIds = <int>{};
+    
+    for (final message in messages) {
+      if (!messageIds.contains(message.id)) {
+        messageIds.add(message.id);
+        uniqueMessages.add(message);
+      }
+    }
+    
+    // 按时间排序
+    uniqueMessages.sort((a, b) => a.createTime!.compareTo(b.createTime!));
+    
+    return uniqueMessages;
   }
 
   Future<void> _onSendMessageRequested(
@@ -209,6 +283,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     // 2. Emit state with optimistic message ADDED TO THE END
     emit(loadedState.copyWith(
       messages: [...loadedState.messages, optimisticMessage], // Append new message
+      hasNewMessage: true,
       error: () => null
     ));
 

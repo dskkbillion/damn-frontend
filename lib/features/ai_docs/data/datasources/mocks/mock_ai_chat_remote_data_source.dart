@@ -91,6 +91,8 @@ class MockAiChatRemoteDataSource implements IAiChatRemoteDataSource {
     required int userId,
     required String message,
     required List<String> fileUrls,
+    List<String>? audioUrls,
+    String? transcription,
   }) {
     if (_shouldFail) {
        if(_random.nextBool()){
@@ -108,9 +110,23 @@ class MockAiChatRemoteDataSource implements IAiChatRemoteDataSource {
      }
 
     final controller = StreamController<String>();
-    final responseWords = ("Mock response for '$message': Lorem ipsum dolor sit amet, consectetur adipiscing elit. " +
-                           (fileUrls.isNotEmpty ? 'Files received: ${fileUrls.join(', ')}. ' : '') +
-                           "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.").split(' ');
+    String responseBase = "Mock response for '$message': Lorem ipsum dolor sit amet, consectetur adipiscing elit. ";
+    
+    if (fileUrls.isNotEmpty) {
+      responseBase += 'Files received: ${fileUrls.join(', ')}. ';
+    }
+    
+    if (audioUrls != null && audioUrls.isNotEmpty) {
+      responseBase += 'Audio URLs received: ${audioUrls.join(', ')}. ';
+    }
+    
+    if (transcription != null && transcription.isNotEmpty) {
+      responseBase += 'Transcription received: $transcription. ';
+    }
+    
+    responseBase += "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+    
+    final responseWords = responseBase.split(' ');
     int wordIndex = 0;
 
     Future.delayed(Duration(milliseconds: 100), () {
@@ -222,6 +238,21 @@ class MockAiChatRemoteDataSource implements IAiChatRemoteDataSource {
        }
        print('Mock: Transcribing audio from $audioOssUrl for user ${userId ?? 'unknown'}.');
        return "This is the mock transcription result for the audio file located at $audioOssUrl. It might contain pauses... or specific keywords.";
+  }
+
+  @override
+  Future<void> cancelChatGeneration({
+    required int conversationId,
+    required int userId,
+  }) async {
+    await _simulateDelay(300);
+    if (_shouldFail) {
+      throw Exception('Mock Network Error: Failed to cancel chat generation.');
+    }
+    if (conversationId < 1) {
+      throw Exception('Mock Error: Cannot cancel chat generation for invalid conversation ID');
+    }
+    print('Mock: Chat generation cancelled for conversation $conversationId, user $userId.');
   }
 
 }

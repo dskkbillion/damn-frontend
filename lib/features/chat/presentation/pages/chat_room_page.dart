@@ -19,32 +19,100 @@ class ChatRoomPage extends StatefulWidget {
 
 class _ChatRoomPageState extends State<ChatRoomPage> {
   final ScrollController _scrollController = ScrollController();
+  // 添加一个标志来跟踪是否在底部
+  bool _showScrollToBottomButton = false;
+  // 添加分页加载参数
+  int _pageNum = 1;
+  final int _pageSize = 20;
+  bool _isLoadingMore = false;
+  bool _hasMoreMessages = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // 监听滚动事件
+    _scrollController.addListener(_onScroll);
+    
+    // 添加延迟滚动，确保页面加载完成后滚动到底部
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 300), _scrollToBottom);
+    });
+  }
+
+  // 处理滚动事件
+  void _onScroll() {
+    // 如果距离底部超过300像素，显示回到底部按钮
+    if (_scrollController.hasClients) {
+      final maxScroll = _scrollController.position.maxScrollExtent;
+      final currentScroll = _scrollController.offset;
+      
+      // 注意：使用reverse时，底部是在位置0
+      setState(() {
+        _showScrollToBottomButton = currentScroll > 300; // 超过300像素，显示滚动到底部按钮
+      });
+      
+      // 在reverse模式下，加载更多是在滚动到最大位置（即顶部，显示最早的消息）
+      if (currentScroll >= maxScroll - 50 && 
+          !_isLoadingMore && 
+          _hasMoreMessages) {
+        _loadMoreMessages();
+        print("[ChatRoom] Loading more messages at maxScroll: $maxScroll, currentScroll: $currentScroll");
+      }
+    }
+  }
+
+  // 加载更多历史消息
+  void _loadMoreMessages() {
+    if (_isLoadingMore) return;
+    
+    setState(() {
+      _isLoadingMore = true;
+    });
+    
+    // 调用bloc加载更多消息
+    context.read<ChatMessagesBloc>().add(
+      LoadMoreChatMessages(
+        chatId: widget.chatId,
+        pageNum: _pageNum + 1,
+        pageSize: _pageSize,
+      ),
+    );
+    
+    // 增加页码
+    _pageNum++;
+  }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
   }
 
+  // 优化滚动到底部的方法 - 在reverse模式下，底部是位置0
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
-      // Delay slightly to allow the list to build
-      Future.delayed(const Duration(milliseconds: 100), () {
-         if (_scrollController.hasClients) { // Check again as widget might dispose
-             _scrollController.animateTo(
-               _scrollController.position.maxScrollExtent, // Scroll to the actual bottom now
-               duration: const Duration(milliseconds: 300),
-               curve: Curves.easeOut,
-             );
-         }
-      });
+      try {
+        final currentScroll = _scrollController.position.pixels;
+        
+        // 在reverse模式下，如果当前不在底部（位置0），使用直接跳转，避免卡顿
+        if (currentScroll > 10) { // 允许10像素的误差
+          _scrollController.jumpTo(0); // 在reverse模式下，底部是位置0
+          print("[ChatRoom] Scrolled to bottom (position 0)");
+        }
+      } catch (e) {
+        // 处理可能的异常，避免因滚动问题导致应用崩溃
+        print("[ChatRoom] Error scrolling to bottom: $e");
+      }
+    } else {
+      print("[ChatRoom] ScrollController has no clients yet");
     }
   }
 
   // Helper to check if timestamp separator is needed
   bool _shouldShowTimestampSeparator(ChatMessage current, ChatMessage? previous) {
     if (previous == null) {
-      return true; // Always show for the very first message (oldest)
+      return true; // Always show for the very first message displayed
     }
     // Show if difference is more than 5 minutes
     final difference = previous.createTime.difference(current.createTime).abs(); 
@@ -125,75 +193,125 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         ),
         // TODO: Add actions like viewing opponent profile
       ),
+      // 添加滚动到底部的悬浮按钮
+      floatingActionButton: _showScrollToBottomButton 
+          ? FloatingActionButton(
+              mini: true,
+              backgroundColor: Colors.white,
+              onPressed: _scrollToBottom,
+              child: const Icon(Icons.arrow_downward, color: Colors.grey),
+            )
+          : null,
       body: Column(
         children: [
           Expanded(
             child: BlocConsumer<ChatMessagesBloc, ChatMessagesState>(
               listener: (context, state) {
-                 // FIX: Schedule scroll after the frame build
-                 if (state is ChatMessagesLoaded && state.messages.isNotEmpty) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                         _scrollToBottom();
+                 // 优化滚动逻辑
+                 if (state is ChatMessagesLoaded) {
+                    // 如果是初始加载或发送新消息，滚动到底部
+                    if (state.isInitialLoad || state.hasNewMessage) {
+                      // 使用多层延迟，确保在各种情况下都能滚动到底部
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _scrollToBottom();
+                        
+                        // 再延迟100毫秒尝试滚动一次
+                        Future.delayed(const Duration(milliseconds: 100), () {
+                          _scrollToBottom();
+                          
+                          // 最后再延迟200毫秒尝试最后一次
+                          Future.delayed(const Duration(milliseconds: 200), _scrollToBottom);
+                        });
+                      });
+                    }
+                    
+                    // 更新加载状态
+                    setState(() {
+                      _isLoadingMore = false;
+                      _hasMoreMessages = state.hasMore;
                     });
                  }
               },
               builder: (context, state) {
                 if (state is ChatMessagesLoading && state is! ChatMessagesLoaded) {
-                  // Show loading only if messages aren't loaded yet
+                  // 显示加载中
                   return Center(child: CircularProgressIndicator());
                 } else if (state is ChatMessagesLoaded) {
                   if (state.messages.isEmpty) {
                     return Center(child: Text(s.chat_no_messages));
                   }
-                  return ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                    itemCount: state.messages.length,
-                    itemBuilder: (context, index) {
-                      // Add null checks for safety
-                      if (state.opponent == null || state.currentUserParticipantId == 0) {
-                        print('Error: Inconsistent state in ChatRoomPage itemBuilder - opponent or currentUserParticipantId is invalid.');
-                        return Container(); 
-                      }
-
-                      // Access messages in normal order (index 0 is oldest)
-                      final currentMessage = state.messages[index]; 
-                      final previousMessage = (index > 0) 
-                          ? state.messages[index - 1]
-                          : null; // Previous message is at index - 1
-
-                      final bool isFirstInList = index == 0;
-
-                      if (currentMessage.createTime == null) {
-                        print('Error: Message ID ${currentMessage.id} has null createTime.');
-                        return ChatMessageBubble(
-                           key: ValueKey(currentMessage.id), 
-                           message: currentMessage,
-                           currentUserParticipantId: state.currentUserParticipantId,
-                           opponent: state.opponent,
-                        );
-                      }
-
-                      // Since list is not reversed, createTime comparison needs adjustment if it relied on reversed order
-                      // Let's assume _shouldShowTimestampSeparator compares current with previous correctly
-                      // Note: _shouldShowTimestampSeparator needs to handle potential null createTime if not already done.
-                      final bool showTimestamp = _shouldShowTimestampSeparator(currentMessage, previousMessage);
-
-                      return Column(
-                        children: [
-                          // Build timestamp separator based on comparison with previous message (index - 1)
-                          if (showTimestamp) 
-                             _buildTimestampSeparator(currentMessage.createTime!, isFirstInList),
+                  
+                  return Stack(
+                    children: [
+                      // 消息列表
+                      ListView.builder(
+                        controller: _scrollController,
+                        reverse: true, // 使用reverse，这样最新消息会在底部
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                        cacheExtent: 200, // 增加缓存范围，提高渲染性能
+                        itemCount: state.messages.length + (_isLoadingMore ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          // 底部加载更多指示器（在reverse模式下显示在顶部）
+                          if (index == state.messages.length && _isLoadingMore) {
+                            return Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            );
+                          }
                           
-                          ChatMessageBubble(
-                            key: ValueKey(currentMessage.id), 
-                            message: currentMessage,
-                            currentUserParticipantId: state.currentUserParticipantId,
-                            opponent: state.opponent,
-                          ),
-                        ],
-                      );
-                    },
+                          // 确保索引在有效范围内
+                          if (index >= state.messages.length) {
+                            return Container(); // 防止越界
+                          }
+                          
+                          // 在reverse模式下，索引0是最新的消息，需要反转索引关系
+                          // 在数据层已经排序为从旧到新，所以显示时需要反转
+                          final messageIndex = state.messages.length - 1 - index;
+                          
+                          // 以下是原有的消息气泡构建逻辑...
+                          if (messageIndex < 0 || messageIndex >= state.messages.length) {
+                            return Container(); // 防止越界
+                          }
+                          
+                          // 使用调整后的索引获取消息
+                          final currentMessage = state.messages[messageIndex]; 
+                          // 在reverse模式下，previous实际上是更新的消息
+                          final previousMessage = (messageIndex > 0) 
+                              ? state.messages[messageIndex - 1]
+                              : null;
+
+                          final bool isFirstInList = messageIndex == 0;
+
+                          if (currentMessage.createTime == null) {
+                            print('Error: Message ID ${currentMessage.id} has null createTime.');
+                            return ChatMessageBubble(
+                              key: ValueKey(currentMessage.id), 
+                              message: currentMessage,
+                              currentUserParticipantId: state.currentUserParticipantId,
+                              opponent: state.opponent,
+                            );
+                          }
+
+                          final bool showTimestamp = _shouldShowTimestampSeparator(currentMessage, previousMessage);
+
+                          return Column(
+                            children: [
+                              if (showTimestamp) 
+                                _buildTimestampSeparator(currentMessage.createTime!, isFirstInList),
+                              
+                              ChatMessageBubble(
+                                key: ValueKey(currentMessage.id), 
+                                message: currentMessage,
+                                currentUserParticipantId: state.currentUserParticipantId,
+                                opponent: state.opponent,
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
                   );
                 } else if (state is ChatMessagesError) {
                   return Center(

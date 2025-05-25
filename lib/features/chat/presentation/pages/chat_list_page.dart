@@ -233,6 +233,9 @@ class ChatListPage extends StatelessWidget {
       // Add BlocListener to handle navigation
       body: BlocListener<ChatListBloc, ChatListState>(
         listener: (context, state) {
+          // 获取国际化资源
+          final s = S.of(context);
+          
           if (state.navigateToChatId != null) {
             final chatId = state.navigateToChatId!;
             print('[ChatListPage] BlocListener triggered navigation to chatId: $chatId');
@@ -257,7 +260,7 @@ class ChatListPage extends StatelessWidget {
             });
           }
           // Handle potential error messages from StartAdminChatRequested
-          if (state.status == ChatListStatus.failure && state.errorMessage != null && state.errorMessage!.contains("无法连接到系统管理员")) {
+          if (state.status == ChatListStatus.failure && state.errorMessage != null && state.errorMessage!.contains(s.chat_admin_connection_error)) {
              // Show SnackBar or Dialog with the error
              ScaffoldMessenger.of(context).showSnackBar(
                SnackBar(content: Text(state.errorMessage!)),

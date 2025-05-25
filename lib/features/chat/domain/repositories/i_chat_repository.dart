@@ -11,7 +11,7 @@ abstract class IChatRepository {
   
   /// Fetches the list of messages for a specific chat room.
   /// Implementations should handle marking messages as read implicitly.
-  Future<Either<Failure, List<ChatMessage>>> getMessages(int chatId);
+  Future<Either<Failure, List<ChatMessage>>> getMessages(int chatId, {int pageNum = 1, int pageSize = 20});
 
   /// Fetches details for a specific chat room.
   Future<Either<Failure, ChatRoom>> getRoomDetails(int chatId);

@@ -53,6 +53,8 @@ abstract class IAiChatRepository {
     required int userId,
     required String message,
     required List<String> fileUrls, // URLs of uploaded files
+    List<String>? audioUrls,
+    String? transcription,
   });
 
   /// Fetches related service recommendations for a conversation.
@@ -82,6 +84,15 @@ abstract class IAiChatRepository {
   /// Returns [Either<Failure, String>] where String is the transcribed text.
   Future<Either<Failure, String>> transcribeAudio(
       {required String audioOssUrl, int? userId});
+
+  /// Cancels an ongoing chat generation.
+  /// (Corresponds to /model/chat/cancel endpoint).
+  ///
+  /// Returns [Either<Failure, void>].
+  Future<Either<Failure, void>> cancelChatGeneration({
+    required int conversationId,
+    required int userId,
+  });
 
   // TODO: Consider adding methods for uploading files if that logic belongs here
   // Future<Either<Failure, String>> uploadFile(File file);

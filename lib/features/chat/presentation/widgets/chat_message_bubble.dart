@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
 import 'package:flutter_markdown/flutter_markdown.dart'; // 导入Markdown渲染包
 import 'package:url_launcher/url_launcher.dart'; // 导入URL处理包
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 import '../../domain/entities/chat_message.dart';
 import '../bloc/chat_messages/chat_messages_bloc.dart'; // Import ChatMessagesBloc
@@ -270,9 +271,12 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   }
 
   Widget _buildMessageContent(BuildContext context, Color textColor, bool isCurrentUser, bool isRevoked, String messageContext) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     if (isRevoked) {
         return Text(
-          '消息已撤回',
+          s.chat_message_recalled,
           // Use a more neutral grey for revoked message text
           style: TextStyle(color: Colors.grey[500], fontStyle: FontStyle.italic),
         );
@@ -300,7 +304,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
        return Text(messageContext, style: TextStyle(color: textColor, fontSize: 15));
      } else {
        // Keep handling for unsupported types
-       return Text('[不受支持的消息类型: ${widget.message.type}]', style: TextStyle(color: Colors.red));
+       return Text('[${S.of(context).chat_unknown_message}: ${widget.message.type}]', style: TextStyle(color: Colors.red));
      }
   }
 
@@ -362,7 +366,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                      children: [
                        const Icon(Icons.broken_image, color: Colors.red, size: 40),
                        const SizedBox(height: 8),
-                       const Text('图片加载失败', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                       Text(S.of(context).product_image_loading_failed, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                        const SizedBox(height: 8),
                        // 重试按钮
                        ElevatedButton(
@@ -379,7 +383,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                            padding: const EdgeInsets.symmetric(horizontal: 8),
                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                          ),
-                         child: const Text('重试', style: TextStyle(fontSize: 12)),
+                         child: Text(S.of(context).ai_docs_retry, style: const TextStyle(fontSize: 12)),
                        ),
                      ],
                    ),
@@ -417,7 +421,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(), // Remove extra padding around icon
           onPressed: _playPauseAudio,
-          tooltip: _isPlaying ? '暂停' : '播放',
+          tooltip: _isPlaying ? S.of(context).chat_audio_pause : S.of(context).chat_audio_play,
         ),
         const SizedBox(width: 8), // Space between icon and duration
         // TODO: Add waveform visualization here later
@@ -458,15 +462,18 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
    }
 
    void _showActionMenu(BuildContext context, Offset tapPosition, bool isCurrentUser) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
     final List<PopupMenuEntry<String>> menuItems = [];
 
     if (widget.message.type == 'text') {
-        menuItems.add(const PopupMenuItem<String>(value: 'copy', child: Text('复制')));
+        menuItems.add(PopupMenuItem<String>(value: 'copy', child: Text(s.chat_copy)));
     }
 
     if (isCurrentUser) {
-        menuItems.add(const PopupMenuItem<String>(value: 'revoke', child: Text('撤回')));
+        menuItems.add(PopupMenuItem<String>(value: 'revoke', child: Text(s.chat_recall)));
     }
 
     if (menuItems.isEmpty) return;
@@ -486,7 +493,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
             case 'copy':
                 Clipboard.setData(ClipboardData(text: widget.message.context));
                 ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('已复制到剪贴板')),
+                    SnackBar(content: Text(s.chat_copied_to_clipboard)),
                 );
                 break;
             case 'revoke':
@@ -500,11 +507,14 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
   // 添加一个方法用于获取allocate消息的显示名称
   String _getSellerName() {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
     
     // 如果当前用户是消息发送者（买家），显示"我"
     if (isCurrentUser) {
-      return "我";
+      return s.chat_me;
     }
     
     // 如果当前用户是消息接收者（卖家），显示对方名称（买家）
@@ -513,6 +523,6 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     }
     
     // 如果无法获取对方名称，返回默认值
-    return "买家";
+    return s.chat_buyer;
   }
 } 

@@ -3,6 +3,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../utils/markdown_style_helper.dart';
 import '../../domain/entities/chat_message.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 class AllocateMessageBubble extends StatefulWidget {
   final ChatMessage message;
@@ -28,17 +29,23 @@ class _AllocateMessageBubbleState extends State<AllocateMessageBubble> {
   
   // 根据当前用户是发送者还是接收者生成不同的标题文本
   String get _titleText {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     if (widget.isCurrentUserMessage) {
       // 当前用户是发送者（买家）
-      return "我想让商家看看";
+      return s.chat_i_want_seller_to_see;
     } else {
       // 当前用户是接收者（卖家）
-      return "${widget.sellerName}想看看";
+      return "${widget.sellerName}${s.chat_wants_to_see}";
     }
   }
   
   @override
   Widget build(BuildContext context) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       decoration: BoxDecoration(
@@ -117,7 +124,7 @@ class _AllocateMessageBubbleState extends State<AllocateMessageBubble> {
                     child: Padding(
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
-                        _isExpanded ? "收起" : "展开",
+                        _isExpanded ? s.chat_collapse : s.chat_expand,
                         style: TextStyle(
                           color: Theme.of(context).primaryColor,
                           fontWeight: FontWeight.bold,

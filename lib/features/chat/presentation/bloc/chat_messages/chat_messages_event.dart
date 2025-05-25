@@ -18,6 +18,22 @@ class LoadChatMessages extends ChatMessagesEvent {
   List<Object?> get props => [chatId];
 }
 
+/// Event to load more messages for a specific chat room
+class LoadMoreChatMessages extends ChatMessagesEvent {
+  final int chatId;
+  final int pageNum;
+  final int pageSize;
+
+  const LoadMoreChatMessages({
+    required this.chatId,
+    required this.pageNum,
+    required this.pageSize,
+  });
+
+  @override
+  List<Object?> get props => [chatId, pageNum, pageSize];
+}
+
 /// Event to send a message
 class SendMessageRequested extends ChatMessagesEvent {
   final String type; // 'text', 'image', 'audio'

@@ -54,6 +54,11 @@ class SendVoiceMessage extends AiChatEvent {
   List<Object?> get props => [audioFile];
 }
 
+/// Event triggered when the user wants to cancel ongoing chat generation.
+class CancelChatGeneration extends AiChatEvent {
+  const CancelChatGeneration();
+}
+
 /// Event triggered when the user wants to stop AI generation.
 class CancelStreaming extends AiChatEvent {} // Renamed from StopGeneration
 

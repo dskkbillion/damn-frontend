@@ -32,7 +32,9 @@ mixin _$AiChatMessageModel {
   @JsonKey(fromJson: _filesFromJson)
   List<String> get files =>
       throw _privateConstructorUsedError; // List of OSS URLs
-  int? get timestamp => throw _privateConstructorUsedError;
+  int? get timestamp =>
+      throw _privateConstructorUsedError; // API might return seconds or milliseconds
+  String? get type => throw _privateConstructorUsedError;
 
   /// Serializes this AiChatMessageModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -57,7 +59,8 @@ abstract class $AiChatMessageModelCopyWith<$Res> {
       String role,
       String content,
       @JsonKey(fromJson: _filesFromJson) List<String> files,
-      int? timestamp});
+      int? timestamp,
+      String? type});
 }
 
 /// @nodoc
@@ -82,6 +85,7 @@ class _$AiChatMessageModelCopyWithImpl<$Res, $Val extends AiChatMessageModel>
     Object? content = null,
     Object? files = null,
     Object? timestamp = freezed,
+    Object? type = freezed,
   }) {
     return _then(_value.copyWith(
       id: freezed == id
@@ -112,6 +116,10 @@ class _$AiChatMessageModelCopyWithImpl<$Res, $Val extends AiChatMessageModel>
           ? _value.timestamp
           : timestamp // ignore: cast_nullable_to_non_nullable
               as int?,
+      type: freezed == type
+          ? _value.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -131,7 +139,8 @@ abstract class _$$AiChatMessageModelImplCopyWith<$Res>
       String role,
       String content,
       @JsonKey(fromJson: _filesFromJson) List<String> files,
-      int? timestamp});
+      int? timestamp,
+      String? type});
 }
 
 /// @nodoc
@@ -154,6 +163,7 @@ class __$$AiChatMessageModelImplCopyWithImpl<$Res>
     Object? content = null,
     Object? files = null,
     Object? timestamp = freezed,
+    Object? type = freezed,
   }) {
     return _then(_$AiChatMessageModelImpl(
       id: freezed == id
@@ -184,6 +194,10 @@ class __$$AiChatMessageModelImplCopyWithImpl<$Res>
           ? _value.timestamp
           : timestamp // ignore: cast_nullable_to_non_nullable
               as int?,
+      type: freezed == type
+          ? _value.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -198,7 +212,8 @@ class _$AiChatMessageModelImpl extends _AiChatMessageModel {
       required this.role,
       required this.content,
       @JsonKey(fromJson: _filesFromJson) final List<String> files = const [],
-      this.timestamp})
+      this.timestamp,
+      this.type})
       : _files = files,
         super._();
 
@@ -231,10 +246,13 @@ class _$AiChatMessageModelImpl extends _AiChatMessageModel {
 // List of OSS URLs
   @override
   final int? timestamp;
+// API might return seconds or milliseconds
+  @override
+  final String? type;
 
   @override
   String toString() {
-    return 'AiChatMessageModel(id: $id, messageId: $messageId, conversationId: $conversationId, role: $role, content: $content, files: $files, timestamp: $timestamp)';
+    return 'AiChatMessageModel(id: $id, messageId: $messageId, conversationId: $conversationId, role: $role, content: $content, files: $files, timestamp: $timestamp, type: $type)';
   }
 
   @override
@@ -251,13 +269,22 @@ class _$AiChatMessageModelImpl extends _AiChatMessageModel {
             (identical(other.content, content) || other.content == content) &&
             const DeepCollectionEquality().equals(other._files, _files) &&
             (identical(other.timestamp, timestamp) ||
-                other.timestamp == timestamp));
+                other.timestamp == timestamp) &&
+            (identical(other.type, type) || other.type == type));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, messageId, conversationId,
-      role, content, const DeepCollectionEquality().hash(_files), timestamp);
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      messageId,
+      conversationId,
+      role,
+      content,
+      const DeepCollectionEquality().hash(_files),
+      timestamp,
+      type);
 
   /// Create a copy of AiChatMessageModel
   /// with the given fields replaced by the non-null parameter values.
@@ -284,7 +311,8 @@ abstract class _AiChatMessageModel extends AiChatMessageModel {
       required final String role,
       required final String content,
       @JsonKey(fromJson: _filesFromJson) final List<String> files,
-      final int? timestamp}) = _$AiChatMessageModelImpl;
+      final int? timestamp,
+      final String? type}) = _$AiChatMessageModelImpl;
   const _AiChatMessageModel._() : super._();
 
   factory _AiChatMessageModel.fromJson(Map<String, dynamic> json) =
@@ -306,7 +334,9 @@ abstract class _AiChatMessageModel extends AiChatMessageModel {
   @JsonKey(fromJson: _filesFromJson)
   List<String> get files; // List of OSS URLs
   @override
-  int? get timestamp;
+  int? get timestamp; // API might return seconds or milliseconds
+  @override
+  String? get type;
 
   /// Create a copy of AiChatMessageModel
   /// with the given fields replaced by the non-null parameter values.

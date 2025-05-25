@@ -125,9 +125,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "allocating_step2": MessageLookupByLibrary.simpleMessage("分发中."),
     "allocating_step3": MessageLookupByLibrary.simpleMessage("分发中.."),
     "allocating_step4": MessageLookupByLibrary.simpleMessage("分发中..."),
+    "chat_admin_connection_error": MessageLookupByLibrary.simpleMessage(
+      "无法连接到系统管理员",
+    ),
     "chat_admin_title": MessageLookupByLibrary.simpleMessage("系统管理员"),
     "chat_attach": MessageLookupByLibrary.simpleMessage("发送图片/文件"),
     "chat_audio_message": MessageLookupByLibrary.simpleMessage("[语音]"),
+    "chat_audio_pause": MessageLookupByLibrary.simpleMessage("暂停"),
+    "chat_audio_play": MessageLookupByLibrary.simpleMessage("播放"),
+    "chat_buyer": MessageLookupByLibrary.simpleMessage("买家"),
     "chat_camera_permission_denied": MessageLookupByLibrary.simpleMessage(
       "未获得相机权限，无法拍照",
     ),
@@ -136,13 +142,57 @@ class MessageLookup extends MessageLookupByLibrary {
     "chat_camera_permission_denied_title": MessageLookupByLibrary.simpleMessage(
       "相机权限已被禁用",
     ),
+    "chat_collapse": MessageLookupByLibrary.simpleMessage("收起"),
+    "chat_copied_to_clipboard": MessageLookupByLibrary.simpleMessage("已复制到剪贴板"),
+    "chat_copy": MessageLookupByLibrary.simpleMessage("复制"),
     "chat_enter_message": MessageLookupByLibrary.simpleMessage("输入消息..."),
     "chat_error_loading": m4,
+    "chat_expand": MessageLookupByLibrary.simpleMessage("展开"),
+    "chat_i_want_seller_to_see": MessageLookupByLibrary.simpleMessage(
+      "我想让商家看看",
+    ),
     "chat_image_message": MessageLookupByLibrary.simpleMessage("[图片]"),
     "chat_image_picking_error": m5,
     "chat_invalid_session": MessageLookupByLibrary.simpleMessage("无效的会话"),
     "chat_list_title": MessageLookupByLibrary.simpleMessage("聊天列表"),
     "chat_loading": MessageLookupByLibrary.simpleMessage("正在加载..."),
+    "chat_markdown_example_bold_italic": MessageLookupByLibrary.simpleMessage(
+      "这是**粗体**文本和*斜体*文本。",
+    ),
+    "chat_markdown_example_list1": MessageLookupByLibrary.simpleMessage(
+      "这是列表项1",
+    ),
+    "chat_markdown_example_list2": MessageLookupByLibrary.simpleMessage(
+      "这是列表项2",
+    ),
+    "chat_markdown_example_list3": MessageLookupByLibrary.simpleMessage(
+      "这是嵌套列表项",
+    ),
+    "chat_markdown_example_quote": MessageLookupByLibrary.simpleMessage(
+      "这是引用文本，支持多行显示",
+    ),
+    "chat_markdown_example_table_col1": MessageLookupByLibrary.simpleMessage(
+      "列1",
+    ),
+    "chat_markdown_example_table_col2": MessageLookupByLibrary.simpleMessage(
+      "列2",
+    ),
+    "chat_markdown_example_table_content1":
+        MessageLookupByLibrary.simpleMessage("内容1"),
+    "chat_markdown_example_table_content2":
+        MessageLookupByLibrary.simpleMessage("内容2"),
+    "chat_markdown_example_table_content3":
+        MessageLookupByLibrary.simpleMessage("内容3"),
+    "chat_markdown_example_table_content4":
+        MessageLookupByLibrary.simpleMessage("内容4"),
+    "chat_markdown_example_title1": MessageLookupByLibrary.simpleMessage(
+      "这是一级标题",
+    ),
+    "chat_markdown_example_title2": MessageLookupByLibrary.simpleMessage(
+      "这是二级标题",
+    ),
+    "chat_me": MessageLookupByLibrary.simpleMessage("我"),
+    "chat_message_recalled": MessageLookupByLibrary.simpleMessage("消息已撤回"),
     "chat_mic_permission_denied": MessageLookupByLibrary.simpleMessage(
       "未获得麦克风权限，无法录音",
     ),
@@ -164,6 +214,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "chat_pick_from_gallery": MessageLookupByLibrary.simpleMessage("从相册选择"),
     "chat_press_to_talk": MessageLookupByLibrary.simpleMessage("按住 说话"),
+    "chat_recall": MessageLookupByLibrary.simpleMessage("撤回"),
     "chat_recording_error": m6,
     "chat_release_to_send": m7,
     "chat_revoked_message": MessageLookupByLibrary.simpleMessage("[消息已撤回]"),
@@ -175,6 +226,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "chat_take_photo": MessageLookupByLibrary.simpleMessage("拍照"),
     "chat_unknown_message": MessageLookupByLibrary.simpleMessage("[未知消息]"),
     "chat_unknown_user": MessageLookupByLibrary.simpleMessage("未知用户"),
+    "chat_wants_to_see": MessageLookupByLibrary.simpleMessage("想看看"),
     "chat_web_recording_not_supported": MessageLookupByLibrary.simpleMessage(
       "Web 平台暂不支持录音功能",
     ),

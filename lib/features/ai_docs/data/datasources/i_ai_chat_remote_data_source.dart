@@ -63,6 +63,8 @@ abstract class IAiChatRemoteDataSource {
   /// [userId] The current user ID.
   /// [message] The text message content.
   /// [fileUrls] List of file URLs (should be valid OSS URLs).
+  /// [audioUrls] List of audio URLs for voice messages.
+  /// [transcription] Pre-transcribed text for audio messages.
   ///
   /// Throws specific exceptions on connection failure.
   /// Returns a [Stream] of raw SSE event data strings.
@@ -72,6 +74,8 @@ abstract class IAiChatRemoteDataSource {
     required int userId,
     required String message,
     required List<String> fileUrls,
+    List<String>? audioUrls,
+    String? transcription,
   });
 
   /// Fetches related service recommendations from `/recsys/conversation/recommend`.
@@ -113,5 +117,17 @@ abstract class IAiChatRemoteDataSource {
   Future<String> transcribeAudio({
     required String audioOssUrl,
     int? userId, 
+  });
+
+  /// Cancels an ongoing chat generation via the `/model/chat/cancel` endpoint.
+  ///
+  /// [conversationId] The ID of the conversation to cancel.
+  /// [userId] The ID of the user requesting the cancellation.
+  ///
+  /// Throws specific exceptions on failure.
+  /// Returns `void` on success.
+  Future<void> cancelChatGeneration({
+    required int conversationId,
+    required int userId,
   });
 } 
