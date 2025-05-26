@@ -49,11 +49,47 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m13(error) => "Loading failed: ${error}";
 
-  static String m14(error) => "Unable to navigate to order list: ${error}";
+  static String m14(count) => "Reviews (${count})";
 
-  static String m15(error) => "Unable to switch to seller mode: ${error}";
+  static String m15(count) => "${count} days ago";
 
-  static String m16(error) => "Search failed: ${error}";
+  static String m16(count) => "${count} hours ago";
+
+  static String m17(error) => "Loading failed: ${error}";
+
+  static String m18(count) => "${count} minutes ago";
+
+  static String m19(count) => "${count} months ago";
+
+  static String m20(count) => "${count} years ago";
+
+  static String m21(error) => "Loading failed: ${error}";
+
+  static String m22(error) => "Unable to navigate to order list: ${error}";
+
+  static String m23(error) => "Unable to switch to seller mode: ${error}";
+
+  static String m24(error) => "Search failed: ${error}";
+
+  static String m25(rate) => "Completion Rate ${rate}%";
+
+  static String m26(error) => "Unable to switch to buyer mode: ${error}";
+
+  static String m27(error) => "Failed to create chat: ${error}";
+
+  static String m28(error) => "Error occurred: ${error}";
+
+  static String m29(feature) => "${feature} feature not yet implemented";
+
+  static String m30(count) => "${count} followers";
+
+  static String m31(days) => "Level 3 Seller for ${days} days";
+
+  static String m32(orderNum) => "Complete ${orderNum} orders";
+
+  static String m33(error) => "Loading failed: ${error}";
+
+  static String m34(amount) => "Earn \$${amount}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -306,12 +342,74 @@ class MessageLookup extends MessageLookupByLibrary {
     "nav_seller_products": MessageLookupByLibrary.simpleMessage("Products"),
     "nav_seller_profile": MessageLookupByLibrary.simpleMessage("Profile"),
     "product_default_name": MessageLookupByLibrary.simpleMessage("Product"),
+    "product_detail_basic_package": MessageLookupByLibrary.simpleMessage(
+      "Basic",
+    ),
+    "product_detail_buy_now": MessageLookupByLibrary.simpleMessage(
+      "Buy Now (1)",
+    ),
+    "product_detail_case_showcase": MessageLookupByLibrary.simpleMessage(
+      "Case Showcase",
+    ),
+    "product_detail_contact_seller": MessageLookupByLibrary.simpleMessage(
+      "Contact Seller",
+    ),
+    "product_detail_delivery_period": MessageLookupByLibrary.simpleMessage(
+      "Delivery Period",
+    ),
+    "product_detail_delivery_times": MessageLookupByLibrary.simpleMessage(
+      "Delivery Times",
+    ),
+    "product_detail_faq": MessageLookupByLibrary.simpleMessage("FAQ"),
+    "product_detail_loading_failed": m13,
+    "product_detail_more": MessageLookupByLibrary.simpleMessage("More"),
+    "product_detail_no_cases": MessageLookupByLibrary.simpleMessage(
+      "No cases available",
+    ),
+    "product_detail_no_reviews": MessageLookupByLibrary.simpleMessage(
+      "No reviews yet",
+    ),
+    "product_detail_please_wait": MessageLookupByLibrary.simpleMessage(
+      "Please wait...",
+    ),
+    "product_detail_published_status": MessageLookupByLibrary.simpleMessage(
+      "Published",
+    ),
+    "product_detail_retry": MessageLookupByLibrary.simpleMessage("Retry"),
+    "product_detail_reviews": m14,
+    "product_detail_sample_review": MessageLookupByLibrary.simpleMessage(
+      "Great service, very patient",
+    ),
+    "product_detail_sample_user": MessageLookupByLibrary.simpleMessage(
+      "Ray123",
+    ),
+    "product_detail_verified_label": MessageLookupByLibrary.simpleMessage(
+      "Verified",
+    ),
+    "product_detail_view_all": MessageLookupByLibrary.simpleMessage("View All"),
     "product_image_loading_failed": MessageLookupByLibrary.simpleMessage(
       "Image loading failed",
     ),
     "product_recommend_button": MessageLookupByLibrary.simpleMessage(
       "Let them see",
     ),
+    "product_reviews_days_ago": m15,
+    "product_reviews_hours_ago": m16,
+    "product_reviews_just_now": MessageLookupByLibrary.simpleMessage(
+      "Just now",
+    ),
+    "product_reviews_loading_failed": m17,
+    "product_reviews_minutes_ago": m18,
+    "product_reviews_months_ago": m19,
+    "product_reviews_no_reviews": MessageLookupByLibrary.simpleMessage(
+      "No reviews yet",
+    ),
+    "product_reviews_retry": MessageLookupByLibrary.simpleMessage("Retry"),
+    "product_reviews_sample_content": MessageLookupByLibrary.simpleMessage(
+      "Great service, very patient",
+    ),
+    "product_reviews_title": MessageLookupByLibrary.simpleMessage("Reviews"),
+    "product_reviews_years_ago": m20,
     "profile_about_us": MessageLookupByLibrary.simpleMessage("About Us"),
     "profile_account_security": MessageLookupByLibrary.simpleMessage(
       "Account & Security",
@@ -327,7 +425,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "profile_favorites": MessageLookupByLibrary.simpleMessage("Favorites"),
     "profile_in_progress": MessageLookupByLibrary.simpleMessage("Processing"),
-    "profile_loading_error": m13,
+    "profile_loading_error": m21,
     "profile_login_button": MessageLookupByLibrary.simpleMessage("Login"),
     "profile_login_prompt": MessageLookupByLibrary.simpleMessage(
       "Please login to view your profile",
@@ -337,7 +435,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "profile_my_dskk": MessageLookupByLibrary.simpleMessage("My DSKK"),
     "profile_my_wallet": MessageLookupByLibrary.simpleMessage("My Wallet"),
-    "profile_navigation_error": m14,
+    "profile_navigation_error": m22,
     "profile_nickname_hint": MessageLookupByLibrary.simpleMessage(
       "Please enter new nickname",
     ),
@@ -351,19 +449,226 @@ class MessageLookup extends MessageLookupByLibrary {
     "profile_refund": MessageLookupByLibrary.simpleMessage("Support"),
     "profile_save": MessageLookupByLibrary.simpleMessage("Save"),
     "profile_settings": MessageLookupByLibrary.simpleMessage("Settings"),
-    "profile_switch_error": m15,
+    "profile_switch_error": m23,
     "profile_switch_to_seller": MessageLookupByLibrary.simpleMessage(
       "Switch to Seller Mode",
     ),
     "profile_wallet": MessageLookupByLibrary.simpleMessage("Wallet"),
     "search_button": MessageLookupByLibrary.simpleMessage("Search"),
-    "search_failed": m16,
+    "search_failed": m24,
     "search_history": MessageLookupByLibrary.simpleMessage("Search History"),
     "search_hot_keywords": MessageLookupByLibrary.simpleMessage("Hot Keywords"),
     "search_no_results": MessageLookupByLibrary.simpleMessage(
       "No relevant services found",
     ),
     "search_title": MessageLookupByLibrary.simpleMessage("Search"),
+    "seller_home_auth_management": MessageLookupByLibrary.simpleMessage("Auth"),
+    "seller_home_auto_reply": MessageLookupByLibrary.simpleMessage(
+      "Auto Reply",
+    ),
+    "seller_home_completion_rate": m25,
+    "seller_home_functions": MessageLookupByLibrary.simpleMessage("Tools"),
+    "seller_home_income": MessageLookupByLibrary.simpleMessage("Revenue"),
+    "seller_home_loading_failed": MessageLookupByLibrary.simpleMessage(
+      "Loading failed",
+    ),
+    "seller_home_no_data": MessageLookupByLibrary.simpleMessage("No data"),
+    "seller_home_no_income_data": MessageLookupByLibrary.simpleMessage(
+      "No revenue data",
+    ),
+    "seller_home_no_recent_income": MessageLookupByLibrary.simpleMessage(
+      "No recent revenue data",
+    ),
+    "seller_home_no_store_info": MessageLookupByLibrary.simpleMessage(
+      "No store information",
+    ),
+    "seller_home_offline": MessageLookupByLibrary.simpleMessage("Offline"),
+    "seller_home_online": MessageLookupByLibrary.simpleMessage("Online"),
+    "seller_home_orders": MessageLookupByLibrary.simpleMessage("Orders"),
+    "seller_home_orders_aftersales": MessageLookupByLibrary.simpleMessage(
+      "Support",
+    ),
+    "seller_home_orders_all": MessageLookupByLibrary.simpleMessage("All"),
+    "seller_home_orders_pending": MessageLookupByLibrary.simpleMessage(
+      "Pending",
+    ),
+    "seller_home_orders_processing": MessageLookupByLibrary.simpleMessage(
+      "Active",
+    ),
+    "seller_home_pending_settlement": MessageLookupByLibrary.simpleMessage(
+      "Pending",
+    ),
+    "seller_home_recent_income": MessageLookupByLibrary.simpleMessage(
+      "Recent Revenue",
+    ),
+    "seller_home_switch_failed": m26,
+    "seller_home_switch_to_buyer": MessageLookupByLibrary.simpleMessage(
+      "Switch to Buyer Mode",
+    ),
+    "seller_home_time_management": MessageLookupByLibrary.simpleMessage(
+      "Schedule",
+    ),
+    "seller_home_today_income": MessageLookupByLibrary.simpleMessage("Today"),
+    "seller_home_total_income": MessageLookupByLibrary.simpleMessage("Total"),
+    "seller_home_view_all": MessageLookupByLibrary.simpleMessage("View All"),
+    "seller_home_view_details": MessageLookupByLibrary.simpleMessage("Details"),
+    "seller_home_wallet": MessageLookupByLibrary.simpleMessage("Wallet"),
+    "seller_profile_about_merchant": MessageLookupByLibrary.simpleMessage(
+      "About Merchant",
+    ),
+    "seller_profile_about_us": MessageLookupByLibrary.simpleMessage("About"),
+    "seller_profile_auth_management": MessageLookupByLibrary.simpleMessage(
+      "Auth",
+    ),
+    "seller_profile_buyer_mode": MessageLookupByLibrary.simpleMessage(
+      "Buyer Mode",
+    ),
+    "seller_profile_certification_status": MessageLookupByLibrary.simpleMessage(
+      "Certification Status",
+    ),
+    "seller_profile_certified": MessageLookupByLibrary.simpleMessage(
+      "Certified",
+    ),
+    "seller_profile_chat_failed": m27,
+    "seller_profile_default_title": MessageLookupByLibrary.simpleMessage(
+      "Seller Profile",
+    ),
+    "seller_profile_error_occurred": m28,
+    "seller_profile_feature_not_implemented": m29,
+    "seller_profile_follow": MessageLookupByLibrary.simpleMessage("Follow"),
+    "seller_profile_follow_success": MessageLookupByLibrary.simpleMessage(
+      "Followed successfully",
+    ),
+    "seller_profile_followed": MessageLookupByLibrary.simpleMessage(
+      "Following",
+    ),
+    "seller_profile_followers": m30,
+    "seller_profile_image_load_failed": MessageLookupByLibrary.simpleMessage(
+      "Image loading failed",
+    ),
+    "seller_profile_level_two": MessageLookupByLibrary.simpleMessage(
+      "Level 2 Member",
+    ),
+    "seller_profile_member_level": MessageLookupByLibrary.simpleMessage(
+      "Member Level",
+    ),
+    "seller_profile_mission": MessageLookupByLibrary.simpleMessage("Mission"),
+    "seller_profile_my_orders": MessageLookupByLibrary.simpleMessage(
+      "My Orders",
+    ),
+    "seller_profile_my_services": MessageLookupByLibrary.simpleMessage(
+      "My Services",
+    ),
+    "seller_profile_my_wallet": MessageLookupByLibrary.simpleMessage("Wallet"),
+    "seller_profile_no_description": MessageLookupByLibrary.simpleMessage(
+      "No description",
+    ),
+    "seller_profile_no_image": MessageLookupByLibrary.simpleMessage("No image"),
+    "seller_profile_no_merchant_info": MessageLookupByLibrary.simpleMessage(
+      "No merchant information",
+    ),
+    "seller_profile_no_products": MessageLookupByLibrary.simpleMessage(
+      "No products",
+    ),
+    "seller_profile_not_certified": MessageLookupByLibrary.simpleMessage(
+      "Not Certified",
+    ),
+    "seller_profile_notifications": MessageLookupByLibrary.simpleMessage(
+      "Notifications",
+    ),
+    "seller_profile_order_delivered": MessageLookupByLibrary.simpleMessage(
+      "Delivered",
+    ),
+    "seller_profile_order_pending": MessageLookupByLibrary.simpleMessage(
+      "Pending",
+    ),
+    "seller_profile_order_processing": MessageLookupByLibrary.simpleMessage(
+      "Processing",
+    ),
+    "seller_profile_order_refund": MessageLookupByLibrary.simpleMessage(
+      "Refund/Support",
+    ),
+    "seller_profile_response_hours": MessageLookupByLibrary.simpleMessage(
+      "3 hours",
+    ),
+    "seller_profile_response_time": MessageLookupByLibrary.simpleMessage(
+      "Response Time",
+    ),
+    "seller_profile_seller": MessageLookupByLibrary.simpleMessage("Seller"),
+    "seller_profile_seller_mode": MessageLookupByLibrary.simpleMessage(
+      "Seller Mode",
+    ),
+    "seller_profile_seller_mode_online": MessageLookupByLibrary.simpleMessage(
+      "Seller Mode: Online",
+    ),
+    "seller_profile_seller_rating": MessageLookupByLibrary.simpleMessage(
+      "Seller Rating",
+    ),
+    "seller_profile_settings": MessageLookupByLibrary.simpleMessage("Settings"),
+    "seller_profile_time_management": MessageLookupByLibrary.simpleMessage(
+      "Schedule",
+    ),
+    "seller_profile_title": MessageLookupByLibrary.simpleMessage("Profile"),
+    "seller_profile_unfollow_success": MessageLookupByLibrary.simpleMessage(
+      "Unfollowed successfully",
+    ),
+    "seller_profile_user_name": MessageLookupByLibrary.simpleMessage("Ray"),
+    "seller_statistics_active_orders": MessageLookupByLibrary.simpleMessage(
+      "Active Orders",
+    ),
+    "seller_statistics_become_level3_seller": m31,
+    "seller_statistics_complete_orders": m32,
+    "seller_statistics_completion_rate": MessageLookupByLibrary.simpleMessage(
+      "Completion",
+    ),
+    "seller_statistics_earliest": MessageLookupByLibrary.simpleMessage(
+      "Earliest",
+    ),
+    "seller_statistics_heat_value": MessageLookupByLibrary.simpleMessage(
+      "Heat",
+    ),
+    "seller_statistics_incomplete_orders": MessageLookupByLibrary.simpleMessage(
+      "Incomplete Orders",
+    ),
+    "seller_statistics_indicators": MessageLookupByLibrary.simpleMessage(
+      "Metrics",
+    ),
+    "seller_statistics_loading_failed": m33,
+    "seller_statistics_monthly_earnings": MessageLookupByLibrary.simpleMessage(
+      "Monthly Revenue",
+    ),
+    "seller_statistics_next_delivery_date":
+        MessageLookupByLibrary.simpleMessage("Next Delivery"),
+    "seller_statistics_pending": MessageLookupByLibrary.simpleMessage(
+      "Pending",
+    ),
+    "seller_statistics_pending_completion":
+        MessageLookupByLibrary.simpleMessage("Pending"),
+    "seller_statistics_positive_rate": MessageLookupByLibrary.simpleMessage(
+      "Rating",
+    ),
+    "seller_statistics_profit_amount": m34,
+    "seller_statistics_receipt": MessageLookupByLibrary.simpleMessage(
+      "Receipt",
+    ),
+    "seller_statistics_reply_rate": MessageLookupByLibrary.simpleMessage(
+      "Reply Rate",
+    ),
+    "seller_statistics_retry": MessageLookupByLibrary.simpleMessage("Retry"),
+    "seller_statistics_seller_homepage": MessageLookupByLibrary.simpleMessage(
+      "Seller Profile",
+    ),
+    "seller_statistics_title": MessageLookupByLibrary.simpleMessage(
+      "Analytics",
+    ),
+    "seller_statistics_total_earnings": MessageLookupByLibrary.simpleMessage(
+      "Total Revenue",
+    ),
+    "seller_statistics_total_orders": MessageLookupByLibrary.simpleMessage(
+      "Total Orders",
+    ),
+    "seller_statistics_upgrade_to_next_level":
+        MessageLookupByLibrary.simpleMessage("Upgrade to Next Level"),
     "system_language": MessageLookupByLibrary.simpleMessage("System Language"),
     "system_language_description": MessageLookupByLibrary.simpleMessage(
       "Automatically use device language settings",

@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SellerProfilePage extends StatefulWidget {
+// 导入国际化
+import '../../../../generated/l10n.dart';
+
+class SellerProfilePage extends ConsumerStatefulWidget {
   final VoidCallback? onSwitchToBuyer;
 
   const SellerProfilePage({Key? key, this.onSwitchToBuyer}) : super(key: key);
 
   @override
-  State<SellerProfilePage> createState() => _SellerProfilePageState();
+  ConsumerState<SellerProfilePage> createState() => _SellerProfilePageState();
 }
 
-class _SellerProfilePageState extends State<SellerProfilePage> {
+class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
   // 卖家模式开关
   bool _sellerModeOn = true;
 
@@ -25,15 +29,15 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                 child: Column(
                   children: [
                     _buildOrderSection(),
-                    _buildMenuSection('认证管理', Icons.verified_user, ''),
-                    _buildMenuSection('我的钱包', Icons.account_balance_wallet_outlined, ''),
-                    _buildMenuSection('时间管理', Icons.access_time_outlined, ''),
+                    _buildMenuSection(S.of(context).seller_profile_auth_management, Icons.verified_user, ''),
+                    _buildMenuSection(S.of(context).seller_profile_my_wallet, Icons.account_balance_wallet_outlined, ''),
+                    _buildMenuSection(S.of(context).seller_profile_time_management, Icons.access_time_outlined, ''),
                     const SizedBox(height: 10),
-                    _buildSectionTitle('设置'),
-                    _buildMenuSection('消息通知', Icons.notifications_none_outlined, ''),
+                    _buildSectionTitle(S.of(context).seller_profile_settings),
+                    _buildMenuSection(S.of(context).seller_profile_notifications, Icons.notifications_none_outlined, ''),
                     const SizedBox(height: 10),
-                    _buildSectionTitle('关于我们'),
-                    _buildMenuSection('小粽子的使命', Icons.emoji_objects_outlined, ''),
+                    _buildSectionTitle(S.of(context).seller_profile_about_us),
+                    _buildMenuSection(S.of(context).seller_profile_mission, Icons.emoji_objects_outlined, ''),
                   ],
                 ),
               ),
@@ -74,39 +78,38 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
               ),
               const SizedBox(width: 16),
               // 用户信息
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '瑞',  // 用户名
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      S.of(context).seller_profile_user_name,  // 用户名
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: Colors.green,
-                          shape: BoxShape.circle,
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        S.of(context).seller_profile_seller_mode_online,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
                         ),
                       ),
-                      const SizedBox(width: 6),
-                      const Text(
-                        '卖家模式：在线',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -122,7 +125,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  _sellerModeOn ? '卖家模式' : '买家模式',
+                  _sellerModeOn ? S.of(context).seller_profile_seller_mode : S.of(context).seller_profile_buyer_mode,
                   style: const TextStyle(
                     color: Color(0xFF333333),
                     fontSize: 16,
@@ -168,21 +171,22 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '我的订单',
-            style: TextStyle(
+          Text(
+            S.of(context).seller_profile_my_orders,
+            style: const TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF333333),
             ),
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildOrderStatusItem(Icons.attach_money, '待确认', 0),
-              _buildOrderStatusItem(Icons.sync, '进行中', 0),
-              _buildOrderStatusItem(Icons.check_circle_outline, '已交付', 0),
-              _buildOrderStatusItem(Icons.assignment_return_outlined, '退款/售后', 0),
+              _buildOrderStatusItem(Icons.attach_money, S.of(context).seller_profile_order_pending, 0),
+              _buildOrderStatusItem(Icons.sync, S.of(context).seller_profile_order_processing, 0),
+              _buildOrderStatusItem(Icons.check_circle_outline, S.of(context).seller_profile_order_delivered, 0),
+              _buildOrderStatusItem(Icons.assignment_return_outlined, S.of(context).seller_profile_order_refund, 0),
             ],
           ),
         ],
@@ -314,7 +318,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
 
   void _showNotImplemented(String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$feature功能尚未实现')),
+      SnackBar(content: Text(S.of(context).seller_profile_feature_not_implemented(feature))),
     );
   }
 }

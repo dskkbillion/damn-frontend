@@ -321,5 +321,277 @@
           "example": "网络错误"
         }
       }
-    }
+    },
+    
+    "product_detail_loading_failed": "加载失败: {error}",
+    "@product_detail_loading_failed": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "网络错误"
+        }
+      }
+    },
+    "product_detail_retry": "重试",
+    "product_detail_please_wait": "请稍等...",
+    "product_detail_contact_seller": "咨询卖家",
+    "product_detail_verified_label": "已认证",
+    "product_detail_published_status": "已发布",
+    "product_detail_more": "更多",
+    "product_detail_delivery_times": "交付次数",
+    "product_detail_delivery_period": "交付周期",
+    "product_detail_buy_now": "一键购买(1)",
+    "product_detail_faq": "常见问题",
+    "product_detail_case_showcase": "案例展示",
+    "product_detail_no_cases": "暂无案例展示",
+    "product_detail_reviews": "评论({count})",
+    "@product_detail_reviews": {
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "5"
+        }
+      }
+    },
+    "product_detail_view_all": "查看全部",
+    "product_detail_no_reviews": "暂无评价",
+    "product_detail_basic_package": "基础",
+    "product_detail_sample_review": "不错，很有耐心",
+    "product_detail_sample_user": "瑞123",
+    
+    "product_reviews_title": "评论",
+    "product_reviews_loading_failed": "加载失败: {error}",
+    "@product_reviews_loading_failed": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "网络错误"
+        }
+      }
+    },
+    "product_reviews_retry": "重试",
+    "product_reviews_no_reviews": "暂无评论",
+    "product_reviews_sample_content": "不错，很有耐心",
+    "product_reviews_years_ago": "{count}年前",
+    "@product_reviews_years_ago": {
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "2"
+        }
+      }
+    },
+    "product_reviews_months_ago": "{count}月前",
+    "@product_reviews_months_ago": {
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "3"
+        }
+      }
+    },
+    "product_reviews_days_ago": "{count}天前",
+    "@product_reviews_days_ago": {
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "5"
+        }
+      }
+    },
+    "product_reviews_hours_ago": "{count}小时前",
+    "@product_reviews_hours_ago": {
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "2"
+        }
+      }
+    },
+    "product_reviews_minutes_ago": "{count}分钟前",
+    "@product_reviews_minutes_ago": {
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "30"
+        }
+      }
+    },
+    "product_reviews_just_now": "刚刚",
+    
+    "seller_profile_default_title": "卖家主页",
+    "seller_profile_seller": "卖家",
+    "seller_profile_no_description": "暂无简介",
+    "seller_profile_followers": "{count}粉丝",
+    "@seller_profile_followers": {
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "2"
+        }
+      }
+    },
+    "seller_profile_followed": "已关注",
+    "seller_profile_follow": "关注",
+    "seller_profile_unfollow_success": "取消关注成功",
+    "seller_profile_follow_success": "关注成功",
+    "seller_profile_chat_failed": "创建聊天失败: {error}",
+    "@seller_profile_chat_failed": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "网络错误"
+        }
+      }
+    },
+    "seller_profile_error_occurred": "发生错误: {error}",
+    "@seller_profile_error_occurred": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "网络错误"
+        }
+      }
+    },
+    "seller_profile_about_merchant": "关于商家",
+    "seller_profile_my_services": "我的服务",
+    "seller_profile_no_merchant_info": "暂无商家信息",
+    "seller_profile_member_level": "会员等级",
+    "seller_profile_level_two": "二级会员",
+    "seller_profile_seller_rating": "卖家评分",
+    "seller_profile_response_time": "回应时间",
+    "seller_profile_response_hours": "3小时",
+    "seller_profile_certification_status": "认证状态",
+    "seller_profile_certified": "已认证",
+    "seller_profile_not_certified": "未认证",
+    "seller_profile_no_products": "暂无商品",
+    "seller_profile_image_load_failed": "图片加载失败",
+    "seller_profile_no_image": "暂无图片",
+    
+    "seller_profile_title": "我的",
+    "seller_profile_auth_management": "认证管理",
+    "seller_profile_my_wallet": "我的钱包",
+    "seller_profile_time_management": "时间管理",
+    "seller_profile_settings": "设置",
+    "seller_profile_notifications": "消息通知",
+    "seller_profile_about_us": "关于我们",
+    "seller_profile_mission": "小粽子的使命",
+    "seller_profile_user_name": "瑞",
+    "seller_profile_seller_mode_online": "卖家模式：在线",
+    "seller_profile_seller_mode": "卖家模式",
+    "seller_profile_buyer_mode": "买家模式",
+    "seller_profile_my_orders": "我的订单",
+    "seller_profile_order_pending": "待确认",
+    "seller_profile_order_processing": "进行中",
+    "seller_profile_order_delivered": "已交付",
+    "seller_profile_order_refund": "退款/售后",
+    "seller_profile_feature_not_implemented": "{feature}功能尚未实现",
+    "@seller_profile_feature_not_implemented": {
+      "placeholders": {
+        "feature": {
+          "type": "String",
+          "example": "认证管理"
+        }
+      }
+    },
+    
+    "seller_home_loading_failed": "加载失败",
+    "seller_home_no_data": "暂无数据",
+    "seller_home_no_store_info": "暂无店铺信息",
+    "seller_home_online": "在线",
+    "seller_home_offline": "离线",
+    "seller_home_completion_rate": "完成率 {rate}%",
+    "@seller_home_completion_rate": {
+      "placeholders": {
+        "rate": {
+          "type": "String",
+          "example": "95.5"
+        }
+      }
+    },
+    "seller_home_switch_to_buyer": "切换到买家模式",
+    "seller_home_switch_failed": "无法切换到买家模式: {error}",
+    "@seller_home_switch_failed": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "网络错误"
+        }
+      }
+    },
+    "seller_home_income": "收入",
+    "seller_home_view_details": "查看明细",
+    "seller_home_total_income": "总收入",
+    "seller_home_today_income": "今日收入",
+    "seller_home_pending_settlement": "待结算",
+    "seller_home_orders": "订单",
+    "seller_home_view_all": "查看全部",
+    "seller_home_orders_all": "全部",
+    "seller_home_orders_pending": "待确认",
+    "seller_home_orders_processing": "进行中",
+    "seller_home_orders_aftersales": "售后中",
+    "seller_home_functions": "功能",
+    "seller_home_wallet": "钱包",
+    "seller_home_auth_management": "认证管理",
+    "seller_home_time_management": "时间管理",
+    "seller_home_auto_reply": "自动回复",
+    "seller_home_recent_income": "近期收入",
+    "seller_home_no_recent_income": "暂无近期收入数据",
+    "seller_home_no_income_data": "暂无收入数据",
+    
+    "seller_statistics_title": "卖家数据",
+    "seller_statistics_seller_homepage": "卖家主页",
+    "seller_statistics_heat_value": "热度值",
+    "seller_statistics_reply_rate": "回复率",
+    "seller_statistics_completion_rate": "完成率",
+    "seller_statistics_positive_rate": "好评率",
+    "seller_statistics_upgrade_to_next_level": "升到下一级",
+    "seller_statistics_become_level3_seller": "成为三级会员卖家{days}天",
+    "@seller_statistics_become_level3_seller": {
+      "placeholders": {
+        "days": {
+          "type": "String",
+          "example": "30"
+        }
+      }
+    },
+    "seller_statistics_complete_orders": "完成订单{orderNum}笔",
+    "@seller_statistics_complete_orders": {
+      "placeholders": {
+        "orderNum": {
+          "type": "String",
+          "example": "10"
+        }
+      }
+    },
+    "seller_statistics_profit_amount": "盈利{amount}元",
+    "@seller_statistics_profit_amount": {
+      "placeholders": {
+        "amount": {
+          "type": "String",
+          "example": "1000.00"
+        }
+      }
+    },
+    "seller_statistics_indicators": "指标",
+    "seller_statistics_total_earnings": "总盈利",
+    "seller_statistics_monthly_earnings": "本月盈利",
+    "seller_statistics_total_orders": "总订单数",
+    "seller_statistics_active_orders": "活跃订单数",
+    "seller_statistics_pending": "待处理",
+    "seller_statistics_incomplete_orders": "未完成订单数",
+    "seller_statistics_pending_completion": "待完成",
+    "seller_statistics_receipt": "回单",
+    "seller_statistics_next_delivery_date": "距离下次邀交日",
+    "seller_statistics_earliest": "最早",
+    "seller_statistics_loading_failed": "加载失败: {error}",
+    "@seller_statistics_loading_failed": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "网络错误"
+        }
+      }
+    },
+    "seller_statistics_retry": "重试"
 }
