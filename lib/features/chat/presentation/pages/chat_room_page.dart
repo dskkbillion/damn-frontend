@@ -6,7 +6,10 @@ import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化�
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_messages/chat_messages_bloc.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/chat_message_bubble.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/message_input_bar.dart';
+import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/product_chat_header.dart'; // 导入商品头部组件
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart'; // For MessageStatus
+// 导入商品详情页面
+import 'package:dskk_flutter_refactor/features/home/presentation/pages/product_detail_page.dart';
 
 class ChatRoomPage extends StatefulWidget {
   final int chatId;
@@ -21,6 +24,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   final ScrollController _scrollController = ScrollController();
   // 添加一个标志来跟踪是否在底部
   bool _showScrollToBottomButton = false;
+  // 添加商品头部显示状态控制
+  bool _showProductHeader = true;
+  double _lastScrollOffset = 0.0;
+  static const double _scrollThreshold = 50.0; // 滚动阈值
   // 添加分页加载参数 - 暂时注释掉分页功能
   // int _pageNum = 1;
   // final int _pageSize = 20;
@@ -33,32 +40,46 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     // 监听滚动事件
     _scrollController.addListener(_onScroll);
     
-    // 添加延迟滚动，确保页面加载完成后滚动到底部
+    // 触发加载聊天消息事件
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        print('[ChatRoomPage] 触发LoadChatMessages事件，chatId: ${widget.chatId}');
+        context.read<ChatMessagesBloc>().add(LoadChatMessages(widget.chatId));
+      }
+      
+      // 添加延迟滚动，确保页面加载完成后滚动到底部
       Future.delayed(const Duration(milliseconds: 300), _scrollToBottom);
     });
   }
 
   // 处理滚动事件
   void _onScroll() {
-    // 如果距离底部超过300像素，显示回到底部按钮
     if (_scrollController.hasClients) {
       final maxScroll = _scrollController.position.maxScrollExtent;
       final currentScroll = _scrollController.offset;
       
-      // 注意：使用reverse时，底部是在位置0
-      setState(() {
-        _showScrollToBottomButton = currentScroll > 300; // 超过300像素，显示滚动到底部按钮
-      });
+      // 计算滚动方向和距离
+      final scrollDelta = currentScroll - _lastScrollOffset;
+      final isScrollingDown = scrollDelta > 0; // 在reverse模式下，向下滚动offset增加
+      final isScrollingUp = scrollDelta < 0;
       
-      // 暂时注释掉分页加载逻辑
-      // 在reverse模式下，加载更多是在滚动到最大位置（即顶部，显示最早的消息）
-      // if (currentScroll >= maxScroll - 50 && 
-      //     !_isLoadingMore && 
-      //     _hasMoreMessages) {
-      //   _loadMoreMessages();
-      //   print("[ChatRoom] Loading more messages at maxScroll: $maxScroll, currentScroll: $currentScroll");
-      // }
+      // 更新商品头部显示状态
+      if (scrollDelta.abs() > 5.0) { // 避免微小滚动触发
+        setState(() {
+          if (isScrollingDown && currentScroll > _scrollThreshold) {
+            // 向下滚动且超过阈值时隐藏商品头部
+            _showProductHeader = false;
+          } else if (isScrollingUp || currentScroll <= _scrollThreshold) {
+            // 向上滚动或接近顶部时显示商品头部
+            _showProductHeader = true;
+          }
+          
+          // 更新滚动到底部按钮状态
+          _showScrollToBottomButton = currentScroll > 300;
+        });
+      }
+      
+      _lastScrollOffset = currentScroll;
     }
   }
 
@@ -216,6 +237,68 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         children: [
           Column(
             children: [
+              // 商品信息头部 - 添加动画效果
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                height: _showProductHeader ? null : 0,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 300),
+                  opacity: _showProductHeader ? 1.0 : 0.0,
+                  child: BlocBuilder<ChatMessagesBloc, ChatMessagesState>(
+                    builder: (context, state) {
+                      if (state is ChatMessagesLoaded) {
+                        // 从bloc中获取chatRoom信息
+                        final bloc = context.read<ChatMessagesBloc>();
+                        final chatRoom = bloc.currentRoom;
+                        
+                        if (chatRoom != null && chatRoom.hasProduct) {
+                          return ProductChatHeader(
+                            chatRoom: chatRoom,
+                            actionText: '查看详情',
+                            onProductTap: () {
+                              // 导航到商品详情页
+                              if (chatRoom.productId != null) {
+                                print('导航到商品详情页: ${chatRoom.productName}, ID: ${chatRoom.productId}');
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProductDetailPage(
+                                      productId: chatRoom.productId!,
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                print('商品ID为空，无法导航到商品详情页');
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('商品信息不完整，无法查看详情')),
+                                );
+                              }
+                            },
+                            onActionTap: () {
+                              // 处理操作按钮点击（如立即购买）
+                              if (chatRoom.productId != null) {
+                                print('点击操作按钮: ${chatRoom.productName}');
+                                // 也可以导航到商品详情页，或者实现其他操作
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProductDetailPage(
+                                      productId: chatRoom.productId!,
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                          );
+                        }
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ),
+              ),
+              
               Expanded(
                 child: BlocConsumer<ChatMessagesBloc, ChatMessagesState>(
                   listener: (context, state) {

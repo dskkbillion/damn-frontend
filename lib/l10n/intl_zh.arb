@@ -23,6 +23,7 @@
     },
     "ai_docs_no_recommendations": "暂无推荐服务",
     "ai_docs_dispatched": "已分发",
+    "ai_docs_enter_chat": "进入聊天",
     "ai_docs_let_them_see": "让ta看看",
     
     "allocating_step1": "分发中",

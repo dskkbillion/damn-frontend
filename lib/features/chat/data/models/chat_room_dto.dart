@@ -1,5 +1,6 @@
 import 'package:dskk_flutter_refactor/features/chat/data/models/chat_message_dto.dart';
 import 'package:dskk_flutter_refactor/features/chat/data/models/participant_dto.dart';
+import 'package:dskk_flutter_refactor/features/chat/data/models/product_vo_dto.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_room.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -14,7 +15,9 @@ class ChatRoomDto with _$ChatRoomDto {
     required ParticipantDto doctor,
     @Default(0) int messageNum, // Unread count
     ChatMessageDto? chatMessageNewVo, // Latest message DTO
-    // Add other fields from API response if necessary
+    // 新增商品相关字段
+    int? productId,
+    ProductVoDto? productVo,
   }) = _ChatRoomDto;
 
   // Private constructor for Freezed
@@ -58,6 +61,11 @@ class ChatRoomDto with _$ChatRoomDto {
          // FIX: Pass the determined sender participant ID (if message exists)
          senderId: lastMessageSenderId ?? 0 // Use 0 or handle null appropriately
       ),
+      // 添加商品相关字段映射
+      productId: productId?.toString(), // 将int转换为String
+      productName: productVo?.name,
+      productImage: productVo?.mainImage,
+      productPrice: productVo?.sellingPrice,
     );
   }
 } 

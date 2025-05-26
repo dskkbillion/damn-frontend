@@ -50,6 +50,9 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
   String? _token;
   StreamSubscription? _messageSubscription;
 
+  // 添加公共getter来访问当前聊天室信息
+  ChatRoom? get currentRoom => _currentRoom;
+
   ChatMessagesBloc({
     required this.chatId,
     required this.getMessageList,

@@ -37,6 +37,10 @@ import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/conversation_sidebar.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/service_card.dart'; 
 
+// Import chat module components for navigation
+import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_messages/chat_messages_bloc.dart';
+import 'package:dskk_flutter_refactor/features/chat/presentation/pages/chat_room_page.dart';
+
 // Get the GetIt instance
 final getIt = GetIt.instance; 
 
@@ -233,29 +237,12 @@ class RecommendationBottomSheetContent extends StatelessWidget {
     // 获取国际化资源
     final s = S.of(context);
     
-    // 添加状态监听，显示分配成功提示
-    return BlocListener<AiChatBloc, AiChatState>(
-      listenWhen: (previous, current) => 
-          previous.status != current.status && 
-          current.status == AiChatStatus.allocationSuccess,
-      listener: (context, state) {
-        // 显示分配成功提示
-        if (state.errorMessage != null && state.errorMessage!.isNotEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage!),
-              backgroundColor: 
-                state.errorMessage!.contains('失败') ? Colors.red : Colors.green,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
-      },
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFFFFF8F0), // 米黄色底色
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
+    // 移除不需要的BlocListener，不显示SnackBar提示
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFFFFF8F0), // 米黄色底色
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -346,16 +333,67 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                        onTap: () {
                           print('服务点击: ${service.title}');
                           final itemData = {
+                            'id': service.id.toString(), // 转换为字符串类型
                             'name': service.title,
                             'description': '推荐服务: ${service.title}，价格: ￥${service.price}',
                           };
-                          context.read<AiChatBloc>().add(TriggerAllocationAction(
+                          context.read<AiChatBloc>().add(TriggerOptimizedAllocation(
                              item: itemData,
                                merchantId: 1, // 固定商家ID
                                serviceId: service.id, // 添加服务ID用于状态追踪
                           ));
                             // 移除Navigator.pop，让底部弹窗保持打开状态，用户可以看到按钮状态变化
                             // Navigator.pop(context); 
+                       },
+                       onEnterChat: () {
+                         // 处理进入聊天的逻辑
+                         try {
+                           final bloc = context.read<AiChatBloc>();
+                           final chatRoomId = bloc.state.createdChatRoomId;
+                           print('尝试进入聊天室，chatRoomId: $chatRoomId');
+                           
+                           if (chatRoomId != null) {
+                             print('开始导航到聊天室: $chatRoomId');
+                             Navigator.pop(context); // 关闭底部弹窗
+                             
+                             // 尝试创建ChatMessagesBloc
+                             try {
+                               final chatMessagesBloc = getIt<ChatMessagesBloc>(param1: chatRoomId);
+                               print('成功创建ChatMessagesBloc: $chatMessagesBloc');
+                               
+                               // 导航到聊天室页面
+                               Navigator.push(
+                                 context,
+                                 MaterialPageRoute(
+                                   builder: (context) => BlocProvider.value(
+                                     value: chatMessagesBloc,
+                                     child: ChatRoomPage(chatId: chatRoomId),
+                                   ),
+                                 ),
+                               ).then((result) {
+                                 print('聊天室页面返回结果: $result');
+                               }).catchError((error) {
+                                 print('导航到聊天室页面时发生错误: $error');
+                               });
+                             } catch (e) {
+                               print('创建ChatMessagesBloc时发生错误: $e');
+                               // 显示错误提示
+                               ScaffoldMessenger.of(context).showSnackBar(
+                                 SnackBar(content: Text('无法创建聊天会话: $e')),
+                               );
+                             }
+                           } else {
+                             print('聊天室ID为空，无法进入聊天');
+                             ScaffoldMessenger.of(context).showSnackBar(
+                               const SnackBar(content: Text('聊天室ID为空，无法进入聊天')),
+                             );
+                           }
+                         } catch (e) {
+                           print('进入聊天时发生未知错误: $e');
+                           ScaffoldMessenger.of(context).showSnackBar(
+                             SnackBar(content: Text('进入聊天时发生错误: $e')),
+                           );
+                         }
                        },
                      );
                    },
@@ -364,7 +402,6 @@ class RecommendationBottomSheetContent extends StatelessWidget {
              ),
            ),
         ],
-        ),
       ),
     );
   }
@@ -374,11 +411,13 @@ class RecommendationBottomSheetContent extends StatelessWidget {
 class ServiceGridItem extends StatelessWidget {
   final RelatedServiceEntity service;
   final VoidCallback onTap;
+  final VoidCallback onEnterChat;
 
   const ServiceGridItem({
     Key? key,
     required this.service,
     required this.onTap,
+    required this.onEnterChat,
   }) : super(key: key);
 
   @override
@@ -472,6 +511,7 @@ class ServiceGridItem extends StatelessWidget {
                     AnimatedAllocationButton(
                       status: allocationStatus,
                       onTap: onTap,
+                      onEnterChat: onEnterChat,
                 ),
               ],
             ),

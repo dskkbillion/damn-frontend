@@ -26,6 +26,7 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/pages/notific
 
 import '../bloc/chat_list/chat_list_bloc.dart';
 import '../widgets/chat_list_item.dart';
+import '../widgets/grouped_chat_list.dart'; // 导入分组组件
 import '../bloc/chat_messages/chat_messages_bloc.dart'; // Import ChatMessagesBloc
 import 'chat_room_page.dart'; // Import ChatRoomPage
 // Import domain entities needed for fake ChatRoom
@@ -35,8 +36,15 @@ import '../../domain/entities/chat_message.dart'; // 添加导入ChatMessage
 
 final sl = GetIt.instance; // Get GetIt instance
 
-class ChatListPage extends StatelessWidget {
+class ChatListPage extends StatefulWidget { // 改为StatefulWidget以支持状态管理
   const ChatListPage({super.key});
+
+  @override
+  State<ChatListPage> createState() => _ChatListPageState();
+}
+
+class _ChatListPageState extends State<ChatListPage> {
+  // 移除_isGroupedView变量，因为我们现在只使用分组视图
 
   // Helper to build the static admin list item
   Widget _buildAdminListItem(BuildContext context, int currentUserId) {
@@ -229,6 +237,7 @@ class ChatListPage extends StatelessWidget {
         foregroundColor: Colors.black, 
         elevation: 0.5, 
         shadowColor: Colors.grey[300],
+        // 移除actions，不再显示切换按钮
       ),
       // Add BlocListener to handle navigation
       body: BlocListener<ChatListBloc, ChatListState>(
@@ -274,10 +283,7 @@ class ChatListPage extends StatelessWidget {
             if (state.status == ChatListStatus.loading && state.chatRooms.isEmpty) { // Show loading only initially
               return Center(child: CircularProgressIndicator()); 
             } else if (state.chatRooms.isNotEmpty) {
-              // Always show the list if we have rooms, even while loading more/refreshing
-              // final itemCount = state.chatRooms.length + 1; // Add 1 for admin entry
-              
-              // 使用RefreshIndicator包装ListView实现下拉刷新
+              // 默认使用分组视图，整个页面可滚动
               return RefreshIndicator(
                 onRefresh: () async {
                   // 触发刷新事件
@@ -309,62 +315,46 @@ class ChatListPage extends StatelessWidget {
                   
                   return completer.future;
                 },
-                child: ListView.separated(
-                 // 修改为+2，包含管理员和通知中心两个固定条目
-                 itemCount: state.chatRooms.length + 2, 
-                 itemBuilder: (context, index) {
-                   // 第一个项是管理员聊天入口
-                   if (index == 0) {
-                     return _buildAdminListItem(context, currentUserId);
-                   }
-                   // 第二个项是通知中心
-                   else if (index == 1) {
-                     return _buildNotificationItem(context, currentUserId);
-                   }
-                   // 后续项是常规聊天室
-                   final chatRoom = state.chatRooms[index - 2]; // 调整索引
-                   return Material(
-                     color: Colors.white, 
-                     child: ChatListItem(
-                       key: ValueKey(chatRoom.id), 
-                       chatRoom: chatRoom,
-                       currentUserId: currentUserId, 
-                       onTap: () {
-                         Navigator.push(
-                           context,
-                           MaterialPageRoute(
-                             builder: (_) => BlocProvider(
-                               create: (_) => sl<ChatMessagesBloc>(param1: chatRoom.id)
-                                             ..add(LoadChatMessages(chatRoom.id)),
-                               child: ChatRoomPage(chatId: chatRoom.id),
-                             ),
-                           ),
-                         ).then((result) {
-                           if (result == true) {
-                             print('[ChatListPage] Refreshing list after viewing chat ${chatRoom.id}');
-                             context.read<ChatListBloc>().add(RefreshChatList()); 
-                           }
-                         });
-                       },
-                     ),
-                   );
-                 },
-                 separatorBuilder: (context, index) {
-                   // 系统管理员和通知中心后使用粗分隔线
-                   if (index < 2) {
-                       return const Divider(height: 8, thickness: 8, color: Color(0xFFEDEDED)); // Thicker separator
-                   } 
-                   // Regular separator
-                   return Divider(
-                     height: 1,
-                     indent: 80, 
-                     endIndent: 16,
-                     color: Colors.grey[100], 
-                     thickness: 0.5, 
-                   );
-                 },
-               ),
-               );
+                child: CustomScrollView(
+                  slivers: [
+                    // 固定的系统条目
+                    SliverToBoxAdapter(
+                      child: Container(
+                        color: Colors.white,
+                        child: Column(
+                          children: [
+                            _buildAdminListItem(context, currentUserId),
+                            const Divider(height: 1, thickness: 1, color: Color(0xFFEDEDED)),
+                            _buildNotificationItem(context, currentUserId),
+                            const Divider(height: 8, thickness: 8, color: Color(0xFFEDEDED)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    
+                    // 分组的聊天列表
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final groupedChats = _groupChatsBySeller(state.chatRooms);
+                          
+                          if (index >= groupedChats.length) return null;
+                          
+                          final group = groupedChats[index];
+                          
+                          // 统一使用分组样式，无论是单个还是多个商品
+                          return SellerGroupItem(
+                            group: group,
+                            currentUserId: currentUserId,
+                            onTap: (chatRoom) => _navigateToChat(context, chatRoom),
+                          );
+                        },
+                        childCount: _groupChatsBySeller(state.chatRooms).length,
+                      ),
+                    ),
+                  ],
+                ),
+              );
             } else if (state.status == ChatListStatus.failure) {
               return Center(
                  // Display error, but potentially still show the Admin entry above it?
@@ -378,5 +368,46 @@ class ChatListPage extends StatelessWidget {
         ),
       ),
     );
+  }
+  
+  // 提取导航逻辑到单独方法
+  void _navigateToChat(BuildContext context, ChatRoom chatRoom) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BlocProvider(
+          create: (_) => sl<ChatMessagesBloc>(param1: chatRoom.id)
+                        ..add(LoadChatMessages(chatRoom.id)),
+          child: ChatRoomPage(chatId: chatRoom.id),
+        ),
+      ),
+    ).then((result) {
+      if (result == true) {
+        print('[ChatListPage] Refreshing list after viewing chat ${chatRoom.id}');
+        context.read<ChatListBloc>().add(RefreshChatList()); 
+      }
+    });
+  }
+  
+  // 提取分组逻辑到单独方法
+  List<SellerChatGroup> _groupChatsBySeller(List<ChatRoom> chatRooms) {
+    final Map<int, List<ChatRoom>> grouped = {};
+    
+    for (final chatRoom in chatRooms) {
+      final sellerId = chatRoom.participant2.referId ?? 0;
+      grouped.putIfAbsent(sellerId, () => []).add(chatRoom);
+    }
+    
+    return grouped.entries.map((entry) {
+      final sellerId = entry.key;
+      final rooms = entry.value;
+      final seller = rooms.first.participant2; // 获取卖家信息
+      
+      return SellerChatGroup(
+        sellerId: sellerId,
+        seller: seller,
+        chatRooms: rooms,
+      );
+    }).toList();
   }
 } 

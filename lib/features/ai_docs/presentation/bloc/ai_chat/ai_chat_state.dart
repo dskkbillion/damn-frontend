@@ -114,6 +114,10 @@ class AiChatState extends Equatable {
   /// 用于跟踪每个服务的分发状态，键为服务ID，值为分发状态
   final Map<int, AllocationStatus> serviceAllocationStatus;
 
+  /// --- New field for created chat room ID ---
+  /// 存储通过优化分发流程创建的聊天室ID
+  final int? createdChatRoomId;
+
   // --- Fields for image handling (Updated) ---
   /// Locally selected image files for preview before sending.
   final List<File>? pendingImageFiles;
@@ -137,6 +141,7 @@ class AiChatState extends Equatable {
     this.recommendations = const [],
     this.recommendationsErrorMessage,
     this.serviceAllocationStatus = const {}, // 默认为空映射
+    this.createdChatRoomId,
     this.pendingImageFiles = const [],
     this.imageUploadStates = const {}, // Default to empty map
     // this.uploadedImageUrls = const [], // Removed
@@ -158,6 +163,7 @@ class AiChatState extends Equatable {
     List<RelatedServiceEntity>? recommendations,
     String? recommendationsErrorMessage,
     Map<int, AllocationStatus>? serviceAllocationStatus,
+    int? createdChatRoomId,
     List<File>? pendingImageFiles,
     Map<String, ImageUploadState>? imageUploadStates,
     // List<String>? uploadedImageUrls, // Removed
@@ -189,6 +195,7 @@ class AiChatState extends Equatable {
                                         ? null
                                         : recommendationsErrorMessage ?? this.recommendationsErrorMessage,
       serviceAllocationStatus: serviceAllocationStatus ?? this.serviceAllocationStatus,
+      createdChatRoomId: createdChatRoomId ?? this.createdChatRoomId,
       pendingImageFiles: clearPendingImages ? [] : pendingImageFiles ?? this.pendingImageFiles,
       imageUploadStates: clearImageUploadStates ? {} : imageUploadStates ?? this.imageUploadStates,
       // uploadedImageUrls: clearUploadedUrls ? [] : uploadedImageUrls ?? this.uploadedImageUrls, // Removed
@@ -210,6 +217,7 @@ class AiChatState extends Equatable {
         recommendations,
         recommendationsErrorMessage,
         serviceAllocationStatus,
+        createdChatRoomId,
         pendingImageFiles,
         imageUploadStates, // Add new map to props
         // uploadedImageUrls, // Removed

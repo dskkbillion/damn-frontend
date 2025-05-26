@@ -75,8 +75,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
     );
     
     try {
-      // 调用创建聊天API
-      final result = await _chatRepository.createRoom(sellerId);
+      // 获取当前商品ID
+      final productId = int.tryParse(widget.productId);
+      
+      // 调用创建聊天API，包含商品ID
+      final result = await _chatRepository.createRoom(
+        sellerId,
+        productId: productId, // 传入商品ID
+      );
       
       // 关闭加载对话框
       Navigator.of(context, rootNavigator: true).pop();

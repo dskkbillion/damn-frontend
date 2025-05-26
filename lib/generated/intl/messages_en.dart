@@ -112,6 +112,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Delete conversation",
     ),
     "ai_docs_dispatched": MessageLookupByLibrary.simpleMessage("Dispatched"),
+    "ai_docs_enter_chat": MessageLookupByLibrary.simpleMessage("Enter Chat"),
     "ai_docs_enter_message": MessageLookupByLibrary.simpleMessage(
       "Enter message...",
     ),

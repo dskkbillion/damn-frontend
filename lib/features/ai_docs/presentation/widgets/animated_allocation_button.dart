@@ -4,12 +4,14 @@ import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化�
 
 class AnimatedAllocationButton extends StatefulWidget {
   final VoidCallback? onTap;
+  final VoidCallback? onEnterChat;
   final AllocationStatus status;
 
   const AnimatedAllocationButton({
     Key? key,
     required this.status,
     this.onTap,
+    this.onEnterChat,
   }) : super(key: key);
 
   @override
@@ -288,12 +290,20 @@ class _AnimatedAllocationButtonState extends State<AnimatedAllocationButton> wit
       width: double.infinity,
       height: 32,
       decoration: BoxDecoration(
-        color: Colors.grey[400],
+        color: const Color(0xFF4CAF50), // 使用绿色表示成功
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Center(
+      child: TextButton(
+        onPressed: widget.onEnterChat, // 使用进入聊天回调
+        style: TextButton.styleFrom(
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          padding: EdgeInsets.zero,
+        ),
         child: Text(
-          s.ai_docs_dispatched, // 使用国际化文本
+          s.ai_docs_enter_chat, // 使用国际化文本 "进入聊天"
           style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,

@@ -185,6 +185,16 @@ class S {
     );
   }
 
+  /// `Enter Chat`
+  String get ai_docs_enter_chat {
+    return Intl.message(
+      'Enter Chat',
+      name: 'ai_docs_enter_chat',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Let them see`
   String get ai_docs_let_them_see {
     return Intl.message(

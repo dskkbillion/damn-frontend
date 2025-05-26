@@ -108,6 +108,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "删除会话",
     ),
     "ai_docs_dispatched": MessageLookupByLibrary.simpleMessage("已分发"),
+    "ai_docs_enter_chat": MessageLookupByLibrary.simpleMessage("进入聊天"),
     "ai_docs_enter_message": MessageLookupByLibrary.simpleMessage("输入消息..."),
     "ai_docs_image_picking_error": m0,
     "ai_docs_let_them_see": MessageLookupByLibrary.simpleMessage("让ta看看"),

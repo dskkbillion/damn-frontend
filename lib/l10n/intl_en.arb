@@ -23,6 +23,7 @@
     },
     "ai_docs_no_recommendations": "No recommendations available",
     "ai_docs_dispatched": "Dispatched",
+    "ai_docs_enter_chat": "Enter Chat",
     "ai_docs_let_them_see": "Let them see",
     
     "allocating_step1": "Allocating",

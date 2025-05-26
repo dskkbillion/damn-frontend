@@ -13,6 +13,7 @@ import '../domain/usecases/get_related_services_usecase.dart';
 import '../domain/usecases/allocate_chat_resource_usecase.dart';
 import '../domain/usecases/transcribe_audio_usecase.dart';
 import '../domain/usecases/cancel_chat_generation_usecase.dart';
+import '../domain/usecases/optimized_allocation_usecase.dart';
 import '../domain/repositories/i_ai_chat_repository.dart';
 import '../domain/repositories/i_file_upload_repository.dart';
 import '../data/repositories/ai_chat_repository_impl.dart';
@@ -25,6 +26,8 @@ import '../data/datasources/ai_docs_file_upload_data_source_impl.dart';
 import '../data/repositories/ai_docs_file_upload_repository_impl.dart';
 import '../../../core/network/network_info.dart';
 import '../../../core/network/i_http_client.dart';
+import '../../../features/chat/domain/usecases/create_chat_room.dart';
+import '../../../features/chat/domain/repositories/i_chat_repository.dart';
 
 /// AI文档模块的依赖注入类
 class AiDocsDI {
@@ -147,6 +150,17 @@ class AiDocsDI {
       print('[AiDocsDI] Registered CancelChatGenerationUseCase');
     }
 
+    if (!getIt.isRegistered<OptimizedAllocationUseCase>()) {
+      getIt.registerLazySingleton<OptimizedAllocationUseCase>(
+        () => OptimizedAllocationUseCase(
+          getIt<IAiChatRepository>(),
+          getIt<IChatRepository>(),
+          getIt<CreateChatRoom>(),
+        ),
+      );
+      print('[AiDocsDI] Registered OptimizedAllocationUseCase');
+    }
+
     // Bloc
     if (!getIt.isRegistered<AiChatBloc>()) {
       getIt.registerFactory<AiChatBloc>(() => AiChatBloc(
@@ -160,6 +174,7 @@ class AiDocsDI {
             getIt<AllocateChatResourceUseCase>(),
             getIt<TranscribeAudioUseCase>(),
             getIt<CancelChatGenerationUseCase>(),
+            getIt<OptimizedAllocationUseCase>(),
             getIt<FlutterSecureStorage>(),
           ));
       print('[AiDocsDI] Registered AiChatBloc');

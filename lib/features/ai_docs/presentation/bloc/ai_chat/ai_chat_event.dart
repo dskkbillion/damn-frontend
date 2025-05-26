@@ -44,6 +44,22 @@ class TriggerAllocationAction extends AiChatEvent {
   List<Object?> get props => [item, merchantId, serviceId];
 }
 
+/// Event to trigger the optimized allocation action (create chat room first, then AI allocation).
+class TriggerOptimizedAllocation extends AiChatEvent {
+  final Map<String, dynamic> item; // 服务/商品详情
+  final int merchantId; // 商家ID
+  final int serviceId; // 服务ID，用于状态追踪
+
+  const TriggerOptimizedAllocation({
+    required this.item,
+    required this.merchantId,
+    required this.serviceId,
+  }); 
+
+  @override
+  List<Object?> get props => [item, merchantId, serviceId];
+}
+
 /// Event triggered when the user finishes recording audio.
 class SendVoiceMessage extends AiChatEvent {
   final File audioFile; // Changed back to File based on Bloc usage - needs path later
