@@ -443,7 +443,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             // 买家模式：按卖家分组显示
             _buildBuyerChatList(filteredRooms, currentUserId)
           else
-            // 卖家模式：直接列表显示
+            // 卖家模式：按商品分组显示
             _buildSellerChatList(filteredRooms, currentUserId),
         ],
       ),
@@ -506,22 +506,24 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     );
   }
 
-  // 卖家模式聊天列表（直接显示）
+  // 卖家模式聊天列表（按商品分组显示）
   Widget _buildSellerChatList(List<ChatRoom> chatRooms, int currentUserId) {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, index) {
-          if (index >= chatRooms.length) return null;
+          final groupedChats = _groupChatsByProduct(chatRooms, currentUserId);
           
-          final chatRoom = chatRooms[index];
+          if (index >= groupedChats.length) return null;
           
-          return ChatListItem(
-            chatRoom: chatRoom,
+          final group = groupedChats[index];
+          
+          return ProductGroupItem(
+            group: group,
             currentUserId: currentUserId,
-            onTap: () => _navigateToChat(context, chatRoom),
+            onTap: (chatRoom) => _navigateToChat(context, chatRoom),
           );
         },
-        childCount: chatRooms.length,
+        childCount: _groupChatsByProduct(chatRooms, currentUserId).length,
       ),
     );
   }
@@ -550,6 +552,35 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       return SellerChatGroup(
         sellerId: sellerId,
         seller: seller,
+        chatRooms: rooms,
+      );
+    }).toList();
+  }
+
+  // 提取分组逻辑到单独方法 - 卖家模式使用，按商品分组
+  List<ProductChatGroup> _groupChatsByProduct(List<ChatRoom> chatRooms, int currentUserId) {
+    final Map<String, List<ChatRoom>> grouped = {};
+    
+    for (final chatRoom in chatRooms) {
+      // 使用商品ID作为分组键，如果没有商品ID则使用特殊键
+      final productId = chatRoom.productId ?? 'no_product';
+      
+      grouped.putIfAbsent(productId, () => []).add(chatRoom);
+      print("[ChatListPage] Grouping chat room ${chatRoom.id} under product: ${chatRoom.productName ?? 'Unknown'} (ID: $productId)");
+    }
+    
+    return grouped.entries.map((entry) {
+      final productId = entry.key;
+      final rooms = entry.value;
+      final firstRoom = rooms.first; // 从第一个房间获取商品信息
+      
+      print("[ChatListPage] Created product group: ${firstRoom.productName ?? 'Unknown'} with ${rooms.length} chat rooms");
+      
+      return ProductChatGroup(
+        productId: productId,
+        productName: firstRoom.productName,
+        productImage: firstRoom.productImage,
+        productPrice: firstRoom.productPrice,
         chatRooms: rooms,
       );
     }).toList();

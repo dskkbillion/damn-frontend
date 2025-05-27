@@ -586,4 +586,445 @@ class ProductChatItem extends StatelessWidget {
       return '${time.month}/${time.day}';
     }
   }
+}
+
+/// 商品聊天分组数据类 - 卖家模式使用
+class ProductChatGroup {
+  final String productId;
+  final String? productName;
+  final String? productImage;
+  final double? productPrice;
+  final List<ChatRoom> chatRooms;
+  
+  ProductChatGroup({
+    required this.productId,
+    this.productName,
+    this.productImage,
+    this.productPrice,
+    required this.chatRooms,
+  });
+}
+
+/// 商品分组项组件 - 卖家模式使用
+class ProductGroupItem extends StatefulWidget {
+  final ProductChatGroup group;
+  final int currentUserId;
+  final Function(ChatRoom) onTap;
+  
+  const ProductGroupItem({
+    Key? key,
+    required this.group,
+    required this.currentUserId,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  State<ProductGroupItem> createState() => _ProductGroupItemState();
+}
+
+class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerProviderStateMixin {
+  bool _isExpanded = false;
+  late AnimationController _animationController;
+  late Animation<double> _expandAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _expandAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _toggleExpansion() {
+    // 如果只有一个用户，直接进入聊天
+    if (widget.group.chatRooms.length == 1) {
+      widget.onTap(widget.group.chatRooms.first);
+      return;
+    }
+    
+    // 多个用户时才展开/收起
+    setState(() {
+      _isExpanded = !_isExpanded;
+      if (_isExpanded) {
+        _animationController.forward();
+      } else {
+        _animationController.reverse();
+      }
+    });
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    // 计算总未读数
+    final totalUnread = widget.group.chatRooms.fold<int>(
+      0, 
+      (sum, room) => sum + room.unreadCount,
+    );
+    
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          // 主要内容区域
+          InkWell(
+            onTap: _toggleExpansion,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              child: Row(
+                children: [
+                  // 商品图片
+                  GestureDetector(
+                    onTap: _toggleExpansion,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: _isExpanded 
+                          ? Border.all(color: Colors.blue, width: 2)
+                          : null,
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: widget.group.productImage != null
+                            ? CachedNetworkImage(
+                                imageUrl: widget.group.productImage!,
+                                width: 50,
+                                height: 50,
+                                fit: BoxFit.cover,
+                                errorWidget: (context, url, error) {
+                                  return Container(
+                                    width: 50,
+                                    height: 50,
+                                    color: Colors.grey[200],
+                                    child: const Icon(Icons.shopping_bag, color: Colors.grey),
+                                  );
+                                },
+                              )
+                            : Container(
+                                width: 50,
+                                height: 50,
+                                color: Colors.grey[200],
+                                child: const Icon(Icons.shopping_bag, color: Colors.grey),
+                              ),
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(width: 12),
+                  
+                  // 商品信息和用户预览
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 商品名称
+                        Text(
+                          widget.group.productName ?? '未知商品',
+                          style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        
+                        const SizedBox(height: 4),
+                        
+                        // 商品价格
+                        if (widget.group.productPrice != null)
+                          Text(
+                            '¥${widget.group.productPrice!.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              color: Colors.red[600],
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        
+                        const SizedBox(height: 6),
+                        
+                        // 用户头像预览行（无论单个还是多个都显示）
+                        if (!_isExpanded) ...[
+                          Row(
+                            children: [
+                              // 显示前3个用户的头像
+                              ...widget.group.chatRooms.take(3).map((chatRoom) {
+                                final buyer = chatRoom.participant2; // 在卖家视角下，participant2是买家
+                                return Container(
+                                  margin: const EdgeInsets.only(right: 4),
+                                  child: CircleAvatar(
+                                    radius: 12,
+                                    backgroundImage: (buyer.avatar != null && buyer.avatar!.isNotEmpty)
+                                        ? CachedNetworkImageProvider(buyer.avatar!)
+                                        : null,
+                                    backgroundColor: Colors.grey[300],
+                                    child: (buyer.avatar == null || buyer.avatar!.isEmpty)
+                                        ? Text(
+                                            buyer.nickName?.isNotEmpty == true
+                                                ? buyer.nickName![0].toUpperCase()
+                                                : '?',
+                                            style: const TextStyle(fontSize: 10, color: Colors.white),
+                                          )
+                                        : null,
+                                  ),
+                                );
+                              }).toList(),
+                              
+                              // 如果有更多用户，显示数量
+                              if (widget.group.chatRooms.length > 3)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[200],
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    '+${widget.group.chatRooms.length - 3}',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.grey[600],
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              
+                              // 如果只有一个用户，显示用户名称
+                              if (widget.group.chatRooms.length == 1) ...[
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    widget.group.chatRooms.first.participant2.nickName ?? '未知用户',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey[600],
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ] else ...[
+                          // 展开状态下显示用户数量
+                          Text(
+                            widget.group.chatRooms.length == 1 
+                              ? '1个用户咨询' 
+                              : '${widget.group.chatRooms.length}个用户咨询',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  
+                  // 右侧信息
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      // 最新消息时间
+                      if (widget.group.chatRooms.isNotEmpty && widget.group.chatRooms.first.lastActivityTime != null)
+                        Text(
+                          _formatTime(widget.group.chatRooms.first.lastActivityTime!),
+                          style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                        ),
+                      
+                      const SizedBox(height: 4),
+                      
+                      // 未读消息数量
+                      if (totalUnread > 0)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 18,
+                            minHeight: 18,
+                          ),
+                          child: Text(
+                            totalUnread > 99 ? '99+' : totalUnread.toString(),
+                            style: const TextStyle(color: Colors.white, fontSize: 10),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      
+                      // 展开/收起指示器
+                      const SizedBox(height: 4),
+                      if (widget.group.chatRooms.length > 1)
+                        Icon(
+                          _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                          color: Colors.grey[400],
+                          size: 20,
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          // 展开的用户列表
+          SizeTransition(
+            sizeFactor: _expandAnimation,
+            child: Container(
+              color: Colors.grey[50],
+              child: Column(
+                children: widget.group.chatRooms.map((chatRoom) {
+                  return Container(
+                    margin: const EdgeInsets.only(left: 16.0),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        left: BorderSide(color: Colors.grey[300]!, width: 2),
+                      ),
+                    ),
+                    child: BuyerChatItem(
+                      chatRoom: chatRoom,
+                      currentUserId: widget.currentUserId,
+                      onTap: () => widget.onTap(chatRoom),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  String _formatTime(DateTime time) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final messageDate = DateTime(time.year, time.month, time.day);
+    final difference = today.difference(messageDate).inDays;
+
+    if (difference == 0) {
+      // 今天：显示时间
+      return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+    } else if (difference == 1) {
+      // 昨天
+      return '昨天';
+    } else if (difference < 7) {
+      // 一周内：显示星期
+      const weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+      return weekdays[time.weekday - 1];
+    } else {
+      // 更早：显示日期
+      return '${time.month}/${time.day}';
+    }
+  }
+}
+
+/// 买家聊天项组件 - 卖家视角下显示买家信息
+class BuyerChatItem extends StatelessWidget {
+  final ChatRoom chatRoom;
+  final int currentUserId;
+  final VoidCallback onTap;
+  
+  const BuyerChatItem({
+    Key? key,
+    required this.chatRoom,
+    required this.currentUserId,
+    required this.onTap,
+  }) : super(key: key);
+  
+  @override
+  Widget build(BuildContext context) {
+    // 在卖家视角下，participant2是买家
+    final buyer = chatRoom.participant2;
+    
+    return ListTile(
+      leading: CircleAvatar(
+        radius: 20,
+        backgroundImage: (buyer.avatar != null && buyer.avatar!.isNotEmpty)
+            ? CachedNetworkImageProvider(buyer.avatar!)
+            : null,
+        backgroundColor: Colors.grey[200],
+        child: (buyer.avatar == null || buyer.avatar!.isEmpty)
+            ? Text(
+                buyer.nickName?.isNotEmpty == true
+                    ? buyer.nickName![0].toUpperCase()
+                    : '?',
+                style: const TextStyle(fontSize: 16, color: Colors.white),
+              )
+            : null,
+      ),
+      title: Text(
+        buyer.nickName ?? '未知用户',
+        style: const TextStyle(fontWeight: FontWeight.w500),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: chatRoom.lastMessage != null
+          ? Text(
+              chatRoom.lastMessage!.context,
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            )
+          : Text(
+              '暂无消息',
+              style: TextStyle(color: Colors.grey[400], fontSize: 12),
+            ),
+      trailing: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (chatRoom.lastActivityTime != null)
+            Text(
+              _formatTime(chatRoom.lastActivityTime!),
+              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+            ),
+          const SizedBox(height: 4),
+          if (chatRoom.unreadCount > 0)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                chatRoom.unreadCount > 99 ? '99+' : chatRoom.unreadCount.toString(),
+                style: const TextStyle(color: Colors.white, fontSize: 10),
+              ),
+            ),
+        ],
+      ),
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+    );
+  }
+  
+  String _formatTime(DateTime time) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final messageDate = DateTime(time.year, time.month, time.day);
+    final difference = today.difference(messageDate).inDays;
+
+    if (difference == 0) {
+      // 今天：显示时间
+      return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+    } else if (difference == 1) {
+      // 昨天
+      return '昨天';
+    } else if (difference < 7) {
+      // 一周内：显示星期
+      const weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+      return weekdays[time.weekday - 1];
+    } else {
+      // 更早：显示日期
+      return '${time.month}/${time.day}';
+    }
+  }
 } 
