@@ -2,6 +2,7 @@ import 'package:dskk_flutter_refactor/features/chat/data/models/chat_message_dto
 import 'package:dskk_flutter_refactor/features/chat/data/models/participant_dto.dart';
 import 'package:dskk_flutter_refactor/features/chat/data/models/product_vo_dto.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_room.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/entities/participant.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'chat_room_dto.freezed.dart';
@@ -51,10 +52,38 @@ class ChatRoomDto with _$ChatRoomDto {
         lastMessageSenderId = chatMessageNewVo!.memberId ?? chatMessageNewVo!.doctorId ?? 0;
     }
 
+    // 转换DTO为实体
+    final memberEntity = member.toEntity();
+    final doctorEntity = doctor.toEntity();
+    
+    Participant currentUserParticipant;
+    Participant opponentParticipant;
+    
+    // 根据API数据结构：member是买家，doctor是卖家
+    // 确保participant1总是当前用户，participant2总是对方
+    if (memberEntity.referId == currentUserId) {
+      // 当前用户是买家(member)
+      currentUserParticipant = memberEntity;
+      opponentParticipant = doctorEntity; // 对方是卖家(doctor)
+      print("[ChatRoomDto] Current user is MEMBER (buyer), opponent is DOCTOR (seller): ${doctorEntity.nickName}");
+    } else if (doctorEntity.referId == currentUserId) {
+      // 当前用户是卖家(doctor)
+      currentUserParticipant = doctorEntity;
+      opponentParticipant = memberEntity; // 对方是买家(member)
+      print("[ChatRoomDto] Current user is DOCTOR (seller), opponent is MEMBER (buyer): ${memberEntity.nickName}");
+    } else {
+      // 异常情况：当前用户既不是买家也不是卖家
+      print("[ChatRoomDto] Warning: Current user $currentUserId is neither member (${memberEntity.referId}) nor doctor (${doctorEntity.referId})");
+      // 默认假设当前用户是买家
+      currentUserParticipant = memberEntity;
+      opponentParticipant = doctorEntity;
+    }
+
     return ChatRoom(
       id: id,
-      participant1: member.toEntity(),
-      participant2: doctor.toEntity(),
+      // participant1 总是当前用户，participant2 总是对方
+      participant1: currentUserParticipant,
+      participant2: opponentParticipant,
       unreadCount: messageNum,
       lastMessage: chatMessageNewVo?.toEntity(
          currentUserId: currentUserId, // Pass commonUserId

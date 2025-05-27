@@ -79,14 +79,59 @@ class GroupedChatList extends StatelessWidget {
     final Map<int, List<ChatRoom>> grouped = {};
     
     for (final chatRoom in chatRooms) {
-      final sellerId = chatRoom.participant2.referId ?? 0;
+      // 确定卖家：根据参与者类型判断
+      Participant seller;
+      int sellerId;
+      
+      // 判断当前用户的类型
+      if (chatRoom.participant1.referId == currentUserId) {
+        // 当前用户是participant1
+        if (chatRoom.participant1.type == 'MEMBER') {
+          // 当前用户是买家，对方是卖家
+          seller = chatRoom.participant2;
+          sellerId = chatRoom.participant2.referId ?? 0;
+        } else {
+          // 当前用户是卖家，按当前用户分组
+          seller = chatRoom.participant1;
+          sellerId = chatRoom.participant1.referId ?? 0;
+        }
+      } else {
+        // 当前用户是participant2
+        if (chatRoom.participant2.type == 'MEMBER') {
+          // 当前用户是买家，对方是卖家
+          seller = chatRoom.participant1;
+          sellerId = chatRoom.participant1.referId ?? 0;
+        } else {
+          // 当前用户是卖家，按当前用户分组
+          seller = chatRoom.participant2;
+          sellerId = chatRoom.participant2.referId ?? 0;
+        }
+      }
+      
       grouped.putIfAbsent(sellerId, () => []).add(chatRoom);
     }
     
     return grouped.entries.map((entry) {
       final sellerId = entry.key;
       final rooms = entry.value;
-      final seller = rooms.first.participant2; // 获取卖家信息
+      // 从第一个房间获取卖家信息
+      final firstRoom = rooms.first;
+      Participant seller;
+      
+      // 重新确定卖家信息（与上面逻辑一致）
+      if (firstRoom.participant1.referId == currentUserId) {
+        if (firstRoom.participant1.type == 'MEMBER') {
+          seller = firstRoom.participant2;
+        } else {
+          seller = firstRoom.participant1;
+        }
+      } else {
+        if (firstRoom.participant2.type == 'MEMBER') {
+          seller = firstRoom.participant1;
+        } else {
+          seller = firstRoom.participant2;
+        }
+      }
       
       return SellerChatGroup(
         sellerId: sellerId,

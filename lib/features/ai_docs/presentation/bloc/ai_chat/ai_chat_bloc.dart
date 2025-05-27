@@ -254,7 +254,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         ));
 
         // Reload the conversation list to show the new conversation
-        add(LoadConversations());
+        add(LoadConversations()); 
       },
     );
   }
@@ -353,8 +353,8 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
          
          // 立即发送语音消息
          add(SendVoiceMessage(audioFile: event.audioFile));
-       },
-     );
+      },
+    );
   }
 
   Future<void> _onDeleteSelectedConversation(
@@ -1314,16 +1314,16 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     _chatStreamSubscription?.cancel();
     print("AiChatBloc closed, stream subscription cancelled.");
     return super.close();
-  }
-
-  // 提取发送消息给商家的逻辑到单独的方法
-  Future<void> _sendAllocationMessageToMerchant(
-    int merchantId, 
-    Map<String, dynamic> item,
-    String summary
-  ) async {
-    try {
-      print('准备发送消息给商家ID: $merchantId, 商品: ${item['name']}');
+   }
+   
+   // 提取发送消息给商家的逻辑到单独的方法
+   Future<void> _sendAllocationMessageToMerchant(
+     int merchantId, 
+     Map<String, dynamic> item,
+     String summary
+   ) async {
+     try {
+       print('准备发送消息给商家ID: $merchantId, 商品: ${item['name']}');
            
       // 创建新的Dio实例并设置基础URL和超时配置
       final dio = Dio(BaseOptions(
@@ -1333,99 +1333,99 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         sendTimeout: const Duration(seconds: 30), // 发送超时30秒
       ));
            
-      // 获取认证令牌
-      final String? authToken = await _storage.read(key: 'auth_token');
-      if (authToken == null || authToken.isEmpty) {
-        throw Exception('认证令牌不存在或为空');
-      }
+           // 获取认证令牌
+           final String? authToken = await _storage.read(key: 'auth_token');
+           if (authToken == null || authToken.isEmpty) {
+             throw Exception('认证令牌不存在或为空');
+           }
            
-      // 添加必要的请求头信息
-      final options = Options(
-        contentType: Headers.jsonContentType,
-        responseType: ResponseType.json,
-        headers: {
-          'Content-Type': 'application/json',
-          'clienttype': '1',
-          'client': Platform.isAndroid ? 'android' : 'ios',
-          'version': '100',
-          'packageName': 'com.duoshaokankan.dskk',
-          'versionCode': '1.0.0',
-          'versionName': '1.0.0',
-          'Authorization': 'Bearer $authToken',
-        },
-      );
+       // 添加必要的请求头信息
+           final options = Options(
+             contentType: Headers.jsonContentType,
+             responseType: ResponseType.json,
+             headers: {
+               'Content-Type': 'application/json',
+           'clienttype': '1',
+               'client': Platform.isAndroid ? 'android' : 'ios',
+               'version': '100',
+           'packageName': 'com.duoshaokankan.dskk',
+           'versionCode': '1.0.0',
+           'versionName': '1.0.0',
+           'Authorization': 'Bearer $authToken',
+             },
+           );
            
-      // 第一步：创建聊天室
-      print("发送创建聊天室请求...");
+           // 第一步：创建聊天室
+           print("发送创建聊天室请求...");
            
-      // 构建创建聊天室的请求参数
-      final createRoomParams = {
-        'doctorId': merchantId.toString(),
-        'type': 'MEMBER',
-      };
+       // 构建创建聊天室的请求参数
+           final createRoomParams = {
+         'doctorId': merchantId.toString(),
+             'type': 'MEMBER',
+           };
            
       // 如果item中包含商品ID，添加到请求参数中
       if (item['id'] != null) {
         createRoomParams['productId'] = item['id'];
       }
            
-      print("创建聊天室请求参数: $createRoomParams");
+           print("创建聊天室请求参数: $createRoomParams");
            
-      final createRoomResponse = await dio.post(
-        '/api/chat/addChat',
-        data: createRoomParams,
-        options: options
-      );
+           final createRoomResponse = await dio.post(
+             '/api/chat/addChat',
+             data: createRoomParams,
+             options: options
+           );
            
-      print("创建聊天室响应状态码: ${createRoomResponse.statusCode}");
-      print("创建聊天室响应数据: ${createRoomResponse.data}");
+           print("创建聊天室响应状态码: ${createRoomResponse.statusCode}");
+           print("创建聊天室响应数据: ${createRoomResponse.data}");
            
-      if (createRoomResponse.statusCode == 200 && 
-          createRoomResponse.data != null && 
-          createRoomResponse.data['code'] == 200) {
-           
+           if (createRoomResponse.statusCode == 200 && 
+               createRoomResponse.data != null && 
+               createRoomResponse.data['code'] == 200) {
+             
         final chatRoomData = createRoomResponse.data['data'];
         final chatId = chatRoomData['id']; // 从聊天室对象中提取id字段
-        print('成功创建聊天室，ID: $chatId');
-           
-        // 第二步：发送消息
-        print("发送消息请求...");
-           
-        // 构建一个更丰富的消息，包含服务名称和AI分析的总结
-        String messageContent = summary;
-           
-        // 构建发送消息的请求参数
-        final sendMessageParams = {
-          'chatId': chatId,
-          'context': messageContent,
-          'type': 'allocate',
-        };
-           
-        print("发送消息请求参数: $sendMessageParams");
-           
-        final sendMsgResponse = await dio.post(
-          '/common/chat/message/add',
-          data: sendMessageParams,
-          options: options
-        );
-           
-        print("发送消息响应状态码: ${sendMsgResponse.statusCode}");
-        print("发送消息响应数据: ${sendMsgResponse.data}");
-           
-        if (sendMsgResponse.statusCode == 200 && 
-            sendMsgResponse.data != null && 
-            sendMsgResponse.data['code'] == 200) {
-          print('消息已成功发送给商家!');
-        } else {
-          print('发送消息API返回错误: ${sendMsgResponse.data}');
-        }
-      } else {
-        print('创建聊天室API返回错误: ${createRoomResponse.data}');
-      }
-    } catch (e) {
-      print('向商家发送消息失败: $e');
-    }
-  }
+             print('成功创建聊天室，ID: $chatId');
+             
+             // 第二步：发送消息
+             print("发送消息请求...");
+             
+             // 构建一个更丰富的消息，包含服务名称和AI分析的总结
+         String messageContent = summary;
+             
+             // 构建发送消息的请求参数
+             final sendMessageParams = {
+               'chatId': chatId,
+           'context': messageContent,
+               'type': 'allocate',
+             };
+             
+             print("发送消息请求参数: $sendMessageParams");
+             
+             final sendMsgResponse = await dio.post(
+               '/common/chat/message/add',
+               data: sendMessageParams,
+               options: options
+             );
+             
+             print("发送消息响应状态码: ${sendMsgResponse.statusCode}");
+             print("发送消息响应数据: ${sendMsgResponse.data}");
+             
+             if (sendMsgResponse.statusCode == 200 && 
+                 sendMsgResponse.data != null && 
+                 sendMsgResponse.data['code'] == 200) {
+               print('消息已成功发送给商家!');
+             } else {
+               print('发送消息API返回错误: ${sendMsgResponse.data}');
+             }
+           } else {
+             print('创建聊天室API返回错误: ${createRoomResponse.data}');
+           }
+         } catch (e) {
+           print('向商家发送消息失败: $e');
+     }
+   }
 
   // --- Handler for Optimized Allocation Action ---
   Future<void> _onTriggerOptimizedAllocation(
@@ -1458,7 +1458,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         final failureStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
         failureStatus[event.serviceId] = AllocationStatus.failure;
       
-        emit(state.copyWith(
+     emit(state.copyWith(
           status: AiChatStatus.allocationFailure, 
           errorMessage: '用户未认证或ID格式无效',
           serviceAllocationStatus: failureStatus
@@ -1593,7 +1593,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
           return conv;
         }).toList();
         
-        emit(state.copyWith(
+       emit(state.copyWith(
           titleStatus: TitleStatus.success,
           conversationTitleStatus: successStatus,
           conversations: updatedConversations,

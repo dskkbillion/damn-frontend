@@ -168,26 +168,9 @@ class MockChatRepository implements IChatRepository {
   }
 
    @override
-  Future<Either<Failure, int>> createRoom(int participantId) async {
-    print('[MockChatRepository] Creating mock room with participantId: $participantId');
-    await Future.delayed(const Duration(seconds: 1));
-    final newChatId = Random().nextInt(100) + 200;
-    final opponent = participantId == 2 ? mockOpponent1 :
-                     participantId == 3 ? mockOpponent2 :
-                     participantId == 4 ? mockOpponent3 :
-                     Participant(id: participantId, nickName: 'Unknown User $participantId', type: 'MEMBER'); // Added type
-
-    final newRoom = ChatRoom(
-        id: newChatId,
-        participant1: mockCurrentUserParticipant,
-        participant2: opponent,
-        unreadCount: 0,
-        lastMessage: null,
-    );
-    _mockRoomDetails[newChatId] = newRoom;
-    _mockMessages[newChatId] = [];
-    print('[MockChatRepository] Created mock room with ID: $newChatId');
-    return Right(newChatId);
+  Future<Either<Failure, int>> createRoom(int sellerId, {int? productId}) {
+    print("MockChatRepository.createRoom called with sellerId: $sellerId, productId: $productId");
+    return Future.value(Right(Random().nextInt(1000) + 1000));
   }
 
   @override

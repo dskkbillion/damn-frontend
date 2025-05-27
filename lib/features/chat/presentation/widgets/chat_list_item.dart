@@ -91,15 +91,15 @@ class _ChatListItemState extends State<ChatListItem> {
     // 获取国际化资源
     final s = S.of(context);
     
-    // 总是显示卖家信息（participant2是doctor/卖家）
-    final seller = widget.chatRoom.participant2;
+    // 获取对方信息（可能是买家或卖家）
+    final opponent = widget.chatRoom.getOpponent(widget.currentUserId);
 
-    // 如果卖家信息为空，显示错误
-    if (seller == null) {
+    // 如果对方信息为空，显示错误
+    if (opponent == null) {
       return ListTile(
         leading: CircleAvatar(child: Icon(Icons.error)),
         title: Text(s.chat_invalid_session),
-        subtitle: Text('卖家信息不存在'),
+        subtitle: Text('对方信息不存在'),
       );
     }
 
@@ -109,14 +109,14 @@ class _ChatListItemState extends State<ChatListItem> {
     return ListTile(
       leading: CircleAvatar(
         radius: 25, // Standard ListTile leading size adjust if needed
-        backgroundImage: (seller.avatar != null && seller.avatar!.isNotEmpty)
-            ? CachedNetworkImageProvider(seller.avatar!)
+        backgroundImage: (opponent.avatar != null && opponent.avatar!.isNotEmpty)
+            ? CachedNetworkImageProvider(opponent.avatar!)
             : null, // Use provider for CircleAvatar
         backgroundColor: Colors.grey[200], // Placeholder background
-        child: (seller.avatar == null || seller.avatar!.isEmpty)
+        child: (opponent.avatar == null || opponent.avatar!.isEmpty)
             ? Text(
-                seller.nickName?.isNotEmpty == true
-                    ? seller.nickName![0].toUpperCase() // Show first initial
+                opponent.nickName?.isNotEmpty == true
+                    ? opponent.nickName![0].toUpperCase() // Show first initial
                     : '?',
                 style: const TextStyle(fontSize: 20, color: Colors.white),
               )
@@ -126,7 +126,7 @@ class _ChatListItemState extends State<ChatListItem> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            seller.nickName ?? '未知卖家',
+            opponent.nickName ?? '未知用户',
             style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16), // Adjust font size
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

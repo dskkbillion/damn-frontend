@@ -142,12 +142,14 @@ Future<void> main() async {
     const sellerToken = "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjdkMjg0MjkzLTVjNzYtNDc0Mi05ZmI4LTIzODdhZjI3ODkzZCJ9.Yp0qHMGlHjShMwnf1LQJ4wCzqakG-fZn7-xpQ2P0GpZ_60fk4_WmIPZ63QpAISbyRrO_-_g8rwoqH86iVGdQtA"; // 卖家Token
     const sellerUserId = "18888888888"; // 卖家ID
     const sellerCommonUserId = "1"; // 卖家通用ID
+    const sellerReferId = "1"; // 卖家referId，用于聊天模块数据匹配（对应API返回的doctor.referId）
 
     await storage.write(key: 'auth_token', value: sellerToken);
     await storage.write(key: 'user_id', value: sellerUserId);
     await storage.write(key: 'common_user_id', value: sellerCommonUserId);
+    await storage.write(key: 'refer_id', value: sellerReferId); // 新增：用于聊天模块
 
-    print('[main_seller_preview] Successfully injected seller credentials.');
+    print('[main_seller_preview] Successfully injected seller credentials with referId: $sellerReferId');
   } catch (e) {
      print('[main_seller_preview] ERROR injecting seller credentials: $e');
   }

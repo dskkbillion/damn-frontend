@@ -167,12 +167,14 @@ Future<void> main() async {
     const buyerToken = "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjBiYjgzYmIwLTIxNTEtNGMyNC1iYmJlLWIwZjY0YzdhY2Y1NSJ9.XxzKc2VTTYE3GKjRYH53jBwGPzrGfmvppayKy31dkzu-XQdFiCDlZXFLgELOLCF0UGdxhoJTkSG-8MNMToIEww"; // 买家Token
     const buyerUserId = "13819198810"; // 买家ID
     const buyerCommonUserId = "10319"; // 买家通用ID
+    const buyerReferId = "10319"; // 买家referId，用于聊天模块数据匹配（对应API返回的member.referId）
 
     await storage.write(key: 'auth_token', value: buyerToken);
     await storage.write(key: 'user_id', value: buyerUserId);
     await storage.write(key: 'common_user_id', value: buyerCommonUserId);
+    await storage.write(key: 'refer_id', value: buyerReferId); // 新增：用于聊天模块
 
-    print('[main_buyer_preview] Successfully injected buyer credentials.');
+    print('[main_buyer_preview] Successfully injected buyer credentials with referId: $buyerReferId');
   } catch (e) {
      print('[main_buyer_preview] ERROR injecting buyer credentials: $e');
   }
