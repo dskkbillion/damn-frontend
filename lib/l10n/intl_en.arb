@@ -26,6 +26,12 @@
     "ai_docs_enter_chat": "Enter Chat",
     "ai_docs_let_them_see": "Let them see",
     
+    "ai_docs_welcome_title": "Welcome to AI Assistant",
+    "ai_docs_welcome_message": "Just send a message to start chatting, and the system will automatically create a chat room for you",
+    "ai_docs_auto_create_text": "No conversation selected, automatically creating a new conversation and sending message",
+    "ai_docs_auto_create_voice": "No conversation selected, automatically creating a new conversation and sending voice message",
+    "ai_docs_cancelling_generation": "Cancelling generation...",
+    
     "allocating_step1": "Allocating",
     "allocating_step2": "Allocating.",
     "allocating_step3": "Allocating..",

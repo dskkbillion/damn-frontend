@@ -26,6 +26,12 @@
     "ai_docs_enter_chat": "进入聊天",
     "ai_docs_let_them_see": "让ta看看",
     
+    "ai_docs_welcome_title": "欢迎使用AI助手",
+    "ai_docs_welcome_message": "直接发送消息即可开始对话，系统会自动为您创建聊天室",
+    "ai_docs_auto_create_text": "没有选择对话，自动创建新对话并发送消息",
+    "ai_docs_auto_create_voice": "没有选择对话，自动创建新对话并发送语音消息",
+    "ai_docs_cancelling_generation": "正在取消生成中...",
+    
     "allocating_step1": "分发中",
     "allocating_step2": "分发中.",
     "allocating_step3": "分发中..",

@@ -205,6 +205,56 @@ class S {
     );
   }
 
+  /// `Welcome to AI Assistant`
+  String get ai_docs_welcome_title {
+    return Intl.message(
+      'Welcome to AI Assistant',
+      name: 'ai_docs_welcome_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Just send a message to start chatting, and the system will automatically create a chat room for you`
+  String get ai_docs_welcome_message {
+    return Intl.message(
+      'Just send a message to start chatting, and the system will automatically create a chat room for you',
+      name: 'ai_docs_welcome_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No conversation selected, automatically creating a new conversation and sending message`
+  String get ai_docs_auto_create_text {
+    return Intl.message(
+      'No conversation selected, automatically creating a new conversation and sending message',
+      name: 'ai_docs_auto_create_text',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No conversation selected, automatically creating a new conversation and sending voice message`
+  String get ai_docs_auto_create_voice {
+    return Intl.message(
+      'No conversation selected, automatically creating a new conversation and sending voice message',
+      name: 'ai_docs_auto_create_voice',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cancelling generation...`
+  String get ai_docs_cancelling_generation {
+    return Intl.message(
+      'Cancelling generation...',
+      name: 'ai_docs_cancelling_generation',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Allocating`
   String get allocating_step1 {
     return Intl.message(

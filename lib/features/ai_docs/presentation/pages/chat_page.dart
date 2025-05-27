@@ -154,22 +154,28 @@ class _ChatPageState extends State<ChatPage> {
     // 获取国际化资源
     final s = S.of(context);
     
-    // Check if there's text OR pending images in the Bloc state
-    // final hasPendingImages = context.read<AiChatBloc>().state.pendingImageFiles?.isNotEmpty ?? false;
-
-    // --- Updated Logic: Require text to send --- 
+    // 检查消息是否为空
     if (message.trim().isNotEmpty) {
-       // Dispatch SendMessage event with ONLY the message text
-       // The Bloc will handle merging with any uploadedImageUrls from the state.
-       context.read<AiChatBloc>().add(SendMessage(message: message.trim()));
-      _textController.clear(); 
+      // 获取当前AI聊天Bloc状态
+      final aiChatBloc = context.read<AiChatBloc>();
+      final currentState = aiChatBloc.state;
+      
+      // 检查是否已选择对话，如果没有选择，先创建新对话
+      if (currentState.selectedConversationId == null) {
+        // 先创建新对话，再发送消息
+        print("[ChatPage] ${s.ai_docs_auto_create_text}");
+        aiChatBloc.add(CreateNewConversationAndSendMessage(message: message.trim()));
+      } else {
+        // 已有对话，直接发送消息
+        aiChatBloc.add(SendMessage(message: message.trim()));
+      }
+      _textController.clear();
     } else {
-       // If message is empty, do not send, even if there are pending images.
-       // Optionally provide feedback to the user.
-       print("Send button pressed, but message text is empty. Not sending.");
-       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(s.ai_docs_please_enter_message)), // 使用国际化文本
-       );
+      // 消息为空，显示提示
+      print("Send button pressed, but message text is empty. Not sending.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.ai_docs_please_enter_message)), // 使用国际化文本
+      );
     }
   }
 

@@ -109,6 +109,26 @@ class DeleteSelectedConversation extends AiChatEvent {
   List<Object?> get props => [conversationId];
 }
 
+/// Event to create a new conversation and immediately send a message.
+class CreateNewConversationAndSendMessage extends AiChatEvent {
+  final String message;
+  
+  const CreateNewConversationAndSendMessage({required this.message});
+  
+  @override
+  List<Object?> get props => [message];
+}
+
+/// Event to create a new conversation and immediately send a voice message.
+class CreateNewConversationAndSendVoiceMessage extends AiChatEvent {
+  final File audioFile;
+  
+  const CreateNewConversationAndSendVoiceMessage({required this.audioFile});
+  
+  @override
+  List<Object?> get props => [audioFile];
+}
+
 /// Event triggered when the AI stream updates the response text.
 /// (Internal event dispatched by the Bloc while listening to the stream)
 class StreamResponseUpdated extends AiChatEvent {

@@ -152,7 +152,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                                   )
                                 : const Icon(Icons.stop_circle, color: Colors.red),
                             tooltip: isCancelling 
-                                ? '正在取消生成中...'  // TODO: 添加到国际化文件
+                                ? s.ai_docs_cancelling_generation
                                 : s.ai_docs_stop_generation, // 使用国际化文本
                             onPressed: isCancelling 
                                 ? null // 取消中时禁用按钮
@@ -382,8 +382,20 @@ class _ChatInputFieldState extends State<ChatInputField> {
                 print("Recorded file size: ${await recordedFile.length()} bytes");
 
                // Dispatch the event with the **actual recorded file**
-                if (mounted) { 
-                   context.read<AiChatBloc>().add(SendVoiceMessage(audioFile: recordedFile));
+                if (mounted) {
+                   // 获取当前AI聊天Bloc状态
+                   final aiChatBloc = context.read<AiChatBloc>();
+                   final currentState = aiChatBloc.state;
+                   
+                   // 检查是否已选择对话，如果没有选择，先创建新对话
+                   if (currentState.selectedConversationId == null) {
+                     // 先创建新对话，再发送语音消息
+                     print("[ChatInputField] ${s.ai_docs_auto_create_voice}");
+                     aiChatBloc.add(CreateNewConversationAndSendVoiceMessage(audioFile: recordedFile));
+                   } else {
+                     // 已有对话，直接发送语音消息
+                     aiChatBloc.add(SendVoiceMessage(audioFile: recordedFile));
+                   }
                 } 
              } else {
                print("Error: Recorded file not found at path: $path");

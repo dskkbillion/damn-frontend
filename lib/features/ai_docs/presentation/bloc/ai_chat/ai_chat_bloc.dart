@@ -91,6 +91,8 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     on<SelectConversation>(_onSelectConversation);
     on<CreateNewConversation>(_onCreateNewConversation);
     on<DeleteSelectedConversation>(_onDeleteSelectedConversation);
+    on<CreateNewConversationAndSendMessage>(_onCreateNewConversationAndSendMessage);
+    on<CreateNewConversationAndSendVoiceMessage>(_onCreateNewConversationAndSendVoiceMessage);
     // Image Handling
     on<PickImage>(_onPickImage);
     on<_ImageUploadSuccess>(_onImageUploadSuccess);
@@ -244,17 +246,115 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         emit(state.copyWith(
           conversationsStatus: ConversationsStatus.loaded, // List status back to loaded (will be updated by LoadConversations)
           selectedConversationIdOrNull: newConversationId,
-          status: AiChatStatus.historyLoadSuccess, // New chat is ready (empty history loaded successfully)
-          messages: [],
-          recommendations: [],
-          streamingResponseText: '', 
-          clearErrorMessage: true,
-          clearConversationListErrorMessage: true,
+          status: AiChatStatus.historyLoadSuccess, // Set main area status to success (no history yet)
+          messages: [], // Clear previous messages
+          streamingResponseText: '', // Clear any streaming text
+          recommendations: [], // Clear related services
+          clearErrorMessage: true, // Clear main chat area error
         ));
-        // Refresh the conversation list to include the new one
-        add(LoadConversations()); 
+
+        // Reload the conversation list to show the new conversation
+        add(LoadConversations());
       },
     );
+  }
+
+  Future<void> _onCreateNewConversationAndSendMessage(
+    CreateNewConversationAndSendMessage event,
+    Emitter<AiChatState> emit,
+  ) async {
+     // 设置状态为创建对话中
+     emit(state.copyWith(conversationsStatus: ConversationsStatus.loading)); 
+     
+     // 获取用户ID
+     final userId = await _getCurrentUserId();
+     if (userId == null) {
+       emit(state.copyWith(
+         conversationsStatus: ConversationsStatus.error, 
+         conversationListErrorMessage: '用户未认证或ID格式无效'
+       ));
+       return;
+     }
+     
+     // 创建新对话
+     final result = await _createConversation(CreateConversationParams(userId: userId));
+     
+     await result.fold(
+       (failure) {
+         // 创建对话失败
+         emit(state.copyWith(
+           conversationsStatus: ConversationsStatus.error,
+           conversationListErrorMessage: '创建对话失败: ${failure.toString()}',
+         ));
+       },
+       (newConversationId) async {
+         // 创建对话成功，设置为当前选中的对话
+         emit(state.copyWith(
+           conversationsStatus: ConversationsStatus.loaded,
+           selectedConversationIdOrNull: newConversationId,
+           status: AiChatStatus.historyLoadSuccess, // 设置为历史加载成功状态
+           messages: [], // 清空消息列表
+           streamingResponseText: '', // 清空流式响应文本
+           recommendations: [], // 清空推荐服务
+           clearErrorMessage: true, // 清除错误消息
+         ));
+         
+         // 重新加载对话列表
+         add(LoadConversations());
+         
+         // 立即发送消息
+         add(SendMessage(message: event.message));
+       },
+     );
+  }
+
+  Future<void> _onCreateNewConversationAndSendVoiceMessage(
+    CreateNewConversationAndSendVoiceMessage event,
+    Emitter<AiChatState> emit,
+  ) async {
+     // 设置状态为创建对话中
+     emit(state.copyWith(conversationsStatus: ConversationsStatus.loading)); 
+     
+     // 获取用户ID
+     final userId = await _getCurrentUserId();
+     if (userId == null) {
+       emit(state.copyWith(
+         conversationsStatus: ConversationsStatus.error, 
+         conversationListErrorMessage: '用户未认证或ID格式无效'
+       ));
+       return;
+     }
+     
+     // 创建新对话
+     final result = await _createConversation(CreateConversationParams(userId: userId));
+     
+     await result.fold(
+       (failure) {
+         // 创建对话失败
+         emit(state.copyWith(
+           conversationsStatus: ConversationsStatus.error,
+           conversationListErrorMessage: '创建对话失败: ${failure.toString()}',
+         ));
+       },
+       (newConversationId) async {
+         // 创建对话成功，设置为当前选中的对话
+         emit(state.copyWith(
+           conversationsStatus: ConversationsStatus.loaded,
+           selectedConversationIdOrNull: newConversationId,
+           status: AiChatStatus.historyLoadSuccess, // 设置为历史加载成功状态
+           messages: [], // 清空消息列表
+           streamingResponseText: '', // 清空流式响应文本
+           recommendations: [], // 清空推荐服务
+           clearErrorMessage: true, // 清除错误消息
+         ));
+         
+         // 重新加载对话列表
+         add(LoadConversations());
+         
+         // 立即发送语音消息
+         add(SendVoiceMessage(audioFile: event.audioFile));
+       },
+     );
   }
 
   Future<void> _onDeleteSelectedConversation(

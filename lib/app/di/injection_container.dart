@@ -36,6 +36,9 @@ import 'package:dskk_flutter_refactor/features/auth/di/auth_di.dart';
 // Import ai_docs module DI
 import 'package:dskk_flutter_refactor/features/ai_docs/di/ai_docs_di.dart';
 
+// Import analytics module DI
+import 'package:dskk_flutter_refactor/core/analytics/di/analytics_injection.dart';
+
 // Import payment related modules
 import '../../features/payment/presentation/bloc/payment_bloc.dart';
 import '../../features/orders/domain/usecases/create_order_use_case.dart';
@@ -113,6 +116,16 @@ Future<void> configureDependencies({required String backendBaseUrl}) async {
     print('[DI] Seller module dependencies initialization complete.');
   } catch (e) {
     print('[DI] Failed to initialize Seller module: $e');
+    // 不抛出异常，允许应用继续启动，但记录错误信息
+  }
+  
+  // 初始化Analytics模块依赖
+  try {
+    print('[DI] Starting Analytics module initialization...');
+    await initAnalyticsModule();
+    print('[DI] Analytics module dependencies initialization complete.');
+  } catch (e) {
+    print('[DI] Failed to initialize Analytics module: $e');
     // 不抛出异常，允许应用继续启动，但记录错误信息
   }
 }

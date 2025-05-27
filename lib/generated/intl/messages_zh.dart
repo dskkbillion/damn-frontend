@@ -99,7 +99,16 @@ class MessageLookup extends MessageLookupByLibrary {
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "ai_docs_add_image": MessageLookupByLibrary.simpleMessage("添加图片"),
     "ai_docs_assistant_title": MessageLookupByLibrary.simpleMessage("AI 助手"),
+    "ai_docs_auto_create_text": MessageLookupByLibrary.simpleMessage(
+      "没有选择对话，自动创建新对话并发送消息",
+    ),
+    "ai_docs_auto_create_voice": MessageLookupByLibrary.simpleMessage(
+      "没有选择对话，自动创建新对话并发送语音消息",
+    ),
     "ai_docs_cancel": MessageLookupByLibrary.simpleMessage("取消"),
+    "ai_docs_cancelling_generation": MessageLookupByLibrary.simpleMessage(
+      "正在取消生成中...",
+    ),
     "ai_docs_conversation_list": MessageLookupByLibrary.simpleMessage("会话列表"),
     "ai_docs_delete": MessageLookupByLibrary.simpleMessage("删除"),
     "ai_docs_delete_conversation_content": MessageLookupByLibrary.simpleMessage(
@@ -179,6 +188,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "ai_docs_uploading_images": MessageLookupByLibrary.simpleMessage(
       "图片正在上传中，请稍候...",
     ),
+    "ai_docs_welcome_message": MessageLookupByLibrary.simpleMessage(
+      "直接发送消息即可开始对话，系统会自动为您创建聊天室",
+    ),
+    "ai_docs_welcome_title": MessageLookupByLibrary.simpleMessage("欢迎使用AI助手"),
     "allocating_step1": MessageLookupByLibrary.simpleMessage("分发中"),
     "allocating_step2": MessageLookupByLibrary.simpleMessage("分发中."),
     "allocating_step3": MessageLookupByLibrary.simpleMessage("分发中.."),

@@ -101,7 +101,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "ai_docs_assistant_title": MessageLookupByLibrary.simpleMessage(
       "AI Assistant",
     ),
+    "ai_docs_auto_create_text": MessageLookupByLibrary.simpleMessage(
+      "No conversation selected, automatically creating a new conversation and sending message",
+    ),
+    "ai_docs_auto_create_voice": MessageLookupByLibrary.simpleMessage(
+      "No conversation selected, automatically creating a new conversation and sending voice message",
+    ),
     "ai_docs_cancel": MessageLookupByLibrary.simpleMessage("Cancel"),
+    "ai_docs_cancelling_generation": MessageLookupByLibrary.simpleMessage(
+      "Cancelling generation...",
+    ),
     "ai_docs_conversation_list": MessageLookupByLibrary.simpleMessage(
       "Conversation List",
     ),
@@ -212,6 +221,12 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "ai_docs_uploading_images": MessageLookupByLibrary.simpleMessage(
       "Images uploading, please wait...",
+    ),
+    "ai_docs_welcome_message": MessageLookupByLibrary.simpleMessage(
+      "Just send a message to start chatting, and the system will automatically create a chat room for you",
+    ),
+    "ai_docs_welcome_title": MessageLookupByLibrary.simpleMessage(
+      "Welcome to AI Assistant",
     ),
     "allocating_step1": MessageLookupByLibrary.simpleMessage("Allocating"),
     "allocating_step2": MessageLookupByLibrary.simpleMessage("Allocating."),
