@@ -28,11 +28,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   bool _showProductHeader = true;
   double _lastScrollOffset = 0.0;
   static const double _scrollThreshold = 50.0; // 滚动阈值
-  // 添加分页加载参数 - 暂时注释掉分页功能
-  // int _pageNum = 1;
-  // final int _pageSize = 20;
-  // bool _isLoadingMore = false;
-  // bool _hasMoreMessages = true;
+  // 添加分页加载参数
+  int _pageNum = 1;
+  final int _pageSize = 20;
+  bool _isLoadingMore = false;
+  bool _hasMoreMessages = true;
 
   @override
   void initState() {
@@ -63,6 +63,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       final isScrollingDown = scrollDelta > 0; // 在reverse模式下，向下滚动offset增加
       final isScrollingUp = scrollDelta < 0;
       
+      // 检查是否需要加载更多历史消息（在reverse模式下，滚动到顶部时加载更多）
+      if (currentScroll >= maxScroll * 0.8 && !_isLoadingMore && _hasMoreMessages) {
+        _loadMoreMessages();
+      }
+      
       // 更新商品头部显示状态
       if (scrollDelta.abs() > 5.0) { // 避免微小滚动触发
         setState(() {
@@ -83,26 +88,28 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     }
   }
 
-  // 暂时注释掉加载更多历史消息的方法
-  // void _loadMoreMessages() {
-  //   if (_isLoadingMore) return;
-  //   
-  //   setState(() {
-  //     _isLoadingMore = true;
-  //   });
-  //   
-  //   // 调用bloc加载更多消息
-  //   context.read<ChatMessagesBloc>().add(
-  //     LoadMoreChatMessages(
-  //       chatId: widget.chatId,
-  //       pageNum: _pageNum + 1,
-  //       pageSize: _pageSize,
-  //     ),
-  //   );
-  //   
-  //   // 增加页码
-  //   _pageNum++;
-  // }
+  // 加载更多历史消息的方法
+  void _loadMoreMessages() {
+    if (_isLoadingMore || !_hasMoreMessages) return;
+    
+    setState(() {
+      _isLoadingMore = true;
+    });
+    
+    print('[ChatRoomPage] Loading more messages, pageNum: ${_pageNum + 1}');
+    
+    // 调用bloc加载更多消息
+    context.read<ChatMessagesBloc>().add(
+      LoadMoreChatMessages(
+        chatId: widget.chatId,
+        pageNum: _pageNum + 1,
+        pageSize: _pageSize,
+      ),
+    );
+    
+    // 增加页码
+    _pageNum++;
+  }
 
   @override
   void dispose() {
@@ -321,10 +328,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         }
                         
                         // 更新加载状态
-                        // setState(() {
-                        //   _isLoadingMore = false;
-                        //   _hasMoreMessages = state.hasMore;
-                        // });
+                        setState(() {
+                          _isLoadingMore = false;
+                          _hasMoreMessages = state.hasMore;
+                        });
                      }
                   },
                   builder: (context, state) {
@@ -344,18 +351,17 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             reverse: true, // 使用reverse，这样最新消息会在底部
                             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
                             cacheExtent: 200, // 增加缓存范围，提高渲染性能
-                            itemCount: state.messages.length, // 暂时注释掉分页功能: + (_isLoadingMore ? 1 : 0),
+                            itemCount: state.messages.length + (_isLoadingMore ? 1 : 0),
                             itemBuilder: (context, index) {
-                              // 暂时注释掉分页加载指示器
                               // 底部加载更多指示器（在reverse模式下显示在顶部）
-                              // if (index == state.messages.length && _isLoadingMore) {
-                              //   return Center(
-                              //     child: Padding(
-                              //       padding: const EdgeInsets.all(8.0),
-                              //       child: CircularProgressIndicator(strokeWidth: 2),
-                              //     ),
-                              //   );
-                              // }
+                              if (index == state.messages.length && _isLoadingMore) {
+                                return Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  ),
+                                );
+                              }
                               
                               // 确保索引在有效范围内
                               if (index >= state.messages.length) {

@@ -64,8 +64,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     required this.webSocketDataSource,
   }) : super(ChatMessagesInitial()) {
     on<LoadChatMessages>(_onLoadChatMessages);
-    // 暂时注释掉分页功能
-    // on<LoadMoreChatMessages>(_onLoadMoreChatMessages);
+    on<LoadMoreChatMessages>(_onLoadMoreChatMessages);
     on<SendMessageRequested>(_onSendMessageRequested);
     on<_MessageReceived>(_onInternalMessageReceived);
     on<RevokeMessageRequested>(_onRevokeMessageRequested);
@@ -100,7 +99,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
         getMessageList(GetMessageListParams(
           chatId: chatId,
           pageNum: 1,
-          pageSize: 500, // 临时增加到50条，可以根据需要调整
+          pageSize: 20, // 改为20条，支持分页
         )),
         getChatRoomDetails(GetChatRoomDetailsParams(chatId: chatId)),
       ]);
@@ -191,73 +190,71 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     }
   }
 
-  // 暂时注释掉分页加载方法
-  // Future<void> _onLoadMoreChatMessages(
-  //   LoadMoreChatMessages event,
-  //   Emitter<ChatMessagesState> emit
-  // ) async {
-  //   if (state is! ChatMessagesLoaded) return;
-  //   final currentState = state as ChatMessagesLoaded;
-  //   
-  //   try {
-  //     // 调用用例加载更多消息
-  //     final result = await getMessageList(GetMessageListParams(
-  //       chatId: event.chatId,
-  //       pageNum: event.pageNum,
-  //       pageSize: event.pageSize
-  //     ));
-  //     
-  //     await result.fold(
-  //       (failure) {
-  //         emit(currentState.copyWith(
-  //           error: () => failure.message,
-  //           isInitialLoad: false,
-  //           hasNewMessage: false
-  //         ));
-  //       },
-  //       (moreMessages) {
-  //         // 检查是否有更多消息
-  //         final hasMore = moreMessages.isNotEmpty && moreMessages.length >= event.pageSize;
-  //         
-  //         // 合并消息并去重
-  //         final allMessages = [...moreMessages, ...currentState.messages];
-  //         final uniqueMessages = _removeDuplicateMessages(allMessages);
-  //         
-  //         emit(currentState.copyWith(
-  //           messages: uniqueMessages,
-  //           isInitialLoad: false,
-  //           hasNewMessage: false,
-  //           hasMore: hasMore,
-  //           error: () => null
-  //         ));
-  //       },
-  //     );
-  //   } catch (e) {
-  //     emit(currentState.copyWith(
-  //       error: () => '加载更多消息失败: ${e.toString()}',
-  //       isInitialLoad: false,
-  //       hasNewMessage: false
-  //     ));
-  //   }
-  // }
+  Future<void> _onLoadMoreChatMessages(
+    LoadMoreChatMessages event,
+    Emitter<ChatMessagesState> emit
+  ) async {
+    if (state is! ChatMessagesLoaded) return;
+    final currentState = state as ChatMessagesLoaded;
+    
+    try {
+      // 调用用例加载更多消息
+      final result = await getMessageList(GetMessageListParams(
+        chatId: event.chatId,
+        pageNum: event.pageNum,
+        pageSize: event.pageSize
+      ));
+      
+      await result.fold(
+        (failure) {
+          emit(currentState.copyWith(
+            error: () => failure.message,
+            isInitialLoad: false,
+            hasNewMessage: false
+          ));
+        },
+        (moreMessages) {
+          // 检查是否有更多消息
+          final hasMore = moreMessages.isNotEmpty && moreMessages.length >= event.pageSize;
+          
+          // 合并消息并去重
+          final allMessages = [...moreMessages, ...currentState.messages];
+          final uniqueMessages = _removeDuplicateMessages(allMessages);
+          
+          emit(currentState.copyWith(
+            messages: uniqueMessages,
+            isInitialLoad: false,
+            hasNewMessage: false,
+            hasMore: hasMore,
+            error: () => null
+          ));
+        },
+      );
+    } catch (e) {
+      emit(currentState.copyWith(
+        error: () => '加载更多消息失败: ${e.toString()}',
+        isInitialLoad: false,
+        hasNewMessage: false
+      ));
+    }
+  }
 
-  // 暂时注释掉去重方法
-  // List<ChatMessage> _removeDuplicateMessages(List<ChatMessage> messages) {
-  //   final uniqueMessages = <ChatMessage>[];
-  //   final messageIds = <int>{};
-  //   
-  //   for (final message in messages) {
-  //     if (!messageIds.contains(message.id)) {
-  //       messageIds.add(message.id);
-  //       uniqueMessages.add(message);
-  //     }
-  //   }
-  //   
-  //   // 按时间排序
-  //   uniqueMessages.sort((a, b) => a.createTime!.compareTo(b.createTime!));
-  //   
-  //   return uniqueMessages;
-  // }
+  List<ChatMessage> _removeDuplicateMessages(List<ChatMessage> messages) {
+    final uniqueMessages = <ChatMessage>[];
+    final messageIds = <int>{};
+    
+    for (final message in messages) {
+      if (!messageIds.contains(message.id)) {
+        messageIds.add(message.id);
+        uniqueMessages.add(message);
+      }
+    }
+    
+    // 按时间排序
+    uniqueMessages.sort((a, b) => a.createTime!.compareTo(b.createTime!));
+    
+    return uniqueMessages;
+  }
 
   Future<void> _onSendMessageRequested(
     SendMessageRequested event,
