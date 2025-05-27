@@ -39,8 +39,7 @@
     - [✓] 在 `lib/features/ai_docs/data/datasources/` 下创建 `IFileUploadDataSource` 接口及 `FileUploadDataSourceImpl` 实现 (依赖 `Core` HTTP Client)。
     - [✓] 在 `lib/features/ai_docs/data/models/` 下定义 `DTOs` (e.g., `AiConversationModel`, `AiChatMessageModel`, `RelatedServiceModel`) 并实现与 `Entities` 的映射 (`fromJson`, `toEntity`)。
     - [✓] 在 `AiChatRepositoryImpl` 和 `FileUploadRepositoryImpl` 中处理数据源调用、错误转换 (API Error -> Domain `Failure`) 和数据映射 (Model -> Entity)。
-    - [✓] **(隔离开发)** 创建 Mock `DataSource` (`MockAiChatRemoteDataSource`, `MockFileUploadDataSource` in `mocks/` subfolder)。
-    - **备注:** 核心实现完成，但 `/chat/allocate` 请求参数和 `/api/common/public/upload` 响应格式待确认。`IHttpClient` 的 SSE 和 Multipart 支持需在 Core 模块实现。
+    - **备注:** 核心实现完成，已接入真实API。`IHttpClient` 的 SSE 和 Multipart 支持已在 Core 模块实现。
 
 - [✓] **6. 实现 Flutter `Domain` 逻辑** (基本完成)
     - [✓] 在 `lib/features/ai_docs/domain/usecases/` 下创建了所有核心业务对应的 `Use Case` 实现类 (e.g., `FetchConversationsUseCase`, `SendMessageUseCase`, `UploadFileUseCase` 等)。

@@ -788,6 +788,116 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     }
   }
 
+  @override
+  Future<String> updateConversationTitle({
+    required int conversationId,
+    required int userId,
+    required String title,
+  }) async {
+    const String path = '/model/chat/title/update';
+    print("Updating conversation title using path: $path");
+    
+    final Map<String, dynamic> requestData = {
+      'conversation_id': conversationId,
+      'user_id': userId,
+      'title': title,
+    };
+    
+    try {
+      // 获取token
+      final storage = const FlutterSecureStorage();
+      final token = await storage.read(key: 'auth_token');
+      print("[AiDocs] 更新标题，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      
+      // 创建包含认证头的选项
+      final options = Options(
+        headers: {
+          if (token != null && token.isNotEmpty)
+            'Authorization': token, // 直接使用token
+        }
+      );
+      print("[AiDocs] 请求头: ${options.headers}");
+      
+      // 直接使用Dio实例
+      final response = await _httpClient.getDioInstance().post(
+        path, 
+        data: requestData,
+        options: options
+      );
+      
+      // 处理响应
+      final responseData = response.data;
+      final data = _handleResponse(responseData);
+      
+      if (data != null && data['title'] is String) {
+        return data['title'];
+      } else {
+        throw ds_exceptions.DataSourceException(message: 'Invalid title format in API response');
+      }
+    } on ds_exceptions.ServerException {
+      rethrow;
+    } on ds_exceptions.NetworkException {
+      rethrow;
+    } catch (e) {
+      print('Unexpected error in updateConversationTitle at $path: $e');
+      throw ds_exceptions.DataSourceException(message: 'Failed to update conversation title: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<String> generateConversationTitle({
+    required int conversationId,
+    required int userId,
+  }) async {
+    const String path = '/model/chat/title/generate';
+    print("Generating conversation title using path: $path");
+    
+    final Map<String, dynamic> requestData = {
+      'conversation_id': conversationId,
+      'user_id': userId,
+    };
+    
+    try {
+      // 获取token
+      final storage = const FlutterSecureStorage();
+      final token = await storage.read(key: 'auth_token');
+      print("[AiDocs] 生成标题，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      
+      // 创建包含认证头的选项
+      final options = Options(
+        headers: {
+          if (token != null && token.isNotEmpty)
+            'Authorization': token, // 直接使用token
+        }
+      );
+      print("[AiDocs] 请求头: ${options.headers}");
+      
+      // 直接使用Dio实例
+      final response = await _httpClient.getDioInstance().post(
+        path, 
+        data: requestData,
+        options: options
+      );
+      
+      // 处理响应
+      final responseData = response.data;
+      final data = _handleResponse(responseData);
+      
+      if (data != null && data['title'] is String) {
+        return data['title'];
+      } else {
+        throw ds_exceptions.DataSourceException(message: 'Invalid title format in API response');
+      }
+    } on ds_exceptions.ServerException {
+      rethrow;
+    } on ds_exceptions.NetworkException {
+      rethrow;
+    } catch (e) {
+      print('Unexpected error in generateConversationTitle at $path: $e');
+      throw ds_exceptions.DataSourceException(message: 'Failed to generate conversation title: ${e.toString()}');
+    }
+  }
+
   // Dispose method if needed (e.g., to close SSE client)
   void dispose() {
     // _sseSubscription?.cancel();

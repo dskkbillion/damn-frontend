@@ -201,4 +201,30 @@ class RemovePendingImage extends AiChatEvent {
   final String imagePathToRemove; // Use file path as identifier
   const RemovePendingImage({required this.imagePathToRemove});
   @override List<Object?> get props => [imagePathToRemove];
+}
+
+/// Event to manually update a conversation title.
+class UpdateConversationTitle extends AiChatEvent {
+  final int conversationId;
+  final String title;
+  
+  const UpdateConversationTitle({
+    required this.conversationId,
+    required this.title,
+  });
+  
+  @override
+  List<Object?> get props => [conversationId, title];
+}
+
+/// Event to generate a conversation title using AI.
+class GenerateConversationTitle extends AiChatEvent {
+  final int conversationId;
+  
+  const GenerateConversationTitle({
+    required this.conversationId,
+  });
+  
+  @override
+  List<Object?> get props => [conversationId];
 } 

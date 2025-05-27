@@ -27,15 +27,13 @@ import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/allocate_
 // Import data layer implementations (Use package imports)
 import 'package:dskk_flutter_refactor/features/ai_docs/data/repositories/ai_chat_repository_impl.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/data/repositories/file_upload_repository_impl.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/data/datasources/mocks/mock_ai_chat_remote_data_source.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/data/datasources/mocks/mock_file_upload_data_source.dart';
-// TODO: Import actual datasources and HTTP client when moving away from mocks
 
 // Import Custom Widgets (Use package imports)
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat_input_field.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat_message_list.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/conversation_sidebar.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/service_card.dart'; 
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/service_card.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat_page_title.dart';
 
 // Import chat module components for navigation
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_messages/chat_messages_bloc.dart';
@@ -94,30 +92,7 @@ class _ChatPageState extends State<ChatPage> {
              onPressed: () => Scaffold.of(context).openDrawer(),
            ),
          ),
-        title: BlocBuilder<AiChatBloc, AiChatState>(
-           // Rebuild title when selected ID or conversations list changes
-           buildWhen: (previous, current) => 
-                previous.selectedConversationId != current.selectedConversationId ||
-                previous.conversations != current.conversations,
-           builder: (context, state) {
-              final selectedId = state.selectedConversationId;
-              String title = s.ai_docs_assistant_title; // 使用国际化文本
-              if (selectedId != null) {
-                // Use firstWhereOrNull from collection package
-                final selectedConversation = state.conversations.firstWhereOrNull(
-                  (conv) => conv.id == selectedId,
-                );
-                if (selectedConversation != null) {
-                   // Use ?? to provide default if title is null
-                  title = selectedConversation.title ?? s.ai_docs_unnamed_conversation; // 使用国际化文本
-                } else {
-                  // Conversation ID exists but object not found yet (list updating?)
-                  title = s.ai_docs_loading; // 使用国际化文本
-                }
-              }
-              return Text(title);
-           },
-        ),
+        title: const ChatPageTitle(),
          // Add the dispatch/recommendation button to actions
          actions: [
            // Replace IconButton with a TextButton

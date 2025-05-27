@@ -28,68 +28,72 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m3(error) => "停止录音出错: ${error}";
 
-  static String m4(error) => "加载失败: ${error}";
+  static String m4(error) => "标题生成失败: ${error}";
 
-  static String m5(error) => "选择图片出错: ${error}";
+  static String m5(error) => "标题更新失败: ${error}";
 
-  static String m6(error) => "无法开始录音: ${error}";
+  static String m6(error) => "加载失败: ${error}";
 
-  static String m7(duration) => "松开 发送 (${duration}s)";
+  static String m7(error) => "选择图片出错: ${error}";
 
-  static String m8(error) => "停止录音失败: ${error}";
+  static String m8(error) => "无法开始录音: ${error}";
 
-  static String m9(targetType, targetValue) =>
+  static String m9(duration) => "松开 发送 (${duration}s)";
+
+  static String m10(error) => "停止录音失败: ${error}";
+
+  static String m11(targetType, targetValue) =>
       "点击了轮播图: ${targetType} - ${targetValue}";
 
-  static String m10(error) => "加载失败: ${error}";
+  static String m12(error) => "加载失败: ${error}";
 
-  static String m11(name) => "点击了服务卡片: ${name}";
+  static String m13(name) => "点击了服务卡片: ${name}";
 
-  static String m12(name) => "点击了\"让ta看看\"按钮: ${name}";
+  static String m14(name) => "点击了\"让ta看看\"按钮: ${name}";
 
-  static String m13(error) => "加载失败: ${error}";
+  static String m15(error) => "加载失败: ${error}";
 
-  static String m14(count) => "评论(${count})";
+  static String m16(count) => "评论(${count})";
 
-  static String m15(count) => "${count}天前";
+  static String m17(count) => "${count}天前";
 
-  static String m16(count) => "${count}小时前";
+  static String m18(count) => "${count}小时前";
 
-  static String m17(error) => "加载失败: ${error}";
+  static String m19(error) => "加载失败: ${error}";
 
-  static String m18(count) => "${count}分钟前";
+  static String m20(count) => "${count}分钟前";
 
-  static String m19(count) => "${count}月前";
+  static String m21(count) => "${count}月前";
 
-  static String m20(count) => "${count}年前";
+  static String m22(count) => "${count}年前";
 
-  static String m21(error) => "加载失败: ${error}";
+  static String m23(error) => "加载失败: ${error}";
 
-  static String m22(error) => "无法导航到订单列表: ${error}";
+  static String m24(error) => "无法导航到订单列表: ${error}";
 
-  static String m23(error) => "无法切换到卖家模式: ${error}";
+  static String m25(error) => "无法切换到卖家模式: ${error}";
 
-  static String m24(error) => "搜索失败: ${error}";
+  static String m26(error) => "搜索失败: ${error}";
 
-  static String m25(rate) => "完成率 ${rate}%";
+  static String m27(rate) => "完成率 ${rate}%";
 
-  static String m26(error) => "无法切换到买家模式: ${error}";
+  static String m28(error) => "无法切换到买家模式: ${error}";
 
-  static String m27(error) => "创建聊天失败: ${error}";
+  static String m29(error) => "创建聊天失败: ${error}";
 
-  static String m28(error) => "发生错误: ${error}";
+  static String m30(error) => "发生错误: ${error}";
 
-  static String m29(feature) => "${feature}功能尚未实现";
+  static String m31(feature) => "${feature}功能尚未实现";
 
-  static String m30(count) => "${count}粉丝";
+  static String m32(count) => "${count}粉丝";
 
-  static String m31(days) => "成为三级会员卖家${days}天";
+  static String m33(days) => "成为三级会员卖家${days}天";
 
-  static String m32(orderNum) => "完成订单${orderNum}笔";
+  static String m34(orderNum) => "完成订单${orderNum}笔";
 
-  static String m33(error) => "加载失败: ${error}";
+  static String m35(error) => "加载失败: ${error}";
 
-  static String m34(amount) => "盈利${amount}元";
+  static String m36(amount) => "盈利${amount}元";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -108,8 +112,17 @@ class MessageLookup extends MessageLookupByLibrary {
       "删除会话",
     ),
     "ai_docs_dispatched": MessageLookupByLibrary.simpleMessage("已分发"),
+    "ai_docs_edit_title": MessageLookupByLibrary.simpleMessage("编辑标题"),
+    "ai_docs_edit_title_hint": MessageLookupByLibrary.simpleMessage("请输入新的标题"),
     "ai_docs_enter_chat": MessageLookupByLibrary.simpleMessage("进入聊天"),
     "ai_docs_enter_message": MessageLookupByLibrary.simpleMessage("输入消息..."),
+    "ai_docs_generate_title": MessageLookupByLibrary.simpleMessage("AI生成标题"),
+    "ai_docs_generate_title_tooltip": MessageLookupByLibrary.simpleMessage(
+      "让AI为这个会话生成一个标题",
+    ),
+    "ai_docs_generating_title": MessageLookupByLibrary.simpleMessage(
+      "正在生成标题...",
+    ),
     "ai_docs_image_picking_error": m0,
     "ai_docs_let_them_see": MessageLookupByLibrary.simpleMessage("让ta看看"),
     "ai_docs_load_conversations_failed": MessageLookupByLibrary.simpleMessage(
@@ -152,6 +165,14 @@ class MessageLookup extends MessageLookupByLibrary {
       "停止录音出错",
     ),
     "ai_docs_stop_recording_error_with_reason": m3,
+    "ai_docs_title_empty": MessageLookupByLibrary.simpleMessage("标题不能为空"),
+    "ai_docs_title_generated": MessageLookupByLibrary.simpleMessage("标题已生成"),
+    "ai_docs_title_generation_failed": m4,
+    "ai_docs_title_too_long": MessageLookupByLibrary.simpleMessage(
+      "标题长度不能超过50个字符",
+    ),
+    "ai_docs_title_update_failed": m5,
+    "ai_docs_title_updated": MessageLookupByLibrary.simpleMessage("标题已更新"),
     "ai_docs_unnamed_conversation": MessageLookupByLibrary.simpleMessage(
       "未命名会话",
     ),
@@ -183,13 +204,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "chat_copied_to_clipboard": MessageLookupByLibrary.simpleMessage("已复制到剪贴板"),
     "chat_copy": MessageLookupByLibrary.simpleMessage("复制"),
     "chat_enter_message": MessageLookupByLibrary.simpleMessage("输入消息..."),
-    "chat_error_loading": m4,
+    "chat_error_loading": m6,
     "chat_expand": MessageLookupByLibrary.simpleMessage("展开"),
     "chat_i_want_seller_to_see": MessageLookupByLibrary.simpleMessage(
       "我想让商家看看",
     ),
     "chat_image_message": MessageLookupByLibrary.simpleMessage("[图片]"),
-    "chat_image_picking_error": m5,
+    "chat_image_picking_error": m7,
     "chat_invalid_session": MessageLookupByLibrary.simpleMessage("无效的会话"),
     "chat_list_title": MessageLookupByLibrary.simpleMessage("聊天列表"),
     "chat_loading": MessageLookupByLibrary.simpleMessage("正在加载..."),
@@ -252,12 +273,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "chat_pick_from_gallery": MessageLookupByLibrary.simpleMessage("从相册选择"),
     "chat_press_to_talk": MessageLookupByLibrary.simpleMessage("按住 说话"),
     "chat_recall": MessageLookupByLibrary.simpleMessage("撤回"),
-    "chat_recording_error": m6,
-    "chat_release_to_send": m7,
+    "chat_recording_error": m8,
+    "chat_release_to_send": m9,
     "chat_revoked_message": MessageLookupByLibrary.simpleMessage("[消息已撤回]"),
     "chat_send": MessageLookupByLibrary.simpleMessage("发送"),
     "chat_send_markdown": MessageLookupByLibrary.simpleMessage("发送Markdown示例"),
-    "chat_stop_recording_error": m8,
+    "chat_stop_recording_error": m10,
     "chat_switch_to_text": MessageLookupByLibrary.simpleMessage("切换到文本输入"),
     "chat_switch_to_voice": MessageLookupByLibrary.simpleMessage("切换到语音输入"),
     "chat_take_photo": MessageLookupByLibrary.simpleMessage("拍照"),
@@ -268,12 +289,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "Web 平台暂不支持录音功能",
     ),
     "chat_yesterday": MessageLookupByLibrary.simpleMessage("昨天"),
-    "home_banner_clicked": m9,
+    "home_banner_clicked": m11,
     "home_end_of_list": MessageLookupByLibrary.simpleMessage("已经到底了"),
     "home_loading": MessageLookupByLibrary.simpleMessage("加载中..."),
-    "home_loading_failed": m10,
-    "home_product_card_clicked": m11,
-    "home_recommend_clicked": m12,
+    "home_loading_failed": m12,
+    "home_product_card_clicked": m13,
+    "home_recommend_clicked": m14,
     "home_retry": MessageLookupByLibrary.simpleMessage("重试"),
     "home_search_hint": MessageLookupByLibrary.simpleMessage("搜索服务"),
     "home_title": MessageLookupByLibrary.simpleMessage("首页"),
@@ -303,7 +324,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "交付次数",
     ),
     "product_detail_faq": MessageLookupByLibrary.simpleMessage("常见问题"),
-    "product_detail_loading_failed": m13,
+    "product_detail_loading_failed": m15,
     "product_detail_more": MessageLookupByLibrary.simpleMessage("更多"),
     "product_detail_no_cases": MessageLookupByLibrary.simpleMessage("暂无案例展示"),
     "product_detail_no_reviews": MessageLookupByLibrary.simpleMessage("暂无评价"),
@@ -314,7 +335,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "已发布",
     ),
     "product_detail_retry": MessageLookupByLibrary.simpleMessage("重试"),
-    "product_detail_reviews": m14,
+    "product_detail_reviews": m16,
     "product_detail_sample_review": MessageLookupByLibrary.simpleMessage(
       "不错，很有耐心",
     ),
@@ -327,19 +348,19 @@ class MessageLookup extends MessageLookupByLibrary {
       "图片加载失败",
     ),
     "product_recommend_button": MessageLookupByLibrary.simpleMessage("让ta看看"),
-    "product_reviews_days_ago": m15,
-    "product_reviews_hours_ago": m16,
+    "product_reviews_days_ago": m17,
+    "product_reviews_hours_ago": m18,
     "product_reviews_just_now": MessageLookupByLibrary.simpleMessage("刚刚"),
-    "product_reviews_loading_failed": m17,
-    "product_reviews_minutes_ago": m18,
-    "product_reviews_months_ago": m19,
+    "product_reviews_loading_failed": m19,
+    "product_reviews_minutes_ago": m20,
+    "product_reviews_months_ago": m21,
     "product_reviews_no_reviews": MessageLookupByLibrary.simpleMessage("暂无评论"),
     "product_reviews_retry": MessageLookupByLibrary.simpleMessage("重试"),
     "product_reviews_sample_content": MessageLookupByLibrary.simpleMessage(
       "不错，很有耐心",
     ),
     "product_reviews_title": MessageLookupByLibrary.simpleMessage("评论"),
-    "product_reviews_years_ago": m20,
+    "product_reviews_years_ago": m22,
     "profile_about_us": MessageLookupByLibrary.simpleMessage("关于我们"),
     "profile_account_security": MessageLookupByLibrary.simpleMessage("账号与安全"),
     "profile_assistant_mission": MessageLookupByLibrary.simpleMessage("小帮手的使命"),
@@ -349,7 +370,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "profile_edit_nickname": MessageLookupByLibrary.simpleMessage("修改昵称"),
     "profile_favorites": MessageLookupByLibrary.simpleMessage("收藏"),
     "profile_in_progress": MessageLookupByLibrary.simpleMessage("处理中"),
-    "profile_loading_error": m21,
+    "profile_loading_error": m23,
     "profile_login_button": MessageLookupByLibrary.simpleMessage("去登录"),
     "profile_login_prompt": MessageLookupByLibrary.simpleMessage(
       "请登录以查看您的个人资料",
@@ -359,7 +380,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "profile_my_dskk": MessageLookupByLibrary.simpleMessage("我的多看"),
     "profile_my_wallet": MessageLookupByLibrary.simpleMessage("我的钱包"),
-    "profile_navigation_error": m22,
+    "profile_navigation_error": m24,
     "profile_nickname_hint": MessageLookupByLibrary.simpleMessage("请输入新昵称"),
     "profile_offline": MessageLookupByLibrary.simpleMessage("离线"),
     "profile_online": MessageLookupByLibrary.simpleMessage("在线"),
@@ -369,18 +390,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "profile_refund": MessageLookupByLibrary.simpleMessage("售后"),
     "profile_save": MessageLookupByLibrary.simpleMessage("保存"),
     "profile_settings": MessageLookupByLibrary.simpleMessage("设置"),
-    "profile_switch_error": m23,
+    "profile_switch_error": m25,
     "profile_switch_to_seller": MessageLookupByLibrary.simpleMessage("切换到卖家模式"),
     "profile_wallet": MessageLookupByLibrary.simpleMessage("钱包"),
     "search_button": MessageLookupByLibrary.simpleMessage("搜索"),
-    "search_failed": m24,
+    "search_failed": m26,
     "search_history": MessageLookupByLibrary.simpleMessage("搜索历史"),
     "search_hot_keywords": MessageLookupByLibrary.simpleMessage("热搜榜"),
     "search_no_results": MessageLookupByLibrary.simpleMessage("没有找到相关的服务"),
     "search_title": MessageLookupByLibrary.simpleMessage("搜索"),
     "seller_home_auth_management": MessageLookupByLibrary.simpleMessage("认证管理"),
     "seller_home_auto_reply": MessageLookupByLibrary.simpleMessage("自动回复"),
-    "seller_home_completion_rate": m25,
+    "seller_home_completion_rate": m27,
     "seller_home_functions": MessageLookupByLibrary.simpleMessage("功能"),
     "seller_home_income": MessageLookupByLibrary.simpleMessage("收入"),
     "seller_home_loading_failed": MessageLookupByLibrary.simpleMessage("加载失败"),
@@ -407,7 +428,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "待结算",
     ),
     "seller_home_recent_income": MessageLookupByLibrary.simpleMessage("近期收入"),
-    "seller_home_switch_failed": m26,
+    "seller_home_switch_failed": m28,
     "seller_home_switch_to_buyer": MessageLookupByLibrary.simpleMessage(
       "切换到买家模式",
     ),
@@ -429,18 +450,18 @@ class MessageLookup extends MessageLookupByLibrary {
       "认证状态",
     ),
     "seller_profile_certified": MessageLookupByLibrary.simpleMessage("已认证"),
-    "seller_profile_chat_failed": m27,
+    "seller_profile_chat_failed": m29,
     "seller_profile_default_title": MessageLookupByLibrary.simpleMessage(
       "卖家主页",
     ),
-    "seller_profile_error_occurred": m28,
-    "seller_profile_feature_not_implemented": m29,
+    "seller_profile_error_occurred": m30,
+    "seller_profile_feature_not_implemented": m31,
     "seller_profile_follow": MessageLookupByLibrary.simpleMessage("关注"),
     "seller_profile_follow_success": MessageLookupByLibrary.simpleMessage(
       "关注成功",
     ),
     "seller_profile_followed": MessageLookupByLibrary.simpleMessage("已关注"),
-    "seller_profile_followers": m30,
+    "seller_profile_followers": m32,
     "seller_profile_image_load_failed": MessageLookupByLibrary.simpleMessage(
       "图片加载失败",
     ),
@@ -498,8 +519,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "seller_statistics_active_orders": MessageLookupByLibrary.simpleMessage(
       "活跃订单数",
     ),
-    "seller_statistics_become_level3_seller": m31,
-    "seller_statistics_complete_orders": m32,
+    "seller_statistics_become_level3_seller": m33,
+    "seller_statistics_complete_orders": m34,
     "seller_statistics_completion_rate": MessageLookupByLibrary.simpleMessage(
       "完成率",
     ),
@@ -509,7 +530,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "未完成订单数",
     ),
     "seller_statistics_indicators": MessageLookupByLibrary.simpleMessage("指标"),
-    "seller_statistics_loading_failed": m33,
+    "seller_statistics_loading_failed": m35,
     "seller_statistics_monthly_earnings": MessageLookupByLibrary.simpleMessage(
       "本月盈利",
     ),
@@ -521,7 +542,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "seller_statistics_positive_rate": MessageLookupByLibrary.simpleMessage(
       "好评率",
     ),
-    "seller_statistics_profit_amount": m34,
+    "seller_statistics_profit_amount": m36,
     "seller_statistics_receipt": MessageLookupByLibrary.simpleMessage("回单"),
     "seller_statistics_reply_rate": MessageLookupByLibrary.simpleMessage("回复率"),
     "seller_statistics_retry": MessageLookupByLibrary.simpleMessage("重试"),

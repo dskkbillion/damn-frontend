@@ -130,4 +130,30 @@ abstract class IAiChatRemoteDataSource {
     required int conversationId,
     required int userId,
   });
+
+  /// Updates the title of a conversation via the `/model/chat/title/update` endpoint.
+  ///
+  /// [conversationId] The ID of the conversation to update.
+  /// [userId] The ID of the user (required by API).
+  /// [title] The new title for the conversation.
+  ///
+  /// Throws specific exceptions on failure.
+  /// Returns the updated title (String) on success.
+  Future<String> updateConversationTitle({
+    required int conversationId,
+    required int userId,
+    required String title,
+  });
+
+  /// Generates a title for a conversation via the `/model/chat/title/generate` endpoint.
+  ///
+  /// [conversationId] The ID of the conversation to generate title for.
+  /// [userId] The ID of the user (required by API).
+  ///
+  /// Throws specific exceptions on failure.
+  /// Returns the generated title (String) on success.
+  Future<String> generateConversationTitle({
+    required int conversationId,
+    required int userId,
+  });
 } 

@@ -83,6 +83,34 @@
     "ai_docs_delete": "删除",
     "ai_docs_please_select_conversation_to_delete": "请先选择要删除的会话",
     
+    "ai_docs_generate_title": "AI生成标题",
+    "ai_docs_generate_title_tooltip": "让AI为这个会话生成一个标题",
+    "ai_docs_generating_title": "正在生成标题...",
+    "ai_docs_title_generated": "标题已生成",
+    "ai_docs_title_generation_failed": "标题生成失败: {error}",
+    "@ai_docs_title_generation_failed": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "网络错误"
+        }
+      }
+    },
+    "ai_docs_edit_title": "编辑标题",
+    "ai_docs_edit_title_hint": "请输入新的标题",
+    "ai_docs_title_updated": "标题已更新",
+    "ai_docs_title_update_failed": "标题更新失败: {error}",
+    "@ai_docs_title_update_failed": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "网络错误"
+        }
+      }
+    },
+    "ai_docs_title_too_long": "标题长度不能超过50个字符",
+    "ai_docs_title_empty": "标题不能为空",
+    
     "nav_ai_assistant": "多少看看",
     "nav_home": "主页",
     "nav_messages": "消息",

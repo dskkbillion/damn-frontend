@@ -490,6 +490,116 @@ class S {
     );
   }
 
+  /// `AI Generate Title`
+  String get ai_docs_generate_title {
+    return Intl.message(
+      'AI Generate Title',
+      name: 'ai_docs_generate_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Let AI generate a title for this conversation`
+  String get ai_docs_generate_title_tooltip {
+    return Intl.message(
+      'Let AI generate a title for this conversation',
+      name: 'ai_docs_generate_title_tooltip',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Generating title...`
+  String get ai_docs_generating_title {
+    return Intl.message(
+      'Generating title...',
+      name: 'ai_docs_generating_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Title generated`
+  String get ai_docs_title_generated {
+    return Intl.message(
+      'Title generated',
+      name: 'ai_docs_title_generated',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Title generation failed: {error}`
+  String ai_docs_title_generation_failed(String error) {
+    return Intl.message(
+      'Title generation failed: $error',
+      name: 'ai_docs_title_generation_failed',
+      desc: '',
+      args: [error],
+    );
+  }
+
+  /// `Edit Title`
+  String get ai_docs_edit_title {
+    return Intl.message(
+      'Edit Title',
+      name: 'ai_docs_edit_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter a new title`
+  String get ai_docs_edit_title_hint {
+    return Intl.message(
+      'Please enter a new title',
+      name: 'ai_docs_edit_title_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Title updated`
+  String get ai_docs_title_updated {
+    return Intl.message(
+      'Title updated',
+      name: 'ai_docs_title_updated',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Title update failed: {error}`
+  String ai_docs_title_update_failed(String error) {
+    return Intl.message(
+      'Title update failed: $error',
+      name: 'ai_docs_title_update_failed',
+      desc: '',
+      args: [error],
+    );
+  }
+
+  /// `Title cannot exceed 50 characters`
+  String get ai_docs_title_too_long {
+    return Intl.message(
+      'Title cannot exceed 50 characters',
+      name: 'ai_docs_title_too_long',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Title cannot be empty`
+  String get ai_docs_title_empty {
+    return Intl.message(
+      'Title cannot be empty',
+      name: 'ai_docs_title_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `DSKK`
   String get nav_ai_assistant {
     return Intl.message('DSKK', name: 'nav_ai_assistant', desc: '', args: []);

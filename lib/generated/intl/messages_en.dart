@@ -28,68 +28,72 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m3(error) => "Error stopping recording: ${error}";
 
-  static String m4(error) => "Loading failed: ${error}";
+  static String m4(error) => "Title generation failed: ${error}";
 
-  static String m5(error) => "Error selecting image: ${error}";
+  static String m5(error) => "Title update failed: ${error}";
 
-  static String m6(error) => "Error starting recording: ${error}";
+  static String m6(error) => "Loading failed: ${error}";
 
-  static String m7(duration) => "Release to Send (${duration}s)";
+  static String m7(error) => "Error selecting image: ${error}";
 
-  static String m8(error) => "Error stopping recording: ${error}";
+  static String m8(error) => "Error starting recording: ${error}";
 
-  static String m9(targetType, targetValue) =>
+  static String m9(duration) => "Release to Send (${duration}s)";
+
+  static String m10(error) => "Error stopping recording: ${error}";
+
+  static String m11(targetType, targetValue) =>
       "Banner clicked: ${targetType} - ${targetValue}";
 
-  static String m10(error) => "Loading failed: ${error}";
+  static String m12(error) => "Loading failed: ${error}";
 
-  static String m11(name) => "Service card clicked: ${name}";
+  static String m13(name) => "Service card clicked: ${name}";
 
-  static String m12(name) => "Let them see button clicked: ${name}";
+  static String m14(name) => "Let them see button clicked: ${name}";
 
-  static String m13(error) => "Loading failed: ${error}";
+  static String m15(error) => "Loading failed: ${error}";
 
-  static String m14(count) => "Reviews (${count})";
+  static String m16(count) => "Reviews (${count})";
 
-  static String m15(count) => "${count} days ago";
+  static String m17(count) => "${count} days ago";
 
-  static String m16(count) => "${count} hours ago";
+  static String m18(count) => "${count} hours ago";
 
-  static String m17(error) => "Loading failed: ${error}";
+  static String m19(error) => "Loading failed: ${error}";
 
-  static String m18(count) => "${count} minutes ago";
+  static String m20(count) => "${count} minutes ago";
 
-  static String m19(count) => "${count} months ago";
+  static String m21(count) => "${count} months ago";
 
-  static String m20(count) => "${count} years ago";
+  static String m22(count) => "${count} years ago";
 
-  static String m21(error) => "Loading failed: ${error}";
+  static String m23(error) => "Loading failed: ${error}";
 
-  static String m22(error) => "Unable to navigate to order list: ${error}";
+  static String m24(error) => "Unable to navigate to order list: ${error}";
 
-  static String m23(error) => "Unable to switch to seller mode: ${error}";
+  static String m25(error) => "Unable to switch to seller mode: ${error}";
 
-  static String m24(error) => "Search failed: ${error}";
+  static String m26(error) => "Search failed: ${error}";
 
-  static String m25(rate) => "Completion Rate ${rate}%";
+  static String m27(rate) => "Completion Rate ${rate}%";
 
-  static String m26(error) => "Unable to switch to buyer mode: ${error}";
+  static String m28(error) => "Unable to switch to buyer mode: ${error}";
 
-  static String m27(error) => "Failed to create chat: ${error}";
+  static String m29(error) => "Failed to create chat: ${error}";
 
-  static String m28(error) => "Error occurred: ${error}";
+  static String m30(error) => "Error occurred: ${error}";
 
-  static String m29(feature) => "${feature} feature not yet implemented";
+  static String m31(feature) => "${feature} feature not yet implemented";
 
-  static String m30(count) => "${count} followers";
+  static String m32(count) => "${count} followers";
 
-  static String m31(days) => "Level 3 Seller for ${days} days";
+  static String m33(days) => "Level 3 Seller for ${days} days";
 
-  static String m32(orderNum) => "Complete ${orderNum} orders";
+  static String m34(orderNum) => "Complete ${orderNum} orders";
 
-  static String m33(error) => "Loading failed: ${error}";
+  static String m35(error) => "Loading failed: ${error}";
 
-  static String m34(amount) => "Earn \$${amount}";
+  static String m36(amount) => "Earn \$${amount}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -112,9 +116,22 @@ class MessageLookup extends MessageLookupByLibrary {
       "Delete conversation",
     ),
     "ai_docs_dispatched": MessageLookupByLibrary.simpleMessage("Dispatched"),
+    "ai_docs_edit_title": MessageLookupByLibrary.simpleMessage("Edit Title"),
+    "ai_docs_edit_title_hint": MessageLookupByLibrary.simpleMessage(
+      "Please enter a new title",
+    ),
     "ai_docs_enter_chat": MessageLookupByLibrary.simpleMessage("Enter Chat"),
     "ai_docs_enter_message": MessageLookupByLibrary.simpleMessage(
       "Enter message...",
+    ),
+    "ai_docs_generate_title": MessageLookupByLibrary.simpleMessage(
+      "AI Generate Title",
+    ),
+    "ai_docs_generate_title_tooltip": MessageLookupByLibrary.simpleMessage(
+      "Let AI generate a title for this conversation",
+    ),
+    "ai_docs_generating_title": MessageLookupByLibrary.simpleMessage(
+      "Generating title...",
     ),
     "ai_docs_image_picking_error": m0,
     "ai_docs_let_them_see": MessageLookupByLibrary.simpleMessage(
@@ -176,6 +193,20 @@ class MessageLookup extends MessageLookupByLibrary {
       "Error stopping recording",
     ),
     "ai_docs_stop_recording_error_with_reason": m3,
+    "ai_docs_title_empty": MessageLookupByLibrary.simpleMessage(
+      "Title cannot be empty",
+    ),
+    "ai_docs_title_generated": MessageLookupByLibrary.simpleMessage(
+      "Title generated",
+    ),
+    "ai_docs_title_generation_failed": m4,
+    "ai_docs_title_too_long": MessageLookupByLibrary.simpleMessage(
+      "Title cannot exceed 50 characters",
+    ),
+    "ai_docs_title_update_failed": m5,
+    "ai_docs_title_updated": MessageLookupByLibrary.simpleMessage(
+      "Title updated",
+    ),
     "ai_docs_unnamed_conversation": MessageLookupByLibrary.simpleMessage(
       "Unnamed Conversation",
     ),
@@ -212,13 +243,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "chat_enter_message": MessageLookupByLibrary.simpleMessage(
       "Enter message...",
     ),
-    "chat_error_loading": m4,
+    "chat_error_loading": m6,
     "chat_expand": MessageLookupByLibrary.simpleMessage("Expand"),
     "chat_i_want_seller_to_see": MessageLookupByLibrary.simpleMessage(
       "I want the seller to see",
     ),
     "chat_image_message": MessageLookupByLibrary.simpleMessage("[Image]"),
-    "chat_image_picking_error": m5,
+    "chat_image_picking_error": m7,
     "chat_invalid_session": MessageLookupByLibrary.simpleMessage(
       "Invalid session",
     ),
@@ -295,8 +326,8 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "chat_press_to_talk": MessageLookupByLibrary.simpleMessage("Press to Talk"),
     "chat_recall": MessageLookupByLibrary.simpleMessage("Recall"),
-    "chat_recording_error": m6,
-    "chat_release_to_send": m7,
+    "chat_recording_error": m8,
+    "chat_release_to_send": m9,
     "chat_revoked_message": MessageLookupByLibrary.simpleMessage(
       "[Message withdrawn]",
     ),
@@ -304,7 +335,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "chat_send_markdown": MessageLookupByLibrary.simpleMessage(
       "Send Markdown Example",
     ),
-    "chat_stop_recording_error": m8,
+    "chat_stop_recording_error": m10,
     "chat_switch_to_text": MessageLookupByLibrary.simpleMessage(
       "Switch to Text Input",
     ),
@@ -321,12 +352,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "Recording is not supported on Web platform",
     ),
     "chat_yesterday": MessageLookupByLibrary.simpleMessage("Yesterday"),
-    "home_banner_clicked": m9,
+    "home_banner_clicked": m11,
     "home_end_of_list": MessageLookupByLibrary.simpleMessage("End of list"),
     "home_loading": MessageLookupByLibrary.simpleMessage("Loading..."),
-    "home_loading_failed": m10,
-    "home_product_card_clicked": m11,
-    "home_recommend_clicked": m12,
+    "home_loading_failed": m12,
+    "home_product_card_clicked": m13,
+    "home_recommend_clicked": m14,
     "home_retry": MessageLookupByLibrary.simpleMessage("Retry"),
     "home_search_hint": MessageLookupByLibrary.simpleMessage("Search services"),
     "home_title": MessageLookupByLibrary.simpleMessage("Home"),
@@ -362,7 +393,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Delivery Times",
     ),
     "product_detail_faq": MessageLookupByLibrary.simpleMessage("FAQ"),
-    "product_detail_loading_failed": m13,
+    "product_detail_loading_failed": m15,
     "product_detail_more": MessageLookupByLibrary.simpleMessage("More"),
     "product_detail_no_cases": MessageLookupByLibrary.simpleMessage(
       "No cases available",
@@ -377,7 +408,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Published",
     ),
     "product_detail_retry": MessageLookupByLibrary.simpleMessage("Retry"),
-    "product_detail_reviews": m14,
+    "product_detail_reviews": m16,
     "product_detail_sample_review": MessageLookupByLibrary.simpleMessage(
       "Great service, very patient",
     ),
@@ -394,14 +425,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "product_recommend_button": MessageLookupByLibrary.simpleMessage(
       "Let them see",
     ),
-    "product_reviews_days_ago": m15,
-    "product_reviews_hours_ago": m16,
+    "product_reviews_days_ago": m17,
+    "product_reviews_hours_ago": m18,
     "product_reviews_just_now": MessageLookupByLibrary.simpleMessage(
       "Just now",
     ),
-    "product_reviews_loading_failed": m17,
-    "product_reviews_minutes_ago": m18,
-    "product_reviews_months_ago": m19,
+    "product_reviews_loading_failed": m19,
+    "product_reviews_minutes_ago": m20,
+    "product_reviews_months_ago": m21,
     "product_reviews_no_reviews": MessageLookupByLibrary.simpleMessage(
       "No reviews yet",
     ),
@@ -410,7 +441,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Great service, very patient",
     ),
     "product_reviews_title": MessageLookupByLibrary.simpleMessage("Reviews"),
-    "product_reviews_years_ago": m20,
+    "product_reviews_years_ago": m22,
     "profile_about_us": MessageLookupByLibrary.simpleMessage("About Us"),
     "profile_account_security": MessageLookupByLibrary.simpleMessage(
       "Account & Security",
@@ -426,7 +457,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "profile_favorites": MessageLookupByLibrary.simpleMessage("Favorites"),
     "profile_in_progress": MessageLookupByLibrary.simpleMessage("Processing"),
-    "profile_loading_error": m21,
+    "profile_loading_error": m23,
     "profile_login_button": MessageLookupByLibrary.simpleMessage("Login"),
     "profile_login_prompt": MessageLookupByLibrary.simpleMessage(
       "Please login to view your profile",
@@ -436,7 +467,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "profile_my_dskk": MessageLookupByLibrary.simpleMessage("My DSKK"),
     "profile_my_wallet": MessageLookupByLibrary.simpleMessage("My Wallet"),
-    "profile_navigation_error": m22,
+    "profile_navigation_error": m24,
     "profile_nickname_hint": MessageLookupByLibrary.simpleMessage(
       "Please enter new nickname",
     ),
@@ -450,13 +481,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "profile_refund": MessageLookupByLibrary.simpleMessage("Support"),
     "profile_save": MessageLookupByLibrary.simpleMessage("Save"),
     "profile_settings": MessageLookupByLibrary.simpleMessage("Settings"),
-    "profile_switch_error": m23,
+    "profile_switch_error": m25,
     "profile_switch_to_seller": MessageLookupByLibrary.simpleMessage(
       "Switch to Seller Mode",
     ),
     "profile_wallet": MessageLookupByLibrary.simpleMessage("Wallet"),
     "search_button": MessageLookupByLibrary.simpleMessage("Search"),
-    "search_failed": m24,
+    "search_failed": m26,
     "search_history": MessageLookupByLibrary.simpleMessage("Search History"),
     "search_hot_keywords": MessageLookupByLibrary.simpleMessage("Hot Keywords"),
     "search_no_results": MessageLookupByLibrary.simpleMessage(
@@ -467,7 +498,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "seller_home_auto_reply": MessageLookupByLibrary.simpleMessage(
       "Auto Reply",
     ),
-    "seller_home_completion_rate": m25,
+    "seller_home_completion_rate": m27,
     "seller_home_functions": MessageLookupByLibrary.simpleMessage("Tools"),
     "seller_home_income": MessageLookupByLibrary.simpleMessage("Revenue"),
     "seller_home_loading_failed": MessageLookupByLibrary.simpleMessage(
@@ -502,7 +533,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "seller_home_recent_income": MessageLookupByLibrary.simpleMessage(
       "Recent Revenue",
     ),
-    "seller_home_switch_failed": m26,
+    "seller_home_switch_failed": m28,
     "seller_home_switch_to_buyer": MessageLookupByLibrary.simpleMessage(
       "Switch to Buyer Mode",
     ),
@@ -530,12 +561,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "seller_profile_certified": MessageLookupByLibrary.simpleMessage(
       "Certified",
     ),
-    "seller_profile_chat_failed": m27,
+    "seller_profile_chat_failed": m29,
     "seller_profile_default_title": MessageLookupByLibrary.simpleMessage(
       "Seller Profile",
     ),
-    "seller_profile_error_occurred": m28,
-    "seller_profile_feature_not_implemented": m29,
+    "seller_profile_error_occurred": m30,
+    "seller_profile_feature_not_implemented": m31,
     "seller_profile_follow": MessageLookupByLibrary.simpleMessage("Follow"),
     "seller_profile_follow_success": MessageLookupByLibrary.simpleMessage(
       "Followed successfully",
@@ -543,7 +574,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "seller_profile_followed": MessageLookupByLibrary.simpleMessage(
       "Following",
     ),
-    "seller_profile_followers": m30,
+    "seller_profile_followers": m32,
     "seller_profile_image_load_failed": MessageLookupByLibrary.simpleMessage(
       "Image loading failed",
     ),
@@ -617,8 +648,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "seller_statistics_active_orders": MessageLookupByLibrary.simpleMessage(
       "Active Orders",
     ),
-    "seller_statistics_become_level3_seller": m31,
-    "seller_statistics_complete_orders": m32,
+    "seller_statistics_become_level3_seller": m33,
+    "seller_statistics_complete_orders": m34,
     "seller_statistics_completion_rate": MessageLookupByLibrary.simpleMessage(
       "Completion",
     ),
@@ -634,7 +665,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "seller_statistics_indicators": MessageLookupByLibrary.simpleMessage(
       "Metrics",
     ),
-    "seller_statistics_loading_failed": m33,
+    "seller_statistics_loading_failed": m35,
     "seller_statistics_monthly_earnings": MessageLookupByLibrary.simpleMessage(
       "Monthly Revenue",
     ),
@@ -648,7 +679,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "seller_statistics_positive_rate": MessageLookupByLibrary.simpleMessage(
       "Rating",
     ),
-    "seller_statistics_profit_amount": m34,
+    "seller_statistics_profit_amount": m36,
     "seller_statistics_receipt": MessageLookupByLibrary.simpleMessage(
       "Receipt",
     ),

@@ -1,6 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
-import 'package:dio/dio.dart';
 
 import '../presentation/bloc/ai_chat/ai_chat_bloc.dart';
 import '../domain/usecases/get_conversations_usecase.dart';
@@ -14,17 +13,16 @@ import '../domain/usecases/allocate_chat_resource_usecase.dart';
 import '../domain/usecases/transcribe_audio_usecase.dart';
 import '../domain/usecases/cancel_chat_generation_usecase.dart';
 import '../domain/usecases/optimized_allocation_usecase.dart';
+import '../domain/usecases/update_conversation_title_usecase.dart';
+import '../domain/usecases/generate_conversation_title_usecase.dart';
 import '../domain/repositories/i_ai_chat_repository.dart';
 import '../domain/repositories/i_file_upload_repository.dart';
 import '../data/repositories/ai_chat_repository_impl.dart';
-import '../data/repositories/file_upload_repository_impl.dart';
 import '../data/datasources/i_ai_chat_remote_data_source.dart';
 import '../data/datasources/ai_chat_remote_data_source_impl.dart';
 import '../data/datasources/i_file_upload_data_source.dart';
-import '../data/datasources/file_upload_data_source_impl.dart';
 import '../data/datasources/ai_docs_file_upload_data_source_impl.dart';
 import '../data/repositories/ai_docs_file_upload_repository_impl.dart';
-import '../../../core/network/network_info.dart';
 import '../../../core/network/i_http_client.dart';
 import '../../../features/chat/domain/usecases/create_chat_room.dart';
 import '../../../features/chat/domain/repositories/i_chat_repository.dart';
@@ -161,6 +159,20 @@ class AiDocsDI {
       print('[AiDocsDI] Registered OptimizedAllocationUseCase');
     }
 
+    if (!getIt.isRegistered<UpdateConversationTitleUseCase>()) {
+      getIt.registerLazySingleton<UpdateConversationTitleUseCase>(
+        () => UpdateConversationTitleUseCase(getIt<IAiChatRepository>()),
+      );
+      print('[AiDocsDI] Registered UpdateConversationTitleUseCase');
+    }
+
+    if (!getIt.isRegistered<GenerateConversationTitleUseCase>()) {
+      getIt.registerLazySingleton<GenerateConversationTitleUseCase>(
+        () => GenerateConversationTitleUseCase(getIt<IAiChatRepository>()),
+      );
+      print('[AiDocsDI] Registered GenerateConversationTitleUseCase');
+    }
+
     // Bloc
     if (!getIt.isRegistered<AiChatBloc>()) {
       getIt.registerFactory<AiChatBloc>(() => AiChatBloc(
@@ -175,6 +187,8 @@ class AiDocsDI {
             getIt<TranscribeAudioUseCase>(),
             getIt<CancelChatGenerationUseCase>(),
             getIt<OptimizedAllocationUseCase>(),
+            getIt<UpdateConversationTitleUseCase>(),
+            getIt<GenerateConversationTitleUseCase>(),
             getIt<FlutterSecureStorage>(),
           ));
       print('[AiDocsDI] Registered AiChatBloc');

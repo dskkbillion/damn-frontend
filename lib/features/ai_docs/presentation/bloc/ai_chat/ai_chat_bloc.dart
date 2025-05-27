@@ -28,6 +28,8 @@ import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/transcrib
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/upload_file_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/cancel_chat_generation_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/optimized_allocation_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/update_conversation_title_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/generate_conversation_title_usecase.dart';
 
 // Move Exports Before Parts - Use package imports
 export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_conversation_entity.dart'; 
@@ -56,6 +58,8 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   final TranscribeAudioUseCase _transcribeAudio;
   final CancelChatGenerationUseCase _cancelChatGeneration;
   final OptimizedAllocationUseCase _optimizedAllocation;
+  final UpdateConversationTitleUseCase _updateConversationTitle;
+  final GenerateConversationTitleUseCase _generateConversationTitle;
 
   // --- Inject Secure Storage --- 
   final FlutterSecureStorage _storage;
@@ -76,6 +80,8 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     this._transcribeAudio,
     this._cancelChatGeneration,
     this._optimizedAllocation,
+    this._updateConversationTitle,
+    this._generateConversationTitle,
     this._storage, // Add storage to constructor
     // Start with initial state containing defaults for new properties
   ) : super(const AiChatState()) { 
@@ -103,6 +109,9 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     on<_HandleStreamDone>(_onHandleStreamDone); 
     // Image Handling - Add handler for removal
     on<RemovePendingImage>(_onRemovePendingImage);
+    // Title Operations
+    on<UpdateConversationTitle>(_onUpdateConversationTitle);
+    on<GenerateConversationTitle>(_onGenerateConversationTitle);
   }
 
   // --- Helper to get current user ID --- 
@@ -1421,5 +1430,148 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         errorMessage: '服务分发过程中发生错误: $e'
       ));
     }
+  }
+
+  // --- Title Operations Handlers ---
+
+  Future<void> _onUpdateConversationTitle(
+    UpdateConversationTitle event,
+    Emitter<AiChatState> emit,
+  ) async {
+    final userId = await _getCurrentUserId();
+    if (userId == null) {
+      emit(state.copyWith(
+        titleStatus: TitleStatus.failure, 
+        titleErrorMessage: 'User not authenticated or invalid ID format'
+      ));
+      return;
+    }
+
+    // 更新特定会话的标题状态为更新中
+    final updatedTitleStatus = Map<int, TitleStatus>.from(state.conversationTitleStatus);
+    updatedTitleStatus[event.conversationId] = TitleStatus.updating;
+    
+    emit(state.copyWith(
+      titleStatus: TitleStatus.updating,
+      conversationTitleStatus: updatedTitleStatus,
+      clearTitleErrorMessage: true,
+    ));
+
+    final result = await _updateConversationTitle(UpdateConversationTitleParams(
+      conversationId: event.conversationId,
+      userId: userId,
+      title: event.title,
+    ));
+
+    result.fold(
+      (failure) {
+        // 更新失败
+        final failureStatus = Map<int, TitleStatus>.from(state.conversationTitleStatus);
+        failureStatus[event.conversationId] = TitleStatus.failure;
+        
+        emit(state.copyWith(
+          titleStatus: TitleStatus.failure,
+          titleErrorMessage: failure.toString(),
+          conversationTitleStatus: failureStatus,
+        ));
+      },
+      (updatedTitle) {
+        // 更新成功
+        final successStatus = Map<int, TitleStatus>.from(state.conversationTitleStatus);
+        successStatus[event.conversationId] = TitleStatus.success;
+        
+        // 更新会话列表中对应会话的标题
+        final updatedConversations = state.conversations.map((conv) {
+          if (conv.id == event.conversationId) {
+            return AiConversationEntity(
+              id: conv.id,
+              title: updatedTitle,
+              createdAt: conv.createdAt,
+              updatedAt: conv.updatedAt,
+            );
+          }
+          return conv;
+        }).toList();
+        
+        emit(state.copyWith(
+          titleStatus: TitleStatus.success,
+          conversationTitleStatus: successStatus,
+          conversations: updatedConversations,
+          clearTitleErrorMessage: true,
+        ));
+        
+        print('[AiChatBloc] 标题更新成功: ${event.conversationId} -> $updatedTitle');
+      },
+    );
+  }
+
+  Future<void> _onGenerateConversationTitle(
+    GenerateConversationTitle event,
+    Emitter<AiChatState> emit,
+  ) async {
+    final userId = await _getCurrentUserId();
+    if (userId == null) {
+      emit(state.copyWith(
+        titleStatus: TitleStatus.failure, 
+        titleErrorMessage: 'User not authenticated or invalid ID format'
+      ));
+      return;
+    }
+
+    // 更新特定会话的标题状态为生成中
+    final updatedTitleStatus = Map<int, TitleStatus>.from(state.conversationTitleStatus);
+    updatedTitleStatus[event.conversationId] = TitleStatus.generating;
+    
+    emit(state.copyWith(
+      titleStatus: TitleStatus.generating,
+      conversationTitleStatus: updatedTitleStatus,
+      clearTitleErrorMessage: true,
+    ));
+
+    final result = await _generateConversationTitle(GenerateConversationTitleParams(
+      conversationId: event.conversationId,
+      userId: userId,
+    ));
+
+    result.fold(
+      (failure) {
+        // 生成失败
+        final failureStatus = Map<int, TitleStatus>.from(state.conversationTitleStatus);
+        failureStatus[event.conversationId] = TitleStatus.failure;
+        
+        emit(state.copyWith(
+          titleStatus: TitleStatus.failure,
+          titleErrorMessage: failure.toString(),
+          conversationTitleStatus: failureStatus,
+        ));
+      },
+      (generatedTitle) {
+        // 生成成功
+        final successStatus = Map<int, TitleStatus>.from(state.conversationTitleStatus);
+        successStatus[event.conversationId] = TitleStatus.success;
+        
+        // 更新会话列表中对应会话的标题
+        final updatedConversations = state.conversations.map((conv) {
+          if (conv.id == event.conversationId) {
+            return AiConversationEntity(
+              id: conv.id,
+              title: generatedTitle,
+              createdAt: conv.createdAt,
+              updatedAt: conv.updatedAt,
+            );
+          }
+          return conv;
+        }).toList();
+        
+        emit(state.copyWith(
+          titleStatus: TitleStatus.success,
+          conversationTitleStatus: successStatus,
+          conversations: updatedConversations,
+          clearTitleErrorMessage: true,
+        ));
+        
+        print('[AiChatBloc] AI标题生成成功: ${event.conversationId} -> $generatedTitle');
+      },
+    );
   }
 } 

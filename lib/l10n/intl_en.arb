@@ -83,6 +83,34 @@
     "ai_docs_delete": "Delete",
     "ai_docs_please_select_conversation_to_delete": "Please select the conversation to delete first",
     
+    "ai_docs_generate_title": "AI Generate Title",
+    "ai_docs_generate_title_tooltip": "Let AI generate a title for this conversation",
+    "ai_docs_generating_title": "Generating title...",
+    "ai_docs_title_generated": "Title generated",
+    "ai_docs_title_generation_failed": "Title generation failed: {error}",
+    "@ai_docs_title_generation_failed": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "Network error"
+        }
+      }
+    },
+    "ai_docs_edit_title": "Edit Title",
+    "ai_docs_edit_title_hint": "Please enter a new title",
+    "ai_docs_title_updated": "Title updated",
+    "ai_docs_title_update_failed": "Title update failed: {error}",
+    "@ai_docs_title_update_failed": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "Network error"
+        }
+      }
+    },
+    "ai_docs_title_too_long": "Title cannot exceed 50 characters",
+    "ai_docs_title_empty": "Title cannot be empty",
+    
     "nav_ai_assistant": "DSKK",
     "nav_home": "Home",
     "nav_messages": "Messages",
