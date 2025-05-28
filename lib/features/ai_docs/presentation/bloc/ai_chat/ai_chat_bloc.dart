@@ -27,6 +27,9 @@ import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/stream_ch
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/transcribe_audio_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/upload_file_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/cancel_chat_generation_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/optimized_allocation_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/update_conversation_title_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/generate_conversation_title_usecase.dart';
 
 // Move Exports Before Parts - Use package imports
 export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_conversation_entity.dart'; 
@@ -54,6 +57,9 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   final AllocateChatResourceUseCase _allocateChatResource;
   final TranscribeAudioUseCase _transcribeAudio;
   final CancelChatGenerationUseCase _cancelChatGeneration;
+  final OptimizedAllocationUseCase _optimizedAllocation;
+  final UpdateConversationTitleUseCase _updateConversationTitle;
+  final GenerateConversationTitleUseCase _generateConversationTitle;
 
   // --- Inject Secure Storage --- 
   final FlutterSecureStorage _storage;
@@ -73,6 +79,9 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     this._allocateChatResource,
     this._transcribeAudio,
     this._cancelChatGeneration,
+    this._optimizedAllocation,
+    this._updateConversationTitle,
+    this._generateConversationTitle,
     this._storage, // Add storage to constructor
     // Start with initial state containing defaults for new properties
   ) : super(const AiChatState()) { 
@@ -82,6 +91,8 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     on<SelectConversation>(_onSelectConversation);
     on<CreateNewConversation>(_onCreateNewConversation);
     on<DeleteSelectedConversation>(_onDeleteSelectedConversation);
+    on<CreateNewConversationAndSendMessage>(_onCreateNewConversationAndSendMessage);
+    on<CreateNewConversationAndSendVoiceMessage>(_onCreateNewConversationAndSendVoiceMessage);
     // Image Handling
     on<PickImage>(_onPickImage);
     on<_ImageUploadSuccess>(_onImageUploadSuccess);
@@ -93,12 +104,16 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     on<CancelChatGeneration>(_onCancelChatGeneration);
     on<FetchRecommendations>(_onFetchRecommendations); 
     on<TriggerAllocationAction>(_onTriggerAllocationAction); 
+    on<TriggerOptimizedAllocation>(_onTriggerOptimizedAllocation);
     // Internal Stream Handling
     on<_ReceiveStreamChunk>(_onReceiveStreamChunk); 
     on<_HandleStreamError>(_onHandleStreamError); 
     on<_HandleStreamDone>(_onHandleStreamDone); 
     // Image Handling - Add handler for removal
     on<RemovePendingImage>(_onRemovePendingImage);
+    // Title Operations
+    on<UpdateConversationTitle>(_onUpdateConversationTitle);
+    on<GenerateConversationTitle>(_onGenerateConversationTitle);
   }
 
   // --- Helper to get current user ID --- 
@@ -231,15 +246,113 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         emit(state.copyWith(
           conversationsStatus: ConversationsStatus.loaded, // List status back to loaded (will be updated by LoadConversations)
           selectedConversationIdOrNull: newConversationId,
-          status: AiChatStatus.historyLoadSuccess, // New chat is ready (empty history loaded successfully)
-          messages: [],
-          recommendations: [],
-          streamingResponseText: '', 
-          clearErrorMessage: true,
-          clearConversationListErrorMessage: true,
+          status: AiChatStatus.historyLoadSuccess, // Set main area status to success (no history yet)
+          messages: [], // Clear previous messages
+          streamingResponseText: '', // Clear any streaming text
+          recommendations: [], // Clear related services
+          clearErrorMessage: true, // Clear main chat area error
         ));
-        // Refresh the conversation list to include the new one
+
+        // Reload the conversation list to show the new conversation
         add(LoadConversations()); 
+      },
+    );
+  }
+
+  Future<void> _onCreateNewConversationAndSendMessage(
+    CreateNewConversationAndSendMessage event,
+    Emitter<AiChatState> emit,
+  ) async {
+     // 设置状态为创建对话中
+     emit(state.copyWith(conversationsStatus: ConversationsStatus.loading)); 
+     
+     // 获取用户ID
+     final userId = await _getCurrentUserId();
+     if (userId == null) {
+       emit(state.copyWith(
+         conversationsStatus: ConversationsStatus.error, 
+         conversationListErrorMessage: '用户未认证或ID格式无效'
+       ));
+       return;
+     }
+     
+     // 创建新对话
+     final result = await _createConversation(CreateConversationParams(userId: userId));
+     
+     await result.fold(
+       (failure) {
+         // 创建对话失败
+         emit(state.copyWith(
+           conversationsStatus: ConversationsStatus.error,
+           conversationListErrorMessage: '创建对话失败: ${failure.toString()}',
+         ));
+       },
+       (newConversationId) async {
+         // 创建对话成功，设置为当前选中的对话
+         emit(state.copyWith(
+           conversationsStatus: ConversationsStatus.loaded,
+           selectedConversationIdOrNull: newConversationId,
+           status: AiChatStatus.historyLoadSuccess, // 设置为历史加载成功状态
+           messages: [], // 清空消息列表
+           streamingResponseText: '', // 清空流式响应文本
+           recommendations: [], // 清空推荐服务
+           clearErrorMessage: true, // 清除错误消息
+         ));
+         
+         // 重新加载对话列表
+         add(LoadConversations());
+         
+         // 立即发送消息
+         add(SendMessage(message: event.message));
+       },
+     );
+  }
+
+  Future<void> _onCreateNewConversationAndSendVoiceMessage(
+    CreateNewConversationAndSendVoiceMessage event,
+    Emitter<AiChatState> emit,
+  ) async {
+     // 设置状态为创建对话中
+     emit(state.copyWith(conversationsStatus: ConversationsStatus.loading)); 
+     
+     // 获取用户ID
+     final userId = await _getCurrentUserId();
+     if (userId == null) {
+       emit(state.copyWith(
+         conversationsStatus: ConversationsStatus.error, 
+         conversationListErrorMessage: '用户未认证或ID格式无效'
+       ));
+       return;
+     }
+     
+     // 创建新对话
+     final result = await _createConversation(CreateConversationParams(userId: userId));
+     
+     await result.fold(
+       (failure) {
+         // 创建对话失败
+         emit(state.copyWith(
+           conversationsStatus: ConversationsStatus.error,
+           conversationListErrorMessage: '创建对话失败: ${failure.toString()}',
+         ));
+       },
+       (newConversationId) async {
+         // 创建对话成功，设置为当前选中的对话
+         emit(state.copyWith(
+           conversationsStatus: ConversationsStatus.loaded,
+           selectedConversationIdOrNull: newConversationId,
+           status: AiChatStatus.historyLoadSuccess, // 设置为历史加载成功状态
+           messages: [], // 清空消息列表
+           streamingResponseText: '', // 清空流式响应文本
+           recommendations: [], // 清空推荐服务
+           clearErrorMessage: true, // 清除错误消息
+         ));
+         
+         // 重新加载对话列表
+         add(LoadConversations());
+         
+         // 立即发送语音消息
+         add(SendVoiceMessage(audioFile: event.audioFile));
       },
     );
   }
@@ -1154,107 +1267,6 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
        ));
      }
    }
-   
-   // 提取发送消息给商家的逻辑到单独的方法
-   Future<void> _sendAllocationMessageToMerchant(
-     int merchantId, 
-     Map<String, dynamic> item,
-     String summary
-   ) async {
-     try {
-       print('准备发送消息给商家ID: $merchantId, 商品: ${item['name']}');
-           
-           // 创建新的Dio实例并设置基础URL
-           final dio = Dio();
-           dio.options.baseUrl = "http://app.duoshaokankan.com/prod-api";
-           
-           // 获取认证令牌
-           final String? authToken = await _storage.read(key: 'auth_token');
-           if (authToken == null || authToken.isEmpty) {
-             throw Exception('认证令牌不存在或为空');
-           }
-           
-       // 添加必要的请求头信息
-           final options = Options(
-             contentType: Headers.jsonContentType,
-             responseType: ResponseType.json,
-             headers: {
-               'Content-Type': 'application/json',
-           'clienttype': '1',
-               'client': Platform.isAndroid ? 'android' : 'ios',
-               'version': '100',
-           'packageName': 'com.duoshaokankan.dskk',
-           'versionCode': '1.0.0',
-           'versionName': '1.0.0',
-           'Authorization': 'Bearer $authToken',
-             },
-           );
-           
-           // 第一步：创建聊天室
-           print("发送创建聊天室请求...");
-           
-       // 构建创建聊天室的请求参数
-           final createRoomParams = {
-         'doctorId': merchantId.toString(),
-             'type': 'MEMBER',
-           };
-           
-           print("创建聊天室请求参数: $createRoomParams");
-           
-           final createRoomResponse = await dio.post(
-             '/api/chat/addChat',
-             data: createRoomParams,
-             options: options
-           );
-           
-           print("创建聊天室响应状态码: ${createRoomResponse.statusCode}");
-           print("创建聊天室响应数据: ${createRoomResponse.data}");
-           
-           if (createRoomResponse.statusCode == 200 && 
-               createRoomResponse.data != null && 
-               createRoomResponse.data['code'] == 200) {
-             
-             final chatId = createRoomResponse.data['data'];
-             print('成功创建聊天室，ID: $chatId');
-             
-             // 第二步：发送消息
-             print("发送消息请求...");
-             
-             // 构建一个更丰富的消息，包含服务名称和AI分析的总结
-         String messageContent = summary;
-             
-             // 构建发送消息的请求参数
-             final sendMessageParams = {
-               'chatId': chatId,
-           'context': messageContent,
-               'type': 'allocate',
-             };
-             
-             print("发送消息请求参数: $sendMessageParams");
-             
-             final sendMsgResponse = await dio.post(
-               '/common/chat/message/add',
-               data: sendMessageParams,
-               options: options
-             );
-             
-             print("发送消息响应状态码: ${sendMsgResponse.statusCode}");
-             print("发送消息响应数据: ${sendMsgResponse.data}");
-             
-             if (sendMsgResponse.statusCode == 200 && 
-                 sendMsgResponse.data != null && 
-                 sendMsgResponse.data['code'] == 200) {
-               print('消息已成功发送给商家!');
-             } else {
-               print('发送消息API返回错误: ${sendMsgResponse.data}');
-             }
-           } else {
-             print('创建聊天室API返回错误: ${createRoomResponse.data}');
-           }
-         } catch (e) {
-           print('向商家发送消息失败: $e');
-     }
-   }
 
   // --- Internal Event Handlers for Stream ---
 
@@ -1302,5 +1314,364 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     _chatStreamSubscription?.cancel();
     print("AiChatBloc closed, stream subscription cancelled.");
     return super.close();
+   }
+   
+   // 提取发送消息给商家的逻辑到单独的方法
+   Future<void> _sendAllocationMessageToMerchant(
+     int merchantId, 
+     Map<String, dynamic> item,
+     String summary
+   ) async {
+     try {
+       print('准备发送消息给商家ID: $merchantId, 商品: ${item['name']}');
+           
+      // 创建新的Dio实例并设置基础URL和超时配置
+      final dio = Dio(BaseOptions(
+        baseUrl: "http://app.duoshaokankan.com/prod-api",
+        connectTimeout: const Duration(seconds: 30), // 连接超时30秒
+        receiveTimeout: const Duration(seconds: 30), // 接收超时30秒
+        sendTimeout: const Duration(seconds: 30), // 发送超时30秒
+      ));
+           
+           // 获取认证令牌
+           final String? authToken = await _storage.read(key: 'auth_token');
+           if (authToken == null || authToken.isEmpty) {
+             throw Exception('认证令牌不存在或为空');
+           }
+           
+       // 添加必要的请求头信息
+           final options = Options(
+             contentType: Headers.jsonContentType,
+             responseType: ResponseType.json,
+             headers: {
+               'Content-Type': 'application/json',
+           'clienttype': '1',
+               'client': Platform.isAndroid ? 'android' : 'ios',
+               'version': '100',
+           'packageName': 'com.duoshaokankan.dskk',
+           'versionCode': '1.0.0',
+           'versionName': '1.0.0',
+           'Authorization': 'Bearer $authToken',
+             },
+           );
+           
+           // 第一步：创建聊天室
+           print("发送创建聊天室请求...");
+           
+       // 构建创建聊天室的请求参数
+           final createRoomParams = {
+         'doctorId': merchantId.toString(),
+             'type': 'MEMBER',
+           };
+           
+      // 如果item中包含商品ID，添加到请求参数中
+      if (item['id'] != null) {
+        createRoomParams['productId'] = item['id'];
+      }
+           
+           print("创建聊天室请求参数: $createRoomParams");
+           
+           final createRoomResponse = await dio.post(
+             '/api/chat/addChat',
+             data: createRoomParams,
+             options: options
+           );
+           
+           print("创建聊天室响应状态码: ${createRoomResponse.statusCode}");
+           print("创建聊天室响应数据: ${createRoomResponse.data}");
+           
+           if (createRoomResponse.statusCode == 200 && 
+               createRoomResponse.data != null && 
+               createRoomResponse.data['code'] == 200) {
+             
+        final chatRoomData = createRoomResponse.data['data'];
+        final chatId = chatRoomData['id']; // 从聊天室对象中提取id字段
+             print('成功创建聊天室，ID: $chatId');
+             
+             // 第二步：发送消息
+             print("发送消息请求...");
+             
+             // 构建一个更丰富的消息，包含服务名称和AI分析的总结
+         String messageContent = summary;
+             
+             // 构建发送消息的请求参数
+             final sendMessageParams = {
+               'chatId': chatId,
+           'context': messageContent,
+               'type': 'allocate',
+             };
+             
+             print("发送消息请求参数: $sendMessageParams");
+             
+             final sendMsgResponse = await dio.post(
+               '/common/chat/message/add',
+               data: sendMessageParams,
+               options: options
+             );
+             
+             print("发送消息响应状态码: ${sendMsgResponse.statusCode}");
+             print("发送消息响应数据: ${sendMsgResponse.data}");
+             
+             if (sendMsgResponse.statusCode == 200 && 
+                 sendMsgResponse.data != null && 
+                 sendMsgResponse.data['code'] == 200) {
+               print('消息已成功发送给商家!');
+             } else {
+               print('发送消息API返回错误: ${sendMsgResponse.data}');
+             }
+           } else {
+             print('创建聊天室API返回错误: ${createRoomResponse.data}');
+           }
+         } catch (e) {
+           print('向商家发送消息失败: $e');
+     }
+   }
+
+  // --- Handler for Optimized Allocation Action ---
+  Future<void> _onTriggerOptimizedAllocation(
+    TriggerOptimizedAllocation event,
+    Emitter<AiChatState> emit,
+  ) async {
+    try {
+      final currentConvId = state.selectedConversationId;
+      if (currentConvId == null) {
+        emit(state.copyWith(
+          status: AiChatStatus.allocationFailure, 
+          errorMessage: 'No conversation selected for allocation'
+        ));
+        return;
+      }
+      
+      // 更新特定服务的分发状态为加载中
+      final updatedAllocationStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
+      updatedAllocationStatus[event.serviceId] = AllocationStatus.loading;
+      
+      emit(state.copyWith(
+        status: AiChatStatus.allocatingResource, 
+        clearErrorMessage: true,
+        serviceAllocationStatus: updatedAllocationStatus
+      ));
+
+      // 获取用户ID
+      final userId = await _getCurrentUserId();
+      if (userId == null) {
+        final failureStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
+        failureStatus[event.serviceId] = AllocationStatus.failure;
+      
+     emit(state.copyWith(
+          status: AiChatStatus.allocationFailure, 
+          errorMessage: '用户未认证或ID格式无效',
+          serviceAllocationStatus: failureStatus
+        ));
+        return;
+      }
+      
+      // 调用优化分配用例
+      final result = await _optimizedAllocation(OptimizedAllocationParams(
+        conversationId: currentConvId,
+        userId: userId,
+        item: event.item,
+        merchantId: event.merchantId,
+      ));
+
+      // 处理结果
+      result.fold(
+        (failure) {
+          // 处理失败情况
+          final failureStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
+          failureStatus[event.serviceId] = AllocationStatus.failure;
+          
+          emit(state.copyWith(
+            status: AiChatStatus.allocationFailure,
+            errorMessage: failure.toString(),
+            serviceAllocationStatus: failureStatus
+          ));
+        },
+        (optimizedResult) {
+          // 处理成功情况
+          final successStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
+          successStatus[event.serviceId] = AllocationStatus.success;
+          
+          // 触发震动反馈
+          HapticUtils.allocationSuccessFeedback();
+          
+          // 更新状态，包括创建的聊天室ID
+          emit(state.copyWith(
+            status: AiChatStatus.allocationSuccess,
+            serviceAllocationStatus: successStatus,
+            createdChatRoomId: optimizedResult.chatRoomId,
+            errorMessage: optimizedResult.allocationSuccess 
+              ? '聊天室已创建，AI分发成功！点击进入聊天' 
+              : '聊天室已创建，但AI分发失败。您仍可以直接与商家聊天',
+          ));
+          
+          // 如果AI分发成功，后台发送消息
+          if (optimizedResult.allocationSuccess) {
+            _sendAllocationMessageToMerchant(
+              event.merchantId, 
+              event.item, 
+              optimizedResult.summary
+            ).catchError((e) {
+              print('向商家发送消息失败(不影响UI状态): $e');
+            });
+          }
+        }
+      );
+    } catch (e, stackTrace) {
+      print('优化分发处理中发生未处理异常: $e');
+      print(stackTrace);
+      
+      final errorStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
+      errorStatus[event.serviceId] = AllocationStatus.failure;
+      
+      emit(state.copyWith(
+        status: AiChatStatus.allocationFailure,
+        serviceAllocationStatus: errorStatus,
+        errorMessage: '服务分发过程中发生错误: $e'
+      ));
+    }
+  }
+
+  // --- Title Operations Handlers ---
+
+  Future<void> _onUpdateConversationTitle(
+    UpdateConversationTitle event,
+    Emitter<AiChatState> emit,
+  ) async {
+    final userId = await _getCurrentUserId();
+    if (userId == null) {
+      emit(state.copyWith(
+        titleStatus: TitleStatus.failure, 
+        titleErrorMessage: 'User not authenticated or invalid ID format'
+      ));
+      return;
+    }
+
+    // 更新特定会话的标题状态为更新中
+    final updatedTitleStatus = Map<int, TitleStatus>.from(state.conversationTitleStatus);
+    updatedTitleStatus[event.conversationId] = TitleStatus.updating;
+    
+    emit(state.copyWith(
+      titleStatus: TitleStatus.updating,
+      conversationTitleStatus: updatedTitleStatus,
+      clearTitleErrorMessage: true,
+    ));
+
+    final result = await _updateConversationTitle(UpdateConversationTitleParams(
+      conversationId: event.conversationId,
+      userId: userId,
+      title: event.title,
+    ));
+
+    result.fold(
+      (failure) {
+        // 更新失败
+        final failureStatus = Map<int, TitleStatus>.from(state.conversationTitleStatus);
+        failureStatus[event.conversationId] = TitleStatus.failure;
+        
+        emit(state.copyWith(
+          titleStatus: TitleStatus.failure,
+          titleErrorMessage: failure.toString(),
+          conversationTitleStatus: failureStatus,
+        ));
+      },
+      (updatedTitle) {
+        // 更新成功
+        final successStatus = Map<int, TitleStatus>.from(state.conversationTitleStatus);
+        successStatus[event.conversationId] = TitleStatus.success;
+        
+        // 更新会话列表中对应会话的标题
+        final updatedConversations = state.conversations.map((conv) {
+          if (conv.id == event.conversationId) {
+            return AiConversationEntity(
+              id: conv.id,
+              title: updatedTitle,
+              createdAt: conv.createdAt,
+              updatedAt: conv.updatedAt,
+            );
+          }
+          return conv;
+        }).toList();
+        
+       emit(state.copyWith(
+          titleStatus: TitleStatus.success,
+          conversationTitleStatus: successStatus,
+          conversations: updatedConversations,
+          clearTitleErrorMessage: true,
+        ));
+        
+        print('[AiChatBloc] 标题更新成功: ${event.conversationId} -> $updatedTitle');
+      },
+    );
+  }
+
+  Future<void> _onGenerateConversationTitle(
+    GenerateConversationTitle event,
+    Emitter<AiChatState> emit,
+  ) async {
+    final userId = await _getCurrentUserId();
+    if (userId == null) {
+      emit(state.copyWith(
+        titleStatus: TitleStatus.failure, 
+        titleErrorMessage: 'User not authenticated or invalid ID format'
+      ));
+      return;
+    }
+
+    // 更新特定会话的标题状态为生成中
+    final updatedTitleStatus = Map<int, TitleStatus>.from(state.conversationTitleStatus);
+    updatedTitleStatus[event.conversationId] = TitleStatus.generating;
+    
+    emit(state.copyWith(
+      titleStatus: TitleStatus.generating,
+      conversationTitleStatus: updatedTitleStatus,
+      clearTitleErrorMessage: true,
+    ));
+
+    final result = await _generateConversationTitle(GenerateConversationTitleParams(
+      conversationId: event.conversationId,
+      userId: userId,
+    ));
+
+    result.fold(
+      (failure) {
+        // 生成失败
+        final failureStatus = Map<int, TitleStatus>.from(state.conversationTitleStatus);
+        failureStatus[event.conversationId] = TitleStatus.failure;
+        
+        emit(state.copyWith(
+          titleStatus: TitleStatus.failure,
+          titleErrorMessage: failure.toString(),
+          conversationTitleStatus: failureStatus,
+        ));
+      },
+      (generatedTitle) {
+        // 生成成功
+        final successStatus = Map<int, TitleStatus>.from(state.conversationTitleStatus);
+        successStatus[event.conversationId] = TitleStatus.success;
+        
+        // 更新会话列表中对应会话的标题
+        final updatedConversations = state.conversations.map((conv) {
+          if (conv.id == event.conversationId) {
+            return AiConversationEntity(
+              id: conv.id,
+              title: generatedTitle,
+              createdAt: conv.createdAt,
+              updatedAt: conv.updatedAt,
+            );
+          }
+          return conv;
+        }).toList();
+        
+        emit(state.copyWith(
+          titleStatus: TitleStatus.success,
+          conversationTitleStatus: successStatus,
+          conversations: updatedConversations,
+          clearTitleErrorMessage: true,
+        ));
+        
+        print('[AiChatBloc] AI标题生成成功: ${event.conversationId} -> $generatedTitle');
+      },
+    );
   }
 } 

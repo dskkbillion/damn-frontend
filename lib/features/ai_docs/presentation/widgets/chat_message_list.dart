@@ -36,7 +36,29 @@ class ChatMessageList extends StatelessWidget {
               state.status != AiChatStatus.streamingResponse && 
               state.status != AiChatStatus.loadingHistory) {
              return Center(
-                 child: Text(s.ai_docs_no_messages) // 使用国际化文本
+                 child: Padding(
+                   padding: const EdgeInsets.all(16.0),
+                   child: Column(
+                     mainAxisSize: MainAxisSize.min,
+                     children: [
+                       Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey[400]),
+                       const SizedBox(height: 16),
+                       Text(
+                         s.ai_docs_welcome_title,
+                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                           fontWeight: FontWeight.bold,
+                           color: Colors.grey[600],
+                         ),
+                       ),
+                       const SizedBox(height: 8),
+                       Text(
+                         s.ai_docs_welcome_message,
+                         textAlign: TextAlign.center,
+                         style: TextStyle(color: Colors.grey[600]),
+                       ),
+                     ],
+                   ),
+                 )
              );
          }
 

@@ -24,7 +24,11 @@ abstract class IChatRepository {
 
   /// Creates a new chat room with the given participant.
   /// Returns the ID of the newly created chat room.
-  Future<Either<Failure, int>> createRoom(int participantId);
+  /// [productId] is optional for product-specific conversations.
+  Future<Either<Failure, int>> createRoom(
+    int participantId, {
+    int? productId, // 新增可选的商品ID参数
+  });
 
   /// Revokes a message by its ID.
   Future<Either<Failure, void>> revokeMessage(int messageId);

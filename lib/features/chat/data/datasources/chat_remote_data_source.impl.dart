@@ -92,9 +92,41 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
         
         final rooms = roomsJson.map((json) => ChatRoomDto.fromJson(json)).toList();
         rooms.sort((a, b) {
-          final DateTime timeA = (a.chatMessageNewVo?.createTime as DateTime?) ?? DateTime.fromMillisecondsSinceEpoch(0);
-          final DateTime timeB = (b.chatMessageNewVo?.createTime as DateTime?) ?? DateTime.fromMillisecondsSinceEpoch(0);
-          return timeB.compareTo(timeA); // Descending order
+          // 安全地解析时间字符串
+          DateTime? timeA;
+          DateTime? timeB;
+          
+          try {
+            if (a.chatMessageNewVo?.createTime != null) {
+              String timeString = a.chatMessageNewVo!.createTime!;
+              if (timeString.contains(' ') && !timeString.contains('T')) {
+                timeString = timeString.replaceFirst(' ', 'T');
+              }
+              timeA = DateTime.parse(timeString);
+            }
+          } catch (e) {
+            print("[ChatRoomDto] Error parsing timeA: ${a.chatMessageNewVo?.createTime}, error: $e");
+            timeA = null;
+          }
+          
+          try {
+            if (b.chatMessageNewVo?.createTime != null) {
+              String timeString = b.chatMessageNewVo!.createTime!;
+              if (timeString.contains(' ') && !timeString.contains('T')) {
+                timeString = timeString.replaceFirst(' ', 'T');
+              }
+              timeB = DateTime.parse(timeString);
+            }
+          } catch (e) {
+            print("[ChatRoomDto] Error parsing timeB: ${b.chatMessageNewVo?.createTime}, error: $e");
+            timeB = null;
+          }
+          
+          // 使用默认时间进行比较
+          final DateTime finalTimeA = timeA ?? DateTime.fromMillisecondsSinceEpoch(0);
+          final DateTime finalTimeB = timeB ?? DateTime.fromMillisecondsSinceEpoch(0);
+          
+          return finalTimeB.compareTo(finalTimeA); // Descending order (newest first)
         });
         return rooms;
       } else {
@@ -152,9 +184,41 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
       
       // 确保按时间升序（从旧到新）排序
       messageDtos.sort((a, b) {
-        final DateTime aTime = (a.createTime as DateTime?) ?? DateTime.fromMillisecondsSinceEpoch(0);
-        final DateTime bTime = (b.createTime as DateTime?) ?? DateTime.fromMillisecondsSinceEpoch(0);
-        return aTime.compareTo(bTime); // 升序排列 (旧->新)
+        // 安全地解析时间字符串
+        DateTime? timeA;
+        DateTime? timeB;
+        
+        try {
+          if (a.createTime != null) {
+            String timeString = a.createTime!;
+            if (timeString.contains(' ') && !timeString.contains('T')) {
+              timeString = timeString.replaceFirst(' ', 'T');
+            }
+            timeA = DateTime.parse(timeString);
+          }
+        } catch (e) {
+          print("[ChatMessageDto] Error parsing timeA: ${a.createTime}, error: $e");
+          timeA = null;
+        }
+        
+        try {
+          if (b.createTime != null) {
+            String timeString = b.createTime!;
+            if (timeString.contains(' ') && !timeString.contains('T')) {
+              timeString = timeString.replaceFirst(' ', 'T');
+            }
+            timeB = DateTime.parse(timeString);
+          }
+        } catch (e) {
+          print("[ChatMessageDto] Error parsing timeB: ${b.createTime}, error: $e");
+          timeB = null;
+        }
+        
+        // 使用默认时间进行比较
+        final DateTime finalTimeA = timeA ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final DateTime finalTimeB = timeB ?? DateTime.fromMillisecondsSinceEpoch(0);
+        
+        return finalTimeA.compareTo(finalTimeB); // 升序排列 (旧->新)
       });
       
       return messageDtos;
@@ -168,8 +232,11 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
   }
 
   @override
-  Future<int> createRoom(int participantId) async {
-    print("[API Call] Creating room with participantId: $participantId");
+  Future<int> createRoom(
+    int participantId, {
+    int? productId, // 新增可选的商品ID参数
+  }) async {
+    print("[API Call] Creating room with participantId: $participantId, productId: $productId");
     try {
       // Prepare request data
       final Map<String, dynamic> requestData = {
@@ -177,19 +244,32 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
         'type': 'MEMBER' // 始终使用'MEMBER'作为type值，用于创建与普通卖家的聊天
       };
       
+      // 如果提供了productId，添加到请求数据中
+      if (productId != null) {
+        requestData['productId'] = productId;
+      }
+      
       print("[API Call] Using type: MEMBER for seller chat creation.");
+      print("[API Call] Request data: $requestData");
 
       final response = await dio.post(
         '/api/chat/addChat',
         data: requestData, // Send the complete data map
         // Assuming default responseType: json is okay here
       );
-      // Handle response, expecting an integer chat ID in the 'data' field
+      // Handle response, expecting a chat room object with 'id' field in the 'data' field
       final dynamic data = _handleResponse(response, "create room"); 
-      if (data is int) {
+      if (data is Map<String, dynamic> && data['id'] is int) {
+        // API返回完整的聊天室对象，提取id字段
+        print("[API Success] Created chat room with ID: ${data['id']}");
+        return data['id'] as int;
+      } else if (data is int) {
+        // 兼容直接返回ID的情况
+        print("[API Success] Created chat room with ID: $data");
         return data;
       } else {
-         print("API Error (create room): Expected integer chat ID in 'data', but got ${data?.runtimeType}");
+         print("API Error (create room): Expected chat room object with 'id' field in 'data', but got ${data?.runtimeType}");
+         print("API Error (create room): Data content: $data");
          throw ServerException(message: "Invalid response format for create room");
       }
     } on DioException catch (e) {

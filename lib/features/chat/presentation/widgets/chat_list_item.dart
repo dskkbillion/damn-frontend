@@ -91,17 +91,15 @@ class _ChatListItemState extends State<ChatListItem> {
     // 获取国际化资源
     final s = S.of(context);
     
-    // Get opponent participant
-    // Note: Ensure getOpponent logic correctly handles potential nulls or missing participants
-    final Participant? opponent = widget.chatRoom.getOpponent(widget.currentUserId);
+    // 获取对方信息（可能是买家或卖家）
+    final opponent = widget.chatRoom.getOpponent(widget.currentUserId);
 
-    // If opponent is null, display an error or placeholder item
+    // 如果对方信息为空，显示错误
     if (opponent == null) {
-      // Consider logging this situation
       return ListTile(
         leading: CircleAvatar(child: Icon(Icons.error)),
         title: Text(s.chat_invalid_session),
-        subtitle: Text(s.chat_opponent_not_found),
+        subtitle: Text('对方信息不存在'),
       );
     }
 
@@ -124,11 +122,80 @@ class _ChatListItemState extends State<ChatListItem> {
               )
             : null,
       ),
-      title: Text(
-        opponent.nickName ?? s.chat_unknown_user,
-        style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16), // Adjust font size
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            opponent.nickName ?? '未知用户',
+            style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16), // Adjust font size
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          // 新增：如果有关联商品，显示商品信息
+          if (widget.chatRoom.hasProduct) ...[
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.blue[50],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue[200]!),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 商品小图
+                  if (widget.chatRoom.productImage != null)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: CachedNetworkImage(
+                        imageUrl: widget.chatRoom.productImage!,
+                        width: 20,
+                        height: 20,
+                        fit: BoxFit.cover,
+                        errorWidget: (context, url, error) {
+                          return Container(
+                            width: 20,
+                            height: 20,
+                            color: Colors.grey[300],
+                            child: const Icon(Icons.image, size: 12),
+                          );
+                        },
+                      ),
+                    ),
+                  
+                  const SizedBox(width: 6),
+                  
+                  // 商品名称
+                  Flexible(
+                    child: Text(
+                      widget.chatRoom.productName ?? '商品',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.blue[700],
+                        fontWeight: FontWeight.w500,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  
+                  // 商品价格
+                  if (widget.chatRoom.productPrice != null) ...[
+                    const SizedBox(width: 4),
+                    Text(
+                      '¥${widget.chatRoom.productPrice!.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.red[600],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ],
       ),
       subtitle: Text(
         lastMessageText,

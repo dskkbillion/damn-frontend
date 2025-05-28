@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // 导入SharedPreferences
+import 'package:flutter_bloc/flutter_bloc.dart'; // 导入BLoC
 
 // Import the root App Widget
 import 'package:dskk_flutter_refactor/app/app.dart';
@@ -25,6 +26,11 @@ import 'package:dskk_flutter_refactor/features/chat/di/chat_di.dart';
 import 'package:dskk_flutter_refactor/features/profile/di/profile_di.dart';
 // 导入卖家模块DI
 import 'package:dskk_flutter_refactor/features/seller/di/seller_di.dart';
+// 导入Analytics模块
+import 'package:dskk_flutter_refactor/core/analytics/di/analytics_injection.dart';
+import 'package:dskk_flutter_refactor/core/analytics/observers/analytics_bloc_observer.dart';
+// 导入core/auth中的IAuthRepository
+import 'package:dskk_flutter_refactor/core/auth/repositories/i_auth_repository.dart' as core_auth;
 
 // 导入Home模块的导航配置
 import 'package:dskk_flutter_refactor/features/home/presentation/navigation/home_navigation_di.dart';
@@ -89,8 +95,20 @@ Future<void> main() async {
   getIt.registerLazySingleton<IAuthRepository>(
     () => MockAuthRepository(secureStorage: getIt<FlutterSecureStorage>())
   );
+  // 同时注册core_auth.IAuthRepository的适配器
+  getIt.registerLazySingleton<core_auth.IAuthRepository>(
+    () => AuthRepositoryAdapter()
+  );
   getIt.allowReassignment = false; // Optional: Disable reassignment after overriding
   print('[main_seller_preview] IAuthRepository overridden.');
+
+  // 11. 初始化分析模块依赖 - 需要在AuthRepository注册之后
+  await initAnalyticsModule();
+  print('[main_seller_preview] Analytics dependencies configured.');
+  
+  // 设置BLoC观察者
+  Bloc.observer = AnalyticsBlocObserver();
+  print('[main_seller_preview] Analytics BLoC observer configured.');
 
   // 5. 初始化AI文档模块依赖 - 卖家模块依赖于IFileUploadRepository
   await AiDocsDI.init(getIt);
@@ -115,8 +133,8 @@ Future<void> main() async {
   // 10. 初始化支付模块依赖
   await PaymentDI.init(getIt);
   print('[main_seller_preview] Payment dependencies configured.');
-
-  // 11. 手动注入卖家认证信息
+  
+  // 12. 手动注入卖家认证信息
   print('[main_seller_preview] Injecting seller credentials...');
   try {
     final storage = getIt<FlutterSecureStorage>(); 
@@ -124,12 +142,14 @@ Future<void> main() async {
     const sellerToken = "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjdkMjg0MjkzLTVjNzYtNDc0Mi05ZmI4LTIzODdhZjI3ODkzZCJ9.Yp0qHMGlHjShMwnf1LQJ4wCzqakG-fZn7-xpQ2P0GpZ_60fk4_WmIPZ63QpAISbyRrO_-_g8rwoqH86iVGdQtA"; // 卖家Token
     const sellerUserId = "18888888888"; // 卖家ID
     const sellerCommonUserId = "1"; // 卖家通用ID
+    const sellerReferId = "1"; // 卖家referId，用于聊天模块数据匹配（对应API返回的doctor.referId）
 
     await storage.write(key: 'auth_token', value: sellerToken);
     await storage.write(key: 'user_id', value: sellerUserId);
     await storage.write(key: 'common_user_id', value: sellerCommonUserId);
+    await storage.write(key: 'refer_id', value: sellerReferId); // 新增：用于聊天模块
 
-    print('[main_seller_preview] Successfully injected seller credentials.');
+    print('[main_seller_preview] Successfully injected seller credentials with referId: $sellerReferId');
   } catch (e) {
      print('[main_seller_preview] ERROR injecting seller credentials: $e');
   }

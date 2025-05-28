@@ -44,6 +44,22 @@ class TriggerAllocationAction extends AiChatEvent {
   List<Object?> get props => [item, merchantId, serviceId];
 }
 
+/// Event to trigger the optimized allocation action (create chat room first, then AI allocation).
+class TriggerOptimizedAllocation extends AiChatEvent {
+  final Map<String, dynamic> item; // 服务/商品详情
+  final int merchantId; // 商家ID
+  final int serviceId; // 服务ID，用于状态追踪
+
+  const TriggerOptimizedAllocation({
+    required this.item,
+    required this.merchantId,
+    required this.serviceId,
+  }); 
+
+  @override
+  List<Object?> get props => [item, merchantId, serviceId];
+}
+
 /// Event triggered when the user finishes recording audio.
 class SendVoiceMessage extends AiChatEvent {
   final File audioFile; // Changed back to File based on Bloc usage - needs path later
@@ -91,6 +107,26 @@ class DeleteSelectedConversation extends AiChatEvent {
   
   @override
   List<Object?> get props => [conversationId];
+}
+
+/// Event to create a new conversation and immediately send a message.
+class CreateNewConversationAndSendMessage extends AiChatEvent {
+  final String message;
+  
+  const CreateNewConversationAndSendMessage({required this.message});
+  
+  @override
+  List<Object?> get props => [message];
+}
+
+/// Event to create a new conversation and immediately send a voice message.
+class CreateNewConversationAndSendVoiceMessage extends AiChatEvent {
+  final File audioFile;
+  
+  const CreateNewConversationAndSendVoiceMessage({required this.audioFile});
+  
+  @override
+  List<Object?> get props => [audioFile];
 }
 
 /// Event triggered when the AI stream updates the response text.
@@ -185,4 +221,30 @@ class RemovePendingImage extends AiChatEvent {
   final String imagePathToRemove; // Use file path as identifier
   const RemovePendingImage({required this.imagePathToRemove});
   @override List<Object?> get props => [imagePathToRemove];
+}
+
+/// Event to manually update a conversation title.
+class UpdateConversationTitle extends AiChatEvent {
+  final int conversationId;
+  final String title;
+  
+  const UpdateConversationTitle({
+    required this.conversationId,
+    required this.title,
+  });
+  
+  @override
+  List<Object?> get props => [conversationId, title];
+}
+
+/// Event to generate a conversation title using AI.
+class GenerateConversationTitle extends AiChatEvent {
+  final int conversationId;
+  
+  const GenerateConversationTitle({
+    required this.conversationId,
+  });
+  
+  @override
+  List<Object?> get props => [conversationId];
 } 

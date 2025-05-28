@@ -24,7 +24,11 @@ mixin _$ChatRoomDto {
   ParticipantDto get member => throw _privateConstructorUsedError;
   ParticipantDto get doctor => throw _privateConstructorUsedError;
   int get messageNum => throw _privateConstructorUsedError; // Unread count
-  ChatMessageDto? get chatMessageNewVo => throw _privateConstructorUsedError;
+  ChatMessageDto? get chatMessageNewVo =>
+      throw _privateConstructorUsedError; // Latest message DTO
+// 新增商品相关字段
+  int? get productId => throw _privateConstructorUsedError;
+  ProductVoDto? get productVo => throw _privateConstructorUsedError;
 
   /// Serializes this ChatRoomDto to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -47,11 +51,14 @@ abstract class $ChatRoomDtoCopyWith<$Res> {
       ParticipantDto member,
       ParticipantDto doctor,
       int messageNum,
-      ChatMessageDto? chatMessageNewVo});
+      ChatMessageDto? chatMessageNewVo,
+      int? productId,
+      ProductVoDto? productVo});
 
   $ParticipantDtoCopyWith<$Res> get member;
   $ParticipantDtoCopyWith<$Res> get doctor;
   $ChatMessageDtoCopyWith<$Res>? get chatMessageNewVo;
+  $ProductVoDtoCopyWith<$Res>? get productVo;
 }
 
 /// @nodoc
@@ -74,6 +81,8 @@ class _$ChatRoomDtoCopyWithImpl<$Res, $Val extends ChatRoomDto>
     Object? doctor = null,
     Object? messageNum = null,
     Object? chatMessageNewVo = freezed,
+    Object? productId = freezed,
+    Object? productVo = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -96,6 +105,14 @@ class _$ChatRoomDtoCopyWithImpl<$Res, $Val extends ChatRoomDto>
           ? _value.chatMessageNewVo
           : chatMessageNewVo // ignore: cast_nullable_to_non_nullable
               as ChatMessageDto?,
+      productId: freezed == productId
+          ? _value.productId
+          : productId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      productVo: freezed == productVo
+          ? _value.productVo
+          : productVo // ignore: cast_nullable_to_non_nullable
+              as ProductVoDto?,
     ) as $Val);
   }
 
@@ -132,6 +149,20 @@ class _$ChatRoomDtoCopyWithImpl<$Res, $Val extends ChatRoomDto>
       return _then(_value.copyWith(chatMessageNewVo: value) as $Val);
     });
   }
+
+  /// Create a copy of ChatRoomDto
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ProductVoDtoCopyWith<$Res>? get productVo {
+    if (_value.productVo == null) {
+      return null;
+    }
+
+    return $ProductVoDtoCopyWith<$Res>(_value.productVo!, (value) {
+      return _then(_value.copyWith(productVo: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -147,7 +178,9 @@ abstract class _$$ChatRoomDtoImplCopyWith<$Res>
       ParticipantDto member,
       ParticipantDto doctor,
       int messageNum,
-      ChatMessageDto? chatMessageNewVo});
+      ChatMessageDto? chatMessageNewVo,
+      int? productId,
+      ProductVoDto? productVo});
 
   @override
   $ParticipantDtoCopyWith<$Res> get member;
@@ -155,6 +188,8 @@ abstract class _$$ChatRoomDtoImplCopyWith<$Res>
   $ParticipantDtoCopyWith<$Res> get doctor;
   @override
   $ChatMessageDtoCopyWith<$Res>? get chatMessageNewVo;
+  @override
+  $ProductVoDtoCopyWith<$Res>? get productVo;
 }
 
 /// @nodoc
@@ -175,6 +210,8 @@ class __$$ChatRoomDtoImplCopyWithImpl<$Res>
     Object? doctor = null,
     Object? messageNum = null,
     Object? chatMessageNewVo = freezed,
+    Object? productId = freezed,
+    Object? productVo = freezed,
   }) {
     return _then(_$ChatRoomDtoImpl(
       id: null == id
@@ -197,6 +234,14 @@ class __$$ChatRoomDtoImplCopyWithImpl<$Res>
           ? _value.chatMessageNewVo
           : chatMessageNewVo // ignore: cast_nullable_to_non_nullable
               as ChatMessageDto?,
+      productId: freezed == productId
+          ? _value.productId
+          : productId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      productVo: freezed == productVo
+          ? _value.productVo
+          : productVo // ignore: cast_nullable_to_non_nullable
+              as ProductVoDto?,
     ));
   }
 }
@@ -209,7 +254,9 @@ class _$ChatRoomDtoImpl extends _ChatRoomDto {
       required this.member,
       required this.doctor,
       this.messageNum = 0,
-      this.chatMessageNewVo})
+      this.chatMessageNewVo,
+      this.productId,
+      this.productVo})
       : super._();
 
   factory _$ChatRoomDtoImpl.fromJson(Map<String, dynamic> json) =>
@@ -227,10 +274,16 @@ class _$ChatRoomDtoImpl extends _ChatRoomDto {
 // Unread count
   @override
   final ChatMessageDto? chatMessageNewVo;
+// Latest message DTO
+// 新增商品相关字段
+  @override
+  final int? productId;
+  @override
+  final ProductVoDto? productVo;
 
   @override
   String toString() {
-    return 'ChatRoomDto(id: $id, member: $member, doctor: $doctor, messageNum: $messageNum, chatMessageNewVo: $chatMessageNewVo)';
+    return 'ChatRoomDto(id: $id, member: $member, doctor: $doctor, messageNum: $messageNum, chatMessageNewVo: $chatMessageNewVo, productId: $productId, productVo: $productVo)';
   }
 
   @override
@@ -244,13 +297,17 @@ class _$ChatRoomDtoImpl extends _ChatRoomDto {
             (identical(other.messageNum, messageNum) ||
                 other.messageNum == messageNum) &&
             (identical(other.chatMessageNewVo, chatMessageNewVo) ||
-                other.chatMessageNewVo == chatMessageNewVo));
+                other.chatMessageNewVo == chatMessageNewVo) &&
+            (identical(other.productId, productId) ||
+                other.productId == productId) &&
+            (identical(other.productVo, productVo) ||
+                other.productVo == productVo));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, id, member, doctor, messageNum, chatMessageNewVo);
+  int get hashCode => Object.hash(runtimeType, id, member, doctor, messageNum,
+      chatMessageNewVo, productId, productVo);
 
   /// Create a copy of ChatRoomDto
   /// with the given fields replaced by the non-null parameter values.
@@ -274,7 +331,9 @@ abstract class _ChatRoomDto extends ChatRoomDto {
       required final ParticipantDto member,
       required final ParticipantDto doctor,
       final int messageNum,
-      final ChatMessageDto? chatMessageNewVo}) = _$ChatRoomDtoImpl;
+      final ChatMessageDto? chatMessageNewVo,
+      final int? productId,
+      final ProductVoDto? productVo}) = _$ChatRoomDtoImpl;
   const _ChatRoomDto._() : super._();
 
   factory _ChatRoomDto.fromJson(Map<String, dynamic> json) =
@@ -289,7 +348,12 @@ abstract class _ChatRoomDto extends ChatRoomDto {
   @override
   int get messageNum; // Unread count
   @override
-  ChatMessageDto? get chatMessageNewVo;
+  ChatMessageDto? get chatMessageNewVo; // Latest message DTO
+// 新增商品相关字段
+  @override
+  int? get productId;
+  @override
+  ProductVoDto? get productVo;
 
   /// Create a copy of ChatRoomDto
   /// with the given fields replaced by the non-null parameter values.

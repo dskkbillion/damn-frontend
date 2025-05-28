@@ -185,11 +185,71 @@ class S {
     );
   }
 
+  /// `Enter Chat`
+  String get ai_docs_enter_chat {
+    return Intl.message(
+      'Enter Chat',
+      name: 'ai_docs_enter_chat',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Let them see`
   String get ai_docs_let_them_see {
     return Intl.message(
       'Let them see',
       name: 'ai_docs_let_them_see',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Welcome to AI Assistant`
+  String get ai_docs_welcome_title {
+    return Intl.message(
+      'Welcome to AI Assistant',
+      name: 'ai_docs_welcome_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Just send a message to start chatting, and the system will automatically create a chat room for you`
+  String get ai_docs_welcome_message {
+    return Intl.message(
+      'Just send a message to start chatting, and the system will automatically create a chat room for you',
+      name: 'ai_docs_welcome_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No conversation selected, automatically creating a new conversation and sending message`
+  String get ai_docs_auto_create_text {
+    return Intl.message(
+      'No conversation selected, automatically creating a new conversation and sending message',
+      name: 'ai_docs_auto_create_text',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No conversation selected, automatically creating a new conversation and sending voice message`
+  String get ai_docs_auto_create_voice {
+    return Intl.message(
+      'No conversation selected, automatically creating a new conversation and sending voice message',
+      name: 'ai_docs_auto_create_voice',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cancelling generation...`
+  String get ai_docs_cancelling_generation {
+    return Intl.message(
+      'Cancelling generation...',
+      name: 'ai_docs_cancelling_generation',
       desc: '',
       args: [],
     );
@@ -475,6 +535,116 @@ class S {
     return Intl.message(
       'Please select the conversation to delete first',
       name: 'ai_docs_please_select_conversation_to_delete',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `AI Generate Title`
+  String get ai_docs_generate_title {
+    return Intl.message(
+      'AI Generate Title',
+      name: 'ai_docs_generate_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Let AI generate a title for this conversation`
+  String get ai_docs_generate_title_tooltip {
+    return Intl.message(
+      'Let AI generate a title for this conversation',
+      name: 'ai_docs_generate_title_tooltip',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Generating title...`
+  String get ai_docs_generating_title {
+    return Intl.message(
+      'Generating title...',
+      name: 'ai_docs_generating_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Title generated`
+  String get ai_docs_title_generated {
+    return Intl.message(
+      'Title generated',
+      name: 'ai_docs_title_generated',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Title generation failed: {error}`
+  String ai_docs_title_generation_failed(String error) {
+    return Intl.message(
+      'Title generation failed: $error',
+      name: 'ai_docs_title_generation_failed',
+      desc: '',
+      args: [error],
+    );
+  }
+
+  /// `Edit Title`
+  String get ai_docs_edit_title {
+    return Intl.message(
+      'Edit Title',
+      name: 'ai_docs_edit_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter a new title`
+  String get ai_docs_edit_title_hint {
+    return Intl.message(
+      'Please enter a new title',
+      name: 'ai_docs_edit_title_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Title updated`
+  String get ai_docs_title_updated {
+    return Intl.message(
+      'Title updated',
+      name: 'ai_docs_title_updated',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Title update failed: {error}`
+  String ai_docs_title_update_failed(String error) {
+    return Intl.message(
+      'Title update failed: $error',
+      name: 'ai_docs_title_update_failed',
+      desc: '',
+      args: [error],
+    );
+  }
+
+  /// `Title cannot exceed 50 characters`
+  String get ai_docs_title_too_long {
+    return Intl.message(
+      'Title cannot exceed 50 characters',
+      name: 'ai_docs_title_too_long',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Title cannot be empty`
+  String get ai_docs_title_empty {
+    return Intl.message(
+      'Title cannot be empty',
+      name: 'ai_docs_title_empty',
       desc: '',
       args: [],
     );
@@ -1522,6 +1692,1221 @@ class S {
       name: 'search_failed',
       desc: '',
       args: [error],
+    );
+  }
+
+  /// `Loading failed: {error}`
+  String product_detail_loading_failed(String error) {
+    return Intl.message(
+      'Loading failed: $error',
+      name: 'product_detail_loading_failed',
+      desc: '',
+      args: [error],
+    );
+  }
+
+  /// `Retry`
+  String get product_detail_retry {
+    return Intl.message(
+      'Retry',
+      name: 'product_detail_retry',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please wait...`
+  String get product_detail_please_wait {
+    return Intl.message(
+      'Please wait...',
+      name: 'product_detail_please_wait',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Contact Seller`
+  String get product_detail_contact_seller {
+    return Intl.message(
+      'Contact Seller',
+      name: 'product_detail_contact_seller',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Verified`
+  String get product_detail_verified_label {
+    return Intl.message(
+      'Verified',
+      name: 'product_detail_verified_label',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Published`
+  String get product_detail_published_status {
+    return Intl.message(
+      'Published',
+      name: 'product_detail_published_status',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `More`
+  String get product_detail_more {
+    return Intl.message(
+      'More',
+      name: 'product_detail_more',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery Times`
+  String get product_detail_delivery_times {
+    return Intl.message(
+      'Delivery Times',
+      name: 'product_detail_delivery_times',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery Period`
+  String get product_detail_delivery_period {
+    return Intl.message(
+      'Delivery Period',
+      name: 'product_detail_delivery_period',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Buy Now (1)`
+  String get product_detail_buy_now {
+    return Intl.message(
+      'Buy Now (1)',
+      name: 'product_detail_buy_now',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `FAQ`
+  String get product_detail_faq {
+    return Intl.message('FAQ', name: 'product_detail_faq', desc: '', args: []);
+  }
+
+  /// `Case Showcase`
+  String get product_detail_case_showcase {
+    return Intl.message(
+      'Case Showcase',
+      name: 'product_detail_case_showcase',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No cases available`
+  String get product_detail_no_cases {
+    return Intl.message(
+      'No cases available',
+      name: 'product_detail_no_cases',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reviews ({count})`
+  String product_detail_reviews(int count) {
+    return Intl.message(
+      'Reviews ($count)',
+      name: 'product_detail_reviews',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `View All`
+  String get product_detail_view_all {
+    return Intl.message(
+      'View All',
+      name: 'product_detail_view_all',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No reviews yet`
+  String get product_detail_no_reviews {
+    return Intl.message(
+      'No reviews yet',
+      name: 'product_detail_no_reviews',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Basic`
+  String get product_detail_basic_package {
+    return Intl.message(
+      'Basic',
+      name: 'product_detail_basic_package',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Great service, very patient`
+  String get product_detail_sample_review {
+    return Intl.message(
+      'Great service, very patient',
+      name: 'product_detail_sample_review',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ray123`
+  String get product_detail_sample_user {
+    return Intl.message(
+      'Ray123',
+      name: 'product_detail_sample_user',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reviews`
+  String get product_reviews_title {
+    return Intl.message(
+      'Reviews',
+      name: 'product_reviews_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Loading failed: {error}`
+  String product_reviews_loading_failed(String error) {
+    return Intl.message(
+      'Loading failed: $error',
+      name: 'product_reviews_loading_failed',
+      desc: '',
+      args: [error],
+    );
+  }
+
+  /// `Retry`
+  String get product_reviews_retry {
+    return Intl.message(
+      'Retry',
+      name: 'product_reviews_retry',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No reviews yet`
+  String get product_reviews_no_reviews {
+    return Intl.message(
+      'No reviews yet',
+      name: 'product_reviews_no_reviews',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Great service, very patient`
+  String get product_reviews_sample_content {
+    return Intl.message(
+      'Great service, very patient',
+      name: 'product_reviews_sample_content',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} years ago`
+  String product_reviews_years_ago(int count) {
+    return Intl.message(
+      '$count years ago',
+      name: 'product_reviews_years_ago',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count} months ago`
+  String product_reviews_months_ago(int count) {
+    return Intl.message(
+      '$count months ago',
+      name: 'product_reviews_months_ago',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count} days ago`
+  String product_reviews_days_ago(int count) {
+    return Intl.message(
+      '$count days ago',
+      name: 'product_reviews_days_ago',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count} hours ago`
+  String product_reviews_hours_ago(int count) {
+    return Intl.message(
+      '$count hours ago',
+      name: 'product_reviews_hours_ago',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count} minutes ago`
+  String product_reviews_minutes_ago(int count) {
+    return Intl.message(
+      '$count minutes ago',
+      name: 'product_reviews_minutes_ago',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Just now`
+  String get product_reviews_just_now {
+    return Intl.message(
+      'Just now',
+      name: 'product_reviews_just_now',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Seller Profile`
+  String get seller_profile_default_title {
+    return Intl.message(
+      'Seller Profile',
+      name: 'seller_profile_default_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Seller`
+  String get seller_profile_seller {
+    return Intl.message(
+      'Seller',
+      name: 'seller_profile_seller',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No description`
+  String get seller_profile_no_description {
+    return Intl.message(
+      'No description',
+      name: 'seller_profile_no_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} followers`
+  String seller_profile_followers(int count) {
+    return Intl.message(
+      '$count followers',
+      name: 'seller_profile_followers',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Following`
+  String get seller_profile_followed {
+    return Intl.message(
+      'Following',
+      name: 'seller_profile_followed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Follow`
+  String get seller_profile_follow {
+    return Intl.message(
+      'Follow',
+      name: 'seller_profile_follow',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unfollowed successfully`
+  String get seller_profile_unfollow_success {
+    return Intl.message(
+      'Unfollowed successfully',
+      name: 'seller_profile_unfollow_success',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Followed successfully`
+  String get seller_profile_follow_success {
+    return Intl.message(
+      'Followed successfully',
+      name: 'seller_profile_follow_success',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to create chat: {error}`
+  String seller_profile_chat_failed(String error) {
+    return Intl.message(
+      'Failed to create chat: $error',
+      name: 'seller_profile_chat_failed',
+      desc: '',
+      args: [error],
+    );
+  }
+
+  /// `Error occurred: {error}`
+  String seller_profile_error_occurred(String error) {
+    return Intl.message(
+      'Error occurred: $error',
+      name: 'seller_profile_error_occurred',
+      desc: '',
+      args: [error],
+    );
+  }
+
+  /// `About Merchant`
+  String get seller_profile_about_merchant {
+    return Intl.message(
+      'About Merchant',
+      name: 'seller_profile_about_merchant',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `My Services`
+  String get seller_profile_my_services {
+    return Intl.message(
+      'My Services',
+      name: 'seller_profile_my_services',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No merchant information`
+  String get seller_profile_no_merchant_info {
+    return Intl.message(
+      'No merchant information',
+      name: 'seller_profile_no_merchant_info',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Member Level`
+  String get seller_profile_member_level {
+    return Intl.message(
+      'Member Level',
+      name: 'seller_profile_member_level',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Level 2 Member`
+  String get seller_profile_level_two {
+    return Intl.message(
+      'Level 2 Member',
+      name: 'seller_profile_level_two',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Seller Rating`
+  String get seller_profile_seller_rating {
+    return Intl.message(
+      'Seller Rating',
+      name: 'seller_profile_seller_rating',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Response Time`
+  String get seller_profile_response_time {
+    return Intl.message(
+      'Response Time',
+      name: 'seller_profile_response_time',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `3 hours`
+  String get seller_profile_response_hours {
+    return Intl.message(
+      '3 hours',
+      name: 'seller_profile_response_hours',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Certification Status`
+  String get seller_profile_certification_status {
+    return Intl.message(
+      'Certification Status',
+      name: 'seller_profile_certification_status',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Certified`
+  String get seller_profile_certified {
+    return Intl.message(
+      'Certified',
+      name: 'seller_profile_certified',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not Certified`
+  String get seller_profile_not_certified {
+    return Intl.message(
+      'Not Certified',
+      name: 'seller_profile_not_certified',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No products`
+  String get seller_profile_no_products {
+    return Intl.message(
+      'No products',
+      name: 'seller_profile_no_products',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Image loading failed`
+  String get seller_profile_image_load_failed {
+    return Intl.message(
+      'Image loading failed',
+      name: 'seller_profile_image_load_failed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No image`
+  String get seller_profile_no_image {
+    return Intl.message(
+      'No image',
+      name: 'seller_profile_no_image',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Profile`
+  String get seller_profile_title {
+    return Intl.message(
+      'Profile',
+      name: 'seller_profile_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Auth`
+  String get seller_profile_auth_management {
+    return Intl.message(
+      'Auth',
+      name: 'seller_profile_auth_management',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Wallet`
+  String get seller_profile_my_wallet {
+    return Intl.message(
+      'Wallet',
+      name: 'seller_profile_my_wallet',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Schedule`
+  String get seller_profile_time_management {
+    return Intl.message(
+      'Schedule',
+      name: 'seller_profile_time_management',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Settings`
+  String get seller_profile_settings {
+    return Intl.message(
+      'Settings',
+      name: 'seller_profile_settings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Notifications`
+  String get seller_profile_notifications {
+    return Intl.message(
+      'Notifications',
+      name: 'seller_profile_notifications',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `About`
+  String get seller_profile_about_us {
+    return Intl.message(
+      'About',
+      name: 'seller_profile_about_us',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mission`
+  String get seller_profile_mission {
+    return Intl.message(
+      'Mission',
+      name: 'seller_profile_mission',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ray`
+  String get seller_profile_user_name {
+    return Intl.message(
+      'Ray',
+      name: 'seller_profile_user_name',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Seller Mode: Online`
+  String get seller_profile_seller_mode_online {
+    return Intl.message(
+      'Seller Mode: Online',
+      name: 'seller_profile_seller_mode_online',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Seller Mode`
+  String get seller_profile_seller_mode {
+    return Intl.message(
+      'Seller Mode',
+      name: 'seller_profile_seller_mode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Buyer Mode`
+  String get seller_profile_buyer_mode {
+    return Intl.message(
+      'Buyer Mode',
+      name: 'seller_profile_buyer_mode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `My Orders`
+  String get seller_profile_my_orders {
+    return Intl.message(
+      'My Orders',
+      name: 'seller_profile_my_orders',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pending`
+  String get seller_profile_order_pending {
+    return Intl.message(
+      'Pending',
+      name: 'seller_profile_order_pending',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Processing`
+  String get seller_profile_order_processing {
+    return Intl.message(
+      'Processing',
+      name: 'seller_profile_order_processing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivered`
+  String get seller_profile_order_delivered {
+    return Intl.message(
+      'Delivered',
+      name: 'seller_profile_order_delivered',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Refund/Support`
+  String get seller_profile_order_refund {
+    return Intl.message(
+      'Refund/Support',
+      name: 'seller_profile_order_refund',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{feature} feature not yet implemented`
+  String seller_profile_feature_not_implemented(String feature) {
+    return Intl.message(
+      '$feature feature not yet implemented',
+      name: 'seller_profile_feature_not_implemented',
+      desc: '',
+      args: [feature],
+    );
+  }
+
+  /// `Loading failed`
+  String get seller_home_loading_failed {
+    return Intl.message(
+      'Loading failed',
+      name: 'seller_home_loading_failed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No data`
+  String get seller_home_no_data {
+    return Intl.message(
+      'No data',
+      name: 'seller_home_no_data',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No store information`
+  String get seller_home_no_store_info {
+    return Intl.message(
+      'No store information',
+      name: 'seller_home_no_store_info',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Online`
+  String get seller_home_online {
+    return Intl.message(
+      'Online',
+      name: 'seller_home_online',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Offline`
+  String get seller_home_offline {
+    return Intl.message(
+      'Offline',
+      name: 'seller_home_offline',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Completion Rate {rate}%`
+  String seller_home_completion_rate(String rate) {
+    return Intl.message(
+      'Completion Rate $rate%',
+      name: 'seller_home_completion_rate',
+      desc: '',
+      args: [rate],
+    );
+  }
+
+  /// `Switch to Buyer Mode`
+  String get seller_home_switch_to_buyer {
+    return Intl.message(
+      'Switch to Buyer Mode',
+      name: 'seller_home_switch_to_buyer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unable to switch to buyer mode: {error}`
+  String seller_home_switch_failed(String error) {
+    return Intl.message(
+      'Unable to switch to buyer mode: $error',
+      name: 'seller_home_switch_failed',
+      desc: '',
+      args: [error],
+    );
+  }
+
+  /// `Revenue`
+  String get seller_home_income {
+    return Intl.message(
+      'Revenue',
+      name: 'seller_home_income',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Details`
+  String get seller_home_view_details {
+    return Intl.message(
+      'Details',
+      name: 'seller_home_view_details',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Total`
+  String get seller_home_total_income {
+    return Intl.message(
+      'Total',
+      name: 'seller_home_total_income',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Today`
+  String get seller_home_today_income {
+    return Intl.message(
+      'Today',
+      name: 'seller_home_today_income',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pending`
+  String get seller_home_pending_settlement {
+    return Intl.message(
+      'Pending',
+      name: 'seller_home_pending_settlement',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Orders`
+  String get seller_home_orders {
+    return Intl.message(
+      'Orders',
+      name: 'seller_home_orders',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `View All`
+  String get seller_home_view_all {
+    return Intl.message(
+      'View All',
+      name: 'seller_home_view_all',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `All`
+  String get seller_home_orders_all {
+    return Intl.message(
+      'All',
+      name: 'seller_home_orders_all',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pending`
+  String get seller_home_orders_pending {
+    return Intl.message(
+      'Pending',
+      name: 'seller_home_orders_pending',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Active`
+  String get seller_home_orders_processing {
+    return Intl.message(
+      'Active',
+      name: 'seller_home_orders_processing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Support`
+  String get seller_home_orders_aftersales {
+    return Intl.message(
+      'Support',
+      name: 'seller_home_orders_aftersales',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tools`
+  String get seller_home_functions {
+    return Intl.message(
+      'Tools',
+      name: 'seller_home_functions',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Wallet`
+  String get seller_home_wallet {
+    return Intl.message(
+      'Wallet',
+      name: 'seller_home_wallet',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Auth`
+  String get seller_home_auth_management {
+    return Intl.message(
+      'Auth',
+      name: 'seller_home_auth_management',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Schedule`
+  String get seller_home_time_management {
+    return Intl.message(
+      'Schedule',
+      name: 'seller_home_time_management',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Auto Reply`
+  String get seller_home_auto_reply {
+    return Intl.message(
+      'Auto Reply',
+      name: 'seller_home_auto_reply',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recent Revenue`
+  String get seller_home_recent_income {
+    return Intl.message(
+      'Recent Revenue',
+      name: 'seller_home_recent_income',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No recent revenue data`
+  String get seller_home_no_recent_income {
+    return Intl.message(
+      'No recent revenue data',
+      name: 'seller_home_no_recent_income',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No revenue data`
+  String get seller_home_no_income_data {
+    return Intl.message(
+      'No revenue data',
+      name: 'seller_home_no_income_data',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Analytics`
+  String get seller_statistics_title {
+    return Intl.message(
+      'Analytics',
+      name: 'seller_statistics_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Seller Profile`
+  String get seller_statistics_seller_homepage {
+    return Intl.message(
+      'Seller Profile',
+      name: 'seller_statistics_seller_homepage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Heat`
+  String get seller_statistics_heat_value {
+    return Intl.message(
+      'Heat',
+      name: 'seller_statistics_heat_value',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reply Rate`
+  String get seller_statistics_reply_rate {
+    return Intl.message(
+      'Reply Rate',
+      name: 'seller_statistics_reply_rate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Completion`
+  String get seller_statistics_completion_rate {
+    return Intl.message(
+      'Completion',
+      name: 'seller_statistics_completion_rate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Rating`
+  String get seller_statistics_positive_rate {
+    return Intl.message(
+      'Rating',
+      name: 'seller_statistics_positive_rate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Upgrade to Next Level`
+  String get seller_statistics_upgrade_to_next_level {
+    return Intl.message(
+      'Upgrade to Next Level',
+      name: 'seller_statistics_upgrade_to_next_level',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Level 3 Seller for {days} days`
+  String seller_statistics_become_level3_seller(String days) {
+    return Intl.message(
+      'Level 3 Seller for $days days',
+      name: 'seller_statistics_become_level3_seller',
+      desc: '',
+      args: [days],
+    );
+  }
+
+  /// `Complete {orderNum} orders`
+  String seller_statistics_complete_orders(String orderNum) {
+    return Intl.message(
+      'Complete $orderNum orders',
+      name: 'seller_statistics_complete_orders',
+      desc: '',
+      args: [orderNum],
+    );
+  }
+
+  /// `Earn ${amount}`
+  String seller_statistics_profit_amount(String amount) {
+    return Intl.message(
+      'Earn \$$amount',
+      name: 'seller_statistics_profit_amount',
+      desc: '',
+      args: [amount],
+    );
+  }
+
+  /// `Metrics`
+  String get seller_statistics_indicators {
+    return Intl.message(
+      'Metrics',
+      name: 'seller_statistics_indicators',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Total Revenue`
+  String get seller_statistics_total_earnings {
+    return Intl.message(
+      'Total Revenue',
+      name: 'seller_statistics_total_earnings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Monthly Revenue`
+  String get seller_statistics_monthly_earnings {
+    return Intl.message(
+      'Monthly Revenue',
+      name: 'seller_statistics_monthly_earnings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Total Orders`
+  String get seller_statistics_total_orders {
+    return Intl.message(
+      'Total Orders',
+      name: 'seller_statistics_total_orders',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Active Orders`
+  String get seller_statistics_active_orders {
+    return Intl.message(
+      'Active Orders',
+      name: 'seller_statistics_active_orders',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pending`
+  String get seller_statistics_pending {
+    return Intl.message(
+      'Pending',
+      name: 'seller_statistics_pending',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Incomplete Orders`
+  String get seller_statistics_incomplete_orders {
+    return Intl.message(
+      'Incomplete Orders',
+      name: 'seller_statistics_incomplete_orders',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pending`
+  String get seller_statistics_pending_completion {
+    return Intl.message(
+      'Pending',
+      name: 'seller_statistics_pending_completion',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Receipt`
+  String get seller_statistics_receipt {
+    return Intl.message(
+      'Receipt',
+      name: 'seller_statistics_receipt',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Next Delivery`
+  String get seller_statistics_next_delivery_date {
+    return Intl.message(
+      'Next Delivery',
+      name: 'seller_statistics_next_delivery_date',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Earliest`
+  String get seller_statistics_earliest {
+    return Intl.message(
+      'Earliest',
+      name: 'seller_statistics_earliest',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Loading failed: {error}`
+  String seller_statistics_loading_failed(String error) {
+    return Intl.message(
+      'Loading failed: $error',
+      name: 'seller_statistics_loading_failed',
+      desc: '',
+      args: [error],
+    );
+  }
+
+  /// `Retry`
+  String get seller_statistics_retry {
+    return Intl.message(
+      'Retry',
+      name: 'seller_statistics_retry',
+      desc: '',
+      args: [],
     );
   }
 }

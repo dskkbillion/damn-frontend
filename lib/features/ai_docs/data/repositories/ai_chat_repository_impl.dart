@@ -212,4 +212,32 @@ class AiChatRepositoryImpl implements IAiChatRepository {
       );
     });
   }
+
+  @override
+  Future<Either<Failure, String>> updateConversationTitle({
+    required int conversationId,
+    required int userId,
+    required String title,
+  }) async {
+    return _tryCatch<String>(() async {
+      return await _remoteDataSource.updateConversationTitle(
+        conversationId: conversationId,
+        userId: userId,
+        title: title,
+      );
+    });
+  }
+
+  @override
+  Future<Either<Failure, String>> generateConversationTitle({
+    required int conversationId,
+    required int userId,
+  }) async {
+    return _tryCatch<String>(() async {
+      return await _remoteDataSource.generateConversationTitle(
+        conversationId: conversationId,
+        userId: userId,
+      );
+    });
+  }
 } 

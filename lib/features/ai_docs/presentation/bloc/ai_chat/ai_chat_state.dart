@@ -47,6 +47,15 @@ enum AllocationStatus {
   failure, // 分发失败
 }
 
+/// Represents the status of title operations.
+enum TitleStatus {
+  initial,
+  generating, // AI正在生成标题
+  updating,   // 正在更新标题
+  success,    // 操作成功
+  failure,    // 操作失败
+}
+
 // --- Define Image Upload State --- 
 enum ImageUploadStatus { uploading, success, failure }
 
@@ -114,6 +123,15 @@ class AiChatState extends Equatable {
   /// 用于跟踪每个服务的分发状态，键为服务ID，值为分发状态
   final Map<int, AllocationStatus> serviceAllocationStatus;
 
+  /// --- New field for created chat room ID ---
+  /// 存储通过优化分发流程创建的聊天室ID
+  final int? createdChatRoomId;
+
+  /// --- New fields for title operations ---
+  final TitleStatus titleStatus;
+  final String? titleErrorMessage;
+  final Map<int, TitleStatus> conversationTitleStatus; // 跟踪每个会话的标题状态
+
   // --- Fields for image handling (Updated) ---
   /// Locally selected image files for preview before sending.
   final List<File>? pendingImageFiles;
@@ -137,6 +155,10 @@ class AiChatState extends Equatable {
     this.recommendations = const [],
     this.recommendationsErrorMessage,
     this.serviceAllocationStatus = const {}, // 默认为空映射
+    this.createdChatRoomId,
+    this.titleStatus = TitleStatus.initial,
+    this.titleErrorMessage,
+    this.conversationTitleStatus = const {},
     this.pendingImageFiles = const [],
     this.imageUploadStates = const {}, // Default to empty map
     // this.uploadedImageUrls = const [], // Removed
@@ -158,12 +180,17 @@ class AiChatState extends Equatable {
     List<RelatedServiceEntity>? recommendations,
     String? recommendationsErrorMessage,
     Map<int, AllocationStatus>? serviceAllocationStatus,
+    int? createdChatRoomId,
+    TitleStatus? titleStatus,
+    String? titleErrorMessage,
+    Map<int, TitleStatus>? conversationTitleStatus,
     List<File>? pendingImageFiles,
     Map<String, ImageUploadState>? imageUploadStates,
     // List<String>? uploadedImageUrls, // Removed
     bool clearErrorMessage = false,
     bool clearConversationListErrorMessage = false,
     bool clearRecommendationsErrorMessage = false,
+    bool clearTitleErrorMessage = false,
     // Flags to specifically clear image lists/maps
     bool clearPendingImages = false,
     bool clearImageUploadStates = false, // Renamed from clearUploadedUrls
@@ -189,6 +216,10 @@ class AiChatState extends Equatable {
                                         ? null
                                         : recommendationsErrorMessage ?? this.recommendationsErrorMessage,
       serviceAllocationStatus: serviceAllocationStatus ?? this.serviceAllocationStatus,
+      createdChatRoomId: createdChatRoomId ?? this.createdChatRoomId,
+      titleStatus: titleStatus ?? this.titleStatus,
+      titleErrorMessage: clearTitleErrorMessage ? null : titleErrorMessage ?? this.titleErrorMessage,
+      conversationTitleStatus: conversationTitleStatus ?? this.conversationTitleStatus,
       pendingImageFiles: clearPendingImages ? [] : pendingImageFiles ?? this.pendingImageFiles,
       imageUploadStates: clearImageUploadStates ? {} : imageUploadStates ?? this.imageUploadStates,
       // uploadedImageUrls: clearUploadedUrls ? [] : uploadedImageUrls ?? this.uploadedImageUrls, // Removed
@@ -210,6 +241,10 @@ class AiChatState extends Equatable {
         recommendations,
         recommendationsErrorMessage,
         serviceAllocationStatus,
+        createdChatRoomId,
+        titleStatus,
+        titleErrorMessage,
+        conversationTitleStatus,
         pendingImageFiles,
         imageUploadStates, // Add new map to props
         // uploadedImageUrls, // Removed

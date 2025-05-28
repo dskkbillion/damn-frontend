@@ -23,7 +23,14 @@
     },
     "ai_docs_no_recommendations": "No recommendations available",
     "ai_docs_dispatched": "Dispatched",
+    "ai_docs_enter_chat": "Enter Chat",
     "ai_docs_let_them_see": "Let them see",
+    
+    "ai_docs_welcome_title": "Welcome to AI Assistant",
+    "ai_docs_welcome_message": "Just send a message to start chatting, and the system will automatically create a chat room for you",
+    "ai_docs_auto_create_text": "No conversation selected, automatically creating a new conversation and sending message",
+    "ai_docs_auto_create_voice": "No conversation selected, automatically creating a new conversation and sending voice message",
+    "ai_docs_cancelling_generation": "Cancelling generation...",
     
     "allocating_step1": "Allocating",
     "allocating_step2": "Allocating.",
@@ -81,6 +88,34 @@
     "ai_docs_cancel": "Cancel",
     "ai_docs_delete": "Delete",
     "ai_docs_please_select_conversation_to_delete": "Please select the conversation to delete first",
+    
+    "ai_docs_generate_title": "AI Generate Title",
+    "ai_docs_generate_title_tooltip": "Let AI generate a title for this conversation",
+    "ai_docs_generating_title": "Generating title...",
+    "ai_docs_title_generated": "Title generated",
+    "ai_docs_title_generation_failed": "Title generation failed: {error}",
+    "@ai_docs_title_generation_failed": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "Network error"
+        }
+      }
+    },
+    "ai_docs_edit_title": "Edit Title",
+    "ai_docs_edit_title_hint": "Please enter a new title",
+    "ai_docs_title_updated": "Title updated",
+    "ai_docs_title_update_failed": "Title update failed: {error}",
+    "@ai_docs_title_update_failed": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "Network error"
+        }
+      }
+    },
+    "ai_docs_title_too_long": "Title cannot exceed 50 characters",
+    "ai_docs_title_empty": "Title cannot be empty",
     
     "nav_ai_assistant": "DSKK",
     "nav_home": "Home",
@@ -321,5 +356,277 @@
           "example": "Network error"
         }
       }
-    }
+    },
+    
+    "product_detail_loading_failed": "Loading failed: {error}",
+    "@product_detail_loading_failed": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "Network error"
+        }
+      }
+    },
+    "product_detail_retry": "Retry",
+    "product_detail_please_wait": "Please wait...",
+    "product_detail_contact_seller": "Contact Seller",
+    "product_detail_verified_label": "Verified",
+    "product_detail_published_status": "Published",
+    "product_detail_more": "More",
+    "product_detail_delivery_times": "Delivery Times",
+    "product_detail_delivery_period": "Delivery Period",
+    "product_detail_buy_now": "Buy Now (1)",
+    "product_detail_faq": "FAQ",
+    "product_detail_case_showcase": "Case Showcase",
+    "product_detail_no_cases": "No cases available",
+    "product_detail_reviews": "Reviews ({count})",
+    "@product_detail_reviews": {
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "5"
+        }
+      }
+    },
+    "product_detail_view_all": "View All",
+    "product_detail_no_reviews": "No reviews yet",
+    "product_detail_basic_package": "Basic",
+    "product_detail_sample_review": "Great service, very patient",
+    "product_detail_sample_user": "Ray123",
+    
+    "product_reviews_title": "Reviews",
+    "product_reviews_loading_failed": "Loading failed: {error}",
+    "@product_reviews_loading_failed": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "Network error"
+        }
+      }
+    },
+    "product_reviews_retry": "Retry",
+    "product_reviews_no_reviews": "No reviews yet",
+    "product_reviews_sample_content": "Great service, very patient",
+    "product_reviews_years_ago": "{count} years ago",
+    "@product_reviews_years_ago": {
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "2"
+        }
+      }
+    },
+    "product_reviews_months_ago": "{count} months ago",
+    "@product_reviews_months_ago": {
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "3"
+        }
+      }
+    },
+    "product_reviews_days_ago": "{count} days ago",
+    "@product_reviews_days_ago": {
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "5"
+        }
+      }
+    },
+    "product_reviews_hours_ago": "{count} hours ago",
+    "@product_reviews_hours_ago": {
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "2"
+        }
+      }
+    },
+    "product_reviews_minutes_ago": "{count} minutes ago",
+    "@product_reviews_minutes_ago": {
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "30"
+        }
+      }
+    },
+    "product_reviews_just_now": "Just now",
+    
+    "seller_profile_default_title": "Seller Profile",
+    "seller_profile_seller": "Seller",
+    "seller_profile_no_description": "No description",
+    "seller_profile_followers": "{count} followers",
+    "@seller_profile_followers": {
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "2"
+        }
+      }
+    },
+    "seller_profile_followed": "Following",
+    "seller_profile_follow": "Follow",
+    "seller_profile_unfollow_success": "Unfollowed successfully",
+    "seller_profile_follow_success": "Followed successfully",
+    "seller_profile_chat_failed": "Failed to create chat: {error}",
+    "@seller_profile_chat_failed": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "Network error"
+        }
+      }
+    },
+    "seller_profile_error_occurred": "Error occurred: {error}",
+    "@seller_profile_error_occurred": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "Network error"
+        }
+      }
+    },
+    "seller_profile_about_merchant": "About Merchant",
+    "seller_profile_my_services": "My Services",
+    "seller_profile_no_merchant_info": "No merchant information",
+    "seller_profile_member_level": "Member Level",
+    "seller_profile_level_two": "Level 2 Member",
+    "seller_profile_seller_rating": "Seller Rating",
+    "seller_profile_response_time": "Response Time",
+    "seller_profile_response_hours": "3 hours",
+    "seller_profile_certification_status": "Certification Status",
+    "seller_profile_certified": "Certified",
+    "seller_profile_not_certified": "Not Certified",
+    "seller_profile_no_products": "No products",
+    "seller_profile_image_load_failed": "Image loading failed",
+    "seller_profile_no_image": "No image",
+    
+    "seller_profile_title": "Profile",
+    "seller_profile_auth_management": "Auth",
+    "seller_profile_my_wallet": "Wallet",
+    "seller_profile_time_management": "Schedule",
+    "seller_profile_settings": "Settings",
+    "seller_profile_notifications": "Notifications",
+    "seller_profile_about_us": "About",
+    "seller_profile_mission": "Mission",
+    "seller_profile_user_name": "Ray",
+    "seller_profile_seller_mode_online": "Seller Mode: Online",
+    "seller_profile_seller_mode": "Seller Mode",
+    "seller_profile_buyer_mode": "Buyer Mode",
+    "seller_profile_my_orders": "My Orders",
+    "seller_profile_order_pending": "Pending",
+    "seller_profile_order_processing": "Processing",
+    "seller_profile_order_delivered": "Delivered",
+    "seller_profile_order_refund": "Refund/Support",
+    "seller_profile_feature_not_implemented": "{feature} feature not yet implemented",
+    "@seller_profile_feature_not_implemented": {
+      "placeholders": {
+        "feature": {
+          "type": "String",
+          "example": "Authentication Management"
+        }
+      }
+    },
+    
+    "seller_home_loading_failed": "Loading failed",
+    "seller_home_no_data": "No data",
+    "seller_home_no_store_info": "No store information",
+    "seller_home_online": "Online",
+    "seller_home_offline": "Offline",
+    "seller_home_completion_rate": "Completion Rate {rate}%",
+    "@seller_home_completion_rate": {
+      "placeholders": {
+        "rate": {
+          "type": "String",
+          "example": "95.5"
+        }
+      }
+    },
+    "seller_home_switch_to_buyer": "Switch to Buyer Mode",
+    "seller_home_switch_failed": "Unable to switch to buyer mode: {error}",
+    "@seller_home_switch_failed": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "Network error"
+        }
+      }
+    },
+    "seller_home_income": "Revenue",
+    "seller_home_view_details": "Details",
+    "seller_home_total_income": "Total",
+    "seller_home_today_income": "Today",
+    "seller_home_pending_settlement": "Pending",
+    "seller_home_orders": "Orders",
+    "seller_home_view_all": "View All",
+    "seller_home_orders_all": "All",
+    "seller_home_orders_pending": "Pending",
+    "seller_home_orders_processing": "Active",
+    "seller_home_orders_aftersales": "Support",
+    "seller_home_functions": "Tools",
+    "seller_home_wallet": "Wallet",
+    "seller_home_auth_management": "Auth",
+    "seller_home_time_management": "Schedule",
+    "seller_home_auto_reply": "Auto Reply",
+    "seller_home_recent_income": "Recent Revenue",
+    "seller_home_no_recent_income": "No recent revenue data",
+    "seller_home_no_income_data": "No revenue data",
+    
+    "seller_statistics_title": "Analytics",
+    "seller_statistics_seller_homepage": "Seller Profile",
+    "seller_statistics_heat_value": "Heat",
+    "seller_statistics_reply_rate": "Reply Rate",
+    "seller_statistics_completion_rate": "Completion",
+    "seller_statistics_positive_rate": "Rating",
+    "seller_statistics_upgrade_to_next_level": "Upgrade to Next Level",
+    "seller_statistics_become_level3_seller": "Level 3 Seller for {days} days",
+    "@seller_statistics_become_level3_seller": {
+      "placeholders": {
+        "days": {
+          "type": "String",
+          "example": "30"
+        }
+      }
+    },
+    "seller_statistics_complete_orders": "Complete {orderNum} orders",
+    "@seller_statistics_complete_orders": {
+      "placeholders": {
+        "orderNum": {
+          "type": "String",
+          "example": "10"
+        }
+      }
+    },
+    "seller_statistics_profit_amount": "Earn ${amount}",
+    "@seller_statistics_profit_amount": {
+      "placeholders": {
+        "amount": {
+          "type": "String",
+          "example": "1000.00"
+        }
+      }
+    },
+    "seller_statistics_indicators": "Metrics",
+    "seller_statistics_total_earnings": "Total Revenue",
+    "seller_statistics_monthly_earnings": "Monthly Revenue",
+    "seller_statistics_total_orders": "Total Orders",
+    "seller_statistics_active_orders": "Active Orders",
+    "seller_statistics_pending": "Pending",
+    "seller_statistics_incomplete_orders": "Incomplete Orders",
+    "seller_statistics_pending_completion": "Pending",
+    "seller_statistics_receipt": "Receipt",
+    "seller_statistics_next_delivery_date": "Next Delivery",
+    "seller_statistics_earliest": "Earliest",
+    "seller_statistics_loading_failed": "Loading failed: {error}",
+    "@seller_statistics_loading_failed": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "Network error"
+        }
+      }
+    },
+    "seller_statistics_retry": "Retry"
 }

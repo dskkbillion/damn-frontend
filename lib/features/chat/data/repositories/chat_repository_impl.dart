@@ -140,11 +140,17 @@ class ChatRepositoryImpl implements IChatRepository {
   }
 
   @override
-  Future<Either<Failure, int>> createRoom(int participantId) async {
-     print("[Repository] Creating room with participantId: $participantId");
+  Future<Either<Failure, int>> createRoom(
+    int participantId, {
+    int? productId, // 新增可选的商品ID参数
+  }) async {
+     print("[Repository] Creating room with participantId: $participantId, productId: $productId");
      // TODO: Check network connection if needed
      try {
-       final chatId = await remoteDataSource.createRoom(participantId);
+       final chatId = await remoteDataSource.createRoom(
+         participantId,
+         productId: productId, // 传递productId给数据源
+       );
        return Right(chatId);
      } on ServerException catch (e) {
        return Left(ServerFailure(message: e.message ?? 'Server error', code: e.statusCode?.toString()));

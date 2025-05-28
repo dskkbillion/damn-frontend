@@ -94,6 +94,23 @@ abstract class IAiChatRepository {
     required int userId,
   });
 
+  /// Updates the title of a specific conversation.
+  ///
+  /// Returns [Either<Failure, String>] where String is the updated title.
+  Future<Either<Failure, String>> updateConversationTitle({
+    required int conversationId,
+    required int userId,
+    required String title,
+  });
+
+  /// Generates a title for a specific conversation using AI.
+  ///
+  /// Returns [Either<Failure, String>] where String is the generated title.
+  Future<Either<Failure, String>> generateConversationTitle({
+    required int conversationId,
+    required int userId,
+  });
+
   // TODO: Consider adding methods for uploading files if that logic belongs here
   // Future<Either<Failure, String>> uploadFile(File file);
 } 

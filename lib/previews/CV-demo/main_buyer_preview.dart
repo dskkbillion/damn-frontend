@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // 导入SharedPreferences
+import 'package:flutter_bloc/flutter_bloc.dart'; // 导入BLoC
 
 // Import the root App Widget
 import 'package:dskk_flutter_refactor/app/app.dart';
@@ -29,6 +30,11 @@ import 'package:dskk_flutter_refactor/features/ai_docs/di/ai_docs_di.dart';
 import 'package:dskk_flutter_refactor/features/chat/di/chat_di.dart';
 // 导入Profile模块DI
 import 'package:dskk_flutter_refactor/features/profile/di/profile_di.dart';
+// 导入Analytics模块
+import 'package:dskk_flutter_refactor/core/analytics/di/analytics_injection.dart';
+import 'package:dskk_flutter_refactor/core/analytics/observers/analytics_bloc_observer.dart';
+// 导入core/auth中的IAuthRepository
+import 'package:dskk_flutter_refactor/core/auth/repositories/i_auth_repository.dart' as core_auth;
 
 // 导入Home模块的导航配置
 import 'package:dskk_flutter_refactor/features/home/presentation/navigation/home_navigation_di.dart';
@@ -126,8 +132,20 @@ Future<void> main() async {
   getIt.registerLazySingleton<IAuthRepository>(
     () => MockAuthRepository(secureStorage: getIt<FlutterSecureStorage>())
   );
+  // 同时注册core_auth.IAuthRepository的适配器
+  getIt.registerLazySingleton<core_auth.IAuthRepository>(
+    () => AuthRepositoryAdapter()
+  );
   getIt.allowReassignment = false; // Optional: Disable reassignment after overriding
   print('[main_buyer_preview] IAuthRepository overridden.');
+  
+  // 9. 初始化分析模块依赖 - 需要在AuthRepository注册之后
+  await initAnalyticsModule();
+  print('[main_buyer_preview] Analytics dependencies configured.');
+  
+  // 设置BLoC观察者
+  Bloc.observer = AnalyticsBlocObserver();
+  print('[main_buyer_preview] Analytics BLoC observer configured.');
   
   // 5. 初始化AI文档模块依赖 - 卖家模块依赖于IFileUploadRepository
   await AiDocsDI.init(getIt);
@@ -140,7 +158,7 @@ Future<void> main() async {
   // 7. 初始化Profile模块依赖
   await ProfileDI.init(getIt);
   print('[main_buyer_preview] Profile dependencies configured.');
-
+  
   // 11. 手动注入买家认证信息
   print('[main_buyer_preview] Injecting buyer credentials...');
   try {
@@ -149,12 +167,14 @@ Future<void> main() async {
     const buyerToken = "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjBiYjgzYmIwLTIxNTEtNGMyNC1iYmJlLWIwZjY0YzdhY2Y1NSJ9.XxzKc2VTTYE3GKjRYH53jBwGPzrGfmvppayKy31dkzu-XQdFiCDlZXFLgELOLCF0UGdxhoJTkSG-8MNMToIEww"; // 买家Token
     const buyerUserId = "13819198810"; // 买家ID
     const buyerCommonUserId = "10319"; // 买家通用ID
+    const buyerReferId = "10319"; // 买家referId，用于聊天模块数据匹配（对应API返回的member.referId）
 
     await storage.write(key: 'auth_token', value: buyerToken);
     await storage.write(key: 'user_id', value: buyerUserId);
     await storage.write(key: 'common_user_id', value: buyerCommonUserId);
+    await storage.write(key: 'refer_id', value: buyerReferId); // 新增：用于聊天模块
 
-    print('[main_buyer_preview] Successfully injected buyer credentials.');
+    print('[main_buyer_preview] Successfully injected buyer credentials with referId: $buyerReferId');
   } catch (e) {
      print('[main_buyer_preview] ERROR injecting buyer credentials: $e');
   }

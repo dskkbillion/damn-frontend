@@ -10,6 +10,13 @@ class ChatRoom extends Equatable {
   final Participant participant2; // Use specific participants for clarity
   final int unreadCount;
   final ChatMessage? lastMessage;
+  
+  // 商品相关字段
+  final String? productId;
+  final String? productName;
+  final String? productImage;
+  final double? productPrice;
+  
   // participants list can be a getter if needed: get participants => [participant1, participant2];
   // lastActivityTime can be a getter: get lastActivityTime => lastMessage?.createTime;
 
@@ -19,6 +26,10 @@ class ChatRoom extends Equatable {
     required this.participant2,
     required this.unreadCount,
     this.lastMessage,
+    this.productId,
+    this.productName,
+    this.productImage,
+    this.productPrice,
   });
 
   @override
@@ -28,10 +39,17 @@ class ChatRoom extends Equatable {
         participant2,
         unreadCount,
         lastMessage,
+        productId,
+        productName,
+        productImage,
+        productPrice,
       ];
 
   // Derived: Get last activity time
   DateTime? get lastActivityTime => lastMessage?.createTime;
+  
+  // Derived: Check if this chat room is associated with a product
+  bool get hasProduct => productId != null && productId!.isNotEmpty;
 
   ChatRoom copyWith({
     int? id,
@@ -39,6 +57,10 @@ class ChatRoom extends Equatable {
     Participant? participant2,
     int? unreadCount,
     ChatMessage? lastMessage,
+    String? productId,
+    String? productName,
+    String? productImage,
+    double? productPrice,
   }) {
     return ChatRoom(
       id: id ?? this.id,
@@ -46,6 +68,10 @@ class ChatRoom extends Equatable {
       participant2: participant2 ?? this.participant2,
       unreadCount: unreadCount ?? this.unreadCount,
       lastMessage: lastMessage ?? this.lastMessage,
+      productId: productId ?? this.productId,
+      productName: productName ?? this.productName,
+      productImage: productImage ?? this.productImage,
+      productPrice: productPrice ?? this.productPrice,
     );
   }
 

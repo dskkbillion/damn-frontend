@@ -101,6 +101,9 @@ import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_percent_statistics_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/repositories/i_seller_statistics_repository.dart';
 
+// Import analytics observers
+import 'package:dskk_flutter_refactor/core/analytics/observers/router_analytics_observer.dart';
+
 // Placeholder page (defined once) - Only used if a module's routes aren't ready
 class PlaceholderPage extends StatelessWidget {
   final String title;
@@ -302,6 +305,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: '/home', // Initial location
     debugLogDiagnostics: true,
     refreshListenable: GoRouterRefreshStream(authRepository.authStatus),
+    observers: [
+      RouterAnalyticsObserver(), // Add analytics observer
+    ],
 
     routes: [
       // --- Buyer Shell Route --- 
