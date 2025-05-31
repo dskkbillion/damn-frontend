@@ -5,6 +5,8 @@ import '../entities/ai_chat_message_entity.dart';
 import '../entities/ai_conversation_entity.dart';
 import '../entities/chat_allocation_result_entity.dart';
 import '../entities/related_service_entity.dart';
+import '../usecases/load_history_usecase.dart';
+import '../usecases/get_conversations_usecase.dart';
 
 /// {@template i_ai_chat_repository}
 /// Interface for the AI Chat repository.
@@ -14,21 +16,28 @@ import '../entities/related_service_entity.dart';
 /// Methods return Either<Failure, SuccessType> to handle potential errors.
 /// {@endtemplate}
 abstract class IAiChatRepository {
-  /// Fetches the list of AI conversations for a given user.
+  /// Fetches the list of AI conversations for a given user with pagination.
   ///
-  /// Returns [Either<Failure, List<AiConversationEntity>>].
-  Future<Either<Failure, List<AiConversationEntity>>> fetchConversations(
-      {required int userId});
+  /// Supports pagination using [page], [pageSize], and [orderBy].
+  /// Returns [Either<Failure, GetConversationsResult>].
+  Future<Either<Failure, GetConversationsResult>> fetchConversations({
+    required int userId,
+    int page = 1,
+    int pageSize = 20,
+    String orderBy = 'desc',
+  });
 
-  /// Loads the message history for a specific conversation.
+  /// Loads the message history for a specific conversation with pagination.
   ///
-  /// Supports pagination using [offset] and [limit].
-  /// Returns [Either<Failure, List<AiChatMessageEntity>>].
-  Future<Either<Failure, List<AiChatMessageEntity>>> loadHistory({
+  /// Supports new pagination using [page], [pageSize], [orderBy], and [getAll].
+  /// Returns [Either<Failure, LoadHistoryResult>].
+  Future<Either<Failure, LoadHistoryResult>> loadHistory({
     required int conversationId,
     required int userId,
-    int? offset,
-    int? limit,
+    int page = 1,
+    int pageSize = 50,
+    String orderBy = 'desc',
+    bool getAll = false,
   });
 
   /// Creates a new AI conversation.

@@ -10,9 +10,13 @@ import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_chat_m
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_conversation_entity.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/chat_allocation_result_entity.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/related_service_entity.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/load_history_usecase.dart'; // 导入LoadHistoryResult
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/get_conversations_usecase.dart'; // 导入GetConversationsResult
 
-// Data Layer (Data Sources)
+// Data Layer (Data Sources and Models)
 import 'package:dskk_flutter_refactor/features/ai_docs/data/datasources/i_ai_chat_remote_data_source.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/data/models/ai_chat_message_model.dart'; // 导入模型类
+import 'package:dskk_flutter_refactor/features/ai_docs/data/models/ai_conversation_model.dart'; // 导入对话模型类
 
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
@@ -76,31 +80,73 @@ class AiChatRepositoryImpl implements IAiChatRepository {
   }
 
   @override
-  Future<Either<Failure, List<AiConversationEntity>>> fetchConversations(
-      {required int userId}) async {
+  Future<Either<Failure, GetConversationsResult>> fetchConversations({
+    required int userId,
+    int page = 1,
+    int pageSize = 20,
+    String orderBy = 'desc',
+  }) async {
     // Use the helper to wrap the data source call
-    return _tryCatch<List<AiConversationEntity>>(() async {
-      final conversationsData = await _remoteDataSource.fetchConversations(userId: userId);
-      // Map data model to entities
-      return conversationsData.map((model) => model.toEntity()).toList();
+    return _tryCatch<GetConversationsResult>(() async {
+      final conversationsData = await _remoteDataSource.fetchConversations(
+        userId: userId,
+        page: page,
+        pageSize: pageSize,
+        orderBy: orderBy,
+      );
+      
+      // 处理数据源返回的Map格式
+      final conversationsListData = conversationsData['conversations'] as List? ?? [];
+      final conversations = conversationsListData
+          .cast<AiConversationModel>() // 将List<dynamic>转换为List<AiConversationModel>
+          .map((model) => model.toEntity())
+          .toList();
+      
+      // 构造GetConversationsResult实体
+      return GetConversationsResult(
+        conversations: conversations,
+        hasMore: conversationsData['hasMore'] as bool? ?? false,
+        currentPage: conversationsData['currentPage'] as int? ?? page,
+        totalPages: conversationsData['totalPages'] as int? ?? 0,
+        totalConversations: conversationsData['totalConversations'] as int? ?? conversations.length,
+      );
     });
   }
 
   @override
-  Future<Either<Failure, List<AiChatMessageEntity>>> loadHistory({
+  Future<Either<Failure, LoadHistoryResult>> loadHistory({
     required int conversationId,
     required int userId,
-    int? offset,
-    int? limit,
+    int page = 1,
+    int pageSize = 50,
+    String orderBy = 'desc',
+    bool getAll = false,
   }) async {
-    return _tryCatch<List<AiChatMessageEntity>>(() async {
-      final messagesData = await _remoteDataSource.loadHistory(
+    return _tryCatch<LoadHistoryResult>(() async {
+      final historyData = await _remoteDataSource.loadHistory(
         conversationId: conversationId,
         userId: userId,
-        offset: offset,
-        limit: limit,
+        page: page,
+        pageSize: pageSize,
+        orderBy: orderBy,
+        getAll: getAll,
       );
-      return messagesData.map((model) => model.toEntity()).toList();
+      
+      // 处理数据源返回的Map格式
+      final messagesData = historyData['messages'] as List? ?? [];
+      final messages = messagesData
+          .cast<AiChatMessageModel>() // 将List<dynamic>转换为List<AiChatMessageModel>
+          .map((model) => model.toEntity())
+          .toList();
+      
+      // 构造LoadHistoryResult实体
+      return LoadHistoryResult(
+        messages: messages,
+        hasMore: historyData['hasMore'] as bool? ?? false,
+        currentPage: historyData['currentPage'] as int? ?? page,
+        totalPages: historyData['totalPages'] as int? ?? 0,
+        totalMessages: historyData['totalMessages'] as int? ?? messages.length,
+      );
     });
   }
 

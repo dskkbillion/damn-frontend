@@ -54,14 +54,27 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
   }
 
   @override
-  Future<List<AiConversationModel>> fetchConversations({required int userId}) async {
+  Future<Map<String, dynamic>> fetchConversations({
+    required int userId,
+    int page = 1,
+    int pageSize = 20,
+    String orderBy = 'desc',
+  }) async {
     const String path = '/model/chat/list';
-    print("Fetching conversations using path: $path");
+    print("Fetching conversations using path: $path with pagination");
+    
+    final Map<String, dynamic> requestData = {
+      'user_id': userId,
+      'page': page,
+      'page_size': pageSize,
+      'order_by': orderBy,
+    };
+    
     try {
       // 获取token - 添加手动获取token的代码
       final storage = const FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      print("[AiDocs] 获取到token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      print("[AiDocs] 获取对话列表，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
       // 创建包含认证头的选项
       final options = Options(
@@ -70,12 +83,12 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
             'Authorization': token, // 直接使用token，不添加Bearer前缀
         }
       );
-      print("[AiDocs] 请求头: ${options.headers}");
+      print("[AiDocs] 请求参数: $requestData");
       
       // 直接使用Dio实例，带上认证头
       final response = await _httpClient.getDioInstance().post(
         path, 
-        data: {'user_id': userId},
+        data: requestData,
         options: options
       );
       
@@ -83,14 +96,50 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       final responseData = response.data;
       final data = _handleResponse(responseData);
       
+      // 解析对话列表
+      List<AiConversationModel> conversations = [];
+      
       if (data != null && data['conversations'] is List) {
-        return (data['conversations'] as List)
+        conversations = (data['conversations'] as List)
             .map((convJson) => AiConversationModel.fromJson(convJson))
             .toList();
+        
+        // 构造包含分页信息的返回结果
+        return {
+          'conversations': conversations,
+          'currentPage': data['current_page'] ?? page,
+          'totalPages': data['total_pages'] ?? 0,
+          'totalConversations': data['total_conversations'] ?? conversations.length,
+          'hasMore': data['has_more'] ?? (conversations.length >= pageSize),
+        };
+      } else if (data != null && data is List) {
+        // 处理直接返回对话列表的格式（向后兼容）
+        conversations = (data as List)
+            .map((convJson) => AiConversationModel.fromJson(convJson))
+            .toList();
+        
+        // 构造默认分页结果
+        return {
+          'conversations': conversations,
+          'currentPage': page,
+          'totalPages': 0,
+          'totalConversations': conversations.length,
+          'hasMore': conversations.length >= pageSize,
+        };
       } else {
-        print('Warning: fetchConversations (POST) received unexpected format. Data: $data');
-        return [];
+        print('Warning: fetchConversations received unexpected format. Data: $data');
+        conversations = [];
       }
+      
+      // 如果响应不包含分页信息，构造默认的分页结果
+      return {
+        'conversations': conversations,
+        'currentPage': page,
+        'totalPages': 0,
+        'totalConversations': conversations.length,
+        'hasMore': conversations.length >= pageSize,
+      };
+      
     } on ds_exceptions.ServerException {
       rethrow;
     } on ds_exceptions.NetworkException {
@@ -102,20 +151,25 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
   }
 
   @override
-  Future<List<AiChatMessageModel>> loadHistory({
+  Future<Map<String, dynamic>> loadHistory({
     required int conversationId,
     required int userId,
-    int? offset,
-    int? limit,
+    int page = 1,
+    int pageSize = 50,
+    String orderBy = 'desc',
+    bool getAll = false,
   }) async {
     const String path = '/model/chat/messages';
-    print("Loading history using path: $path for conv $conversationId");
+    print("Loading history using path: $path for conv $conversationId with pagination");
+    
     final Map<String, dynamic> requestData = {
       'conversation_id': conversationId,
       'user_id': userId,
+      'page': page,
+      'page_size': pageSize,
+      'order_by': orderBy,
+      'get_all': getAll,
     };
-    if (offset != null) requestData['offset'] = offset;
-    if (limit != null) requestData['limit'] = limit;
 
     try {
       // 获取token
@@ -130,7 +184,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
             'Authorization': token, // 直接使用token
         }
       );
-      print("[AiDocs] 请求头: ${options.headers}");
+      print("[AiDocs] 请求参数: $requestData");
       
       // 直接使用Dio实例
       final response = await _httpClient.getDioInstance().post(
@@ -143,9 +197,12 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       final responseData = response.data;
       final data = _handleResponse(responseData);
       
+      // 解析消息列表
+      List<AiChatMessageModel> messages = [];
+      
       if (data != null && data is List) { 
         print("[DATASOURCE DEBUG] Parsing ${data.length} messages from root data list.");
-        return (data as List).map((msgJson) {
+        messages = (data as List).map((msgJson) {
           print("[DATASOURCE DEBUG] Parsing msgJson: ${jsonEncode(msgJson)}");
            if (msgJson is Map<String, dynamic>) { 
              print("[DATASOURCE DEBUG]  -> id type: ${msgJson['id']?.runtimeType}");
@@ -165,32 +222,54 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
               rethrow;
            }
         }).toList();
-      } else if (data != null && data['messages'] is List) {
-        print("[DATASOURCE DEBUG] Parsing ${ (data['messages'] as List).length} messages from nested 'messages' key.");
-        return (data['messages'] as List).map((msgJson) {
-           print("[DATASOURCE DEBUG] Parsing msgJson: ${jsonEncode(msgJson)}"); 
-          if (msgJson is Map<String, dynamic>) { 
-             print("[DATASOURCE DEBUG]  -> id type: ${msgJson['id']?.runtimeType}");
-             print("[DATASOURCE DEBUG]  -> message_id type: ${msgJson['message_id']?.runtimeType}");
-             print("[DATASOURCE DEBUG]  -> conversation_id type: ${msgJson['conversation_id']?.runtimeType}");
-             print("[DATASOURCE DEBUG]  -> role type: ${msgJson['role']?.runtimeType}");
-             print("[DATASOURCE DEBUG]  -> content type: ${msgJson['content']?.runtimeType}");
-             print("[DATASOURCE DEBUG]  -> files type: ${msgJson['files']?.runtimeType}");
-             print("[DATASOURCE DEBUG]  -> timestamp type: ${msgJson['timestamp']?.runtimeType}");
-          }
-          try {
-            return AiChatMessageModel.fromJson(msgJson as Map<String, dynamic>); 
-          } catch (e, stacktrace) {
-            print("[DATASOURCE ERROR] Failed to parse msgJson: $e");
-            print("[DATASOURCE ERROR] Stacktrace: $stacktrace");
-            print("[DATASOURCE ERROR] Failing msgJson: ${jsonEncode(msgJson)}");
-            rethrow; 
-          }
-        }).toList();
+      } else if (data != null && data is Map<String, dynamic>) {
+        // 处理可能包含分页信息的响应格式
+        if (data['messages'] is List) {
+          print("[DATASOURCE DEBUG] Parsing ${(data['messages'] as List).length} messages from nested 'messages' key.");
+          messages = (data['messages'] as List).map((msgJson) {
+             print("[DATASOURCE DEBUG] Parsing msgJson: ${jsonEncode(msgJson)}"); 
+            if (msgJson is Map<String, dynamic>) { 
+               print("[DATASOURCE DEBUG]  -> id type: ${msgJson['id']?.runtimeType}");
+               print("[DATASOURCE DEBUG]  -> message_id type: ${msgJson['message_id']?.runtimeType}");
+               print("[DATASOURCE DEBUG]  -> conversation_id type: ${msgJson['conversation_id']?.runtimeType}");
+               print("[DATASOURCE DEBUG]  -> role type: ${msgJson['role']?.runtimeType}");
+               print("[DATASOURCE DEBUG]  -> content type: ${msgJson['content']?.runtimeType}");
+               print("[DATASOURCE DEBUG]  -> files type: ${msgJson['files']?.runtimeType}");
+               print("[DATASOURCE DEBUG]  -> timestamp type: ${msgJson['timestamp']?.runtimeType}");
+            }
+            try {
+              return AiChatMessageModel.fromJson(msgJson as Map<String, dynamic>); 
+            } catch (e, stacktrace) {
+              print("[DATASOURCE ERROR] Failed to parse msgJson: $e");
+              print("[DATASOURCE ERROR] Stacktrace: $stacktrace");
+              print("[DATASOURCE ERROR] Failing msgJson: ${jsonEncode(msgJson)}");
+              rethrow; 
+            }
+          }).toList();
+        }
+        
+        // 构造包含分页信息的返回结果
+        return {
+          'messages': messages,
+          'currentPage': data['current_page'] ?? page,
+          'totalPages': data['total_pages'] ?? 0,
+          'totalMessages': data['total_messages'] ?? messages.length,
+          'hasMore': data['has_more'] ?? (messages.length >= pageSize),
+        };
       } else {
         print('Warning: loadHistory received unexpected format for $conversationId. Data: $data');
-        return [];
+        messages = [];
       }
+      
+      // 如果响应不包含分页信息，构造默认的分页结果
+      return {
+        'messages': messages,
+        'currentPage': page,
+        'totalPages': 0,
+        'totalMessages': messages.length,
+        'hasMore': messages.length >= pageSize,
+      };
+      
     } on ds_exceptions.ServerException {
       rethrow;
     } on ds_exceptions.NetworkException {

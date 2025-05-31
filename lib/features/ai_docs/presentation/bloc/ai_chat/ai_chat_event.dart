@@ -21,8 +21,19 @@ class InitializeChat extends AiChatEvent {
 }
 
 /// Event triggered when the user scrolls to the top to load older messages.
-// REMOVED - API does not support pagination yet.
-// class LoadMoreHistory extends AiChatEvent {}
+class LoadMoreHistory extends AiChatEvent {
+  final int? page; // 可选的页码，如果不提供则使用当前页+1
+  
+  const LoadMoreHistory({this.page});
+  
+  @override
+  List<Object?> get props => [page];
+}
+
+/// Event to scroll to bottom of chat
+class ScrollToBottom extends AiChatEvent {
+  const ScrollToBottom();
+}
 
 /// Event to fetch related service recommendations.
 class FetchRelatedServices extends AiChatEvent {}
@@ -82,7 +93,14 @@ class CancelStreaming extends AiChatEvent {} // Renamed from StopGeneration
 class FetchRecommendations extends AiChatEvent {}
 
 /// Event to load the list of conversations.
-class LoadConversations extends AiChatEvent {}
+class LoadConversations extends AiChatEvent {
+  final int? page; // 可选的页码，如果不提供则使用第1页
+  
+  const LoadConversations({this.page});
+  
+  @override
+  List<Object?> get props => [page];
+}
 
 /// Event to select a conversation.
 class SelectConversation extends AiChatEvent {
@@ -247,4 +265,19 @@ class GenerateConversationTitle extends AiChatEvent {
   
   @override
   List<Object?> get props => [conversationId];
+}
+
+/// Event triggered when the user scrolls to load more conversations.
+class LoadMoreConversations extends AiChatEvent {
+  final int? page; // 可选的页码，如果不提供则使用当前页+1
+  
+  const LoadMoreConversations({this.page});
+  
+  @override
+  List<Object?> get props => [page];
+}
+
+/// Event to refresh conversations list (pull to refresh).
+class RefreshConversations extends AiChatEvent {
+  const RefreshConversations();
 } 

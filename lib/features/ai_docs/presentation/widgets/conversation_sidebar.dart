@@ -9,8 +9,46 @@ import '../bloc/ai_chat/ai_chat_bloc.dart';
 // import '../bloc/ai_chat/ai_chat_event.dart';
 // import '../../../domain/entities/ai_conversation_entity.dart'; // No longer needed here
 
-class ConversationSidebar extends StatelessWidget {
+class ConversationSidebar extends StatefulWidget {
   const ConversationSidebar({super.key});
+
+  @override
+  State<ConversationSidebar> createState() => _ConversationSidebarState();
+}
+
+class _ConversationSidebarState extends State<ConversationSidebar> {
+  late ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+    final threshold = 200.0; // 距离底部200像素时触发加载更多
+
+    // 检查是否滚动到底部，触发加载更多对话
+    if (maxScroll - currentScroll <= threshold && !_scrollController.position.outOfRange) {
+      final state = context.read<AiChatBloc>().state;
+      if (state.conversationsHasMore && 
+          !state.isLoadingMoreConversations && 
+          state.conversations.isNotEmpty) {
+        print("[ConversationSidebar] Triggering LoadMoreConversations");
+        context.read<AiChatBloc>().add(const LoadMoreConversations());
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +70,8 @@ class ConversationSidebar extends StatelessWidget {
           buildWhen: (previous, current) => 
                previous.conversationsStatus != current.conversationsStatus ||
                previous.conversations != current.conversations ||
-               previous.selectedConversationId != current.selectedConversationId,
+               previous.selectedConversationId != current.selectedConversationId ||
+               previous.isLoadingMoreConversations != current.isLoadingMoreConversations,
           builder: (context, state) {
             return Column(
               children: [
@@ -55,9 +94,16 @@ class ConversationSidebar extends StatelessWidget {
                   ),
                 ),
                 const Divider(height: 1),
-                // --- Conversation List Area ---
+                // --- Conversation List Area with Pull to Refresh ---
                 Expanded(
-                  child: _buildConversationList(context, state),
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      context.read<AiChatBloc>().add(const RefreshConversations());
+                      // 等待刷新完成
+                      await Future.delayed(const Duration(milliseconds: 500));
+                    },
+                    child: _buildConversationList(context, state),
+                  ),
                 ),
               ],
             );
@@ -79,7 +125,7 @@ class ConversationSidebar extends StatelessWidget {
          } 
          // Otherwise, show the list potentially with a subtle loading indicator on top?
          // For now, just show the list while loading updates.
-         return _buildList(context, state.conversations, state.selectedConversationId);
+         return _buildList(context, state.conversations, state.selectedConversationId, state);
        case ConversationsStatus.error:
          return Center(
            child: Padding(
@@ -98,7 +144,7 @@ class ConversationSidebar extends StatelessWidget {
                   ElevatedButton.icon(
                      icon: const Icon(Icons.refresh), 
                      label: Text(s.ai_docs_retry), // 使用国际化文本
-                     onPressed: () => context.read<AiChatBloc>().add(LoadConversations()),
+                     onPressed: () => context.read<AiChatBloc>().add(const LoadConversations()),
                   )
                ],
              ),
@@ -110,17 +156,40 @@ class ConversationSidebar extends StatelessWidget {
           if (state.conversations.isEmpty) {
              return Center(child: Text(s.ai_docs_no_conversations)); // 使用国际化文本
           }
-          return _buildList(context, state.conversations, state.selectedConversationId);
+          return _buildList(context, state.conversations, state.selectedConversationId, state);
      }
   }
 
-  // Helper method to build the actual ListView
-  Widget _buildList(BuildContext context, List<AiConversationEntity> conversations, int? selectedId) {
+  // Helper method to build the actual ListView with pagination support
+  Widget _buildList(BuildContext context, List<AiConversationEntity> conversations, int? selectedId, AiChatState state) {
     final s = S.of(context); // 获取国际化资源
     
     return ListView.builder(
-       itemCount: conversations.length,
+       controller: _scrollController,
+       physics: const AlwaysScrollableScrollPhysics(), // 确保可以下拉刷新
+       itemCount: conversations.length + (state.isLoadingMoreConversations ? 1 : 0),
        itemBuilder: (context, index) {
+         // 显示加载更多指示器
+         if (index == conversations.length && state.isLoadingMoreConversations) {
+           return Container(
+             padding: const EdgeInsets.all(16.0),
+             child: const Center(
+               child: Row(
+                 mainAxisSize: MainAxisSize.min,
+                 children: [
+                   SizedBox(
+                     width: 16,
+                     height: 16,
+                     child: CircularProgressIndicator(strokeWidth: 2),
+                   ),
+                   SizedBox(width: 8),
+                   Text('加载更多对话...', style: TextStyle(color: Colors.grey)),
+                 ],
+               ),
+             ),
+           );
+         }
+         
           final conv = conversations[index];
           return ListTile(
               title: Text(

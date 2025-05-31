@@ -9,28 +9,41 @@ import '../models/related_service_model.dart';
 /// Implementations should handle HTTP requests and potentially specific exceptions.
 /// {@endtemplate}
 abstract class IAiChatRemoteDataSource {
-  /// Fetches the list of AI conversations from the `/model/chat/list` endpoint.
+  /// Fetches the list of AI conversations from the `/model/chat/list` endpoint with pagination.
   ///
   /// [userId] The ID of the user whose conversations are to be fetched.
+  /// [page] Page number (starting from 1).
+  /// [pageSize] Number of conversations per page.
+  /// [orderBy] Sort order: 'desc' (newest first) or 'asc' (oldest first).
   ///
   /// Throws specific exceptions (e.g., ServerException, NetworkException) on failure.
-  /// Returns a list of [AiConversationModel] on success.
-  Future<List<AiConversationModel>> fetchConversations({required int userId});
+  /// Returns a Map containing conversations list and pagination info.
+  Future<Map<String, dynamic>> fetchConversations({
+    required int userId,
+    int page = 1,
+    int pageSize = 20,
+    String orderBy = 'desc',
+  });
 
   /// Loads the message history for a specific conversation from `/model/chat/messages`.
-  ///
+  /// 
+  /// Updated to support new pagination parameters:
   /// [conversationId] The ID of the conversation.
   /// [userId] The ID of the user (required by API).
-  /// [offset] Optional offset for pagination.
-  /// [limit] Optional limit for pagination.
+  /// [page] Page number (starting from 1).
+  /// [pageSize] Number of messages per page.
+  /// [orderBy] Sort order: 'desc' (newest first) or 'asc' (oldest first).
+  /// [getAll] Whether to get all messages (ignores pagination when true).
   ///
   /// Throws specific exceptions on failure.
-  /// Returns a list of [AiChatMessageModel] on success.
-  Future<List<AiChatMessageModel>> loadHistory({
+  /// Returns a Map containing messages list and pagination info.
+  Future<Map<String, dynamic>> loadHistory({
     required int conversationId,
     required int userId,
-    int? offset,
-    int? limit,
+    int page = 1,
+    int pageSize = 50,
+    String orderBy = 'desc',
+    bool getAll = false,
   });
 
   /// Creates a new conversation via the `/model/chat/create` endpoint.

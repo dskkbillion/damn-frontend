@@ -88,11 +88,16 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     // --- Register event handlers ---
     // Conversation List Management
     on<LoadConversations>(_onLoadConversations);
+    on<LoadMoreConversations>(_onLoadMoreConversations);
+    on<RefreshConversations>(_onRefreshConversations);
     on<SelectConversation>(_onSelectConversation);
     on<CreateNewConversation>(_onCreateNewConversation);
     on<DeleteSelectedConversation>(_onDeleteSelectedConversation);
     on<CreateNewConversationAndSendMessage>(_onCreateNewConversationAndSendMessage);
     on<CreateNewConversationAndSendVoiceMessage>(_onCreateNewConversationAndSendVoiceMessage);
+    // Pagination Events - 新增
+    on<LoadMoreHistory>(_onLoadMoreHistory);
+    on<ScrollToBottom>(_onScrollToBottom);
     // Image Handling
     on<PickImage>(_onPickImage);
     on<_ImageUploadSuccess>(_onImageUploadSuccess);
@@ -143,8 +148,15 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     Emitter<AiChatState> emit,
   ) async {
      print("[AiChatBloc] _onLoadConversations triggered.");
-     // Indicate loading state for the conversation list
-     emit(state.copyWith(conversationsStatus: ConversationsStatus.loading));
+     
+     // 重置分页状态并设置加载状态
+     emit(state.copyWith(
+       conversationsStatus: ConversationsStatus.loading,
+       isLoadingMoreConversations: false,
+       conversationsCurrentPage: 1,
+       conversationsHasMore: true,
+     ));
+     
      final userId = await _getCurrentUserId();
      print("[AiChatBloc] _onLoadConversations: Retrieved userId = $userId");
 
@@ -155,8 +167,9 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
      }
 
      print("[AiChatBloc] _onLoadConversations: Calling _getConversations with userId: $userId");
-     // Pass int userId to Params
-     final result = await _getConversations(GetConversationsParams(userId: userId)); 
+     // 使用事件提供的页码或默认第1页
+     final page = event.page ?? 1;
+     final result = await _getConversations(GetConversationsParams(userId: userId, page: page)); 
      print("[AiChatBloc] _onLoadConversations: _getConversations result: $result");
 
      result.fold(
@@ -164,22 +177,96 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
          print("[AiChatBloc] _onLoadConversations: Failure - $failure. Emitting error state.");
          emit(state.copyWith(
              conversationsStatus: ConversationsStatus.error,
-             // Use the dedicated error message field for conversation list errors
              conversationListErrorMessage: failure.toString(),
           ));
        },
-       (conversations) {
-         print("[AiChatBloc] _onLoadConversations: Success - Received ${conversations.length} conversations. Emitting loaded state.");
+       (conversationsResult) {
+         print("[AiChatBloc] _onLoadConversations: Success - Received ${conversationsResult.conversations.length} conversations. Emitting loaded state.");
          emit(state.copyWith(
              conversationsStatus: ConversationsStatus.loaded,
-             conversations: conversations,
-             // Clear conversation list error on success
+             conversations: conversationsResult.conversations,
+             conversationsCurrentPage: conversationsResult.currentPage,
+             conversationsTotalPages: conversationsResult.totalPages,
+             totalConversationsCount: conversationsResult.totalConversations,
+             conversationsHasMore: conversationsResult.hasMore,
              clearConversationListErrorMessage: true,
          ));
        },
      );
      // Log the final emitted state for debugging
      print("[AiChatBloc] _onLoadConversations: Final emitted state status = ${state.conversationsStatus}, count = ${state.conversations.length}"); 
+  }
+
+  Future<void> _onLoadMoreConversations(
+    LoadMoreConversations event,
+    Emitter<AiChatState> emit,
+  ) async {
+    // 防止重复加载
+    if (state.isLoadingMoreConversations || !state.conversationsHasMore) {
+      print("[AiChatBloc] LoadMoreConversations ignored: isLoading=${state.isLoadingMoreConversations}, hasMore=${state.conversationsHasMore}");
+      return;
+    }
+
+    print("[AiChatBloc] Loading more conversations, current page: ${state.conversationsCurrentPage}");
+    
+    emit(state.copyWith(isLoadingMoreConversations: true));
+    
+    final userId = await _getCurrentUserId();
+    if (userId == null) {
+      emit(state.copyWith(
+        isLoadingMoreConversations: false,
+        conversationsStatus: ConversationsStatus.error, 
+        conversationListErrorMessage: 'User not authenticated or invalid ID format'
+      ));
+      return;
+    }
+
+    // 计算要加载的页码
+    final nextPage = event.page ?? (state.conversationsCurrentPage + 1);
+    
+    final result = await _getConversations(GetConversationsParams(
+      userId: userId, 
+      page: nextPage
+    ));
+
+    result.fold(
+      (failure) {
+        print("[AiChatBloc] LoadMoreConversations failed: $failure");
+        emit(state.copyWith(
+          isLoadingMoreConversations: false,
+          conversationsStatus: ConversationsStatus.error,
+          conversationListErrorMessage: 'Failed to load more conversations: ${failure.toString()}',
+        ));
+      },
+      (conversationsResult) {
+        print("[AiChatBloc] LoadMoreConversations success: loaded ${conversationsResult.conversations.length} conversations");
+        
+        // 将新对话插入到现有列表
+        final allConversations = <AiConversationEntity>[];
+        allConversations.addAll(state.conversations);
+        allConversations.addAll(conversationsResult.conversations);
+        
+        emit(state.copyWith(
+          isLoadingMoreConversations: false,
+          conversations: allConversations,
+          conversationsHasMore: conversationsResult.hasMore,
+          conversationsCurrentPage: nextPage,
+          conversationsTotalPages: conversationsResult.totalPages,
+          totalConversationsCount: conversationsResult.totalConversations,
+          conversationsStatus: ConversationsStatus.loaded,
+        ));
+      },
+    );
+  }
+
+  Future<void> _onRefreshConversations(
+    RefreshConversations event,
+    Emitter<AiChatState> emit,
+  ) async {
+    print("[AiChatBloc] Refreshing conversations");
+    
+    // 刷新时重置到第一页
+    add(const LoadConversations(page: 1));
   }
 
    Future<void> _onSelectConversation(
@@ -189,6 +276,8 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     // If same conversation selected, do nothing (or maybe reload history?)
     if (state.selectedConversationId == event.conversationId) return;
 
+    print("[AiChatBloc] Selecting conversation: ${event.conversationId}");
+
     // Immediately update selected ID and clear messages/status for the main chat area
     emit(state.copyWith(
       selectedConversationIdOrNull: event.conversationId,
@@ -197,29 +286,60 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       recommendations: [], // Clear related services
       streamingResponseText: '', // Clear generation
       clearErrorMessage: true, // Clear main chat area error
+      // 重置分页状态
+      currentPage: 1,
+      totalPages: 0,
+      totalMessages: 0,
+      hasMoreHistory: true,
+      isLoadingMoreHistory: false,
     ));
 
-    // Load history for the selected conversation
+    // Load history for the selected conversation using new pagination
     final userId = await _getCurrentUserId();
     if (userId == null) {
-       emit(state.copyWith(status: AiChatStatus.historyLoadFailure, errorMessage: 'User not authenticated or invalid ID format'));
+       emit(state.copyWith(
+         status: AiChatStatus.historyLoadFailure, 
+         errorMessage: 'User not authenticated or invalid ID format'
+       ));
        return;
     }
+    
     final historyResult = await _loadHistory(LoadHistoryParams(
       conversationId: event.conversationId,
       userId: userId,
+      page: 1, // 从第一页开始
+      pageSize: 50,
+      orderBy: 'desc', // 最新消息在前
     ));
 
     historyResult.fold(
-      (failure) => emit(state.copyWith(
-        status: AiChatStatus.historyLoadFailure, // Update main area status
-        errorMessage: 'Failed to load history: ${failure.toString()}',
-      )),
-      (messages) => emit(state.copyWith(
-        status: AiChatStatus.historyLoadSuccess, // Update main area status
-        messages: messages,
-        hasMoreHistory: messages.length >= 50, // Example: Assume more if limit reached
-      )),
+      (failure) {
+        print("[AiChatBloc] Failed to load history: $failure");
+        emit(state.copyWith(
+          status: AiChatStatus.historyLoadFailure, // Update main area status
+          errorMessage: 'Failed to load history: ${failure.toString()}',
+        ));
+      },
+      (historyData) {
+        print("[AiChatBloc] Loaded ${historyData.messages.length} messages for conversation ${event.conversationId}");
+        
+        // 由于orderBy='desc'，需要反转消息顺序以保持时间正序显示
+        final orderedMessages = historyData.messages.reversed.toList();
+        
+        emit(state.copyWith(
+          status: AiChatStatus.historyLoadSuccess, // Update main area status
+          messages: orderedMessages,
+          hasMoreHistory: historyData.hasMore,
+          currentPage: 1,
+          totalPages: historyData.totalPages,
+          totalMessages: historyData.totalMessages,
+          // 加载完成后触发滚动到底部
+          shouldScrollToBottom: true,
+        ));
+        
+        // 立即重置滚动标志
+        emit(state.copyWith(shouldScrollToBottom: false));
+      },
     );
   }
 
@@ -406,6 +526,94 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         add(LoadConversations()); 
       },
     );
+  }
+
+  // --- 分页处理方法 ---
+  
+  Future<void> _onLoadMoreHistory(
+    LoadMoreHistory event,
+    Emitter<AiChatState> emit,
+  ) async {
+    // 防止重复加载
+    if (state.isLoadingMoreHistory || !state.hasMoreHistory) {
+      print("[AiChatBloc] LoadMoreHistory ignored: isLoading=${state.isLoadingMoreHistory}, hasMore=${state.hasMoreHistory}");
+      return;
+    }
+
+    final conversationId = state.selectedConversationId;
+    if (conversationId == null) {
+      print("[AiChatBloc] LoadMoreHistory ignored: no conversation selected");
+      return;
+    }
+
+    print("[AiChatBloc] Loading more history for conversation $conversationId, current page: ${state.currentPage}");
+    
+    emit(state.copyWith(isLoadingMoreHistory: true));
+    
+    final userId = await _getCurrentUserId();
+    if (userId == null) {
+      emit(state.copyWith(
+        isLoadingMoreHistory: false,
+        status: AiChatStatus.historyLoadFailure, 
+        errorMessage: 'User not authenticated or invalid ID format'
+      ));
+      return;
+    }
+
+    // 计算要加载的页码
+    final nextPage = event.page ?? (state.currentPage + 1);
+    
+    final historyResult = await _loadHistory(LoadHistoryParams(
+      conversationId: conversationId,
+      userId: userId,
+      page: nextPage,
+      pageSize: 50, // 可以从配置中读取
+      orderBy: 'desc', // 最新的在前面，但是我们要追加到列表前面
+    ));
+
+    historyResult.fold(
+      (failure) {
+        print("[AiChatBloc] LoadMoreHistory failed: $failure");
+        emit(state.copyWith(
+          isLoadingMoreHistory: false,
+          status: AiChatStatus.historyLoadFailure,
+          errorMessage: 'Failed to load more history: ${failure.toString()}',
+        ));
+      },
+      (historyData) {
+        print("[AiChatBloc] LoadMoreHistory success: loaded ${historyData.messages.length} messages");
+        
+        // 由于orderBy='desc'，新加载的消息需要插入到现有消息的前面
+        // 但要保持时间顺序正确
+        final newMessages = <AiChatMessageEntity>[];
+        
+        // 如果是第一页数据，直接使用
+        if (state.messages.isEmpty) {
+          newMessages.addAll(historyData.messages.reversed); // 反转以保持时间正序
+        } else {
+          // 不是第一页，将新消息插入到前面
+          newMessages.addAll(historyData.messages.reversed);
+          newMessages.addAll(state.messages);
+        }
+        
+        emit(state.copyWith(
+          isLoadingMoreHistory: false,
+          messages: newMessages,
+          hasMoreHistory: historyData.hasMore,
+          currentPage: nextPage,
+          totalPages: historyData.totalPages,
+          totalMessages: historyData.totalMessages,
+          status: AiChatStatus.historyLoadSuccess,
+        ));
+      },
+    );
+  }
+
+  void _onScrollToBottom(ScrollToBottom event, Emitter<AiChatState> emit) {
+    print("[AiChatBloc] ScrollToBottom triggered");
+    emit(state.copyWith(shouldScrollToBottom: true));
+    // 立即重置标志，避免重复触发
+    emit(state.copyWith(shouldScrollToBottom: false));
   }
 
   // --- Image Handling Handlers ---

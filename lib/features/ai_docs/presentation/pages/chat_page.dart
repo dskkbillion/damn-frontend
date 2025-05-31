@@ -169,6 +169,9 @@ class _ChatPageState extends State<ChatPage> {
         // 已有对话，直接发送消息
         aiChatBloc.add(SendMessage(message: message.trim()));
       }
+      
+      // 发送消息后触发滚动到底部
+      aiChatBloc.add(const ScrollToBottom());
       _textController.clear();
     } else {
       // 消息为空，显示提示

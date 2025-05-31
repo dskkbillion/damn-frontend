@@ -111,6 +111,18 @@ class AiChatState extends Equatable {
   final List<AiConversationEntity> conversations;
   final int? selectedConversationId;
   final String? conversationListErrorMessage;
+  
+  /// --- New fields for conversations pagination ---
+  /// 是否正在加载更多对话
+  final bool isLoadingMoreConversations;
+  /// 对话列表当前页码
+  final int conversationsCurrentPage;
+  /// 对话列表总页数（如果后端提供）
+  final int conversationsTotalPages;
+  /// 对话列表总数（如果后端提供）
+  final int totalConversationsCount;
+  /// 对话列表是否还有更多页面
+  final bool conversationsHasMore;
 
   /// The list of recommended services.
   final List<RelatedServiceEntity> recommendations;
@@ -137,8 +149,18 @@ class AiChatState extends Equatable {
   final List<File>? pendingImageFiles;
   /// Tracks the upload state for each pending image file (path -> state).
   final Map<String, ImageUploadState>? imageUploadStates;
-  // Removed uploadedImageUrls
-  // final List<String>? uploadedImageUrls;
+
+  // --- New fields for pagination ---
+  /// 是否正在加载更多历史消息
+  final bool isLoadingMoreHistory;
+  /// 当前页码
+  final int currentPage;
+  /// 总页数（如果后端提供）
+  final int totalPages;
+  /// 总消息数（如果后端提供）
+  final int totalMessages;
+  /// 是否应该自动滚动到底部
+  final bool shouldScrollToBottom;
 
   /// {@macro ai_chat_state}
   const AiChatState({
@@ -161,7 +183,18 @@ class AiChatState extends Equatable {
     this.conversationTitleStatus = const {},
     this.pendingImageFiles = const [],
     this.imageUploadStates = const {}, // Default to empty map
-    // this.uploadedImageUrls = const [], // Removed
+    // Pagination fields
+    this.isLoadingMoreHistory = false,
+    this.currentPage = 1,
+    this.totalPages = 0,
+    this.totalMessages = 0,
+    this.shouldScrollToBottom = false,
+    // Conversations pagination fields
+    this.isLoadingMoreConversations = false,
+    this.conversationsCurrentPage = 1,
+    this.conversationsTotalPages = 0,
+    this.totalConversationsCount = 0,
+    this.conversationsHasMore = true,
   });
 
   /// Creates a copy of the current state with updated values.
@@ -186,14 +219,25 @@ class AiChatState extends Equatable {
     Map<int, TitleStatus>? conversationTitleStatus,
     List<File>? pendingImageFiles,
     Map<String, ImageUploadState>? imageUploadStates,
-    // List<String>? uploadedImageUrls, // Removed
+    // Pagination parameters
+    bool? isLoadingMoreHistory,
+    int? currentPage,
+    int? totalPages,
+    int? totalMessages,
+    bool? shouldScrollToBottom,
+    // Conversations pagination parameters
+    bool? isLoadingMoreConversations,
+    int? conversationsCurrentPage,
+    int? conversationsTotalPages,
+    int? totalConversationsCount,
+    bool? conversationsHasMore,
+    // Clear flags
     bool clearErrorMessage = false,
     bool clearConversationListErrorMessage = false,
     bool clearRecommendationsErrorMessage = false,
     bool clearTitleErrorMessage = false,
-    // Flags to specifically clear image lists/maps
     bool clearPendingImages = false,
-    bool clearImageUploadStates = false, // Renamed from clearUploadedUrls
+    bool clearImageUploadStates = false,
   }) {
     final newSelectedId = selectedConversationIdOrNull == const Object()
                               ? this.selectedConversationId
@@ -222,7 +266,18 @@ class AiChatState extends Equatable {
       conversationTitleStatus: conversationTitleStatus ?? this.conversationTitleStatus,
       pendingImageFiles: clearPendingImages ? [] : pendingImageFiles ?? this.pendingImageFiles,
       imageUploadStates: clearImageUploadStates ? {} : imageUploadStates ?? this.imageUploadStates,
-      // uploadedImageUrls: clearUploadedUrls ? [] : uploadedImageUrls ?? this.uploadedImageUrls, // Removed
+      // Pagination fields
+      isLoadingMoreHistory: isLoadingMoreHistory ?? this.isLoadingMoreHistory,
+      currentPage: currentPage ?? this.currentPage,
+      totalPages: totalPages ?? this.totalPages,
+      totalMessages: totalMessages ?? this.totalMessages,
+      shouldScrollToBottom: shouldScrollToBottom ?? this.shouldScrollToBottom,
+      // Conversations pagination fields
+      isLoadingMoreConversations: isLoadingMoreConversations ?? this.isLoadingMoreConversations,
+      conversationsCurrentPage: conversationsCurrentPage ?? this.conversationsCurrentPage,
+      conversationsTotalPages: conversationsTotalPages ?? this.conversationsTotalPages,
+      totalConversationsCount: totalConversationsCount ?? this.totalConversationsCount,
+      conversationsHasMore: conversationsHasMore ?? this.conversationsHasMore,
     );
   }
 
@@ -246,7 +301,18 @@ class AiChatState extends Equatable {
         titleErrorMessage,
         conversationTitleStatus,
         pendingImageFiles,
-        imageUploadStates, // Add new map to props
-        // uploadedImageUrls, // Removed
+        imageUploadStates,
+        // Pagination props
+        isLoadingMoreHistory,
+        currentPage,
+        totalPages,
+        totalMessages,
+        shouldScrollToBottom,
+        // Conversations pagination props
+        isLoadingMoreConversations,
+        conversationsCurrentPage,
+        conversationsTotalPages,
+        totalConversationsCount,
+        conversationsHasMore,
       ];
 } 
