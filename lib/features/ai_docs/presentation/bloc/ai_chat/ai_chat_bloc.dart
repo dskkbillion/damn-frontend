@@ -31,6 +31,10 @@ import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/optimized
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/update_conversation_title_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/generate_conversation_title_usecase.dart';
 
+// Data source import for rate limit access
+import 'package:dskk_flutter_refactor/features/ai_docs/data/datasources/i_ai_chat_remote_data_source.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/data/datasources/exceptions.dart' as ds_exceptions;
+
 // Move Exports Before Parts - Use package imports
 export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_conversation_entity.dart'; 
 export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_chat_message_entity.dart'; 
@@ -61,6 +65,9 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   final UpdateConversationTitleUseCase _updateConversationTitle;
   final GenerateConversationTitleUseCase _generateConversationTitle;
 
+  // --- Data Source for Rate Limit Access ---
+  final IAiChatRemoteDataSource _remoteDataSource;
+
   // --- Inject Secure Storage --- 
   final FlutterSecureStorage _storage;
 
@@ -82,6 +89,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     this._optimizedAllocation,
     this._updateConversationTitle,
     this._generateConversationTitle,
+    this._remoteDataSource, // Add data source to constructor
     this._storage, // Add storage to constructor
     // Start with initial state containing defaults for new properties
   ) : super(const AiChatState()) { 
@@ -119,6 +127,9 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     // Title Operations
     on<UpdateConversationTitle>(_onUpdateConversationTitle);
     on<GenerateConversationTitle>(_onGenerateConversationTitle);
+    // Rate Limit Operations
+    on<FetchRateLimitStatus>(_onFetchRateLimitStatus);
+    on<ResetRateLimit>(_onResetRateLimit);
   }
 
   // --- Helper to get current user ID --- 
@@ -1294,187 +1305,184 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
      FetchRecommendations event,
      Emitter<AiChatState> emit,
    ) async {
-    // Check if a conversation is selected
     final currentConvId = state.selectedConversationId;
     if (currentConvId == null) {
-      // Cannot fetch recommendations without a selected conversation
       emit(state.copyWith(
-         recommendationsStatus: RecommendationsStatus.error,
-         recommendationsErrorMessage: 'Please select a conversation first.',
-         clearRecommendationsErrorMessage: false // Ensure flag is handled correctly
-       ));
+        recommendationsStatus: RecommendationsStatus.error,
+        recommendationsErrorMessage: "No conversation selected.",
+      ));
       return;
     }
 
-    // Emit loading state
     emit(state.copyWith(
-       recommendationsStatus: RecommendationsStatus.loading,
-       clearRecommendationsErrorMessage: true // Clear previous error
+      recommendationsStatus: RecommendationsStatus.loading,
+      clearRecommendationsErrorMessage: true,
     ));
 
-    // Call the use case
     final userId = await _getCurrentUserId();
     if (userId == null) {
-      emit(state.copyWith(recommendationsStatus: RecommendationsStatus.error, recommendationsErrorMessage: 'User not authenticated or invalid ID format'));
+      emit(state.copyWith(
+        recommendationsStatus: RecommendationsStatus.error,
+        recommendationsErrorMessage: "User not authenticated or invalid ID format.",
+      ));
       return;
     }
-    
-    // 获取当前会话的最新消息ID
-    int? latestMessageId;
-    if (state.messages.isNotEmpty) {
-      // 尝试从消息列表中获取最新的消息ID
-      for (var msg in state.messages.reversed) {
-        // 检查messageId是否可以转换为整数
-        if (msg.messageId != null && int.tryParse(msg.messageId!) != null) {
-          latestMessageId = int.parse(msg.messageId!);
-          break;
-        }
-      }
-    }
-    
-    print("[AiChatBloc] 推荐请求参数: userId=$userId, conversationId=$currentConvId, messageId=$latestMessageId");
-    
-    final result = await _getRelatedServices(GetRelatedServicesParams(
-      conversationId: currentConvId,
-      userId: userId,
-      // 如果有最新消息ID，就用它，否则不传
-      messageId: latestMessageId,
-      limit: 10 // 设置默认限制
-    ));
 
-    // Handle the result
+    final result = await _getRelatedServices(
+      GetRelatedServicesParams(
+        conversationId: currentConvId,
+        userId: userId,
+        limit: 10,
+      ),
+    );
+
     result.fold(
-      (failure) => emit(state.copyWith(
-         recommendationsStatus: RecommendationsStatus.error,
-         recommendationsErrorMessage: failure.toString(), // Use failure message
-         clearRecommendationsErrorMessage: false
-       )),
-      (recommendations) => emit(state.copyWith(
-         recommendationsStatus: RecommendationsStatus.loaded,
-         recommendations: recommendations, // Update the list
-         clearRecommendationsErrorMessage: true // Clear error on success
-       )),
+      (failure) {
+        // 检查是否是频率限制错误
+        if (failure.toString().contains('429') || failure.toString().contains('频繁')) {
+          emit(state.copyWith(
+            recommendationsStatus: RecommendationsStatus.error,
+            recommendationsErrorMessage: failure.toString(),
+            rateLimitStatus: RateLimitStatus.limitExceeded,
+          ));
+        } else {
+          emit(state.copyWith(
+            recommendationsStatus: RecommendationsStatus.error,
+            recommendationsErrorMessage: failure.toString(),
+          ));
+        }
+      },
+      (services) {
+        emit(state.copyWith(
+          recommendationsStatus: RecommendationsStatus.loaded,
+          recommendations: services,
+          clearRecommendationsErrorMessage: true,
+        ));
+        
+        // 如果获取推荐成功，也重新获取频率限制状态
+        add(FetchRateLimitStatus(userId: userId));
+      },
     );
   }
 
-   // --- Handler for Allocation Action ---
-   Future<void> _onTriggerAllocationAction(
-     TriggerAllocationAction event,
-     Emitter<AiChatState> emit,
-   ) async {
-     try {
-     final currentConvId = state.selectedConversationId;
-     if (currentConvId == null) {
-         emit(state.copyWith(
-           status: AiChatStatus.allocationFailure, 
-           errorMessage: 'No conversation selected for allocation'
-         ));
-       return;
-     }
-     
-     // 更新特定服务的分发状态为加载中
-     final updatedAllocationStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
-     updatedAllocationStatus[event.serviceId] = AllocationStatus.loading;
-     
-     emit(state.copyWith(
-       status: AiChatStatus.allocatingResource, 
-       clearErrorMessage: true,
-       serviceAllocationStatus: updatedAllocationStatus
-     ));
+  // --- Handler for Allocation Action ---
+  Future<void> _onTriggerAllocationAction(
+    TriggerAllocationAction event,
+    Emitter<AiChatState> emit,
+  ) async {
+    try {
+    final currentConvId = state.selectedConversationId;
+    if (currentConvId == null) {
+        emit(state.copyWith(
+          status: AiChatStatus.allocationFailure, 
+          errorMessage: 'No conversation selected for allocation'
+        ));
+      return;
+    }
+    
+    // 更新特定服务的分发状态为加载中
+    final updatedAllocationStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
+    updatedAllocationStatus[event.serviceId] = AllocationStatus.loading;
+    
+    emit(state.copyWith(
+      status: AiChatStatus.allocatingResource, 
+      clearErrorMessage: true,
+      serviceAllocationStatus: updatedAllocationStatus
+    ));
 
-     // 获取用户ID
-     final userId = await _getCurrentUserId();
-     if (userId == null) {
-       // 更新分发状态为失败
-         final failureStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
-         failureStatus[event.serviceId] = AllocationStatus.failure;
-       
-       emit(state.copyWith(
-         status: AiChatStatus.allocationFailure, 
-           errorMessage: '用户未认证或ID格式无效',
-           serviceAllocationStatus: failureStatus
-       ));
-       return;
-     }
-     
-     // 调用分配资源用例
-     final result = await _allocateChatResource(AllocateChatResourceParams(
-        conversationId: currentConvId,
-        userId: userId,
-        item: event.item,
-        merchantId: event.merchantId,
-     ));
+    // 获取用户ID
+    final userId = await _getCurrentUserId();
+    if (userId == null) {
+      // 更新分发状态为失败
+        final failureStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
+        failureStatus[event.serviceId] = AllocationStatus.failure;
+      
+      emit(state.copyWith(
+        status: AiChatStatus.allocationFailure, 
+          errorMessage: '用户未认证或ID格式无效',
+          serviceAllocationStatus: failureStatus
+        ));
+      return;
+    }
+    
+    // 调用分配资源用例
+    final result = await _allocateChatResource(AllocateChatResourceParams(
+       conversationId: currentConvId,
+       userId: userId,
+       item: event.item,
+       merchantId: event.merchantId,
+    ));
 
-       // 处理结果
-       if (result.isLeft()) {
-         // 处理失败情况
-         final failure = result.fold(
-           (l) => l,
-           (r) => null,
-         );
-         
-         // 更新分发状态为失败
-         final failureStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
-         failureStatus[event.serviceId] = AllocationStatus.failure;
-         
-         emit(state.copyWith(
-         status: AiChatStatus.allocationFailure,
-         errorMessage: failure.toString(),
-           serviceAllocationStatus: failureStatus
-         ));
-       } else {
-         // 处理成功情况
-         final allocationResult = result.fold(
-           (l) => null,
-           (r) => r,
-         );
-         
-         if (allocationResult == null) {
-           throw Exception("结果处理错误");
-         }
-         
-         // 分发成功，触发中度双震
-         await HapticUtils.allocationSuccessFeedback();
-         
-         // 立即更新成功状态，确保UI更新
-         final successStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
-         successStatus[event.serviceId] = AllocationStatus.success;
-         
-         // 获取AI生成的专业需求总结
-         final summary = allocationResult.summary;
-         print('Allocation successful: $summary'); 
-         
-         // 发射成功状态
-         emit(state.copyWith(
-            status: AiChatStatus.allocationSuccess,
-           serviceAllocationStatus: successStatus,
-            // errorMessage: '服务已成功分发给商家'
-         ));
-         
-         // 后台异步处理发送消息，不再使用结果更新UI状态
-         _sendAllocationMessageToMerchant(
-           event.merchantId, 
-           event.item, 
-           summary
-         ).catchError((e) {
-           print('向商家发送消息失败(不影响UI状态): $e');
-         });
-       }
-     } catch (e, stackTrace) {
-       print('分发处理中发生未处理异常: $e');
-       print(stackTrace);
-       
-       // 异常情况下，确保按钮状态正确
-       final errorStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
-       errorStatus[event.serviceId] = AllocationStatus.failure;
-       
-       emit(state.copyWith(
-         status: AiChatStatus.allocationFailure,
-         serviceAllocationStatus: errorStatus,
-         errorMessage: '服务分发过程中发生错误: $e'
-       ));
-     }
-   }
+      // 处理结果
+      if (result.isLeft()) {
+        // 处理失败情况
+        final failure = result.fold(
+          (l) => l,
+          (r) => null,
+        );
+        
+        // 更新分发状态为失败
+        final failureStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
+        failureStatus[event.serviceId] = AllocationStatus.failure;
+        
+        emit(state.copyWith(
+        status: AiChatStatus.allocationFailure,
+        errorMessage: failure.toString(),
+          serviceAllocationStatus: failureStatus
+        ));
+      } else {
+        // 处理成功情况
+        final allocationResult = result.fold(
+          (l) => null,
+          (r) => r,
+        );
+        
+        if (allocationResult == null) {
+          throw Exception("结果处理错误");
+        }
+        
+        // 分发成功，触发中度双震
+        await HapticUtils.allocationSuccessFeedback();
+        
+        // 立即更新成功状态，确保UI更新
+        final successStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
+        successStatus[event.serviceId] = AllocationStatus.success;
+        
+        // 获取AI生成的专业需求总结
+        final summary = allocationResult.summary;
+        print('Allocation successful: $summary'); 
+        
+        // 发射成功状态
+        emit(state.copyWith(
+           status: AiChatStatus.allocationSuccess,
+          serviceAllocationStatus: successStatus,
+           // errorMessage: '服务已成功分发给商家'
+        ));
+        
+        // 后台异步处理发送消息，不再使用结果更新UI状态
+        _sendAllocationMessageToMerchant(
+          event.merchantId, 
+          event.item, 
+          summary
+        ).catchError((e) {
+          print('向商家发送消息失败(不影响UI状态): $e');
+        });
+      }
+    } catch (e, stackTrace) {
+      print('分发处理中发生未处理异常: $e');
+      print(stackTrace);
+      
+      // 异常情况下，确保按钮状态正确
+      final errorStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
+      errorStatus[event.serviceId] = AllocationStatus.failure;
+      
+      emit(state.copyWith(
+        status: AiChatStatus.allocationFailure,
+        serviceAllocationStatus: errorStatus,
+        errorMessage: '服务分发过程中发生错误: $e'
+      ));
+    }
+  }
 
   // --- Internal Event Handlers for Stream ---
 
@@ -1880,6 +1888,120 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         
         print('[AiChatBloc] AI标题生成成功: ${event.conversationId} -> $generatedTitle');
       },
+    );
+  }
+
+  // --- Rate Limit Handlers ---
+
+  Future<void> _onFetchRateLimitStatus(
+    FetchRateLimitStatus event,
+    Emitter<AiChatState> emit,
+  ) async {
+    emit(state.copyWith(rateLimitStatus: RateLimitStatus.loading));
+    
+    try {
+      final userId = await _getCurrentUserId();
+      if (userId == null) {
+        emit(state.copyWith(
+          rateLimitStatus: RateLimitStatus.error,
+          rateLimitErrorMessage: 'User not authenticated or invalid ID format',
+        ));
+        return;
+      }
+
+      final result = await _remoteDataSource.getRateLimitStatus(
+        userId: userId,
+      );
+      
+      final conversationLimit = _parseServiceLimitInfo(result['data']['conversation']);
+      final personalizedLimit = _parseServiceLimitInfo(result['data']['personalized']);
+      
+      emit(state.copyWith(
+        rateLimitStatus: RateLimitStatus.loaded,
+        conversationRateLimit: conversationLimit,
+        personalizedRateLimit: personalizedLimit,
+        clearRateLimitErrorMessage: true,
+      ));
+      
+    } catch (e) {
+      print('[AiChatBloc] Failed to fetch rate limit status: $e');
+      emit(state.copyWith(
+        rateLimitStatus: RateLimitStatus.error,
+        rateLimitErrorMessage: e.toString(),
+      ));
+    }
+  }
+
+  Future<void> _onResetRateLimit(
+    ResetRateLimit event,
+    Emitter<AiChatState> emit,
+  ) async {
+    try {
+      final userId = await _getCurrentUserId();
+      if (userId == null) {
+        emit(state.copyWith(
+          rateLimitStatus: RateLimitStatus.error,
+          rateLimitErrorMessage: 'User not authenticated or invalid ID format',
+        ));
+        return;
+      }
+
+      await _remoteDataSource.resetUserRateLimit(
+        userId: userId,
+        serviceType: event.serviceType,
+        ruleName: event.ruleName,
+      );
+      
+      // 重置成功后，重新获取状态
+      add(FetchRateLimitStatus(userId: userId));
+      
+    } catch (e) {
+      print('[AiChatBloc] Failed to reset rate limit: $e');
+      emit(state.copyWith(
+        rateLimitStatus: RateLimitStatus.error,
+        rateLimitErrorMessage: e.toString(),
+      ));
+    }
+  }
+
+  // 解析服务限制信息的辅助方法
+  RateLimitInfo? _parseServiceLimitInfo(Map<String, dynamic>? serviceData) {
+    if (serviceData == null || serviceData['enabled'] != true) {
+      return null;
+    }
+    
+    final rules = serviceData['rules'] as Map<String, dynamic>?;
+    if (rules == null) return null;
+    
+    // 找到剩余次数最少的规则作为主要显示
+    int minRemaining = 999999;
+    int maxResetTime = 0;
+    final ruleStatuses = <RuleStatus>[];
+    
+    rules.forEach((ruleName, ruleData) {
+      final remaining = ruleData['remaining'] ?? 0;
+      final resetTime = ruleData['reset_in_seconds'] ?? 0;
+      
+      if (remaining < minRemaining) {
+        minRemaining = remaining;
+      }
+      if (resetTime > maxResetTime) {
+        maxResetTime = resetTime;
+      }
+      
+      ruleStatuses.add(RuleStatus(
+        name: ruleName,
+        currentCount: ruleData['current_count'] ?? 0,
+        limit: ruleData['limit'] ?? 0,
+        remaining: remaining,
+        windowMinutes: ruleData['window_minutes'] ?? 0,
+      ));
+    });
+    
+    return RateLimitInfo(
+      remaining: minRemaining,
+      resetInSeconds: maxResetTime,
+      rulesStatus: ruleStatuses,
     );
   }
 } 

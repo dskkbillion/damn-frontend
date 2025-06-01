@@ -169,4 +169,34 @@ abstract class IAiChatRemoteDataSource {
     required int conversationId,
     required int userId,
   });
+
+  /// 查询用户频率限制状态
+  ///
+  /// [userId] 用户ID
+  ///
+  /// Throws specific exceptions on failure.
+  /// Returns rate limit status data on success.
+  Future<Map<String, dynamic>> getRateLimitStatus({
+    required int userId,
+  });
+
+  /// 重置用户频率限制
+  ///
+  /// [userId] 用户ID
+  /// [serviceType] 服务类型 (conversation/personalized)，可选
+  /// [ruleName] 规则名称 (burst/hourly)，可选
+  ///
+  /// Throws specific exceptions on failure.
+  /// Returns reset result data on success.
+  Future<Map<String, dynamic>> resetUserRateLimit({
+    required int userId,
+    String? serviceType,
+    String? ruleName,
+  });
+
+  /// 获取频率限制配置
+  ///
+  /// Throws specific exceptions on failure.
+  /// Returns rate limit config data on success.
+  Future<Map<String, dynamic>> getRateLimitConfig();
 } 

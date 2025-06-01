@@ -280,4 +280,30 @@ class LoadMoreConversations extends AiChatEvent {
 /// Event to refresh conversations list (pull to refresh).
 class RefreshConversations extends AiChatEvent {
   const RefreshConversations();
+}
+
+/// 查询频率限制状态事件
+class FetchRateLimitStatus extends AiChatEvent {
+  final int userId;
+  
+  const FetchRateLimitStatus({required this.userId});
+  
+  @override
+  List<Object?> get props => [userId];
+}
+
+/// 重置频率限制事件（管理员功能）
+class ResetRateLimit extends AiChatEvent {
+  final int userId;
+  final String? serviceType;
+  final String? ruleName;
+  
+  const ResetRateLimit({
+    required this.userId,
+    this.serviceType,
+    this.ruleName,
+  });
+  
+  @override
+  List<Object?> get props => [userId, serviceType, ruleName];
 } 

@@ -189,6 +189,7 @@ class AiDocsDI {
             getIt<OptimizedAllocationUseCase>(),
             getIt<UpdateConversationTitleUseCase>(),
             getIt<GenerateConversationTitleUseCase>(),
+            getIt<IAiChatRemoteDataSource>(),
             getIt<FlutterSecureStorage>(),
           ));
       print('[AiDocsDI] Registered AiChatBloc');

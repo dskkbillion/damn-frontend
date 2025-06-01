@@ -22,4 +22,18 @@ class DataSourceException implements Exception {
   DataSourceException({this.message = 'An unexpected error occurred in the data source.'});
    @override
   String toString() => 'DataSourceException(message: $message)';
+}
+
+/// 频率限制异常
+class RateLimitException implements Exception {
+  final String message;
+  final Map<String, dynamic>? rateLimitData;
+  
+  const RateLimitException({
+    required this.message,
+    this.rateLimitData,
+  });
+  
+  @override
+  String toString() => 'RateLimitException: $message';
 } 

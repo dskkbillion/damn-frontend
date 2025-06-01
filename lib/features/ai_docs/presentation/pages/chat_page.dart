@@ -34,6 +34,8 @@ import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/conversation_sidebar.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/service_card.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat_page_title.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/rate_limit_indicator.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/rate_limit_warning.dart';
 
 // Import chat module components for navigation
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_messages/chat_messages_bloc.dart';
@@ -59,8 +61,11 @@ class _ChatPageState extends State<ChatPage> {
     // Ensure BlocProvider is available above this widget in the tree
     WidgetsBinding.instance.addPostFrameCallback((_) { 
       if (mounted) { // Check if the state is still mounted
-        context.read<AiChatBloc>().add(LoadConversations());
-        print("[ChatPage] Dispatched LoadConversations event.");
+        final bloc = context.read<AiChatBloc>();
+        bloc.add(LoadConversations());
+        // 初始加载频率限制状态
+        bloc.add(const FetchRateLimitStatus(userId: 1)); // TODO: 获取真实用户ID
+        print("[ChatPage] Dispatched LoadConversations and FetchRateLimitStatus events.");
       }
     });
   }
@@ -95,6 +100,8 @@ class _ChatPageState extends State<ChatPage> {
         title: const ChatPageTitle(),
          // Add the dispatch/recommendation button to actions
          actions: [
+           // 频率限制指示器
+           const RateLimitIndicator(),
            // Replace IconButton with a TextButton
            Padding(
              // Add some padding to align with other AppBar elements
@@ -136,6 +143,23 @@ class _ChatPageState extends State<ChatPage> {
       // The body is now just the chat area (Column)
       body: Column(
          children: [
+           // 频率限制警告横幅
+           BlocBuilder<AiChatBloc, AiChatState>(
+             buildWhen: (previous, current) =>
+                 previous.conversationRateLimit != current.conversationRateLimit,
+             builder: (context, state) {
+               final rateLimit = state.conversationRateLimit;
+               if (rateLimit == null) return const SizedBox.shrink();
+               
+               return RateLimitWarningBanner(
+                 remaining: rateLimit.remaining,
+                 resetInSeconds: rateLimit.resetInSeconds,
+                 onDismiss: () {
+                   // 可以添加隐藏逻辑，这里暂时不实现
+                 },
+               );
+             },
+           ),
            // Message List Area
            const Expanded(
              child: ChatMessageList(),

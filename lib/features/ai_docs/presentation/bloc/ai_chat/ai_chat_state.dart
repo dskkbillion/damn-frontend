@@ -1,5 +1,50 @@
 part of 'ai_chat_bloc.dart';
 
+/// 频率限制信息
+class RateLimitInfo extends Equatable {
+  final int remaining;
+  final int resetInSeconds;
+  final List<RuleStatus> rulesStatus;
+
+  const RateLimitInfo({
+    required this.remaining,
+    required this.resetInSeconds,
+    required this.rulesStatus,
+  });
+
+  @override
+  List<Object?> get props => [remaining, resetInSeconds, rulesStatus];
+}
+
+/// 规则状态信息
+class RuleStatus extends Equatable {
+  final String name;
+  final int currentCount;
+  final int limit;
+  final int remaining;
+  final int windowMinutes;
+
+  const RuleStatus({
+    required this.name,
+    required this.currentCount,
+    required this.limit,
+    required this.remaining,
+    required this.windowMinutes,
+  });
+
+  @override
+  List<Object?> get props => [name, currentCount, limit, remaining, windowMinutes];
+}
+
+/// 频率限制状态枚举
+enum RateLimitStatus {
+  initial,
+  loading,
+  loaded,
+  error,
+  limitExceeded,
+}
+
 /// Represents the status of AI chat operations (main chat area).
 enum AiChatStatus {
   initial, // Initial state before loading
@@ -162,6 +207,16 @@ class AiChatState extends Equatable {
   /// 是否应该自动滚动到底部
   final bool shouldScrollToBottom;
 
+  /// --- New fields for rate limit ---
+  /// 频率限制状态
+  final RateLimitStatus rateLimitStatus;
+  /// 会话推荐的频率限制信息
+  final RateLimitInfo? conversationRateLimit;
+  /// 个性化推荐的频率限制信息
+  final RateLimitInfo? personalizedRateLimit;
+  /// 频率限制错误信息
+  final String? rateLimitErrorMessage;
+
   /// {@macro ai_chat_state}
   const AiChatState({
     this.status = AiChatStatus.initial,
@@ -195,6 +250,11 @@ class AiChatState extends Equatable {
     this.conversationsTotalPages = 0,
     this.totalConversationsCount = 0,
     this.conversationsHasMore = true,
+    // Rate limit fields
+    this.rateLimitStatus = RateLimitStatus.initial,
+    this.conversationRateLimit,
+    this.personalizedRateLimit,
+    this.rateLimitErrorMessage,
   });
 
   /// Creates a copy of the current state with updated values.
@@ -231,6 +291,11 @@ class AiChatState extends Equatable {
     int? conversationsTotalPages,
     int? totalConversationsCount,
     bool? conversationsHasMore,
+    // Rate limit parameters
+    RateLimitStatus? rateLimitStatus,
+    RateLimitInfo? conversationRateLimit,
+    RateLimitInfo? personalizedRateLimit,
+    String? rateLimitErrorMessage,
     // Clear flags
     bool clearErrorMessage = false,
     bool clearConversationListErrorMessage = false,
@@ -238,6 +303,7 @@ class AiChatState extends Equatable {
     bool clearTitleErrorMessage = false,
     bool clearPendingImages = false,
     bool clearImageUploadStates = false,
+    bool clearRateLimitErrorMessage = false,
   }) {
     final newSelectedId = selectedConversationIdOrNull == const Object()
                               ? this.selectedConversationId
@@ -278,6 +344,11 @@ class AiChatState extends Equatable {
       conversationsTotalPages: conversationsTotalPages ?? this.conversationsTotalPages,
       totalConversationsCount: totalConversationsCount ?? this.totalConversationsCount,
       conversationsHasMore: conversationsHasMore ?? this.conversationsHasMore,
+      // Rate limit fields
+      rateLimitStatus: rateLimitStatus ?? this.rateLimitStatus,
+      conversationRateLimit: conversationRateLimit ?? this.conversationRateLimit,
+      personalizedRateLimit: personalizedRateLimit ?? this.personalizedRateLimit,
+      rateLimitErrorMessage: clearRateLimitErrorMessage ? null : rateLimitErrorMessage ?? this.rateLimitErrorMessage,
     );
   }
 
@@ -314,5 +385,10 @@ class AiChatState extends Equatable {
         conversationsTotalPages,
         totalConversationsCount,
         conversationsHasMore,
+        // Rate limit props
+        rateLimitStatus,
+        conversationRateLimit,
+        personalizedRateLimit,
+        rateLimitErrorMessage,
       ];
 } 
