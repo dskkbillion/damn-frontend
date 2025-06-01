@@ -2,7 +2,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-import '../../../../core/payment/services/i_payment_service.dart';
+import '../../../../core/payment/services/payment_service_factory.dart';
+import '../../../../core/config/payment_config.dart';
 import '../../../orders/domain/usecases/create_order_use_case.dart';
 import 'payment_event.dart';
 import 'payment_state.dart';
@@ -11,11 +12,9 @@ import 'payment_state.dart';
 @injectable
 class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
   final CreateOrderUseCase createOrderUseCase;
-  final IPaymentService paymentService;
 
   PaymentBloc({
     required this.createOrderUseCase,
-    required this.paymentService,
   }) : super(PaymentInitial()) {
     on<CreateOrderAndPayEvent>(_onCreateOrderAndPay);
     on<DirectPayEvent>(_onDirectPay);
@@ -28,6 +27,18 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     Emitter<PaymentState> emit,
   ) async {
     try {
+      // 打印支付配置信息（仅在调试模式下）
+      PaymentConfig.printConfig();
+      
+      // 验证支付方式
+      final isAvailable = await PaymentServiceFactory.isPaymentMethodAvailable(event.paymentMethod);
+      if (!isAvailable) {
+        emit(PaymentFailedState(
+          errorMessage: '不支持的支付方式: ${event.paymentMethod}',
+        ));
+        return;
+      }
+      
       // 显示创建订单中状态
       emit(CreatingOrderState());
 
@@ -44,39 +55,66 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
       await orderResult.fold(
         (failure) {
           // 创建订单失败
-          Fluttertoast.showToast(msg: failure.message);
-          emit(PaymentFailedState(errorMessage: failure.message));
+          final errorMessage = failure.message;
+          Fluttertoast.showToast(msg: errorMessage);
+          emit(PaymentFailedState(errorMessage: errorMessage));
         },
         (creationResult) async {
           // 创建订单成功
           // 显示支付中状态
-          emit(PayingState(orderId: creationResult.orderId));
+          emit(PayingState(
+            orderId: creationResult.orderId,
+            paymentMethod: event.paymentMethod,
+          ));
 
-          // 调用支付
-          final payResult = await paymentService.initiatePayment(
-            creationResult.orderId,
-            paymentMethodId: 'alipay',
-          );
+          // 根据选择的支付方式创建对应的支付服务
+          try {
+            final paymentService = PaymentServiceFactory.create(event.paymentMethod);
+            
+            // 调用支付
+            final payResult = await paymentService.initiatePayment(
+              creationResult.orderId,
+              paymentMethodId: event.paymentMethod,
+            );
 
-          // 处理支付结果
-          payResult.fold(
-            (failure) {
-              // 支付失败
-              emit(PaymentFailedState(
-                errorMessage: failure.message,
-                orderId: creationResult.orderId,
-              ));
-            },
-            (_) {
-              // 支付成功
-              emit(PaymentCompletedState(orderId: creationResult.orderId));
-            },
-          );
+            // 处理支付结果
+            payResult.fold(
+              (failure) {
+                // 支付失败
+                final errorMessage = failure.message;
+                Fluttertoast.showToast(msg: errorMessage);
+                emit(PaymentFailedState(
+                  errorMessage: errorMessage,
+                  orderId: creationResult.orderId,
+                  paymentMethod: event.paymentMethod,
+                ));
+              },
+              (_) {
+                // 支付成功
+                Fluttertoast.showToast(msg: '支付成功');
+                emit(PaymentCompletedState(
+                  orderId: creationResult.orderId,
+                  paymentMethod: event.paymentMethod,
+                ));
+              },
+            );
+          } catch (e) {
+            // 支付服务创建失败或其他异常
+            final errorMessage = '支付服务异常: $e';
+            Fluttertoast.showToast(msg: errorMessage);
+            emit(PaymentFailedState(
+              errorMessage: errorMessage,
+              orderId: creationResult.orderId,
+              paymentMethod: event.paymentMethod,
+            ));
+          }
         },
       );
     } catch (e) {
       // 捕获未处理异常
-      emit(PaymentFailedState(errorMessage: '支付过程中发生异常: $e'));
+      final errorMessage = '支付过程中发生异常: $e';
+      Fluttertoast.showToast(msg: errorMessage);
+      emit(PaymentFailedState(errorMessage: errorMessage));
     }
   }
 
@@ -86,32 +124,71 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     Emitter<PaymentState> emit,
   ) async {
     try {
+      // 验证支付方式
+      final isAvailable = await PaymentServiceFactory.isPaymentMethodAvailable(event.paymentMethod);
+      if (!isAvailable) {
+        emit(PaymentFailedState(
+          errorMessage: '不支持的支付方式: ${event.paymentMethod}',
+          orderId: event.orderId,
+        ));
+        return;
+      }
+      
       // 显示支付中状态
-      emit(PayingState(orderId: event.orderId));
+      emit(PayingState(
+        orderId: event.orderId,
+        paymentMethod: event.paymentMethod,
+      ));
 
-      // 调用支付
-      final payResult = await paymentService.initiatePayment(
-        event.orderId,
-        paymentMethodId: event.paymentMethod,
-      );
+      // 根据选择的支付方式创建对应的支付服务
+      try {
+        final paymentService = PaymentServiceFactory.create(event.paymentMethod);
+        
+        // 调用支付
+        final payResult = await paymentService.initiatePayment(
+          event.orderId,
+          paymentMethodId: event.paymentMethod,
+        );
 
-      // 处理支付结果
-      payResult.fold(
-        (failure) {
-          // 支付失败
-          emit(PaymentFailedState(
-            errorMessage: failure.message,
-            orderId: event.orderId,
-          ));
-        },
-        (_) {
-          // 支付成功
-          emit(PaymentCompletedState(orderId: event.orderId));
-        },
-      );
+        // 处理支付结果
+        payResult.fold(
+          (failure) {
+            // 支付失败
+            final errorMessage = failure.message;
+            Fluttertoast.showToast(msg: errorMessage);
+            emit(PaymentFailedState(
+              errorMessage: errorMessage,
+              orderId: event.orderId,
+              paymentMethod: event.paymentMethod,
+            ));
+          },
+          (_) {
+            // 支付成功
+            Fluttertoast.showToast(msg: '支付成功');
+            emit(PaymentCompletedState(
+              orderId: event.orderId,
+              paymentMethod: event.paymentMethod,
+            ));
+          },
+        );
+      } catch (e) {
+        // 支付服务创建失败或其他异常
+        final errorMessage = '支付服务异常: $e';
+        Fluttertoast.showToast(msg: errorMessage);
+        emit(PaymentFailedState(
+          errorMessage: errorMessage,
+          orderId: event.orderId,
+          paymentMethod: event.paymentMethod,
+        ));
+      }
     } catch (e) {
       // 捕获未处理异常
-      emit(PaymentFailedState(errorMessage: '支付过程中发生异常: $e'));
+      final errorMessage = '支付过程中发生异常: $e';
+      Fluttertoast.showToast(msg: errorMessage);
+      emit(PaymentFailedState(
+        errorMessage: errorMessage,
+        orderId: event.orderId,
+      ));
     }
   }
 } 

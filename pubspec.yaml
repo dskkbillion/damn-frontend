@@ -89,6 +89,7 @@ dependencies:
   
   # 支付功能
   tobias: ^3.3.0  # 支付宝SDK Flutter插件
+  fluwx: ^4.1.0  # 微信支付Flutter插件
   fluttertoast: ^8.2.4  # 用于显示支付结果提示
 
 dev_dependencies:

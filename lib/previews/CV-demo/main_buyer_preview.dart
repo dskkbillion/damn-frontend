@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // 导入SharedPreferences
 import 'package:flutter_bloc/flutter_bloc.dart'; // 导入BLoC
+import 'package:fluwx/fluwx.dart'; // 导入微信SDK
 
 // Import the root App Widget
 import 'package:dskk_flutter_refactor/app/app.dart';
@@ -35,6 +36,8 @@ import 'package:dskk_flutter_refactor/core/analytics/di/analytics_injection.dart
 import 'package:dskk_flutter_refactor/core/analytics/observers/analytics_bloc_observer.dart';
 // 导入core/auth中的IAuthRepository
 import 'package:dskk_flutter_refactor/core/auth/repositories/i_auth_repository.dart' as core_auth;
+// 导入支付配置
+import 'package:dskk_flutter_refactor/core/config/payment_config.dart';
 
 // 导入Home模块的导航配置
 import 'package:dskk_flutter_refactor/features/home/presentation/navigation/home_navigation_di.dart';
@@ -65,6 +68,23 @@ Future<void> main() async {
   } catch (e) {
       print("[main_buyer_preview] Error loading .env file: $e. Using fallback.");
       backendBaseUrl = 'https://app.duoshaokankan.com/prod-api'; // Fallback on error
+  }
+
+  // 初始化微信SDK
+  try {
+    final wechatAppId = PaymentConfig.wechatAppId;
+    if (wechatAppId.isNotEmpty) {
+      await registerWxApi(
+        appId: wechatAppId,
+        doOnAndroid: true,
+        doOnIOS: true,
+      );
+      print('[main_buyer_preview] 微信SDK初始化成功: $wechatAppId');
+    } else {
+      print('[main_buyer_preview] 微信AppID未配置，跳过微信SDK初始化');
+    }
+  } catch (e) {
+    print('[main_buyer_preview] 微信SDK初始化失败: $e');
   }
 
   // 初始化SharedPreferences
@@ -100,7 +120,6 @@ Future<void> main() async {
   if (!getIt.isRegistered<PaymentBloc>()) {
     getIt.registerFactory<PaymentBloc>(() => PaymentBloc(
       createOrderUseCase: getIt<CreateOrderUseCase>(),
-      paymentService: getIt<IPaymentService>(),
     ));
     print('[main_buyer_preview] Registered PaymentBloc to GetIt container.');
   }
