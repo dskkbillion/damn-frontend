@@ -18,10 +18,6 @@ import '../models/related_service_model.dart';
 import 'i_ai_chat_remote_data_source.dart';
 import 'exceptions.dart' as ds_exceptions;
 import 'package:dio/dio.dart';
-import 'package:collection/collection.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/data/models/ai_conversation_history_model.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/data/models/ai_conversation_page_model.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/data/models/message_history_page_model.dart';
 
 /// {@template ai_chat_remote_data_source_impl}
 /// Implementation of [IAiChatRemoteDataSource] that uses an [IHttpClient]
@@ -670,7 +666,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       // 检查是否是429频率限制错误
       if (response.statusCode == 429) {
         final data = _handleResponse(responseData);
-        throw RateLimitException(
+        throw ds_exceptions.RateLimitException(
           message: data['message'] ?? '请求过于频繁',
           rateLimitData: data['data'],
         );
@@ -711,7 +707,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
         print('Warning: getRelatedServices received unexpected format. Data: $data');
         return [];
       }
-    } on RateLimitException {
+    } on ds_exceptions.RateLimitException {
       rethrow;
     } on ds_exceptions.ServerException {
       rethrow;

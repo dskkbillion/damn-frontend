@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:get_it/get_it.dart'; // Import GetIt
 import 'package:collection/collection.dart'; // Import collection package
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 添加FlutterSecureStorage导入
 import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 // Import Bloc and State/Event files
@@ -59,13 +60,29 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     // Dispatch the event to load conversations when the page initializes
     // Ensure BlocProvider is available above this widget in the tree
-    WidgetsBinding.instance.addPostFrameCallback((_) { 
+    WidgetsBinding.instance.addPostFrameCallback((_) async { 
       if (mounted) { // Check if the state is still mounted
         final bloc = context.read<AiChatBloc>();
         bloc.add(LoadConversations());
-        // 初始加载频率限制状态
-        bloc.add(const FetchRateLimitStatus(userId: 1)); // TODO: 获取真实用户ID
-        print("[ChatPage] Dispatched LoadConversations and FetchRateLimitStatus events.");
+        
+        // 获取真实用户ID并加载频率限制状态
+        try {
+          // 从存储中获取用户ID
+          final storage = const FlutterSecureStorage();
+          final commonUserIdString = await storage.read(key: 'common_user_id');
+          final userId = int.tryParse(commonUserIdString ?? '');
+          
+          if (userId != null) {
+            bloc.add(FetchRateLimitStatus(userId: userId));
+            print("[ChatPage] Dispatched FetchRateLimitStatus with userId: $userId");
+          } else {
+            print("[ChatPage] Warning: Could not get valid user ID for rate limit status");
+          }
+        } catch (e) {
+          print("[ChatPage] Error getting user ID: $e");
+        }
+        
+        print("[ChatPage] Dispatched LoadConversations event.");
       }
     });
   }

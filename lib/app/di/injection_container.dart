@@ -128,6 +128,16 @@ Future<void> configureDependencies({required String backendBaseUrl}) async {
     print('[DI] Failed to initialize Analytics module: $e');
     // 不抛出异常，允许应用继续启动，但记录错误信息
   }
+  
+  // 初始化AI文档模块依赖
+  try {
+    print('[DI] Starting AI Docs module initialization...');
+    await AiDocsDI.init(getIt);
+    print('[DI] AI Docs module dependencies initialization complete.');
+  } catch (e) {
+    print('[DI] Failed to initialize AI Docs module: $e');
+    // 不抛出异常，允许应用继续启动，但记录错误信息
+  }
 }
 
 // 注册核心依赖

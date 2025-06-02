@@ -1913,8 +1913,17 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         userId: userId,
       );
       
-      final conversationLimit = _parseServiceLimitInfo(result['data']['conversation']);
-      final personalizedLimit = _parseServiceLimitInfo(result['data']['personalized']);
+      print('[AiChatBloc] Rate limit API result: $result');
+      
+      // result已经是API响应的data部分，不需要再访问result['data']
+      final conversationData = result['conversation'] as Map<String, dynamic>?;
+      final personalizedData = result['personalized'] as Map<String, dynamic>?;
+      
+      final conversationLimit = _parseServiceLimitInfo(conversationData);
+      final personalizedLimit = _parseServiceLimitInfo(personalizedData);
+      
+      print('[AiChatBloc] Parsed conversation limit: $conversationLimit');
+      print('[AiChatBloc] Parsed personalized limit: $personalizedLimit');
       
       emit(state.copyWith(
         rateLimitStatus: RateLimitStatus.loaded,
