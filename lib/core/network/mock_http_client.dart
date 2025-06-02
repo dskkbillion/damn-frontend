@@ -55,34 +55,7 @@ class MockHttpClient implements IHttpClient {
              ]
            }
         };
-    } else if (path == '/recsys/conversation/recommend') {
-       print('[MockHttpClient] GET recommendations for conversation: ${queryParameters?['conversation_id']}');
-        return {
-         'code': 200,
-         'message': 'Success',
-         'data': {
-           'items': [
-              {
-                'id': 101, 
-                'mainImage': 'https://via.placeholder.com/150/FF0000/FFFFFF?Text=Service1', 
-                'name': 'Premium Logo Design',
-                'sellingPrice': 199.99
-              },
-              {
-                'id': 102,
-                'mainImage': 'https://via.placeholder.com/150/00FF00/000000?Text=Service2',
-                'name': 'Social Media Strategy Consultation',
-                'sellingPrice': 249.00
-              },
-              {
-                'id': 103,
-                'mainImage': 'https://via.placeholder.com/150/0000FF/FFFFFF?Text=Service3',
-                'name': 'Custom Website Development (Basic)',
-                'sellingPrice': 499.50
-              }
-           ]
-         }
-       };
+    // Removed /recsys/conversation/recommend mock data - using real API now
     } else if (path.contains('conversations')) {
       return {
         'data': [
@@ -146,18 +119,7 @@ class MockHttpClient implements IHttpClient {
              ]
            }
          };
-    } else if (path.contains('/recsys/conversation/recommend')) {
-       print('[MockHttpClient] Fetching recommendations via POST');
-        return {
-         'code': 200,
-         'message': 'Success',
-         'data': {
-           'items': [
-              {'id': 101, 'title': 'Intro to Machine Learning', 'url': 'http://example.com/ml-intro'},
-              {'id': 102, 'title': 'Neural Network Deep Dive', 'url': 'http://example.com/nn-deep-dive'}
-           ]
-         }
-       };
+    // Removed /recsys/conversation/recommend POST mock data - using real API now
     } else if (path.contains('chat/allocate')) {
       print('[MockHttpClient] Simulating allocation action...');
       return {

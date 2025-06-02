@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:get_it/get_it.dart'; // Import GetIt
 import 'package:collection/collection.dart'; // Import collection package
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 添加FlutterSecureStorage导入
 import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 // Import Bloc and State/Event files
@@ -34,6 +35,8 @@ import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/conversation_sidebar.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/service_card.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat_page_title.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/rate_limit_indicator.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/rate_limit_warning.dart';
 
 // Import chat module components for navigation
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_messages/chat_messages_bloc.dart';
@@ -57,9 +60,28 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     // Dispatch the event to load conversations when the page initializes
     // Ensure BlocProvider is available above this widget in the tree
-    WidgetsBinding.instance.addPostFrameCallback((_) { 
+    WidgetsBinding.instance.addPostFrameCallback((_) async { 
       if (mounted) { // Check if the state is still mounted
-        context.read<AiChatBloc>().add(LoadConversations());
+        final bloc = context.read<AiChatBloc>();
+        bloc.add(LoadConversations());
+        
+        // 获取真实用户ID并加载频率限制状态
+        try {
+          // 从存储中获取用户ID
+          final storage = const FlutterSecureStorage();
+          final commonUserIdString = await storage.read(key: 'common_user_id');
+          final userId = int.tryParse(commonUserIdString ?? '');
+          
+          if (userId != null) {
+            bloc.add(FetchRateLimitStatus(userId: userId));
+            print("[ChatPage] Dispatched FetchRateLimitStatus with userId: $userId");
+          } else {
+            print("[ChatPage] Warning: Could not get valid user ID for rate limit status");
+          }
+        } catch (e) {
+          print("[ChatPage] Error getting user ID: $e");
+        }
+        
         print("[ChatPage] Dispatched LoadConversations event.");
       }
     });
@@ -95,6 +117,8 @@ class _ChatPageState extends State<ChatPage> {
         title: const ChatPageTitle(),
          // Add the dispatch/recommendation button to actions
          actions: [
+           // 频率限制指示器
+           const RateLimitIndicator(),
            // Replace IconButton with a TextButton
            Padding(
              // Add some padding to align with other AppBar elements
@@ -136,6 +160,23 @@ class _ChatPageState extends State<ChatPage> {
       // The body is now just the chat area (Column)
       body: Column(
          children: [
+           // 频率限制警告横幅
+           BlocBuilder<AiChatBloc, AiChatState>(
+             buildWhen: (previous, current) =>
+                 previous.conversationRateLimit != current.conversationRateLimit,
+             builder: (context, state) {
+               final rateLimit = state.conversationRateLimit;
+               if (rateLimit == null) return const SizedBox.shrink();
+               
+               return RateLimitWarningBanner(
+                 remaining: rateLimit.remaining,
+                 resetInSeconds: rateLimit.resetInSeconds,
+                 onDismiss: () {
+                   // 可以添加隐藏逻辑，这里暂时不实现
+                 },
+               );
+             },
+           ),
            // Message List Area
            const Expanded(
              child: ChatMessageList(),

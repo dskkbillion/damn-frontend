@@ -662,6 +662,16 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       
       // 处理响应
       final responseData = response.data;
+      
+      // 检查是否是429频率限制错误
+      if (response.statusCode == 429) {
+        final data = _handleResponse(responseData);
+        throw ds_exceptions.RateLimitException(
+          message: data['message'] ?? '请求过于频繁',
+          rateLimitData: data['data'],
+        );
+      }
+      
       final data = _handleResponse(responseData);
       
       print('[DataSource] Related services response: ${jsonEncode(data)}');
@@ -697,6 +707,8 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
         print('Warning: getRelatedServices received unexpected format. Data: $data');
         return [];
       }
+    } on ds_exceptions.RateLimitException {
+      rethrow;
     } on ds_exceptions.ServerException {
       rethrow;
     } on ds_exceptions.NetworkException {
@@ -704,6 +716,135 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } catch (e) {
       print('Unexpected error in getRelatedServices at $path: $e');
       throw ds_exceptions.DataSourceException(message: 'Failed to get related services: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getRateLimitStatus({
+    required int userId,
+  }) async {
+    final String path = '/recsys/rate-limit/status/$userId';
+    print("Fetching rate limit status using path: $path");
+    
+    try {
+      final storage = const FlutterSecureStorage();
+      final token = await storage.read(key: 'auth_token');
+      print("[AiDocs] 获取频率限制状态，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      
+      final options = Options(
+        headers: {
+          if (token != null && token.isNotEmpty)
+            'Authorization': token,
+        }
+      );
+      
+      final response = await _httpClient.getDioInstance().get(
+        path,
+        options: options
+      );
+      
+      final responseData = response.data;
+      final data = _handleResponse(responseData);
+      
+      return data as Map<String, dynamic>;
+    } on ds_exceptions.ServerException {
+      rethrow;
+    } on ds_exceptions.NetworkException {
+      rethrow;
+    } catch (e) {
+      print('Unexpected error in getRateLimitStatus: $e');
+      throw ds_exceptions.DataSourceException(
+        message: 'Failed to get rate limit status: ${e.toString()}'
+      );
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> resetUserRateLimit({
+    required int userId,
+    String? serviceType,
+    String? ruleName,
+  }) async {
+    final String path = '/recsys/rate-limit/reset/$userId';
+    print("Resetting user rate limit using path: $path");
+    
+    final Map<String, String> queryParams = {};
+    if (serviceType != null) {
+      queryParams['service_type'] = serviceType;
+    }
+    if (ruleName != null) {
+      queryParams['rule_name'] = ruleName;
+    }
+    
+    try {
+      final storage = const FlutterSecureStorage();
+      final token = await storage.read(key: 'auth_token');
+      print("[AiDocs] 重置频率限制，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      
+      final options = Options(
+        headers: {
+          if (token != null && token.isNotEmpty)
+            'Authorization': token,
+        }
+      );
+      
+      final response = await _httpClient.getDioInstance().post(
+        path,
+        queryParameters: queryParams,
+        options: options
+      );
+      
+      final responseData = response.data;
+      final data = _handleResponse(responseData);
+      
+      return data as Map<String, dynamic>;
+    } on ds_exceptions.ServerException {
+      rethrow;
+    } on ds_exceptions.NetworkException {
+      rethrow;
+    } catch (e) {
+      print('Unexpected error in resetUserRateLimit: $e');
+      throw ds_exceptions.DataSourceException(
+        message: 'Failed to reset user rate limit: ${e.toString()}'
+      );
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getRateLimitConfig() async {
+    const String path = '/recsys/rate-limit/config';
+    print("Fetching rate limit config using path: $path");
+    
+    try {
+      final storage = const FlutterSecureStorage();
+      final token = await storage.read(key: 'auth_token');
+      print("[AiDocs] 获取频率限制配置，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      
+      final options = Options(
+        headers: {
+          if (token != null && token.isNotEmpty)
+            'Authorization': token,
+        }
+      );
+      
+      final response = await _httpClient.getDioInstance().get(
+        path,
+        options: options
+      );
+      
+      final responseData = response.data;
+      final data = _handleResponse(responseData);
+      
+      return data as Map<String, dynamic>;
+    } on ds_exceptions.ServerException {
+      rethrow;
+    } on ds_exceptions.NetworkException {
+      rethrow;
+    } catch (e) {
+      print('Unexpected error in getRateLimitConfig: $e');
+      throw ds_exceptions.DataSourceException(
+        message: 'Failed to get rate limit config: ${e.toString()}'
+      );
     }
   }
 
