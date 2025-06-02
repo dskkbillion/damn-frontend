@@ -22,4 +22,18 @@ class StartAdminChatRequested extends ChatListEvent {}
 // Event to clear the navigation trigger after navigation has occurred
 class ClearNavigationTrigger extends ChatListEvent {}
 
+/// Event to update the unread count for a specific chat room
+class UpdateChatRoomUnreadCount extends ChatListEvent {
+  final int chatId;
+  final int unreadCount;
+
+  const UpdateChatRoomUnreadCount({
+    required this.chatId, 
+    required this.unreadCount
+  });
+
+  @override
+  List<Object> get props => [chatId, unreadCount];
+}
+
 // Add other events like UpdateChatRoomListWithNewMessage later 

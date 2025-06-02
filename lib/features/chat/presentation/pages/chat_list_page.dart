@@ -299,17 +299,26 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                     builder: (_) => BlocProvider(
                       create: (_) => sl<ChatMessagesBloc>(param1: chatId)
                                     ..add(LoadChatMessages(chatId)),
-                      child: ChatRoomPage(chatId: chatId),
+                      child: ChatRoomPage(
+                        chatId: chatId,
+                        onMessagesLoaded: () {
+                          // 当消息加载成功后，更新聊天列表中的未读数量为0
+                          print('[ChatListPage] Admin chat messages loaded, updating unread count to 0');
+                          context.read<ChatListBloc>().add(
+                            UpdateChatRoomUnreadCount(chatId: chatId, unreadCount: 0)
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ).then((result) {
                    // Reset navigation trigger in Bloc state after navigation
-                   context.read<ChatListBloc>().add(ClearNavigationTrigger()); // Need to add this event
-                   // Handle potential refresh logic if needed after returning
-                   if (result == true) {
-                     print('[ChatListPage] Refreshing list after viewing chat $chatId');
-                     context.read<ChatListBloc>().add(RefreshChatList()); 
-                   }
+                   context.read<ChatListBloc>().add(ClearNavigationTrigger());
+                   // Remove the RefreshChatList since we now update unread count directly
+                   // if (result == true) {
+                   //   print('[ChatListPage] Refreshing list after viewing chat $chatId');
+                   //   context.read<ChatListBloc>().add(RefreshChatList()); 
+                   // }
                 });
               }
               // Handle potential error messages from StartAdminChatRequested
@@ -352,14 +361,24 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         builder: (_) => BlocProvider(
           create: (_) => sl<ChatMessagesBloc>(param1: chatRoom.id)
                         ..add(LoadChatMessages(chatRoom.id)),
-          child: ChatRoomPage(chatId: chatRoom.id),
+          child: ChatRoomPage(
+            chatId: chatRoom.id,
+            onMessagesLoaded: () {
+              // 当消息加载成功后，更新聊天列表中的未读数量为0
+              print('[ChatListPage] Chat ${chatRoom.id} messages loaded, updating unread count to 0');
+              context.read<ChatListBloc>().add(
+                UpdateChatRoomUnreadCount(chatId: chatRoom.id, unreadCount: 0)
+              );
+            },
+          ),
         ),
       ),
     ).then((result) {
-      if (result == true) {
-        print('[ChatListPage] Refreshing list after viewing chat ${chatRoom.id}');
-        context.read<ChatListBloc>().add(RefreshChatList()); 
-      }
+      // Remove the RefreshChatList since we now update unread count directly
+      // if (result == true) {
+      //   print('[ChatListPage] Refreshing list after viewing chat ${chatRoom.id}');
+      //   context.read<ChatListBloc>().add(RefreshChatList()); 
+      // }
     });
   }
   

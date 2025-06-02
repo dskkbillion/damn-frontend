@@ -30,6 +30,7 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
     on<RefreshChatList>(_onRefreshChatList);
     on<StartAdminChatRequested>(_onStartAdminChatRequested);
     on<ClearNavigationTrigger>(_onClearNavigationTrigger);
+    on<UpdateChatRoomUnreadCount>(_onUpdateChatRoomUnreadCount);
   }
 
   Future<void> _onLoadChatRoomList(
@@ -119,5 +120,23 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
     print("[ChatListBloc] Clearing navigation trigger.");
     // Emit state with navigateToChatId set to null using the flag
     emit(state.copyWith(clearNavigateToChatId: true)); 
+  }
+
+  // Handler to update unread count for a specific chat room
+  void _onUpdateChatRoomUnreadCount(
+    UpdateChatRoomUnreadCount event,
+    Emitter<ChatListState> emit,
+  ) {
+    print('[ChatListBloc] Updating unread count for chatId ${event.chatId} to ${event.unreadCount}');
+    
+    // 更新对应聊天室的未读数量
+    final updatedChatRooms = state.chatRooms.map((room) {
+      if (room.id == event.chatId) {
+        return room.copyWith(unreadCount: event.unreadCount);
+      }
+      return room;
+    }).toList();
+    
+    emit(state.copyWith(chatRooms: updatedChatRooms));
   }
 } 
