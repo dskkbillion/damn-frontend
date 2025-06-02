@@ -8,8 +8,22 @@ import 'package:image_picker/image_picker.dart'; // Import image_picker
 import 'package:record/record.dart'; // Import record
 import 'package:permission_handler/permission_handler.dart'; // Import permission_handler
 import 'package:path_provider/path_provider.dart'; // Import path_provider
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 import '../bloc/chat_messages/chat_messages_bloc.dart';
+
+// 文件上传状态定义
+enum FileUploadStatus { uploading, success, failure }
+
+class FileUploadState {
+  final FileUploadStatus status;
+  final String? url;
+  final String? error;
+  
+  const FileUploadState.uploading() : status = FileUploadStatus.uploading, url = null, error = null;
+  const FileUploadState.success(this.url) : status = FileUploadStatus.success, error = null;
+  const FileUploadState.failure(this.error) : status = FileUploadStatus.failure, url = null;
+}
 
 class MessageInputBar extends StatefulWidget {
   final int chatId; // Needed to potentially associate input with the chat
@@ -29,6 +43,10 @@ class _MessageInputBarState extends State<MessageInputBar> {
   String? _recordingPath;
   Timer? _recordingTimer;
   int _recordingDuration = 0;
+  
+  // 新增：文件上传状态管理
+  List<File> _pendingFiles = [];
+  Map<String, FileUploadState> _fileUploadStates = {};
 
   @override
   void initState() {
@@ -63,10 +81,13 @@ class _MessageInputBarState extends State<MessageInputBar> {
   }
 
   Future<void> _startRecording() async {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     // --- Add Web Check --- 
     if (kIsWeb) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Web 平台暂不支持录音功能')),
+        SnackBar(content: Text(s.chat_web_recording_not_supported)),
       );
       return;
     }
@@ -82,15 +103,15 @@ class _MessageInputBarState extends State<MessageInputBar> {
         showDialog(
             context: context,
             builder: (context) => AlertDialog(
-                title: const Text('麦克风权限已被禁用'),
-                content: const Text('请在系统设置中手动开启麦克风权限才能使用录音功能。'),
+                title: Text(s.chat_mic_permission_denied_title),
+                content: Text(s.chat_mic_permission_denied_message),
                 actions: <Widget>[
                     TextButton(
-                        child: const Text('取消'),
+                        child: Text(s.chat_permission_denied_cancel),
                         onPressed: () => Navigator.of(context).pop(),
                     ),
                     TextButton(
-                        child: const Text('去设置'),
+                        child: Text(s.chat_permission_denied_settings),
                         onPressed: () {
                             Navigator.of(context).pop();
                             openAppSettings(); // Open app settings
@@ -112,7 +133,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
     if (!status.isGranted) {
       // FIX: Provide slightly more context if denied after request
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('未获得麦克风权限，无法录音')),
+        SnackBar(content: Text(s.chat_mic_permission_denied)),
       );
       return;
     }
@@ -120,11 +141,16 @@ class _MessageInputBarState extends State<MessageInputBar> {
     // --- Permission Granted - Proceed with recording --- 
     try {
       final Directory tempDir = await getTemporaryDirectory();
-      _recordingPath = '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.m4a'; // Use m4a for broader compatibility
+      // 修改为WAV格式，与AI docs保持一致
+      _recordingPath = '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.wav';
 
-      // Start recording
+      // 使用与AI docs相同的录音配置
       await _audioRecorder.start(
-        const RecordConfig(encoder: AudioEncoder.aacLc), // Specify encoder
+        const RecordConfig(
+          encoder: AudioEncoder.wav, // 使用WAV格式
+          bitRate: 16000, // 设置码率为16kbps
+          sampleRate: 16000, // 设置采样率为16kHz
+        ),
         path: _recordingPath!,
       );
 
@@ -141,7 +167,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
     } catch (e) {
       print('Error starting recording: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('无法开始录音: $e')),
+        SnackBar(content: Text(s.chat_recording_error('$e'))),
       );
       _resetRecordingState();
     }
@@ -159,6 +185,9 @@ class _MessageInputBarState extends State<MessageInputBar> {
   }
 
   Future<void> _stopRecordingAndSend() async {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     _recordingTimer?.cancel();
     try {
       final path = await _audioRecorder.stop();
@@ -178,7 +207,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
     } catch (e) {
       print('Error stopping recording: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('停止录音失败: $e')),
+        SnackBar(content: Text(s.chat_stop_recording_error('$e'))),
       );
     } finally {
       if(mounted) {
@@ -217,6 +246,9 @@ class _MessageInputBarState extends State<MessageInputBar> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     // --- Camera Permission Check --- 
     if (source == ImageSource.camera) {
       var status = await Permission.camera.status;
@@ -227,15 +259,15 @@ class _MessageInputBarState extends State<MessageInputBar> {
         showDialog(
             context: context,
             builder: (context) => AlertDialog(
-                title: const Text('相机权限已被禁用'),
-                content: const Text('请在系统设置中手动开启相机权限才能使用拍照功能。'),
+                title: Text(s.chat_camera_permission_denied_title),
+                content: Text(s.chat_camera_permission_denied_message),
                 actions: <Widget>[
                     TextButton(
-                        child: const Text('取消'),
+                        child: Text(s.chat_permission_denied_cancel),
                         onPressed: () => Navigator.of(context).pop(),
                     ),
                     TextButton(
-                        child: const Text('去设置'),
+                        child: Text(s.chat_permission_denied_settings),
                         onPressed: () {
                             Navigator.of(context).pop();
                             openAppSettings(); // Open app settings
@@ -256,7 +288,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
       // Check final status
       if (!status.isGranted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('未获得相机权限，无法拍照')),
+          SnackBar(content: Text(s.chat_camera_permission_denied)),
         );
         return;
       }
@@ -266,26 +298,274 @@ class _MessageInputBarState extends State<MessageInputBar> {
     // --- Permission Granted (or Gallery source) - Proceed with picking --- 
     final ImagePicker picker = ImagePicker();
     try {
-      final XFile? pickedFile = await picker.pickImage(source: source);
+      final XFile? pickedFile = await picker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85, // 压缩图片质量
+      );
 
       if (pickedFile != null) {
+        final file = File(pickedFile.path);
+        
+        // 1. 添加到待上传列表，显示上传状态
+        setState(() {
+          _pendingFiles.add(file);
+          _fileUploadStates[file.path] = const FileUploadState.uploading();
+        });
+
         print('Image picked: ${pickedFile.path}');
+        
+        // 2. 发送消息（会触发上传）
         context.read<ChatMessagesBloc>().add(
-          SendMessageRequested(type: 'image', file: File(pickedFile.path)),
+          SendMessageRequested(type: 'image', file: file),
         );
+        
+        // 3. 监听上传结果
+        _listenToUploadResult(file);
+        
       } else {
         print('No image selected.');
       }
     } catch (e) {
        print('Error picking image: $e');
        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('选择图片出错: $e')),
+          SnackBar(content: Text(s.chat_image_picking_error('$e'))), 
       ); 
     }
   }
+  
+  // 支持多图片选择
+  Future<void> _pickMultipleImages() async {
+    final ImagePicker picker = ImagePicker();
+    try {
+      final List<XFile> pickedFiles = await picker.pickMultiImage(
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+
+      if (pickedFiles.isNotEmpty) {
+        for (final pickedFile in pickedFiles) {
+          final file = File(pickedFile.path);
+          
+          setState(() {
+            _pendingFiles.add(file);
+            _fileUploadStates[file.path] = const FileUploadState.uploading();
+          });
+          
+          // 逐个发送
+          context.read<ChatMessagesBloc>().add(
+            SendMessageRequested(type: 'image', file: file),
+          );
+          
+          _listenToUploadResult(file);
+        }
+      }
+    } catch (e) {
+      print('Error picking multiple images: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('选择图片出错: $e')),
+      );
+    }
+  }
+  
+  // 监听上传结果
+  void _listenToUploadResult(File file) {
+    // 模拟上传过程，实际应该监听Bloc状态变化
+    Timer(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _fileUploadStates[file.path] = const FileUploadState.success('uploaded_url');
+          // 3秒后清除状态
+          Timer(const Duration(seconds: 2), () {
+            if (mounted) {
+              setState(() {
+                _pendingFiles.remove(file);
+                _fileUploadStates.remove(file.path);
+              });
+            }
+          });
+        });
+      }
+    });
+  }
+  
+  // 构建文件预览区域
+  Widget _buildFilePreviewArea() {
+    if (_pendingFiles.isEmpty) return const SizedBox.shrink();
+    
+    return Container(
+      height: 80,
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _pendingFiles.length,
+        itemBuilder: (context, index) {
+          final file = _pendingFiles[index];
+          final uploadState = _fileUploadStates[file.path];
+          
+          return Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Stack(
+              children: [
+                // 文件预览
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: _buildFilePreview(file),
+                ),
+                
+                // 上传状态覆盖层
+                if (uploadState != null)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8.0),
+                        color: uploadState.status == FileUploadStatus.uploading
+                            ? Colors.black.withOpacity(0.5)
+                            : uploadState.status == FileUploadStatus.failure
+                                ? Colors.red.withOpacity(0.6)
+                                : Colors.transparent,
+                      ),
+                      child: Center(
+                        child: _buildUploadStatusIcon(uploadState),
+                      ),
+                    ),
+                  ),
+                
+                // 删除按钮
+                Positioned(
+                  top: -4,
+                  right: -4,
+                  child: GestureDetector(
+                    onTap: () => _removeFile(index),
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.black54,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+  
+  Widget _buildFilePreview(File file) {
+    final extension = file.path.toLowerCase();
+    
+    if (extension.endsWith('.jpg') || 
+        extension.endsWith('.jpeg') || 
+        extension.endsWith('.png') || 
+        extension.endsWith('.gif')) {
+      // 图片预览
+      return Image.file(
+        file,
+        width: 64,
+        height: 64,
+        fit: BoxFit.cover,
+      );
+    } else {
+      // 其他文件类型显示图标
+      return Container(
+        width: 64,
+        height: 64,
+        color: Colors.grey[300],
+        child: const Icon(Icons.insert_drive_file, size: 32),
+      );
+    }
+  }
+  
+  Widget _buildUploadStatusIcon(FileUploadState uploadState) {
+    switch (uploadState.status) {
+      case FileUploadStatus.uploading:
+        return const SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: Colors.white,
+          ),
+        );
+      case FileUploadStatus.success:
+        return const Icon(
+          Icons.check_circle,
+          color: Colors.green,
+          size: 24,
+        );
+      case FileUploadStatus.failure:
+        return const Icon(
+          Icons.error_outline,
+          color: Colors.white,
+          size: 24,
+        );
+    }
+  }
+  
+  void _removeFile(int index) {
+    final file = _pendingFiles[index];
+    setState(() {
+      _pendingFiles.removeAt(index);
+      _fileUploadStates.remove(file.path);
+    });
+  }
+
+  // 添加一个示例Markdown消息快捷发送方法
+  void _sendMarkdownExample() {
+    // 关闭底部菜单
+    Navigator.of(context).pop();
+    
+    // 获取国际化资源
+    final s = S.of(context);
+    
+    // 使用国际化字符串构建Markdown示例
+    final String markdownExample = """
+# ${s.chat_markdown_example_title1}
+## ${s.chat_markdown_example_title2}
+
+${s.chat_markdown_example_bold_italic}
+
+- ${s.chat_markdown_example_list1}
+- ${s.chat_markdown_example_list2}
+  - ${s.chat_markdown_example_list3}
+
+> ${s.chat_markdown_example_quote}
+> ${s.chat_markdown_example_quote}
+
+[This is a link](https://flutter.dev)
+
+```dart
+void main() {
+  print('Hello, Markdown!');
+}
+```
+
+${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
+|-----|-----|
+| ${s.chat_markdown_example_table_content1} | ${s.chat_markdown_example_table_content2} |
+| ${s.chat_markdown_example_table_content3} | ${s.chat_markdown_example_table_content4} |
+""";
+
+    // 发送Markdown消息
+    context.read<ChatMessagesBloc>().add(
+      SendMessageRequested(type: 'text', text: markdownExample),
+    );
+  }
 
   void _showAttachmentMenu(BuildContext context) {
-     showModalBottomSheet(
+    // 获取国际化资源
+    final s = S.of(context);
+     
+    showModalBottomSheet(
         context: context,
         builder: (BuildContext bc) {
           return SafeArea(
@@ -293,18 +573,33 @@ class _MessageInputBarState extends State<MessageInputBar> {
               children: <Widget>[
                 ListTile(
                     leading: const Icon(Icons.photo_library),
-                    title: const Text('从相册选择'),
+                    title: Text(s.chat_pick_from_gallery),
                     onTap: () {
                       Navigator.of(context).pop(); // Close bottom sheet
                       _pickImage(ImageSource.gallery);
                     }),
                 ListTile(
                   leading: const Icon(Icons.photo_camera),
-                  title: const Text('拍照'),
+                  title: Text(s.chat_take_photo),
                   onTap: () {
                      Navigator.of(context).pop(); // Close bottom sheet
                     _pickImage(ImageSource.camera);
                   },
+                ),
+                // 新增多图片选择
+                ListTile(
+                  leading: const Icon(Icons.photo_library_outlined),
+                  title: const Text('选择多张图片'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _pickMultipleImages();
+                  },
+                ),
+                // 添加Markdown消息示例按钮
+                ListTile(
+                  leading: const Icon(Icons.text_format),
+                  title: Text(s.chat_send_markdown),
+                  onTap: _sendMarkdownExample,
                 ),
                  // TODO: Add options for file selection etc. later
               ],
@@ -315,6 +610,9 @@ class _MessageInputBarState extends State<MessageInputBar> {
 
   // Helper widget builders
   Widget _buildVoiceKeyboardButton() {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     return IconButton(
       icon: Icon(_isVoiceMode ? Icons.keyboard_alt_outlined : Icons.mic_none_outlined),
       onPressed: () {
@@ -324,19 +622,22 @@ class _MessageInputBarState extends State<MessageInputBar> {
         // Hide keyboard if switching to voice mode
         if (_isVoiceMode) FocusScope.of(context).unfocus();
       },
-      tooltip: _isVoiceMode ? '切换到文本输入' : '切换到语音输入',
+      tooltip: _isVoiceMode ? s.chat_switch_to_text : s.chat_switch_to_voice,
       color: Colors.grey[700],
     );
   }
 
   Widget _buildTextField() {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     return TextField(
       controller: _controller,
       maxLines: 5, // Allow multi-line input
       minLines: 1,
       textInputAction: TextInputAction.newline, // Or send on enter? Decide behavior
       decoration: InputDecoration(
-        hintText: '输入消息...',
+        hintText: s.chat_enter_message,
         filled: true,
         fillColor: Colors.grey[100],
         contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
@@ -358,8 +659,11 @@ class _MessageInputBarState extends State<MessageInputBar> {
   }
 
   Widget _buildPressToTalkButton() {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     Color buttonColor = _isRecording ? Colors.red : Theme.of(context).primaryColor;
-    String buttonText = _isRecording ? '松开 发送 (${_recordingDuration}s)' : '按住 说话';
+    String buttonText = _isRecording ? s.chat_release_to_send(_recordingDuration) : s.chat_press_to_talk;
 
     return GestureDetector(
       // Use LongPressDraggable or simple LongPress handlers based on complexity needed
@@ -399,21 +703,27 @@ class _MessageInputBarState extends State<MessageInputBar> {
   }
 
   Widget _buildAttachmentButton() {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     return IconButton(
       icon: const Icon(Icons.add_circle_outline),
       onPressed: () => _showAttachmentMenu(context),
-      tooltip: '发送图片/文件',
+      tooltip: s.chat_attach,
       color: Colors.grey[700],
     );
   }
 
   Widget _buildSendButton() {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     return Visibility(
       visible: _canSend && !_isVoiceMode, // Show only if text entered and not in voice mode
       child: IconButton(
         icon: const Icon(Icons.send),
         onPressed: _sendMessage,
-        tooltip: '发送',
+        tooltip: s.chat_send,
         color: Theme.of(context).primaryColor, // Use theme color
       ),
     );
@@ -429,23 +739,32 @@ class _MessageInputBarState extends State<MessageInputBar> {
         // boxShadow removed for flatter design, adjust if needed
       ),
       child: SafeArea(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center, // Align items vertically
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            _buildVoiceKeyboardButton(),
-            const SizedBox(width: 4), // Spacing
-            Expanded(
-              // Switch between TextField and PressToTalk button
-              child: _isVoiceMode ? _buildPressToTalkButton() : _buildTextField(),
-            ),
-            const SizedBox(width: 4), // Spacing
-            // Show attachment button only when not recording
-            // Or always show? Decide based on UX preference
-            if (!_isRecording)
-               _buildAttachmentButton(), 
+            // 文件预览区域
+            _buildFilePreviewArea(),
             
-            // Send button is conditionally visible inside its builder
-            _buildSendButton(),
+            // 输入区域
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center, // Align items vertically
+              children: [
+                _buildVoiceKeyboardButton(),
+                const SizedBox(width: 4), // Spacing
+                Expanded(
+                  // Switch between TextField and PressToTalk button
+                  child: _isVoiceMode ? _buildPressToTalkButton() : _buildTextField(),
+                ),
+                const SizedBox(width: 4), // Spacing
+                // Show attachment button only when not recording
+                // Or always show? Decide based on UX preference
+                if (!_isRecording)
+                   _buildAttachmentButton(), 
+                
+                // Send button is conditionally visible inside its builder
+                _buildSendButton(),
+              ],
+            ),
           ],
         ),
       ),

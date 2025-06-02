@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 // Import necessary Bloc (which exports State, Event, and Entities it imports)
 import '../bloc/ai_chat/ai_chat_bloc.dart';
@@ -8,11 +9,51 @@ import '../bloc/ai_chat/ai_chat_bloc.dart';
 // import '../bloc/ai_chat/ai_chat_event.dart';
 // import '../../../domain/entities/ai_conversation_entity.dart'; // No longer needed here
 
-class ConversationSidebar extends StatelessWidget {
+class ConversationSidebar extends StatefulWidget {
   const ConversationSidebar({super.key});
 
   @override
+  State<ConversationSidebar> createState() => _ConversationSidebarState();
+}
+
+class _ConversationSidebarState extends State<ConversationSidebar> {
+  late ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+    final threshold = 200.0; // 距离底部200像素时触发加载更多
+
+    // 检查是否滚动到底部，触发加载更多对话
+    if (maxScroll - currentScroll <= threshold && !_scrollController.position.outOfRange) {
+      final state = context.read<AiChatBloc>().state;
+      if (state.conversationsHasMore && 
+          !state.isLoadingMoreConversations && 
+          state.conversations.isNotEmpty) {
+        print("[ConversationSidebar] Triggering LoadMoreConversations");
+        context.read<AiChatBloc>().add(const LoadMoreConversations());
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final s = S.of(context); // 获取国际化资源
+    
     // Wrap the content in SafeArea to avoid status bar overlap
     return SafeArea(
       child: Container(
@@ -29,7 +70,8 @@ class ConversationSidebar extends StatelessWidget {
           buildWhen: (previous, current) => 
                previous.conversationsStatus != current.conversationsStatus ||
                previous.conversations != current.conversations ||
-               previous.selectedConversationId != current.selectedConversationId,
+               previous.selectedConversationId != current.selectedConversationId ||
+               previous.isLoadingMoreConversations != current.isLoadingMoreConversations,
           builder: (context, state) {
             return Column(
               children: [
@@ -38,7 +80,7 @@ class ConversationSidebar extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.add_circle_outline),
-                    label: const Text('新建聊天'),
+                    label: Text(s.ai_docs_new_chat), // 使用国际化文本
                     style: ElevatedButton.styleFrom(
                        minimumSize: const Size(double.infinity, 40), 
                     ),
@@ -52,9 +94,16 @@ class ConversationSidebar extends StatelessWidget {
                   ),
                 ),
                 const Divider(height: 1),
-                // --- Conversation List Area ---
+                // --- Conversation List Area with Pull to Refresh ---
                 Expanded(
-                  child: _buildConversationList(context, state),
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      context.read<AiChatBloc>().add(const RefreshConversations());
+                      // 等待刷新完成
+                      await Future.delayed(const Duration(milliseconds: 500));
+                    },
+                    child: _buildConversationList(context, state),
+                  ),
                 ),
               ],
             );
@@ -66,6 +115,8 @@ class ConversationSidebar extends StatelessWidget {
 
   // Helper method to build the list based on status
   Widget _buildConversationList(BuildContext context, AiChatState state) {
+     final s = S.of(context); // 获取国际化资源
+     
      switch (state.conversationsStatus) {
        case ConversationsStatus.loading:
        // Show loading indicator only if list is initially empty
@@ -74,7 +125,7 @@ class ConversationSidebar extends StatelessWidget {
          } 
          // Otherwise, show the list potentially with a subtle loading indicator on top?
          // For now, just show the list while loading updates.
-         return _buildList(context, state.conversations, state.selectedConversationId);
+         return _buildList(context, state.conversations, state.selectedConversationId, state);
        case ConversationsStatus.error:
          return Center(
            child: Padding(
@@ -85,15 +136,15 @@ class ConversationSidebar extends StatelessWidget {
                  const Icon(Icons.error_outline, color: Colors.red, size: 32),
                  const SizedBox(height: 8),
                  Text(
-                   state.conversationListErrorMessage ?? "加载会话失败", 
+                   state.conversationListErrorMessage ?? s.ai_docs_load_conversations_failed, // 使用国际化文本
                    textAlign: TextAlign.center,
                    style: const TextStyle(color: Colors.red)
                  ),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                      icon: const Icon(Icons.refresh), 
-                     label: const Text('重试'),
-                     onPressed: () => context.read<AiChatBloc>().add(LoadConversations()),
+                     label: Text(s.ai_docs_retry), // 使用国际化文本
+                     onPressed: () => context.read<AiChatBloc>().add(const LoadConversations()),
                   )
                ],
              ),
@@ -103,21 +154,46 @@ class ConversationSidebar extends StatelessWidget {
         case ConversationsStatus.initial: // Treat initial as loaded (or show loading initially)
         default:
           if (state.conversations.isEmpty) {
-             return const Center(child: Text("暂无会话"));
+             return Center(child: Text(s.ai_docs_no_conversations)); // 使用国际化文本
           }
-          return _buildList(context, state.conversations, state.selectedConversationId);
+          return _buildList(context, state.conversations, state.selectedConversationId, state);
      }
   }
 
-  // Helper method to build the actual ListView
-  Widget _buildList(BuildContext context, List<AiConversationEntity> conversations, int? selectedId) {
+  // Helper method to build the actual ListView with pagination support
+  Widget _buildList(BuildContext context, List<AiConversationEntity> conversations, int? selectedId, AiChatState state) {
+    final s = S.of(context); // 获取国际化资源
+    
     return ListView.builder(
-       itemCount: conversations.length,
+       controller: _scrollController,
+       physics: const AlwaysScrollableScrollPhysics(), // 确保可以下拉刷新
+       itemCount: conversations.length + (state.isLoadingMoreConversations ? 1 : 0),
        itemBuilder: (context, index) {
+         // 显示加载更多指示器
+         if (index == conversations.length && state.isLoadingMoreConversations) {
+           return Container(
+             padding: const EdgeInsets.all(16.0),
+             child: const Center(
+               child: Row(
+                 mainAxisSize: MainAxisSize.min,
+                 children: [
+                   SizedBox(
+                     width: 16,
+                     height: 16,
+                     child: CircularProgressIndicator(strokeWidth: 2),
+                   ),
+                   SizedBox(width: 8),
+                   Text('加载更多对话...', style: TextStyle(color: Colors.grey)),
+                 ],
+               ),
+             ),
+           );
+         }
+         
           final conv = conversations[index];
           return ListTile(
               title: Text(
-                  conv.title?.isNotEmpty ?? false ? conv.title! : '未命名会话', 
+                  conv.title?.isNotEmpty ?? false ? conv.title! : s.ai_docs_unnamed_conversation, // 使用国际化文本
                   overflow: TextOverflow.ellipsis,
               ),
               // 移除ID展示
@@ -136,7 +212,7 @@ class ConversationSidebar extends StatelessWidget {
               // Add delete button
                trailing: IconButton(
                  icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey), // Subtle color
-                 tooltip: '删除会话',
+                 tooltip: s.ai_docs_delete_conversation_tooltip, // 使用国际化文本
                  onPressed: () => _confirmDelete(context, conv.id), // Show confirmation
                ),
             );
@@ -146,20 +222,22 @@ class ConversationSidebar extends StatelessWidget {
 
   // Helper method to show delete confirmation dialog
   Future<void> _confirmDelete(BuildContext context, int conversationId) async {
+     final s = S.of(context); // 获取国际化资源
+     
      final bool? confirm = await showDialog<bool>(
         context: context,
         builder: (BuildContext dialogContext) {
           return AlertDialog(
-            title: const Text('删除会话？'),
-            content: const Text('确定要永久删除此会话吗？'),
+            title: Text(s.ai_docs_delete_conversation_title), // 使用国际化文本
+            content: Text(s.ai_docs_delete_conversation_content), // 使用国际化文本
             actions: <Widget>[
               TextButton(
-                child: const Text('取消'),
+                child: Text(s.ai_docs_cancel), // 使用国际化文本
                 onPressed: () => Navigator.of(dialogContext).pop(false), // Return false
               ),
               TextButton(
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('删除'),
+                child: Text(s.ai_docs_delete), // 使用国际化文本
                 onPressed: () => Navigator.of(dialogContext).pop(true), // Return true
               ),
             ],
@@ -167,23 +245,10 @@ class ConversationSidebar extends StatelessWidget {
         },
       );
 
-      // If user confirmed, dispatch the delete event
-      // Note: This deletes the currently selected conversation in the Bloc,
-      // which might not be the one the user clicked delete on if selection changed fast.
-      // A safer approach might be to pass the ID to the delete event.
+      // If user confirmed, dispatch the delete event with the specific conversationId
       if (confirm == true) {
-        // Check if the one to be deleted is currently selected before dispatching
-        final currentState = context.read<AiChatBloc>().state;
-        if (currentState.selectedConversationId == conversationId) {
-           context.read<AiChatBloc>().add(DeleteSelectedConversation());
-        } else {
-           // TODO: Implement deleting a non-selected conversation?
-           // Maybe add DeleteConversationById(id) event?
-           print("Deletion requested for non-selected conversation ID: $conversationId. Ignoring for now.");
-           ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('请先选择要删除的会话')),
-           );
-        }
+        // 直接传递conversationId，不再需要检查是否选中
+        context.read<AiChatBloc>().add(DeleteSelectedConversation(conversationId: conversationId));
       }
   }
 } 

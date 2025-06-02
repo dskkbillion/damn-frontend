@@ -16,6 +16,7 @@ import 'package:get_it/get_it.dart'; // 引入GetIt
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 引入安全存储
 import '../../../../core/network/network_info.dart'; // 引入网络信息服务
 import '../../../../core/network/mock_network_info.dart' as mock_network; // 引入模拟网络信息服务并添加前缀
+import '../pages/language_settings_page.dart'; // 引入语言设置页面
 // import '../pages/simple_profile_page.dart'; // 不再需要 SimpleProfilePage
 // import '../pages/edit_profile_page.dart'; // 如果有其他页面
 
@@ -27,8 +28,9 @@ class ProfileRoutes {
 
   // 定义常量路径，方便复用和引用
   static const String profilePath = '/profile';
-  static const String accountSecurityPath = '/profile/account_security';
+  static const String accountSecurityPath = '/profile/account-security';
   static const String walletPath = '/profile/wallet';
+  static const String languageSettingsPath = '/profile/language-settings';
 
   // 模块内部路由定义
   static final List<RouteBase> _routes = [
@@ -119,6 +121,12 @@ class ProfileRoutes {
               );
             }
           },
+        ),
+        // 添加语言设置页面路由
+        GoRoute(
+          path: 'language-settings',
+          name: 'languageSettings',
+          builder: (context, state) => const LanguageSettingsPage(),
         ),
       ],
     ),

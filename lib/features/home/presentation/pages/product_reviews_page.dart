@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+// 导入国际化
+import '../../../../generated/l10n.dart';
+
 import '../../domain/entities/product_review.dart';
 import '../cubit/product_reviews_cubit.dart';
 import '../cubit/product_reviews_state.dart';
@@ -22,7 +25,7 @@ class ProductReviewsPage extends StatelessWidget {
       create: (_) => GetIt.I<ProductReviewsCubit>()..getProductReviews(productId),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('评论'),
+          title: Text(S.of(context).product_reviews_title),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
             onPressed: () => Navigator.of(context).pop(),
@@ -37,13 +40,13 @@ class ProductReviewsPage extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('加载失败: ${state.message}'),
+                    Text(S.of(context).product_reviews_loading_failed(state.message)),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
                         context.read<ProductReviewsCubit>().getProductReviews(productId);
                       },
-                      child: const Text('重试'),
+                      child: Text(S.of(context).product_reviews_retry),
                     ),
                   ],
                 ),
@@ -51,7 +54,7 @@ class ProductReviewsPage extends StatelessWidget {
             } else if (state is ProductReviewsLoaded) {
               return _buildReviewsList(context, state);
             }
-            return const Center(child: Text('暂无评论'));
+            return Center(child: Text(S.of(context).product_reviews_no_reviews));
           },
         ),
       ),
@@ -60,7 +63,7 @@ class ProductReviewsPage extends StatelessWidget {
 
   Widget _buildReviewsList(BuildContext context, ProductReviewsLoaded state) {
     if (state.reviews.isEmpty) {
-      return const Center(child: Text('暂无评论'));
+      return Center(child: Text(S.of(context).product_reviews_no_reviews));
     }
     
     return ListView.separated(
@@ -125,7 +128,7 @@ class ProductReviewsPage extends StatelessWidget {
             ),
             // 评论时间
             Text(
-              _formatDateTime(review.createTime),
+              _formatDateTime(context, review.createTime),
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey[600],
@@ -137,9 +140,9 @@ class ProductReviewsPage extends StatelessWidget {
         // 这里根据实际API返回数据提供评论内容
         // 通常评论会有一个content字段，但API示例中没有
         // 假设有个默认值
-        const Text(
-          "不错，很有耐心",
-          style: TextStyle(
+        Text(
+          S.of(context).product_reviews_sample_content,
+          style: const TextStyle(
             fontSize: 14,
           ),
         ),
@@ -210,24 +213,24 @@ class ProductReviewsPage extends StatelessWidget {
     );
   }
 
-  String _formatDateTime(String dateTimeStr) {
+  String _formatDateTime(BuildContext context, String dateTimeStr) {
     try {
       final dateTime = DateTime.parse(dateTimeStr);
       final now = DateTime.now();
       final difference = now.difference(dateTime);
       
       if (difference.inDays > 365) {
-        return '${(difference.inDays / 365).floor()}年前';
+        return S.of(context).product_reviews_years_ago((difference.inDays / 365).floor());
       } else if (difference.inDays > 30) {
-        return '${(difference.inDays / 30).floor()}月前';
+        return S.of(context).product_reviews_months_ago((difference.inDays / 30).floor());
       } else if (difference.inDays > 0) {
-        return '${difference.inDays}天前';
+        return S.of(context).product_reviews_days_ago(difference.inDays);
       } else if (difference.inHours > 0) {
-        return '${difference.inHours}小时前';
+        return S.of(context).product_reviews_hours_ago(difference.inHours);
       } else if (difference.inMinutes > 0) {
-        return '${difference.inMinutes}分钟前';
+        return S.of(context).product_reviews_minutes_ago(difference.inMinutes);
       } else {
-        return '刚刚';
+        return S.of(context).product_reviews_just_now;
       }
     } catch (e) {
       return dateTimeStr;

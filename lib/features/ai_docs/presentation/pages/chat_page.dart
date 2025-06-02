@@ -7,10 +7,13 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:get_it/get_it.dart'; // Import GetIt
 import 'package:collection/collection.dart'; // Import collection package
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 添加FlutterSecureStorage导入
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 // Import Bloc and State/Event files
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/bloc/ai_chat/ai_chat_bloc.dart'; // Use package import
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat_message_widget.dart'; // Use package import
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/animated_allocation_button.dart'; // 导入动画按钮组件
 
 // Import domain interfaces and usecases (Use package imports)
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/repositories/i_ai_chat_repository.dart';
@@ -25,15 +28,19 @@ import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/allocate_
 // Import data layer implementations (Use package imports)
 import 'package:dskk_flutter_refactor/features/ai_docs/data/repositories/ai_chat_repository_impl.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/data/repositories/file_upload_repository_impl.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/data/datasources/mocks/mock_ai_chat_remote_data_source.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/data/datasources/mocks/mock_file_upload_data_source.dart';
-// TODO: Import actual datasources and HTTP client when moving away from mocks
 
 // Import Custom Widgets (Use package imports)
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat_input_field.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat_message_list.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/conversation_sidebar.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/service_card.dart'; 
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/service_card.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat_page_title.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/rate_limit_indicator.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/rate_limit_warning.dart';
+
+// Import chat module components for navigation
+import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_messages/chat_messages_bloc.dart';
+import 'package:dskk_flutter_refactor/features/chat/presentation/pages/chat_room_page.dart';
 
 // Get the GetIt instance
 final getIt = GetIt.instance; 
@@ -53,9 +60,28 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     // Dispatch the event to load conversations when the page initializes
     // Ensure BlocProvider is available above this widget in the tree
-    WidgetsBinding.instance.addPostFrameCallback((_) { 
+    WidgetsBinding.instance.addPostFrameCallback((_) async { 
       if (mounted) { // Check if the state is still mounted
-        context.read<AiChatBloc>().add(LoadConversations());
+        final bloc = context.read<AiChatBloc>();
+        bloc.add(LoadConversations());
+        
+        // 获取真实用户ID并加载频率限制状态
+        try {
+          // 从存储中获取用户ID
+          final storage = const FlutterSecureStorage();
+          final commonUserIdString = await storage.read(key: 'common_user_id');
+          final userId = int.tryParse(commonUserIdString ?? '');
+          
+          if (userId != null) {
+            bloc.add(FetchRateLimitStatus(userId: userId));
+            print("[ChatPage] Dispatched FetchRateLimitStatus with userId: $userId");
+          } else {
+            print("[ChatPage] Warning: Could not get valid user ID for rate limit status");
+          }
+        } catch (e) {
+          print("[ChatPage] Error getting user ID: $e");
+        }
+        
         print("[ChatPage] Dispatched LoadConversations event.");
       }
     });
@@ -69,6 +95,9 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     return Scaffold(
       // Add a drawer for the conversation sidebar
       drawer: const Drawer(
@@ -81,36 +110,15 @@ class _ChatPageState extends State<ChatPage> {
          leading: Builder(
            builder: (context) => IconButton(
              icon: const Icon(Icons.menu),
-             tooltip: '会话列表',
+             tooltip: s.ai_docs_conversation_list, // 使用国际化文本
              onPressed: () => Scaffold.of(context).openDrawer(),
            ),
          ),
-        title: BlocBuilder<AiChatBloc, AiChatState>(
-           // Rebuild title when selected ID or conversations list changes
-           buildWhen: (previous, current) => 
-                previous.selectedConversationId != current.selectedConversationId ||
-                previous.conversations != current.conversations,
-           builder: (context, state) {
-              final selectedId = state.selectedConversationId;
-              String title = 'AI 助手'; // Default title
-              if (selectedId != null) {
-                // Use firstWhereOrNull from collection package
-                final selectedConversation = state.conversations.firstWhereOrNull(
-                  (conv) => conv.id == selectedId,
-                );
-                if (selectedConversation != null) {
-                   // Use ?? to provide default if title is null
-                  title = selectedConversation.title ?? '未命名会话';
-                } else {
-                  // Conversation ID exists but object not found yet (list updating?)
-                  title = '加载中...'; // Or keep 'Conversation $selectedId'
-                }
-              }
-              return Text(title);
-           },
-        ),
+        title: const ChatPageTitle(),
          // Add the dispatch/recommendation button to actions
          actions: [
+           // 频率限制指示器
+           const RateLimitIndicator(),
            // Replace IconButton with a TextButton
            Padding(
              // Add some padding to align with other AppBar elements
@@ -131,34 +139,44 @@ class _ChatPageState extends State<ChatPage> {
                   } else {
                      // Optionally show a message if no conversation is selected
                      ScaffoldMessenger.of(context).showSnackBar(
-                       const SnackBar(content: Text('请先选择一个会话')),
+                       SnackBar(content: Text(s.ai_docs_select_conversation_first)), // 使用国际化文本
                      );
                      return; // Don't show bottom sheet if no conversation
                   }
                   // Then show the bottom sheet (it will initially show loading)
                   _showRecommendationsBottomSheet(context);
                },
-               child: const Text(
-                  '匹配', // Set the text to "匹配"
-                  style: TextStyle(
+               child: Text(
+                  s.ai_docs_match_button, // 使用国际化文本
+                  style: const TextStyle(
                      fontWeight: FontWeight.bold, // Make text bold
                      fontSize: 16, // Adjust font size if needed
                   ),
                ),
              ),
            ),
-            // IconButton(
-            //    icon: const Icon(Icons.recommend_outlined), 
-            //    tooltip: 'Recommend/Dispatch', 
-            //    onPressed: () {
-            //       _showRecommendationsBottomSheet(context);
-            //    },
-            // ),
          ],
       ),
       // The body is now just the chat area (Column)
       body: Column(
          children: [
+           // 频率限制警告横幅
+           BlocBuilder<AiChatBloc, AiChatState>(
+             buildWhen: (previous, current) =>
+                 previous.conversationRateLimit != current.conversationRateLimit,
+             builder: (context, state) {
+               final rateLimit = state.conversationRateLimit;
+               if (rateLimit == null) return const SizedBox.shrink();
+               
+               return RateLimitWarningBanner(
+                 remaining: rateLimit.remaining,
+                 resetInSeconds: rateLimit.resetInSeconds,
+                 onDismiss: () {
+                   // 可以添加隐藏逻辑，这里暂时不实现
+                 },
+               );
+             },
+           ),
            // Message List Area
            const Expanded(
              child: ChatMessageList(),
@@ -174,22 +192,34 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _sendMessage(String message) {
-    // Check if there's text OR pending images in the Bloc state
-    // final hasPendingImages = context.read<AiChatBloc>().state.pendingImageFiles?.isNotEmpty ?? false;
-
-    // --- Updated Logic: Require text to send --- 
+    // 获取国际化资源
+    final s = S.of(context);
+    
+    // 检查消息是否为空
     if (message.trim().isNotEmpty) {
-       // Dispatch SendMessage event with ONLY the message text
-       // The Bloc will handle merging with any uploadedImageUrls from the state.
-       context.read<AiChatBloc>().add(SendMessage(message: message.trim()));
-      _textController.clear(); 
+      // 获取当前AI聊天Bloc状态
+      final aiChatBloc = context.read<AiChatBloc>();
+      final currentState = aiChatBloc.state;
+      
+      // 检查是否已选择对话，如果没有选择，先创建新对话
+      if (currentState.selectedConversationId == null) {
+        // 先创建新对话，再发送消息
+        print("[ChatPage] ${s.ai_docs_auto_create_text}");
+        aiChatBloc.add(CreateNewConversationAndSendMessage(message: message.trim()));
+      } else {
+        // 已有对话，直接发送消息
+        aiChatBloc.add(SendMessage(message: message.trim()));
+      }
+      
+      // 发送消息后触发滚动到底部
+      aiChatBloc.add(const ScrollToBottom());
+      _textController.clear();
     } else {
-       // If message is empty, do not send, even if there are pending images.
-       // Optionally provide feedback to the user.
-       print("Send button pressed, but message text is empty. Not sending.");
-       ScaffoldMessenger.of(context).showSnackBar(
-         const SnackBar(content: Text('请输入消息内容')),
-       );
+      // 消息为空，显示提示
+      print("Send button pressed, but message text is empty. Not sending.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.ai_docs_please_enter_message)), // 使用国际化文本
+      );
     }
   }
 
@@ -229,29 +259,15 @@ class RecommendationBottomSheetContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 添加状态监听，显示分配成功提示
-    return BlocListener<AiChatBloc, AiChatState>(
-      listenWhen: (previous, current) => 
-          previous.status != current.status && 
-          current.status == AiChatStatus.allocationSuccess,
-      listener: (context, state) {
-        // 显示分配成功提示
-        if (state.errorMessage != null && state.errorMessage!.isNotEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage!),
-              backgroundColor: 
-                state.errorMessage!.contains('失败') ? Colors.red : Colors.green,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
-      },
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFFFFF8F0), // 米黄色底色
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
+    // 获取国际化资源
+    final s = S.of(context);
+    
+    // 移除不需要的BlocListener，不显示SnackBar提示
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFFFFF8F0), // 米黄色底色
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -263,7 +279,7 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-             '推荐服务', 
+                    s.ai_docs_recommended_services, // 使用国际化文本
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -301,7 +317,7 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                           const Icon(Icons.error_outline, color: Colors.red, size: 48),
                           const SizedBox(height: 16),
                           Text(
-                            "加载推荐服务失败: ${state.recommendationsErrorMessage ?? '未知错误'}",
+                            s.ai_docs_recommendations_error(state.recommendationsErrorMessage ?? ''), // 使用国际化文本
                             style: const TextStyle(color: Colors.red),
                             textAlign: TextAlign.center,
                           ),
@@ -312,19 +328,19 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                   
                   // 空状态
                  if (state.recommendations.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.inbox, color: Colors.grey, size: 48),
-                          SizedBox(height: 16),
-                          Text('暂无推荐服务', style: TextStyle(color: Colors.grey)),
+                          const Icon(Icons.inbox, color: Colors.grey, size: 48),
+                          const SizedBox(height: 16),
+                          Text(s.ai_docs_no_recommendations, style: const TextStyle(color: Colors.grey)), // 使用国际化文本
                         ],
                       ),
                     );
                    }
 
-                  // 服务列表 - 改为两列网格布局
+                  // 服务列表 - 保持不变
                   return GridView.builder(
                     padding: const EdgeInsets.all(16),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -342,16 +358,67 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                        onTap: () {
                           print('服务点击: ${service.title}');
                           final itemData = {
+                            'id': service.id.toString(), // 转换为字符串类型
                             'name': service.title,
                             'description': '推荐服务: ${service.title}，价格: ￥${service.price}',
                           };
-                          context.read<AiChatBloc>().add(TriggerAllocationAction(
+                          context.read<AiChatBloc>().add(TriggerOptimizedAllocation(
                              item: itemData,
                                merchantId: 1, // 固定商家ID
                                serviceId: service.id, // 添加服务ID用于状态追踪
                           ));
                             // 移除Navigator.pop，让底部弹窗保持打开状态，用户可以看到按钮状态变化
                             // Navigator.pop(context); 
+                       },
+                       onEnterChat: () {
+                         // 处理进入聊天的逻辑
+                         try {
+                           final bloc = context.read<AiChatBloc>();
+                           final chatRoomId = bloc.state.createdChatRoomId;
+                           print('尝试进入聊天室，chatRoomId: $chatRoomId');
+                           
+                           if (chatRoomId != null) {
+                             print('开始导航到聊天室: $chatRoomId');
+                             Navigator.pop(context); // 关闭底部弹窗
+                             
+                             // 尝试创建ChatMessagesBloc
+                             try {
+                               final chatMessagesBloc = getIt<ChatMessagesBloc>(param1: chatRoomId);
+                               print('成功创建ChatMessagesBloc: $chatMessagesBloc');
+                               
+                               // 导航到聊天室页面
+                               Navigator.push(
+                                 context,
+                                 MaterialPageRoute(
+                                   builder: (context) => BlocProvider.value(
+                                     value: chatMessagesBloc,
+                                     child: ChatRoomPage(chatId: chatRoomId),
+                                   ),
+                                 ),
+                               ).then((result) {
+                                 print('聊天室页面返回结果: $result');
+                               }).catchError((error) {
+                                 print('导航到聊天室页面时发生错误: $error');
+                               });
+                             } catch (e) {
+                               print('创建ChatMessagesBloc时发生错误: $e');
+                               // 显示错误提示
+                               ScaffoldMessenger.of(context).showSnackBar(
+                                 SnackBar(content: Text('无法创建聊天会话: $e')),
+                               );
+                             }
+                           } else {
+                             print('聊天室ID为空，无法进入聊天');
+                             ScaffoldMessenger.of(context).showSnackBar(
+                               const SnackBar(content: Text('聊天室ID为空，无法进入聊天')),
+                             );
+                           }
+                         } catch (e) {
+                           print('进入聊天时发生未知错误: $e');
+                           ScaffoldMessenger.of(context).showSnackBar(
+                             SnackBar(content: Text('进入聊天时发生错误: $e')),
+                           );
+                         }
                        },
                      );
                    },
@@ -360,7 +427,6 @@ class RecommendationBottomSheetContent extends StatelessWidget {
              ),
            ),
         ],
-        ),
       ),
     );
   }
@@ -370,24 +436,32 @@ class RecommendationBottomSheetContent extends StatelessWidget {
 class ServiceGridItem extends StatelessWidget {
   final RelatedServiceEntity service;
   final VoidCallback onTap;
+  final VoidCallback onEnterChat;
 
   const ServiceGridItem({
     Key? key,
     required this.service,
     required this.onTap,
+    required this.onEnterChat,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // 在独立Widget中使用context.select是安全的
-    final allocationStatus = context.select<AiChatBloc, AllocationStatus?>(
-      (bloc) => bloc.state.serviceAllocationStatus[service.id]
-    ) ?? AllocationStatus.initial;
+    // 获取国际化资源
+    final s = S.of(context);
     
-    // 根据分发状态决定按钮颜色
-    final buttonColor = allocationStatus == AllocationStatus.success
-        ? Colors.grey[400] // 已分发状态使用灰色
-        : const Color(0xFFA86400); // 默认棕色
+    // 使用BlocBuilder来监听状态变化，确保按钮状态能被正确更新
+    return BlocBuilder<AiChatBloc, AiChatState>(
+      buildWhen: (previous, current) =>
+        // 只有在服务分配状态变化或总体状态变化时才重建
+        previous.serviceAllocationStatus[service.id] != current.serviceAllocationStatus[service.id] ||
+        (previous.status != current.status && 
+         (current.status == AiChatStatus.allocatingResource || 
+          current.status == AiChatStatus.allocationSuccess || 
+          current.status == AiChatStatus.allocationFailure)),
+      builder: (context, state) {
+        // 获取当前服务的分配状态
+        final allocationStatus = state.serviceAllocationStatus[service.id] ?? AllocationStatus.initial;
 
     return Container(
       decoration: BoxDecoration(
@@ -458,54 +532,19 @@ class ServiceGridItem extends StatelessWidget {
                 
                 const SizedBox(height: 8),
                 
-                // 按钮独占一行 - 根据状态显示不同内容
-                Container(
-                  width: double.infinity, // 占满整行
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: buttonColor,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: allocationStatus == AllocationStatus.loading
-                      // 加载中状态显示进度指示器
-                      ? Center(
-                          child: SizedBox(
-                            width: 20, // 限制加载指示器大小
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2, // 细线的进度指示器
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          ),
-                        )
-                      // 其他状态显示文本按钮
-                      : TextButton(
-                          onPressed: allocationStatus == AllocationStatus.success 
-                              ? null // 已分发状态禁用按钮
-                              : onTap,
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            padding: EdgeInsets.zero,
-                          ),
-                          child: Text(
-                            allocationStatus == AllocationStatus.success 
-                                ? '已分发' // 成功状态显示"已分发"
-                                : '让ta看看',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
+                    // 使用新的动画按钮替换原有按钮
+                    AnimatedAllocationButton(
+                      status: allocationStatus,
+                      onTap: onTap,
+                      onEnterChat: onEnterChat,
                 ),
               ],
             ),
           ),
         ),
       ),
+        );
+      },
     );
   }
 }

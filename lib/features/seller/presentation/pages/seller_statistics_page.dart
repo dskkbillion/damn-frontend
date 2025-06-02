@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_statistics.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_statistics/seller_statistics_bloc.dart';
@@ -8,12 +9,15 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_s
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/empty_state.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/loading_state.dart';
 
+// 导入国际化
+import '../../../../generated/l10n.dart';
+
 /// 卖家数据统计页面
-class SellerStatisticsPage extends StatelessWidget {
+class SellerStatisticsPage extends ConsumerWidget {
   const SellerStatisticsPage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return BlocProvider(
       create: (context) => GetIt.I<SellerStatisticsBloc>()..add(const LoadSellerStatistics()),
       child: Scaffold(
@@ -34,9 +38,9 @@ class SellerStatisticsPage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            '卖家数据',
-                            style: TextStyle(
+                          Text(
+                            S.of(context).seller_statistics_title,
+                            style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                             ),
@@ -62,13 +66,13 @@ class SellerStatisticsPage extends StatelessWidget {
                   children: [
                     const Icon(Icons.error_outline, size: 48, color: Colors.red),
                     const SizedBox(height: 16),
-                    Text('加载失败: ${state.failure.message}'),
+                    Text(S.of(context).seller_statistics_loading_failed(state.failure.message)),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
                         context.read<SellerStatisticsBloc>().add(const LoadSellerStatistics());
                       },
-                      child: const Text('重试'),
+                      child: Text(S.of(context).seller_statistics_retry),
                     ),
                   ],
                 ),
@@ -86,9 +90,9 @@ class SellerStatisticsPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '卖家主页',
-          style: TextStyle(
+        Text(
+          S.of(context).seller_statistics_seller_homepage,
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
@@ -97,10 +101,10 @@ class SellerStatisticsPage extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildPercentCircle('热度值', stats.heatPercent, const Color(0xFFFFB74D)),
-            _buildPercentCircle('回复率', stats.recoverPercent, const Color(0xFFFFB74D)),
-            _buildPercentCircle('完成率', stats.completePercent, Colors.grey.shade500),
-            _buildPercentCircle('好评率', stats.goodPercent, Colors.grey.shade500),
+            _buildPercentCircle(S.of(context).seller_statistics_heat_value, stats.heatPercent, const Color(0xFFFFB74D)),
+            _buildPercentCircle(S.of(context).seller_statistics_reply_rate, stats.recoverPercent, const Color(0xFFFFB74D)),
+            _buildPercentCircle(S.of(context).seller_statistics_completion_rate, stats.completePercent, Colors.grey.shade500),
+            _buildPercentCircle(S.of(context).seller_statistics_positive_rate, stats.goodPercent, Colors.grey.shade500),
           ],
         ),
       ],
@@ -157,9 +161,9 @@ class SellerStatisticsPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '升到下一级',
-          style: TextStyle(
+        Text(
+          S.of(context).seller_statistics_upgrade_to_next_level,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -183,17 +187,17 @@ class SellerStatisticsPage extends StatelessWidget {
             child: Column(
               children: [
                 _buildUpgradeItem(
-                  '成为三级会员卖家${stats.days}天',
+                  S.of(context).seller_statistics_become_level3_seller(stats.days.toString()),
                   '${stats.totalDays}/${stats.days}',
                 ),
                 const Divider(height: 24, thickness: 0.5),
                 _buildUpgradeItem(
-                  '完成订单${stats.orderNum}笔',
+                  S.of(context).seller_statistics_complete_orders(stats.orderNum.toString()),
                   '${stats.totalOrderNum}/${stats.orderNum}',
                 ),
                 const Divider(height: 24, thickness: 0.5),
                 _buildUpgradeItem(
-                  '盈利${stats.orderPrice.toStringAsFixed(2)}元',
+                  S.of(context).seller_statistics_profit_amount(stats.orderPrice.toStringAsFixed(2)),
                   '${stats.totalOrderPrice.toStringAsFixed(2)}/${stats.orderPrice.toStringAsFixed(2)}',
                 ),
               ],
@@ -232,9 +236,9 @@ class SellerStatisticsPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '指标',
-          style: TextStyle(
+        Text(
+          S.of(context).seller_statistics_indicators,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -260,10 +264,10 @@ class SellerStatisticsPage extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: _buildIndicatorItem('总盈利', stats.totalEarnings.toInt().toString()),
+                      child: _buildIndicatorItem(S.of(context).seller_statistics_total_earnings, stats.totalEarnings.toInt().toString()),
                     ),
                     Expanded(
-                      child: _buildIndicatorItem('本月盈利', stats.thisMonthTotalEarnings.toInt().toString()),
+                      child: _buildIndicatorItem(S.of(context).seller_statistics_monthly_earnings, stats.thisMonthTotalEarnings.toInt().toString()),
                     ),
                   ],
                 ),
@@ -271,10 +275,10 @@ class SellerStatisticsPage extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: _buildIndicatorItem('总订单数', stats.totalOrderNum.toString()),
+                      child: _buildIndicatorItem(S.of(context).seller_statistics_total_orders, stats.totalOrderNum.toString()),
                     ),
                     Expanded(
-                      child: _buildIndicatorItem('活跃订单数', stats.activeOrderNum.toString()),
+                      child: _buildIndicatorItem(S.of(context).seller_statistics_active_orders, stats.activeOrderNum.toString()),
                     ),
                   ],
                 ),
@@ -313,7 +317,7 @@ class SellerStatisticsPage extends StatelessWidget {
   /// 构建待处理部分（未完成订单数、距离下次邀交日）
   Widget _buildPendingSection(BuildContext context, SellerIndexStatistics stats) {
     String earlyTimeText = stats.earlyTime > 0 
-        ? '${stats.earlyTime} (最早)' 
+        ? '${stats.earlyTime} (${S.of(context).seller_statistics_earliest})' 
         : 'N/A';
     
     String latenessTimeText = stats.latenessTime > 0 
@@ -323,9 +327,9 @@ class SellerStatisticsPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '待处理',
-          style: TextStyle(
+        Text(
+          S.of(context).seller_statistics_pending,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -349,12 +353,12 @@ class SellerStatisticsPage extends StatelessWidget {
             child: Column(
               children: [
                 _buildPendingItem(
-                  '未完成订单数',
-                  '${stats.pendingOrderNum} (待完成) / ${stats.receiptOrderNum} (回单)',
+                  S.of(context).seller_statistics_incomplete_orders,
+                  '${stats.pendingOrderNum} (${S.of(context).seller_statistics_pending_completion}) / ${stats.receiptOrderNum} (${S.of(context).seller_statistics_receipt})',
                 ),
                 const Divider(height: 30, thickness: 0.5),
                 _buildPendingItem(
-                  '距离下次邀交日',
+                  S.of(context).seller_statistics_next_delivery_date,
                   '$earlyTimeText / $latenessTimeText',
                 ),
               ],
@@ -368,19 +372,29 @@ class SellerStatisticsPage extends StatelessWidget {
   /// 构建待处理项目
   Widget _buildPendingItem(String label, String value) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 15,
+        Expanded(
+          flex: 2,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 15,
+            ),
           ),
         ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
+        const SizedBox(width: 8),
+        Expanded(
+          flex: 3,
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.end,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
           ),
         ),
       ],

@@ -194,3 +194,135 @@ void registerChatMessagesBloc(GetIt getIt) {
     ),
   );
 } 
+
+/// 聊天模块的依赖注入类
+class ChatDI {
+  /// 初始化聊天模块的所有依赖
+  static Future<void> init(GetIt getIt) async {
+    print('[ChatDI] Initializing Chat module dependencies');
+
+    // 数据源
+    if (!getIt.isRegistered<IChatRemoteDataSource>()) {
+      getIt.registerLazySingleton<IChatRemoteDataSource>(
+        () => ChatRemoteDataSourceImpl(dio: getIt<Dio>()),
+      );
+      print('[ChatDI] Registered IChatRemoteDataSource');
+    }
+    
+    if (!getIt.isRegistered<IFileRemoteDataSource>()) {
+      getIt.registerLazySingleton<IFileRemoteDataSource>(
+        () => FileRemoteDataSourceImpl(dio: getIt<Dio>()),
+      );
+      print('[ChatDI] Registered IFileRemoteDataSource');
+    }
+    
+    if (!getIt.isRegistered<IChatWebSocketDataSource>()) {
+      getIt.registerLazySingleton<IChatWebSocketDataSource>(
+        () => ChatWebSocketDataSourceImpl(),
+      );
+      print('[ChatDI] Registered IChatWebSocketDataSource');
+    }
+
+    // 仓库
+    if (!getIt.isRegistered<IChatRepository>()) {
+      getIt.registerLazySingleton<IChatRepository>(
+        () => ChatRepositoryImpl(
+          remoteDataSource: getIt<IChatRemoteDataSource>(),
+          userRepository: getIt<IUserRepository>(),
+        ),
+      );
+      print('[ChatDI] Registered IChatRepository');
+    }
+    
+    if (!getIt.isRegistered<IFileRepository>()) {
+      getIt.registerLazySingleton<IFileRepository>(
+        () => FileRepositoryImpl(
+          remoteDataSource: getIt<IFileRemoteDataSource>(),
+        ),
+      );
+      print('[ChatDI] Registered IFileRepository');
+    }
+
+    // 用例
+    if (!getIt.isRegistered<GetChatRoomList>()) {
+      getIt.registerLazySingleton<GetChatRoomList>(
+        () => GetChatRoomListImpl(getIt<IChatRepository>()),
+      );
+      print('[ChatDI] Registered GetChatRoomList');
+    }
+
+    if (!getIt.isRegistered<CreateChatRoom>()) {
+      getIt.registerLazySingleton<CreateChatRoom>(
+        () => CreateChatRoomImpl(getIt<IChatRepository>()),
+      );
+      print('[ChatDI] Registered CreateChatRoom');
+    }
+
+    if (!getIt.isRegistered<GetMessageList>()) {
+      getIt.registerLazySingleton<GetMessageList>(
+        () => GetMessageListImpl(getIt<IChatRepository>()),
+      );
+      print('[ChatDI] Registered GetMessageList');
+    }
+
+    if (!getIt.isRegistered<SendMessage>()) {
+      getIt.registerLazySingleton<SendMessage>(
+        () => SendMessageImpl(getIt<IChatRepository>(), getIt<IFileRepository>()),
+      );
+      print('[ChatDI] Registered SendMessage');
+    }
+
+    if (!getIt.isRegistered<RevokeMessage>()) {
+      getIt.registerLazySingleton<RevokeMessage>(
+        () => RevokeMessageImpl(getIt<IChatRepository>()),
+      );
+      print('[ChatDI] Registered RevokeMessage');
+    }
+
+    if (!getIt.isRegistered<DeleteChatMessage>()) {
+      getIt.registerLazySingleton<DeleteChatMessage>(
+        () => DeleteChatMessageImpl(getIt<IChatRepository>()),
+      );
+      print('[ChatDI] Registered DeleteChatMessage');
+    }
+
+    if (!getIt.isRegistered<GetChatRoomDetails>()) {
+      getIt.registerLazySingleton<GetChatRoomDetails>(
+        () => GetChatRoomDetailsImpl(getIt<IChatRepository>()),
+      );
+      print('[ChatDI] Registered GetChatRoomDetails');
+    }
+
+    // Bloc
+    if (!getIt.isRegistered<ChatListBloc>()) {
+      getIt.registerFactory<ChatListBloc>(() => ChatListBloc(
+            getChatRoomList: getIt<GetChatRoomList>(),
+            createChatRoom: getIt<CreateChatRoom>(),
+          ));
+      print('[ChatDI] Registered ChatListBloc');
+    } else {
+      print('[ChatDI] ChatListBloc already registered, skipping');
+    }
+
+    // 注册工厂方法，需要传入chatId参数
+    if (!getIt.isRegistered<ChatMessagesBloc>()) {
+      getIt.registerFactoryParam<ChatMessagesBloc, int, void>(
+        (chatId, _) => ChatMessagesBloc(
+          chatId: chatId,
+          getMessageList: getIt<GetMessageList>(),
+          sendMessage: getIt<SendMessage>(),
+          revokeMessage: getIt<RevokeMessage>(),
+          deleteChatMessage: getIt<DeleteChatMessage>(),
+          getChatRoomDetails: getIt<GetChatRoomDetails>(),
+          userRepository: getIt<IUserRepository>(),
+          webSocketDataSource: getIt<IChatWebSocketDataSource>(),
+        ),
+      );
+      print('[ChatDI] Registered ChatMessagesBloc factory with parameters');
+    } else {
+      print('[ChatDI] ChatMessagesBloc factory already registered, skipping');
+    }
+
+    print('[ChatDI] Chat module dependencies initialized');
+  }
+} 

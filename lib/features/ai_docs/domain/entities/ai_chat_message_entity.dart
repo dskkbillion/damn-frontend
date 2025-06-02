@@ -29,6 +29,10 @@ class AiChatMessageEntity extends Equatable {
   final String content; // Used for text messages
   final List<String>? fileUrls; // Used for image URL(s) or audio URL
 
+  // 转录相关字段
+  final String? transcription; // 转录的文本内容
+  final bool isTranscribing; // 是否正在转录中
+
   // Removed isStreaming, hasError - these should be UI state, not entity properties
 
   /// {@macro ai_chat_message_entity}
@@ -41,8 +45,35 @@ class AiChatMessageEntity extends Equatable {
     this.messageType = MessageType.text, 
     // Content might be empty for non-text messages initially
     this.content = '', 
-    this.fileUrls, 
+    this.fileUrls,
+    this.transcription,
+    this.isTranscribing = false,
   });
+  
+  /// 创建一个带有更新值的新实例
+  AiChatMessageEntity copyWith({
+    String? messageId,
+    MessageSender? sender,
+    int? conversationId,
+    DateTime? timestamp,
+    MessageType? messageType,
+    String? content,
+    List<String>? fileUrls,
+    String? transcription,
+    bool? isTranscribing,
+  }) {
+    return AiChatMessageEntity(
+      messageId: messageId ?? this.messageId,
+      sender: sender ?? this.sender,
+      conversationId: conversationId ?? this.conversationId,
+      timestamp: timestamp ?? this.timestamp,
+      messageType: messageType ?? this.messageType,
+      content: content ?? this.content,
+      fileUrls: fileUrls ?? this.fileUrls,
+      transcription: transcription ?? this.transcription,
+      isTranscribing: isTranscribing ?? this.isTranscribing,
+    );
+  }
 
   @override
   List<Object?> get props => [
@@ -53,5 +84,7 @@ class AiChatMessageEntity extends Equatable {
         messageType,
         content,
         fileUrls,
+        transcription,
+        isTranscribing,
       ];
 } 

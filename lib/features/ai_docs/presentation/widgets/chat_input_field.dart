@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart'; // Import the record package
 import 'package:permission_handler/permission_handler.dart'; // Import permission_handler
 import 'package:image_picker/image_picker.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 import '../bloc/ai_chat/ai_chat_bloc.dart';
 // Remove direct imports of part files
@@ -42,6 +43,8 @@ class _ChatInputFieldState extends State<ChatInputField> {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context); // 获取国际化资源
+    
     // Use BlocBuilder to access the full state, including pendingImageFiles & imageUploadStates
     return BlocBuilder<AiChatBloc, AiChatState>(
       buildWhen: (previous, current) => 
@@ -50,10 +53,12 @@ class _ChatInputFieldState extends State<ChatInputField> {
           previous.imageUploadStates != current.imageUploadStates, // Also rebuild on upload state changes
       builder: (context, state) {
         final bool isStreaming = state.status == AiChatStatus.streamingResponse;
+        final bool isCancelling = state.status == AiChatStatus.cancellingGeneration;
         final bool isBusy = state.status == AiChatStatus.sendingMessage ||
                            state.status == AiChatStatus.transcribingAudio ||
                            state.status == AiChatStatus.allocatingResource ||
-                           isStreaming;
+                           isStreaming ||
+                           isCancelling;
         final List<File> pendingImages = state.pendingImageFiles ?? [];
         // Get the upload states map
         final Map<String, ImageUploadState> uploadStates = state.imageUploadStates ?? {}; 
@@ -71,8 +76,10 @@ class _ChatInputFieldState extends State<ChatInputField> {
         return ValueListenableBuilder<TextEditingValue>(
           valueListenable: widget.textController,
           builder: (context, textValue, child) {
-             // Base condition: Not busy/recording AND text is not empty
-             final bool baseCanSendMessage = !isBusy && !(_isRecording ?? false) && textValue.text.trim().isNotEmpty;
+             // Base condition: Not busy/recording AND (text is not empty OR has images)
+             final bool hasText = textValue.text.trim().isNotEmpty;
+             final bool hasImages = pendingImages.isNotEmpty;
+             final bool baseCanSendMessage = !isBusy && !(_isRecording ?? false) && (hasText || hasImages);
 
              return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
@@ -103,14 +110,14 @@ class _ChatInputFieldState extends State<ChatInputField> {
                         icon: const Icon(Icons.add_photo_alternate_outlined),
                         // Use internal method _pickAndDispatchImage
                         onPressed: isBusy || _isRecording ? null : _pickAndDispatchImage, 
-                        tooltip: '添加图片',
+                        tooltip: s.ai_docs_add_image, // 使用国际化文本
                       ),
                       // Attach Voice Button (Stateful)
                       IconButton(
                          icon: Icon(_isRecording ? Icons.stop_circle_outlined : Icons.mic_none_outlined, 
                                     color: _isRecording ? Colors.red : null),
                          onPressed: isBusy ? null : _handleVoiceButtonPress, 
-                         tooltip: _isRecording ? '停止录音' : '录制语音',
+                         tooltip: _isRecording ? s.ai_docs_stop_recording : s.ai_docs_start_recording, // 使用国际化文本
                        ),
                       // Text Input Field
                       Expanded(
@@ -118,7 +125,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                           controller: widget.textController,
                           enabled: !isBusy && !_isRecording, 
                           decoration: InputDecoration(
-                            hintText: _isRecording ? '正在录音...点击停止发送' : '输入消息...',
+                            hintText: _isRecording ? s.ai_docs_recording : s.ai_docs_enter_message, // 使用国际化文本
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(24.0),
                               borderSide: BorderSide.none,
@@ -135,11 +142,24 @@ class _ChatInputFieldState extends State<ChatInputField> {
                         ),
                       ),
                       // Send / Stop Generation Button
-                       if (isStreaming)
+                       if (isStreaming || isCancelling)
                           IconButton(
-                            icon: const Icon(Icons.stop_circle, color: Colors.red),
-                            tooltip: '停止生成',
-                            onPressed: () => context.read<AiChatBloc>().add(CancelStreaming()),
+                            icon: isCancelling 
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2)
+                                  )
+                                : const Icon(Icons.stop_circle, color: Colors.red),
+                            tooltip: isCancelling 
+                                ? s.ai_docs_cancelling_generation
+                                : s.ai_docs_stop_generation, // 使用国际化文本
+                            onPressed: isCancelling 
+                                ? null // 取消中时禁用按钮
+                                : () {
+                                    // 使用新的CancelChatGeneration事件，这会调用后端API
+                                    context.read<AiChatBloc>().add(const CancelChatGeneration());
+                                  },
                           )
                        else
                           IconButton(
@@ -151,7 +171,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                                              if (isAnyImageUploading) {
                                                 // Show feedback and DO NOT send
                                                 ScaffoldMessenger.of(context).showSnackBar(
-                                                   const SnackBar(content: Text('图片正在上传中，请稍候...')),
+                                                   SnackBar(content: Text(s.ai_docs_uploading_images)), // 使用国际化文本
                                                  );
                                              } else {
                                                 // No uploads in progress, proceed to send
@@ -159,7 +179,9 @@ class _ChatInputFieldState extends State<ChatInputField> {
                                              }
                                            }
                                          : null,
-                            tooltip: '发送消息',
+                            // 添加长按操作显示Markdown示例菜单
+                            onLongPress: isBusy ? null : _showMarkdownExampleMenu,
+                            tooltip: s.ai_docs_send_message, // 使用国际化文本
                           ),
                     ],
                   ),
@@ -295,6 +317,8 @@ class _ChatInputFieldState extends State<ChatInputField> {
 
   // Handle voice button logic with actual recording
   void _handleVoiceButtonPress() async {
+    final s = S.of(context); // 获取国际化资源
+    
     if (!_isRecording) {
       // --- Start Recording ---
       // 1. Check for microphone permission
@@ -306,7 +330,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
          if (!status.isGranted) {
             if (mounted) {
                ScaffoldMessenger.of(context).showSnackBar(
-                 const SnackBar(content: Text('麦克风权限被拒绝')),
+                 SnackBar(content: Text(s.ai_docs_mic_permission_denied)), // 使用国际化文本
                );
             }
             return; // Stop if permission is not granted
@@ -315,14 +339,13 @@ class _ChatInputFieldState extends State<ChatInputField> {
 
        // 2. Start recording to a temporary path
       final Directory tempDir = await getTemporaryDirectory();
-      final String filePath = '${tempDir.path}/audio_${DateTime.now().millisecondsSinceEpoch}.aac'; // Unique filename, AAC format
+      final String filePath = '${tempDir.path}/audio_${DateTime.now().millisecondsSinceEpoch}.wav'; // 使用WAV格式
       
-      // Prepare recorder config (AAC-LC is a common choice, check backend requirements)
-      // TODO: Revisit encoder and bitrate settings based on final requirements
+      // 修改录音配置，使用WAV格式，16kbps码率
        const recordConfig = RecordConfig(
-         encoder: AudioEncoder.aacLc, // Example: AAC-LC
-         // bitRate: 16000, // TODO: Confirm if record package allows this directly
-         // sampleRate: 16000, // Sample rate often related to quality/bitrate
+         encoder: AudioEncoder.wav, // 使用WAV格式
+         bitRate: 16000, // 设置码率为16kbps
+         sampleRate: 16000, // 设置采样率为16kHz
        );
 
       try {
@@ -337,7 +360,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
          print("Error starting recording: $e");
          if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('开始录音出错: $e')),
+              SnackBar(content: Text(s.ai_docs_recording_error(e.toString()))), // 使用国际化文本
             );
          }
       }
@@ -359,14 +382,26 @@ class _ChatInputFieldState extends State<ChatInputField> {
                 print("Recorded file size: ${await recordedFile.length()} bytes");
 
                // Dispatch the event with the **actual recorded file**
-                if (mounted) { 
-                   context.read<AiChatBloc>().add(SendVoiceMessage(audioFile: recordedFile));
+                if (mounted) {
+                   // 获取当前AI聊天Bloc状态
+                   final aiChatBloc = context.read<AiChatBloc>();
+                   final currentState = aiChatBloc.state;
+                   
+                   // 检查是否已选择对话，如果没有选择，先创建新对话
+                   if (currentState.selectedConversationId == null) {
+                     // 先创建新对话，再发送语音消息
+                     print("[ChatInputField] ${s.ai_docs_auto_create_voice}");
+                     aiChatBloc.add(CreateNewConversationAndSendVoiceMessage(audioFile: recordedFile));
+                   } else {
+                     // 已有对话，直接发送语音消息
+                     aiChatBloc.add(SendVoiceMessage(audioFile: recordedFile));
+                   }
                 } 
              } else {
                print("Error: Recorded file not found at path: $path");
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('错误：未找到录音文件')),
+                    SnackBar(content: Text(s.ai_docs_recording_file_not_found)), // 使用国际化文本
                   );
                }
              }
@@ -374,7 +409,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
             print("Error: Stopping recording failed, path is null.");
             if (mounted) {
                ScaffoldMessenger.of(context).showSnackBar(
-                 const SnackBar(content: Text('停止录音出错')),
+                 SnackBar(content: Text(s.ai_docs_stop_recording_error)), // 使用国际化文本
                );
             }
          }
@@ -382,7 +417,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
          print("Error stopping recording: $e");
          if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('停止录音出错: $e')),
+              SnackBar(content: Text(s.ai_docs_stop_recording_error_with_reason(e.toString()))), // 使用国际化文本
             );
          }
           // Ensure recording state is reset even if stopping fails
@@ -391,5 +426,157 @@ class _ChatInputFieldState extends State<ChatInputField> {
          }
       }
     }
+  }
+
+  // 添加长按操作显示Markdown示例菜单
+  void _showMarkdownExampleMenu() {
+    final s = S.of(context);
+    
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.title),
+                title: const Text('Markdown 标题示例'),
+                onTap: () {
+                  _sendMarkdownExample("""
+# 一级标题
+## 二级标题
+### 三级标题
+                  """);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.format_list_bulleted),
+                title: const Text('Markdown 列表示例'),
+                onTap: () {
+                  _sendMarkdownExample("""
+- 列表项 1
+- 列表项 2
+  - 子列表项 2.1
+  - 子列表项 2.2
+- 列表项 3
+
+1. 有序列表 1
+2. 有序列表 2
+   1. 子列表 2.1
+   2. 子列表 2.2
+3. 有序列表 3
+                  """);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.format_quote),
+                title: const Text('Markdown 引用和代码示例'),
+                onTap: () {
+                  _sendMarkdownExample("""
+> 这是一段引用文本
+> 这是引用的第二行
+
+代码块示例:
+```dart
+void main() {
+  print('Hello, Markdown!');
+}
+```
+                  """);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.table_chart),
+                title: const Text('Markdown 表格示例'),
+                onTap: () {
+                  _sendMarkdownExample("""
+| 列1 | 列2 | 列3 |
+|-----|-----|-----|
+| 单元格1 | 单元格2 | 单元格3 |
+| 单元格4 | 单元格5 | 单元格6 |
+                  """);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.format_bold),
+                title: const Text('Markdown 格式化和链接示例'),
+                onTap: () {
+                  _sendMarkdownExample("""
+**粗体文本** 和 *斜体文本*
+
+~~删除线文本~~
+
+[Flutter官网链接](https://flutter.dev)
+
+![图片描述](https://picsum.photos/200/100)
+                  """);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.view_agenda),
+                title: const Text('Markdown 完整示例'),
+                onTap: () {
+                  _sendMarkdownExample("""
+# Markdown 完整示例
+
+## 标题与格式
+
+这是正文内容。**这是粗体** 和 *这是斜体*。
+
+## 列表
+
+- 无序列表项 1
+- 无序列表项 2
+  - 子项 2.1
+  - 子项 2.2
+
+1. 有序列表项 1
+2. 有序列表项 2
+
+## 引用与代码
+
+> 这是一段引用文本
+> 第二行引用
+
+代码示例:
+```dart
+void main() {
+  print('Hello, Markdown!');
+}
+```
+
+## 表格
+
+| 商品 | 价格 | 库存 |
+|-----|-----|-----|
+| 商品A | ¥100 | 20 |
+| 商品B | ¥200 | 10 |
+
+[更多Markdown语法](https://www.markdownguide.org/)
+                  """);
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+  
+  // 发送Markdown示例
+  void _sendMarkdownExample(String markdownText) {
+    // 清理不必要的前导和尾随空白，但保留内部格式
+    final cleanedText = markdownText.trim();
+    // 设置到输入框
+    widget.textController.text = cleanedText;
+    // 发送消息
+    widget.onSendMessage(cleanedText);
   }
 } 

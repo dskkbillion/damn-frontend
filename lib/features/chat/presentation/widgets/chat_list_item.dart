@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:intl/date_symbol_data_local.dart'; // Import for initializing locale data
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 import '../../domain/entities/chat_message.dart';
 import '../../domain/entities/chat_room.dart';
@@ -33,6 +34,9 @@ class _ChatListItemState extends State<ChatListItem> {
 
   // Updated timestamp formatting based on frontend.md
   String _formatTimestamp(DateTime? timestamp) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     if (timestamp == null) return '';
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -44,7 +48,7 @@ class _ChatListItemState extends State<ChatListItem> {
       return DateFormat('HH:mm', 'zh_CN').format(timestamp);
     } else if (difference == 1) {
       // Yesterday
-      return '昨天';
+      return s.chat_yesterday;
     } else if (difference < 7) {
        // Within a week: Weekday (e.g., 星期一)
        // Ensure zh_CN is initialized for this
@@ -56,6 +60,9 @@ class _ChatListItemState extends State<ChatListItem> {
   }
 
   String _getLastMessagePreview(ChatMessage? message) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     if (message == null) return '';
     // Limit preview length for text messages
     const maxLength = 30; 
@@ -67,31 +74,32 @@ class _ChatListItemState extends State<ChatListItem> {
       case 'text':
         return contextPreview;
       case 'image':
-        return '[图片]';
+        return s.chat_image_message;
       case 'audio':
-        return '[语音]';
+        return s.chat_audio_message;
       case 'revoke': // Use the actual type string if different
-        return '[消息已撤回]';
+        return s.chat_revoked_message;
       // TODO: Add cases for other custom types ('order', 'distribute')
       default:
         // Show context for unknown types if not empty, otherwise indicate unknown
-        return contextPreview.isNotEmpty ? contextPreview : '[未知消息]';
+        return contextPreview.isNotEmpty ? contextPreview : s.chat_unknown_message;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Get opponent participant
-    // Note: Ensure getOpponent logic correctly handles potential nulls or missing participants
-    final Participant? opponent = widget.chatRoom.getOpponent(widget.currentUserId);
+    // 获取国际化资源
+    final s = S.of(context);
+    
+    // 获取对方信息（可能是买家或卖家）
+    final opponent = widget.chatRoom.getOpponent(widget.currentUserId);
 
-    // If opponent is null, display an error or placeholder item
+    // 如果对方信息为空，显示错误
     if (opponent == null) {
-      // Consider logging this situation
-      return const ListTile(
+      return ListTile(
         leading: CircleAvatar(child: Icon(Icons.error)),
-        title: Text('无效的会话'),
-        subtitle: Text('无法找到对方信息'),
+        title: Text(s.chat_invalid_session),
+        subtitle: Text('对方信息不存在'),
       );
     }
 
@@ -114,11 +122,80 @@ class _ChatListItemState extends State<ChatListItem> {
               )
             : null,
       ),
-      title: Text(
-        opponent.nickName ?? '未知用户',
-        style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16), // Adjust font size
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            opponent.nickName ?? '未知用户',
+            style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16), // Adjust font size
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          // 新增：如果有关联商品，显示商品信息
+          if (widget.chatRoom.hasProduct) ...[
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.blue[50],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue[200]!),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 商品小图
+                  if (widget.chatRoom.productImage != null)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: CachedNetworkImage(
+                        imageUrl: widget.chatRoom.productImage!,
+                        width: 20,
+                        height: 20,
+                        fit: BoxFit.cover,
+                        errorWidget: (context, url, error) {
+                          return Container(
+                            width: 20,
+                            height: 20,
+                            color: Colors.grey[300],
+                            child: const Icon(Icons.image, size: 12),
+                          );
+                        },
+                      ),
+                    ),
+                  
+                  const SizedBox(width: 6),
+                  
+                  // 商品名称
+                  Flexible(
+                    child: Text(
+                      widget.chatRoom.productName ?? '商品',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.blue[700],
+                        fontWeight: FontWeight.w500,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  
+                  // 商品价格
+                  if (widget.chatRoom.productPrice != null) ...[
+                    const SizedBox(width: 4),
+                    Text(
+                      '¥${widget.chatRoom.productPrice!.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.red[600],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ],
       ),
       subtitle: Text(
         lastMessageText,

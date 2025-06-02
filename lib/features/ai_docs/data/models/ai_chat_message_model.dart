@@ -54,6 +54,7 @@ class AiChatMessageModel with _$AiChatMessageModel {
     required String content,
     @JsonKey(fromJson: _filesFromJson) @Default([]) List<String> files, // List of OSS URLs
     int? timestamp, // API might return seconds or milliseconds
+    String? type, // 新增：消息类型字段，从API获取
     // Add other potential fields from API like 'parent_message_id' if needed
   }) = _AiChatMessageModel;
 
@@ -101,7 +102,59 @@ class AiChatMessageModel with _$AiChatMessageModel {
       content: content,
       fileUrls: files.isNotEmpty ? files : null,
       timestamp: dateTime,
-      messageType: files.isNotEmpty ? MessageType.image : MessageType.text, // Basic derivation
+      messageType: _determineMessageType(), // 使用智能判断
     );
+  }
+
+  /// 智能判断消息类型
+  MessageType _determineMessageType() {
+    // 1. 优先使用API返回的type字段
+    if (type != null) {
+      switch (type!.toLowerCase()) {
+        case 'audio':
+        case 'voice':
+          return MessageType.audio;
+        case 'image':
+        case 'picture':
+          return MessageType.image;
+        case 'text':
+        default:
+          return MessageType.text;
+      }
+    }
+
+    // 2. 如果没有type字段，根据文件URL判断
+    if (files.isEmpty) {
+      return MessageType.text;
+    }
+
+    // 检查第一个文件的扩展名
+    final firstFile = files.first.toLowerCase();
+    
+    // 音频文件扩展名
+    if (firstFile.contains('.wav') || 
+        firstFile.contains('.mp3') || 
+        firstFile.contains('.m4a') || 
+        firstFile.contains('.aac') ||
+        firstFile.contains('.ogg') ||
+        firstFile.contains('audio')) {
+      return MessageType.audio;
+    }
+    
+    // 图片文件扩展名
+    if (firstFile.contains('.jpg') || 
+        firstFile.contains('.jpeg') || 
+        firstFile.contains('.png') || 
+        firstFile.contains('.gif') || 
+        firstFile.contains('.webp') ||
+        firstFile.contains('.bmp') ||
+        firstFile.contains('image') ||
+        firstFile.contains('img')) {
+      return MessageType.image;
+    }
+
+    // 默认情况：有文件但无法判断类型，当作文本处理
+    print('Warning: Unknown file type for URL: $firstFile, treating as text');
+    return MessageType.text;
   }
 } 

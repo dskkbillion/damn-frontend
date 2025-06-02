@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dskk_flutter_refactor/app/app_mode.dart';
 
+// 导入国际化
+import '../../../../generated/l10n.dart';
+
 import '../bloc/seller_home/seller_home_bloc.dart';
 import '../bloc/seller_home/seller_home_event.dart';
 import '../bloc/seller_home/seller_home_state.dart';
@@ -52,7 +55,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
               
               if (state.hasError) {
                 return EmptyState.error(
-                  text: '加载失败',
+                  text: S.of(context).seller_home_loading_failed,
                   subText: state.errorMessage,
                   onRetryPressed: () {
                     context.read<SellerHomeBloc>().add(const LoadDashboardData(forceRefresh: true));
@@ -62,7 +65,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
               
               if (state.dashboardData == null) {
                 return EmptyState.error(
-                  text: '暂无数据',
+                  text: S.of(context).seller_home_no_data,
                   onRetryPressed: () {
                     context.read<SellerHomeBloc>().add(const LoadDashboardData(forceRefresh: true));
                   },
@@ -113,11 +116,11 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
   // 店铺信息卡片
   Widget _buildStoreProfileCard(BuildContext context, SellerHomeState state) {
     if (state.storeProfile == null) {
-      return const Card(
+      return Card(
         child: Padding(
           padding: EdgeInsets.all(16.0),
           child: Center(
-            child: Text('暂无店铺信息'),
+            child: Text(S.of(context).seller_home_no_store_info),
           ),
         ),
       );
@@ -201,7 +204,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        profile.onlineFlag! ? '在线' : '离线',
+                                        profile.onlineFlag! ? S.of(context).seller_home_online : S.of(context).seller_home_offline,
                                         style: const TextStyle(
                                           fontSize: 12,
                                           color: Colors.white,
@@ -235,7 +238,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                                 const Icon(Icons.check_circle_outline, color: Colors.white, size: 16),
                                 const SizedBox(width: 4),
                                 Text(
-                                  '完成率 ${profile.completionRate!.toStringAsFixed(1)}%',
+                                  S.of(context).seller_home_completion_rate(profile.completionRate!.toStringAsFixed(1)),
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 14,
@@ -282,7 +285,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.switch_account_outlined, size: 18),
-                    label: const Text('切换到买家模式'),
+                    label: Text(S.of(context).seller_home_switch_to_buyer),
                     onPressed: () {
                       // 更新状态
                       ref.read(appModeProvider.notifier).state = AppMode.buyer;
@@ -292,7 +295,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                       } catch (e) {
                         print('Error navigating to /profile: $e');
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('无法切换到买家模式: $e')),
+                          SnackBar(content: Text(S.of(context).seller_home_switch_failed(e.toString()))),
                         );
                       }
                     },
@@ -346,9 +349,9 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  '收入',
-                  style: TextStyle(
+                Text(
+                  S.of(context).seller_home_income,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -363,10 +366,10 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                     minimumSize: const Size(50, 30),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Text('查看明细'),
-                      Icon(Icons.arrow_forward_ios, size: 12),
+                      Text(S.of(context).seller_home_view_details),
+                      const Icon(Icons.arrow_forward_ios, size: 12),
                     ],
                   ),
                 ),
@@ -376,9 +379,9 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildIncomeItem('总收入', '¥${dashboardData.income.total.toStringAsFixed(2)}'),
-                _buildIncomeItem('今日收入', '¥${dashboardData.income.today.toStringAsFixed(2)}'),
-                _buildIncomeItem('待结算', '¥${dashboardData.income.pending.toStringAsFixed(2)}'),
+                _buildIncomeItem(S.of(context).seller_home_total_income, '¥${dashboardData.income.total.toStringAsFixed(2)}'),
+                _buildIncomeItem(S.of(context).seller_home_today_income, '¥${dashboardData.income.today.toStringAsFixed(2)}'),
+                _buildIncomeItem(S.of(context).seller_home_pending_settlement, '¥${dashboardData.income.pending.toStringAsFixed(2)}'),
               ],
             ),
           ],
@@ -398,9 +401,9 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  '订单',
-                  style: TextStyle(
+                Text(
+                  S.of(context).seller_home_orders,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -415,10 +418,10 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                     minimumSize: const Size(50, 30),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Text('查看全部'),
-                      Icon(Icons.arrow_forward_ios, size: 12),
+                      Text(S.of(context).seller_home_view_all),
+                      const Icon(Icons.arrow_forward_ios, size: 12),
                     ],
                   ),
                 ),
@@ -431,28 +434,28 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                 _buildOrderStatusItem(
                   context,
                   icon: Icons.receipt_long,
-                  label: '全部',
+                  label: S.of(context).seller_home_orders_all,
                   count: dashboardData.orders.total.toString(),
                   onTap: () => context.go('/seller/order-list'),
                 ),
                 _buildOrderStatusItem(
                   context,
                   icon: Icons.access_time,
-                  label: '待确认',
+                  label: S.of(context).seller_home_orders_pending,
                   count: dashboardData.orders.pending.toString(),
                   onTap: () => context.go('/seller/order-list?status=awaitingStart'),
                 ),
                 _buildOrderStatusItem(
                   context,
                   icon: Icons.loop,
-                  label: '进行中',
+                  label: S.of(context).seller_home_orders_processing,
                   count: dashboardData.orders.completed.toString(),
                   onTap: () => context.go('/seller/order-list?status=awaitingDelivery'),
                 ),
                 _buildOrderStatusItem(
                   context,
                   icon: Icons.support_agent,
-                  label: '售后中',
+                  label: S.of(context).seller_home_orders_aftersales,
                   count: dashboardData.orders.canceled.toString(),
                   onTap: () => context.go('/seller/order-list?status=afterSale'),
                 ),
@@ -472,9 +475,9 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '功能',
-              style: TextStyle(
+            Text(
+              S.of(context).seller_home_functions,
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -490,25 +493,25 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                 _buildFunctionItem(
                   context,
                   icon: Icons.account_balance_wallet_outlined,
-                  label: '钱包',
-                  onTap: () => context.go('/seller/wallet'),
+                  label: S.of(context).seller_home_wallet,
+                  onTap: () => context.goNamed('seller_wallet'),
                 ),
                 _buildFunctionItem(
                   context,
                   icon: Icons.verified_user,
-                  label: '认证管理',
+                  label: S.of(context).seller_home_auth_management,
                   onTap: () => context.go(SellerRoutes.authentication),
                 ),
                 _buildFunctionItem(
                   context,
                   icon: Icons.access_time,
-                  label: '时间管理',
+                  label: S.of(context).seller_home_time_management,
                   onTap: () => context.go(SellerRoutes.timeManagement),
                 ),
                 _buildFunctionItem(
                   context,
                   icon: Icons.reply_all,
-                  label: '自动回复',
+                  label: S.of(context).seller_home_auto_reply,
                   onTap: () => context.go(SellerRoutes.autoReply),
                 ),
               ],
@@ -526,10 +529,10 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
         List<WeeklyIncomeItem>.from(dashboardData.statistics.weeklyIncome ?? []);
     
     if (weeklyIncome.isEmpty) {
-      return const Card(
+      return Card(
         child: Padding(
           padding: EdgeInsets.all(16.0),
-          child: Center(child: Text('暂无近期收入数据')), 
+          child: Center(child: Text(S.of(context).seller_home_no_recent_income)), 
         ),
       );
     }
@@ -546,9 +549,9 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '近期收入',
-              style: TextStyle(
+            Text(
+              S.of(context).seller_home_recent_income,
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -589,8 +592,8 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                               ))
                           .toList(),
                     )
-                  : const Center(
-                      child: Text('暂无收入数据'),
+                  : Center(
+                      child: Text(S.of(context).seller_home_no_income_data),
                     ),
             ),
           ],

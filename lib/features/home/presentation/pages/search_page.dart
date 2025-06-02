@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 class SearchPage extends StatefulWidget {
   const SearchPage({Key? key}) : super(key: key);
@@ -138,6 +139,9 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -149,8 +153,8 @@ class _SearchPageState extends State<SearchPage> {
         title: TextField(
           controller: _searchController,
           autofocus: true,
-          decoration: const InputDecoration(
-            hintText: '搜索服务',
+          decoration: InputDecoration(
+            hintText: s.home_search_hint,
             border: InputBorder.none,
           ),
           onSubmitted: _handleSearch,
@@ -160,7 +164,7 @@ class _SearchPageState extends State<SearchPage> {
             onPressed: () {
               _handleSearch(_searchController.text);
             },
-            child: const Text('搜索'),
+            child: Text(s.search_button),
           ),
         ],
       ),
@@ -172,7 +176,7 @@ class _SearchPageState extends State<SearchPage> {
             // 热门搜索
             Row(
               children: [
-                const Text('热搜榜', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(s.search_hot_keywords, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 if (_isLoading)
                   Container(
                     margin: const EdgeInsets.only(left: 8),
@@ -198,7 +202,7 @@ class _SearchPageState extends State<SearchPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('搜索历史', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(s.search_history, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 IconButton(
                   icon: const Icon(Icons.delete_outline),
                   onPressed: _clearSearchHistory,

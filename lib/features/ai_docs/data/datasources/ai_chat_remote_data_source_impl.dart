@@ -6,6 +6,7 @@ import 'dart:io'; // Needed for File type if using local file upload later
 
 import 'package:http/http.dart' as http; // Assuming we might need this for SSE later, keep for context
 import 'package:flutter_dotenv/flutter_dotenv.dart'; // Import dotenv
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 添加FlutterSecureStorage导入
 
 import '../../../../core/network/i_http_client.dart';
 import '../../../../core/error/failures.dart';
@@ -16,6 +17,7 @@ import '../models/related_service_model.dart';
 // import '../models/chat_allocation_result_model.dart'; // Not directly used in return types
 import 'i_ai_chat_remote_data_source.dart';
 import 'exceptions.dart' as ds_exceptions;
+import 'package:dio/dio.dart';
 
 /// {@template ai_chat_remote_data_source_impl}
 /// Implementation of [IAiChatRemoteDataSource] that uses an [IHttpClient]
@@ -36,7 +38,12 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
   }
 
   // Helper to extract data or throw ServerException
-  dynamic _handleResponse(Map<String, dynamic> responseData) {
+  dynamic _handleResponse(dynamic responseData) {
+    // 处理Dio直接响应的格式
+    if (responseData is Response) {
+      responseData = responseData.data;
+    }
+    
     final int code = responseData['code'] ?? 500;
     final String message = responseData['message'] ?? 'Unknown server error';
     if (code == 200) {
@@ -47,23 +54,92 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
   }
 
   @override
-  Future<List<AiConversationModel>> fetchConversations({required int userId}) async {
+  Future<Map<String, dynamic>> fetchConversations({
+    required int userId,
+    int page = 1,
+    int pageSize = 20,
+    String orderBy = 'desc',
+  }) async {
     const String path = '/model/chat/list';
-    print("Fetching conversations using path: $path");
+    print("Fetching conversations using path: $path with pagination");
+    
+    final Map<String, dynamic> requestData = {
+      'user_id': userId,
+      'page': page,
+      'page_size': pageSize,
+      'order_by': orderBy,
+    };
+    
     try {
-      final responseData = await _httpClient.post(
-        path,
-        body: {'user_id': userId}
+      // 获取token - 添加手动获取token的代码
+      final storage = const FlutterSecureStorage();
+      final token = await storage.read(key: 'auth_token');
+      print("[AiDocs] 获取对话列表，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      
+      // 创建包含认证头的选项
+      final options = Options(
+        headers: {
+          if (token != null && token.isNotEmpty)
+            'Authorization': token, // 直接使用token，不添加Bearer前缀
+        }
       );
+      print("[AiDocs] 请求参数: $requestData");
+      
+      // 直接使用Dio实例，带上认证头
+      final response = await _httpClient.getDioInstance().post(
+        path, 
+        data: requestData,
+        options: options
+      );
+      
+      // 处理响应
+      final responseData = response.data;
       final data = _handleResponse(responseData);
+      
+      // 解析对话列表
+      List<AiConversationModel> conversations = [];
+      
       if (data != null && data['conversations'] is List) {
-        return (data['conversations'] as List)
+        conversations = (data['conversations'] as List)
             .map((convJson) => AiConversationModel.fromJson(convJson))
             .toList();
+        
+        // 构造包含分页信息的返回结果
+        return {
+          'conversations': conversations,
+          'currentPage': data['current_page'] ?? page,
+          'totalPages': data['total_pages'] ?? 0,
+          'totalConversations': data['total_conversations'] ?? conversations.length,
+          'hasMore': data['has_more'] ?? (conversations.length >= pageSize),
+        };
+      } else if (data != null && data is List) {
+        // 处理直接返回对话列表的格式（向后兼容）
+        conversations = (data as List)
+            .map((convJson) => AiConversationModel.fromJson(convJson))
+            .toList();
+        
+        // 构造默认分页结果
+        return {
+          'conversations': conversations,
+          'currentPage': page,
+          'totalPages': 0,
+          'totalConversations': conversations.length,
+          'hasMore': conversations.length >= pageSize,
+        };
       } else {
-        print('Warning: fetchConversations (POST) received unexpected format. Data: $data');
-        return [];
+        print('Warning: fetchConversations received unexpected format. Data: $data');
+        conversations = [];
       }
+      
+      // 如果响应不包含分页信息，构造默认的分页结果
+      return {
+        'conversations': conversations,
+        'currentPage': page,
+        'totalPages': 0,
+        'totalConversations': conversations.length,
+        'hasMore': conversations.length >= pageSize,
+      };
+      
     } on ds_exceptions.ServerException {
       rethrow;
     } on ds_exceptions.NetworkException {
@@ -75,28 +151,58 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
   }
 
   @override
-  Future<List<AiChatMessageModel>> loadHistory({
+  Future<Map<String, dynamic>> loadHistory({
     required int conversationId,
     required int userId,
-    int? offset,
-    int? limit,
+    int page = 1,
+    int pageSize = 50,
+    String orderBy = 'desc',
+    bool getAll = false,
   }) async {
     const String path = '/model/chat/messages';
-    print("Loading history using path: $path for conv $conversationId");
+    print("Loading history using path: $path for conv $conversationId with pagination");
+    
     final Map<String, dynamic> requestData = {
       'conversation_id': conversationId,
       'user_id': userId,
+      'page': page,
+      'page_size': pageSize,
+      'order_by': orderBy,
+      'get_all': getAll,
     };
-    if (offset != null) requestData['offset'] = offset;
-    if (limit != null) requestData['limit'] = limit;
 
     try {
-      final responseData = await _httpClient.post(path, body: requestData);
+      // 获取token
+      final storage = const FlutterSecureStorage();
+      final token = await storage.read(key: 'auth_token');
+      print("[AiDocs] 加载历史记录，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      
+      // 创建包含认证头的选项
+      final options = Options(
+        headers: {
+          if (token != null && token.isNotEmpty)
+            'Authorization': token, // 直接使用token
+        }
+      );
+      print("[AiDocs] 请求参数: $requestData");
+      
+      // 直接使用Dio实例
+      final response = await _httpClient.getDioInstance().post(
+        path, 
+        data: requestData,
+        options: options
+      );
+      
+      // 处理响应
+      final responseData = response.data;
       final data = _handleResponse(responseData);
+      
+      // 解析消息列表
+      List<AiChatMessageModel> messages = [];
       
       if (data != null && data is List) { 
         print("[DATASOURCE DEBUG] Parsing ${data.length} messages from root data list.");
-        return (data as List).map((msgJson) {
+        messages = (data as List).map((msgJson) {
           print("[DATASOURCE DEBUG] Parsing msgJson: ${jsonEncode(msgJson)}");
            if (msgJson is Map<String, dynamic>) { 
              print("[DATASOURCE DEBUG]  -> id type: ${msgJson['id']?.runtimeType}");
@@ -116,32 +222,54 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
               rethrow;
            }
         }).toList();
-      } else if (data != null && data['messages'] is List) {
-        print("[DATASOURCE DEBUG] Parsing ${ (data['messages'] as List).length} messages from nested 'messages' key.");
-        return (data['messages'] as List).map((msgJson) {
-           print("[DATASOURCE DEBUG] Parsing msgJson: ${jsonEncode(msgJson)}"); 
-          if (msgJson is Map<String, dynamic>) { 
-             print("[DATASOURCE DEBUG]  -> id type: ${msgJson['id']?.runtimeType}");
-             print("[DATASOURCE DEBUG]  -> message_id type: ${msgJson['message_id']?.runtimeType}");
-             print("[DATASOURCE DEBUG]  -> conversation_id type: ${msgJson['conversation_id']?.runtimeType}");
-             print("[DATASOURCE DEBUG]  -> role type: ${msgJson['role']?.runtimeType}");
-             print("[DATASOURCE DEBUG]  -> content type: ${msgJson['content']?.runtimeType}");
-             print("[DATASOURCE DEBUG]  -> files type: ${msgJson['files']?.runtimeType}");
-             print("[DATASOURCE DEBUG]  -> timestamp type: ${msgJson['timestamp']?.runtimeType}");
-          }
-          try {
-            return AiChatMessageModel.fromJson(msgJson as Map<String, dynamic>); 
-          } catch (e, stacktrace) {
-            print("[DATASOURCE ERROR] Failed to parse msgJson: $e");
-            print("[DATASOURCE ERROR] Stacktrace: $stacktrace");
-            print("[DATASOURCE ERROR] Failing msgJson: ${jsonEncode(msgJson)}");
-            rethrow; 
-          }
-        }).toList();
+      } else if (data != null && data is Map<String, dynamic>) {
+        // 处理可能包含分页信息的响应格式
+        if (data['messages'] is List) {
+          print("[DATASOURCE DEBUG] Parsing ${(data['messages'] as List).length} messages from nested 'messages' key.");
+          messages = (data['messages'] as List).map((msgJson) {
+             print("[DATASOURCE DEBUG] Parsing msgJson: ${jsonEncode(msgJson)}"); 
+            if (msgJson is Map<String, dynamic>) { 
+               print("[DATASOURCE DEBUG]  -> id type: ${msgJson['id']?.runtimeType}");
+               print("[DATASOURCE DEBUG]  -> message_id type: ${msgJson['message_id']?.runtimeType}");
+               print("[DATASOURCE DEBUG]  -> conversation_id type: ${msgJson['conversation_id']?.runtimeType}");
+               print("[DATASOURCE DEBUG]  -> role type: ${msgJson['role']?.runtimeType}");
+               print("[DATASOURCE DEBUG]  -> content type: ${msgJson['content']?.runtimeType}");
+               print("[DATASOURCE DEBUG]  -> files type: ${msgJson['files']?.runtimeType}");
+               print("[DATASOURCE DEBUG]  -> timestamp type: ${msgJson['timestamp']?.runtimeType}");
+            }
+            try {
+              return AiChatMessageModel.fromJson(msgJson as Map<String, dynamic>); 
+            } catch (e, stacktrace) {
+              print("[DATASOURCE ERROR] Failed to parse msgJson: $e");
+              print("[DATASOURCE ERROR] Stacktrace: $stacktrace");
+              print("[DATASOURCE ERROR] Failing msgJson: ${jsonEncode(msgJson)}");
+              rethrow; 
+            }
+          }).toList();
+        }
+        
+        // 构造包含分页信息的返回结果
+        return {
+          'messages': messages,
+          'currentPage': data['current_page'] ?? page,
+          'totalPages': data['total_pages'] ?? 0,
+          'totalMessages': data['total_messages'] ?? messages.length,
+          'hasMore': data['has_more'] ?? (messages.length >= pageSize),
+        };
       } else {
         print('Warning: loadHistory received unexpected format for $conversationId. Data: $data');
-        return [];
+        messages = [];
       }
+      
+      // 如果响应不包含分页信息，构造默认的分页结果
+      return {
+        'messages': messages,
+        'currentPage': page,
+        'totalPages': 0,
+        'totalMessages': messages.length,
+        'hasMore': messages.length >= pageSize,
+      };
+      
     } on ds_exceptions.ServerException {
       rethrow;
     } on ds_exceptions.NetworkException {
@@ -162,8 +290,31 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     final Map<String, dynamic> requestData = {'user_id': userId};
     if (title != null) requestData['title'] = title;
     try {
-      final responseData = await _httpClient.post(path, body: requestData);
+      // 获取token
+      final storage = const FlutterSecureStorage();
+      final token = await storage.read(key: 'auth_token');
+      print("[AiDocs] 创建会话，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      
+      // 创建包含认证头的选项
+      final options = Options(
+        headers: {
+          if (token != null && token.isNotEmpty)
+            'Authorization': token, // 直接使用token
+        }
+      );
+      print("[AiDocs] 请求头: ${options.headers}");
+      
+      // 直接使用Dio实例
+      final response = await _httpClient.getDioInstance().post(
+        path, 
+        data: requestData,
+        options: options
+      );
+      
+      // 处理响应
+      final responseData = response.data;
       final data = _handleResponse(responseData);
+      
       if (data != null && data['conversation_id'] is int) {
         return data['conversation_id'];
       } else {
@@ -191,7 +342,29 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       'user_id': userId,
     };
     try {
-      final responseData = await _httpClient.post(path, body: requestData);
+      // 获取token
+      final storage = const FlutterSecureStorage();
+      final token = await storage.read(key: 'auth_token');
+      print("[AiDocs] 删除会话，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      
+      // 创建包含认证头的选项
+      final options = Options(
+        headers: {
+          if (token != null && token.isNotEmpty)
+            'Authorization': token, // 直接使用token
+        }
+      );
+      print("[AiDocs] 请求头: ${options.headers}");
+      
+      // 直接使用Dio实例
+      final response = await _httpClient.getDioInstance().post(
+        path, 
+        data: requestData,
+        options: options
+      );
+      
+      // 处理响应
+      final responseData = response.data;
       _handleResponse(responseData); // Throws if code != 200
     } on ds_exceptions.ServerException {
       rethrow;
@@ -209,106 +382,229 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     required int userId,
     required String message,
     required List<String> fileUrls,
+    List<String>? audioUrls,
+    String? transcription,
   }) {
     const String path = '/model/chat';
     print("Streaming chat completion using path: $path");
+    
+    // 构建请求数据，支持新的语音消息参数
     final Map<String, dynamic> requestData = {
       'conversation_id': conversationId,
       'user_id': userId,
       'message': message,
-      // Only include 'files' if not empty, assuming API expects this
-      if (fileUrls.isNotEmpty) 'files': fileUrls, 
+      'stream': true, // 确保启用流式响应
     };
+    
+    // 添加音频URL和转录文本参数
+    if (audioUrls != null && audioUrls.isNotEmpty) {
+      requestData['audio_urls'] = audioUrls;
+      print('[DataSource] Adding audio_urls: $audioUrls');
+    }
+    
+    if (transcription != null && transcription.isNotEmpty) {
+      requestData['transcription'] = transcription;
+      print('[DataSource] Adding transcription: $transcription');
+    }
+    
+    // 支持多模态：判断是否为图像URL并使用相应的参数名
+    if (fileUrls.isNotEmpty) {
+      // 简单的图像URL判断逻辑（可以根据实际需求调整）
+      final isImageUrls = fileUrls.any((url) => 
+        url.toLowerCase().contains('.jpg') || 
+        url.toLowerCase().contains('.jpeg') || 
+        url.toLowerCase().contains('.png') || 
+        url.toLowerCase().contains('.gif') || 
+        url.toLowerCase().contains('.webp') ||
+        url.toLowerCase().contains('image') ||
+        url.toLowerCase().contains('img'));
+      
+      if (isImageUrls) {
+        requestData['image_urls'] = fileUrls; // 使用新的 image_urls 参数
+        print('[DataSource] Adding image_urls: $fileUrls');
+      } else {
+        requestData['files'] = fileUrls; // 保持向后兼容（用于其他文件类型）
+        print('[DataSource] Adding files: $fileUrls');
+      }
+    }
+    
     print('[DataSource] Calling streamChatCompletion with data: $requestData');
 
     try {
-      // Call the HttpClient method that returns the raw SSE stream
-      final rawSseStream = _httpClient.postAndStream(path, body: requestData);
-
-      // Transform the raw stream to extract relevant data chunks
-      // Using StreamTransformer for cleaner separation of parsing logic
-      return rawSseStream.transform(StreamTransformer.fromHandlers(
-        handleData: (rawData, sink) {
-          // Process raw SSE data which might contain multiple events
-          final lines = rawData.split('\n');
-          String? currentEvent;
-          String currentData = '';
-
-          for (final line in lines) {
-            if (line.startsWith('event:')) {
-              currentEvent = line.substring(6).trim();
-            } else if (line.startsWith('data:')) {
-              // Append data, removing the 'data:' prefix
-              // Handle potential multi-line data if needed (though unlikely here)
-              currentData += line.substring(5).trim(); 
-            } else if (line.trim().isEmpty) {
-              // Empty line signifies end of an event
-              if ((currentEvent == 'conversation.reasoning.delta' || 
-                  currentEvent == 'conversation.message.delta') && 
-                  currentData.isNotEmpty) {
-                try {
-                  final jsonData = jsonDecode(currentData);
-                  if (jsonData is Map<String, dynamic>) {
-                    // 检查并提取内容，支持多种字段名称
-                    String? contentChunk;
-                    if (jsonData.containsKey('reason_content')) {
-                      contentChunk = jsonData['reason_content'] as String?;
-                    } else if (jsonData.containsKey('content')) {
-                      contentChunk = jsonData['content'] as String?;
-                    }
-                    
-                    if (contentChunk != null && contentChunk.isNotEmpty) {
-                      print('[DataSource - SSE Parser] Yielding chunk: $contentChunk');
-                      sink.add(contentChunk); // Add the extracted content chunk to the output stream
-                    }
-                  }
-                } catch (e) {
-                  print('[DataSource - SSE Parser] Error decoding data JSON: $e. Data: $currentData');
-                  // Decide how to handle JSON decode error (e.g., addError to sink)
-                   sink.addError(ds_exceptions.DataSourceException(message: "Failed to parse SSE data chunk: $e"));
-                }
-              } else if (currentEvent == 'conversation.message.completed' && currentData.isNotEmpty) {
-                print('[DataSource - SSE Parser] Received completion event');
-                try {
-                  final jsonData = jsonDecode(currentData);
-                  // 在这里可以处理最终消息内容，但我们不需要再发送，因为我们已经累积了所有增量更新
-                  // 这只是一个标记完成的事件
-                } catch (e) {
-                  print('[DataSource - SSE Parser] Error decoding completion JSON: $e');
-                }
-              } else if (currentEvent == 'done') {
-                print('[DataSource - SSE Parser] Received done event');
-              }
-              // Reset for the next event
-              currentEvent = null;
-              currentData = '';
-            }
-             // Ignore other lines (like comments starting with ':')
-          }
-        },
-        handleError: (error, stackTrace, sink) {
-          print('[DataSource - SSE Stream] Error from HttpClient stream: $error');
-          // Forward the error to the output stream
-           if (error is ds_exceptions.ServerException) {
-              sink.addError(error); // Forward ServerException
-           } else {
-              sink.addError(ds_exceptions.NetworkException(message: "Network error during stream: ${error.toString()}"));
-           }
-        },
-        handleDone: (sink) {
-          print('[DataSource - SSE Stream] HttpClient stream done.');
-          sink.close(); // Close the output stream when the input stream is done
-        },
-      ));
-    } catch (e) {
-       // Catch errors during the initial call to postAndStream (e.g., network unavailable before request)
-       print("Error initiating streamChatCompletion to $path: $e");
-       // Return a stream that immediately emits an error
-        if (e is ds_exceptions.ServerException || e is ds_exceptions.NetworkException) {
-          return Stream.error(e);
-        } else {
-           return Stream.error(ds_exceptions.DataSourceException(message: "Failed to initiate SSE stream: ${e.toString()}"));
+      // 获取token
+      final storage = const FlutterSecureStorage();
+      final token = storage.read(key: 'auth_token').then((token) {
+        print("[AiDocs] 流式聊天，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+        
+        // 创建完整的URL
+        final String baseUrl = _getModelBaseUrl();
+        String fullUrl = baseUrl.endsWith('/') ? baseUrl + path.substring(1) : baseUrl + path;
+        if (!fullUrl.startsWith('http')) {
+          fullUrl = 'http://' + fullUrl;
         }
+        print("[AiDocs] 完整URL: $fullUrl");
+        
+        // 创建HTTP请求
+        final request = http.Request('POST', Uri.parse(fullUrl));
+        request.headers['Content-Type'] = 'application/json';
+        
+        // 添加认证头
+        if (token != null && token.isNotEmpty) {
+          request.headers['Authorization'] = token; // 直接使用token
+        }
+        print("[AiDocs] SSE请求头: ${request.headers}");
+        
+        // 添加请求体
+        request.body = jsonEncode(requestData);
+        
+        // 发送请求并获取流式响应
+        return http.Client().send(request).then((streamedResponse) {
+          if (streamedResponse.statusCode == 200) {
+            // 处理流式响应，支持新的事件类型
+            return streamedResponse.stream
+              .transform(utf8.decoder)
+              .transform(StreamTransformer.fromHandlers(
+                handleData: (String data, EventSink<String> sink) {
+                  _processSSEData(data, sink);
+                },
+                handleError: (error, stackTrace, sink) {
+                  print('[DataSource - SSE Stream] Error: $error');
+                  sink.addError(ds_exceptions.NetworkException(
+                    message: "Network error during stream: ${error.toString()}"
+                  ));
+                },
+                handleDone: (sink) {
+                  print('[DataSource - SSE Stream] Stream completed.');
+                  sink.close();
+                },
+              ));
+          } else {
+            // 处理错误状态码
+            throw ds_exceptions.ServerException(
+              message: 'Failed to stream chat: ${streamedResponse.statusCode}',
+              statusCode: streamedResponse.statusCode
+            );
+          }
+        });
+      });
+      
+      // 返回处理结果流
+      return Stream.fromFuture(token).asyncExpand((value) => value);
+      
+    } catch (e) {
+      // 处理错误
+      print("Error initiating streamChatCompletion to $path: $e");
+      if (e is ds_exceptions.ServerException || e is ds_exceptions.NetworkException) {
+        return Stream.error(e);
+      } else {
+        return Stream.error(ds_exceptions.DataSourceException(
+          message: "Failed to initiate SSE stream: ${e.toString()}"
+        ));
+      }
+    }
+  }
+
+  // 新增：处理SSE数据的方法，支持更多事件类型
+  void _processSSEData(String data, EventSink<String> sink) {
+    final lines = data.split('\n');
+    String? currentEvent;
+    String currentData = '';
+
+    for (final line in lines) {
+      if (line.startsWith('event:')) {
+        currentEvent = line.substring(6).trim();
+      } else if (line.startsWith('data:')) {
+        currentData += line.substring(5).trim();
+      } else if (line.trim().isEmpty && currentEvent != null) {
+        // 处理不同类型的SSE事件
+        _handleSSEEvent(currentEvent, currentData, sink);
+        
+        // 重置状态
+        currentEvent = null;
+        currentData = '';
+      }
+    }
+  }
+
+  // 新增：处理不同类型的SSE事件
+  void _handleSSEEvent(String event, String data, EventSink<String> sink) {
+    try {
+      switch (event) {
+        case 'conversation.message.delta':
+        case 'conversation.reasoning.delta':
+          if (data.isNotEmpty) {
+            final jsonData = jsonDecode(data);
+            if (jsonData is Map<String, dynamic>) {
+              String? contentChunk;
+              // 支持多种内容字段名称
+              if (jsonData.containsKey('reason_content')) {
+                contentChunk = jsonData['reason_content'] as String?;
+              } else if (jsonData.containsKey('content')) {
+                contentChunk = jsonData['content'] as String?;
+              }
+              
+              if (contentChunk != null && contentChunk.isNotEmpty) {
+                print('[DataSource - SSE] Content chunk: $contentChunk');
+                sink.add(contentChunk);
+              }
+            }
+          }
+          break;
+          
+        case 'conversation.message.completed':
+          print('[DataSource - SSE] Message completed');
+          if (data.isNotEmpty) {
+            final jsonData = jsonDecode(data);
+            print('[DataSource - SSE] Completion data: $jsonData');
+          }
+          // 发送特殊标记表示消息完成
+          sink.add('[COMPLETED]');
+          break;
+          
+        case 'conversation.message.cancelled':
+          print('[DataSource - SSE] Message cancelled by user');
+          sink.add('[CANCELLED]');
+          break;
+          
+        case 'conversation.message.error':
+          print('[DataSource - SSE] Message error');
+          if (data.isNotEmpty) {
+            final jsonData = jsonDecode(data);
+            final errorMsg = jsonData['error'] ?? 'Unknown error';
+            sink.addError(ds_exceptions.ServerException(message: errorMsg));
+          }
+          break;
+          
+        case 'done':
+          print('[DataSource - SSE] Stream done');
+          sink.add('[DONE]');
+          break;
+          
+        case 'conversation.message.meta':
+          // 处理元数据事件，检测是否跳过用户消息显示
+          if (data.isNotEmpty) {
+            final jsonData = jsonDecode(data);
+            print('[DataSource - SSE] Meta data: $jsonData');
+            if (jsonData is Map<String, dynamic>) {
+              final skipUserMessage = jsonData['skip_user_message_display'] as bool?;
+              if (skipUserMessage == true) {
+                print('[DataSource - SSE] Received skip_user_message_display = true');
+                // 发送特殊标记给BLoC，表示需要跳过用户消息显示
+                sink.add('[SKIP_USER_MESSAGE]');
+              }
+            }
+          }
+          break;
+          
+        default:
+          print('[DataSource - SSE] Unknown event type: $event');
+          break;
+      }
+    } catch (e) {
+      print('[DataSource - SSE] Error processing event $event: $e. Data: $data');
+      sink.addError(ds_exceptions.DataSourceException(
+        message: "Failed to parse SSE event: $e"
+      ));
     }
   }
 
@@ -343,7 +639,39 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     }
     
     try {
-      final responseData = await _httpClient.post(path, body: requestData);
+      // 获取token
+      final storage = const FlutterSecureStorage();
+      final token = await storage.read(key: 'auth_token');
+      print("[AiDocs] 获取相关服务，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      
+      // 创建包含认证头的选项
+      final options = Options(
+        headers: {
+          if (token != null && token.isNotEmpty)
+            'Authorization': token, // 直接使用token
+        }
+      );
+      print("[AiDocs] 请求头: ${options.headers}");
+      
+      // 直接使用Dio实例
+      final response = await _httpClient.getDioInstance().post(
+        path, 
+        data: requestData,
+        options: options
+      );
+      
+      // 处理响应
+      final responseData = response.data;
+      
+      // 检查是否是429频率限制错误
+      if (response.statusCode == 429) {
+        final data = _handleResponse(responseData);
+        throw ds_exceptions.RateLimitException(
+          message: data['message'] ?? '请求过于频繁',
+          rateLimitData: data['data'],
+        );
+      }
+      
       final data = _handleResponse(responseData);
       
       print('[DataSource] Related services response: ${jsonEncode(data)}');
@@ -379,6 +707,8 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
         print('Warning: getRelatedServices received unexpected format. Data: $data');
         return [];
       }
+    } on ds_exceptions.RateLimitException {
+      rethrow;
     } on ds_exceptions.ServerException {
       rethrow;
     } on ds_exceptions.NetworkException {
@@ -386,6 +716,135 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } catch (e) {
       print('Unexpected error in getRelatedServices at $path: $e');
       throw ds_exceptions.DataSourceException(message: 'Failed to get related services: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getRateLimitStatus({
+    required int userId,
+  }) async {
+    final String path = '/recsys/rate-limit/status/$userId';
+    print("Fetching rate limit status using path: $path");
+    
+    try {
+      final storage = const FlutterSecureStorage();
+      final token = await storage.read(key: 'auth_token');
+      print("[AiDocs] 获取频率限制状态，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      
+      final options = Options(
+        headers: {
+          if (token != null && token.isNotEmpty)
+            'Authorization': token,
+        }
+      );
+      
+      final response = await _httpClient.getDioInstance().get(
+        path,
+        options: options
+      );
+      
+      final responseData = response.data;
+      final data = _handleResponse(responseData);
+      
+      return data as Map<String, dynamic>;
+    } on ds_exceptions.ServerException {
+      rethrow;
+    } on ds_exceptions.NetworkException {
+      rethrow;
+    } catch (e) {
+      print('Unexpected error in getRateLimitStatus: $e');
+      throw ds_exceptions.DataSourceException(
+        message: 'Failed to get rate limit status: ${e.toString()}'
+      );
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> resetUserRateLimit({
+    required int userId,
+    String? serviceType,
+    String? ruleName,
+  }) async {
+    final String path = '/recsys/rate-limit/reset/$userId';
+    print("Resetting user rate limit using path: $path");
+    
+    final Map<String, String> queryParams = {};
+    if (serviceType != null) {
+      queryParams['service_type'] = serviceType;
+    }
+    if (ruleName != null) {
+      queryParams['rule_name'] = ruleName;
+    }
+    
+    try {
+      final storage = const FlutterSecureStorage();
+      final token = await storage.read(key: 'auth_token');
+      print("[AiDocs] 重置频率限制，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      
+      final options = Options(
+        headers: {
+          if (token != null && token.isNotEmpty)
+            'Authorization': token,
+        }
+      );
+      
+      final response = await _httpClient.getDioInstance().post(
+        path,
+        queryParameters: queryParams,
+        options: options
+      );
+      
+      final responseData = response.data;
+      final data = _handleResponse(responseData);
+      
+      return data as Map<String, dynamic>;
+    } on ds_exceptions.ServerException {
+      rethrow;
+    } on ds_exceptions.NetworkException {
+      rethrow;
+    } catch (e) {
+      print('Unexpected error in resetUserRateLimit: $e');
+      throw ds_exceptions.DataSourceException(
+        message: 'Failed to reset user rate limit: ${e.toString()}'
+      );
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getRateLimitConfig() async {
+    const String path = '/recsys/rate-limit/config';
+    print("Fetching rate limit config using path: $path");
+    
+    try {
+      final storage = const FlutterSecureStorage();
+      final token = await storage.read(key: 'auth_token');
+      print("[AiDocs] 获取频率限制配置，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      
+      final options = Options(
+        headers: {
+          if (token != null && token.isNotEmpty)
+            'Authorization': token,
+        }
+      );
+      
+      final response = await _httpClient.getDioInstance().get(
+        path,
+        options: options
+      );
+      
+      final responseData = response.data;
+      final data = _handleResponse(responseData);
+      
+      return data as Map<String, dynamic>;
+    } on ds_exceptions.ServerException {
+      rethrow;
+    } on ds_exceptions.NetworkException {
+      rethrow;
+    } catch (e) {
+      print('Unexpected error in getRateLimitConfig: $e');
+      throw ds_exceptions.DataSourceException(
+        message: 'Failed to get rate limit config: ${e.toString()}'
+      );
     }
   }
 
@@ -404,9 +863,33 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       'item': item,
       'merchant_id': merchantId,
     };
+    
     try {
-      final responseData = await _httpClient.post(path, body: requestData);
-      return _handleResponse(responseData) as Map<String, dynamic>;
+      // 获取token
+      final storage = const FlutterSecureStorage();
+      final token = await storage.read(key: 'auth_token');
+      print("[AiDocs] 分发资源，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      
+      // 创建包含认证头和更长超时设置的请求选项
+      final options = Options(
+        // 设置更长的超时时间（60秒接收超时）
+        receiveTimeout: const Duration(seconds: 60),
+        headers: {
+          if (token != null && token.isNotEmpty)
+            'Authorization': token, // 直接使用token
+        }
+      );
+      
+      print("[AiDocs] 请求头: ${options.headers}");
+      print("使用60秒超时发起allocate请求");
+      
+      // 使用带选项的post方法发送请求
+      final response = await _httpClient.getDioInstance().post(path, 
+        data: requestData,
+        options: options,
+      );
+      
+      return _handleResponse(response.data) as Map<String, dynamic>;
     } on ds_exceptions.ServerException {
       rethrow;
     } on ds_exceptions.NetworkException {
@@ -428,9 +911,31 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     };
     if (userId != null) requestData['user_id'] = userId;
     try {
-      // This method likely needs POST, not multipart if sending URL
-      final responseData = await _httpClient.post(path, body: requestData); 
+      // 获取token
+      final storage = const FlutterSecureStorage();
+      final token = await storage.read(key: 'auth_token');
+      print("[AiDocs] 转录音频，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      
+      // 创建包含认证头的选项
+      final options = Options(
+        headers: {
+          if (token != null && token.isNotEmpty)
+            'Authorization': token, // 直接使用token
+        }
+      );
+      print("[AiDocs] 请求头: ${options.headers}");
+      
+      // 直接使用Dio实例
+      final response = await _httpClient.getDioInstance().post(
+        path, 
+        data: requestData,
+        options: options
+      );
+      
+      // 处理响应
+      final responseData = response.data;
       final data = _handleResponse(responseData);
+      
       if (data != null && data['content'] is String) {
         return data['content'];
       } else {
@@ -443,6 +948,173 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } catch (e) {
       print('Unexpected error in transcribeAudio: $e');
       throw ds_exceptions.DataSourceException(message: 'Failed to transcribe audio: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> cancelChatGeneration({
+    required int conversationId,
+    required int userId,
+  }) async {
+    const String path = '/model/chat/cancel';
+    print("Cancelling chat generation for conversation $conversationId");
+    
+    final Map<String, dynamic> requestData = {
+      'conversation_id': conversationId,
+      'user_id': userId,
+    };
+    
+    try {
+      // 获取token
+      final storage = const FlutterSecureStorage();
+      final token = await storage.read(key: 'auth_token');
+      print("[AiDocs] 取消聊天，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      
+      // 创建包含认证头的选项
+      final options = Options(
+        headers: {
+          if (token != null && token.isNotEmpty)
+            'Authorization': token, // 直接使用token
+        }
+      );
+      
+      // 发送取消请求
+      final response = await _httpClient.getDioInstance().post(
+        path,
+        data: requestData,
+        options: options
+      );
+      
+      final responseData = response.data;
+      final result = responseData is Map ? responseData : {};
+      
+      if (result['status'] == 'success') {
+        print('[AiDocs] Chat generation cancelled successfully');
+      } else {
+        throw ds_exceptions.ServerException(
+          message: result['message'] ?? 'Failed to cancel chat generation'
+        );
+      }
+      
+    } on ds_exceptions.ServerException {
+      rethrow;
+    } on ds_exceptions.NetworkException {
+      rethrow;
+    } catch (e) {
+      print('Unexpected error in cancelChatGeneration: $e');
+      throw ds_exceptions.DataSourceException(
+        message: 'Failed to cancel chat generation: ${e.toString()}'
+      );
+    }
+  }
+
+  @override
+  Future<String> updateConversationTitle({
+    required int conversationId,
+    required int userId,
+    required String title,
+  }) async {
+    const String path = '/model/chat/title/update';
+    print("Updating conversation title using path: $path");
+    
+    final Map<String, dynamic> requestData = {
+      'conversation_id': conversationId,
+      'user_id': userId,
+      'title': title,
+    };
+    
+    try {
+      // 获取token
+      final storage = const FlutterSecureStorage();
+      final token = await storage.read(key: 'auth_token');
+      print("[AiDocs] 更新标题，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      
+      // 创建包含认证头的选项
+      final options = Options(
+        headers: {
+          if (token != null && token.isNotEmpty)
+            'Authorization': token, // 直接使用token
+        }
+      );
+      print("[AiDocs] 请求头: ${options.headers}");
+      
+      // 直接使用Dio实例
+      final response = await _httpClient.getDioInstance().post(
+        path, 
+        data: requestData,
+        options: options
+      );
+      
+      // 处理响应
+      final responseData = response.data;
+      final data = _handleResponse(responseData);
+      
+      if (data != null && data['title'] is String) {
+        return data['title'];
+      } else {
+        throw ds_exceptions.DataSourceException(message: 'Invalid title format in API response');
+      }
+    } on ds_exceptions.ServerException {
+      rethrow;
+    } on ds_exceptions.NetworkException {
+      rethrow;
+    } catch (e) {
+      print('Unexpected error in updateConversationTitle at $path: $e');
+      throw ds_exceptions.DataSourceException(message: 'Failed to update conversation title: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<String> generateConversationTitle({
+    required int conversationId,
+    required int userId,
+  }) async {
+    const String path = '/model/chat/title/generate';
+    print("Generating conversation title using path: $path");
+    
+    final Map<String, dynamic> requestData = {
+      'conversation_id': conversationId,
+      'user_id': userId,
+    };
+    
+    try {
+      // 获取token
+      final storage = const FlutterSecureStorage();
+      final token = await storage.read(key: 'auth_token');
+      print("[AiDocs] 生成标题，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      
+      // 创建包含认证头的选项
+      final options = Options(
+        headers: {
+          if (token != null && token.isNotEmpty)
+            'Authorization': token, // 直接使用token
+        }
+      );
+      print("[AiDocs] 请求头: ${options.headers}");
+      
+      // 直接使用Dio实例
+      final response = await _httpClient.getDioInstance().post(
+        path, 
+        data: requestData,
+        options: options
+      );
+      
+      // 处理响应
+      final responseData = response.data;
+      final data = _handleResponse(responseData);
+      
+      if (data != null && data['title'] is String) {
+        return data['title'];
+      } else {
+        throw ds_exceptions.DataSourceException(message: 'Invalid title format in API response');
+      }
+    } on ds_exceptions.ServerException {
+      rethrow;
+    } on ds_exceptions.NetworkException {
+      rethrow;
+    } catch (e) {
+      print('Unexpected error in generateConversationTitle at $path: $e');
+      throw ds_exceptions.DataSourceException(message: 'Failed to generate conversation title: ${e.toString()}');
     }
   }
 

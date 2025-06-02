@@ -33,12 +33,12 @@ class SendMessageImpl implements SendMessage {
       // Update message context with the uploaded file URL
       final fileUrl = uploadResult.getOrElse(() => ''); // Should always have a value if isRight()
       if (fileUrl.isEmpty) {
-        return Left(GeneralFailure());
+        return Left(GeneralFailure(message: '发送消息失败，参数无效'));
       }
        // Important: Create a *new* instance with the updated context
       messageToSend = messageToSend.copyWith(context: fileUrl);
     } else if ((messageToSend.type == 'image' || messageToSend.type == 'audio') && params.file == null) {
-       return Left(GeneralFailure());
+       return Left(GeneralFailure(message: '发送消息失败，参数无效'));
     }
 
     // Send the message (text or file URL as context)

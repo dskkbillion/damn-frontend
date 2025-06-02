@@ -73,7 +73,7 @@ class HomeRepositoryImpl implements IHomeRepository {
         );
         return Right(homePageData);
       } on CacheException {
-        return Left(CacheFailure());
+        return Left(CacheFailure(message: '缓存获取Banner失败'));
       }
     }
   }
@@ -108,7 +108,7 @@ class HomeRepositoryImpl implements IHomeRepository {
         )).toList();
         return Right(feedItems);
       } on CacheException {
-        return Left(CacheFailure());
+        return Left(CacheFailure(message: '缓存获取热门服务失败'));
       }
     }
   }
@@ -125,7 +125,7 @@ class HomeRepositoryImpl implements IHomeRepository {
       }
     } else {
       // 离线状态暂时不支持获取商品详情
-      return Left(NetworkFailure());
+      return Left(NetworkFailure(message: '网络连接失败，无法获取卖家信息'));
     }
   }
 
@@ -146,7 +146,7 @@ class HomeRepositoryImpl implements IHomeRepository {
         return Left(ServerFailure(message: e.message ?? "搜索失败"));
       }
     } else {
-      return Left(NetworkFailure());
+      return Left(NetworkFailure(message: '网络连接失败，无法获取更多卖家信息'));
     }
   }
 }

@@ -4,6 +4,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
+// 导入国际化
+import '../../../../generated/l10n.dart';
+
 import '../../domain/entities/product_detail.dart';
 import '../cubit/product_detail_cubit.dart';
 import '../widgets/product_images_carousel.dart';
@@ -72,8 +75,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
     );
     
     try {
-      // 调用创建聊天API
-      final result = await _chatRepository.createRoom(sellerId);
+      // 获取当前商品ID
+      final productId = int.tryParse(widget.productId);
+      
+      // 调用创建聊天API，包含商品ID
+      final result = await _chatRepository.createRoom(
+        sellerId,
+        productId: productId, // 传入商品ID
+      );
       
       // 关闭加载对话框
       Navigator.of(context, rootNavigator: true).pop();
@@ -82,9 +91,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
       result.fold(
         (failure) {
           // 显示错误提示
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('创建聊天失败: ${failure.message}')),
-          );
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   SnackBar(content: Text('创建聊天失败: ${failure.message}')),
+          // );
         },
         (chatId) {
           // 导航到聊天页面
@@ -96,9 +105,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
       Navigator.of(context, rootNavigator: true).pop();
       
       // 显示错误提示
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('发生错误: $e')),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text('发生错误: $e')),
+      // );
     } finally {
       setState(() {
         _isCreatingChat = false;
@@ -170,13 +179,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('加载失败: ${state.message}'),
+                    Text(S.of(context).product_detail_loading_failed(state.message)),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
                         context.read<ProductDetailCubit>().getProductDetail(widget.productId);
                       },
-                      child: const Text('重试'),
+                      child: Text(S.of(context).product_detail_retry),
                     ),
                   ],
                 ),
@@ -193,7 +202,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
               }
               return _buildProductDetail(context, product);
             }
-            return const Center(child: Text('请稍等...'));
+            return Center(child: Text(S.of(context).product_detail_please_wait));
           },
         ),
       ),
@@ -309,12 +318,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(Icons.check_circle, color: Colors.green, size: 14),
-                            SizedBox(width: 2),
+                          children: [
+                            const Icon(Icons.check_circle, color: Colors.green, size: 14),
+                            const SizedBox(width: 2),
                             Text(
-                              '多条数据json格式传',
-                              style: TextStyle(
+                              S.of(context).product_detail_verified_label,
+                              style: const TextStyle(
                                 color: Colors.green,
                                 fontSize: 12,
                               ),
@@ -352,10 +361,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Icon(Icons.chat_bubble_outline, size: 16),
-                  SizedBox(width: 4),
-                  Text('咨询卖家'),
+                children: [
+                  const Icon(Icons.chat_bubble_outline, size: 16),
+                  const SizedBox(width: 4),
+                  Text(S.of(context).product_detail_contact_seller),
                 ],
               ),
             ),
@@ -379,9 +388,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
               color: Colors.grey[200],
               borderRadius: BorderRadius.circular(4),
             ),
-            child: const Text(
-              '已发布（审核通过）改名',
-              style: TextStyle(
+            child: Text(
+              S.of(context).product_detail_published_status,
+              style: const TextStyle(
                 fontSize: 12,
                 color: Colors.black87,
               ),
@@ -415,7 +424,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                   ),
                 ),
                 Text(
-                  '更多',
+                  S.of(context).product_detail_more,
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.blue[600],
@@ -462,7 +471,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('交付次数', style: TextStyle(fontSize: 16)),
+              Text(S.of(context).product_detail_delivery_times, style: const TextStyle(fontSize: 16)),
               Text('${variant.editNum}', style: const TextStyle(fontSize: 16)),
             ],
           ),
@@ -470,7 +479,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-              const Text('交付周期', style: TextStyle(fontSize: 16)),
+              Text(S.of(context).product_detail_delivery_period, style: const TextStyle(fontSize: 16)),
               Text('${variant.deliveryDay}', style: const TextStyle(fontSize: 16)),
             ],
             ),
@@ -484,16 +493,30 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
         ? product.variants![_selectedVariantIndex]
         : null;
     
+    if (variant == null) {
+      return const SizedBox.shrink();
+    }
+    
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
       width: double.infinity,
       height: 50,
       child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('立即购买功能待实现')),
-                  );
-                },
+        onPressed: () {
+          // 导航到订单确认页面
+          context.go(
+            '/products/${product.id}/confirm',
+            extra: {
+              'productId': product.id,
+              'variantId': variant.id,
+              'quantity': 1, // 默认购买数量为1
+              'sellerId': product.sellerId,
+              'productName': product.name,
+              'price': variant.sellingPrice,
+              'imageUrl': product.images?.isNotEmpty == true ? product.images!.first : null,
+            },
+          );
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.black,
           shape: RoundedRectangleBorder(
@@ -501,8 +524,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           ),
         ),
         child: Text(
-          '一键购买(1)',
-          style: TextStyle(
+          S.of(context).product_detail_buy_now,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -518,9 +541,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
     }
     
     return ExpansionTile(
-      title: const Text(
-                      '常见问题',
-                      style: TextStyle(
+      title: Text(
+                      S.of(context).product_detail_faq,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -555,15 +578,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
   }
 
   Widget _buildCaseShowcase(ProductDetail product) {
-    // 暂无案例展示数据，但添加UI占位
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '案例展示',
-            style: TextStyle(
+          Text(
+            S.of(context).product_detail_case_showcase,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               ),
@@ -578,7 +600,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
             ),
             child: Center(
               child: Text(
-                '暂无案例展示',
+                S.of(context).product_detail_no_cases,
                 style: TextStyle(color: Colors.grey[600]),
               ),
             ),
@@ -598,7 +620,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '评论(${product.evaluateNum})',
+                S.of(context).product_detail_reviews(product.evaluateNum),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -614,9 +636,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                 },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Text('查看全部', style: TextStyle(color: Colors.grey)),
-                    Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+                  children: [
+                    Text(S.of(context).product_detail_view_all, style: const TextStyle(color: Colors.grey)),
+                    const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
                   ],
           ),
               ),
@@ -626,12 +648,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           
           // 如果没有评价，显示"暂无评价"提示
           if (product.evaluateNum <= 0)
-            const Center(
+            Center(
               child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
                 child: Text(
-                  '暂无评价',
-                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                  S.of(context).product_detail_no_reviews,
+                  style: const TextStyle(color: Colors.grey, fontSize: 14),
                 ),
               ),
             )
@@ -651,16 +673,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
+                        children: [
                           Flexible(
                             child: Text(
-                              '瑞123', 
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              S.of(context).product_detail_sample_user, 
+                              style: const TextStyle(fontWeight: FontWeight.bold),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          SizedBox(width: 8),
-                          Text(
+                          const SizedBox(width: 8),
+                          const Text(
                             '2025-03-12 11:20:05', 
                             style: TextStyle(color: Colors.grey, fontSize: 12),
                           ),
@@ -668,12 +690,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                       ),
                       const SizedBox(height: 4),
                       Row(
-                        children: const [
-                          Text('基础', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                        children: [
+                          Text(S.of(context).product_detail_basic_package, style: const TextStyle(color: Colors.grey, fontSize: 12)),
                         ],
               ),
                       const SizedBox(height: 4),
-                      const Text('不错，很有耐心'),
+                      Text(S.of(context).product_detail_sample_review),
                     ],
             ),
                 ),

@@ -47,7 +47,7 @@ class ChatRepositoryImpl implements IChatRepository {
       } catch (e) {
         // Catch unexpected errors during user fetch or API call
         print("Unexpected error in getChatRooms Repository: $e");
-        return Left(GeneralFailure());
+        return Left(GeneralFailure(message: '读取聊天室列表失败'));
       }
     // } else {
     //   // Handle no network connection case if needed
@@ -56,7 +56,7 @@ class ChatRepositoryImpl implements IChatRepository {
   }
 
   @override
-  Future<Either<Failure, List<ChatMessage>>> getMessages(int chatId) async {
+  Future<Either<Failure, List<ChatMessage>>> getMessages(int chatId, {int pageNum = 1, int pageSize = 20}) async {
     // TODO: Implement getMessages similar to getChatRooms
     // Need to fetch current user ID to pass to toEntity
     try {
@@ -65,7 +65,7 @@ class ChatRepositoryImpl implements IChatRepository {
          (failure) => Left(failure),
          (user) async {
            try {
-             final messageDtos = await remoteDataSource.getMessages(chatId);
+             final messageDtos = await remoteDataSource.getMessages(chatId, pageNum: pageNum, pageSize: pageSize);
              final messages = messageDtos.map((dto) {
                final senderId = dto.memberId ?? dto.doctorId ?? 0;
                return dto.toEntity(currentUserId: user.id, senderId: senderId);
@@ -78,7 +78,7 @@ class ChatRepositoryImpl implements IChatRepository {
        );
     } catch (e) {
        print("Unexpected error in getMessages Repository: $e");
-       return Left(GeneralFailure());
+       return Left(GeneralFailure(message: '读取聊天消息失败'));
     }
   }
 
@@ -100,7 +100,7 @@ class ChatRepositoryImpl implements IChatRepository {
        );
     } catch (e) {
        print("Unexpected error in getRoomDetails Repository: $e");
-       return Left(GeneralFailure());
+       return Left(GeneralFailure(message: '读取聊天室详情失败'));
     }
   }
 
@@ -135,22 +135,28 @@ class ChatRepositoryImpl implements IChatRepository {
     } catch (e) {
        print("Unexpected error in sendMessage Repository: $e");
        // FIX: Use correct GeneralFailure constructor (no message)
-       return Left(GeneralFailure());
+       return Left(GeneralFailure(message: '发送消息失败'));
     }
   }
 
   @override
-  Future<Either<Failure, int>> createRoom(int participantId) async {
-     print("[Repository] Creating room with participantId: $participantId");
+  Future<Either<Failure, int>> createRoom(
+    int participantId, {
+    int? productId, // 新增可选的商品ID参数
+  }) async {
+     print("[Repository] Creating room with participantId: $participantId, productId: $productId");
      // TODO: Check network connection if needed
      try {
-       final chatId = await remoteDataSource.createRoom(participantId);
+       final chatId = await remoteDataSource.createRoom(
+         participantId,
+         productId: productId, // 传递productId给数据源
+       );
        return Right(chatId);
      } on ServerException catch (e) {
        return Left(ServerFailure(message: e.message ?? 'Server error', code: e.statusCode?.toString()));
      } catch (e) {
        print("[Repository] Unexpected error creating room: $e");
-       return Left(GeneralFailure());
+       return Left(GeneralFailure(message: '创建聊天室失败'));
      }
   }
 

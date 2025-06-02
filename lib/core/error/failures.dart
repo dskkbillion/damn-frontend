@@ -4,25 +4,31 @@ import 'package:equatable/equatable.dart';
 /// 使用 Equatable 以方便比较。
 abstract class Failure extends Equatable {
   final String message;
+  final int? statusCode;
 
   /// {@macro failure}
-  const Failure({this.message = 'An unexpected error occurred'});
+  const Failure({
+    required this.message,
+    this.statusCode,
+  });
 
   // Subclasses should override props if they have properties to compare
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, statusCode];
 }
 
 /// 表示服务器相关的错误 (例如, API 调用失败, 5xx 错误)
 class ServerFailure extends Failure {
   final String? code;
-  final int? statusCode;
 
   const ServerFailure({
-    String message = 'Server Error', 
-    this.code, 
-    this.statusCode
-  }) : super(message: message);
+    required String message,
+    int? statusCode,
+    this.code,
+  }) : super(
+          message: message,
+          statusCode: statusCode,
+        );
 
   @override
   List<Object?> get props => [message, code, statusCode];
@@ -34,9 +40,10 @@ class ServerFailure extends Failure {
 /// 表示网络连接错误
 class NetworkFailure extends Failure {
   final String? code;
+
   const NetworkFailure({
-    String message = 'Network connection failed', 
-    this.code
+    required String message,
+    this.code,
   }) : super(message: message);
   
   @override
@@ -49,9 +56,10 @@ class NetworkFailure extends Failure {
 /// 表示本地缓存相关的错误 (例如, 读取/写入 SharedPreferences 失败)
 class CacheFailure extends Failure {
   final String? code;
+
   const CacheFailure({
-    String message = 'Cache Error', 
-    this.code
+    required String message,
+    this.code,
   }) : super(message: message);
 
   @override
@@ -74,9 +82,10 @@ class SimpleFailure extends Failure {
 /// 表示一个通用的、未指定类型的失败情况。
 class GeneralFailure extends Failure {
   final String code;
+
   const GeneralFailure({
+    required String message,
     this.code = 'GENERAL_ERROR',
-    String message = 'An unexpected error occurred'
   }) : super(message: message);
 
   @override
@@ -92,6 +101,7 @@ class ValidationFailure extends Failure {
 /// 聊天错误
 class ChatFailure extends Failure {
   final String code;
+
   const ChatFailure({
     required this.code,
     String message = 'Chat Error'
@@ -104,6 +114,7 @@ class ChatFailure extends Failure {
 /// 未授权错误
 class UnauthorizedFailure extends Failure {
   final String code;
+
   const UnauthorizedFailure({
     this.code = 'UNAUTHORIZED',
     String message = 'Unauthorized'
@@ -142,4 +153,15 @@ class NotFoundFailure extends Failure {
 class UnknownFailure extends Failure {
   const UnknownFailure({String message = 'An unknown error occurred'})
       : super(message: message);
+}
+
+/// 支付错误
+class PaymentFailure extends Failure {
+  const PaymentFailure({
+    required String message,
+    int? statusCode,
+  }) : super(
+          message: message,
+          statusCode: statusCode,
+        );
 }
