@@ -13,8 +13,13 @@ import 'package:dskk_flutter_refactor/features/home/presentation/pages/product_d
 
 class ChatRoomPage extends StatefulWidget {
   final int chatId;
+  final VoidCallback? onMessagesLoaded; // 新增回调参数
 
-  const ChatRoomPage({super.key, required this.chatId});
+  const ChatRoomPage({
+    super.key, 
+    required this.chatId,
+    this.onMessagesLoaded, // 添加可选回调
+  });
 
   @override
   State<ChatRoomPage> createState() => _ChatRoomPageState();
@@ -311,6 +316,12 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   listener: (context, state) {
                      // 优化滚动逻辑
                      if (state is ChatMessagesLoaded) {
+                        // 当消息首次加载成功时，触发回调通知聊天列表更新未读数量
+                        if (state.isInitialLoad) {
+                          print('[ChatRoomPage] Messages loaded successfully, triggering onMessagesLoaded callback');
+                          widget.onMessagesLoaded?.call();
+                        }
+                        
                         // 如果是初始加载或发送新消息，滚动到底部
                         if (state.isInitialLoad || state.hasNewMessage) {
                           // 使用多层延迟，确保在各种情况下都能滚动到底部
