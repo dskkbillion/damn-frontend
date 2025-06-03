@@ -10,6 +10,7 @@ class RelatedServiceEntity extends Equatable {
   final String title;
   // rating field removed as it's not in the API response
   final double price; // Changed type to double
+  final bool allocationStatusRecorded; // 🆕 新增字段
 
   /// {@macro related_service_entity}
   const RelatedServiceEntity({
@@ -17,9 +18,10 @@ class RelatedServiceEntity extends Equatable {
     required this.imageUrl,
     required this.title,
     required this.price,
+    this.allocationStatusRecorded = false, // 默认值
   });
 
   @override
   // Updated props list
-  List<Object?> get props => [id, imageUrl, title, price]; 
+  List<Object?> get props => [id, imageUrl, title, price, allocationStatusRecorded]; 
 } 

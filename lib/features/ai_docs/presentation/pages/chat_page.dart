@@ -14,6 +14,7 @@ import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化�
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/bloc/ai_chat/ai_chat_bloc.dart'; // Use package import
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat_message_widget.dart'; // Use package import
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/animated_allocation_button.dart'; // 导入动画按钮组件
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/service_allocation_buttons.dart'; // 🆕 导入新的分配按钮组件
 
 // Import domain interfaces and usecases (Use package imports)
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/repositories/i_ai_chat_repository.dart';
@@ -532,9 +533,9 @@ class ServiceGridItem extends StatelessWidget {
                 
                 const SizedBox(height: 8),
                 
-                    // 使用新的动画按钮替换原有按钮
-                    AnimatedAllocationButton(
-                      status: allocationStatus,
+                    // 🆕 使用新的按钮组件替换AnimatedAllocationButton
+                    ServiceAllocationButtons(
+                      service: service,
                       onTap: onTap,
                       onEnterChat: onEnterChat,
                 ),

@@ -29,7 +29,9 @@ mixin _$RelatedServiceModel {
   String get title =>
       throw _privateConstructorUsedError; // rating field removed
   @JsonKey(name: 'sellingPrice')
-  double get price => throw _privateConstructorUsedError;
+  double get price => throw _privateConstructorUsedError; // Changed to double
+  @JsonKey(name: 'allocation_status_recorded')
+  bool get allocationStatusRecorded => throw _privateConstructorUsedError;
 
   /// Serializes this RelatedServiceModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -51,7 +53,9 @@ abstract class $RelatedServiceModelCopyWith<$Res> {
       {int id,
       @JsonKey(name: 'mainImage') String imageUrl,
       @JsonKey(name: 'name') String title,
-      @JsonKey(name: 'sellingPrice') double price});
+      @JsonKey(name: 'sellingPrice') double price,
+      @JsonKey(name: 'allocation_status_recorded')
+      bool allocationStatusRecorded});
 }
 
 /// @nodoc
@@ -73,6 +77,7 @@ class _$RelatedServiceModelCopyWithImpl<$Res, $Val extends RelatedServiceModel>
     Object? imageUrl = null,
     Object? title = null,
     Object? price = null,
+    Object? allocationStatusRecorded = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -91,6 +96,10 @@ class _$RelatedServiceModelCopyWithImpl<$Res, $Val extends RelatedServiceModel>
           ? _value.price
           : price // ignore: cast_nullable_to_non_nullable
               as double,
+      allocationStatusRecorded: null == allocationStatusRecorded
+          ? _value.allocationStatusRecorded
+          : allocationStatusRecorded // ignore: cast_nullable_to_non_nullable
+              as bool,
     ) as $Val);
   }
 }
@@ -107,7 +116,9 @@ abstract class _$$RelatedServiceModelImplCopyWith<$Res>
       {int id,
       @JsonKey(name: 'mainImage') String imageUrl,
       @JsonKey(name: 'name') String title,
-      @JsonKey(name: 'sellingPrice') double price});
+      @JsonKey(name: 'sellingPrice') double price,
+      @JsonKey(name: 'allocation_status_recorded')
+      bool allocationStatusRecorded});
 }
 
 /// @nodoc
@@ -127,6 +138,7 @@ class __$$RelatedServiceModelImplCopyWithImpl<$Res>
     Object? imageUrl = null,
     Object? title = null,
     Object? price = null,
+    Object? allocationStatusRecorded = null,
   }) {
     return _then(_$RelatedServiceModelImpl(
       id: null == id
@@ -145,6 +157,10 @@ class __$$RelatedServiceModelImplCopyWithImpl<$Res>
           ? _value.price
           : price // ignore: cast_nullable_to_non_nullable
               as double,
+      allocationStatusRecorded: null == allocationStatusRecorded
+          ? _value.allocationStatusRecorded
+          : allocationStatusRecorded // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -156,7 +172,9 @@ class _$RelatedServiceModelImpl extends _RelatedServiceModel {
       {required this.id,
       @JsonKey(name: 'mainImage') required this.imageUrl,
       @JsonKey(name: 'name') required this.title,
-      @JsonKey(name: 'sellingPrice') required this.price})
+      @JsonKey(name: 'sellingPrice') required this.price,
+      @JsonKey(name: 'allocation_status_recorded')
+      this.allocationStatusRecorded = false})
       : super._();
 
   factory _$RelatedServiceModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -177,10 +195,14 @@ class _$RelatedServiceModelImpl extends _RelatedServiceModel {
   @override
   @JsonKey(name: 'sellingPrice')
   final double price;
+// Changed to double
+  @override
+  @JsonKey(name: 'allocation_status_recorded')
+  final bool allocationStatusRecorded;
 
   @override
   String toString() {
-    return 'RelatedServiceModel(id: $id, imageUrl: $imageUrl, title: $title, price: $price)';
+    return 'RelatedServiceModel(id: $id, imageUrl: $imageUrl, title: $title, price: $price, allocationStatusRecorded: $allocationStatusRecorded)';
   }
 
   @override
@@ -192,12 +214,16 @@ class _$RelatedServiceModelImpl extends _RelatedServiceModel {
             (identical(other.imageUrl, imageUrl) ||
                 other.imageUrl == imageUrl) &&
             (identical(other.title, title) || other.title == title) &&
-            (identical(other.price, price) || other.price == price));
+            (identical(other.price, price) || other.price == price) &&
+            (identical(
+                    other.allocationStatusRecorded, allocationStatusRecorded) ||
+                other.allocationStatusRecorded == allocationStatusRecorded));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, imageUrl, title, price);
+  int get hashCode => Object.hash(
+      runtimeType, id, imageUrl, title, price, allocationStatusRecorded);
 
   /// Create a copy of RelatedServiceModel
   /// with the given fields replaced by the non-null parameter values.
@@ -218,11 +244,12 @@ class _$RelatedServiceModelImpl extends _RelatedServiceModel {
 
 abstract class _RelatedServiceModel extends RelatedServiceModel {
   const factory _RelatedServiceModel(
-          {required final int id,
-          @JsonKey(name: 'mainImage') required final String imageUrl,
-          @JsonKey(name: 'name') required final String title,
-          @JsonKey(name: 'sellingPrice') required final double price}) =
-      _$RelatedServiceModelImpl;
+      {required final int id,
+      @JsonKey(name: 'mainImage') required final String imageUrl,
+      @JsonKey(name: 'name') required final String title,
+      @JsonKey(name: 'sellingPrice') required final double price,
+      @JsonKey(name: 'allocation_status_recorded')
+      final bool allocationStatusRecorded}) = _$RelatedServiceModelImpl;
   const _RelatedServiceModel._() : super._();
 
   factory _RelatedServiceModel.fromJson(Map<String, dynamic> json) =
@@ -240,7 +267,10 @@ abstract class _RelatedServiceModel extends RelatedServiceModel {
   String get title; // rating field removed
   @override
   @JsonKey(name: 'sellingPrice')
-  double get price;
+  double get price; // Changed to double
+  @override
+  @JsonKey(name: 'allocation_status_recorded')
+  bool get allocationStatusRecorded;
 
   /// Create a copy of RelatedServiceModel
   /// with the given fields replaced by the non-null parameter values.
