@@ -75,6 +75,8 @@ CANCEL   // 取消
 - `payTime` → `payTime` (DateTime)
 - `deliveryTime` → `deliveryTime` (DateTime)
 - `completeTime` → `completeTime` (DateTime)
+- `buyerPlatformFlag` → `buyerPlatformFlag` (Boolean) - 买家平台介入标记
+- `sellerPlatformFlag` → `sellerPlatformFlag` (Boolean) - 卖家平台介入标记
 
 ### 2. 订单需求信息
 参考后端实体：[OrderDemand.java](mdc:duoshaokk_api/xunman-shop/src/main/java/vip/xunman/shop/orderDemand/OrderDemand.java)

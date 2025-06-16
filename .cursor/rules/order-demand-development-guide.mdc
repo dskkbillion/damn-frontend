@@ -29,7 +29,7 @@ GET  /api/project/orderDemand/get        # 申请详情
 2. `reform` - 买家申请重做（买家发起）  
 3. `replenish_materials` - 卖家申请补充材料（卖家发起）
 4. `refuse` - 卖家拒绝接单（卖家发起）
-5. `platform` - 平台介入（**目前禁用**）
+5. `platform` - 平台介入（**已实现，设置标记供管理后台处理**）
 
 ## 前端开发任务拆解
 
@@ -167,7 +167,60 @@ Future<void> auditOrderDemand({
 }
 ```
 
-### 第三阶段：需求状态跟踪功能
+### 第三阶段：平台介入功能
+
+#### 1. 创建平台介入申请页面
+**文件路径：** `lib/features/orders/presentation/pages/platform_intervention_apply_page.dart`
+
+**页面功能：**
+- 显示订单争议详情
+- 选择申请平台介入的理由
+- 填写详细情况说明
+- 提交平台介入申请
+
+#### 2. 实现平台标记显示
+**文件路径：** `lib/features/orders/presentation/widgets/platform_intervention_status_widget.dart`
+
+**功能实现：**
+```dart
+class PlatformInterventionStatus extends StatelessWidget {
+  final bool buyerPlatformFlag;
+  final bool sellerPlatformFlag;
+  
+  Widget build(BuildContext context) {
+    if (buyerPlatformFlag) {
+      return StatusTag(text: '已申请平台介入', type: StatusTagType.warning);
+    }
+    if (sellerPlatformFlag) {
+      return StatusTag(text: '对方已申请平台介入', type: StatusTagType.info);
+    }
+    return const SizedBox.shrink();
+  }
+}
+```
+
+#### 3. 实现平台介入API
+```dart
+// 申请平台介入
+Future<void> applyPlatformIntervention({
+  required int orderId,
+  required String reasonValue,
+  required String reasonLabel,
+  String? remarks,
+}) async {
+  const String endpoint = '/api/project/orderDemand/add';
+  final requestData = {
+    'orderId': orderId,
+    'type': 'platform',
+    'reasonValue': reasonValue,
+    'reasonLabel': reasonLabel,
+    if (remarks != null) 'remarks': remarks,
+  };
+  // API实现...
+}
+```
+
+### 第四阶段：需求状态跟踪功能
 
 #### 1. 创建需求列表页面
 **文件路径：** `lib/features/orders/presentation/pages/order_demand_list_page.dart`
@@ -281,11 +334,13 @@ if (errorMessage.contains('无法提交申请')) {
 - [ ] 简单的状态展示
 
 ### 里程碑2（2-3周）  
+- [ ] 平台介入功能完成
+- [ ] 平台标记显示实现
 - [ ] 卖家审核功能完成
-- [ ] 需求列表页面完成
 - [ ] 错误处理完善
 
 ### 里程碑3（3-4周）
+- [ ] 需求列表页面完成
 - [ ] 需求详情页面完成
 - [ ] 状态跟踪组件完成
 - [ ] 与现有功能集成
