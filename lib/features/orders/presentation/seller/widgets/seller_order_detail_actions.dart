@@ -1,16 +1,206 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get_it/get_it.dart';
 
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/repositories/i_order_repository.dart';
 import '../bloc/seller_order_detail_bloc.dart'; // Import Detail Bloc
 
+/// 邀请评价状态数据类
+class InvitationStatus {
+  final int todayCount;
+  final DateTime? lastInviteTime;
+  
+  const InvitationStatus({
+    this.todayCount = 0,
+    this.lastInviteTime,
+  });
+  
+  bool get hasReachedLimit => todayCount >= 3;
+  
+  bool get hasInvitedToday {
+    if (lastInviteTime == null) return false;
+    final now = DateTime.now();
+    final lastDate = lastInviteTime!;
+    return now.year == lastDate.year && 
+           now.month == lastDate.month && 
+           now.day == lastDate.day;
+  }
+  
+  String get statusText {
+    if (hasReachedLimit) {
+      return '今日已邀请 $todayCount/3 次';
+    } else if (hasInvitedToday) {
+      return '今日已邀请 $todayCount/3 次';
+    } else {
+      return '可邀请评价';
+    }
+  }
+}
+
 /// Displays action buttons for the SellerOrderDetailPage, typically at the bottom.
-class SellerOrderDetailActions extends StatelessWidget {
+class SellerOrderDetailActions extends StatefulWidget {
   final Order order;
 
   const SellerOrderDetailActions({super.key, required this.order});
+
+  @override
+  State<SellerOrderDetailActions> createState() => _SellerOrderDetailActionsState();
+}
+
+class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
+  InvitationStatus? _invitationStatus;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.order.state == OrderStatus.orderCompleted) {
+      _loadInvitationStatus();
+    }
+  }
+
+  /// 加载邀请状态
+  Future<void> _loadInvitationStatus() async {
+    final prefs = GetIt.instance<SharedPreferences>();
+    final key = 'invitation_status_${widget.order.id}';
+    final data = prefs.getString(key);
+    
+    if (data != null) {
+      try {
+        final parts = data.split('|');
+        if (parts.length >= 2) {
+          final todayCount = int.parse(parts[0]);
+          final lastTimeStr = parts[1];
+          final lastTime = lastTimeStr.isNotEmpty ? DateTime.parse(lastTimeStr) : null;
+          
+          // 检查是否跨天，如果跨天则重置计数
+          if (lastTime != null) {
+            final now = DateTime.now();
+            final lastDate = DateTime(lastTime.year, lastTime.month, lastTime.day);
+            final today = DateTime(now.year, now.month, now.day);
+            
+            if (lastDate.isBefore(today)) {
+              // 跨天了，重置计数
+              setState(() {
+                _invitationStatus = const InvitationStatus(todayCount: 0);
+              });
+              await _saveInvitationStatus(const InvitationStatus(todayCount: 0));
+              return;
+            }
+          }
+          
+          setState(() {
+            _invitationStatus = InvitationStatus(
+              todayCount: todayCount,
+              lastInviteTime: lastTime,
+            );
+          });
+        }
+      } catch (e) {
+        print('[SellerOrderDetailActions] Error parsing invitation status: $e');
+      }
+    }
+    
+    // 如果没有数据或解析失败，使用默认状态
+    if (_invitationStatus == null) {
+      setState(() {
+        _invitationStatus = const InvitationStatus();
+      });
+    }
+  }
+
+  /// 保存邀请状态
+  Future<void> _saveInvitationStatus(InvitationStatus status) async {
+    final prefs = GetIt.instance<SharedPreferences>();
+    final key = 'invitation_status_${widget.order.id}';
+    final data = '${status.todayCount}|${status.lastInviteTime?.toIso8601String() ?? ''}';
+    await prefs.setString(key, data);
+  }
+
+  /// 处理邀请评价操作
+  Future<void> _handleInviteEvaluation(BuildContext context) async {
+    final bloc = BlocProvider.of<SellerOrderDetailBloc>(context);
+    
+    // 检查是否已达到限制
+    if (_invitationStatus?.hasReachedLimit == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('今日邀请次数已达上限（3次），请明天再试'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // 显示确认对话框，包含状态信息
+    final confirmed = await _showInviteConfirmationDialog(context);
+    if (confirmed == true) {
+      // 先乐观更新UI状态
+      final currentStatus = _invitationStatus ?? const InvitationStatus();
+      final newStatus = InvitationStatus(
+        todayCount: currentStatus.todayCount + 1,
+        lastInviteTime: DateTime.now(),
+      );
+      
+      setState(() {
+        _invitationStatus = newStatus;
+      });
+      await _saveInvitationStatus(newStatus);
+      
+      // 发送邀请请求
+      bloc.add(SellerInviteEvaluationRequested(orderId: widget.order.id));
+    }
+  }
+
+  /// 显示邀请确认对话框
+  Future<bool?> _showInviteConfirmationDialog(BuildContext context) {
+    final status = _invitationStatus ?? const InvitationStatus();
+    final remaining = 3 - status.todayCount;
+    
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('邀请评价'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('您确定要邀请买家评价此订单吗？'),
+              const SizedBox(height: 8),
+              Text(
+                '当前状态：${status.statusText}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: status.hasReachedLimit ? Colors.orange : Colors.green,
+                ),
+              ),
+              if (remaining > 0) ...[
+                const SizedBox(height: 4),
+                Text(
+                  '邀请后今日还可邀请 ${remaining - 1} 次',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('取消'),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+            ),
+            TextButton(
+              child: const Text('确认邀请'),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +247,7 @@ class SellerOrderDetailActions extends StatelessWidget {
     );
 
     // Determine buttons based on state
-    switch (order.state) {
+    switch (widget.order.state) {
       case OrderStatus.awaitingStart:
         buttons.add(OutlinedButton(
           onPressed: () async {
@@ -72,7 +262,7 @@ class SellerOrderDetailActions extends StatelessWidget {
                 if (reasonLabel.trim().isNotEmpty) {
                     // TODO: Map common reasons to reasonValue codes if needed by API
                     final params = AddOrderDemandParams(
-                        orderId: order.id,
+                        orderId: widget.order.id,
                         type: 'refuse',
                         reasonValue: 'seller_reject_custom', // Placeholder value
                         reasonLabel: reasonLabel.trim(),
@@ -94,7 +284,7 @@ class SellerOrderDetailActions extends StatelessWidget {
            onPressed: () async {
             final confirmed = await _showConfirmationDialog(context, title: '确认接单', content: '您确定要接受此订单吗？');
             if (confirmed == true) {
-              bloc.add(SellerConfirmAcceptanceRequested(orderId: order.id));
+              bloc.add(SellerConfirmAcceptanceRequested(orderId: widget.order.id));
             }
            }, 
            style: filledStyle, 
@@ -114,13 +304,13 @@ class SellerOrderDetailActions extends StatelessWidget {
 
                if (deliverySn.isNotEmpty) { // Require SN at least
                   final params = DeliverOrderParams(
-                    orderId: order.id, 
+                    orderId: widget.order.id, 
                     content: '已发货', // Or use custom content?
                     files: [], // TODO: Handle file uploads
                     deliverySn: deliverySn, // Pass the collected SN
                     deliveryCompany: deliveryCompany.isNotEmpty ? deliveryCompany : null, // Pass company if provided
                   );
-                  bloc.add(SellerDeliverRequested(orderId: order.id, params: params));
+                  bloc.add(SellerDeliverRequested(orderId: widget.order.id, params: params));
                } else {
                  // SN was empty, even if dialog was confirmed
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -142,29 +332,61 @@ class SellerOrderDetailActions extends StatelessWidget {
           onPressed: () async {
              final confirmed = await _showConfirmationDialog(context, title: '确认删除', content: '您确定要删除这条订单记录吗？此操作无法撤销。');
              if (confirmed == true) {
-               bloc.add(SellerDeleteRecordRequested(orderId: order.id));
+               bloc.add(SellerDeleteRecordRequested(orderId: widget.order.id));
              }
           }, 
           style: outlineStyle, 
           child: const Text('删除记录')
           ));
-        buttons.add(ElevatedButton(
-           onPressed: () async {
-             final confirmed = await _showConfirmationDialog(context, title: '邀请评价', content: '您确定要邀请买家评价此订单吗？');
-             if (confirmed == true) {
-               bloc.add(SellerInviteEvaluationRequested(orderId: order.id));
-             }
-           }, 
-           style: filledStyle, 
-           child: const Text('邀请评价')
+        
+        // 改进的邀请评价按钮
+        if (_invitationStatus != null) {
+          final status = _invitationStatus!;
+          buttons.add(ElevatedButton(
+            onPressed: status.hasReachedLimit ? null : () => _handleInviteEvaluation(context),
+            style: status.hasReachedLimit 
+              ? ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  textStyle: Theme.of(context).textTheme.labelLarge,
+                  backgroundColor: Colors.grey[300],
+                  foregroundColor: Colors.grey[600],
+                )
+              : filledStyle,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(status.hasReachedLimit ? '已达上限' : '邀请评价'),
+                if (status.hasInvitedToday) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    '${status.todayCount}/3',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      fontSize: 10,
+                      color: status.hasReachedLimit ? Colors.grey[600] : Colors.white70,
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ));
+        } else {
+          // 加载中状态
+          buttons.add(ElevatedButton(
+            onPressed: null,
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              backgroundColor: Colors.grey[300],
+            ),
+            child: const Text('加载中...'),
+          ));
+        }
         break;
       case OrderStatus.canceled:
           buttons.add(OutlinedButton(
            onPressed: () async {
              final confirmed = await _showConfirmationDialog(context, title: '确认删除', content: '您确定要删除这条已取消的订单记录吗？此操作无法撤销。');
              if (confirmed == true) {
-                bloc.add(SellerDeleteRecordRequested(orderId: order.id));
+                bloc.add(SellerDeleteRecordRequested(orderId: widget.order.id));
               }
             }, 
             style: outlineStyle, 

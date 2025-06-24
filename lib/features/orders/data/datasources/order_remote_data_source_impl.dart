@@ -476,10 +476,33 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
 
   @override
   Future<void> inviteEvaluation(int orderId) async {
-    // API endpoint for inviting evaluation is not confirmed yet.
-    print('[OrderRemoteDataSource] ERROR: inviteEvaluation called, but API endpoint is unknown.');
-    throw UnimplementedError('API endpoint for inviting evaluation is not implemented.');
-    // Or return Left(ServerFailure(...)) immediately if preferred
+    const String endpoint = '/api/shop/evaluate/invite';
+    try {
+      final response = await coreDioClient.post(
+        endpoint,
+        queryParameters: {'orderId': orderId.toString()},
+        data: {}, // Empty body as per API requirements
+      );
+      
+      // Check BUSINESS code from response body
+      if (response.statusCode == 200 && response.data != null && response.data['code'] == 200) {
+         print('[OrderRemoteDataSourceImpl] inviteEvaluation successful (Code: ${response.data['code']}).');
+         return;
+      } else {
+        final errorMsg = response.data?['msg'] ?? 'Failed to invite evaluation (Unknown error)';
+        final errorCode = response.data?['code'] ?? response.statusCode;
+        print('[OrderRemoteDataSourceImpl] inviteEvaluation failed. Code: $errorCode, Msg: $errorMsg');
+        throw ServerFailure(message: errorMsg);
+      }
+    } on DioException catch (e) {
+      print('[OrderRemoteDataSourceImpl] inviteEvaluation DioException: ${e.toString()}');
+      throw ServerFailure(
+          message: e.response?.data?['msg'] ?? e.message ?? 'Network error inviting evaluation');
+    } catch (e) {
+      print('[OrderRemoteDataSourceImpl] inviteEvaluation unexpected error: ${e.toString()}');
+      if (e is ServerFailure) { rethrow; }
+      throw ServerFailure(message: 'An unexpected error occurred inviting evaluation: ${e.toString()}');
+    }
   }
 
   @override

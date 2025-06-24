@@ -134,6 +134,9 @@ Future<void> main() async {
   await PaymentDI.init(getIt);
   print('[main_seller_preview] Payment dependencies configured.');
   
+  // 注意: 订单模块依赖已通过 configureDependencies 中的 OrdersDI.init 统一配置
+  // 包括买家和卖家订单相关的用例、BLoC等
+  
   // 12. 手动注入卖家认证信息
   print('[main_seller_preview] Injecting seller credentials...');
   try {

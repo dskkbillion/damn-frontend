@@ -3,13 +3,71 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_stat
 import 'package:flutter/material.dart';
 
 /// Widget displaying the order status timeline and description card.
-class OrderStatusTimelineHeader extends StatelessWidget {
+class OrderStatusTimelineHeader extends StatefulWidget {
   final Order order;
 
   const OrderStatusTimelineHeader({super.key, required this.order});
 
-  // TODO: Implement the actual timeline and description card UI based on prototypes
-  // This is a basic placeholder structure
+  @override
+  State<OrderStatusTimelineHeader> createState() => _OrderStatusTimelineHeaderState();
+}
+
+class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader>
+    with TickerProviderStateMixin {
+  late AnimationController _progressController;
+  late Animation<double> _progressAnimation;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // 进度动画控制器
+    _progressController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+    
+    _progressAnimation = Tween<double>(
+      begin: 0.0,
+      end: _getCurrentProgress(),
+    ).animate(CurvedAnimation(
+      parent: _progressController,
+      curve: Curves.easeInOut,
+    ));
+    
+    // 脉动动画控制器（用于活跃步骤）
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
+    
+    _pulseAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.2,
+    ).animate(CurvedAnimation(
+      parent: _pulseController,
+      curve: Curves.easeInOut,
+    ));
+    
+    // 启动动画
+    _progressController.forward();
+    _pulseController.repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _progressController.dispose();
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  double _getCurrentProgress() {
+    final currentStep = _getCurrentStepIndex(widget.order.state);
+    return currentStep / 5.0; // 总共6步，索引0-5
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -18,42 +76,61 @@ class OrderStatusTimelineHeader extends StatelessWidget {
     final List<String> steps = [
       '已拍下', '已提交', '已接单', '已交付', '已收货', '待评价'
     ];
-    int currentStepIndex = _getCurrentStepIndex(order.state);
-    String statusTitle = _getStatusTitle(order.state);
-    String? statusSubtitle = _getStatusSubtitle(order.state);
-    bool showTimeline = order.state != OrderStatus.canceled; // Don't show timeline for canceled orders
+    int currentStepIndex = _getCurrentStepIndex(widget.order.state);
+    String statusTitle = _getStatusTitle(widget.order.state);
+    String? statusSubtitle = _getStatusSubtitle(widget.order.state);
+    bool showTimeline = widget.order.state != OrderStatus.canceled;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // --- Timeline Visual (conditional) ---
+        // --- 优化后的时间线视觉效果 ---
         if (showTimeline)
-          _buildTimelineVisual(context, steps, currentStepIndex),
-        if (showTimeline) // Add spacing only if timeline is shown
+          _buildOptimizedTimeline(context, steps, currentStepIndex),
+        if (showTimeline)
           const SizedBox(height: 16),
         // --- Status Description Card ---
         Card(
-          elevation: 1,
-          margin: EdgeInsets.zero, // Reset margin if Card adds default
+          elevation: 2,
+          margin: EdgeInsets.zero,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  statusTitle,
-                  style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                if (statusSubtitle != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4.0),
-                    child: Text(
-                      statusSubtitle,
-                      style: textTheme.bodySmall?.copyWith(color: colorScheme.secondary),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12.0),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  colorScheme.surface,
+                  colorScheme.surface.withOpacity(0.95),
+                ],
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    statusTitle,
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
                     ),
                   ),
-              ],
+                  if (statusSubtitle != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6.0),
+                      child: Text(
+                        statusSubtitle,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurface.withOpacity(0.7),
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -61,9 +138,242 @@ class OrderStatusTimelineHeader extends StatelessWidget {
     );
   }
 
+  /// 构建优化后的时间线
+  Widget _buildOptimizedTimeline(BuildContext context, List<String> steps, int currentStepIndex) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12.0),
+        color: colorScheme.surface.withOpacity(0.5),
+      ),
+      child: Column(
+        children: [
+          // 顶部进度条
+          AnimatedBuilder(
+            animation: _progressAnimation,
+            builder: (context, child) {
+              return _buildProgressBar(context, _progressAnimation.value);
+            },
+          ),
+          const SizedBox(height: 20),
+          // 步骤指示器
+          Row(
+            children: _buildTimelineSteps(context, steps, currentStepIndex),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 构建进度条
+  Widget _buildProgressBar(BuildContext context, double progress) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return Container(
+      height: 4,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: FractionallySizedBox(
+        alignment: Alignment.centerLeft,
+        widthFactor: progress.clamp(0.0, 1.0),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                colorScheme.primary,
+                colorScheme.primary.withOpacity(0.8),
+                colorScheme.primaryContainer,
+              ],
+            ),
+            borderRadius: BorderRadius.circular(2),
+            boxShadow: [
+              BoxShadow(
+                color: colorScheme.primary.withOpacity(0.3),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 构建时间线步骤
+  List<Widget> _buildTimelineSteps(BuildContext context, List<String> steps, int currentStepIndex) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    List<Widget> stepWidgets = [];
+
+    for (int i = 0; i < steps.length; i++) {
+      bool isCompleted = i < currentStepIndex;
+      bool isActive = i == currentStepIndex;
+      bool isInactive = i > currentStepIndex;
+
+      Color currentStepColor = isInactive ? Colors.grey.shade400 : colorScheme.primary;
+
+      // 添加连接线（除了第一个步骤）
+      if (i > 0) {
+        stepWidgets.add(_buildConnectingLine(isCompleted || (i - 1) == currentStepIndex, context));
+      }
+
+      // 添加步骤组件
+      stepWidgets.add(_buildStepWidget(
+        context,
+        steps[i],
+        isCompleted,
+        isActive,
+        currentStepColor,
+      ));
+    }
+
+    return stepWidgets;
+  }
+
+  /// 构建优化的连接线
+  Widget _buildConnectingLine(bool isActive, BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    return Expanded(
+      child: Container(
+        height: 3.0,
+        margin: const EdgeInsets.symmetric(horizontal: 8.0),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isActive 
+                ? [
+                    colorScheme.primary,
+                    colorScheme.primary.withOpacity(0.8),
+                    colorScheme.primaryContainer,
+                  ]
+                : [
+                    Colors.grey.shade300,
+                    Colors.grey.shade200,
+                    Colors.grey.shade300,
+                  ],
+          ),
+          borderRadius: BorderRadius.circular(1.5),
+          boxShadow: isActive ? [
+            BoxShadow(
+              color: colorScheme.primary.withOpacity(0.2),
+              blurRadius: 3,
+              offset: const Offset(0, 1),
+            ),
+          ] : null,
+        ),
+      ),
+    );
+  }
+
+  /// 构建步骤组件
+  Widget _buildStepWidget(
+    BuildContext context,
+    String stepText,
+    bool isCompleted,
+    bool isActive,
+    Color color,
+  ) {
+    final theme = Theme.of(context);
+    
+    Widget stepCircle = _buildStepCircle(isCompleted, isActive, color);
+    
+    // 为活跃步骤添加脉动动画
+    if (isActive) {
+      stepCircle = AnimatedBuilder(
+        animation: _pulseAnimation,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _pulseAnimation.value,
+            child: child,
+          );
+        },
+        child: stepCircle,
+      );
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        stepCircle,
+        const SizedBox(height: 8),
+        Container(
+          constraints: const BoxConstraints(maxWidth: 50),
+          child: Text(
+            stepText,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: color,
+              fontSize: 11,
+              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 构建步骤圆点
+  Widget _buildStepCircle(bool isCompleted, bool isActive, Color color) {
+    return Container(
+      width: 26,
+      height: 26,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: isCompleted || isActive ? color : Colors.transparent,
+        border: Border.all(
+          color: color,
+          width: isActive ? 3.0 : 2.0,
+        ),
+        boxShadow: isActive || isCompleted ? [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            blurRadius: isActive ? 8 : 4,
+            spreadRadius: isActive ? 2 : 1,
+          ),
+        ] : null,
+      ),
+      child: isCompleted 
+          ? Icon(
+              Icons.check,
+              size: 16,
+              color: Colors.white,
+            )
+          : isActive 
+              ? Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 2,
+                      ),
+                    ],
+                  ),
+                )
+              : null,
+    );
+  }
+
   // Determine the index of the current step based on OrderStatus
   int _getCurrentStepIndex(OrderStatus status) {
-    // Refined mapping based on typical flow and prototype screenshots
     const int totalSteps = 6; // Define total steps here
     switch (status) {
       case OrderStatus.awaitingPayment:
@@ -135,83 +445,5 @@ class OrderStatusTimelineHeader extends StatelessWidget {
        // Add subtitles for other states if needed
       default: return null;
     }
-  }
-
-  // Builds the visual representation of the timeline steps and connectors.
-  Widget _buildTimelineVisual(BuildContext context, List<String> steps, int currentStepIndex) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final double iconSize = 18.0; // Slightly smaller icons might look better
-    final double lineThickness = 1.0;
-    final Color activeColor = colorScheme.primary; // Use primary theme color
-    final Color inactiveColor = Colors.grey.shade400;
-
-    List<Widget> stepWidgets = [];
-
-    for (int i = 0; i < steps.length; i++) {
-      bool isCompleted = i < currentStepIndex;
-      bool isActive = i == currentStepIndex;
-      bool isInactive = i > currentStepIndex;
-
-      Color currentStepColor = isInactive ? inactiveColor : activeColor;
-      IconData currentIconData;
-      if (isCompleted) {
-        currentIconData = Icons.check_circle;
-      } else if (isActive) {
-        currentIconData = Icons.circle; // Active step as solid circle
-      } else { // isInactive
-        currentIconData = Icons.circle; // Inactive step also solid circle, but grey
-      }
-
-      // --- Add Connecting Line ---
-      if (i > 0) {
-        bool previousStepCompleted = (i - 1) < currentStepIndex;
-        stepWidgets.add(
-          Expanded(
-            child: Container(
-              height: lineThickness,
-              color: previousStepCompleted ? activeColor : inactiveColor,
-              margin: const EdgeInsets.symmetric(horizontal: 4.0), // Adjust line margin
-            ),
-          ),
-        );
-      }
-
-      // --- Add Step Widget (Icon + Text) ---
-      stepWidgets.add(
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              currentIconData,
-              color: currentStepColor,
-              size: iconSize,
-            ),
-            const SizedBox(height: 6), // Adjust spacing
-            Text(
-              steps[i],
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: currentStepColor,
-                fontSize: 11, // Adjust font size
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
-      // Ensure the Row takes full available width
-      child: SizedBox(
-        width: double.infinity,
-        child: Row(
-          // mainAxisAlignment: MainAxisAlignment.spaceBetween, // Keep or adjust as needed
-          children: stepWidgets,
-        ),
-      ),
-    );
   }
 } 

@@ -15,15 +15,11 @@ import 'package:dskk_flutter_refactor/core/auth/repositories/mocks/mock_auth_rep
 // 导入安全存储仓库
 import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
 import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository_impl.dart';
-// 导入订单相关类
-import 'package:dskk_flutter_refactor/features/orders/domain/repositories/i_order_repository.dart';
-import 'package:dskk_flutter_refactor/features/orders/data/repositories/mocks/mock_order_repository.dart';
-import 'package:dskk_flutter_refactor/features/orders/domain/usecases/create_order_use_case.dart';
+// 订单模块依赖将通过统一的OrdersDI配置
 import 'package:dskk_flutter_refactor/features/home/di/home_di.dart'; // Import Home DI
 import 'package:dskk_flutter_refactor/features/favorites/di/favorites_di.dart'; // Import Favorites DI
 import 'package:dskk_flutter_refactor/features/seller/di/seller_statistics_di.dart';
-import 'package:dskk_flutter_refactor/features/payment/presentation/bloc/payment_bloc.dart'; // 导入PaymentBloc
-import 'package:dskk_flutter_refactor/core/payment/services/i_payment_service.dart'; // 导入IPaymentService
+// PaymentBloc将通过支付模块DI配置
 import 'package:dskk_flutter_refactor/features/payment/di/payment_di.dart'; // 导入支付模块DI
 // 导入AI文档和聊天模块的DI
 import 'package:dskk_flutter_refactor/features/ai_docs/di/ai_docs_di.dart';
@@ -81,28 +77,6 @@ Future<void> main() async {
       () => SecureStorageRepositoryImpl(getIt<FlutterSecureStorage>()),
     );
     print('[main_buyer_preview] Registered ISecureStorageRepository to GetIt container.');
-  }
-  
-  // 注册订单相关依赖
-  if (!getIt.isRegistered<IOrderRepository>()) {
-    getIt.registerLazySingleton<IOrderRepository>(() => MockOrderRepository());
-    print('[main_buyer_preview] Registered IOrderRepository to GetIt container.');
-  }
-  
-  if (!getIt.isRegistered<CreateOrderUseCase>()) {
-    getIt.registerLazySingleton<CreateOrderUseCase>(
-      () => CreateOrderUseCase(getIt<IOrderRepository>()),
-    );
-    print('[main_buyer_preview] Registered CreateOrderUseCase to GetIt container.');
-  }
-
-  // 注册PaymentBloc
-  if (!getIt.isRegistered<PaymentBloc>()) {
-    getIt.registerFactory<PaymentBloc>(() => PaymentBloc(
-      createOrderUseCase: getIt<CreateOrderUseCase>(),
-      paymentService: getIt<IPaymentService>(),
-    ));
-    print('[main_buyer_preview] Registered PaymentBloc to GetIt container.');
   }
 
   // 1. 初始化核心依赖
