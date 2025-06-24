@@ -7,6 +7,12 @@ import 'package:dskk_flutter_refactor/features/seller/domain/usecases/update_pro
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_event.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_state.dart';
 import 'package:injectable/injectable.dart';
+import 'dart:io';
+import 'package:path/path.dart' as path;
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/repositories/i_file_upload_repository.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/repositories/i_seller_repository.dart';
 
 /// 产品编辑BLoC
 @injectable
@@ -19,12 +25,20 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
   
   /// 更新产品UseCase
   final UpdateProductUseCase _updateProductUseCase;
+  
+  /// 文件上传仓库
+  final IFileUploadRepository _fileUploadRepository;
+  
+  /// 卖家仓库
+  final ISellerRepository _sellerRepository;
 
   /// 构造函数
   ProductEditBloc(
     this._getSellerProductDetailUseCase,
     this._createProductUseCase,
     this._updateProductUseCase,
+    this._fileUploadRepository,
+    this._sellerRepository,
   ) : super(ProductEditState.initial()) {
     on<InitializeProductEdit>(_onInitializeProductEdit);
     on<LoadProductData>(_onLoadProductData);
@@ -39,6 +53,9 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     on<UpdateProductMaterial>(_onUpdateProductMaterial);
     on<SelectProductImages>(_onSelectProductImages);
     on<SelectDetailProductImages>(_onSelectDetailProductImages);
+    on<UploadProductImage>(_onUploadProductImage);
+    on<ProductImageUploadSuccess>(_onProductImageUploadSuccess);
+    on<ProductImageUploadFailure>(_onProductImageUploadFailure);
     on<SubmitProductForm>(_onSubmitProductForm);
     on<ResetProductForm>(_onResetProductForm);
   }
@@ -256,7 +273,36 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     SelectProductImages event,
     Emitter<ProductEditState> emit,
   ) {
+    // 先保存选择的图片路径
     emit(state.copyWithSelectedImages(event.imagePaths));
+    
+    // 验证图片数量限制
+    if (event.imagePaths.length > 9) {
+      emit(state.copyWithError('最多只能上传9张图片'));
+      return;
+    }
+    
+    // 更新上传状态
+    emit(state.copyWith(
+      uploadStatus: UploadStatus.uploading,
+      totalUploadCount: event.imagePaths.length,
+      uploadedCount: 0,
+    ));
+    
+    // 改为顺序上传，只先上传第一张图片
+    if (event.imagePaths.isNotEmpty) {
+      // 获取第一个图片和剩余图片列表
+      final firstImagePath = event.imagePaths.first;
+      final remainingPaths = event.imagePaths.length > 1 
+          ? event.imagePaths.sublist(1) 
+          : <String>[];
+      
+      add(UploadProductImage(
+        imagePath: firstImagePath,
+        isDetailImage: false,
+        remainingPaths: remainingPaths,
+      ));
+    }
   }
 
   /// 选择商品详情图片处理
@@ -264,7 +310,240 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     SelectDetailProductImages event,
     Emitter<ProductEditState> emit,
   ) {
+    // 先保存选择的详情图片路径
     emit(state.copyWithSelectedDetailImages(event.imagePaths));
+    
+    // 验证图片数量限制
+    if (event.imagePaths.length > 9) {
+      emit(state.copyWithError('最多只能上传9张详情图片'));
+      return;
+    }
+    
+    // 更新上传状态
+    emit(state.copyWith(
+      uploadStatus: UploadStatus.uploading,
+      totalUploadCount: event.imagePaths.length,
+      uploadedCount: 0,
+    ));
+    
+    // 改为顺序上传，只先上传第一张图片
+    if (event.imagePaths.isNotEmpty) {
+      // 获取第一个图片和剩余图片列表
+      final firstImagePath = event.imagePaths.first;
+      final remainingPaths = event.imagePaths.length > 1 
+          ? event.imagePaths.sublist(1) 
+          : <String>[];
+      
+      add(UploadProductImage(
+        imagePath: firstImagePath,
+        isDetailImage: true,
+        remainingPaths: remainingPaths,
+      ));
+    }
+  }
+  
+  /// 处理图片，包括格式转换和压缩
+  /// 返回处理后的图片路径
+  Future<String> _preprocessImage(String imagePath) async {
+    try {
+      final File imageFile = File(imagePath);
+      
+      // 判断文件是否存在
+      if (!await imageFile.exists()) {
+        print('图片文件不存在: $imagePath');
+        return imagePath; // 如果文件不存在，返回原路径
+      }
+      
+      // 获取文件扩展名并转为小写
+      final String extension = path.extension(imagePath).toLowerCase();
+      
+      // 检查文件大小
+      final int fileSize = await imageFile.length();
+      final int maxSize = 5 * 1024 * 1024; // 5MB最大限制
+      final int targetSize = 1 * 1024 * 1024; // 目标1MB
+      
+      // 只处理HEIC格式或大于目标大小的图片
+      bool needProcess = extension == '.heic' || extension == '.heif' || fileSize > targetSize;
+      
+      if (!needProcess) {
+        return imagePath; // 如果不需要处理，返回原路径
+      }
+      
+      // 获取临时目录保存处理后的图片
+      final tempDir = await getTemporaryDirectory();
+      final String fileName = '${DateTime.now().millisecondsSinceEpoch}_compressed.jpg';
+      final String targetPath = path.join(tempDir.path, fileName);
+      
+      // 计算压缩质量
+      int quality = 85; // 默认质量
+      if (fileSize > maxSize) {
+        quality = 60; // 对大图片使用更高压缩率
+      } else if (fileSize > targetSize * 2) {
+        quality = 70;
+      }
+      
+      // 设置最大宽度和高度限制，保持宽高比
+      const int maxWidth = 1920;
+      const int maxHeight = 1920;
+      
+      print('开始处理图片: $imagePath (${(fileSize / 1024).toStringAsFixed(2)}KB, 格式:$extension)');
+      print('目标路径: $targetPath, 压缩质量: $quality%');
+      
+      // 使用flutter_image_compress压缩并转换格式
+      final result = await FlutterImageCompress.compressAndGetFile(
+        imagePath,
+        targetPath,
+        quality: quality,
+        minWidth: 1080,
+        minHeight: 1080,
+        format: CompressFormat.jpeg, // 统一转为JPEG格式
+      );
+      
+      if (result != null) {
+        final int newSize = await File(result.path).length();
+        print('图片处理完成: ${(fileSize / 1024).toStringAsFixed(2)}KB -> ${(newSize / 1024).toStringAsFixed(2)}KB');
+        print('压缩率: ${(newSize * 100 / fileSize).toStringAsFixed(1)}%');
+        return result.path;
+      } else {
+        print('图片压缩失败，使用原图');
+        return imagePath;
+      }
+    } catch (e) {
+      print('图片预处理过程中发生错误: $e');
+      return imagePath; // 处理失败时返回原路径
+    }
+  }
+
+  /// 上传单个图片处理
+  Future<void> _onUploadProductImage(
+    UploadProductImage event,
+    Emitter<ProductEditState> emit,
+  ) async {
+    try {
+      // 原始文件路径
+      final String originalPath = event.imagePath;
+      
+      // 图片预处理：转换格式和压缩
+      final String processedPath = await _preprocessImage(originalPath);
+      final File file = File(processedPath);
+      
+      // 检查文件大小是否超过限制 (5MB)
+      final fileSize = await file.length();
+      final maxSize = 5 * 1024 * 1024; // 5MB
+      
+      if (fileSize > maxSize) {
+        add(ProductImageUploadFailure(
+          imagePath: originalPath, // 保持用原始路径，保证UI显示的一致性
+          errorMessage: '图片大小超过5MB限制，即使压缩后仍然过大',
+          isDetailImage: event.isDetailImage,
+          remainingPaths: event.remainingPaths,
+        ));
+        return;
+      }
+      
+      // 上传预处理后的文件
+      final result = await _fileUploadRepository.uploadFile(file);
+      
+      result.fold(
+        (failure) {
+          // 上传失败
+          add(ProductImageUploadFailure(
+            imagePath: originalPath,
+            errorMessage: failure.message,
+            isDetailImage: event.isDetailImage,
+            remainingPaths: event.remainingPaths,
+          ));
+        },
+        (url) {
+          // 上传成功
+          add(ProductImageUploadSuccess(
+            imagePath: originalPath,
+            imageUrl: url,
+            isDetailImage: event.isDetailImage,
+            remainingPaths: event.remainingPaths,
+          ));
+        },
+      );
+    } catch (e) {
+      // 处理异常
+      add(ProductImageUploadFailure(
+        imagePath: event.imagePath,
+        errorMessage: e.toString(),
+        isDetailImage: event.isDetailImage,
+        remainingPaths: event.remainingPaths,
+      ));
+    }
+  }
+  
+  /// 图片上传成功处理
+  void _onProductImageUploadSuccess(
+    ProductImageUploadSuccess event,
+    Emitter<ProductEditState> emit,
+  ) {
+    // 更新已上传数量
+    final int newCount = state.uploadedCount + 1;
+    
+    // 更新已上传的URL列表
+    List<String> updatedMainUrls = List.from(state.uploadedImageUrls);
+    List<String> updatedDetailUrls = List.from(state.uploadedDetailImageUrls);
+    
+    if (event.isDetailImage) {
+      updatedDetailUrls.add(event.imageUrl);
+    } else {
+      updatedMainUrls.add(event.imageUrl);
+    }
+    
+    // 检查是否全部上传完成
+    final bool allDone = newCount >= state.totalUploadCount;
+    
+    // 更新状态
+    emit(state.copyWith(
+      uploadedCount: newCount,
+      uploadStatus: allDone ? UploadStatus.success : UploadStatus.uploading,
+      uploadedImageUrls: updatedMainUrls,
+      uploadedDetailImageUrls: updatedDetailUrls,
+      errorMessage: null, // 清除之前的错误信息
+      hasError: false,    // 清除错误状态
+    ));
+    
+    // 检查是否有剩余图片需要上传
+    if (event.remainingPaths != null && event.remainingPaths!.isNotEmpty) {
+      // 获取下一个图片和更新后的剩余图片列表
+      final nextImagePath = event.remainingPaths!.first;
+      final updatedRemainingPaths = event.remainingPaths!.length > 1 
+          ? event.remainingPaths!.sublist(1) 
+          : <String>[];
+      
+      // 继续上传下一张图片
+      add(UploadProductImage(
+        imagePath: nextImagePath,
+        isDetailImage: event.isDetailImage,
+        remainingPaths: updatedRemainingPaths,
+      ));
+    }
+  }
+  
+  /// 图片上传失败处理
+  void _onProductImageUploadFailure(
+    ProductImageUploadFailure event,
+    Emitter<ProductEditState> emit,
+  ) {
+    // 仍然增加已处理的图片计数，以便UI可以显示进度
+    final int newCount = state.uploadedCount + 1;
+    final bool allDone = newCount >= state.totalUploadCount;
+    
+    // 标记上传失败
+    emit(state.copyWith(
+      uploadStatus: UploadStatus.failure,
+      uploadedCount: newCount,
+      errorMessage: '图片上传失败: ${event.errorMessage}',
+      hasError: true,
+      // 如果所有图片都已处理完（成功或失败），更新状态
+      isLoading: allDone ? false : state.isLoading,
+    ));
+    
+    // 对于上传失败的图片，我们不会继续处理remainingPaths中的图片
+    // 可以添加重试逻辑或让用户手动重试
   }
 
   /// 提交表单处理
@@ -279,8 +558,20 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     }
     
     // 检查是否有选择图片
-    if (state.selectedImagePaths.isEmpty && (state.product?.images.isEmpty ?? true)) {
+    if (state.selectedImagePaths.isEmpty && state.uploadedImageUrls.isEmpty && (state.product?.images.isEmpty ?? true)) {
       emit(state.copyWithError('请至少上传一张商品图片'));
+      return;
+    }
+    
+    // 检查是否所有图片都已上传完成
+    if (state.uploadStatus == UploadStatus.uploading) {
+      emit(state.copyWithError('图片正在上传中，请等待上传完成后再提交'));
+      return;
+    }
+    
+    // 检查是否有图片上传失败
+    if (state.uploadStatus == UploadStatus.failure && state.uploadedImageUrls.isEmpty) {
+      emit(state.copyWithError('图片上传失败，请重新选择图片'));
       return;
     }
     
@@ -288,30 +579,36 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     
     if (state.isCreateMode) {
       // 创建商品
-      final params = CreateProductParams(
-        name: state.formData.name,
-        description: state.formData.description,
-        price: state.formData.price,
-        imageFilePaths: state.selectedImagePaths,
-        detailImageFilePaths: state.selectedDetailImagePaths,
-        detailContent: state.formData.detailContent,
-        categoryId: state.formData.categoryId,
-        variants: state.formData.variants.isNotEmpty ? state.formData.variants : null,
-        productMaterials: state.formData.productMaterials.isNotEmpty ? state.formData.productMaterials : null,
-      );
-      
-      final result = await _createProductUseCase(params);
-      
-      result.fold(
-        (failure) => emit(state.copyWithError(failure.message)),
-        (success) {
-          if (success) {
-            emit(state.copyWithSubmitSuccess());
-          } else {
-            emit(state.copyWithError('创建商品失败'));
-          }
-        },
-      );
+      try {
+        // 准备创建参数
+        final productData = ProductCreationData(
+          name: state.formData.name,
+          description: state.formData.description,
+          price: state.formData.price,
+          images: state.uploadedImageUrls.join(','), // 使用已上传的URL
+          categoryId: state.formData.categoryId,
+          variants: state.formData.variants,
+          productMaterials: state.formData.productMaterials,
+          detailImages: state.uploadedDetailImageUrls.isNotEmpty ? state.uploadedDetailImageUrls.join(',') : null,
+          detailContent: state.formData.detailContent.isNotEmpty ? state.formData.detailContent : null,
+        );
+        
+        // 创建商品
+        final result = await _sellerRepository.createProduct(productData);
+        
+        result.fold(
+          (failure) => emit(state.copyWithError(failure.message)),
+          (success) {
+            if (success) {
+              emit(state.copyWith(isSubmitSuccess: true));
+            } else {
+              emit(state.copyWithError('创建商品失败'));
+            }
+          },
+        );
+      } catch (e) {
+        emit(state.copyWithError('创建商品过程中发生错误: ${e.toString()}'));
+      }
     } else {
       // 更新商品
       if (state.product == null) {
@@ -319,31 +616,37 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
         return;
       }
       
-      final params = UpdateProductParams(
-        id: state.product!.id,
-        name: state.formData.name,
-        description: state.formData.description,
-        price: state.formData.price,
-        imageFilePaths: state.selectedImagePaths.isNotEmpty ? state.selectedImagePaths : null,
-        detailImageFilePaths: state.selectedDetailImagePaths.isNotEmpty ? state.selectedDetailImagePaths : null,
-        detailContent: state.formData.detailContent.isNotEmpty ? state.formData.detailContent : null,
-        categoryId: state.formData.categoryId,
-        variants: state.formData.variants.isNotEmpty ? state.formData.variants : null,
-        productMaterials: state.formData.productMaterials.isNotEmpty ? state.formData.productMaterials : null,
-      );
-      
-      final result = await _updateProductUseCase(params);
-      
-      result.fold(
-        (failure) => emit(state.copyWithError(failure.message)),
-        (success) {
-          if (success) {
-            emit(state.copyWithSubmitSuccess());
-          } else {
-            emit(state.copyWithError('更新商品失败'));
-          }
-        },
-      );
+      try {
+        // 准备更新参数
+        final productData = ProductUpdateData(
+          id: state.product!.id,
+          name: state.formData.name,
+          description: state.formData.description,
+          price: state.formData.price,
+          images: state.uploadedImageUrls.isNotEmpty ? state.uploadedImageUrls.join(',') : null,
+          categoryId: state.formData.categoryId,
+          variants: state.formData.variants,
+          productMaterials: state.formData.productMaterials,
+          detailImages: state.uploadedDetailImageUrls.isNotEmpty ? state.uploadedDetailImageUrls.join(',') : null,
+          detailContent: state.formData.detailContent.isNotEmpty ? state.formData.detailContent : null,
+        );
+        
+        // 更新商品
+        final result = await _sellerRepository.updateProduct(productData);
+        
+        result.fold(
+          (failure) => emit(state.copyWithError(failure.message)),
+          (success) {
+            if (success) {
+              emit(state.copyWith(isSubmitSuccess: true));
+            } else {
+              emit(state.copyWithError('更新商品失败'));
+            }
+          },
+        );
+      } catch (e) {
+        emit(state.copyWithError('更新商品过程中发生错误: ${e.toString()}'));
+      }
     }
   }
 

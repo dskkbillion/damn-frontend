@@ -25,6 +25,7 @@ class RelatedServiceModel with _$RelatedServiceModel {
     @JsonKey(name: 'name') required String title,
     // rating field removed
     @JsonKey(name: 'sellingPrice') required double price, // Changed to double
+    @JsonKey(name: 'allocation_status_recorded') @Default(false) bool allocationStatusRecorded,
     // Add other fields from API if needed (e.g., originalPrice, tenantId, etc.)
     // Consider adding them as optional if not used by the domain.
   }) = _RelatedServiceModel;
@@ -41,6 +42,7 @@ class RelatedServiceModel with _$RelatedServiceModel {
       imageUrl: imageUrl,
       title: title,
       price: price,
+      allocationStatusRecorded: allocationStatusRecorded,
       // rating is removed
     );
   }

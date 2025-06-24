@@ -188,9 +188,9 @@ class _FavoritesPageState extends State<FavoritesPage> with SingleTickerProvider
             onTap: () {
               // 跳转到服务详情页
               // 这里需要通过导航服务实现
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('查看服务详情: ${service.title}')),
-              );
+              // ScaffoldMessenger.of(context).showSnackBar(
+              //   SnackBar(content: Text('查看服务详情: ${service.title}')),
+              // );
             },
             onRemove: () {
               // 从收藏中移除
@@ -201,9 +201,9 @@ class _FavoritesPageState extends State<FavoritesPage> with SingleTickerProvider
                       ),
                     );
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('无法移除收藏，缺少收藏ID')),
-                );
+                // ScaffoldMessenger.of(context).showSnackBar(
+                //   const SnackBar(content: Text('无法移除收藏，缺少收藏ID')),
+                // );
               }
             },
           );
@@ -246,9 +246,9 @@ class _FavoritesPageState extends State<FavoritesPage> with SingleTickerProvider
             onTap: () {
               // 跳转到卖家详情页
               // 这里需要通过导航服务实现
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('查看卖家详情: ${seller.nickName}')),
-              );
+              // ScaffoldMessenger.of(context).showSnackBar(
+              //   SnackBar(content: Text('查看卖家详情: ${seller.nickName}')),
+              // );
             },
             onUnfollow: () {
               // 取消关注卖家

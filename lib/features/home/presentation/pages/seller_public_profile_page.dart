@@ -5,6 +5,9 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
+// 导入国际化
+import '../../../../generated/l10n.dart';
+
 import 'package:dskk_flutter_refactor/features/home/domain/entities/seller_product.dart';
 import 'package:dskk_flutter_refactor/features/home/presentation/bloc/seller_profile_bloc.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/repositories/i_chat_repository.dart';
@@ -61,7 +64,7 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
       result.fold(
         (failure) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('创建聊天失败: ${failure.message}')),
+            SnackBar(content: Text(S.of(context).seller_profile_chat_failed(failure.message))),
           );
         },
         (chatId) {
@@ -71,7 +74,7 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
     } catch (e) {
       Navigator.of(context, rootNavigator: true).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('发生错误: $e')),
+        SnackBar(content: Text(S.of(context).seller_profile_error_occurred(e.toString()))),
       );
     } finally {
       setState(() {
@@ -95,14 +98,14 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('加载失败: ${state.message}'),
+                    Text(S.of(context).product_detail_loading_failed(state.message)),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
                         context.read<SellerProfileBloc>()
                           ..add(LoadSellerProducts(sellerId: widget.sellerId));
                       },
-                      child: const Text('重试'),
+                      child: Text(S.of(context).product_detail_retry),
                     ),
                   ],
                 ),
@@ -110,7 +113,7 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
             } else if (state is SellerProfileLoaded) {
               return _buildSellerProfile(context, state);
             }
-            return const Center(child: Text('加载中...'));
+            return Center(child: Text(S.of(context).product_detail_please_wait));
           },
         ),
       ),
@@ -128,7 +131,7 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
           pinned: true,
           flexibleSpace: FlexibleSpaceBar(
             title: Text(
-              seller?.nickName ?? '卖家主页',
+              seller?.nickName ?? S.of(context).seller_profile_default_title,
               style: const TextStyle(color: Colors.white),
             ),
             background: Container(
@@ -169,7 +172,7 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            seller?.nickName ?? '卖家',
+                            seller?.nickName ?? S.of(context).seller_profile_seller,
                             style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
@@ -177,7 +180,7 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '2粉丝',
+                            S.of(context).seller_profile_followers(2),
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[600],
@@ -185,7 +188,7 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            seller?.remarks ?? '暂无简介',
+                            seller?.remarks ?? S.of(context).seller_profile_no_description,
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[800],
@@ -211,13 +214,13 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
                             // 已关注，执行取消关注
                             bloc.add(UnfollowSellerEvent(sellerId: widget.sellerId));
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('取消关注成功')),
+                              SnackBar(content: Text(S.of(context).seller_profile_unfollow_success)),
                             );
                           } else {
                             // 未关注，执行关注
                             bloc.add(FollowSellerEvent(sellerId: widget.sellerId));
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('关注成功')),
+                              SnackBar(content: Text(S.of(context).seller_profile_follow_success)),
                             );
                           }
                         },
@@ -229,7 +232,7 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
                               ? Colors.black 
                               : Colors.white,
                         ),
-                        child: Text(seller?.memberAttention == true ? '已关注' : '关注'),
+                        child: Text(seller?.memberAttention == true ? S.of(context).seller_profile_followed : S.of(context).seller_profile_follow),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -248,9 +251,9 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
                 // 标签页
                 TabBar(
                   controller: _tabController,
-                  tabs: const [
-                    Tab(text: '关于商家'),
-                    Tab(text: '我的服务'),
+                  tabs: [
+                    Tab(text: S.of(context).seller_profile_about_merchant),
+                    Tab(text: S.of(context).seller_profile_my_services),
                   ],
                   labelColor: Colors.amber[800],
                   unselectedLabelColor: Colors.grey,
@@ -282,15 +285,15 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
 
   Widget _buildAboutSeller(SellerInfo? seller) {
     if (seller == null) {
-      return const Center(child: Text('暂无商家信息'));
+      return Center(child: Text(S.of(context).seller_profile_no_merchant_info));
     }
     
     return ListView(
       children: [
-        _buildInfoItem('会员等级', '二级会员', Icons.grade),
-        _buildInfoItem('卖家评分', '5.0', Icons.star),
-        _buildInfoItem('回应时间', '3小时', Icons.access_time),
-        _buildInfoItem('认证状态', seller.trueName != null ? '已认证' : '未认证', Icons.verified_user),
+        _buildInfoItem(S.of(context).seller_profile_member_level, S.of(context).seller_profile_level_two, Icons.grade),
+        _buildInfoItem(S.of(context).seller_profile_seller_rating, '5.0', Icons.star),
+        _buildInfoItem(S.of(context).seller_profile_response_time, S.of(context).seller_profile_response_hours, Icons.access_time),
+        _buildInfoItem(S.of(context).seller_profile_certification_status, seller.trueName != null ? S.of(context).seller_profile_certified : S.of(context).seller_profile_not_certified, Icons.verified_user),
       ],
     );
   }
@@ -337,7 +340,7 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
   // 新的商品网格布局，使用MasonryGridView
   Widget _buildProductsGrid(List<SellerProduct> products) {
     if (products.isEmpty) {
-      return const Center(child: Text('暂无商品'));
+      return Center(child: Text(S.of(context).seller_profile_no_products));
     }
     
     return MasonryGridView.count(
@@ -479,7 +482,7 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '图片加载失败',
+                  S.of(context).seller_profile_image_load_failed,
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontWeight: FontWeight.bold,
@@ -508,7 +511,7 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
               ),
               const SizedBox(height: 8),
               Text(
-                product.name.isNotEmpty ? product.name.substring(0, product.name.length > 10 ? 10 : product.name.length) : '商品',
+                product.name.isNotEmpty ? product.name.substring(0, product.name.length > 10 ? 10 : product.name.length) : S.of(context).seller_profile_no_image,
                 style: TextStyle(
                   color: Colors.grey[600],
                   fontWeight: FontWeight.bold,

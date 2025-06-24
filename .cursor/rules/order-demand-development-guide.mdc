@@ -1,0 +1,347 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# 订单需求功能开发指南
+
+## 功能概述
+订单需求功能允许买家和卖家在订单执行过程中进行协商和调整，是重要的订单管理补充功能。
+
+## 后端API分析总结
+
+### 已验证的API端点
+参考：[OrderDemandApiController.java](mdc:duoshaokk_api/xunman-shop/src/main/java/vip/xunman/shop/orderDemand/OrderDemandApiController.java)
+
+```
+POST /api/project/orderDemand/add        # 申请上报
+POST /api/project/orderDemand/audit      # 审核申请  
+POST /api/project/orderDemand/buyerList  # 买家申请列表
+POST /api/project/orderDemand/list       # 通用申请列表
+GET  /api/project/orderDemand/get        # 申请详情
+```
+
+### 业务流程分析
+参考：[OrderDemandService.java](mdc:duoshaokk_api/xunman-shop/src/main/java/vip/xunman/shop/orderDemand/OrderDemandService.java)
+
+**支持的需求类型：**
+1. `replenishment` - 买家申请补充（买家发起）
+2. `reform` - 买家申请重做（买家发起）  
+3. `replenish_materials` - 卖家申请补充材料（卖家发起）
+4. `refuse` - 卖家拒绝接单（卖家发起）
+5. `platform` - 平台介入（**已实现，设置标记供管理后台处理**）
+
+## 前端开发任务拆解
+
+### 第一阶段：买家需求申请功能
+
+#### 1. 创建买家申请页面
+**文件路径：** `lib/features/orders/presentation/pages/order_demand_apply_page.dart`
+
+**页面功能：**
+- 显示订单基本信息
+- 选择申请类型（补充/重做）
+- 选择申请理由
+- 填写详细说明
+- 提交申请
+
+**关键实现点：**
+```dart
+class OrderDemandApplyPage extends StatefulWidget {
+  final Order order;
+  final String demandType; // 'replenishment' or 'reform'
+  
+  // 申请理由选项（需要与后端协调具体选项）
+  final List<String> reasonOptions = [
+    '需要更多信息',
+    '需求不够明确', 
+    '质量不满意',
+    '其他原因',
+  ];
+}
+```
+
+#### 2. 创建需求状态枚举
+**文件路径：** `lib/features/orders/domain/entities/order_demand_status.dart`
+
+```dart
+enum OrderDemandStatus {
+  wait('WAIT', '待审核'),
+  success('SUCCESS', '审核通过'),
+  fail('FAIL', '拒绝'),
+  cancel('CANCEL', '取消');
+  
+  const OrderDemandStatus(this.value, this.label);
+  final String value;
+  final String label;
+  
+  static OrderDemandStatus fromString(String? value) {
+    return OrderDemandStatus.values.firstWhere(
+      (status) => status.value == value,
+      orElse: () => OrderDemandStatus.wait,
+    );
+  }
+}
+```
+
+#### 3. 创建需求实体类
+**文件路径：** `lib/features/orders/domain/entities/order_demand.dart`
+
+参考后端实体：[OrderDemand.java](mdc:duoshaokk_api/xunman-shop/src/main/java/vip/xunman/shop/orderDemand/OrderDemand.java)
+
+```dart
+class OrderDemand {
+  final int id;
+  final int orderId;
+  final String type;
+  final String reasonValue;
+  final String reasonLabel;
+  final String? remarks;
+  final OrderDemandStatus status;
+  final DateTime createTime;
+  final DateTime? updateTime;
+  
+  // 构造函数和方法...
+}
+```
+
+#### 4. 实现API数据源方法
+**文件路径：** 扩展 [IOrderRemoteDataSource](mdc:lib/features/orders/data/datasources/i_order_remote_data_source.dart)
+
+```dart
+// 买家申请补充材料
+Future<void> addBuyerOrderDemand({
+  required int orderId,
+  required String type, // 'replenishment' or 'reform'
+  required String reasonValue,
+  required String reasonLabel,
+  String? remarks,
+}) async {
+  const String endpoint = '/api/project/orderDemand/add';
+  final requestData = {
+    'orderId': orderId,
+    'type': type,
+    'reasonValue': reasonValue,
+    'reasonLabel': reasonLabel,
+    if (remarks != null) 'remarks': remarks,
+  };
+  // API实现...
+}
+
+// 获取买家申请列表
+Future<List<OrderDemand>> getBuyerOrderDemandList({
+  int page = 1,
+  int limit = 10,
+}) async {
+  const String endpoint = '/api/project/orderDemand/buyerList';
+  // API实现...
+}
+```
+
+### 第二阶段：卖家需求处理功能
+
+#### 1. 创建卖家审核页面
+**文件路径：** `lib/features/orders/presentation/seller/pages/seller_demand_review_page.dart`
+
+**页面功能：**
+- 显示买家申请详情
+- 查看申请理由和说明
+- 提供审核操作（通过/拒绝）
+- 填写审核意见
+
+#### 2. 实现卖家审核API
+```dart
+// 卖家审核买家申请
+Future<void> auditOrderDemand({
+  required int demandId,
+  required OrderDemandStatus status, // SUCCESS or FAIL
+  String? auditRemark,
+}) async {
+  const String endpoint = '/api/project/orderDemand/audit';
+  final requestData = {
+    'id': demandId,
+    'status': status.value,
+    if (auditRemark != null) 'auditRemark': auditRemark,
+  };
+  // API实现...
+}
+```
+
+### 第三阶段：平台介入功能
+
+#### 1. 创建平台介入申请页面
+**文件路径：** `lib/features/orders/presentation/pages/platform_intervention_apply_page.dart`
+
+**页面功能：**
+- 显示订单争议详情
+- 选择申请平台介入的理由
+- 填写详细情况说明
+- 提交平台介入申请
+
+#### 2. 实现平台标记显示
+**文件路径：** `lib/features/orders/presentation/widgets/platform_intervention_status_widget.dart`
+
+**功能实现：**
+```dart
+class PlatformInterventionStatus extends StatelessWidget {
+  final bool buyerPlatformFlag;
+  final bool sellerPlatformFlag;
+  
+  Widget build(BuildContext context) {
+    if (buyerPlatformFlag) {
+      return StatusTag(text: '已申请平台介入', type: StatusTagType.warning);
+    }
+    if (sellerPlatformFlag) {
+      return StatusTag(text: '对方已申请平台介入', type: StatusTagType.info);
+    }
+    return const SizedBox.shrink();
+  }
+}
+```
+
+#### 3. 实现平台介入API
+```dart
+// 申请平台介入
+Future<void> applyPlatformIntervention({
+  required int orderId,
+  required String reasonValue,
+  required String reasonLabel,
+  String? remarks,
+}) async {
+  const String endpoint = '/api/project/orderDemand/add';
+  final requestData = {
+    'orderId': orderId,
+    'type': 'platform',
+    'reasonValue': reasonValue,
+    'reasonLabel': reasonLabel,
+    if (remarks != null) 'remarks': remarks,
+  };
+  // API实现...
+}
+```
+
+### 第四阶段：需求状态跟踪功能
+
+#### 1. 创建需求列表页面
+**文件路径：** `lib/features/orders/presentation/pages/order_demand_list_page.dart`
+
+**页面功能：**
+- 显示用户的所有申请
+- 按状态筛选申请
+- 查看申请详情
+- 跳转到相关订单
+
+#### 2. 创建需求详情页面
+**文件路径：** `lib/features/orders/presentation/pages/order_demand_detail_page.dart`
+
+**页面功能：**
+- 显示申请完整信息
+- 显示处理时间线
+- 显示审核结果
+- 相关操作按钮
+
+#### 3. 创建状态跟踪组件
+**文件路径：** `lib/features/orders/presentation/widgets/order_demand_timeline_widget.dart`
+
+**组件功能：**
+- 申请提交时间
+- 审核处理时间
+- 状态变更历史
+- 操作人员信息
+
+## 开发注意事项
+
+### 1. 状态流转规则
+根据后端业务逻辑：
+
+**买家申请流程：**
+```
+提交申请 → WAIT(待审核) → SUCCESS/FAIL(审核结果)
+```
+
+**状态变更影响：**
+- 审核通过 → 订单状态变为 `sellerSupplementaryMaterials`
+- 审核拒绝 → 订单状态变为 `applyForRefuse`
+
+### 2. 权限控制
+- 买家只能查看和操作自己的申请
+- 卖家只能审核针对自己订单的申请
+- 申请提交后买家无法修改
+- 同一订单不能有重复的待审核申请
+
+### 3. UI/UX设计要点
+- 申请理由选择应该直观易懂
+- 状态展示要清晰明确
+- 时间线展示要突出关键节点
+- 错误提示要用户友好
+
+### 4. 错误处理
+常见错误情况和处理：
+```dart
+// 重复申请检查
+if (errorMessage.contains('该订单已有未审核申请')) {
+  showDialog('您已提交过申请，请耐心等待处理结果');
+}
+
+// 订单状态不符
+if (errorMessage.contains('无法提交申请')) {
+  showDialog('当前订单状态不支持此操作');
+}
+```
+
+## 集成点和依赖
+
+### 1. 与现有订单功能集成
+- 在订单详情页添加申请入口
+- 在订单列表显示需求状态
+- 操作按钮根据需求状态调整
+
+### 2. 与售后功能区分
+- 需求申请 vs 售后申请的场景区分
+- 状态展示的差异化处理
+- 操作流程的不同引导
+
+### 3. 通知和消息集成
+- 申请提交后的确认反馈
+- 审核结果的消息通知
+- 状态变更的实时更新
+
+## 测试验证要点
+
+### 1. 功能测试
+- 各种申请类型的提交
+- 不同状态下的操作权限
+- 错误情况的处理
+- 数据的正确显示
+
+### 2. 边界条件测试  
+- 重复申请的阻止
+- 无效订单ID的处理
+- 网络异常的处理
+- 数据格式异常的处理
+
+### 3. 用户体验测试
+- 操作流程的流畅性
+- 反馈信息的及时性
+- 错误提示的友好性
+- 页面加载的性能
+
+## 开发里程碑
+
+### 里程碑1（1-2周）
+- [ ] 买家申请页面完成
+- [ ] 基础API调用实现
+- [ ] 简单的状态展示
+
+### 里程碑2（2-3周）  
+- [ ] 平台介入功能完成
+- [ ] 平台标记显示实现
+- [ ] 卖家审核功能完成
+- [ ] 错误处理完善
+
+### 里程碑3（3-4周）
+- [ ] 需求列表页面完成
+- [ ] 需求详情页面完成
+- [ ] 状态跟踪组件完成
+- [ ] 与现有功能集成
+- [ ] 测试和优化

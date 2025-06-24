@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart'; // Import audioplayers
+import 'package:flutter_markdown/flutter_markdown.dart'; // 导入Markdown渲染包
+import 'package:url_launcher/url_launcher.dart'; // 导入URL处理包
+import '../../../../features/chat/presentation/utils/markdown_style_helper.dart'; // 复用已有的样式助手
 import '../../domain/entities/ai_chat_message_entity.dart';
 import '../../domain/entities/related_service_entity.dart'; // Import RelatedServiceEntity
 import 'blinking_cursor.dart'; // Import the blinking cursor widget
@@ -48,39 +51,95 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
   @override
   void initState() {
     super.initState();
-    if (_isAudioMessage && _audioUrl != null) {
-      _initAudioPlayer();
+    _checkAndInitAudioPlayer();
+  }
+
+  @override
+  void didUpdateWidget(ChatMessageBubble oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 检查fileUrls或转录状态是否有变化
+    if (widget.message.fileUrls != oldWidget.message.fileUrls ||
+        widget.message.isTranscribing != oldWidget.message.isTranscribing) {
+      _checkAndInitAudioPlayer();
+    }
+  }
+
+  void _checkAndInitAudioPlayer() {
+    // 只有在以下条件都满足时才初始化AudioPlayer：
+    // 1. 是音频消息
+    // 2. 有音频URL
+    // 3. 不是转录中状态（避免在转录阶段初始化）
+    // 4. AudioPlayer还未初始化
+    if (_isAudioMessage && 
+        _audioUrl != null && 
+        !widget.message.isTranscribing && 
+        _audioPlayer == null) {
+      print('[AudioPlayer] Initializing for URL: $_audioUrl');
+      // 延迟初始化，给UI一些时间渲染
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted) {
+          _initAudioPlayer();
+        }
+      });
     }
   }
 
   void _initAudioPlayer() {
-    _audioPlayer = AudioPlayer();
-    // Set release mode to keep resources low. Typically you might use loop=false instead.
-    _audioPlayer!.setReleaseMode(ReleaseMode.stop); 
+    if (_audioPlayer != null) {
+      _audioPlayer!.dispose(); // 清理旧的播放器
+    }
+    
+    try {
+      _audioPlayer = AudioPlayer();
+      // Set release mode to keep resources low. Typically you might use loop=false instead.
+      _audioPlayer!.setReleaseMode(ReleaseMode.stop); 
 
-    // Listen to state changes
-    _audioPlayer!.onPlayerStateChanged.listen((state) {
-       if (mounted) {
-         setState(() => _playerState = state);
-       }
-    });
+      // Listen to state changes
+      _audioPlayer!.onPlayerStateChanged.listen((state) {
+         if (mounted) {
+           setState(() => _playerState = state);
+         }
+      });
 
-    // Listen to duration changes
-    _audioPlayer!.onDurationChanged.listen((duration) {
+      // Listen to duration changes
+      _audioPlayer!.onDurationChanged.listen((duration) {
+        if (mounted) {
+          setState(() => _duration = duration);
+        }
+      });
+
+      // Listen to position changes
+      _audioPlayer!.onPositionChanged.listen((position) {
+         if (mounted) {
+           setState(() => _position = position);
+         }
+      });
+
+      // Prepare the player (optional but good practice)
+      // 使用异步方式设置音频源，避免阻塞UI
+      _audioPlayer!.setSourceUrl(_audioUrl!).then((_) {
+        print('[AudioPlayer] Audio source set successfully for: $_audioUrl');
+        if (mounted) {
+          setState(() {}); // 触发重新渲染以更新UI状态
+        }
+      }).catchError((e) {
+        print('[AudioPlayer] Failed to set audio source: $e');
+        // 不立即显示错误，而是标记为初始化失败
+        if (mounted) {
+          setState(() {
+            _audioPlayer?.dispose();
+            _audioPlayer = null;
+          });
+        }
+      });
+    } catch (e) {
+      print('[AudioPlayer] Exception during initialization: $e');
+      _audioPlayer?.dispose();
+      _audioPlayer = null;
       if (mounted) {
-        setState(() => _duration = duration);
+        setState(() {});
       }
-    });
-
-    // Listen to position changes
-    _audioPlayer!.onPositionChanged.listen((position) {
-       if (mounted) {
-         setState(() => _position = position);
-       }
-    });
-
-    // Prepare the player (optional but good practice)
-    _audioPlayer!.setSourceUrl(_audioUrl!); 
+    }
   }
 
   @override
@@ -93,18 +152,37 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
 
   Future<void> _play() async {
     if (_audioUrl == null) return;
-    // If player is not initialized or disposed, re-initialize
-     if (_audioPlayer == null || _playerState == PlayerState.stopped || _playerState == PlayerState.completed) {
-       _initAudioPlayer(); // Re-initialize if needed (e.g., after completion)
-       await _audioPlayer!.play(UrlSource(_audioUrl!));
-     } else if (_playerState == PlayerState.paused) {
-       await _audioPlayer!.resume();
-     } else { // If already playing or preparing, stop and play from start
-       await _audioPlayer!.stop();
-       await _audioPlayer!.play(UrlSource(_audioUrl!));
-     }
-    if (mounted) {
-      setState(() => _playerState = PlayerState.playing);
+    
+    try {
+      // If player is not initialized or disposed, re-initialize
+      if (_audioPlayer == null || _playerState == PlayerState.stopped || _playerState == PlayerState.completed) {
+        _initAudioPlayer(); // Re-initialize if needed (e.g., after completion)
+        // 等待初始化完成
+        await Future.delayed(const Duration(milliseconds: 200));
+        if (_audioPlayer == null) {
+          print('[AudioPlayer] Failed to initialize player for playback');
+          return;
+        }
+        await _audioPlayer!.play(UrlSource(_audioUrl!));
+      } else if (_playerState == PlayerState.paused) {
+        await _audioPlayer!.resume();
+      } else { // If already playing or preparing, stop and play from start
+        await _audioPlayer!.stop();
+        await _audioPlayer!.play(UrlSource(_audioUrl!));
+      }
+      if (mounted) {
+        setState(() => _playerState = PlayerState.playing);
+      }
+    } catch (e) {
+      print('[AudioPlayer] Error during playback: $e');
+      // 播放失败时重置播放器状态
+      if (mounted) {
+        setState(() {
+          _playerState = PlayerState.stopped;
+          _audioPlayer?.dispose();
+          _audioPlayer = null;
+        });
+      }
     }
   }
 
@@ -138,74 +216,102 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
 
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 14.0),
-        decoration: BoxDecoration(
-          color: bubbleColor,
-          borderRadius: BorderRadius.circular(16.0),
-        ),
-        constraints: BoxConstraints(
-           maxWidth: MediaQuery.of(context).size.width * 0.75
-        ),
-        child: Column(
-           crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-           mainAxisSize: MainAxisSize.min,
-           children: [
-              // --- Display content based on messageType ---
-              if (widget.message.messageType == MessageType.text)
-                 _buildTextContent(context, isUser)
-              else if (widget.message.messageType == MessageType.image)
-                 _buildImageContent(context) // 改为实际图片渲染
-              else if (widget.message.messageType == MessageType.audio)
-                 _buildAudioContent(context, isUser) // Use the new stateful player
-              else // Default or unknown type
-                 const Text("不支持的消息类型"),
+      child: Column(
+        crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          // 消息气泡
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+            padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 14.0),
+            decoration: BoxDecoration(
+              color: bubbleColor,
+              borderRadius: BorderRadius.circular(16.0),
+            ),
+            constraints: BoxConstraints(
+               maxWidth: MediaQuery.of(context).size.width * 0.75
+            ),
+            child: Column(
+               crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+               mainAxisSize: MainAxisSize.min,
+               children: [
+                  // --- Display content based on messageType ---
+                  if (widget.message.messageType == MessageType.text)
+                     _buildTextContent(context, isUser)
+                  else if (widget.message.messageType == MessageType.image)
+                     _buildImageContent(context) // 改为实际图片渲染
+                  else if (widget.message.messageType == MessageType.audio)
+                     _buildAudioContent(context, isUser) // Use the new stateful player
+                  else // Default or unknown type
+                     const Text("不支持的消息类型"),
 
-              // --- Display Timestamp (Optional) ---
-              // Don't show timestamp for streaming text message
-              if (widget.message.timestamp != null && !(widget.isStreaming && widget.message.messageType == MessageType.text))
-               Padding(
-                 padding: const EdgeInsets.only(top: 4.0),
-                 child: Text(
-                    _formatTimestamp(widget.message.timestamp!), 
-                    style: TextStyle(
-                        fontSize: 10.0, 
-                        color: isUser 
-                           ? Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.7) 
-                           : Theme.of(context).colorScheme.onSecondaryContainer.withOpacity(0.7),
-                    ),
-                 ),
-               )
-           ],
-        ),
+                  // --- Display Timestamp (Optional) ---
+                  // Don't show timestamp for streaming text message
+                  if (widget.message.timestamp != null && !(widget.isStreaming && widget.message.messageType == MessageType.text))
+                   Padding(
+                     padding: const EdgeInsets.only(top: 4.0),
+                     child: Text(
+                        _formatTimestamp(widget.message.timestamp!), 
+                        style: TextStyle(
+                            fontSize: 10.0, 
+                            color: isUser 
+                               ? Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.7) 
+                               : Theme.of(context).colorScheme.onSecondaryContainer.withOpacity(0.7),
+                        ),
+                     ),
+                   )
+               ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
   // --- Text content builder (uses widget.message and widget.isStreaming) ---
   Widget _buildTextContent(BuildContext context, bool isUser) {
+     final textColor = isUser 
+          ? Theme.of(context).colorScheme.onPrimaryContainer 
+          : Theme.of(context).colorScheme.onSecondaryContainer;
+         
+     // 处理流式响应或空消息的特殊情况
+     if (widget.isStreaming && widget.message.content.isEmpty) {
+       return Row(
+         mainAxisSize: MainAxisSize.min,
+         crossAxisAlignment: CrossAxisAlignment.end,
+         children: [
+           Text(
+             "...",
+             style: TextStyle(
+               fontSize: 15.0,
+               color: textColor,
+             ),
+           ),
+           BlinkingCursor(cursorColor: textColor),
+         ],
+       );
+     }
+     
+     // 使用Markdown渲染组件替代普通Text
      return Row(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Flexible(
-            child: Text(
-               (widget.isStreaming && widget.message.content.isEmpty) ? "..." : widget.message.content,
-                style: TextStyle(
-                  fontSize: 15.0, 
-                  color: isUser 
-                      ? Theme.of(context).colorScheme.onPrimaryContainer 
-                      : Theme.of(context).colorScheme.onSecondaryContainer,
-                ),
-             ),
+            child: MarkdownBody(
+              data: widget.message.content,
+              selectable: true, // 允许用户选择文本
+              styleSheet: MarkdownStyleHelper.buildChatBubbleStyle(context, textColor),
+              onTapLink: (text, href, title) {
+                // 处理链接点击
+                if (href != null) {
+                  launchUrl(Uri.parse(href), mode: LaunchMode.externalApplication);
+                }
+              },
+              shrinkWrap: true, // 确保内容自适应并限制在消息气泡内
+            ),
           ),
           if (widget.isStreaming)
-              BlinkingCursor( 
-                cursorColor: isUser 
-                      ? Theme.of(context).colorScheme.onPrimaryContainer 
-                      : Theme.of(context).colorScheme.onSecondaryContainer,
-              ),
+              BlinkingCursor(cursorColor: textColor),
         ],
       );
   }
@@ -288,16 +394,105 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
                       : Theme.of(context).colorScheme.onSecondaryContainer;
     
      final url = _audioUrl;
-     if (url == null || _audioPlayer == null) {
-       // Show error or loading state if URL is missing or player failed init
-       return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-             Icon(Icons.error_outline, color: Colors.red, size: 20),
-             const SizedBox(width: 8),
-             Text("音频不可用", style: TextStyle(color: iconColor)),
-           ],
-        );
+     print('[AudioPlayer] Building audio content - URL: $url, Player: ${_audioPlayer != null}, Message Type: ${widget.message.messageType}');
+     
+     // 如果没有URL，只显示转录状态，不显示错误信息（避免初始阶段的错误闪现）
+     if (url == null) {
+       return Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         mainAxisSize: MainAxisSize.min,
+         children: [
+           // 转录状态或转录文本
+           if (widget.message.isTranscribing)
+             Row(
+               mainAxisSize: MainAxisSize.min,
+               children: [
+                 SizedBox(
+                   width: 12,
+                   height: 12,
+                   child: CircularProgressIndicator(
+                     strokeWidth: 2,
+                     valueColor: AlwaysStoppedAnimation<Color>(iconColor),
+                   ),
+                 ),
+                 const SizedBox(width: 8),
+                 Text(
+                   '转录中...',
+                   style: TextStyle(
+                     fontSize: 12,
+                     color: iconColor,
+                   ),
+                 ),
+               ],
+             )
+           else if (widget.message.content.isNotEmpty && widget.message.content != "转录中...")
+             Text(
+               widget.message.content,
+               style: TextStyle(
+                 fontSize: 14.0,
+                 color: iconColor,
+               ),
+             ),
+         ],
+       );
+     }
+     
+     // 如果有URL但AudioPlayer初始化失败，显示简化的错误信息和重试选项
+     if (_audioPlayer == null) {
+       return Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         mainAxisSize: MainAxisSize.min,
+         children: [
+           // 简化的音频播放器UI（即使初始化失败也显示基本界面）
+           Row(
+             mainAxisSize: MainAxisSize.min,
+             children: [
+               // 显示重试按钮而不是播放按钮
+               IconButton(
+                 icon: Icon(
+                   Icons.refresh,
+                   color: iconColor.withOpacity(0.7),
+                   size: 30,
+                 ),
+                 onPressed: () {
+                   print('[AudioPlayer] Retrying initialization...');
+                   _initAudioPlayer();
+                 },
+                 padding: EdgeInsets.zero,
+                 constraints: const BoxConstraints(),
+               ),
+               const SizedBox(width: 8),
+               // 显示音频不可用状态
+               Expanded(
+                 child: Container(
+                   height: 2,
+                   decoration: BoxDecoration(
+                     color: iconColor.withOpacity(0.3),
+                     borderRadius: BorderRadius.circular(1),
+                   ),
+                 ),
+               ),
+               const SizedBox(width: 8),
+               Text(
+                 '音频不可用',
+                 style: TextStyle(fontSize: 12.0, color: iconColor.withOpacity(0.7)),
+               ),
+             ],
+           ),
+           // 显示转录文本（这是最重要的内容）
+           if (widget.message.content.isNotEmpty && widget.message.content != "转录中...")
+             Padding(
+               padding: const EdgeInsets.only(top: 8.0),
+               child: Text(
+                 widget.message.content,
+                 style: TextStyle(
+                   fontSize: 14.0,
+                   color: iconColor,
+                 ),
+               ),
+             ),
+         ],
+       );
      }
 
     // Format duration helper
@@ -311,53 +506,98 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
     final currentPosition = _position ?? Duration.zero;
     final totalDuration = _duration ?? Duration.zero;
 
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Play/Pause Button
-        IconButton(
-          icon: Icon(
-            _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
-            color: iconColor,
-            size: 30,
-          ),
-          onPressed: _isPlaying ? _pause : _play,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(), // Remove default padding
-        ),
-        const SizedBox(width: 8),
-        // Optional: Progress Indicator (Slider or LinearProgressIndicator)
-         Expanded( // Allow slider to take available space
-           child: SliderTheme( // Customize slider appearance
-             data: SliderTheme.of(context).copyWith(
-               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6.0),
-               overlayShape: const RoundSliderOverlayShape(overlayRadius: 12.0),
-               trackHeight: 2.0,
-               activeTrackColor: iconColor,
-               inactiveTrackColor: iconColor.withOpacity(0.3),
-               thumbColor: iconColor,
+        // 音频播放器
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Play/Pause Button
+            IconButton(
+              icon: Icon(
+                _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                color: iconColor,
+                size: 30,
               ),
-             child: Slider(
-               value: totalDuration.inMilliseconds > 0 
-                      ? (currentPosition.inMilliseconds.clamp(0, totalDuration.inMilliseconds) / totalDuration.inMilliseconds)
-                      : 0.0,
-               onChanged: (value) async {
-                 final newPosition = totalDuration * value;
-                 await _audioPlayer!.seek(newPosition);
-                 // Optionally resume playback after seeking
-                 // if (!_isPlaying && _playerState != PlayerState.completed) {
-                 //   _play();
-                 // }
-               },
+              onPressed: _isPlaying ? _pause : _play,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(), // Remove default padding
+            ),
+            const SizedBox(width: 8),
+            // Optional: Progress Indicator (Slider or LinearProgressIndicator)
+             Expanded( // Allow slider to take available space
+               child: SliderTheme( // Customize slider appearance
+                 data: SliderTheme.of(context).copyWith(
+                   thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6.0),
+                   overlayShape: const RoundSliderOverlayShape(overlayRadius: 12.0),
+                   trackHeight: 2.0,
+                   activeTrackColor: iconColor,
+                   inactiveTrackColor: iconColor.withOpacity(0.3),
+                   thumbColor: iconColor,
+                  ),
+                 child: Slider(
+                   value: totalDuration.inMilliseconds > 0 
+                          ? (currentPosition.inMilliseconds.clamp(0, totalDuration.inMilliseconds) / totalDuration.inMilliseconds)
+                          : 0.0,
+                   onChanged: (value) async {
+                     final newPosition = totalDuration * value;
+                     await _audioPlayer!.seek(newPosition);
+                     // Optionally resume playback after seeking
+                     // if (!_isPlaying && _playerState != PlayerState.completed) {
+                     //   _play();
+                     // }
+                   },
+                 ),
+               ),
              ),
-           ),
-         ),
-        const SizedBox(width: 8),
-        // Duration Text
-        Text(
-          '${formatDuration(currentPosition)} / ${formatDuration(totalDuration)}',
-          style: TextStyle(fontSize: 12.0, color: iconColor.withOpacity(0.8)),
+            const SizedBox(width: 8),
+            // Duration Text
+            Text(
+              '${formatDuration(currentPosition)} / ${formatDuration(totalDuration)}',
+              style: TextStyle(fontSize: 12.0, color: iconColor.withOpacity(0.8)),
+            ),
+          ],
         ),
+        
+        // 转录文本或转录中状态
+        if (widget.message.isTranscribing)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 12,
+                  height: 12,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(iconColor),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '转录中...',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: iconColor,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else if (widget.message.content.isNotEmpty && widget.message.content != "转录中...")
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              widget.message.content,
+              style: TextStyle(
+                fontSize: 14.0,
+                color: iconColor,
+              ),
+            ),
+          ),
       ],
     );
   }

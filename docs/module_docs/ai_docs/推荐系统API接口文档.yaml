@@ -1,0 +1,868 @@
+openapi: 3.0.3
+info:
+  title: 推荐系统API接口文档 (含分发次数限制)
+  description: |
+    智能推荐系统API接口文档，包含会话推荐、个性化推荐及分发次数限制功能。
+    
+    ## 主要功能
+    - 会话推荐：基于对话内容的智能推荐
+    - 个性化推荐：基于用户历史行为的个性化推荐  
+    - 分发次数限制：基于Redis滑动窗口的智能限流
+    - 状态查询：实时查询用户限流状态
+    - 管理功能：管理员可重置用户限制
+    
+    ## 限流策略
+    - **会话推荐**: 5分钟内最多3次，1小时内最多30次
+    - **个性化推荐**: 5分钟内最多2次，1小时内最多20次
+    - **滑动窗口**: 精确控制任意时间段内的请求次数
+    - **多层防护**: 短期突发限制 + 长期配额控制
+    
+    ## 错误处理
+    - `200`: 请求成功
+    - `400`: 请求参数错误
+    - `429`: 触发限流限制
+    - `500`: 服务器内部错误
+    
+  version: 2.0.0
+  contact:
+    name: 推荐系统团队
+    email: recsys@example.com
+
+servers:
+  - url: http://localhost:8080
+    description: 开发环境
+  - url: https://api.example.com
+    description: 生产环境
+
+tags:
+  - name: recommendation
+    description: 推荐服务接口
+  - name: rate-limit
+    description: 分发次数限制接口
+  - name: system
+    description: 系统管理接口
+
+paths:
+  /recsys/conversation/recommend:
+    post:
+      tags:
+        - recommendation
+      summary: 获取会话推荐
+      description: |
+        基于对话内容获取智能推荐结果，支持分发次数限制。
+        
+        **限流规则:**
+        - 5分钟内最多3次请求
+        - 1小时内最多30次请求
+        
+        **返回结果包含:**
+        - 推荐商品列表
+        - 剩余可用次数
+        - 距离重置的时间
+      operationId: getConversationRecommendation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecommendationRequest'
+            examples:
+              new_conversation:
+                summary: 新会话推荐
+                value:
+                  user_id: 123
+                  limit: 10
+              existing_conversation:
+                summary: 现有会话推荐
+                value:
+                  user_id: 123
+                  conversation_id: 456
+                  limit: 10
+      responses:
+        '200':
+          description: 推荐成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationSuccessResponse'
+              examples:
+                success:
+                  summary: 成功获取推荐
+                  value:
+                    code: 200
+                    message: "success"
+                    data:
+                      request_id: "uuid-12345"
+                      items:
+                        - id: "item001"
+                          name: "推荐商品1"
+                          price: 299.99
+                          recommend_score: 0.95
+                      total: 1
+                      elapsed_time: 0.5
+                      from_history: false
+                      rate_limit:
+                        remaining: 27
+                        reset_in_seconds: 2400
+                        rules_status:
+                          - name: "burst"
+                            current_count: 1
+                            limit: 3
+                            remaining: 2
+                            window_minutes: 5
+                          - name: "hourly"
+                            current_count: 3
+                            limit: 30
+                            remaining: 27
+                            window_minutes: 60
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing_user_id:
+                  summary: 缺少用户ID
+                  value:
+                    code: 400
+                    message: "user_id is required"
+                    data: null
+        '429':
+          description: 触发限流限制
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RateLimitErrorResponse'
+              examples:
+                burst_limit:
+                  summary: 短期限流
+                  value:
+                    code: 429
+                    message: "请求过于频繁，请2分钟后再试"
+                    data:
+                      remaining: 0
+                      reset_in_seconds: 120
+                      failed_rule: "burst"
+                      rules_status:
+                        - name: "burst"
+                          current_count: 3
+                          limit: 3
+                          remaining: 0
+                hourly_limit:
+                  summary: 长期限流
+                  value:
+                    code: 429
+                    message: "每小时配额已用完，请35分钟后再试"
+                    data:
+                      remaining: 0
+                      reset_in_seconds: 2100
+                      failed_rule: "hourly"
+                      rules_status:
+                        - name: "hourly"
+                          current_count: 30
+                          limit: 30
+                          remaining: 0
+        '500':
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /recsys/personalized/recommend:
+    post:
+      tags:
+        - recommendation
+      summary: 获取个性化推荐
+      description: |
+        基于用户历史行为获取个性化推荐结果，支持分发次数限制。
+        
+        **限流规则:**
+        - 5分钟内最多2次请求
+        - 1小时内最多20次请求
+      operationId: getPersonalizedRecommendation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonalizedRecommendationRequest'
+            examples:
+              standard:
+                summary: 标准个性化推荐
+                value:
+                  user_id: 123
+                  limit: 20
+      responses:
+        '200':
+          description: 推荐成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationSuccessResponse'
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: 触发限流限制
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RateLimitErrorResponse'
+        '500':
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /recsys/rate-limit/status/{user_id}:
+    get:
+      tags:
+        - rate-limit
+      summary: 查询用户限流状态
+      description: |
+        查询指定用户的分发次数限制状态，不消耗限流配额。
+        
+        **返回信息:**
+        - 当前已使用次数
+        - 剩余可用次数
+        - 距离重置的时间
+        - 各规则详细状态
+      operationId: getRateLimitStatus
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: 用户ID
+          schema:
+            type: integer
+            example: 123
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RateLimitStatusResponse'
+              examples:
+                normal_status:
+                  summary: 正常状态
+                  value:
+                    code: 200
+                    message: "success"
+                    data:
+                      user_id: 123
+                      conversation:
+                        enabled: true
+                        service_type: "conversation"
+                        rules:
+                          burst:
+                            current_count: 1
+                            remaining: 2
+                            limit: 3
+                            window_minutes: 5
+                            reset_in_seconds: 180
+                          hourly:
+                            current_count: 5
+                            remaining: 25
+                            limit: 30
+                            window_minutes: 60
+                            reset_in_seconds: 2400
+                      personalized:
+                        enabled: true
+                        service_type: "personalized"
+                        rules:
+                          burst:
+                            current_count: 0
+                            remaining: 2
+                            limit: 2
+                            window_minutes: 5
+                            reset_in_seconds: 300
+                          hourly:
+                            current_count: 3
+                            remaining: 17
+                            limit: 20
+                            window_minutes: 60
+                            reset_in_seconds: 2400
+                disabled_status:
+                  summary: 限流已禁用
+                  value:
+                    code: 200
+                    message: "success"
+                    data:
+                      user_id: 123
+                      conversation:
+                        enabled: false
+                        message: "限流已禁用"
+                      personalized:
+                        enabled: false
+                        message: "限流已禁用"
+        '500':
+          description: 查询失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /recsys/rate-limit/reset/{user_id}:
+    post:
+      tags:
+        - rate-limit
+      summary: 重置用户限流限制
+      description: |
+        重置指定用户的分发次数限制，管理员功能。
+        
+        **重置范围:**
+        - 不指定参数：重置该用户所有限制
+        - 指定service_type：重置该服务的所有规则
+        - 指定service_type和rule_name：重置特定规则
+      operationId: resetUserRateLimit
+      security:
+        - adminAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: 用户ID
+          schema:
+            type: integer
+            example: 123
+        - name: service_type
+          in: query
+          required: false
+          description: 服务类型 (conversation/personalized)
+          schema:
+            type: string
+            enum: [conversation, personalized]
+            example: conversation
+        - name: rule_name
+          in: query
+          required: false
+          description: 规则名称 (burst/hourly)
+          schema:
+            type: string
+            enum: [burst, hourly]
+            example: burst
+      responses:
+        '200':
+          description: 重置成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: "success"
+                  data:
+                    type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      message:
+                        type: string
+                        example: "成功重置 2 个限制记录"
+                      reset_count:
+                        type: integer
+                        example: 2
+              examples:
+                reset_all:
+                  summary: 重置所有限制
+                  value:
+                    code: 200
+                    message: "success"
+                    data:
+                      success: true
+                      message: "成功重置 4 个限制记录"
+                      reset_count: 4
+                reset_specific:
+                  summary: 重置特定规则
+                  value:
+                    code: 200
+                    message: "success"
+                    data:
+                      success: true
+                      message: "成功重置 1 个限制记录"
+                      reset_count: 1
+        '400':
+          description: 重置失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 权限不足
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 403
+                message: "需要管理员权限"
+                data: null
+        '500':
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /recsys/rate-limit/config:
+    get:
+      tags:
+        - rate-limit
+      summary: 获取限流配置
+      description: |
+        获取当前的限流配置信息和验证结果。
+        
+        **返回信息:**
+        - 当前配置摘要
+        - 配置验证结果
+        - 各服务限流规则
+      operationId: getRateLimitConfig
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: "success"
+                  data:
+                    type: object
+                    properties:
+                      config:
+                        $ref: '#/components/schemas/RateLimitConfig'
+                      validation:
+                        $ref: '#/components/schemas/ConfigValidation'
+              examples:
+                config_info:
+                  summary: 配置信息
+                  value:
+                    code: 200
+                    message: "success"
+                    data:
+                      config:
+                        enabled: true
+                        redis_db: 6
+                        services_count: 2
+                        services:
+                          conversation:
+                            rules_count: 2
+                            rules:
+                              - name: "burst"
+                                limit: 3
+                                window_minutes: 5
+                                priority: 1
+                              - name: "hourly"
+                                limit: 30
+                                window_minutes: 60
+                                priority: 2
+                          personalized:
+                            rules_count: 2
+                            rules:
+                              - name: "burst"
+                                limit: 2
+                                window_minutes: 5
+                                priority: 1
+                              - name: "hourly"
+                                limit: 20
+                                window_minutes: 60
+                                priority: 2
+                      validation:
+                        valid: true
+                        errors: []
+                        warnings: []
+                        services:
+                          conversation:
+                            valid: true
+                            rules_count: 2
+                          personalized:
+                            valid: true
+                            rules_count: 2
+        '500':
+          description: 获取失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /recsys/health:
+    get:
+      tags:
+        - system
+      summary: 健康检查
+      description: 检查推荐系统服务的健康状态
+      operationId: healthCheck
+      responses:
+        '200':
+          description: 服务正常
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: "success"
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        example: "ok"
+                      service:
+                        type: string
+                        example: "recommendation"
+
+components:
+  schemas:
+    RecommendationRequest:
+      type: object
+      required:
+        - user_id
+      properties:
+        user_id:
+          type: integer
+          description: 用户ID
+          example: 123
+        conversation_id:
+          type: integer
+          nullable: true
+          description: 会话ID，新会话推荐时可为空
+          example: 456
+        message_id:
+          type: integer
+          nullable: true
+          description: 消息ID，新会话推荐时可为空
+          example: 789
+        limit:
+          type: integer
+          description: 返回结果数量
+          default: 10
+          minimum: 1
+          maximum: 50
+          example: 10
+
+    PersonalizedRecommendationRequest:
+      type: object
+      required:
+        - user_id
+      properties:
+        user_id:
+          type: integer
+          description: 用户ID
+          example: 123
+        limit:
+          type: integer
+          description: 返回结果数量
+          default: 20
+          minimum: 1
+          maximum: 50
+          example: 20
+
+    RecommendationItem:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 商品ID
+          example: "item001"
+        name:
+          type: string
+          description: 商品名称
+          example: "推荐商品1"
+        price:
+          type: number
+          format: float
+          description: 商品价格
+          example: 299.99
+        recommend_score:
+          type: number
+          format: float
+          description: 推荐分数
+          example: 0.95
+        recall_channel:
+          type: array
+          items:
+            type: string
+          description: 召回渠道
+          example: ["vector_search", "collaborative_filtering"]
+        recall_source:
+          type: string
+          description: 召回来源
+          example: "conversation"
+
+    RateLimitInfo:
+      type: object
+      properties:
+        remaining:
+          type: integer
+          description: 剩余可用次数
+          example: 27
+        reset_in_seconds:
+          type: integer
+          description: 距离重置还有多少秒
+          example: 2400
+        rules_status:
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleStatus'
+          description: 各规则状态详情
+
+    RuleStatus:
+      type: object
+      properties:
+        name:
+          type: string
+          description: 规则名称
+          example: "burst"
+        current_count:
+          type: integer
+          description: 当前已使用次数
+          example: 3
+        limit:
+          type: integer
+          description: 限制次数
+          example: 30
+        remaining:
+          type: integer
+          description: 剩余次数
+          example: 27
+        window_minutes:
+          type: integer
+          description: 时间窗口（分钟）
+          example: 60
+
+    RecommendationSuccessResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: "success"
+        data:
+          type: object
+          properties:
+            request_id:
+              type: string
+              description: 请求ID
+              example: "uuid-12345"
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/RecommendationItem'
+              description: 推荐商品列表
+            total:
+              type: integer
+              description: 推荐结果总数
+              example: 10
+            elapsed_time:
+              type: number
+              format: float
+              description: 处理耗时（秒）
+              example: 0.5
+            from_history:
+              type: boolean
+              description: 是否来自历史记录
+              example: false
+            rate_limit:
+              $ref: '#/components/schemas/RateLimitInfo'
+
+    RateLimitErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 429
+        message:
+          type: string
+          example: "请求过于频繁，请2分钟后再试"
+        data:
+          type: object
+          properties:
+            remaining:
+              type: integer
+              example: 0
+            reset_in_seconds:
+              type: integer
+              example: 120
+            failed_rule:
+              type: string
+              example: "burst"
+            rules_status:
+              type: array
+              items:
+                $ref: '#/components/schemas/RuleStatus'
+
+    RateLimitStatusResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: "success"
+        data:
+          type: object
+          properties:
+            user_id:
+              type: integer
+              example: 123
+            conversation:
+              $ref: '#/components/schemas/ServiceLimitStatus'
+            personalized:
+              $ref: '#/components/schemas/ServiceLimitStatus'
+
+    ServiceLimitStatus:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          example: true
+        service_type:
+          type: string
+          example: "conversation"
+        rules:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/RuleDetailStatus'
+        message:
+          type: string
+          description: 当enabled=false时的说明信息
+          example: "限流已禁用"
+
+    RuleDetailStatus:
+      type: object
+      properties:
+        current_count:
+          type: integer
+          example: 1
+        remaining:
+          type: integer
+          example: 2
+        limit:
+          type: integer
+          example: 3
+        window_seconds:
+          type: integer
+          example: 300
+        window_minutes:
+          type: integer
+          example: 5
+        reset_in_seconds:
+          type: integer
+          example: 180
+
+    RateLimitConfig:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          example: true
+        redis_db:
+          type: integer
+          example: 6
+        services_count:
+          type: integer
+          example: 2
+        services:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ServiceConfig'
+
+    ServiceConfig:
+      type: object
+      properties:
+        rules_count:
+          type: integer
+          example: 2
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleConfig'
+
+    RuleConfig:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "burst"
+        limit:
+          type: integer
+          example: 3
+        window_minutes:
+          type: integer
+          example: 5
+        priority:
+          type: integer
+          example: 1
+
+    ConfigValidation:
+      type: object
+      properties:
+        valid:
+          type: boolean
+          example: true
+        errors:
+          type: array
+          items:
+            type: string
+          example: []
+        warnings:
+          type: array
+          items:
+            type: string
+          example: []
+        services:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              valid:
+                type: boolean
+              rules_count:
+                type: integer
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: "请求参数错误"
+        data:
+          nullable: true
+          example: null
+
+  securitySchemes:
+    adminAuth:
+      type: http
+      scheme: bearer
+      description: 管理员JWT Token
+
+# 全局安全要求（可选）
+security: [] 

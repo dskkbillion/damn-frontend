@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 import '../bloc/profile_bloc.dart';
 import '../../domain/entities/user_profile.dart';
@@ -20,6 +21,9 @@ class ProfileHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     UserProfile? profile;
     if (state is ProfileLoaded) {
       profile = (state as ProfileLoaded).profile;
@@ -58,11 +62,11 @@ class ProfileHeader extends ConsumerWidget {
               children: [
                 _buildAvatar(context, profile),
                 const SizedBox(width: 16),
-                _buildNameAndStatus(context, profile),
+                _buildNameAndStatus(context, profile, s),
               ],
             ),
             const SizedBox(height: 16),
-            _buildSwitchToSellerButton(context, ref),
+            _buildSwitchToSellerButton(context, ref, s),
           ],
         ),
       ),
@@ -89,7 +93,7 @@ class ProfileHeader extends ConsumerWidget {
     );
   }
 
-  Widget _buildNameAndStatus(BuildContext context, UserProfile? profile) {
+  Widget _buildNameAndStatus(BuildContext context, UserProfile? profile, S s) {
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,7 +101,7 @@ class ProfileHeader extends ConsumerWidget {
           InkWell(
             onTap: () => _showEditNicknameDialog(context, profile?.nickName),
             child: Text(
-              profile?.nickName ?? '用户',
+              profile?.nickName ?? s.profile_default_name,
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -127,7 +131,7 @@ class ProfileHeader extends ConsumerWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                profile?.onlineFlag == true ? '在线' : '离线',
+                profile?.onlineFlag == true ? s.profile_online : s.profile_offline,
                 style: TextStyle(
                   fontSize: 13,
                   color: Colors.white.withOpacity(0.9),
@@ -140,12 +144,12 @@ class ProfileHeader extends ConsumerWidget {
     );
   }
 
-  Widget _buildSwitchToSellerButton(BuildContext context, WidgetRef ref) {
+  Widget _buildSwitchToSellerButton(BuildContext context, WidgetRef ref, S s) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
         icon: const Icon(Icons.storefront_outlined, size: 18),
-        label: const Text('切换到卖家模式'),
+        label: Text(s.profile_switch_to_seller),
         onPressed: () {
           ref.read(appModeProvider.notifier).state = AppMode.seller;
           try {
@@ -153,7 +157,7 @@ class ProfileHeader extends ConsumerWidget {
           } catch (e) {
             print('Error navigating to /seller: $e');
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('无法切换到卖家模式: $e')),
+              SnackBar(content: Text(s.profile_switch_error('$e'))),
             );
           }
         },
@@ -170,23 +174,26 @@ class ProfileHeader extends ConsumerWidget {
   }
 
   void _showEditNicknameDialog(BuildContext context, String? currentNickname) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     final textController = TextEditingController(text: currentNickname);
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('修改昵称'),
+        title: Text(s.profile_edit_nickname),
         content: TextField(
           controller: textController,
-          decoration: const InputDecoration(
-            hintText: '请输入新昵称',
+          decoration: InputDecoration(
+            hintText: s.profile_nickname_hint,
           ),
           maxLength: 20,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
+            child: Text(s.profile_cancel),
           ),
           TextButton(
             onPressed: () {
@@ -198,7 +205,7 @@ class ProfileHeader extends ConsumerWidget {
               }
               Navigator.pop(context);
             },
-            child: const Text('保存'),
+            child: Text(s.profile_save),
           ),
         ],
       ),

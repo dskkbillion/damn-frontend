@@ -41,6 +41,8 @@ class StreamChatCompletionUseCase
       userId: params.userId,
       message: params.message,
       fileUrls: params.fileUrls,
+      audioUrls: params.audioUrls,
+      transcription: params.transcription,
     );
   }
 }
@@ -53,6 +55,8 @@ class StreamChatCompletionParams extends Equatable {
   final int userId;
   final String message;
   final List<String> fileUrls; // Should contain OSS URLs before calling
+  final List<String>? audioUrls;
+  final String? transcription;
 
   /// {@macro stream_chat_completion_params}
   const StreamChatCompletionParams({
@@ -60,8 +64,10 @@ class StreamChatCompletionParams extends Equatable {
     required this.userId,
     required this.message,
     required this.fileUrls,
+    this.audioUrls,
+    this.transcription,
   });
 
   @override
-  List<Object?> get props => [conversationId, userId, message, fileUrls];
+  List<Object?> get props => [conversationId, userId, message, fileUrls, audioUrls, transcription];
 } 

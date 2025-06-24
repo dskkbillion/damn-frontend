@@ -1,0 +1,229 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# API开发标准规范
+
+## 开发新功能前的必检事项
+
+### 1. 后端API确认清单
+在实现任何新功能前，必须完成以下检查：
+
+- [ ] 确认API端点在后端代码中存在
+- [ ] 验证HTTP方法（GET/POST/PUT/DELETE）
+- [ ] 确认请求参数格式和验证规则
+- [ ] 确认响应数据结构
+- [ ] 检查是否需要认证/授权
+- [ ] 确认错误响应格式
+
+### 2. 功能可用性验证
+参考后端业务逻辑，确认功能是否真正可用：
+
+**✅ 已确认可用的功能：**
+- 订单CRUD操作
+- 订单状态流转
+- 售后申请和处理
+- 评价功能
+- 卖家操作（接单、发货等）
+- **邀请评价功能**：后端完整实现，包含重复邀请检查和消息通知
+- **平台介入功能**：设计正确，创建申请记录并设置平台标记，由管理后台处理
+
+**⚠️ 需要修复的前端问题：**
+- 邀请评价API调用前端实现有误
+- 平台介入功能前端理解错误，需要正确实现标记逻辑
+
+## API实现规范
+
+### 1. 数据源实现模式
+参考现有实现：[OrderRemoteDataSourceImpl](mdc:lib/features/orders/data/datasources/order_remote_data_source_impl.dart)
+
+```dart
+// 标准API调用模式
+@override
+Future<void> methodName(params) async {
+  const String endpoint = '/api/exact/path';
+  try {
+    final requestData = {
+      'field1': params.field1,
+      'field2': params.field2,
+      // 确保字段名与后端完全一致
+    };
+    
+    final response = await coreDioClient.post(endpoint, data: requestData);
+    
+    // 检查业务状态码
+    if (response.statusCode == 200 && 
+        response.data != null && 
+        response.data['code'] == 200) {
+      return; // 成功
+    } else {
+      throw ServerFailure(message: response.data?['msg'] ?? 'API调用失败');
+    }
+  } on DioException catch (e) {
+    throw ServerFailure(message: e.response?.data?['msg'] ?? '网络错误');
+  } catch (e) {
+    throw ServerFailure(message: '意外错误: ${e.toString()}');
+  }
+}
+```
+
+### 2. 分页API规范
+参考后端分页实现，使用正确的参数名：
+
+```dart
+// 正确的分页参数
+final Map<String, dynamic> params = {
+  'pageNum': page,        // 不是 pageIndex
+  'pageSize': limit,      // 不是 size 或 count
+  'type': userRole,       // buyer 或 seller
+};
+```
+
+### 3. 状态筛选API规范
+参考后端实现，使用states数组而不是单个state：
+
+```dart
+// 正确的状态筛选
+if (status != null) {
+  params['states'] = [status.toJsonString()]; // 数组格式
+}
+```
+
+## 特定功能开发指南
+
+### 订单需求功能开发
+
+#### 1. 买家申请补充材料
+**API端点：** `POST /api/project/orderDemand/add`
+
+**请求参数规范：**
+```dart
+final requestData = {
+  'orderId': orderId,                    // Long
+  'type': 'replenishment',              // 或 'reform'
+  'reasonValue': selectedReasonCode,     // String
+  'reasonLabel': selectedReasonText,     // String  
+  'remarks': userRemarks,               // String (可选)
+};
+```
+
+**后端验证规则：**
+- orderId: 必须存在且属于当前用户
+- type: 必须是已定义的类型
+- reasonValue/reasonLabel: 不能为空
+- 同一订单不能有重复的待审核申请
+
+#### 2. 卖家审核申请
+**API端点：** `POST /api/project/orderDemand/audit`
+
+**请求参数规范：**
+```dart
+final requestData = {
+  'id': demandId,                       // 申请ID
+  'status': 'SUCCESS',                  // 或 'FAIL'
+  // 其他字段根据需要添加
+};
+```
+
+#### 3. 申请列表查询
+**API端点：** `POST /api/project/orderDemand/buyerList`
+
+**查询参数规范：**
+```dart
+final requestData = {
+  'pageNum': page,
+  'pageSize': limit,
+  // 买家查询会自动过滤 replenishment 和 reform 类型
+};
+```
+
+### 新功能开发检查点
+
+#### 开发前检查
+1. 在对应的后端控制器中找到API方法
+2. 查看方法签名和参数验证规则
+3. 确认业务逻辑没有被注释或禁用
+4. 理解状态流转和权限控制
+
+#### 开发中检查  
+1. API端点路径完全正确
+2. HTTP方法匹配
+3. 请求参数字段名和类型正确
+4. 响应数据解析正确
+5. 错误处理完整
+
+#### 开发后检查
+1. 测试各种成功场景
+2. 测试各种错误场景
+3. 验证状态变更正确
+4. 确认UI反馈正确
+
+## 错误处理标准
+
+### 1. 统一错误处理模式
+```dart
+try {
+  // API 调用
+} on DioException catch (e) {
+  // 网络层错误
+  final message = e.response?.data?['msg'] ?? e.message ?? '网络错误';
+  throw ServerFailure(message: message);
+} catch (e) {
+  // 其他错误
+  if (e is ServerFailure) rethrow;
+  throw ServerFailure(message: '意外错误: ${e.toString()}');
+}
+```
+
+### 2. 业务错误处理
+根据后端返回的code和msg进行处理：
+- code: 200 → 成功
+- code: 其他值 → 根据msg显示错误信息
+
+### 3. 用户友好的错误提示
+将后端返回的技术错误转换为用户友好的提示：
+```dart
+String getClientFriendlyErrorMessage(String backendMessage) {
+  if (backendMessage.contains('该订单已有未审核申请')) {
+    return '您已提交过申请，请等待处理结果';
+  }
+  if (backendMessage.contains('订单不存在')) {
+    return '订单信息异常，请刷新重试';
+  }
+  return backendMessage; // 默认显示原始消息
+}
+```
+
+## 开发优先级和依赖关系
+
+### 高优先级（可立即开始）
+1. 买家申请补充材料页面 - 依赖已有的OrderDemand API
+2. 卖家审核申请页面 - 依赖已有的审核API
+3. 申请历史列表 - 依赖已有的查询API
+
+### 中优先级（需要后端协调）
+1. 提醒发货功能 - API存在但前端未实现
+2. 邀请评价功能 - API存在但前端实现有问题
+3. 订单统计面板 - API存在但前端未使用
+
+### 低优先级（需要重新评估）
+1. 平台介入功能 - 后端核心逻辑被禁用
+2. 高级筛选功能 - 需要确认后端支持的筛选条件
+
+## 代码质量要求
+
+### 1. 类型安全
+- 使用强类型定义参数和响应
+- 避免dynamic类型，明确指定泛型
+- 使用枚举而不是字符串常量
+
+### 2. 可维护性
+- API方法命名清晰，与后端方法对应
+- 参数封装为明确的Params类
+- 响应数据映射为Model类
+
+### 3. 可测试性
+- API调用逻辑与UI逻辑分离
+- 提供Mock实现用于测试
+- 错误情况的单元测试覆盖

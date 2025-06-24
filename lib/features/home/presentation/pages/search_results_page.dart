@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 import '../cubit/search_cubit.dart';
 import '../widgets/home_feed_list.dart';
@@ -18,6 +19,9 @@ class SearchResultsPage extends StatefulWidget {
 class _SearchResultsPageState extends State<SearchResultsPage> {
   @override
   Widget build(BuildContext context) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     return BlocProvider(
       create: (_) => GetIt.I<SearchCubit>()..searchProducts(widget.keyword),
       child: Scaffold(
@@ -64,21 +68,21 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('搜索失败: ${state.message}'),
+                    Text(s.search_failed(state.message)),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
                         context.read<SearchCubit>().searchProducts(widget.keyword);
                       },
-                      child: const Text('重试'),
+                      child: Text(s.home_retry),
                     ),
                   ],
                 ),
               );
             } else if (state is SearchLoaded) {
               if (state.products.isEmpty) {
-                return const Center(
-                  child: Text('没有找到相关的服务', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                return Center(
+                  child: Text(s.search_no_results, style: const TextStyle(fontSize: 16, color: Colors.grey)),
                 );
               }
               

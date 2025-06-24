@@ -5,6 +5,8 @@ import '../entities/ai_chat_message_entity.dart';
 import '../entities/ai_conversation_entity.dart';
 import '../entities/chat_allocation_result_entity.dart';
 import '../entities/related_service_entity.dart';
+import '../usecases/load_history_usecase.dart';
+import '../usecases/get_conversations_usecase.dart';
 
 /// {@template i_ai_chat_repository}
 /// Interface for the AI Chat repository.
@@ -14,21 +16,28 @@ import '../entities/related_service_entity.dart';
 /// Methods return Either<Failure, SuccessType> to handle potential errors.
 /// {@endtemplate}
 abstract class IAiChatRepository {
-  /// Fetches the list of AI conversations for a given user.
+  /// Fetches the list of AI conversations for a given user with pagination.
   ///
-  /// Returns [Either<Failure, List<AiConversationEntity>>].
-  Future<Either<Failure, List<AiConversationEntity>>> fetchConversations(
-      {required int userId});
+  /// Supports pagination using [page], [pageSize], and [orderBy].
+  /// Returns [Either<Failure, GetConversationsResult>].
+  Future<Either<Failure, GetConversationsResult>> fetchConversations({
+    required int userId,
+    int page = 1,
+    int pageSize = 20,
+    String orderBy = 'desc',
+  });
 
-  /// Loads the message history for a specific conversation.
+  /// Loads the message history for a specific conversation with pagination.
   ///
-  /// Supports pagination using [offset] and [limit].
-  /// Returns [Either<Failure, List<AiChatMessageEntity>>].
-  Future<Either<Failure, List<AiChatMessageEntity>>> loadHistory({
+  /// Supports new pagination using [page], [pageSize], [orderBy], and [getAll].
+  /// Returns [Either<Failure, LoadHistoryResult>].
+  Future<Either<Failure, LoadHistoryResult>> loadHistory({
     required int conversationId,
     required int userId,
-    int? offset,
-    int? limit,
+    int page = 1,
+    int pageSize = 50,
+    String orderBy = 'desc',
+    bool getAll = false,
   });
 
   /// Creates a new AI conversation.
@@ -53,6 +62,8 @@ abstract class IAiChatRepository {
     required int userId,
     required String message,
     required List<String> fileUrls, // URLs of uploaded files
+    List<String>? audioUrls,
+    String? transcription,
   });
 
   /// Fetches related service recommendations for a conversation.
@@ -82,6 +93,32 @@ abstract class IAiChatRepository {
   /// Returns [Either<Failure, String>] where String is the transcribed text.
   Future<Either<Failure, String>> transcribeAudio(
       {required String audioOssUrl, int? userId});
+
+  /// Cancels an ongoing chat generation.
+  /// (Corresponds to /model/chat/cancel endpoint).
+  ///
+  /// Returns [Either<Failure, void>].
+  Future<Either<Failure, void>> cancelChatGeneration({
+    required int conversationId,
+    required int userId,
+  });
+
+  /// Updates the title of a specific conversation.
+  ///
+  /// Returns [Either<Failure, String>] where String is the updated title.
+  Future<Either<Failure, String>> updateConversationTitle({
+    required int conversationId,
+    required int userId,
+    required String title,
+  });
+
+  /// Generates a title for a specific conversation using AI.
+  ///
+  /// Returns [Either<Failure, String>] where String is the generated title.
+  Future<Either<Failure, String>> generateConversationTitle({
+    required int conversationId,
+    required int userId,
+  });
 
   // TODO: Consider adding methods for uploading files if that logic belongs here
   // Future<Either<Failure, String>> uploadFile(File file);

@@ -16,6 +16,7 @@ _$AiChatMessageModelImpl _$$AiChatMessageModelImplFromJson(
       content: json['content'] as String,
       files: json['files'] == null ? const [] : _filesFromJson(json['files']),
       timestamp: (json['timestamp'] as num?)?.toInt(),
+      type: json['type'] as String?,
     );
 
 Map<String, dynamic> _$$AiChatMessageModelImplToJson(
@@ -28,4 +29,5 @@ Map<String, dynamic> _$$AiChatMessageModelImplToJson(
       'content': instance.content,
       'files': instance.files,
       'timestamp': instance.timestamp,
+      'type': instance.type,
     };

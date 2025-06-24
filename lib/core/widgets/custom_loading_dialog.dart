@@ -1,0 +1,56 @@
+import 'package:flutter/material.dart';
+
+/// 显示加载对话框
+void showLoadingDialog(BuildContext context, {String message = '处理中...'}) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return CustomLoadingDialog(message: message);
+    },
+  );
+}
+
+/// 关闭加载对话框
+void dismissLoadingDialog(BuildContext context) {
+  Navigator.of(context, rootNavigator: true).pop();
+}
+
+/// 自定义加载对话框
+class CustomLoadingDialog extends StatelessWidget {
+  final String message;
+
+  const CustomLoadingDialog({
+    Key? key,
+    this.message = '处理中...',
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      elevation: 0,
+      backgroundColor: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+} 

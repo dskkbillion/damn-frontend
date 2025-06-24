@@ -16,6 +16,10 @@ _$ChatRoomDtoImpl _$$ChatRoomDtoImplFromJson(Map<String, dynamic> json) =>
           ? null
           : ChatMessageDto.fromJson(
               json['chatMessageNewVo'] as Map<String, dynamic>),
+      productId: (json['productId'] as num?)?.toInt(),
+      productVo: json['productVo'] == null
+          ? null
+          : ProductVoDto.fromJson(json['productVo'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$ChatRoomDtoImplToJson(_$ChatRoomDtoImpl instance) =>
@@ -25,4 +29,6 @@ Map<String, dynamic> _$$ChatRoomDtoImplToJson(_$ChatRoomDtoImpl instance) =>
       'doctor': instance.doctor,
       'messageNum': instance.messageNum,
       'chatMessageNewVo': instance.chatMessageNewVo,
+      'productId': instance.productId,
+      'productVo': instance.productVo,
     };

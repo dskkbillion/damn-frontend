@@ -75,16 +75,16 @@ class FileRemoteDataSourceImpl implements IFileRemoteDataSource {
       // Provide more specific error messages based on DioErrorType if needed
       String failureMessage = e.message ?? "Network error uploading file";
       if (e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.sendTimeout || e.type == DioExceptionType.receiveTimeout) {
-          failureMessage = "网络超时，请稍后重试";
+          failureMessage = "Network timeout, please try again later";
       } else if (e.type == DioExceptionType.connectionError) {
           // This might catch the 'Connection reset by peer'
-          failureMessage = "无法连接到服务器，请检查网络连接";
+          failureMessage = "Cannot connect to server, please check your network connection";
       }
       throw ServerException(message: failureMessage, statusCode: e.response?.statusCode);
     } catch (e, stacktrace) {
       // Handle other unexpected errors (e.g., during FormData creation)
       print("Unexpected error during uploadFile: $e\n$stacktrace");
-      throw ServerException(message: "处理上传文件时发生意外错误"); // Generic internal error message
+      throw ServerException(message: "Unexpected error while processing file upload"); // Generic internal error message
     }
   }
 

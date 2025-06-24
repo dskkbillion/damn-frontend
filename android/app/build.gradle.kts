@@ -37,8 +37,25 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+    
+    // 添加支付宝SDK配置
+    packagingOptions {
+        pickFirst("lib/armeabi-v7a/libentryexpro.so")
+        pickFirst("lib/arm64-v8a/libentryexpro.so")
+        pickFirst("lib/x86/libentryexpro.so")
+        pickFirst("lib/x86_64/libentryexpro.so")
+        exclude("META-INF/LICENSE")
+        exclude("META-INF/NOTICE")
+    }
 }
 
 flutter {
     source = "../.."
+}
+
+// 添加支持库依赖，避免版本冲突
+dependencies {
+    // 避免版本冲突
+    implementation("com.android.support:support-v4:28.0.0")
+    implementation("com.android.support:design:28.0.0")
 }

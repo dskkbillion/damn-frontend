@@ -13,6 +13,8 @@ _$RelatedServiceModelImpl _$$RelatedServiceModelImplFromJson(
       imageUrl: json['mainImage'] as String,
       title: json['name'] as String,
       price: (json['sellingPrice'] as num).toDouble(),
+      allocationStatusRecorded:
+          json['allocation_status_recorded'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$$RelatedServiceModelImplToJson(
@@ -22,4 +24,5 @@ Map<String, dynamic> _$$RelatedServiceModelImplToJson(
       'mainImage': instance.imageUrl,
       'name': instance.title,
       'sellingPrice': instance.price,
+      'allocation_status_recorded': instance.allocationStatusRecorded,
     };

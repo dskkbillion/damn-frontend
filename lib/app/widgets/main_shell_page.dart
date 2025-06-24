@@ -1,79 +1,88 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart'; // Import GoRouter
-import 'package:flutter_riverpod/flutter_riverpod.dart'; // 引入 Riverpod
-// TODO: 引入卖家导航栏 Widget (创建后)
-// import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_bottom_navigation_bar.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart'; // 导入SVG插件
+import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/core/utils/haptic_utils.dart'; // 导入震动工具类
 
-// This widget now receives the StatefulNavigationShell from GoRouter
-// and uses it to manage the scaffold body and bottom navigation state.
-class MainShellPage extends ConsumerWidget { // Changed to ConsumerWidget
+/// 主壳页面，支持可配置的开发tab
+class MainShellPage extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
-
+  
   const MainShellPage({required this.navigationShell, super.key});
-
-  // We no longer need StatefulWidget or local state management for index
-  // as GoRouter's StatefulNavigationShell handles it.
-
-  // We also don't need the _widgetOptions list here,
-  // as the navigationShell widget itself displays the correct page.
-
+  
   void _onTap(BuildContext context, int index) {
-    // Use the navigationShell's goBranch method to navigate
-    // Tapping the current tab again might reset the inner stack (optional)
+    // 添加轻微震动反馈
+    HapticUtils.lightTabFeedback();
+    
     navigationShell.goBranch(
       index,
-      // `initialLocation` true = reset the branch to its initial location
       initialLocation: index == navigationShell.currentIndex,
     );
   }
-
+  
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 不再需要监听 AppMode
-    // final currentMode = ref.watch(appModeProvider);
+    // 读取是否显示开发tab的配置
+    final showDevTab = ref.watch(showDevTabProvider);
+    // 获取国际化资源
+    final s = S.of(context);
+    
+    // 根据配置构建导航栏项目
+    final List<BottomNavigationBarItem> items = [
+      BottomNavigationBarItem(
+        icon: SvgPicture.asset(
+          'assets/icons/nav/dskk_logo.svg',
+          width: 24,
+          height: 24,
+          colorFilter: const ColorFilter.mode(Colors.grey, BlendMode.srcIn),
+        ),
+        activeIcon: SvgPicture.asset(
+          'assets/icons/nav/dskk_logo.svg',
+          width: 24,
+          height: 24,
+          colorFilter: ColorFilter.mode(const Color(0xFFD0903D), BlendMode.srcIn),
+        ),
+        label: s.nav_ai_assistant,
+      ),
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.home_outlined),
+        activeIcon: const Icon(Icons.home),
+        label: s.nav_home,
+      ),
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.chat_bubble_outline),
+        activeIcon: const Icon(Icons.chat_bubble),
+        label: s.nav_messages,
+      ),
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.person_outline),
+        activeIcon: const Icon(Icons.person),
+        label: s.nav_profile,
+      ),
+    ];
+    
+    // 仅在配置为显示开发tab时添加
+    if (showDevTab) {
+      items.add(BottomNavigationBarItem(
+        icon: const Icon(Icons.developer_mode_outlined),
+        activeIcon: const Icon(Icons.developer_mode),
+        label: s.nav_dev,
+      ));
+    }
 
     return Scaffold(
-      // The body is now simply the navigationShell widget.
-      // It handles displaying the correct page based on the active branch.
       body: navigationShell,
-      // 直接构建买家导航栏
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         selectedItemColor: const Color(0xFFD0903D),
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.auto_awesome_outlined),
-            activeIcon: Icon(Icons.auto_awesome),
-            label: 'AI助手',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: '主页',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            activeIcon: Icon(Icons.chat_bubble),
-            label: '消息',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: '我的',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.developer_mode_outlined),
-            activeIcon: Icon(Icons.developer_mode),
-            label: '开发',
-          ),
-        ],
+        items: items,
         currentIndex: navigationShell.currentIndex,
-        onTap: (index) => _onTap(context, index), // 传递 context
+        onTap: (index) => _onTap(context, index),
       ),
     );
   }
-
-  // 移除 _buildBuyerNavigationBar 和 _buildSellerNavigationBar 方法
 } 

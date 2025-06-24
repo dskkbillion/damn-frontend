@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 import '../../domain/entities/banner.dart' as home_banner;
 import '../../domain/entities/home_category.dart';
@@ -20,8 +21,11 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     // 注意：在预览应用中，HomeBloc 已经在上层通过 BlocProvider 提供
-    return const HomeView(title: '首页');
+    return HomeView(title: s.home_title);
   }
 }
 
@@ -86,6 +90,9 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   Widget build(BuildContext context) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     return Scaffold(
       appBar: AppBar(
         title: _buildSearchBar(context),
@@ -125,12 +132,12 @@ class _HomeViewState extends State<HomeView> {
                                 targetValue: banner.targetValue,
                               ));
                           // 显示点击信息
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('点击了轮播图: ${banner.targetType} - ${banner.targetValue}'),
-                              duration: const Duration(seconds: 1),
-                            ),
-                          );
+                          // ScaffoldMessenger.of(context).showSnackBar(
+                          //   SnackBar(
+                          //     content: Text(s.home_banner_clicked(banner.targetType, banner.targetValue)),
+                          //     duration: const Duration(seconds: 1),
+                          //   ),
+                          // );
                         },
                       ),
                     ),
@@ -157,12 +164,12 @@ class _HomeViewState extends State<HomeView> {
                                   productId: item.id,
                                 ));
                             // 显示点击信息
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('点击了服务卡片: ${item.name}'),
-                                duration: const Duration(seconds: 1),
-                              ),
-                            );
+                            // ScaffoldMessenger.of(context).showSnackBar(
+                            //   SnackBar(
+                            //     content: Text(s.home_product_card_clicked(item.name)),
+                            //     duration: const Duration(seconds: 1),
+                            //   ),
+                            // );
                           },
                           onRecommendClicked: () {
                             context.read<HomeBloc>().add(RecommendButtonClicked(
@@ -170,12 +177,12 @@ class _HomeViewState extends State<HomeView> {
                                   productName: item.name,
                                 ));
                             // 显示点击信息
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('点击了"让ta看看"按钮: ${item.name}'),
-                                duration: const Duration(seconds: 1),
-                              ),
-                            );
+                            // ScaffoldMessenger.of(context).showSnackBar(
+                            //   SnackBar(
+                            //     content: Text(s.home_recommend_clicked(item.name)),
+                            //     duration: const Duration(seconds: 1),
+                            //   ),
+                            // );
                           },
                           showRecommendButton: false,
                         );
@@ -196,13 +203,13 @@ class _HomeViewState extends State<HomeView> {
                   
                   // 到底了提示
                   if (!hasMore)
-                    const SliverToBoxAdapter(
+                    SliverToBoxAdapter(
                       child: Padding(
-                        padding: EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.all(16.0),
                         child: Center(
                           child: Text(
-                            '已经到底了',
-                            style: TextStyle(
+                            s.home_end_of_list,
+                            style: const TextStyle(
                               color: Colors.grey,
                               fontSize: 14,
                             ),
@@ -219,7 +226,7 @@ class _HomeViewState extends State<HomeView> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    '加载失败: ${state.message}',
+                    s.home_loading_failed(state.message),
                     style: const TextStyle(color: Colors.red),
                   ),
                   const SizedBox(height: 16),
@@ -227,7 +234,7 @@ class _HomeViewState extends State<HomeView> {
                     onPressed: () {
                       context.read<HomeBloc>().add(const LoadHomeData());
                     },
-                    child: const Text('重试'),
+                    child: Text(s.home_retry),
                   ),
                 ],
               ),
@@ -257,6 +264,9 @@ class _HomeViewState extends State<HomeView> {
   
   /// 构建搜索栏
   Widget _buildSearchBar(BuildContext context) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
     return GestureDetector(
       onTap: () {
         // 跳转到搜索页面
@@ -269,15 +279,15 @@ class _HomeViewState extends State<HomeView> {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
-          children: const [
-            Padding(
+          children: [
+            const Padding(
             padding: EdgeInsets.symmetric(horizontal: 12),
             child: Icon(Icons.search, color: Colors.grey),
           ),
           Expanded(
               child: Text(
-                '搜索服务',
-                style: TextStyle(color: Colors.grey),
+                s.home_search_hint,
+                style: const TextStyle(color: Colors.grey),
               ),
             ),
           ],

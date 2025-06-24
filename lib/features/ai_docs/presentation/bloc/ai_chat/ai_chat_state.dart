@@ -1,5 +1,50 @@
 part of 'ai_chat_bloc.dart';
 
+/// 频率限制信息
+class RateLimitInfo extends Equatable {
+  final int remaining;
+  final int resetInSeconds;
+  final List<RuleStatus> rulesStatus;
+
+  const RateLimitInfo({
+    required this.remaining,
+    required this.resetInSeconds,
+    required this.rulesStatus,
+  });
+
+  @override
+  List<Object?> get props => [remaining, resetInSeconds, rulesStatus];
+}
+
+/// 规则状态信息
+class RuleStatus extends Equatable {
+  final String name;
+  final int currentCount;
+  final int limit;
+  final int remaining;
+  final int windowMinutes;
+
+  const RuleStatus({
+    required this.name,
+    required this.currentCount,
+    required this.limit,
+    required this.remaining,
+    required this.windowMinutes,
+  });
+
+  @override
+  List<Object?> get props => [name, currentCount, limit, remaining, windowMinutes];
+}
+
+/// 频率限制状态枚举
+enum RateLimitStatus {
+  initial,
+  loading,
+  loaded,
+  error,
+  limitExceeded,
+}
+
 /// Represents the status of AI chat operations (main chat area).
 enum AiChatStatus {
   initial, // Initial state before loading
@@ -9,6 +54,7 @@ enum AiChatStatus {
   sendingMessage, // Uploading files (if any) and sending message
   waitingForResponse, // <-- Add this status
   streamingResponse, // AI is generating and streaming response
+  cancellingGeneration, // User requested cancellation of ongoing generation
   messageSendSuccess, // AI finished responding successfully
   messageSendFailure, // Failed to send message or stream response
   loadingRecommendations, // Loading related services
@@ -44,6 +90,15 @@ enum AllocationStatus {
   loading, // 正在分发中
   success, // 分发成功
   failure, // 分发失败
+}
+
+/// Represents the status of title operations.
+enum TitleStatus {
+  initial,
+  generating, // AI正在生成标题
+  updating,   // 正在更新标题
+  success,    // 操作成功
+  failure,    // 操作失败
 }
 
 // --- Define Image Upload State --- 
@@ -101,6 +156,18 @@ class AiChatState extends Equatable {
   final List<AiConversationEntity> conversations;
   final int? selectedConversationId;
   final String? conversationListErrorMessage;
+  
+  /// --- New fields for conversations pagination ---
+  /// 是否正在加载更多对话
+  final bool isLoadingMoreConversations;
+  /// 对话列表当前页码
+  final int conversationsCurrentPage;
+  /// 对话列表总页数（如果后端提供）
+  final int conversationsTotalPages;
+  /// 对话列表总数（如果后端提供）
+  final int totalConversationsCount;
+  /// 对话列表是否还有更多页面
+  final bool conversationsHasMore;
 
   /// The list of recommended services.
   final List<RelatedServiceEntity> recommendations;
@@ -113,13 +180,42 @@ class AiChatState extends Equatable {
   /// 用于跟踪每个服务的分发状态，键为服务ID，值为分发状态
   final Map<int, AllocationStatus> serviceAllocationStatus;
 
+  /// --- New field for created chat room ID ---
+  /// 存储通过优化分发流程创建的聊天室ID
+  final int? createdChatRoomId;
+
+  /// --- New fields for title operations ---
+  final TitleStatus titleStatus;
+  final String? titleErrorMessage;
+  final Map<int, TitleStatus> conversationTitleStatus; // 跟踪每个会话的标题状态
+
   // --- Fields for image handling (Updated) ---
   /// Locally selected image files for preview before sending.
   final List<File>? pendingImageFiles;
   /// Tracks the upload state for each pending image file (path -> state).
   final Map<String, ImageUploadState>? imageUploadStates;
-  // Removed uploadedImageUrls
-  // final List<String>? uploadedImageUrls;
+
+  // --- New fields for pagination ---
+  /// 是否正在加载更多历史消息
+  final bool isLoadingMoreHistory;
+  /// 当前页码
+  final int currentPage;
+  /// 总页数（如果后端提供）
+  final int totalPages;
+  /// 总消息数（如果后端提供）
+  final int totalMessages;
+  /// 是否应该自动滚动到底部
+  final bool shouldScrollToBottom;
+
+  /// --- New fields for rate limit ---
+  /// 频率限制状态
+  final RateLimitStatus rateLimitStatus;
+  /// 会话推荐的频率限制信息
+  final RateLimitInfo? conversationRateLimit;
+  /// 个性化推荐的频率限制信息
+  final RateLimitInfo? personalizedRateLimit;
+  /// 频率限制错误信息
+  final String? rateLimitErrorMessage;
 
   /// {@macro ai_chat_state}
   const AiChatState({
@@ -136,9 +232,29 @@ class AiChatState extends Equatable {
     this.recommendations = const [],
     this.recommendationsErrorMessage,
     this.serviceAllocationStatus = const {}, // 默认为空映射
+    this.createdChatRoomId,
+    this.titleStatus = TitleStatus.initial,
+    this.titleErrorMessage,
+    this.conversationTitleStatus = const {},
     this.pendingImageFiles = const [],
     this.imageUploadStates = const {}, // Default to empty map
-    // this.uploadedImageUrls = const [], // Removed
+    // Pagination fields
+    this.isLoadingMoreHistory = false,
+    this.currentPage = 1,
+    this.totalPages = 0,
+    this.totalMessages = 0,
+    this.shouldScrollToBottom = false,
+    // Conversations pagination fields
+    this.isLoadingMoreConversations = false,
+    this.conversationsCurrentPage = 1,
+    this.conversationsTotalPages = 0,
+    this.totalConversationsCount = 0,
+    this.conversationsHasMore = true,
+    // Rate limit fields
+    this.rateLimitStatus = RateLimitStatus.initial,
+    this.conversationRateLimit,
+    this.personalizedRateLimit,
+    this.rateLimitErrorMessage,
   });
 
   /// Creates a copy of the current state with updated values.
@@ -157,15 +273,37 @@ class AiChatState extends Equatable {
     List<RelatedServiceEntity>? recommendations,
     String? recommendationsErrorMessage,
     Map<int, AllocationStatus>? serviceAllocationStatus,
+    int? createdChatRoomId,
+    TitleStatus? titleStatus,
+    String? titleErrorMessage,
+    Map<int, TitleStatus>? conversationTitleStatus,
     List<File>? pendingImageFiles,
     Map<String, ImageUploadState>? imageUploadStates,
-    // List<String>? uploadedImageUrls, // Removed
+    // Pagination parameters
+    bool? isLoadingMoreHistory,
+    int? currentPage,
+    int? totalPages,
+    int? totalMessages,
+    bool? shouldScrollToBottom,
+    // Conversations pagination parameters
+    bool? isLoadingMoreConversations,
+    int? conversationsCurrentPage,
+    int? conversationsTotalPages,
+    int? totalConversationsCount,
+    bool? conversationsHasMore,
+    // Rate limit parameters
+    RateLimitStatus? rateLimitStatus,
+    RateLimitInfo? conversationRateLimit,
+    RateLimitInfo? personalizedRateLimit,
+    String? rateLimitErrorMessage,
+    // Clear flags
     bool clearErrorMessage = false,
     bool clearConversationListErrorMessage = false,
     bool clearRecommendationsErrorMessage = false,
-    // Flags to specifically clear image lists/maps
+    bool clearTitleErrorMessage = false,
     bool clearPendingImages = false,
-    bool clearImageUploadStates = false, // Renamed from clearUploadedUrls
+    bool clearImageUploadStates = false,
+    bool clearRateLimitErrorMessage = false,
   }) {
     final newSelectedId = selectedConversationIdOrNull == const Object()
                               ? this.selectedConversationId
@@ -188,9 +326,29 @@ class AiChatState extends Equatable {
                                         ? null
                                         : recommendationsErrorMessage ?? this.recommendationsErrorMessage,
       serviceAllocationStatus: serviceAllocationStatus ?? this.serviceAllocationStatus,
+      createdChatRoomId: createdChatRoomId ?? this.createdChatRoomId,
+      titleStatus: titleStatus ?? this.titleStatus,
+      titleErrorMessage: clearTitleErrorMessage ? null : titleErrorMessage ?? this.titleErrorMessage,
+      conversationTitleStatus: conversationTitleStatus ?? this.conversationTitleStatus,
       pendingImageFiles: clearPendingImages ? [] : pendingImageFiles ?? this.pendingImageFiles,
       imageUploadStates: clearImageUploadStates ? {} : imageUploadStates ?? this.imageUploadStates,
-      // uploadedImageUrls: clearUploadedUrls ? [] : uploadedImageUrls ?? this.uploadedImageUrls, // Removed
+      // Pagination fields
+      isLoadingMoreHistory: isLoadingMoreHistory ?? this.isLoadingMoreHistory,
+      currentPage: currentPage ?? this.currentPage,
+      totalPages: totalPages ?? this.totalPages,
+      totalMessages: totalMessages ?? this.totalMessages,
+      shouldScrollToBottom: shouldScrollToBottom ?? this.shouldScrollToBottom,
+      // Conversations pagination fields
+      isLoadingMoreConversations: isLoadingMoreConversations ?? this.isLoadingMoreConversations,
+      conversationsCurrentPage: conversationsCurrentPage ?? this.conversationsCurrentPage,
+      conversationsTotalPages: conversationsTotalPages ?? this.conversationsTotalPages,
+      totalConversationsCount: totalConversationsCount ?? this.totalConversationsCount,
+      conversationsHasMore: conversationsHasMore ?? this.conversationsHasMore,
+      // Rate limit fields
+      rateLimitStatus: rateLimitStatus ?? this.rateLimitStatus,
+      conversationRateLimit: conversationRateLimit ?? this.conversationRateLimit,
+      personalizedRateLimit: personalizedRateLimit ?? this.personalizedRateLimit,
+      rateLimitErrorMessage: clearRateLimitErrorMessage ? null : rateLimitErrorMessage ?? this.rateLimitErrorMessage,
     );
   }
 
@@ -209,8 +367,28 @@ class AiChatState extends Equatable {
         recommendations,
         recommendationsErrorMessage,
         serviceAllocationStatus,
+        createdChatRoomId,
+        titleStatus,
+        titleErrorMessage,
+        conversationTitleStatus,
         pendingImageFiles,
-        imageUploadStates, // Add new map to props
-        // uploadedImageUrls, // Removed
+        imageUploadStates,
+        // Pagination props
+        isLoadingMoreHistory,
+        currentPage,
+        totalPages,
+        totalMessages,
+        shouldScrollToBottom,
+        // Conversations pagination props
+        isLoadingMoreConversations,
+        conversationsCurrentPage,
+        conversationsTotalPages,
+        totalConversationsCount,
+        conversationsHasMore,
+        // Rate limit props
+        rateLimitStatus,
+        conversationRateLimit,
+        personalizedRateLimit,
+        rateLimitErrorMessage,
       ];
 } 

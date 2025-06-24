@@ -2,21 +2,28 @@ import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart'; // Import injectable
 import 'dart:convert'; // Import jsonDecode
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../../../core/error/failures.dart'; // 使用 failures.dart
 import '../../domain/entities/order_status.dart';
 import '../models/order_model.dart';
 import 'i_order_remote_data_source.dart';
 import '../../domain/repositories/i_order_repository.dart';
+import '../../domain/entities/order_creation_result.dart';
+import '../../domain/usecases/submit_requirements_use_case.dart';
 
 /// 订单远程数据源的实现类。
 @LazySingleton(as: IOrderRemoteDataSource) // Add injectable annotation
 class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
   // final Dio dio; // REMOVED: Direct Dio dependency
   final CoreDioClient coreDioClient; // CHANGED: Depend on CoreDioClient
+  final FlutterSecureStorage secureStorage;
 
   // OrderRemoteDataSourceImpl({required this.dio}); // REMOVED
-  OrderRemoteDataSourceImpl({required this.coreDioClient}); // CHANGED
+  OrderRemoteDataSourceImpl({
+    required this.coreDioClient,
+    required this.secureStorage,
+  }); // CHANGED
 
   // --- API Endpoints --- (根据 RN 代码分析确定)
   final String _listEndpoint = '/api/shop/order/list';
@@ -319,20 +326,15 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
   // --- Implement new data source methods (placeholders) ---
 
   @override
-  Future<void> submitRequirements({
-    required String orderId,
-    required int productId,
-    required List<Map<String, String>> feature,
-    required List<String> attachmentPaths,
-  }) async {
+  Future<void> submitRequirements(SubmitRequirementsParams params) async {
     const String _submitRequirementsEndpoint = '/api/project/orderMaterials/add';
     try {
       // Construct the request body based on API/RN code analysis
       final data = {
-        'orderId': int.tryParse(orderId) ?? 0,
-        'productId': productId,
-        'feature': feature,
-        'files': attachmentPaths,
+        'orderId': params.orderId,
+        'productId': params.productId,
+        'feature': params.feature,
+        'files': params.attachmentPaths,
       };
 
       print('[OrderRemoteDataSourceImpl] submitRequirements called:');
@@ -435,6 +437,8 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
         'orderId': params.orderId,
         'content': params.content,
         'files': params.files, // Sending as array, confirm with backend!
+        'deliverySn': params.deliverySn,
+        'deliveryCompany': params.deliveryCompany,
       };
       final response = await coreDioClient.post(endpoint, data: requestData);
 
@@ -472,9 +476,88 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
 
   @override
   Future<void> inviteEvaluation(int orderId) async {
-    // API endpoint for inviting evaluation is not confirmed yet.
-    print('[OrderRemoteDataSource] ERROR: inviteEvaluation called, but API endpoint is unknown.');
-    throw UnimplementedError('API endpoint for inviting evaluation is not implemented.');
-    // Or return Left(ServerFailure(...)) immediately if preferred
+    const String endpoint = '/api/shop/evaluate/invite';
+    try {
+      final response = await coreDioClient.post(
+        endpoint,
+        queryParameters: {'orderId': orderId.toString()},
+        data: {}, // Empty body as per API requirements
+      );
+      
+      // Check BUSINESS code from response body
+      if (response.statusCode == 200 && response.data != null && response.data['code'] == 200) {
+         print('[OrderRemoteDataSourceImpl] inviteEvaluation successful (Code: ${response.data['code']}).');
+         return;
+      } else {
+        final errorMsg = response.data?['msg'] ?? 'Failed to invite evaluation (Unknown error)';
+        final errorCode = response.data?['code'] ?? response.statusCode;
+        print('[OrderRemoteDataSourceImpl] inviteEvaluation failed. Code: $errorCode, Msg: $errorMsg');
+        throw ServerFailure(message: errorMsg);
+      }
+    } on DioException catch (e) {
+      print('[OrderRemoteDataSourceImpl] inviteEvaluation DioException: ${e.toString()}');
+      throw ServerFailure(
+          message: e.response?.data?['msg'] ?? e.message ?? 'Network error inviting evaluation');
+    } catch (e) {
+      print('[OrderRemoteDataSourceImpl] inviteEvaluation unexpected error: ${e.toString()}');
+      if (e is ServerFailure) { rethrow; }
+      throw ServerFailure(message: 'An unexpected error occurred inviting evaluation: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<OrderCreationResult> createOrder({
+    required int productId,
+    required int variantId,
+    required int quantity,
+    required int sellerId,
+    required double price,
+  }) async {
+    try {
+      final token = await secureStorage.read(key: 'auth_token');
+      
+      final response = await coreDioClient.post(
+        '/api/orders/create',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+        data: {
+          'productId': productId,
+          'variantId': variantId,
+          'quantity': quantity,
+          'sellerId': sellerId,
+          'price': price,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        
+        if (data['code'] == 200) {
+          return OrderCreationResult(
+            orderId: data['data']['orderId'],
+            orderInfo: data['data']['orderInfo'],
+            totalAmount: double.parse(data['data']['totalAmount'].toString()),
+          );
+        } else {
+          throw ServerFailure(
+            message: data['message'] ?? '创建订单失败',
+            statusCode: data['code'],
+          );
+        }
+      } else {
+        throw ServerFailure(
+          message: '服务器错误：${response.statusCode}',
+          statusCode: response.statusCode,
+        );
+      }
+    } catch (e) {
+      if (e is ServerFailure) {
+        rethrow;
+      }
+      
+      throw ServerFailure(
+        message: '创建订单失败: $e',
+        statusCode: 500,
+      );
+    }
   }
 } 

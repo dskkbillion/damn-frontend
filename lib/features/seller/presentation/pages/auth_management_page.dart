@@ -26,7 +26,13 @@ class AuthManagementPage extends StatelessWidget {
           title: const Text('认证管理'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.goNamed('seller_home');
+              }
+            },
           ),
         ),
         body: BlocBuilder<AuthManagementBloc, AuthManagementState>(

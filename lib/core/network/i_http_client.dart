@@ -1,4 +1,5 @@
 import 'dart:io'; // For File type
+import 'package:dio/dio.dart'; // 导入Dio
 
 /// {@template i_http_client}
 /// Abstract interface for an HTTP client.
@@ -9,6 +10,12 @@ import 'dart:io'; // For File type
 /// potentially common error handling/wrapping.
 /// {@endtemplate}
 abstract class IHttpClient {
+  /// 获取底层的Dio实例
+  ///
+  /// 用于需要直接访问Dio特性的场景
+  /// 谨慎使用，避免绕过抽象层的错误处理
+  Dio getDioInstance();
+  
   /// 执行GET请求
   ///
   /// [endpoint] 接口路径

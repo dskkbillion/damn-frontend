@@ -9,6 +9,9 @@ import 'package:dskk_flutter_refactor/features/ai_docs/domain/repositories/i_fil
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
 
+/// 图片上传进度回调
+typedef UploadProgressCallback = void Function(int uploadedCount, int totalCount);
+
 /// 创建商品参数
 class CreateProductParams extends Equatable {
   /// 商品名称
@@ -37,6 +40,9 @@ class CreateProductParams extends Equatable {
   
   /// 详情图HTML内容（可选，优先使用图片）
   final String? detailContent;
+  
+  /// 上传进度回调
+  final UploadProgressCallback? onUploadProgress;
 
   /// 构造函数
   const CreateProductParams({
@@ -49,6 +55,7 @@ class CreateProductParams extends Equatable {
     this.variants,
     this.productMaterials,
     this.detailContent,
+    this.onUploadProgress,
   });
 
   @override
@@ -103,6 +110,10 @@ class CreateProductUseCase implements UseCase<bool, CreateProductParams> {
         });
       }
       
+      // 总文件数，用于进度计算
+      final totalFiles = allImagePaths.length;
+      int uploadedCount = 0;
+      
       // 逐个上传所有图片，而不是先上传所有主图再上传所有详情图
       for (final imageData in allImagePaths) {
         final path = imageData['path'] as String;
@@ -115,6 +126,9 @@ class CreateProductUseCase implements UseCase<bool, CreateProductParams> {
           await Future.delayed(const Duration(milliseconds: 500));
         }
         
+        // 上传前通知进度
+        params.onUploadProgress?.call(uploadedCount, totalFiles);
+        
         final uploadResult = await _fileUploadRepository.uploadFile(file);
         
         // 如果有一个图片上传失败，则返回失败
@@ -124,6 +138,12 @@ class CreateProductUseCase implements UseCase<bool, CreateProductParams> {
             (_) => throw Exception("Unexpected state"),
           );
         }
+        
+        // 上传成功，更新计数器
+        uploadedCount++;
+        
+        // 上传后通知进度
+        params.onUploadProgress?.call(uploadedCount, totalFiles);
         
         // 根据图片类型，添加到相应的URL列表
         uploadResult.fold(
