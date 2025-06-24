@@ -12,56 +12,7 @@ class OrderStatusTimelineHeader extends StatefulWidget {
   State<OrderStatusTimelineHeader> createState() => _OrderStatusTimelineHeaderState();
 }
 
-class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader>
-    with TickerProviderStateMixin {
-  late AnimationController _progressController;
-  late Animation<double> _progressAnimation;
-  late AnimationController _pulseController;
-  late Animation<double> _pulseAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    
-    // 进度动画控制器
-    _progressController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
-    
-    _progressAnimation = Tween<double>(
-      begin: 0.0,
-      end: _getCurrentProgress(),
-    ).animate(CurvedAnimation(
-      parent: _progressController,
-      curve: Curves.easeInOut,
-    ));
-    
-    // 脉动动画控制器（用于活跃步骤）
-    _pulseController = AnimationController(
-      duration: const Duration(milliseconds: 1200),
-      vsync: this,
-    );
-    
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.2,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
-    
-    // 启动动画
-    _progressController.forward();
-    _pulseController.repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _progressController.dispose();
-    _pulseController.dispose();
-    super.dispose();
-  }
+class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
 
   double _getCurrentProgress() {
     final currentStep = _getCurrentStepIndex(widget.order.state);
@@ -91,46 +42,32 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader>
           const SizedBox(height: 16),
         // --- Status Description Card ---
         Card(
-          elevation: 2,
+          elevation: 1,
           margin: EdgeInsets.zero,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12.0),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  colorScheme.surface,
-                  colorScheme.surface.withOpacity(0.95),
-                ],
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    statusTitle,
-                    style: textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
-                    ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  statusTitle,
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
-                  if (statusSubtitle != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6.0),
-                      child: Text(
-                        statusSubtitle,
-                        style: textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurface.withOpacity(0.7),
-                          height: 1.4,
-                        ),
+                ),
+                if (statusSubtitle != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6.0),
+                    child: Text(
+                      statusSubtitle,
+                      style: textTheme.bodySmall?.copyWith(
+                        color: Colors.grey[600],
+                        height: 1.4,
                       ),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
           ),
         ),
@@ -147,16 +84,15 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader>
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12.0),
-        color: colorScheme.surface.withOpacity(0.5),
+        color: colorScheme.surface, // 移除透明度
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 顶部进度条
-          AnimatedBuilder(
-            animation: _progressAnimation,
-            builder: (context, child) {
-              return _buildProgressBar(context, _progressAnimation.value);
-            },
+          // 顶部进度条 - 左对齐
+          Align(
+            alignment: Alignment.centerLeft,
+            child: _buildProgressBar(context, _getCurrentProgress()), // 直接使用值，避免动画
           ),
           const SizedBox(height: 20),
           // 步骤指示器
@@ -171,40 +107,25 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader>
   /// 构建进度条
   Widget _buildProgressBar(BuildContext context, double progress) {
     final colorScheme = Theme.of(context).colorScheme;
+    const double progressBarWidth = 280.0; // 固定宽度，避免MediaQuery调用
     
-    return Container(
-      height: 4,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 2,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: FractionallySizedBox(
-        alignment: Alignment.centerLeft,
-        widthFactor: progress.clamp(0.0, 1.0),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                colorScheme.primary,
-                colorScheme.primary.withOpacity(0.8),
-                colorScheme.primaryContainer,
-              ],
+    return SizedBox(
+      width: progressBarWidth,
+      child: Container(
+        height: 4,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(2),
+        ),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Container(
+            width: progressBarWidth * progress.clamp(0.0, 1.0),
+            height: 4,
+            decoration: BoxDecoration(
+              color: colorScheme.primary, // 简化为单色，移除渐变
+              borderRadius: BorderRadius.circular(2),
             ),
-            borderRadius: BorderRadius.circular(2),
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.primary.withOpacity(0.3),
-                blurRadius: 4,
-                offset: const Offset(0, 1),
-              ),
-            ],
           ),
         ),
       ),
@@ -244,35 +165,15 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader>
 
   /// 构建优化的连接线
   Widget _buildConnectingLine(bool isActive, BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
     
     return Expanded(
       child: Container(
-        height: 3.0,
+        height: 2.0,
         margin: const EdgeInsets.symmetric(horizontal: 8.0),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: isActive 
-                ? [
-                    colorScheme.primary,
-                    colorScheme.primary.withOpacity(0.8),
-                    colorScheme.primaryContainer,
-                  ]
-                : [
-                    Colors.grey.shade300,
-                    Colors.grey.shade200,
-                    Colors.grey.shade300,
-                  ],
-          ),
-          borderRadius: BorderRadius.circular(1.5),
-          boxShadow: isActive ? [
-            BoxShadow(
-              color: colorScheme.primary.withOpacity(0.2),
-              blurRadius: 3,
-              offset: const Offset(0, 1),
-            ),
-          ] : null,
+          color: isActive ? colorScheme.primary : Colors.grey.shade300, // 简化为单色
+          borderRadius: BorderRadius.circular(1.0),
         ),
       ),
     );
@@ -288,26 +189,10 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader>
   ) {
     final theme = Theme.of(context);
     
-    Widget stepCircle = _buildStepCircle(isCompleted, isActive, color);
-    
-    // 为活跃步骤添加脉动动画
-    if (isActive) {
-      stepCircle = AnimatedBuilder(
-        animation: _pulseAnimation,
-        builder: (context, child) {
-          return Transform.scale(
-            scale: _pulseAnimation.value,
-            child: child,
-          );
-        },
-        child: stepCircle,
-      );
-    }
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        stepCircle,
+        _buildStepCircle(isCompleted, isActive, color), // 直接使用，移除动画
         const SizedBox(height: 8),
         Container(
           constraints: const BoxConstraints(maxWidth: 50),
@@ -330,42 +215,29 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader>
   /// 构建步骤圆点
   Widget _buildStepCircle(bool isCompleted, bool isActive, Color color) {
     return Container(
-      width: 26,
-      height: 26,
+      width: 24,
+      height: 24,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: isCompleted || isActive ? color : Colors.transparent,
         border: Border.all(
           color: color,
-          width: isActive ? 3.0 : 2.0,
+          width: isActive ? 2.5 : 2.0,
         ),
-        boxShadow: isActive || isCompleted ? [
-          BoxShadow(
-            color: color.withOpacity(0.3),
-            blurRadius: isActive ? 8 : 4,
-            spreadRadius: isActive ? 2 : 1,
-          ),
-        ] : null,
       ),
       child: isCompleted 
-          ? Icon(
+          ? const Icon(
               Icons.check,
-              size: 16,
+              size: 14,
               color: Colors.white,
             )
           : isActive 
               ? Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 2,
-                      ),
-                    ],
                   ),
                 )
               : null,
