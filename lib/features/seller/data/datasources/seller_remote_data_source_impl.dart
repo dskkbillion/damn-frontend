@@ -142,7 +142,7 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
   @override
   Future<dynamic> getProductDetail(int productId) async {
     try {
-      final response = await _dio.get('/api/shop/product/detail', queryParameters: {
+      final response = await _dio.get('/api/shop/product/get', queryParameters: {
         'id': productId,
       });
       

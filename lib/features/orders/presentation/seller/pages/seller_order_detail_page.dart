@@ -11,8 +11,6 @@ import '../../../domain/entities/order.dart';
 import '../../widgets/order_status_timeline_header.dart';
 // Import the status widget
 import '../../widgets/order_status_widget.dart';
-// Import the new description card widget
-import '../widgets/seller_status_description_card.dart';
 // Import the item tile widget
 import '../../widgets/order_detail_item_tile.dart';
 // Import the action buttons widget
@@ -176,50 +174,9 @@ class SellerOrderDetailPage extends StatelessWidget {
             children: [
               // 1. Status Timeline Header
               OrderStatusTimelineHeader(order: order),
-              // 2. Status Description Card
-              SellerStatusDescriptionCard(order: order),
-              const SizedBox(height: 16), // Spacing after card
-              // 3. Buyer Shipping Address Section
-              Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                  side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3))
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.location_on_outlined, size: 20, color: Theme.of(context).colorScheme.primary),
-                          const SizedBox(width: 8),
-                          Text(
-                            order.shippingAddress.recipientName, 
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                          const SizedBox(width: 8),
-                          Text(
-                            order.shippingAddress.phone,
-                            style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        order.shippingAddress.detailAddress,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16), 
-              // 4. Order Items Section
+              const SizedBox(height: 24), // 调整间距
+              // 2. 移除状态描述卡片，直接显示订单商品
+              // 3. Order Items Section
               Card(
                   margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   elevation: 0,
@@ -244,7 +201,7 @@ class SellerOrderDetailPage extends StatelessWidget {
                     ),
                 ),
                 const SizedBox(height: 16),
-              // 5. Price Summary Section
+              // 4. Price Summary Section
               Card(
                   margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   elevation: 0,
@@ -257,7 +214,8 @@ class SellerOrderDetailPage extends StatelessWidget {
                     child: Column(
                       children: [
                         _buildPriceRow(context, '商品总额', order.priceSummary.totalPrice),
-                        _buildPriceRow(context, '运费', order.priceSummary.deliveryPrice),
+                        if (order.priceSummary.deliveryPrice > 0)
+                          _buildPriceRow(context, '运费', order.priceSummary.deliveryPrice),
                         if (order.priceSummary.discountPrice > 0)
                           _buildPriceRow(context, '优惠金额', -order.priceSummary.discountPrice, isDiscount: true),
                         const Divider(height: 16, thickness: 0.5),
@@ -267,7 +225,7 @@ class SellerOrderDetailPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-              // 6. Time Info Section
+              // 5. Time Info Section
                Card(
                   margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   elevation: 0,
@@ -284,9 +242,7 @@ class SellerOrderDetailPage extends StatelessWidget {
                         _buildTimeRow(context, '下单时间', order.createdAt),
                         if (order.paymentInfo?.payTime != null)
                             _buildTimeRow(context, '付款时间', order.paymentInfo!.payTime),
-                        if (order.shippingInfo?.deliveryTime != null)
-                            _buildTimeRow(context, '发货时间', order.shippingInfo!.deliveryTime),
-                          if (order.completeTime != null)
+                        if (order.completeTime != null)
                             _buildTimeRow(context, '完成时间', order.completeTime),
                         if (order.cancelTime != null)
                             _buildTimeRow(context, '取消时间', order.cancelTime),
@@ -296,7 +252,7 @@ class SellerOrderDetailPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16), // Spacing after time card
 
-              // 7. Dynamic Content Area (based on order state)
+              // 6. Dynamic Content Area (based on order state)
               SellerDynamicContentArea(order: order),
               // Spacer before bottom padding (which is for the action bar)
               // const SizedBox(height: 16),

@@ -34,9 +34,14 @@ class SellerOrderItemCard extends StatelessWidget {
 
     return Card(
       // 使用 Card 来获得圆角、阴影和白色背景，符合原型风格
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      elevation: 1, // 对应 CSS 的 shadow-sm
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      elevation: 0, // 无阴影，更简洁
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+        side: BorderSide(
+          color: colorScheme.outline.withOpacity(0.3), // 淡边框
+        ),
+      ),
       child: InkWell(
         onTap: onTap ?? navigateToDetail, // Default to navigate if onTap is null
         borderRadius: BorderRadius.circular(12.0),

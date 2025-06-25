@@ -69,9 +69,9 @@ class PaymentResultPage extends StatelessWidget {
                   onPressed: () {
                     // 跳转到订单详情页面
                     if (orderId != null) {
-                      context.go('/orders/$orderId');
+                      context.go('/orderDetail/$orderId');
                     } else {
-                      context.go('/orders');
+                      context.go('/profile/orders');
                     }
                   },
                   style: ElevatedButton.styleFrom(

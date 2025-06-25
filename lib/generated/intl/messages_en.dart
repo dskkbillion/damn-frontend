@@ -514,7 +514,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Auto Reply",
     ),
     "seller_home_completion_rate": m27,
-    "seller_home_functions": MessageLookupByLibrary.simpleMessage("Tools"),
+    "seller_home_functions": MessageLookupByLibrary.simpleMessage("Functions"),
     "seller_home_income": MessageLookupByLibrary.simpleMessage("Revenue"),
     "seller_home_loading_failed": MessageLookupByLibrary.simpleMessage(
       "Loading failed",
@@ -533,14 +533,22 @@ class MessageLookup extends MessageLookupByLibrary {
     "seller_home_online": MessageLookupByLibrary.simpleMessage("Online"),
     "seller_home_orders": MessageLookupByLibrary.simpleMessage("Orders"),
     "seller_home_orders_aftersales": MessageLookupByLibrary.simpleMessage(
-      "Support",
+      "After Sales",
     ),
     "seller_home_orders_all": MessageLookupByLibrary.simpleMessage("All"),
+    "seller_home_orders_awaiting_delivery":
+        MessageLookupByLibrary.simpleMessage("Awaiting Delivery"),
+    "seller_home_orders_canceled": MessageLookupByLibrary.simpleMessage(
+      "Canceled",
+    ),
+    "seller_home_orders_completed": MessageLookupByLibrary.simpleMessage(
+      "Completed",
+    ),
     "seller_home_orders_pending": MessageLookupByLibrary.simpleMessage(
       "Pending",
     ),
     "seller_home_orders_processing": MessageLookupByLibrary.simpleMessage(
-      "Active",
+      "Processing",
     ),
     "seller_home_pending_settlement": MessageLookupByLibrary.simpleMessage(
       "Pending",

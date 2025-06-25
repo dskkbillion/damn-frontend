@@ -433,7 +433,11 @@ class MessageLookup extends MessageLookupByLibrary {
       "售后中",
     ),
     "seller_home_orders_all": MessageLookupByLibrary.simpleMessage("全部"),
-    "seller_home_orders_pending": MessageLookupByLibrary.simpleMessage("待确认"),
+    "seller_home_orders_awaiting_delivery":
+        MessageLookupByLibrary.simpleMessage("待发货"),
+    "seller_home_orders_canceled": MessageLookupByLibrary.simpleMessage("已取消"),
+    "seller_home_orders_completed": MessageLookupByLibrary.simpleMessage("已完成"),
+    "seller_home_orders_pending": MessageLookupByLibrary.simpleMessage("待处理"),
     "seller_home_orders_processing": MessageLookupByLibrary.simpleMessage(
       "进行中",
     ),

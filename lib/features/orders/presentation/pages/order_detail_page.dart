@@ -84,6 +84,10 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: BlocBuilder<OrderDetailBloc, OrderDetailState>(
           builder: (context, state) {
             final extractedOrder = _extractOrder(state);
@@ -284,8 +288,10 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               Text('价格信息', style: textTheme.titleMedium),
               const SizedBox(height: 8),
               _buildPriceRow(context, '商品总价', '¥${order.priceSummary.totalPrice.toStringAsFixed(2)}'),
-              _buildPriceRow(context, '运费', '+ ¥${order.priceSummary.deliveryPrice.toStringAsFixed(2)}'),
-              _buildPriceRow(context, '优惠金额', '- ¥${order.priceSummary.discountPrice.toStringAsFixed(2)}'),
+              if (order.priceSummary.deliveryPrice > 0)
+                _buildPriceRow(context, '运费', '+ ¥${order.priceSummary.deliveryPrice.toStringAsFixed(2)}'),
+              if (order.priceSummary.discountPrice > 0)
+                _buildPriceRow(context, '优惠金额', '- ¥${order.priceSummary.discountPrice.toStringAsFixed(2)}'),
                const Divider(height: 16, thickness: 0.5),
                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -307,8 +313,6 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               _buildInfoRow(context, '创建时间:', _formatDateTime(order.createdAt)),
               if (order.paymentInfo.payTime != null)
                 _buildInfoRow(context, '付款时间:', _formatDateTime(order.paymentInfo.payTime!)),
-              if (order.shippingInfo.deliveryTime != null)
-                _buildInfoRow(context, '发货时间:', _formatDateTime(order.shippingInfo.deliveryTime!)),
               if (order.completeTime != null)
                 _buildInfoRow(context, '完成时间:', _formatDateTime(order.completeTime!)),
               if (order.cancelTime != null)

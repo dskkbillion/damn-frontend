@@ -48,62 +48,13 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
       'type': userRole,
     };
 
-    // (Based on API doc/example provided by user) - CORRECTED MAPPING using 'states' array
-    if (status != null) {
-      switch (status) {
-        case OrderStatus.awaitingPayment:
-          // params['state'] = 'awaitingPayment';
-          params['states'] = ['awaitingPayment']; // Use states array
-          break;
-        case OrderStatus.awaitingSubmission:
-          // params['state'] = 'awaitingSubmission'; 
-          params['states'] = ['awaitingSubmission']; // Use states array
-          break;
-        case OrderStatus.buyAwaitingSubmission:
-          // params['state'] = 'buyAwaitingSubmission'; 
-          params['states'] = ['buyAwaitingSubmission']; // Use states array
-          break;
-        case OrderStatus.awaitingStart:
-          // params['state'] = 'awaitingStart'; 
-          params['states'] = ['awaitingStart']; // Use states array
-           break; 
-        case OrderStatus.awaitingDelivery:
-          // params['state'] = 'awaitingDelivery'; 
-          params['states'] = ['awaitingDelivery']; // Use states array
-          break;
-        case OrderStatus.awaitingConfirmation:
-          // params['state'] = 'awaitingConfirmation'; 
-          params['states'] = ['awaitingConfirmation']; // Use states array
-          break;
-        case OrderStatus.sellerSupplementaryMaterials:
-          // params['state'] = 'sellerSupplementaryMaterials'; 
-          params['states'] = ['sellerSupplementaryMaterials']; // Use states array
-           break;
-        case OrderStatus.applyForRefuse:
-          // params['state'] = 'applyForRefuse'; 
-          params['states'] = ['applyForRefuse']; // Use states array
-           break;   
-        case OrderStatus.canceled:
-          // params['state'] = 'canceled'; 
-          params['states'] = ['canceled']; // Use states array
-           break;              
-        case OrderStatus.awaitingEvaluation: 
-        case OrderStatus.orderCompleted: // Keep grouping for '待评价' tab
-          params['states'] = ['awaitingEvaluation', 'orderCompleted'];
-          break;
-        case OrderStatus.afterSale:
-        case OrderStatus.AfterSaleRejection:
-        case OrderStatus.applyingForMediation: // Keep grouping for '售后中' tab
-          params['states'] = [
-            "afterSale",
-            "AfterSaleRejection",
-            "applyingForMediation"
-          ];
-          break;
-        case OrderStatus.unknown: // Represents '全部' tab
-          // No state or states parameter needed for 'All'
-          break;
-      }
+    // Add status parameter if status filter is provided and not 'unknown' (All)
+    if (status != null && status != OrderStatus.unknown) {
+      // 直接使用订单状态的枚举值，与后端保持一致
+      params['state'] = status.name;  // 使用枚举的name属性获取字符串值
+      
+      // 添加调试日志
+      print('[OrderRemoteDataSource] Mapping status: ${status.name} -> state: ${params['state']}');
     }
     // Keyword handling remains the same
     if (keyword != null && keyword.isNotEmpty) {
@@ -113,12 +64,19 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
     // REMOVED check for conflicting state/states as we now only use states
     // if (params.containsKey('states') && params.containsKey('state')) { ... }
 
+    // 添加调试日志
+    print('[OrderRemoteDataSource] getOrderList called with params: $params');
+
     try {
       // CHANGED: Use coreDioClient.post
       final response = await coreDioClient.post(
         _listEndpoint,
         data: params,
       );
+
+      // 添加响应日志
+      print('[OrderRemoteDataSource] Response status: ${response.statusCode}');
+      print('[OrderRemoteDataSource] Response data: ${response.data}');
 
       if (response.statusCode == 200 && response.data != null) {
         // **DEBUG: Print response.data type and value**

@@ -86,6 +86,9 @@ import 'package:dskk_flutter_refactor/features/seller/data/datasources/seller_lo
 // Import new page
 import 'package:dskk_flutter_refactor/features/home/presentation/pages/seller_public_profile_page.dart';
 
+// Import ProductManagementBloc events
+import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_management/product_management_event.dart';
+
 // Import payment related pages and blocs
 import '../../features/payment/presentation/bloc/payment_bloc.dart';
 import '../../features/payment/presentation/pages/order_confirm_page.dart';
@@ -209,10 +212,29 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   
   final sellerOrdersRoute = GoRoute(
       path: '/seller/orders', 
-      builder: (context, state) => BlocProvider(
-        create: (_) => productManagementBloc, // 使用手动创建的BLoC
-        child: const ProductManagementPage(),
-      ),
+      builder: (context, state) {
+        // 提取status查询参数
+        final statusString = state.uri.queryParameters['status'];
+        print('[GoRoute /seller/orders] Received status param: $statusString');
+        
+        // 解析status为OrderStatus枚举
+        final parsedStatus = OrderStatusExtension.fromString(statusString);
+        
+        return BlocProvider(
+          create: (_) => GetIt.I<SellerOrderListBloc>()
+            ..add(LoadSellerOrdersRequested(statusFilter: parsedStatus)),
+          child: SellerOrderListPage(initialStatus: statusString),
+        );
+      },
+  );
+  
+  // 定义商品管理路由
+  final sellerProductsRoute = GoRoute(
+    path: '/seller/products',
+    builder: (context, state) => BlocProvider(
+      create: (_) => productManagementBloc..add(LoadProductList()),
+      child: const ProductManagementPage(),
+    ),
   );
   
   // 直接定义卖家聊天列表路由
@@ -249,26 +271,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   
   // 定义 Seller Non-Shell Routes (保持不变或根据需要调整)
   final sellerNonShellRoutes = <RouteBase>[
-      // 添加卖家订单列表的独立路由
-      GoRoute(
-        path: '/seller/order-list', 
-        name: 'sellerOrderList',
-        builder: (context, state) {
-          // 提取status查询参数
-          final statusString = state.uri.queryParameters['status'];
-          print('[GoRoute /seller/order-list] Received raw status string from URL: $statusString');
-          
-          // 解析status为OrderStatus枚举
-          final parsedStatus = OrderStatusExtension.fromString(statusString);
-          print('[GoRoute /seller/order-list] Parsed status using OrderStatusExtension.fromString: $parsedStatus');
-          
-          return BlocProvider(
-            create: (_) => GetIt.I<SellerOrderListBloc>()
-              ..add(LoadSellerOrdersRequested(statusFilter: parsedStatus)),
-            child: SellerOrderListPage(initialStatus: statusString),
-          );
-        },
-      ),
+      // 添加卖家订单路由到非Shell路由，以便从其他地方（如卖家主页）访问
+      sellerOrdersRoute,
       GoRoute(
         path: SellerRoutes.notifications, 
         builder: (context, state) => const NotificationListPage(),
@@ -296,9 +300,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   // Define Buyer Order Detail Route
   final buyerOrderDetailRoute = OrderRoutes.routes.firstWhere((r) => r is GoRoute && r.path == '/orderDetail/:orderId'); 
   
-  // !!! Get Buyer Order List Route !!!
-  final buyerOrderListRoute = OrderRoutes.routes.firstWhere((r) => r is GoRoute && r.path == '/orders');
-
+  // Define Seller Order Detail Route
+  final sellerOrderDetailRoute = OrderRoutes.routes.firstWhere((r) => r is GoRoute && r.path == '/seller/orders/:orderId');
+  
   // Create the GoRouter instance
   final router = GoRouter(
     navigatorKey: rootNavigatorKey,
@@ -357,9 +361,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [ sellerDashboardRoute ], 
           ),
-          // Branch 1: 卖家订单
+          // Branch 1: 商品管理（修复：原来错误地使用了订单路由）
           StatefulShellBranch(
-             routes: [ sellerOrdersRoute ], 
+             routes: [ sellerProductsRoute ], 
           ),
           // Branch 2: 卖家消息 (聊天)
           StatefulShellBranch(
@@ -375,7 +379,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       // --- Top-level routes (No Shell) ---
       ...AuthRoutes.routes, // Login etc.
       buyerOrderDetailRoute, 
-      buyerOrderListRoute,   // <--- ADD Buyer Order List Route HERE
+      sellerOrderDetailRoute,  // 添加卖家订单详情路由
       buyerNotificationRoute, // 添加买家通知页面路由
       ...AfterSalesRoutes.routes,
       ...FavoritesRoutes.routes, 

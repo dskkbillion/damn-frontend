@@ -411,7 +411,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                 TextButton(
                   onPressed: () {
                     // 导航到卖家订单列表页面（全部订单）
-                    context.go('/seller/order-list');
+                    context.go('/seller/orders');
                   },
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
@@ -436,28 +436,28 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                   icon: Icons.receipt_long,
                   label: S.of(context).seller_home_orders_all,
                   count: dashboardData.orders.total.toString(),
-                  onTap: () => context.go('/seller/order-list'),
+                  onTap: () => context.go('/seller/orders'),
                 ),
                 _buildOrderStatusItem(
                   context,
                   icon: Icons.access_time,
                   label: S.of(context).seller_home_orders_pending,
                   count: dashboardData.orders.pending.toString(),
-                  onTap: () => context.go('/seller/order-list?status=awaitingStart'),
+                  onTap: () => context.go('/seller/orders?status=awaitingStart'),
                 ),
                 _buildOrderStatusItem(
                   context,
-                  icon: Icons.loop,
-                  label: S.of(context).seller_home_orders_processing,
+                  icon: Icons.check_circle_outline,
+                  label: S.of(context).seller_home_orders_completed,
                   count: dashboardData.orders.completed.toString(),
-                  onTap: () => context.go('/seller/order-list?status=awaitingDelivery'),
+                  onTap: () => context.go('/seller/orders?status=orderCompleted'),
                 ),
                 _buildOrderStatusItem(
                   context,
-                  icon: Icons.support_agent,
-                  label: S.of(context).seller_home_orders_aftersales,
+                  icon: Icons.cancel_outlined,
+                  label: S.of(context).seller_home_orders_canceled,
                   count: dashboardData.orders.canceled.toString(),
-                  onTap: () => context.go('/seller/order-list?status=afterSale'),
+                  onTap: () => context.go('/seller/orders?status=canceled'),
                 ),
               ],
             ),

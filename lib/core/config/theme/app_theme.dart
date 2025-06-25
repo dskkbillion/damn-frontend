@@ -13,8 +13,12 @@ class AppTheme {
       // background: Colors.white,
       // error: Colors.red,
       // surface: Colors.grey[100],
-    ),
-    useMaterial3: true,
+          ),
+      useMaterial3: true,
+      cardTheme: const CardTheme(
+        elevation: 0, // 默认无阴影
+        // 移除自定义卡片颜色，使用Material 3默认
+      ),
 
     // TODO: Define other theme aspects like text themes, button themes, etc.
     // textTheme: ...,

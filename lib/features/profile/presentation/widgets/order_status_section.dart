@@ -42,25 +42,25 @@ class OrderStatusSection extends StatelessWidget {
                 context,
                 Icons.access_time,
                 s.profile_pending_payment,
-                onTap: () => _navigateToOrders(context, 'pending'),
+                onTap: () => _navigateToOrders(context, 'awaitingPayment'),
               ),
               _buildOrderStatusItem(
                 context,
                 Icons.sync,
                 s.profile_in_progress,
-                onTap: () => _navigateToOrders(context, 'processing'),
+                onTap: () => _navigateToOrders(context, 'awaitingDelivery'),
               ),
               _buildOrderStatusItem(
                 context,
                 Icons.check_circle_outline,
                 s.profile_completed,
-                onTap: () => _navigateToOrders(context, 'completed'),
+                onTap: () => _navigateToOrders(context, 'orderCompleted'),
               ),
               _buildOrderStatusItem(
                 context,
                 Icons.undo,
                 s.profile_refund,
-                onTap: () => _navigateToOrders(context, 'refund'),
+                onTap: () => _navigateToOrders(context, 'afterSale'),
               ),
             ],
           ),
@@ -112,7 +112,7 @@ class OrderStatusSection extends StatelessWidget {
     // 获取国际化资源
     final s = S.of(context);
     
-    const String basePath = '/orders';
+    const String basePath = '/profile/orders';
     final String pathWithQuery = '$basePath?status=$status';
 
     try {

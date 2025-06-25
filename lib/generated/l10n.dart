@@ -2580,30 +2580,60 @@ class S {
     );
   }
 
-  /// `Active`
+  /// `Processing`
   String get seller_home_orders_processing {
     return Intl.message(
-      'Active',
+      'Processing',
       name: 'seller_home_orders_processing',
       desc: '',
       args: [],
     );
   }
 
-  /// `Support`
+  /// `After Sales`
   String get seller_home_orders_aftersales {
     return Intl.message(
-      'Support',
+      'After Sales',
       name: 'seller_home_orders_aftersales',
       desc: '',
       args: [],
     );
   }
 
-  /// `Tools`
+  /// `Awaiting Delivery`
+  String get seller_home_orders_awaiting_delivery {
+    return Intl.message(
+      'Awaiting Delivery',
+      name: 'seller_home_orders_awaiting_delivery',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Completed`
+  String get seller_home_orders_completed {
+    return Intl.message(
+      'Completed',
+      name: 'seller_home_orders_completed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Canceled`
+  String get seller_home_orders_canceled {
+    return Intl.message(
+      'Canceled',
+      name: 'seller_home_orders_canceled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Functions`
   String get seller_home_functions {
     return Intl.message(
-      'Tools',
+      'Functions',
       name: 'seller_home_functions',
       desc: '',
       args: [],

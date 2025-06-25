@@ -145,10 +145,6 @@ class SellerDynamicContentArea extends StatelessWidget {
   Widget _buildAwaitingConfirmationContent(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
-    // final sn = order.shippingInfo.logisticsNo; // Remove logisticsNo dependency
-
-    // For service orders, this state means service delivered, awaiting buyer confirmation.
-    // Display a generic message for now, until we know how delivery info is stored.
     
     return Card(
        margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -164,7 +160,7 @@ class SellerDynamicContentArea extends StatelessWidget {
            children: [
               Row(
                 children: [
-                  Icon(Icons.task_alt_outlined, size: 20, color: colorScheme.primary), // Use a different icon
+                  Icon(Icons.task_alt_outlined, size: 20, color: colorScheme.primary),
                   const SizedBox(width: 8),
                   Text('服务已交付', style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
                 ],
@@ -174,8 +170,7 @@ class SellerDynamicContentArea extends StatelessWidget {
                  '您已完成服务交付，请等待买家确认。如有问题，买家可能会发起售后。' ,
                  style: textTheme.bodyMedium,
                ),
-              // TODO: Later, display actual delivery content (text, files) if available in Order entity.
-              // Remove SN display and copy button
+              // TODO: 后续版本可以添加交付内容的详情显示
            ],
          ),
        ),

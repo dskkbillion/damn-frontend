@@ -21,25 +21,29 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
   late TabController _tabController;
   final ScrollController _scrollController = ScrollController();
 
-  // Define Seller Tabs
-  // TODO: Finalize tab statuses based on seller workflow
+  // Define Seller Tabs - 单一状态映射，清晰明确
   final List<Tab> _tabs = const [
-    Tab(text: '全部'),       // OrderStatus.unknown
-    Tab(text: '待确认'),     // OrderStatus.awaitingStart
-    Tab(text: '进行中'),     // OrderStatus.awaitingDelivery, etc.
-    Tab(text: '待确认收货'), // OrderStatus.awaitingConfirmation
-    Tab(text: '已完成'),     // OrderStatus.orderCompleted
-    Tab(text: '售后中'),     // OrderStatus.afterSale, etc.
-    // Add more seller-specific statuses if needed
+    Tab(text: '全部'),        // 所有订单
+    Tab(text: '待接单'),      // 等待卖家确认接单
+    Tab(text: '待提交'),      // 等待卖家提交要求
+    Tab(text: '待发货'),      // 等待卖家发货/交付
+    Tab(text: '待确认收货'),  // 等待买家确认收货
+    Tab(text: '待评价'),      // 等待买家评价
+    Tab(text: '已完成'),      // 订单已完成
+    Tab(text: '售后中'),      // 售后处理中
+    Tab(text: '已取消'),      // 已取消订单
   ];
 
   final List<OrderStatus> _tabStatuses = [
-    OrderStatus.unknown,
-    OrderStatus.awaitingStart,
-    OrderStatus.awaitingDelivery, // Combine relevant in-progress states here?
-    OrderStatus.awaitingConfirmation,
-    OrderStatus.orderCompleted, // Add corresponding status
-    OrderStatus.afterSale, // Combine relevant after-sale states here?
+    OrderStatus.unknown,              // 全部
+    OrderStatus.awaitingStart,        // 待接单
+    OrderStatus.awaitingSubmission,   // 待提交
+    OrderStatus.awaitingDelivery,     // 待发货
+    OrderStatus.awaitingConfirmation, // 待确认收货
+    OrderStatus.awaitingEvaluation,   // 待评价
+    OrderStatus.orderCompleted,       // 已完成
+    OrderStatus.afterSale,            // 售后中
+    OrderStatus.canceled,             // 已取消
   ];
 
   // 根据状态查找对应的Tab索引
@@ -123,7 +127,9 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/seller'), // 返回卖家首页
+          onPressed: () => Navigator.of(context).canPop() 
+            ? Navigator.of(context).pop() 
+            : context.go('/seller'), // 如果不能返回，则导航到卖家首页
         ),
         title: const Text('我的订单 (卖家)'),
         // TODO: Add Search Icon/Action?
@@ -183,18 +189,35 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
             }
             if (state is SellerOrderListFailure && state.previousState == null) {
                return Center(
-                 child: Column(
-                   mainAxisAlignment: MainAxisAlignment.center,
-                   children: [
-                     Text('加载失败: ${state.message}'),
-                     const SizedBox(height: 16),
-                     ElevatedButton(
-                        onPressed: () => context.read<SellerOrderListBloc>().add(
-                            LoadSellerOrdersRequested(statusFilter: _tabStatuses[_tabController.index])
-                        ),
-                       child: const Text('重试'),
+                 child: Padding(
+                   padding: const EdgeInsets.all(32.0),
+                   child: Card(
+                     elevation: 0,
+                     shape: RoundedRectangleBorder(
+                       borderRadius: BorderRadius.circular(12.0),
+                       side: BorderSide(
+                         color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                       ),
                      ),
-                   ],
+                     child: Padding(
+                       padding: const EdgeInsets.all(32.0),
+                       child: Column(
+                         mainAxisSize: MainAxisSize.min,
+                         children: [
+                           Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error),
+                           const SizedBox(height: 16),
+                           Text('加载失败: ${state.message}'),
+                           const SizedBox(height: 16),
+                           ElevatedButton(
+                              onPressed: () => context.read<SellerOrderListBloc>().add(
+                                  LoadSellerOrdersRequested(statusFilter: _tabStatuses[_tabController.index])
+                              ),
+                             child: const Text('重试'),
+                           ),
+                         ],
+                       ),
+                     ),
+                   ),
                  ),
                );
             }
@@ -203,7 +226,24 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
             if (ordersToShow.isEmpty && !isLoading && !isActionInProgress) {
                // Use the current filter from successState if available
                final statusText = successState?.currentStatusFilter?.toString().split('.').last ?? '当前';
-               return Center(child: Text('暂无此状态订单'));
+               return Center(
+                 child: Padding(
+                   padding: const EdgeInsets.all(32.0),
+                   child: Card(
+                     elevation: 0,
+                     shape: RoundedRectangleBorder(
+                       borderRadius: BorderRadius.circular(12.0),
+                       side: BorderSide(
+                         color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                       ),
+                     ),
+                     child: const Padding(
+                       padding: EdgeInsets.all(48.0),
+                       child: Text('暂无此状态订单', style: TextStyle(fontSize: 16)),
+                     ),
+                   ),
+                 ),
+               );
             }
 
             return Stack( // Use Stack to overlay progress indicator
@@ -218,6 +258,7 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
                   },
                   child: ListView.builder(
                     controller: _scrollController,
+                    padding: const EdgeInsets.all(16.0),
                     itemCount: ordersToShow.length + (isLoading ? 1 : 0), // Add space for loading indicator
                     itemBuilder: (context, index) {
                       if (index >= ordersToShow.length) {
@@ -228,17 +269,14 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
                         );
                       }
                       final order = ordersToShow[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                        child: SellerOrderItemCard(
+                      return SellerOrderItemCard(
                           order: order,
                           onTap: () {
                             // Navigate to the seller detail page using push instead of go
                             context.push('/seller/orders/${order.id}'); 
                              print('[SellerOrderListPage] Pushing to seller detail for order ${order.id}');
                           },
-                        ),
-                      );
+                        );
                     },
                   ),
                 ),

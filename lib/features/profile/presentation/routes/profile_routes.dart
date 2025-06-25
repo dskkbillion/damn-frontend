@@ -20,6 +20,11 @@ import '../pages/language_settings_page.dart'; // 引入语言设置页面
 // import '../pages/simple_profile_page.dart'; // 不再需要 SimpleProfilePage
 // import '../pages/edit_profile_page.dart'; // 如果有其他页面
 
+// 添加订单相关导入
+import '../../../orders/presentation/pages/order_list_page.dart';
+import '../../../orders/presentation/bloc/order_list_bloc.dart';
+import '../../../orders/domain/entities/order_status.dart';
+
 class ProfileRoutes {
   ProfileRoutes._(); // 私有构造函数，防止实例化
 
@@ -31,6 +36,7 @@ class ProfileRoutes {
   static const String accountSecurityPath = '/profile/account-security';
   static const String walletPath = '/profile/wallet';
   static const String languageSettingsPath = '/profile/language-settings';
+  static const String ordersPath = '/profile/orders'; // 添加订单路径常量
 
   // 模块内部路由定义
   static final List<RouteBase> _routes = [
@@ -127,6 +133,34 @@ class ProfileRoutes {
           path: 'language-settings',
           name: 'languageSettings',
           builder: (context, state) => const LanguageSettingsPage(),
+        ),
+        // 添加订单页面路由
+        GoRoute(
+          path: 'orders',
+          name: 'profileOrders',
+          builder: (context, state) {
+            // 提取status查询参数
+            final statusString = state.uri.queryParameters['status'];
+            print('[ProfileRoutes] Orders route - status param: $statusString');
+            
+            // 解析status
+            OrderStatus? parsedStatus;
+            if (statusString != null) {
+              try {
+                parsedStatus = OrderStatus.values.firstWhere(
+                  (e) => e.toString().split('.').last == statusString,
+                );
+              } catch (e) {
+                print('[ProfileRoutes] Failed to parse status: $statusString');
+              }
+            }
+            
+            return BlocProvider(
+              create: (_) => GetIt.instance<OrderListBloc>()
+                ..add(LoadOrders(status: parsedStatus)),
+              child: OrderListPage(initialStatus: statusString),
+            );
+          },
         ),
       ],
     ),

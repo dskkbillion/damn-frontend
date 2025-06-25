@@ -131,7 +131,14 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.of(context).canPop() 
+              ? Navigator.of(context).pop() 
+              : context.go('/profile'), // 如果不能返回，则导航到个人中心
+          ),
           title: const Text('我的订单'),
+          // automaticallyImplyLeading 默认为 true，会自动显示返回按钮
           actions: [
             // IconButton removed as requested
           ],
@@ -162,11 +169,28 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                // Use the correct state names: OrderListLoaded, OrderListError, OrderListLoading, OrderListInitial
                if (state is OrderListLoaded) { // Correct success state name
                    if (state.orders.isEmpty) {
-                     return const Center(child: Text('暂无相关订单'));
+                     return Center(
+                       child: Padding(
+                         padding: const EdgeInsets.all(32.0),
+                         child: Card(
+                           elevation: 0,
+                           shape: RoundedRectangleBorder(
+                             borderRadius: BorderRadius.circular(12.0),
+                             side: BorderSide(
+                               color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                             ),
+                           ),
+                           child: const Padding(
+                             padding: EdgeInsets.all(48.0),
+                             child: Text('暂无相关订单', style: TextStyle(fontSize: 16)),
+                           ),
+                         ),
+                       ),
+                     );
                    }
                    return ListView.builder(
                       controller: _scrollController,
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(16.0),
                       itemCount: state.hasReachedMax ? state.orders.length : state.orders.length + 1,
                       itemBuilder: (context, index) {
                          if (index >= state.orders.length) {
@@ -229,19 +253,36 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                 } else if (state is OrderListError) { // Correct error state name
                    // Show a simple error message, maybe with a retry button
                    return Center(
-                     child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('加载失败: ${state.message}'),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            // Use the renamed function for retry
-                            onPressed: () => _loadOrdersForStatus(_tabStatuses[_tabController.index]), 
-                            child: const Text('重试'),
-                          )
-                        ],
-                     )
-                    );
+                     child: Padding(
+                       padding: const EdgeInsets.all(32.0),
+                       child: Card(
+                         elevation: 0,
+                         shape: RoundedRectangleBorder(
+                           borderRadius: BorderRadius.circular(12.0),
+                           side: BorderSide(
+                             color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                           ),
+                         ),
+                         child: Padding(
+                           padding: const EdgeInsets.all(32.0),
+                           child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error),
+                                const SizedBox(height: 16),
+                                Text('加载失败: ${state.message}'),
+                                const SizedBox(height: 16),
+                                ElevatedButton(
+                                  // Use the renamed function for retry
+                                  onPressed: () => _loadOrdersForStatus(_tabStatuses[_tabController.index]), 
+                                  child: const Text('重试'),
+                                )
+                              ],
+                           ),
+                         ),
+                       ),
+                     ),
+                   );
                 }
                 return const Center(child: Text('请选择分类查看订单')); // Initial or empty state
            },
