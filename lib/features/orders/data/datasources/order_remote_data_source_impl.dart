@@ -475,14 +475,22 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
       final token = await secureStorage.read(key: 'auth_token');
       
       final response = await coreDioClient.post(
-        '/api/orders/create',
+        '/api/shop/order/create',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
         data: {
-          'productId': productId,
-          'variantId': variantId,
-          'quantity': quantity,
-          'sellerId': sellerId,
-          'price': price,
+          'couponId': null, // 优惠券ID，可为null
+          'remark': '通过应用下单',
+          'items': [
+            {
+              'productId': productId,
+              'variantId': variantId,
+              'quantity': quantity,
+            }
+          ],
+          'addressId': null, // 收货地址ID，可为null
+          'groupId': null, // 拼团ID，可为null  
+          'activityType': 'product', // 活动类型：product
+          'referrerId': null, // 邀请人ID，可为null
         },
       );
 
@@ -490,14 +498,16 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
         final data = response.data;
         
         if (data['code'] == 200) {
+          // 根据实际API响应格式调整数据解析
+          final orderData = data['data'];
           return OrderCreationResult(
-            orderId: data['data']['orderId'],
-            orderInfo: data['data']['orderInfo'],
-            totalAmount: double.parse(data['data']['totalAmount'].toString()),
+            orderId: (orderData['id'] ?? orderData['orderId']).toString(), // 转换为字符串类型
+            orderInfo: orderData['orderInfo'] ?? 'order_${orderData['id']}', // 生成订单信息
+            totalAmount: double.tryParse(orderData['payPrice']?.toString() ?? orderData['totalPrice']?.toString() ?? '0') ?? 0.0,
           );
         } else {
           throw ServerFailure(
-            message: data['message'] ?? '创建订单失败',
+            message: data['msg'] ?? data['message'] ?? '创建订单失败',
             statusCode: data['code'],
           );
         }

@@ -120,3 +120,8 @@ web/plugins.dart
 # Cursor and specstory
 .specstory/
 .cursorindexingignore
+
+# Payment configuration with sensitive data
+config/alipay_keys.yaml
+config/payment_keys.yaml
+config/*_keys.yaml

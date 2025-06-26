@@ -3,6 +3,7 @@ import 'package:dskk_flutter_refactor/core/error/failures.dart';
 // Removed INavigationService import as it might not be needed for direct navigation
 // import 'package:dskk_flutter_refactor/core/navigation/services/i_navigation_service.dart';
 import 'package:dskk_flutter_refactor/core/payment/services/i_payment_service.dart';
+import 'package:dskk_flutter_refactor/core/payment/models/payment_models.dart';
 // Import other core interfaces if needed
 // import 'package:dskk_flutter_refactor/core/aftersale/repositories/i_aftersale_repository.dart';
 // import 'package:dskk_flutter_refactor/core/rating/repositories/i_rating_repository.dart';
@@ -313,14 +314,43 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
   // Implement these if they need specific Bloc logic beyond just UI navigation handled by buttons
 
   Future<void> _onGoToPayment(GoToPayment event, Emitter<OrderDetailState> emit) async {
-     // Example: Initiate payment service call
+     // 如果当前状态不是已加载，无法进行支付
+     if (state is! OrderDetailLoaded) {
+        emit(const OrderDetailError(message: '无法进行支付：订单数据未加载'));
+        return;
+     }
+     final currentState = state as OrderDetailLoaded;
+     
      print('[OrderDetailBloc] Initiating payment for order ${event.orderId}');
+     
+     // 发出支付中状态
+     emit(OrderDetailPaymentLoading(previousState: currentState));
+     
      try {
-        await _paymentService.initiatePayment(event.orderId.toString());
-        // Maybe emit a specific state if needed, or just let UI handle navigation
+        // 调用支付服务创建支付
+        final paymentRequest = PaymentRequest(
+          orderId: event.orderId.toString(),
+          amount: '0.01', // 这里需要从订单中获取实际金额
+          subject: '订单支付',
+          description: '订单号: ${event.orderId}',
+          method: PaymentMethod.alipay,
+          scene: PaymentScene.order,
+        );
+        
+        final response = await _paymentService.createPayment(paymentRequest);
+        
+        // 发出支付结果状态，让UI层处理导航
+        emit(OrderDetailPaymentResult(
+          paymentResponse: response,
+          previousState: currentState,
+        ));
+        
      } catch (e) {
         print('[OrderDetailBloc] Error initiating payment: $e');
-        // Emit failure state if needed
+        emit(OrderDetailActionFailure(
+          message: '发起支付失败: $e',
+          previousState: currentState,
+        ));
      }
   }
 

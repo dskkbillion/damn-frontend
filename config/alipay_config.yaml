@@ -1,0 +1,24 @@
+# 支付宝配置文件（服务端托管模式）
+# 服务端处理所有密钥和签名，客户端配置最小化
+alipay:
+  # 环境配置
+  environment: "production" # sandbox | production
+  
+  # 开发环境配置
+  development:
+    mock_payment: false  # 是否启用模拟支付
+    
+  # 显示配置（用于UI展示）
+  display:
+    name: "支付宝支付"
+    icon: "alipay"
+    description: "安全便捷的支付方式"
+    
+  # 服务端托管说明
+  # 注意：所有APP_ID、密钥、签名等敏感配置都由服务端管理
+  # 客户端只负责：
+  # 1. 调用后端支付API
+  # 2. 接收支付SDK字符串  
+  # 3. 调用支付宝SDK
+  # 4. 处理支付结果
+  

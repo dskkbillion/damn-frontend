@@ -214,34 +214,32 @@ class OrderDetailActionButtons extends StatelessWidget {
     }
   }
 
-  // --- Helper function for order demand dialog (replenishment/reform) ---
+  // --- Helper function for order demand dialog ---
   Future<void> _showOrderDemandDialog(BuildContext context, String demandType) async {
     final TextEditingController reasonController = TextEditingController();
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-    String selectedReasonValue = demandType == 'replenishment' ? 'material_insufficient' : 'quality_unsatisfied';
+    String selectedReasonValue = '';
     
+    // Define reasons based on demand type
     final Map<String, Map<String, String>> demandReasons = {
       'replenishment': {
-        'material_insufficient': '材料不足',
-        'requirement_unclear': '需求不明确',
-        'additional_features': '需要额外功能',
-        'design_change': '设计变更',
+        'incomplete': '信息不完整',
+        'unclear': '要求不明确',
+        'additional': '需要补充说明',
+        'reference': '需要参考资料',
         'other': '其他原因',
       },
       'reform': {
-        'quality_unsatisfied': '质量不满意',
-        'requirement_mismatch': '不符合要求',
-        'error_in_work': '工作有误',
-        'design_flaw': '设计缺陷',
+        'quality': '质量不满意',
+        'requirement': '不符合要求',
+        'incomplete': '内容不完整',
+        'error': '存在错误',
         'other': '其他原因',
       },
     };
 
     final currentReasons = demandReasons[demandType] ?? {};
-    final dialogTitle = demandType == 'replenishment' ? '申请补充材料' : '申请重做';
-    final dialogHint = demandType == 'replenishment' 
-        ? '请详细说明需要补充的材料或信息...' 
-        : '请详细说明需要重做的原因...';
+    selectedReasonValue = currentReasons.keys.first;
 
     return showDialog<void>(
       context: context,
@@ -250,7 +248,7 @@ class OrderDetailActionButtons extends StatelessWidget {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text(dialogTitle),
+              title: Text(demandType == 'replenishment' ? '申请补充材料' : '申请重做'),
               content: Form(
                 key: formKey,
                 child: SingleChildScrollView(
@@ -258,9 +256,11 @@ class OrderDetailActionButtons extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('卖家会收到您的申请，并在24小时内回复处理结果。'),
+                      Text(demandType == 'replenishment' 
+                          ? '如果需要卖家补充更多材料或说明，请详细描述您的需求。'
+                          : '如果对交付结果不满意，可以申请重做。请说明具体问题。'),
                       const SizedBox(height: 16),
-                      const Text('申请类型:', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const Text('问题类型:', style: TextStyle(fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
                         value: selectedReasonValue,
@@ -285,10 +285,12 @@ class OrderDetailActionButtons extends StatelessWidget {
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: reasonController,
-                        maxLines: 4,
-                        maxLength: 500,
+                        maxLines: 3,
+                        maxLength: 300,
                         decoration: InputDecoration(
-                          hintText: dialogHint,
+                          hintText: demandType == 'replenishment' 
+                              ? '请详细说明需要补充的材料或信息...'
+                              : '请详细说明需要重做的原因和要求...',
                           border: const OutlineInputBorder(),
                           isDense: true,
                         ),
@@ -297,7 +299,7 @@ class OrderDetailActionButtons extends StatelessWidget {
                             return '请输入详细说明';
                           }
                           if (value.trim().length < 10) {
-                            return '详细说明至少需要10个字符';
+                            return '说明至少需要10个字符';
                           }
                           return null;
                         },
@@ -310,25 +312,11 @@ class OrderDetailActionButtons extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                           border: Border.all(color: Colors.blue[200]!),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '温馨提示：',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue[700],
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '• 申请提交后卖家会收到通知\n'
-                              '• 卖家同意后可继续完善订单\n'
-                              '• 每个订单最多可申请3次',
-                              style: TextStyle(fontSize: 12, color: Colors.blue[600]),
-                            ),
-                          ],
+                        child: Text(
+                          demandType == 'replenishment' 
+                              ? '提示：卖家会在收到申请后24小时内回复并补充相关材料。'
+                              : '提示：重做申请提交后，卖家会重新处理您的订单。',
+                          style: const TextStyle(fontSize: 12, color: Colors.blue),
                         ),
                       ),
                     ],
@@ -384,7 +372,7 @@ class OrderDetailActionButtons extends StatelessWidget {
       // 模拟成功提交
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('申请已提交，卖家会在24小时内回复处理结果'),
           backgroundColor: Colors.green,
         ),
@@ -408,6 +396,7 @@ class OrderDetailActionButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final buttons = <Widget>[];
+    Widget? primaryButton;
 
     // 使用 order_status.dart 中定义的实际枚举值
     switch (order.state) {
@@ -423,9 +412,9 @@ class OrderDetailActionButtons extends StatelessWidget {
              },
            );
         }));
-        buttons.add(_buildButton(context, '去支付', () {
+        primaryButton = _buildButton(context, '去支付', () {
           context.read<OrderDetailBloc>().add(GoToPayment(orderId: order.id));
-        }, isPrimary: true));
+        }, isPrimary: true);
         break;
       // 待发货/待交付，允许取消和提醒
       case OrderStatus.awaitingDelivery:
@@ -436,7 +425,7 @@ class OrderDetailActionButtons extends StatelessWidget {
           // TODO: Implement reminder logic (if any) - maybe a snackbar?
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已提醒卖家发货')));
         }));
-        buttons.add(_buildButton(context, '申请平台介入', () {
+        buttons.add(_buildButton(context, '平台介入', () {
           _showPlatformInterventionDialog(context);
         }));
         buttons.add(_buildButton(context, '取消订单', () { // 假设这些状态可以取消
@@ -455,13 +444,13 @@ class OrderDetailActionButtons extends StatelessWidget {
         buttons.add(_buildButton(context, '查看物流', () {
            context.read<OrderDetailBloc>().add(GoToTracking(orderId: order.id));
         }));
-        buttons.add(_buildButton(context, '申请补充材料', () {
+        buttons.add(_buildButton(context, '补充材料', () {
           _showOrderDemandDialog(context, 'replenishment');
         }));
-        buttons.add(_buildButton(context, '申请平台介入', () {
+        buttons.add(_buildButton(context, '平台介入', () {
           _showPlatformInterventionDialog(context);
         }));
-        buttons.add(_buildButton(context, '确认收货', () {
+        primaryButton = _buildButton(context, '确认收货', () {
            // Call the confirmation dialog
           _showConfirmationDialog(
             context: context,
@@ -472,7 +461,7 @@ class OrderDetailActionButtons extends StatelessWidget {
               context.read<OrderDetailBloc>().add(OrderActionRequested(action: OrderAction.confirmReceipt, orderId: order.id.toString()));
             },
           );
-        }, isPrimary: true));
+        }, isPrimary: true);
         break;
       case OrderStatus.awaitingEvaluation: // 待评价
          buttons.add(_buildButton(context, '查看物流', () {
@@ -480,7 +469,7 @@ class OrderDetailActionButtons extends StatelessWidget {
            print('查看物流 for order ${order.id}');
            // Example: context.go('/tracking/${order.id}');
         }));
-        buttons.add(_buildButton(context, '申请补充材料', () {
+        buttons.add(_buildButton(context, '补充材料', () {
           _showOrderDemandDialog(context, 'replenishment');
         }));
         buttons.add(_buildButton(context, '申请售后', () {
@@ -501,16 +490,16 @@ class OrderDetailActionButtons extends StatelessWidget {
              print('Error: Cannot apply after sales for order ${order.id} with no items.');
            }
         }));
-        buttons.add(_buildButton(context, '申请平台介入', () {
+        buttons.add(_buildButton(context, '平台介入', () {
           _showPlatformInterventionDialog(context);
         }));
-        buttons.add(_buildButton(context, '去评价', () {
+        primaryButton = _buildButton(context, '去评价', () {
            // TODO: Implement navigation to evaluation page or show modal
            print('去评价 for order ${order.id}');
            // Example: context.go('/evaluate/${order.id}');
            // For now, just adding the existing event might be okay if it handles showing the form
             context.read<OrderDetailBloc>().add(GoToEvaluation(orderId: order.id));
-        }, isPrimary: true));
+        }, isPrimary: true);
         break;
       case OrderStatus.orderCompleted: // 已完成
          buttons.add(_buildButton(context, '申请重做', () {
@@ -573,15 +562,123 @@ class OrderDetailActionButtons extends StatelessWidget {
         break;
     }
 
-    if (buttons.isEmpty) {
+    // 如果没有按钮，不显示
+    if (buttons.isEmpty && primaryButton == null) {
       return const SizedBox.shrink();
     }
 
-    return Wrap(
-      spacing: 8.0,
-      runSpacing: 4.0,
-      alignment: WrapAlignment.end,
-      children: buttons,
+    // 将主要按钮添加到列表中
+    if (primaryButton != null) {
+      buttons.add(primaryButton);
+    }
+
+    return _buildResponsiveButtonLayout(buttons);
+  }
+
+  /// 构建响应式按钮布局
+  Widget _buildResponsiveButtonLayout(List<Widget> buttons) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenWidth = constraints.maxWidth;
+        final buttonCount = buttons.length;
+        
+        // 如果按钮数量 > 3 或屏幕宽度较小，使用多行布局
+        if (buttonCount > 3 || screenWidth < 400) {
+          return _buildMultiRowLayout(buttons);
+        } else {
+          // 单行布局
+          return _buildSingleRowLayout(buttons);
+        }
+      },
+    );
+  }
+
+  /// 构建单行布局
+  Widget _buildSingleRowLayout(List<Widget> buttons) {
+    return Row(
+      children: buttons.asMap().entries.map((entry) {
+        final index = entry.key;
+        final button = entry.value;
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: index > 0 ? 8.0 : 0,
+            ),
+            child: button,
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  /// 构建多行布局
+  Widget _buildMultiRowLayout(List<Widget> buttons) {
+    // 将主要按钮（最后一个）放在单独一行，其余按钮放在上面的行
+    if (buttons.length == 1) {
+      return SizedBox(
+        width: double.infinity,
+        child: buttons.first,
+      );
+    }
+
+    final secondaryButtons = buttons.take(buttons.length - 1).toList();
+    final primaryButton = buttons.last;
+
+    return Column(
+      children: [
+        // 次要操作按钮行
+        if (secondaryButtons.isNotEmpty) ...[
+          _buildSecondaryButtonsRow(secondaryButtons),
+          const SizedBox(height: 8),
+        ],
+        // 主要操作按钮行
+        SizedBox(
+          width: double.infinity,
+          child: primaryButton,
+        ),
+      ],
+    );
+  }
+
+  /// 构建次要按钮行
+  Widget _buildSecondaryButtonsRow(List<Widget> buttons) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenWidth = constraints.maxWidth;
+        
+        // 如果次要按钮太多，分成两行
+        if (buttons.length > 3 || (buttons.length > 2 && screenWidth < 360)) {
+          return Column(
+            children: [
+              _buildButtonRow(buttons.take(2).toList()),
+              if (buttons.length > 2) ...[
+                const SizedBox(height: 8),
+                _buildButtonRow(buttons.skip(2).toList()),
+              ],
+            ],
+          );
+        } else {
+          return _buildButtonRow(buttons);
+        }
+      },
+    );
+  }
+
+  /// 构建按钮行
+  Widget _buildButtonRow(List<Widget> buttons) {
+    return Row(
+      children: buttons.asMap().entries.map((entry) {
+        final index = entry.key;
+        final button = entry.value;
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: index > 0 ? 8.0 : 0,
+            ),
+            child: button,
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -590,8 +687,8 @@ class OrderDetailActionButtons extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     // Define common style elements
-    final buttonPadding = const EdgeInsets.symmetric(horizontal: 16, vertical: 10); // Increased padding
-    final buttonTextStyle = textTheme.bodyMedium; // Use bodyMedium for better readability
+    final buttonPadding = const EdgeInsets.symmetric(horizontal: 12, vertical: 10); // 减少水平padding
+    final buttonTextStyle = textTheme.bodyMedium?.copyWith(fontSize: 13); // 稍微减小字体
     final buttonShape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)); // Slightly less rounded
     const buttonMinSize = Size(0, 36); // Slightly taller minimum height
 
@@ -607,7 +704,7 @@ class OrderDetailActionButtons extends StatelessWidget {
                minimumSize: buttonMinSize,
                elevation: 2, // Add slight elevation
             ),
-            child: Text(text),
+            child: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis),
           )
         : OutlinedButton(
             onPressed: onPressed,
@@ -619,7 +716,7 @@ class OrderDetailActionButtons extends StatelessWidget {
               shape: buttonShape,
               minimumSize: buttonMinSize,
             ),
-            child: Text(text),
+            child: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis),
           );
   }
 } 

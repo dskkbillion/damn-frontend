@@ -6,6 +6,7 @@ import 'package:dskk_flutter_refactor/core/navigation/services/i_navigation_serv
 import 'package:dskk_flutter_refactor/core/payment/services/i_payment_service.dart';
 import 'package:dskk_flutter_refactor/core/payment/services/alipay_payment_service.dart';
 import 'package:dskk_flutter_refactor/core/network/network_info.dart';
+import 'package:dskk_flutter_refactor/core/api/api_client.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -219,10 +220,21 @@ Future<void> registerCoreDependencies() async {
   // 注册Navigation Service mock
   getIt.registerLazySingleton<INavigationService>(() => MockNavigationService());
 
+  // 注册ApiClient（如果尚未注册）
+  if (!getIt.isRegistered<ApiClient>()) {
+    final packageInfo = getIt<PackageInfo>();
+    getIt.registerLazySingleton<ApiClient>(
+      () => ApiClient.getInstance(
+        baseUrl: getIt<String>(instanceName: 'backendBaseUrl'),
+        token: null,
+        version: packageInfo.buildNumber, // 使用真实的构建版本号
+      ),
+    );
+  }
+
   // 注册AlipayPaymentService (使用实际实现替代Mock)
   getIt.registerLazySingleton<IPaymentService>(() => AlipayPaymentService(
-    getIt<Dio>(),
-    getIt<NetworkInfo>(),
+    getIt<ApiClient>(),
   ));
 }
 

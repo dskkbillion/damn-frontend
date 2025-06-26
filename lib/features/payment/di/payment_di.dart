@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import '../presentation/bloc/payment_bloc.dart';
 import '../../../core/payment/services/i_payment_service.dart';
 import '../../../core/payment/services/alipay_payment_service.dart';
+import '../../../core/api/api_client.dart';
 import '../../../features/orders/domain/usecases/create_order_use_case.dart';
 import '../../../features/orders/domain/repositories/i_order_repository.dart';
 import '../../../core/network/network_info.dart';
@@ -21,13 +22,21 @@ class PaymentDI {
       print('[payment_di] Registered PaymentBloc');
     }
     
+    // 注册 ApiClient（如果尚未注册）
+    if (!sl.isRegistered<ApiClient>()) {
+      sl.registerLazySingleton<ApiClient>(
+        () => ApiClient.getInstance(
+          baseUrl: 'https://api.duoshaokk.com',
+          token: null,
+        ),
+      );
+      print('[payment_di] Registered ApiClient');
+    }
+
     // 注册 IPaymentService 的实现（如果尚未注册）
     if (!sl.isRegistered<IPaymentService>()) {
       sl.registerLazySingleton<IPaymentService>(
-        () => AlipayPaymentService(
-          sl<Dio>(),
-          sl<NetworkInfo>(),
-        ),
+        () => AlipayPaymentService(sl<ApiClient>()),
       );
       print('[payment_di] Registered AlipayPaymentService as IPaymentService');
     }

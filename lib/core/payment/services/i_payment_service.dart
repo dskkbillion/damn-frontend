@@ -1,9 +1,27 @@
 import 'package:dartz/dartz.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
+import '../models/payment_models.dart' as models;
 
 /// 定义支付服务相关的接口契约。
 abstract class IPaymentService {
 
+  /// 初始化支付服务
+  Future<void> initialize();
+
+  /// 支付服务是否可用
+  bool get isAvailable;
+
+  /// 创建支付订单
+  Future<models.PaymentResponse> createPayment(models.PaymentRequest request);
+
+  /// 查询支付状态
+  Future<models.PaymentResult> queryPaymentStatus(String orderId);
+
+  /// 取消支付
+  Future<bool> cancelPayment(String orderId);
+
+  // --- 向后兼容的方法 ---
+  
   /// 启动针对特定订单的支付流程。
   ///
   /// 这可能会导航到一个支付网关页面，或者直接调起支付 SDK。

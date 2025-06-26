@@ -110,4 +110,27 @@ class OrderDetailActionFailure extends OrderDetailState {
   const OrderDetailActionFailure({required this.message, this.previousState});
    @override
   List<Object?> get props => [message, previousState];
+}
+
+/// State indicating payment is being processed.
+class OrderDetailPaymentLoading extends OrderDetailState {
+  final OrderDetailLoaded previousState;
+  const OrderDetailPaymentLoading({required this.previousState});
+   @override
+  List<Object?> get props => [previousState];
+}
+
+/// State representing payment result.
+/// UI layer should use this to trigger navigation based on payment result type.
+class OrderDetailPaymentResult extends OrderDetailState {
+  final PaymentResponse paymentResponse;
+  final OrderDetailLoaded previousState;
+  
+  const OrderDetailPaymentResult({
+    required this.paymentResponse,
+    required this.previousState,
+  });
+  
+  @override
+  List<Object?> get props => [paymentResponse, previousState];
 } 

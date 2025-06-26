@@ -6,6 +6,7 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart'; // Needed for _buildDynamicContentSection
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_action_buttons.dart';
+import 'package:dskk_flutter_refactor/core/payment/services/payment_navigation_service.dart';
 // Import actual widgets confirmed to be used in _buildOrderDetailContent
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_status_timeline_header.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_detail_item_tile.dart';
@@ -135,6 +136,13 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   behavior: SnackBarBehavior.floating,
                 ),
               );
+          } else if (state is OrderDetailPaymentResult) {
+            // Handle payment result and navigate accordingly
+            print('[OrderDetailPage] Received payment result: ${state.paymentResponse.resultType}');
+            PaymentNavigationService.handlePaymentResult(context, state.paymentResponse);
+            
+            // Reload order details to get updated status
+            context.read<OrderDetailBloc>().add(LoadOrderDetail(orderId: _orderIdInt!));
           }
         },
         child: BlocBuilder<OrderDetailBloc, OrderDetailState>(
