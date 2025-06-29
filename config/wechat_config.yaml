@@ -1,0 +1,32 @@
+# 微信支付配置
+# 服务端托管模式 - 客户端只负责调用SDK和展示结果，所有密钥和签名处理由后端完成
+
+# 环境配置
+environment: production  # production | sandbox
+
+# 开发调试配置
+mock_payment: false  # 是否使用Mock支付（开发调试用）
+
+# 显示配置
+display:
+  name: "微信支付"
+  icon: "wechat"
+  color: "#07c160"  # 微信绿色
+  description: "安全便捷的移动支付"
+  
+# 微信App配置（必需，用于初始化SDK）
+app_config:
+  app_id: "your_wechat_app_id"        # 微信开放平台申请的APP ID
+  universal_link: "https://your.domain.com/wechat/"  # iOS Universal Link（必需）
+
+# 支付场景配置
+payment_scenes:
+  - order      # 订单支付
+  - vip        # 会员充值
+  - wallet     # 余额充值
+
+# 支付方式配置
+payment_types:
+  - app        # App支付
+  # - mini_program  # 小程序支付（如需要）
+  # - h5            # H5支付（如需要） 
