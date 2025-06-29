@@ -75,6 +75,15 @@ app.*.map.json
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.*
 
+# iOS build files and configurations (编译生成的文件)
+**/ios/Podfile.lock
+**/ios/*.xcodeproj/project.pbxuser
+**/ios/*.xcodeproj/xcuserdata/
+**/ios/*.xcodeproj/project.xcworkspace/xcuserdata/
+**/ios/*.xcworkspace/xcuserdata/
+# 注意：project.pbxproj 通常需要版本控制，但如果频繁变化可以考虑忽略
+# **/ios/*.xcodeproj/project.pbxproj
+
 # macOS
 **/macos/Flutter/GeneratedPluginRegistrant.swift
 **/macos/Flutter/ephemeral

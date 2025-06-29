@@ -19,7 +19,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.4.0 <4.0.0' # Use higher constraint
+  sdk: ">=3.4.0 <4.0.0" # Use higher constraint
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -86,12 +86,12 @@ dependencies:
   permission_handler: ^11.3.1
   flutter_staggered_grid_view: ^0.7.0
   flutter_svg: ^2.0.9
-  
+
   # 支付功能
-  tobias: ^3.3.0  # 支付宝SDK Flutter插件
-  fluwx: ^5.5.5   # 微信SDK Flutter插件
-  fluttertoast: ^8.2.4  # 用于显示支付结果提示
-  yaml: ^3.1.2  # 用于解析配置文件
+  tobias: ^3.3.0 # 支付宝SDK Flutter插件
+  fluwx: ^5.5.5 # 微信SDK Flutter插件
+  fluttertoast: ^8.2.4 # 用于显示支付结果提示
+  yaml: ^3.1.2 # 用于解析配置文件
 
 dev_dependencies:
   flutter_test:
@@ -159,3 +159,7 @@ flutter:
   # see https://flutter.dev/custom-fonts/#from-packages
 flutter_intl:
   enabled: true
+
+# 支付宝 tobias 插件配置
+tobias:
+  url_scheme: com.duoshaokankan.weapp
