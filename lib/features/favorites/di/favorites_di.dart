@@ -15,6 +15,7 @@ import '../domain/usecases/follow_seller_usecase.dart';
 import '../domain/usecases/get_favorite_sellers_usecase.dart';
 import '../domain/usecases/get_favorite_services_usecase.dart';
 import '../domain/usecases/remove_from_favorites_usecase.dart';
+import '../domain/usecases/remove_from_favorites_by_object_id_usecase.dart';
 import '../domain/usecases/unfollow_seller_usecase.dart';
 import '../presentation/bloc/favorites_bloc.dart';
 
@@ -29,6 +30,7 @@ class FavoritesDI {
         getFavoriteSellersUseCase: sl<GetFavoriteSellersUseCase>(),
         addToFavoritesUseCase: sl<AddToFavoritesUseCase>(),
         removeFromFavoritesUseCase: sl<RemoveFromFavoritesUseCase>(),
+        removeFromFavoritesByObjectIdUseCase: sl<RemoveFromFavoritesByObjectIdUseCase>(),
         checkIsFavoriteUseCase: sl<CheckIsFavoriteUseCase>(),
         followSellerUseCase: sl<FollowSellerUseCase>(),
         unfollowSellerUseCase: sl<UnfollowSellerUseCase>(),
@@ -40,6 +42,7 @@ class FavoritesDI {
     sl.registerLazySingleton(() => GetFavoriteSellersUseCase(sl<IFavoritesRepository>()));
     sl.registerLazySingleton(() => AddToFavoritesUseCase(sl<IFavoritesRepository>()));
     sl.registerLazySingleton(() => RemoveFromFavoritesUseCase(sl<IFavoritesRepository>()));
+    sl.registerLazySingleton(() => RemoveFromFavoritesByObjectIdUseCase(sl<IFavoritesRepository>()));
     sl.registerLazySingleton(() => CheckIsFavoriteUseCase(sl<IFavoritesRepository>()));
     sl.registerLazySingleton(() => FollowSellerUseCase(sl<IFavoritesRepository>()));
     sl.registerLazySingleton(() => UnfollowSellerUseCase(sl<IFavoritesRepository>()));

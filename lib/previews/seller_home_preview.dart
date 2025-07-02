@@ -8,6 +8,9 @@ import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_store_profile_usecase.dart';
 import 'package:dskk_flutter_refactor/core/navigation/services/mocks/mock_navigation_service.dart';
 
+// 导入统一主题
+import 'package:dskk_flutter_refactor/core/config/theme/app_theme.dart';
+
 // 实例化模拟仓库和导航服务
 final mockSellerRepo = MockSellerRepository();
 final mockNavigationService = MockNavigationService();
@@ -36,12 +39,7 @@ class SellerHomePreviewApp extends StatelessWidget {
       ),
       child: MaterialApp(
         title: 'Seller Home Preview',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-          // TODO: 可能需要引入项目的主题配置
-          // theme: AppTheme.lightTheme, 
-        ),
+        theme: AppTheme.lightTheme,
         home: const SellerHomePage(), // 不再需要传递仓库
       ),
     );

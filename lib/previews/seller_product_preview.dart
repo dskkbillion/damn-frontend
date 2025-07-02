@@ -5,6 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/product_management_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_management/product_management_bloc.dart';
 
+// 导入统一主题
+import 'package:dskk_flutter_refactor/core/config/theme/app_theme.dart';
+
 // 导入 Mock 依赖和 UseCases
 import 'package:dskk_flutter_refactor/features/seller/mocks/mock_seller_repository.dart';
 import 'package:dskk_flutter_refactor/core/navigation/services/mocks/mock_navigation_service.dart';
@@ -42,11 +45,7 @@ class SellerProductPreviewApp extends StatelessWidget {
       ),
       child: MaterialApp(
         title: 'Product Management Preview',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-          // TODO: 引入项目主题
-        ),
+        theme: AppTheme.lightTheme,
         home: const ProductManagementPage(),
       ),
     );

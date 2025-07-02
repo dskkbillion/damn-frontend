@@ -118,6 +118,21 @@ class FavoritesRepositoryImpl implements IFavoritesRepository {
     }
   }
 
+  /// 按对象ID从收藏中移除
+  @override
+  Future<Either<Failure, void>> removeFromFavoritesByObjectId(String type, int objectId) async {
+    if (await networkInfo.isConnected) {
+      try {
+        await remoteDataSource.removeFromFavoritesByObjectId(type, objectId);
+        return const Right(null);
+      } on ServerException {
+        return Left(ServerFailure(message: '移除收藏失败，服务器错误'));
+      }
+    } else {
+      return Left(NetworkFailure(message: '网络连接失败，无法移除收藏'));
+    }
+  }
+
   /// 检查对象是否已收藏
   @override
   Future<Either<Failure, Map<int, bool>>> checkIsFavorite(

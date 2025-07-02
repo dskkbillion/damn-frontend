@@ -16,6 +16,19 @@ import '../../domain/entities/participant.dart'; // Import Participant
 import 'allocate_message_bubble.dart'; // 导入新创建的allocate消息气泡组件
 import '../utils/markdown_style_helper.dart'; // 导入Markdown样式助手
 
+// 撤回状态检查结果
+class RevokeCheckResult {
+    final bool canRevoke;
+    final String reason;
+    final Duration? remainingTime;
+    
+    RevokeCheckResult({
+        required this.canRevoke, 
+        required this.reason,
+        this.remainingTime,
+    });
+}
+
 // Helper function to format duration (e.g., 0:05, 1:23)
 String _formatDuration(Duration? duration) {
   if (duration == null) return '0:00';
@@ -325,10 +338,14 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           style: TextStyle(color: Colors.grey[500], fontStyle: FontStyle.italic),
         );
      } else if (widget.message.type == 'text') {
-       // 替换Text组件为Markdown渲染组件
-       return MarkdownBody(
+       // 用GestureDetector包装Markdown组件，确保长按事件能正确触发
+       return GestureDetector(
+         onLongPressStart: (details) {
+           _showActionMenu(context, details.globalPosition, isCurrentUser);
+         },
+         child: MarkdownBody(
          data: messageContext,
-         selectable: true, // 允许用户选择文本
+           selectable: false, // 禁用选择功能，避免与长按菜单冲突
          styleSheet: MarkdownStyleHelper.buildChatBubbleStyle(context, textColor),
          onTapLink: (text, href, title) {
            // 处理链接点击
@@ -338,6 +355,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
          },
          // 确保内容自适应并限制在消息气泡内
          shrinkWrap: true,
+         ),
        );
      } else if (widget.message.type == 'audio') {
        // Pass textColor and isCurrentUser to audio content
@@ -411,6 +429,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
      }
 
      final heroTag = 'imagePreview_${widget.message.id}';
+     final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
+     final bool isRevoked = widget.message.withdrawFlag || widget.message.type == 'revoke';
+     
      if (imageUrl.isEmpty) {
        return Container(
          width: 150, height: 150,
@@ -424,6 +445,12 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
      
      return GestureDetector(
        onTap: () => _showImagePreview(context, imageUrl),
+       // 添加长按事件处理，支持撤回和复制功能
+       onLongPressStart: (details) {
+         if (!isRevoked) {
+           _showActionMenu(context, details.globalPosition, isCurrentUser);
+         }
+       },
        child: Hero(
          tag: heroTag,
          child: ConstrainedBox(
@@ -617,15 +644,40 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
     final List<PopupMenuEntry<String>> menuItems = [];
 
+    // 文本消息支持复制
     if (widget.message.type == 'text') {
         menuItems.add(PopupMenuItem<String>(value: 'copy', child: Text(s.chat_copy)));
     }
 
+    // 当前用户的消息支持撤回（包括文本和图片）
     if (isCurrentUser) {
-        menuItems.add(PopupMenuItem<String>(value: 'revoke', child: Text(s.chat_recall)));
+        // 检查消息发送时间，判断是否可以撤回
+        final revokeResult = _checkRevokeStatus();
+        
+        if (revokeResult.canRevoke) {
+            // 可以撤回：显示正常的撤回选项
+            menuItems.add(PopupMenuItem<String>(
+                value: 'revoke', 
+                child: Text(s.chat_recall)
+            ));
+        }
+        // 注意：超过2分钟的消息不显示任何撤回选项
     }
 
-    if (menuItems.isEmpty) return;
+    // 如果没有可用选项，显示提示信息
+    if (menuItems.isEmpty) {
+        if (isCurrentUser) {
+            // 如果是当前用户的消息但没有可用操作，显示原因
+            final revokeResult = _checkRevokeStatus();
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content: Text(revokeResult.reason),
+                    duration: const Duration(seconds: 2),
+                ),
+            );
+        }
+        return;
+    }
 
     showMenu(
         context: context,
@@ -646,12 +698,60 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 );
                 break;
             case 'revoke':
-                context.read<ChatMessagesBloc>().add(RevokeMessageRequested(widget.message.id));
-                break;
-            case 'delete':
+                // 再次检查是否可以撤回（防止时间差问题）
+                final revokeResult = _checkRevokeStatus();
+                if (revokeResult.canRevoke) {
+                    context.read<ChatMessagesBloc>().add(RevokeMessageRequested(widget.message.id));
+                } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text(revokeResult.reason),
+                            duration: const Duration(seconds: 2),
+                        ),
+                    );
+                }
                 break;
         }
     });
+  }
+
+  // 检查消息撤回状态（更详细的版本）
+  RevokeCheckResult _checkRevokeStatus() {
+      if (widget.message.createTime == null) {
+          return RevokeCheckResult(
+              canRevoke: false, 
+              reason: '消息时间信息缺失，无法撤回'
+          );
+      }
+      
+      final now = DateTime.now();
+      final messageTime = widget.message.createTime!;
+      final timeDifference = now.difference(messageTime);
+      
+      // 允许撤回的时间窗口：2分钟（120秒）
+      const revokeTimeLimit = Duration(minutes: 2);
+      
+      print('[Debug] 消息撤回检查 - 消息时间: $messageTime, 当前时间: $now, 时间差: ${timeDifference.inSeconds}秒');
+      
+      if (timeDifference <= revokeTimeLimit) {
+          final remainingTime = revokeTimeLimit - timeDifference;
+          return RevokeCheckResult(
+              canRevoke: true, 
+              reason: '可以撤回',
+              remainingTime: remainingTime
+          );
+      } else {
+          final overTime = timeDifference - revokeTimeLimit;
+          return RevokeCheckResult(
+              canRevoke: false, 
+              reason: '消息发送已超过2分钟，无法撤回（超出${overTime.inSeconds}秒）'
+          );
+      }
+  }
+
+  // 保留原有的简单检查方法（向后兼容）
+  bool _canRevokeMessage() {
+      return _checkRevokeStatus().canRevoke;
   }
 
   // 添加一个方法用于获取allocate消息的显示名称

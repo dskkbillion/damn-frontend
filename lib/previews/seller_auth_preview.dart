@@ -5,6 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/auth_management_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/auth_management/auth_management_bloc.dart';
 
+// 导入统一主题
+import 'package:dskk_flutter_refactor/core/config/theme/app_theme.dart';
+
 // 导入 Mock 依赖和 UseCases
 import 'package:dskk_flutter_refactor/features/seller/mocks/mock_seller_repository.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_authentication_status_usecase.dart';
@@ -29,11 +32,7 @@ class SellerAuthPreviewApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Auth Management Preview',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        // TODO: 引入项目主题
-      ),
+      theme: AppTheme.lightTheme,
       home: Builder(
         builder: (materialAppContext) {
           // !!! 使用 BlocProvider.value 提供已创建的实例 !!!

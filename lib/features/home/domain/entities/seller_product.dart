@@ -120,6 +120,7 @@ class SellerInfo {
   final String? avatar;
   final String? remarks;
   final bool? memberAttention;
+  final int fansCount;
 
   SellerInfo({
     required this.id,
@@ -128,6 +129,7 @@ class SellerInfo {
     this.avatar,
     this.remarks,
     this.memberAttention,
+    this.fansCount = 0,
   });
 
   factory SellerInfo.fromJson(Map<String, dynamic> json) {
@@ -138,6 +140,7 @@ class SellerInfo {
       avatar: json['avatar'],
       remarks: json['remarks'],
       memberAttention: json['memberAttention'] ?? false,
+      fansCount: json['fansCount'] ?? 0,
     );
   }
 } 

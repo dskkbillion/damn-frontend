@@ -122,3 +122,21 @@ class SwitchTabEvent extends FavoritesEvent {
 
 /// 清除错误事件
 class ClearErrorEvent extends FavoritesEvent {}
+
+/// 按商品ID从收藏中移除事件
+class RemoveFromFavoritesByObjectIdEvent extends FavoritesEvent {
+  /// 收藏类型
+  final String type;
+  
+  /// 商品/卖家ID
+  final int objectId;
+
+  /// 构造函数
+  const RemoveFromFavoritesByObjectIdEvent({
+    required this.type,
+    required this.objectId,
+  });
+
+  @override
+  List<Object?> get props => [type, objectId];
+}

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 /// 根据订单状态显示【订单详情页】可用操作按钮的 Widget
 class OrderDetailActionButtons extends StatelessWidget {
@@ -138,9 +139,9 @@ class OrderDetailActionButtons extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                           border: Border.all(color: Colors.orange[200]!),
                         ),
-                        child: const Text(
+                        child: Text(
                           '提示：申请提交后无法撤销，每个订单最多可申请2次。',
-                          style: TextStyle(fontSize: 12, color: Colors.orange),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.warning),
                         ),
                       ),
                     ],
@@ -316,7 +317,7 @@ class OrderDetailActionButtons extends StatelessWidget {
                           demandType == 'replenishment' 
                               ? '提示：卖家会在收到申请后24小时内回复并补充相关材料。'
                               : '提示：重做申请提交后，卖家会重新处理您的订单。',
-                          style: const TextStyle(fontSize: 12, color: Colors.blue),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.primary),
                         ),
                       ),
                     ],
@@ -688,7 +689,7 @@ class OrderDetailActionButtons extends StatelessWidget {
 
     // Define common style elements
     final buttonPadding = const EdgeInsets.symmetric(horizontal: 12, vertical: 10); // 减少水平padding
-    final buttonTextStyle = textTheme.bodyMedium?.copyWith(fontSize: 13); // 稍微减小字体
+    final buttonTextStyle = textTheme.bodySmall; // 使用标准小字体
     final buttonShape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)); // Slightly less rounded
     const buttonMinSize = Size(0, 36); // Slightly taller minimum height
 
@@ -719,4 +720,4 @@ class OrderDetailActionButtons extends StatelessWidget {
             child: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis),
           );
   }
-} 
+}

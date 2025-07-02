@@ -43,12 +43,15 @@ import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller
 
 // 用例 - 认证管理
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_authentication_status.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_time_settings_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/update_time_settings_usecase.dart';
 
 // Bloc - 卖家主页和产品管理
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_home/seller_home_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_management/product_management_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/auth_management/auth_management_bloc.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/time_management/time_management_bloc.dart';
 
 // 统计模块依赖注入
 import 'package:dskk_flutter_refactor/features/seller/di/seller_statistics_di.dart';
@@ -181,6 +184,21 @@ class SellerDI {
         print('[SellerDI] 已注册 GetAuthenticationStatus');
       }
 
+      // 用例 - 时间管理
+      if (!sl.isRegistered<GetTimeSettingsUseCase>()) {
+        sl.registerLazySingleton<GetTimeSettingsUseCase>(
+          () => GetTimeSettingsUseCase(sl<ISellerRepository>())
+        );
+        print('[SellerDI] 已注册 GetTimeSettingsUseCase');
+      }
+
+      if (!sl.isRegistered<UpdateTimeSettingsUseCase>()) {
+        sl.registerLazySingleton<UpdateTimeSettingsUseCase>(
+          () => UpdateTimeSettingsUseCase(sl<ISellerRepository>())
+        );
+        print('[SellerDI] 已注册 UpdateTimeSettingsUseCase');
+      }
+
       // 注册文件上传仓库（如果尚未注册）
       if (!sl.isRegistered<IFileUploadRepository>()) {
         // 检查是否有必要的依赖项
@@ -297,6 +315,19 @@ class SellerDI {
       print('[SellerDI] 已注册 AuthManagementBloc');
     } else {
       print('[SellerDI] AuthManagementBloc 已存在，跳过注册');
+    }
+
+    // BLoC - 时间管理
+    if (!sl.isRegistered<TimeManagementBloc>()) {
+      sl.registerFactory<TimeManagementBloc>(
+        () => TimeManagementBloc(
+          sl<GetTimeSettingsUseCase>(),
+          sl<UpdateTimeSettingsUseCase>(),
+        )
+      );
+      print('[SellerDI] 已注册 TimeManagementBloc');
+    } else {
+      print('[SellerDI] TimeManagementBloc 已存在，跳过注册');
     }
   }
 } 

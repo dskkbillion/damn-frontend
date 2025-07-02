@@ -9,6 +9,7 @@ import '../../domain/usecases/follow_seller_usecase.dart';
 import '../../domain/usecases/get_favorite_services_usecase.dart';
 import '../../domain/usecases/get_favorite_sellers_usecase.dart';
 import '../../domain/usecases/remove_from_favorites_usecase.dart';
+import '../../domain/usecases/remove_from_favorites_by_object_id_usecase.dart';
 import '../../domain/usecases/unfollow_seller_usecase.dart';
 import 'favorites_event.dart';
 import 'favorites_state.dart';
@@ -19,6 +20,7 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
   final GetFavoriteSellersUseCase getFavoriteSellersUseCase;
   final AddToFavoritesUseCase addToFavoritesUseCase;
   final RemoveFromFavoritesUseCase removeFromFavoritesUseCase;
+  final RemoveFromFavoritesByObjectIdUseCase removeFromFavoritesByObjectIdUseCase;
   final CheckIsFavoriteUseCase checkIsFavoriteUseCase;
   final FollowSellerUseCase followSellerUseCase;
   final UnfollowSellerUseCase unfollowSellerUseCase;
@@ -29,6 +31,7 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
     required this.getFavoriteSellersUseCase,
     required this.addToFavoritesUseCase,
     required this.removeFromFavoritesUseCase,
+    required this.removeFromFavoritesByObjectIdUseCase,
     required this.checkIsFavoriteUseCase,
     required this.followSellerUseCase,
     required this.unfollowSellerUseCase,
@@ -37,6 +40,7 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
     on<LoadFavoriteSellersEvent>(_onLoadFavoriteSellers);
     on<AddToFavoritesEvent>(_onAddToFavorites);
     on<RemoveFromFavoritesEvent>(_onRemoveFromFavorites);
+    on<RemoveFromFavoritesByObjectIdEvent>(_onRemoveFromFavoritesByObjectId);
     on<CheckIsFavoriteEvent>(_onCheckIsFavorite);
     on<FollowSellerEvent>(_onFollowSeller);
     on<UnfollowSellerEvent>(_onUnfollowSeller);
@@ -318,6 +322,45 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
     else if (event.tabIndex == 1 && state.sellers.isEmpty) {
       add(const LoadFavoriteSellersEvent());
     }
+  }
+
+  /// 处理按商品ID从收藏中移除事件
+  Future<void> _onRemoveFromFavoritesByObjectId(
+    RemoveFromFavoritesByObjectIdEvent event,
+    Emitter<FavoritesState> emit,
+  ) async {
+    emit(state.copyWith(errorMessage: null));
+
+    final result = await removeFromFavoritesByObjectIdUseCase(
+      RemoveFromFavoritesByObjectIdParams(
+        type: event.type,
+        objectId: event.objectId,
+      ),
+    );
+
+    result.fold(
+      (failure) {
+        emit(state.copyWith(
+          errorMessage: '移除收藏失败',
+        ));
+      },
+      (_) {
+        // 更新收藏状态映射
+        final Map<int, bool> updatedMap = Map.from(state.favoriteStatusMap);
+        updatedMap[event.objectId] = false;
+
+        emit(state.copyWith(
+          favoriteStatusMap: updatedMap,
+        ));
+
+        // 根据当前标签页刷新列表
+        if (state.currentTabIndex == 0 && event.type == 'org_product') {
+          add(const LoadFavoriteServicesEvent(refresh: true));
+        } else if (state.currentTabIndex == 1 && event.type == 'org') {
+          add(const LoadFavoriteSellersEvent(refresh: true));
+        }
+      },
+    );
   }
 
   /// 处理清除错误事件

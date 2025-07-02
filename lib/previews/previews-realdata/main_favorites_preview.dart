@@ -28,6 +28,9 @@ import '../../features/favorites/domain/usecases/unfollow_seller_usecase.dart';
 import '../../features/favorites/presentation/bloc/favorites_bloc.dart';
 import '../../features/favorites/presentation/pages/favorites_page.dart';
 
+// 导入统一主题
+import '../../core/config/theme/app_theme.dart';
+
 /// 服务定位器
 final sl = GetIt.instance;
 
@@ -129,10 +132,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: '收藏功能预览',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
+      theme: AppTheme.lightTheme,
       home: BlocProvider(
         create: (context) => sl<FavoritesBloc>(),
         child: const FavoritesPage(),

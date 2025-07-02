@@ -5,6 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/notification_list_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/notification_list/notification_list_bloc.dart';
 
+// 导入统一主题
+import 'package:dskk_flutter_refactor/core/config/theme/app_theme.dart';
+
 // 导入 Mock 依赖和 UseCases
 import 'package:dskk_flutter_refactor/features/seller/mocks/mock_seller_repository.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_notification_list_usecase.dart';
@@ -39,11 +42,7 @@ class SellerNotificationPreviewApp extends StatelessWidget {
       ),
       child: MaterialApp(
         title: 'Notification List Preview',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-          // TODO: 引入项目主题
-        ),
+        theme: AppTheme.lightTheme,
         home: const NotificationListPage(),
       ),
     );

@@ -231,28 +231,42 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           },
         ),
       ),
-      // --- Persistent Footer Buttons --- (Kept as per previous structure)
-      persistentFooterButtons: [
-        BlocBuilder<OrderDetailBloc, OrderDetailState>(
-          builder: (context, state) {
-            final order = _extractOrder(state);
-            if (order != null) {
-              // Add padding and align buttons to the right
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      // --- Bottom Navigation Bar as Footer --- (使用bottomNavigationBar替代persistentFooterButtons避免分隔线)
+      bottomNavigationBar: BlocBuilder<OrderDetailBloc, OrderDetailState>(
+        builder: (context, state) {
+          final order = _extractOrder(state);
+          if (order != null) {
+            // Don't show footer buttons for completed or canceled orders
+            if (order.state == OrderStatus.orderCompleted || order.state == OrderStatus.canceled) {
+              return const SizedBox.shrink();
+            }
+            
+            // 使用Container包装，避免分隔线问题
+            return Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                border: Border(
+                  top: BorderSide(
+                    color: Colors.transparent, // 透明边框
+                    width: 0,
+                  ),
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              child: SafeArea(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     OrderDetailActionButtons(order: order),
                   ],
                 ),
-              );
-            }
-            // Return an empty container if order is not loaded
-            return const SizedBox.shrink();
-          },
-        ),
-      ],
+              ),
+            );
+          }
+          // Return empty widget if order is not loaded
+          return const SizedBox.shrink();
+        },
+      ),
     );
   }
 
@@ -279,52 +293,73 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               // Dynamic section based on state (e.g., form, info area)
               _buildDynamicContentSection(context, order),
               const SizedBox(height: 24),
-              // Order Items Section
+              // Order Items Section - 包装为Card
               if (order.items.isNotEmpty)
-                 Column(
-                   crossAxisAlignment: CrossAxisAlignment.start,
-                   children: [
-                      Text('订单商品', style: textTheme.titleMedium),
-                      const SizedBox(height: 8),
-                      OrderDetailItemTile(item: order.items.first),
-                      const SizedBox(height: 16),
-                      const Divider(),
-                      const SizedBox(height: 16),
-                   ],
+                 Card(
+                   child: Padding(
+                     padding: const EdgeInsets.all(16.0),
+                     child: Column(
+                       crossAxisAlignment: CrossAxisAlignment.start,
+                       children: [
+                          Text('订单商品', style: textTheme.titleMedium),
+                          const SizedBox(height: 8),
+                          OrderDetailItemTile(item: order.items.first),
+                       ],
+                     ),
+                   ),
                  ),
-              // Pricing Section
-              Text('价格信息', style: textTheme.titleMedium),
-              const SizedBox(height: 8),
-              _buildPriceRow(context, '商品总价', '¥${order.priceSummary.totalPrice.toStringAsFixed(2)}'),
-              if (order.priceSummary.deliveryPrice > 0)
-                _buildPriceRow(context, '运费', '+ ¥${order.priceSummary.deliveryPrice.toStringAsFixed(2)}'),
-              if (order.priceSummary.discountPrice > 0)
-                _buildPriceRow(context, '优惠金额', '- ¥${order.priceSummary.discountPrice.toStringAsFixed(2)}'),
-               const Divider(height: 16, thickness: 0.5),
-               Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                      Text('实付款', style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
-                      Text(
-                        '¥${order.priceSummary.payPrice.toStringAsFixed(2)}',
-                        style: textTheme.titleMedium?.copyWith(color: colorScheme.primary, fontWeight: FontWeight.bold),
+              const SizedBox(height: 16),
+              // Pricing Section - 包装为Card
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('价格信息', style: textTheme.titleMedium),
+                      const SizedBox(height: 8),
+                      _buildPriceRow(context, '商品总价', '¥${order.priceSummary.totalPrice.toStringAsFixed(2)}'),
+                      if (order.priceSummary.deliveryPrice > 0)
+                        _buildPriceRow(context, '运费', '+ ¥${order.priceSummary.deliveryPrice.toStringAsFixed(2)}'),
+                      if (order.priceSummary.discountPrice > 0)
+                        _buildPriceRow(context, '优惠金额', '- ¥${order.priceSummary.discountPrice.toStringAsFixed(2)}'),
+                      const Divider(height: 16, thickness: 0.5),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('实付款', style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+                          Text(
+                            '¥${order.priceSummary.payPrice.toStringAsFixed(2)}',
+                            style: textTheme.titleMedium?.copyWith(color: colorScheme.primary, fontWeight: FontWeight.bold),
+                          ),
+                        ]
                       ),
-                  ]
-               ),
+                    ],
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
-              const Divider(),
-              const SizedBox(height: 16),
-              // Order Info Section (Timestamps, etc.)
-              Text('订单信息', style: textTheme.titleMedium),
-              const SizedBox(height: 8),
-              _buildInfoRow(context, '订单编号:', order.orderSn),
-              _buildInfoRow(context, '创建时间:', _formatDateTime(order.createdAt)),
-              if (order.paymentInfo.payTime != null)
-                _buildInfoRow(context, '付款时间:', _formatDateTime(order.paymentInfo.payTime!)),
-              if (order.completeTime != null)
-                _buildInfoRow(context, '完成时间:', _formatDateTime(order.completeTime!)),
-              if (order.cancelTime != null)
-                _buildInfoRow(context, '取消时间:', _formatDateTime(order.cancelTime!)),
+              // Order Info Section - 包装为Card
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('订单信息', style: textTheme.titleMedium),
+                      const SizedBox(height: 8),
+                      _buildInfoRow(context, '订单编号:', order.orderSn),
+                      _buildInfoRow(context, '创建时间:', _formatDateTime(order.createdAt)),
+                      if (order.paymentInfo.payTime != null)
+                        _buildInfoRow(context, '付款时间:', _formatDateTime(order.paymentInfo.payTime!)),
+                      if (order.completeTime != null)
+                        _buildInfoRow(context, '完成时间:', _formatDateTime(order.completeTime!)),
+                      if (order.cancelTime != null)
+                        _buildInfoRow(context, '取消时间:', _formatDateTime(order.cancelTime!)),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
        ),
@@ -354,8 +389,11 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
          return AfterSaleInfoArea(order: order); // Return Widget instance, passing the order
        case OrderStatus.orderCompleted:
          return OrderCompletionSummary(order: order); // Return Widget instance
+      case OrderStatus.canceled:
+        // For canceled orders, return empty widget to avoid duplicate status display
+        // (OrderStatusTimelineHeader already shows the cancellation status)
+        return const SizedBox.shrink();
       // Add cases for other statuses if they have specific content areas
-      // case OrderStatus.canceled:
       // case OrderStatus.applyingForMediation:
       // case OrderStatus.sellerSupplementaryMaterials:
       // case OrderStatus.applyForRefuse:
@@ -364,8 +402,6 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         // For states with no specific dynamic content, return an empty box
         return const SizedBox.shrink();
     }
-     // Default return might not be needed if switch is exhaustive or default handles all others
-     // return const SizedBox.shrink(); // Can likely be removed if default covers all
   }
 
   // Helper to build simple info rows
@@ -436,4 +472,4 @@ class _PlaceholderContentCard extends StatelessWidget {
       ),
     );
   }
-} 
+}

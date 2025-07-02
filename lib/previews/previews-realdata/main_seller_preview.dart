@@ -32,6 +32,9 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_h
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_home/seller_home_state.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/routes/seller_routes.dart';
 
+// 导入统一主题
+import 'package:dskk_flutter_refactor/core/config/theme/app_theme.dart';
+
 // GetIt 服务定位器实例
 final sl = GetIt.instance;
 
@@ -64,27 +67,7 @@ class SellerPreviewApp extends StatelessWidget {
       title: '卖家中心预览',
       debugShowCheckedModeBanner: false,
         routerConfig: router,
-      theme: ThemeData(
-        primarySwatch: MaterialColor(0xFFB66D0E, {
-          50: const Color(0xFFF9ECCF),
-          100: const Color(0xFFF0D9A0),
-          200: const Color(0xFFE6C571),
-          300: const Color(0xFFDCB141),
-          400: const Color(0xFFCEA128),
-          500: const Color(0xFFB66D0E), // 主色
-          600: const Color(0xFFA85F0D),
-          700: const Color(0xFF9A510B),
-          800: const Color(0xFF8C430A),
-          900: const Color(0xFF753506),
-        }),
-        colorScheme: const ColorScheme.light(
-          primary: Color(0xFFB66D0E),
-          secondary: Color(0xFFB66D0E),
-          onPrimary: Colors.white,
-        ),
-        primaryColor: const Color(0xFFB66D0E),
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
+      theme: AppTheme.lightTheme,
       ),
     );
   }

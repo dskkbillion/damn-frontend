@@ -14,6 +14,9 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/routes/seller
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/seller_home_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_home/seller_home_bloc.dart';
 
+// 导入统一主题
+import 'package:dskk_flutter_refactor/core/config/theme/app_theme.dart';
+
 // Optional: Import other DI initializers if needed (e.g., Home DI from main_dev_preview)
 // import 'package:dskk_flutter_refactor/features/home/di/home_di.dart';
 
@@ -112,11 +115,7 @@ class SellerRealPreviewApp extends StatelessWidget {
     
     return MaterialApp.router(
       title: 'Seller Module Real API Preview',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        // TODO: Introduce project theme
-      ),
+      theme: AppTheme.lightTheme,
       routerConfig: router,
     );
   }

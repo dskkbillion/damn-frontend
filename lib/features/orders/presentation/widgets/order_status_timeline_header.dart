@@ -167,9 +167,8 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
           constraints: const BoxConstraints(maxWidth: 50),
           child: Text(
             stepText,
-            style: theme.textTheme.bodySmall?.copyWith(
+            style: theme.textTheme.labelSmall?.copyWith(
               color: color,
-              fontSize: 11,
               fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
             ),
             textAlign: TextAlign.center,

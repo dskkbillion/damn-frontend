@@ -49,7 +49,7 @@ class OrderDetailItemTile extends StatelessWidget {
               children: [
                 Text(
                   item.productName,
-                  style: textTheme.titleMedium?.copyWith(fontSize: 15), // Adjust font size if needed
+                  style: textTheme.titleMedium, // 使用标准字体大小
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),

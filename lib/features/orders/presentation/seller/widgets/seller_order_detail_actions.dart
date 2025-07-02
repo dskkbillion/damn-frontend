@@ -361,7 +361,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
                   Text(
                     '${status.todayCount}/3',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      fontSize: 10,
+                      // 使用标准小字体，移除硬编码字体大小
                       color: status.hasReachedLimit ? Colors.grey[600] : Colors.white70,
                     ),
                   ),

@@ -47,7 +47,7 @@ class ProfileRoutes {
       routes: [
         // 子路由：账号与安全页面
         GoRoute(
-          path: 'account_security',
+          path: 'account-security',
           name: 'accountSecurity',
           builder: (context, state) => const AccountSecurityPage(),
         ),

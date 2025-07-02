@@ -15,6 +15,9 @@ import '../../features/home/presentation/bloc/home_bloc.dart';
 import '../../features/home/presentation/navigation/home_navigation_service.dart';
 import '../../features/home/presentation/navigation/home_router.dart';
 
+// 导入统一主题
+import '../../core/config/theme/app_theme.dart';
+
 /// 获取依赖注入实例
 final sl = GetIt.instance;
 
@@ -43,11 +46,7 @@ class HomeApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Home Module',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        useMaterial3: true,
-      ),
+      theme: AppTheme.lightTheme,
       routerConfig: HomeRouter.router,
       builder: (context, child) {
         return BlocProvider<HomeBloc>(

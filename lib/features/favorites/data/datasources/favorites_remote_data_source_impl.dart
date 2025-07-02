@@ -597,8 +597,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
       final uri = Uri.parse('$baseUrl/api/invitation/cancelCollectionMember');
 
       final body = json.encode({
-        'referId': user.referId,
-        'type': user.type,
+        'id': user.id,
       });
 
       final headers = await _getHeaders();
@@ -625,6 +624,74 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
       }
     } catch (e) {
       print('取消关注卖家出错: $e');
+      if (e is ServerException) {
+        rethrow;
+      }
+      throw ServerException(message: e.toString());
+    }
+  }
+
+  /// 按对象ID从收藏中移除
+  @override
+  Future<void> removeFromFavoritesByObjectId(String type, int objectId) async {
+    try {
+      print('[Debug] 开始按objectId删除收藏: type=$type, objectId=$objectId');
+      
+      // 步骤1: 获取收藏列表以找到收藏记录ID
+      final userId = await getUserId();
+      final queryParams = {
+        'type': type,
+        'memberId': userId,
+        'pageNum': '1',
+        'pageSize': '100', // 获取足够多的记录
+      };
+
+      final uri = Uri.parse('$baseUrl/api/collect/list').replace(
+        queryParameters: queryParams,
+      );
+
+      final headers = await _getHeaders();
+      
+      print('[Debug] 查询收藏列表API请求URL: $uri');
+      
+      final response = await client.get(uri, headers: headers);
+      
+      print('[Debug] 查询收藏列表API响应状态码: ${response.statusCode}');
+      print('[Debug] 查询收藏列表API响应内容: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final jsonResponse = json.decode(response.body);
+        if (jsonResponse['code'] == 200 && jsonResponse['rows'] != null) {
+          final List<dynamic> rows = jsonResponse['rows'];
+          
+          // 步骤2: 查找匹配的收藏记录
+          int? favoriteRecordId;
+          for (final row in rows) {
+            if (row['objectId'] == objectId && row['type'] == type) {
+              favoriteRecordId = row['id'];
+              print('[Debug] 找到匹配的收藏记录: recordId=$favoriteRecordId, objectId=$objectId');
+              break;
+            }
+          }
+          
+          if (favoriteRecordId == null) {
+            print('[Debug] 未找到匹配的收藏记录，可能已经被删除');
+            // 不抛出错误，认为删除成功
+            return;
+          }
+          
+          // 步骤3: 使用收藏记录ID删除
+          await removeFromFavorites([favoriteRecordId]);
+          print('[Debug] 成功删除收藏记录: $favoriteRecordId');
+          
+        } else {
+          throw ServerException(message: jsonResponse['msg'] ?? 'Failed to get favorites list');
+        }
+      } else {
+        throw ServerException(message: 'Failed to get favorites list');
+      }
+    } catch (e) {
+      print('[Debug] 按objectId删除收藏出错: $e');
       if (e is ServerException) {
         rethrow;
       }

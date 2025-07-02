@@ -85,12 +85,9 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Card(
-      elevation: 0,
-      margin: EdgeInsets.zero,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      // 使用统一Card主题
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(16.0), // 使用标准间距
         child: Form(
           key: _formKey,
           child: Column(

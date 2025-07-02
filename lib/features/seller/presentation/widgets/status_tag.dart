@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 状态标签类型
 enum StatusTagType {
@@ -73,13 +75,13 @@ class StatusTag extends StatelessWidget {
     
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: large ? 12.0 : 8.0, 
-        vertical: large ? 6.0 : 4.0
+        horizontal: large ? AppDimensions.spacingMd : AppDimensions.spacingSm, 
+        vertical: large ? AppDimensions.spacingSm : AppDimensions.spacingXs
       ),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(rounded ? (large ? 16.0 : 12.0) : 0),
-        border: !filled ? Border.all(color: txtColor, width: 1.0) : null,
+        borderRadius: BorderRadius.circular(rounded ? (large ? AppDimensions.radiusLg : AppDimensions.radiusMd) : 0),
+        border: !filled ? Border.all(color: txtColor, width: AppDimensions.borderStandard) : null,
       ),
       child: Text(
         text,
@@ -94,27 +96,38 @@ class StatusTag extends StatelessWidget {
   
   /// 根据类型获取背景色
   Color _getBackgroundColor(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    
     switch (type) {
       case StatusTagType.primary:
-        return theme.colorScheme.primary;
+        return AppColors.primary;
       case StatusTagType.success:
-        return Colors.green;
+        return AppColors.success;
       case StatusTagType.warning:
-        return Colors.orange;
+        return AppColors.warning;
       case StatusTagType.danger:
-        return theme.colorScheme.error;
+        return AppColors.error;
       case StatusTagType.info:
-        return Colors.lightBlue;
+        return AppColors.info;
       case StatusTagType.defaultTag:
-        return Colors.grey;
+        return AppColors.grey[500]!;
     }
   }
   
   /// 根据类型获取文本颜色
   Color _getTextColor(BuildContext context) {
-    return Colors.white;
+    switch (type) {
+      case StatusTagType.primary:
+        return AppColors.getOnPrimaryColor();
+      case StatusTagType.success:
+        return AppColors.getOnSuccessColor();
+      case StatusTagType.warning:
+        return AppColors.getOnWarningColor();
+      case StatusTagType.danger:
+        return AppColors.getOnErrorColor();
+      case StatusTagType.info:
+        return AppColors.getOnInfoColor();
+      case StatusTagType.defaultTag:
+        return AppColors.getOnPrimaryColor();
+    }
   }
 }
 

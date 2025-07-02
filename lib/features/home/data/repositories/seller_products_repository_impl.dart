@@ -27,10 +27,11 @@ class SellerProductsRepositoryImpl implements SellerProductsRepository {
     try {
       final result = await dataSource.followSeller(sellerId);
       return Right(result);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message ?? '收藏卖家失败'));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      if (e is ServerException) {
+        return Left(ServerFailure(message: e.message ?? '关注卖家失败'));
+      }
+      return Left(NetworkFailure(message: e.toString()));
     }
   }
   
@@ -39,10 +40,24 @@ class SellerProductsRepositoryImpl implements SellerProductsRepository {
     try {
       final result = await dataSource.unfollowSeller(sellerId);
       return Right(result);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message ?? '取消收藏卖家失败'));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      if (e is ServerException) {
+        return Left(ServerFailure(message: e.message ?? '取消关注卖家失败'));
+      }
+      return Left(NetworkFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, SellerInfo?>> getSellerInfo(int sellerId) async {
+    try {
+      final result = await dataSource.getSellerInfo(sellerId);
+      return Right(result);
+    } catch (e) {
+      if (e is ServerException) {
+        return Left(ServerFailure(message: e.message ?? '获取卖家信息失败'));
+      }
+      return Left(NetworkFailure(message: e.toString()));
     }
   }
 } 

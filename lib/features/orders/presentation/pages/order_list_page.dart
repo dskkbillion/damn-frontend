@@ -180,10 +180,10 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
                              ),
                            ),
-                           child: const Padding(
-                             padding: EdgeInsets.all(48.0),
-                             child: Text('暂无相关订单', style: TextStyle(fontSize: 16)),
-                           ),
+                                                        child: Padding(
+                               padding: const EdgeInsets.all(48.0),
+                              child: Text('暂无相关订单', style: Theme.of(context).textTheme.bodyLarge),
+                             ),
                          ),
                        ),
                      );

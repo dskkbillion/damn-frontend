@@ -11,6 +11,9 @@ import '../../features/profile/injection_container.dart';
 import '../../features/profile/presentation/bloc/wallet_bloc.dart';
 import '../../features/profile/presentation/bloc/wallet_event.dart';
 
+// 导入统一主题
+import '../../core/config/theme/app_theme.dart';
+
 /// 钱包页面预览入口点
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,11 +44,7 @@ class WalletPreviewApp extends StatelessWidget {
     return MaterialApp(
       title: '钱包页面预览',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        useMaterial3: true,
-      ),
+      theme: AppTheme.lightTheme,
       home: BlocProvider(
         create: (context) => GetIt.instance<WalletBloc>(),
         child: const WalletPage(),

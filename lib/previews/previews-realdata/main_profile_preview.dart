@@ -18,6 +18,9 @@ import '../../features/profile/domain/repositories/i_wallet_repository.dart';
 import '../../features/profile/data/repositories/wallet_repository_impl.dart';
 import '../../core/network/network_info.dart';
 
+// 导入统一主题
+import '../../core/config/theme/app_theme.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -57,29 +60,7 @@ class ProfilePreviewApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: '个人中心预览',
-      theme: ThemeData(
-        primarySwatch: MaterialColor(0xFFB66D0E, {
-          50: const Color(0xFFF9ECCF),
-          100: const Color(0xFFF0D9A0),
-          200: const Color(0xFFE6C571),
-          300: const Color(0xFFDCB141),
-          400: const Color(0xFFCEA128),
-          500: const Color(0xFFB66D0E), // 主色
-          600: const Color(0xFFA85F0D),
-          700: const Color(0xFF9A510B),
-          800: const Color(0xFF8C430A),
-          900: const Color(0xFF753506),
-        }),
-        colorScheme: const ColorScheme.light(
-          primary: Color(0xFFB66D0E),
-          secondary: Color(0xFFB66D0E),
-          onPrimary: Colors.white,
-        ),
-        primaryColor: const Color(0xFFB66D0E),
-        primaryColorLight: const Color(0xFFE6C571),
-        primaryColorDark: const Color(0xFF8C430A),
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
+      theme: AppTheme.lightTheme,
       home: const MainProfileScreen(),
     );
   }

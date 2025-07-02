@@ -89,32 +89,60 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
       create: (_) => GetIt.I<SellerProfileBloc>()
         ..add(LoadSellerProducts(sellerId: widget.sellerId)),
       child: Scaffold(
-        body: BlocBuilder<SellerProfileBloc, SellerProfileState>(
-          builder: (context, state) {
-            if (state is SellerProfileLoading) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is SellerProfileError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(S.of(context).product_detail_loading_failed(state.message)),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        context.read<SellerProfileBloc>()
-                          ..add(LoadSellerProducts(sellerId: widget.sellerId));
-                      },
-                      child: Text(S.of(context).product_detail_retry),
+        body: MultiBlocListener(
+          listeners: [
+            // 监听关注/取消关注的状态变化
+            BlocListener<SellerProfileBloc, SellerProfileState>(
+              listener: (context, state) {
+                if (state is SellerProfileError) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(state.message)),
+                  );
+                } else if (state is SellerProfileFollowError) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.message),
+                      backgroundColor: Colors.red,
                     ),
-                  ],
-                ),
-              );
-            } else if (state is SellerProfileLoaded) {
-              return _buildSellerProfile(context, state);
-            }
-            return Center(child: Text(S.of(context).product_detail_please_wait));
-          },
+                  );
+                } else if (state is SellerProfileUnfollowError) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.message),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+            ),
+          ],
+          child: BlocBuilder<SellerProfileBloc, SellerProfileState>(
+            builder: (context, state) {
+              if (state is SellerProfileLoading) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (state is SellerProfileError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(S.of(context).product_detail_loading_failed(state.message)),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          context.read<SellerProfileBloc>()
+                            ..add(LoadSellerProducts(sellerId: widget.sellerId));
+                        },
+                        child: Text(S.of(context).product_detail_retry),
+                      ),
+                    ],
+                  ),
+                );
+              } else if (state is SellerProfileLoaded) {
+                return _buildSellerProfile(context, state);
+              }
+              return Center(child: Text(S.of(context).product_detail_please_wait));
+            },
+          ),
         ),
       ),
     );
@@ -179,8 +207,9 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
                             ),
                           ),
                           const SizedBox(height: 4),
+                          // 显示真实的粉丝数量
                           Text(
-                            S.of(context).seller_profile_followers(2),
+                            S.of(context).seller_profile_followers(seller?.fansCount ?? 0),
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[600],
@@ -213,15 +242,9 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
                           if (seller?.memberAttention == true) {
                             // 已关注，执行取消关注
                             bloc.add(UnfollowSellerEvent(sellerId: widget.sellerId));
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(S.of(context).seller_profile_unfollow_success)),
-                            );
                           } else {
                             // 未关注，执行关注
                             bloc.add(FollowSellerEvent(sellerId: widget.sellerId));
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(S.of(context).seller_profile_follow_success)),
-                            );
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -356,8 +379,8 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
         
         return GestureDetector(
           onTap: () {
-            // 跳转到商品详情页
-            GoRouter.of(context).push('/product/${product.id}');
+            // 修复：使用正确的路由路径（复数形式）
+            GoRouter.of(context).push('/products/${product.id}');
           },
           child: Container(
             decoration: BoxDecoration(

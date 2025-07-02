@@ -148,10 +148,7 @@ class _OrderRequirementSubmissionFormState
     }
 
     return Card(
-      elevation: 0, // Use elevation from outer card or none
-      margin: EdgeInsets.zero,
-      color: Colors.white, // Or theme surface color
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      // 使用统一Card主题
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -321,7 +318,7 @@ class _OrderRequirementSubmissionFormState
                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
                  child: Text(
                    fileName, // Show simulated file name
-                   style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 10),
+                   style: Theme.of(context).textTheme.labelSmall,
                    maxLines: 1,
                    overflow: TextOverflow.ellipsis,
                   ),

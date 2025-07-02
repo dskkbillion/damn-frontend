@@ -6,4 +6,5 @@ abstract class SellerProductsRepository {
   Future<Either<Failure, List<SellerProduct>>> getSellerProducts(int sellerId);
   Future<Either<Failure, bool>> followSeller(int sellerId);
   Future<Either<Failure, bool>> unfollowSeller(int sellerId);
+  Future<Either<Failure, SellerInfo?>> getSellerInfo(int sellerId);
 } 

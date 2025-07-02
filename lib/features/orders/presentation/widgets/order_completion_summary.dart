@@ -30,12 +30,9 @@ class OrderCompletionSummary extends StatelessWidget {
     final timeLabel = isCompleted ? '完成时间:' : '取消时间:';
 
     return Card(
-      elevation: 0,
-      margin: EdgeInsets.zero,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      // 使用统一Card主题
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0), // Adjust vertical padding
+        padding: const EdgeInsets.all(16.0), // 使用标准间距
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

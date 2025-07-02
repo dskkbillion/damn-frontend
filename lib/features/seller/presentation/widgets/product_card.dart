@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/enums/product_status.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_managed_product.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/status_tag.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 商品卡片组件
 /// 
@@ -42,10 +44,10 @@ class ProductCard extends StatelessWidget {
     final statusTag = _buildStatusTag();
     
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      margin: EdgeInsets.symmetric(vertical: AppDimensions.spacingSm, horizontal: AppDimensions.spacingLg),
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
       ),
       child: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -93,10 +95,10 @@ class ProductCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '¥${product.price.toStringAsFixed(2)}',
+                                                  '¥${product.price.toStringAsFixed(2)}',
                         style: TextStyle(
                           fontSize: 18,
-                          color: Theme.of(context).primaryColor,
+                          color: AppColors.primary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -106,7 +108,7 @@ class ProductCard extends StatelessWidget {
                           '销量: ${product.sales}',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[600],
+                            color: AppColors.textSecondary,
                           ),
                         ),
                     ],
@@ -214,7 +216,7 @@ class ProductCard extends StatelessWidget {
           style: OutlinedButton.styleFrom(
             minimumSize: const Size(60, 36),
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            foregroundColor: Theme.of(context).colorScheme.error,
+            foregroundColor: AppColors.error,
           ),
           child: const Text('删除'),
         ),
@@ -229,10 +231,10 @@ class ProductCard extends StatelessWidget {
     return Container(
       width: 80,
       height: 80,
-      color: Colors.grey[300],
-      child: const Icon(
+      color: AppColors.backgroundTertiary,
+      child: Icon(
         Icons.image,
-        color: Colors.grey,
+        color: AppColors.grey[500],
         size: 40,
       ),
     );

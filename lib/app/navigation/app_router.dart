@@ -26,6 +26,13 @@ import 'package:dskk_flutter_refactor/features/ai_docs/presentation/routes/ai_do
 import 'package:dskk_flutter_refactor/features/auth/presentation/routes/auth_routes.dart'; 
 import 'package:dskk_flutter_refactor/features/profile/presentation/routes/profile_routes.dart'; 
 import 'package:dskk_flutter_refactor/features/home/presentation/routes/home_routes.dart';
+// Import wallet related classes
+import 'package:dskk_flutter_refactor/features/profile/presentation/pages/wallet_page.dart';
+import 'package:dskk_flutter_refactor/features/profile/presentation/bloc/wallet_bloc.dart';
+import 'package:dskk_flutter_refactor/features/profile/data/datasources/profile_remote_data_source.dart';
+import 'package:dskk_flutter_refactor/features/profile/data/repositories/wallet_repository_impl.dart';
+import 'package:dskk_flutter_refactor/features/profile/domain/usecases/get_wallet_summary.dart';
+import 'package:dskk_flutter_refactor/features/profile/domain/usecases/get_wallet_transactions.dart';
 import 'package:dskk_flutter_refactor/features/favorites/presentation/routes/favorites_routes.dart';
 // Import Chat Module Routes
 import 'package:dskk_flutter_refactor/features/chat/presentation/routes/chat_routes.dart';
@@ -269,7 +276,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     ),
   );
   
-  // 定义 Seller Non-Shell Routes (保持不变或根据需要调整)
+  // 定义 Seller Non-Shell Routes (包含完整的卖家路由)
   final sellerNonShellRoutes = <RouteBase>[
       // 添加卖家订单路由到非Shell路由，以便从其他地方（如卖家主页）访问
       sellerOrdersRoute,
@@ -285,9 +292,85 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: SellerRoutes.timeManagement, builder: (context, state) => const TimeManagementPage()), 
       GoRoute(path: SellerRoutes.autoReply, builder: (context, state) => const AutoReplyPage()), 
       GoRoute(path: SellerRoutes.storeSettings, builder: (context, state) => const Placeholder(child: Center(child: Text('店铺设置')))), 
+      GoRoute(path: SellerRoutes.statistics, builder: (context, state) => BlocProvider(
+        create: (context) => GetIt.I<SellerStatisticsBloc>(),
+        child: const SellerStatisticsPage(),
+      )),
+      // 添加卖家钱包路由 - 修复 seller_wallet 路由问题
+      GoRoute(
+        path: SellerRoutes.wallet,
+        name: 'seller_wallet',
+        builder: (context, state) {
+          try {
+            // 获取主应用的GetIt实例
+            final getIt = GetIt.I;
+          
+            // 尝试从GetIt获取主应用的Dio实例
+            final dio = getIt<Dio>();
+            
+            // 获取主应用的其他必要依赖
+            final secureStorage = getIt<FlutterSecureStorage>();
+            
+            // 创建网络信息服务
+            NetworkInfo networkInfo;
+            try {
+              networkInfo = getIt<NetworkInfo>();
+            } catch (e) {
+              print('NetworkInfo not found in GetIt, using mock');
+              networkInfo = mock.MockNetworkInfo();
+            }
+            
+            // 创建远程数据源
+            final remoteDataSource = ProfileRemoteDataSourceImpl(
+              dio: dio,
+              storage: secureStorage,
+            );
+            
+            // 创建钱包仓库
+            final walletRepository = WalletRepositoryImpl(
+              remoteDataSource: remoteDataSource,
+              networkInfo: networkInfo,
+            );
+            
+            // 创建用例
+            final getWalletSummary = GetWalletSummary(walletRepository);
+            final getWalletTransactions = GetWalletTransactions(walletRepository);
+            
+            // 创建BLoC
+            final walletBloc = WalletBloc(
+              getWalletSummary: getWalletSummary,
+              getWalletTransactions: getWalletTransactions,
+            );
+            
+            return BlocProvider(
+              create: (context) => walletBloc,
+              child: const WalletPage(),
+            );
+          } catch (e) {
+            print('Error creating WalletBloc: $e');
+            return Scaffold(
+              appBar: AppBar(title: const Text('钱包')),
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('初始化钱包页面失败'),
+                    const SizedBox(height: 16),
+                    Text('错误: $e', style: const TextStyle(fontSize: 12, color: Colors.red)),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('返回'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+        },
+      ),
       GoRoute(path: 'orders/:id/delivery', builder: (context, state) => OrderDeliveryPage(orderId: int.parse(state.pathParameters['id'] ?? '0'))), 
       // 确保所有非 Shell 路由都在这里或者在其父路由的 sub-routes 中
-      // 例如，'/seller/products' 本身可能不需要在这里，因为它可以通过 '/seller' 访问
   ];
 
   // 买家通知页面路由
@@ -451,6 +534,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           SellerRoutes.home, 
           SellerRoutes.statistics,  // 添加新的统计路由路径
           SellerRoutes.notifications,  // 添加通知路径
+          SellerRoutes.wallet,  // 添加钱包路径
+          SellerRoutes.timeManagement,  // 添加时间管理路径
+          SellerRoutes.authentication,  // 添加认证路径
+          SellerRoutes.autoReply,  // 添加自动回复路径
       ]; 
       
       // 特殊情况：卖家主页路径（公共路径，不应受模式限制）

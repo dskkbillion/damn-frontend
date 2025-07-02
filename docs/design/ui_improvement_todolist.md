@@ -33,9 +33,9 @@ lib/previews/previews-realdata/main_favorites_preview.dart
 ```
 
 **修复方案**:
-- [ ] 将所有 `primarySwatch: Colors.blue` 替换为统一主题
-- [ ] 移除重复的MaterialColor定义
-- [ ] 统一使用 `theme: AppTheme.lightTheme`
+- [x] 将所有 `primarySwatch: Colors.blue` 替换为统一主题
+- [x] 移除重复的MaterialColor定义
+- [x] 统一使用 `theme: AppTheme.lightTheme`
 
 **预期收益**: 开发环境视觉统一，预览效果一致
 
@@ -45,16 +45,16 @@ lib/previews/previews-realdata/main_favorites_preview.dart
 **问题**: 现有`app_theme.dart`配置不完整
 
 **需要创建的文件**:
-- [ ] `lib/core/config/theme/app_colors.dart` - 颜色系统
-- [ ] `lib/core/config/theme/app_text_styles.dart` - 字体系统  
-- [ ] `lib/core/config/theme/app_dimensions.dart` - 尺寸系统
-- [ ] `lib/core/config/theme/app_shadows.dart` - 阴影系统
+- [x] `lib/core/config/theme/app_colors.dart` - 颜色系统
+- [x] `lib/core/config/theme/app_text_styles.dart` - 字体系统  
+- [x] `lib/core/config/theme/app_dimensions.dart` - 尺寸系统
+- [x] `lib/core/config/theme/app_shadows.dart` - 阴影系统
 
 **主要任务**:
-- [ ] 完善`AppTheme.lightTheme`配置
-- [ ] 添加所有组件主题 (Button, Input, Card等)
-- [ ] 定义完整的ColorScheme
-- [ ] 建立标准TextTheme
+- [x] 完善`AppTheme.lightTheme`配置
+- [x] 添加所有组件主题 (Button, Input, Card等)
+- [x] 定义完整的ColorScheme
+- [x] 建立标准TextTheme
 
 ---
 
@@ -74,8 +74,8 @@ Colors.grey → AppColors.grey[对应级别]
 
 #### 3.2 重点修复文件 (按影响范围排序)
 **高影响文件** (用户直接可见):
-- [ ] `lib/features/seller/presentation/widgets/status_tag.dart`
-- [ ] `lib/features/seller/presentation/widgets/product_card.dart`
+- [x] `lib/features/seller/presentation/widgets/status_tag.dart`
+- [x] `lib/features/seller/presentation/widgets/product_card.dart`
 - [ ] `lib/features/seller/presentation/pages/seller_home_page.dart`
 - [ ] `lib/features/seller/presentation/pages/product_management_page.dart`
 - [ ] `lib/features/seller/presentation/pages/product_edit_page.dart`

@@ -154,8 +154,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
               onPressed: () {
                     final favoritesBloc = context.read<FavoritesBloc>();
                     if (isFavorite) {
-                      // 如果已收藏，则移除收藏
-                      favoritesBloc.add(RemoveFromFavoritesEvent(favoriteIds: [productId]));
+                      // 如果已收藏，则移除收藏（使用新的按商品ID移除事件）
+                      favoritesBloc.add(RemoveFromFavoritesByObjectIdEvent(
+                        type: 'org_product',
+                        objectId: productId,
+                      ));
                     } else {
                       // 如果未收藏，则添加收藏
                       favoritesBloc.add(AddToFavoritesEvent(

@@ -161,9 +161,16 @@ class ChatRepositoryImpl implements IChatRepository {
   }
 
   @override
-  Future<Either<Failure, void>> revokeMessage(int messageId) {
-     // TODO: Implement revokeMessage
-    throw UnimplementedError();
+  Future<Either<Failure, void>> revokeMessage(int messageId) async {
+    try {
+      await remoteDataSource.revokeMessage(messageId);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message ?? '撤回消息失败', code: e.statusCode?.toString()));
+    } catch (e) {
+      print("Unexpected error in revokeMessage Repository: $e");
+      return Left(GeneralFailure(message: '撤回消息失败: ${e.toString()}'));
+    }
   }
 
   @override

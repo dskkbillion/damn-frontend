@@ -25,6 +25,14 @@ import '../domain/usecases/get_seller_products.dart';
 import '../domain/usecases/follow_seller.dart';
 import '../domain/usecases/unfollow_seller.dart';
 import '../presentation/bloc/seller_profile_bloc.dart';
+import '../domain/usecases/get_seller_info.dart';
+
+// 商品评论相关导入
+import '../data/datasources/product_reviews_remote_data_source.dart';
+import '../data/repositories/product_reviews_repository_impl.dart';
+import '../domain/repositories/product_reviews_repository.dart';
+import '../domain/usecases/get_product_reviews_use_case.dart';
+import '../presentation/cubit/product_reviews_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -58,6 +66,9 @@ Future<void> initHomeDi() async {
   } else {
     print('[home_di] SearchCubit 已经注册，跳过重复注册');
   }
+  
+  // 注册商品评论相关依赖
+  _registerProductReviewsDependencies();
   
   // 注册卖家主页相关依赖
   _registerSellerProfileDependencies();
@@ -258,7 +269,7 @@ void _registerSellerProfileDependencies() {
   
   // 用例
   if (!sl.isRegistered<GetSellerProducts>()) {
-    sl.registerFactory(
+    sl.registerLazySingleton(
       () => GetSellerProducts(sl<SellerProductsRepository>()),
     );
     print('[home_di] 注册 GetSellerProducts');
@@ -268,7 +279,7 @@ void _registerSellerProfileDependencies() {
   
   // 收藏卖家用例
   if (!sl.isRegistered<FollowSeller>()) {
-    sl.registerFactory(
+    sl.registerLazySingleton(
       () => FollowSeller(sl<SellerProductsRepository>()),
     );
     print('[home_di] 注册 FollowSeller');
@@ -278,12 +289,22 @@ void _registerSellerProfileDependencies() {
   
   // 取消收藏卖家用例
   if (!sl.isRegistered<UnfollowSeller>()) {
-    sl.registerFactory(
+    sl.registerLazySingleton(
       () => UnfollowSeller(sl<SellerProductsRepository>()),
     );
     print('[home_di] 注册 UnfollowSeller');
   } else {
     print('[home_di] UnfollowSeller 已经注册，跳过重复注册');
+  }
+  
+  // 注册GetSellerInfo用例
+  if (!sl.isRegistered<GetSellerInfo>()) {
+    sl.registerLazySingleton(
+      () => GetSellerInfo(sl<SellerProductsRepository>()),
+    );
+    print('[home_di] 注册 GetSellerInfo');
+  } else {
+    print('[home_di] GetSellerInfo 已经注册，跳过重复注册');
   }
   
   // BLoC
@@ -293,11 +314,58 @@ void _registerSellerProfileDependencies() {
         getSellerProducts: sl(),
         followSeller: sl(),
         unfollowSeller: sl(),
+        getSellerInfo: sl(),
       ),
     );
     print('[home_di] 注册 SellerProfileBloc');
   } else {
     print('[home_di] SellerProfileBloc 已经注册，跳过重复注册');
+  }
+}
+
+// 商品评论相关依赖注册
+void _registerProductReviewsDependencies() {
+  // 注册ProductReviewsCubit
+  if (!sl.isRegistered<ProductReviewsCubit>()) {
+    sl.registerFactory(() => ProductReviewsCubit(sl()));
+    print('[home_di] 注册 ProductReviewsCubit');
+  } else {
+    print('[home_di] ProductReviewsCubit 已经注册，跳过重复注册');
+  }
+
+  // 注册GetProductReviewsUseCase
+  if (!sl.isRegistered<GetProductReviewsUseCase>()) {
+    sl.registerLazySingleton(() => GetProductReviewsUseCase(sl()));
+    print('[home_di] 注册 GetProductReviewsUseCase');
+  } else {
+    print('[home_di] GetProductReviewsUseCase 已经注册，跳过重复注册');
+  }
+
+  // 注册ProductReviewsRepository
+  if (!sl.isRegistered<ProductReviewsRepository>()) {
+    sl.registerLazySingleton<ProductReviewsRepository>(
+      () => ProductReviewsRepositoryImpl(sl(), sl()),
+    );
+    print('[home_di] 注册 ProductReviewsRepository');
+  } else {
+    print('[home_di] ProductReviewsRepository 已经注册，跳过重复注册');
+  }
+
+  // 注册ProductReviewsRemoteDataSource
+  if (!sl.isRegistered<ProductReviewsRemoteDataSource>()) {
+    sl.registerLazySingleton<ProductReviewsRemoteDataSource>(
+      () => ProductReviewsRemoteDataSourceImpl(
+        client: sl<http.Client>(),
+        baseUrl: sl(instanceName: 'baseUrl'),
+        getToken: () async {
+          final tokenGetter = sl<Future<String?> Function()>(instanceName: 'getAuthToken');
+          return await tokenGetter() ?? '';
+        },
+      ),
+    );
+    print('[home_di] 注册 ProductReviewsRemoteDataSource');
+  } else {
+    print('[home_di] ProductReviewsRemoteDataSource 已经注册，跳过重复注册');
   }
 }
 

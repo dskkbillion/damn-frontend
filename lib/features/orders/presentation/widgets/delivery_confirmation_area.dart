@@ -39,9 +39,7 @@ class DeliveryConfirmationArea extends StatelessWidget {
           itemBuilder: (context, index) {
             final delivery = deliveryItems[index];
             return Card(
-              margin: const EdgeInsets.symmetric(vertical: 8.0),
-              elevation: 1,
-               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+              // 使用统一Card主题
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -67,7 +65,7 @@ class DeliveryConfirmationArea extends StatelessWidget {
                       Container(
                          padding: const EdgeInsets.all(12.0),
                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
+                            color: Theme.of(context).colorScheme.surfaceContainerHighest,
                             borderRadius: BorderRadius.circular(8)
                          ),
                          child: Builder( // Use Builder to access context if needed inside calculation

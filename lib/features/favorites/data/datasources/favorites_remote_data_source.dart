@@ -51,6 +51,15 @@ abstract class FavoritesRemoteDataSource {
   /// 失败抛出异常
   Future<void> removeFromFavorites(List<int> favoriteIds);
 
+  /// 按对象ID从收藏中移除
+  /// 
+  /// [type] 收藏类型，如"org_product"（服务项目）、"org"（服务机构/卖家）等
+  /// [objectId] 要移除的对象ID
+  /// 
+  /// 成功返回 void
+  /// 失败抛出异常
+  Future<void> removeFromFavoritesByObjectId(String type, int objectId);
+
   /// 检查对象是否已收藏
   /// 
   /// [type] 收藏类型，如"org_product"（服务项目）、"org"（服务机构/卖家）等

@@ -31,4 +31,40 @@ class SellerProfileError extends SellerProfileState {
 
   @override
   List<Object> get props => [message];
+}
+
+class SellerProfileFollowSuccess extends SellerProfileState {
+  final String message;
+
+  const SellerProfileFollowSuccess({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+
+class SellerProfileFollowError extends SellerProfileState {
+  final String message;
+
+  const SellerProfileFollowError({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+
+class SellerProfileUnfollowSuccess extends SellerProfileState {
+  final String message;
+
+  const SellerProfileUnfollowSuccess({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+
+class SellerProfileUnfollowError extends SellerProfileState {
+  final String message;
+
+  const SellerProfileUnfollowError({required this.message});
+
+  @override
+  List<Object> get props => [message];
 } 

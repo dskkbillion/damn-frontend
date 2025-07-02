@@ -205,10 +205,10 @@ class _PlatformInterventionApplyPageState extends State<PlatformInterventionAppl
                             Text('提交中...'),
                           ],
                         )
-                      : const Text(
-                          '提交申请',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
+                                              : Text(
+                            '提交申请',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                          ),
                 ),
               ),
               const SizedBox(height: 16),

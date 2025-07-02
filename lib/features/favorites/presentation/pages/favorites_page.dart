@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/common_user.dart';
 import '../../domain/entities/favorite.dart';
@@ -10,17 +12,20 @@ import '../bloc/favorites_state.dart';
 import '../widgets/empty_favorites.dart';
 import '../widgets/favorite_seller_item.dart';
 import '../widgets/favorite_service_item.dart';
+import '../../../../app/navigation/app_router_config.dart';
+import '../../../../generated/l10n.dart';
+import '../../../../core/utils/haptic_utils.dart';
 
 /// 收藏页面
-class FavoritesPage extends StatefulWidget {
+class FavoritesPage extends ConsumerStatefulWidget {
   /// 构造函数
   const FavoritesPage({Key? key}) : super(key: key);
 
   @override
-  State<FavoritesPage> createState() => _FavoritesPageState();
+  ConsumerState<FavoritesPage> createState() => _FavoritesPageState();
 }
 
-class _FavoritesPageState extends State<FavoritesPage> with SingleTickerProviderStateMixin {
+class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final ScrollController _servicesScrollController = ScrollController();
   final ScrollController _sellersScrollController = ScrollController();
@@ -105,6 +110,91 @@ class _FavoritesPageState extends State<FavoritesPage> with SingleTickerProvider
     }
   }
 
+  /// 底部导航栏点击处理
+  void _onBottomNavTap(int index) {
+    // 添加轻微震动反馈
+    HapticUtils.lightTabFeedback();
+    
+    switch (index) {
+      case 0: // AI助手
+        context.go('/ai-docs');
+        break;
+      case 1: // 首页
+        context.go('/home');
+        break;
+      case 2: // 消息
+        context.go('/chat');
+        break;
+      case 3: // 个人中心
+        context.go('/profile');
+        break;
+      case 4: // 开发选项
+        context.go('/dev');
+        break;
+    }
+  }
+
+  /// 构建底部导航栏
+  Widget _buildBottomNavigationBar() {
+    // 读取是否显示开发tab的配置
+    final showDevTab = ref.watch(showDevTabProvider);
+    // 获取国际化资源
+    final s = S.of(context);
+    
+    // 根据配置构建导航栏项目
+    final List<BottomNavigationBarItem> items = [
+      BottomNavigationBarItem(
+        icon: SvgPicture.asset(
+          'assets/icons/nav/dskk_logo.svg',
+          width: 24,
+          height: 24,
+          colorFilter: const ColorFilter.mode(Colors.grey, BlendMode.srcIn),
+        ),
+        activeIcon: SvgPicture.asset(
+          'assets/icons/nav/dskk_logo.svg',
+          width: 24,
+          height: 24,
+          colorFilter: ColorFilter.mode(const Color(0xFFD0903D), BlendMode.srcIn),
+        ),
+        label: s.nav_ai_assistant,
+      ),
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.home_outlined),
+        activeIcon: const Icon(Icons.home),
+        label: s.nav_home,
+      ),
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.chat_bubble_outline),
+        activeIcon: const Icon(Icons.chat_bubble),
+        label: s.nav_messages,
+      ),
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.person_outline),
+        activeIcon: const Icon(Icons.person),
+        label: s.nav_profile,
+      ),
+    ];
+    
+    // 仅在配置为显示开发tab时添加
+    if (showDevTab) {
+      items.add(BottomNavigationBarItem(
+        icon: const Icon(Icons.developer_mode_outlined),
+        activeIcon: const Icon(Icons.developer_mode),
+        label: s.nav_dev,
+      ));
+    }
+
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      selectedItemColor: const Color(0xFFD0903D),
+      unselectedItemColor: Colors.grey,
+      showUnselectedLabels: true,
+      items: items,
+      currentIndex: 3, // 设置为个人中心tab，因为收藏功能属于个人中心
+      onTap: _onBottomNavTap,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -151,6 +241,8 @@ class _FavoritesPageState extends State<FavoritesPage> with SingleTickerProvider
           );
         },
       ),
+      // 添加底部导航栏
+      bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
@@ -170,7 +262,7 @@ class _FavoritesPageState extends State<FavoritesPage> with SingleTickerProvider
       },
       child: ListView.builder(
         controller: _servicesScrollController,
-        padding: const EdgeInsets.only(top: 8, bottom: 16),
+        padding: const EdgeInsets.only(top: 8, bottom: 80), // 增加底部padding为底部导航栏留空间
         itemCount: state.services.length + (state.isServicesLoading ? 1 : 0),
         itemBuilder: (context, index) {
           if (index == state.services.length) {
@@ -228,7 +320,7 @@ class _FavoritesPageState extends State<FavoritesPage> with SingleTickerProvider
       },
       child: ListView.builder(
         controller: _sellersScrollController,
-        padding: const EdgeInsets.only(top: 8, bottom: 16),
+        padding: const EdgeInsets.only(top: 8, bottom: 80), // 增加底部padding为底部导航栏留空间
         itemCount: state.sellers.length + (state.isSellersLoading ? 1 : 0),
         itemBuilder: (context, index) {
           if (index == state.sellers.length) {
