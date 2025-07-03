@@ -46,6 +46,10 @@ import 'package:dskk_flutter_refactor/app/app_mode.dart';
 // Import AppRouterConfig
 import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart';
 
+// --- 新增：统一路由相关导入 ---
+import 'package:dskk_flutter_refactor/app/widgets/unified_shell_page.dart';
+import 'package:dskk_flutter_refactor/app/navigation/unified_route_builder.dart';
+
 // Import Shell Pages
 import 'package:dskk_flutter_refactor/app/widgets/main_shell_page.dart'; // 使用正确的名字和路径
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_shell_page.dart'; // 卖家 Shell
@@ -129,6 +133,9 @@ class PlaceholderPage extends StatelessWidget {
   }
 }
 
+// --- 新增：统一路由开关 ---
+const bool USE_UNIFIED_ROUTER = true; // 启用统一路由
+
 // Provider for the GoRouter instance (from HEAD/auth-module)
 final goRouterProvider = Provider<GoRouter>((ref) {  
   // 读取是否显示开发tab的配置  
@@ -171,6 +178,155 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       '/seller/chat', // Placeholder
       '/seller/profile' // Placeholder
   ];
+
+  // --- 新增：统一路由构建函数 ---
+  List<RouteBase> _buildUnifiedRoutes(WidgetRef ref) {
+    final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'unified_root');
+    
+    return [
+      // 统一Shell路由
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return UnifiedShellPage(navigationShell: navigationShell);
+        },
+        branches: [
+          // Branch 0: 第一个Tab（AI助手/数据统计）
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/unified_tab1',
+                pageBuilder: (context, state) {
+                  return UnifiedRouteBuilder.buildPageWithErrorBoundary(
+                    state,
+                    () => Consumer(builder: (context, ref, _) {
+                      return UnifiedRouteBuilder.buildFirstTabContent(ref);
+                    }),
+                    name: 'unified_tab1',
+                  );
+                },
+              ),
+            ],
+          ),
+          
+          // Branch 1: 第二个Tab（主页/商品管理）
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/unified_tab2',
+                pageBuilder: (context, state) {
+                  return UnifiedRouteBuilder.buildPageWithErrorBoundary(
+                    state,
+                    () => Consumer(builder: (context, ref, _) {
+                      return UnifiedRouteBuilder.buildSecondTabContent(ref);
+                    }),
+                    name: 'unified_tab2',
+                  );
+                },
+              ),
+            ],
+          ),
+          
+          // Branch 2: 第三个Tab（消息）
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/unified_tab3',
+                pageBuilder: (context, state) {
+                  return UnifiedRouteBuilder.buildPageWithErrorBoundary(
+                    state,
+                    () => Consumer(builder: (context, ref, _) {
+                      return UnifiedRouteBuilder.buildThirdTabContent(ref);
+                    }),
+                    name: 'unified_tab3',
+                  );
+                },
+              ),
+            ],
+          ),
+          
+          // Branch 3: 第四个Tab（个人页面）
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/unified_tab4',
+                pageBuilder: (context, state) {
+                  return UnifiedRouteBuilder.buildPageWithErrorBoundary(
+                    state,
+                    () => Consumer(builder: (context, ref, _) {
+                      return UnifiedRouteBuilder.buildFourthTabContent(ref);
+                    }),
+                    name: 'unified_tab4',
+                  );
+                },
+              ),
+            ],
+          ),
+          
+          // Branch 4: 开发Tab（可选）
+          if (showDevTab) StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/dev_menu',
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  child: DevMenuPage(),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      
+      // 非Shell路由（详情页等）
+      ...AuthRoutes.routes,
+      ...OrderRoutes.routes,
+      ...AfterSalesRoutes.routes,
+      ...FavoritesRoutes.routes,
+      ...PaymentRoutes.routes,
+      ...sellerNonShellRoutes,
+      buyerOrderDetailRoute, 
+      sellerOrderDetailRoute,
+      buyerNotificationRoute,
+      
+      // 添加卖家主页路由
+      GoRoute(
+        path: '/seller/:id/profile',
+        name: 'sellerPublicProfile',
+        pageBuilder: (context, state) {
+          final sellerId = int.parse(state.pathParameters['id'] ?? '0');
+          return MaterialPage(
+            key: ValueKey('seller_profile_$sellerId'),
+            child: SellerPublicProfilePage(sellerId: sellerId),
+          );
+        },
+      ),
+
+      // 支付专用路由
+      GoRoute(
+        path: '/product-payment/:id/confirm',
+        name: 'productPaymentConfirm',
+        pageBuilder: (context, state) {
+          final productId = int.parse(state.pathParameters['id'] ?? '0');
+          final Map<String, dynamic> extra = state.extra as Map<String, dynamic>? ?? {};
+          
+          return MaterialPage(
+            key: ValueKey('payment_confirm_$productId'),
+            child: BlocProvider(
+              create: (_) => getIt<PaymentBloc>(),
+              child: OrderConfirmPage(
+                productId: productId,
+                variantId: extra['variantId'] ?? 0,
+                quantity: extra['quantity'] ?? 1,
+                sellerId: extra['sellerId'] ?? 0,
+                price: extra['price'] ?? 0.0,
+                productName: extra['productName'] ?? '',
+                imageUrl: extra['imageUrl'],
+              ),
+            ),
+          );
+        },
+      ),
+    ];
+  }
 
   // 获取卖家相关依赖，用于手动创建BLoC
   final getIt = GetIt.instance;
@@ -389,15 +545,17 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   // Create the GoRouter instance
   final router = GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: '/home', // Initial location
+    initialLocation: USE_UNIFIED_ROUTER ? '/unified_tab2' : '/home', // 根据模式设置初始路径
     debugLogDiagnostics: true,
     refreshListenable: GoRouterRefreshStream(authRepository.authStatus),
     observers: [
       RouterAnalyticsObserver(), // Add analytics observer
     ],
 
-    routes: [
-      // --- Buyer Shell Route --- 
+    routes: USE_UNIFIED_ROUTER 
+      ? _buildUnifiedRoutes(ref)  // 新的统一路由
+      : [
+        // --- Buyer Shell Route --- 
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           // 使用 MainShellPage 作为买家 Shell
@@ -508,7 +666,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-    ],
+        ],
 
     // errorBuilder from HEAD/auth-module
     errorBuilder: (context, state) => Scaffold(
