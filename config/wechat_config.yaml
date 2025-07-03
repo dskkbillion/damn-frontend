@@ -16,8 +16,8 @@ display:
   
 # 微信App配置（必需，用于初始化SDK）
 app_config:
-  app_id: "your_wechat_app_id"        # 微信开放平台申请的APP ID
-  universal_link: "https://your.domain.com/wechat/"  # iOS Universal Link（必需）
+  app_id: "wx8647007008f7b74d"        # 微信开放平台申请的APP ID
+  universal_link: "https://app.duoshaokankan.com/wechat/"  # iOS Universal Link（必需）
 
 # 支付场景配置
 payment_scenes:

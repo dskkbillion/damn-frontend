@@ -4,6 +4,8 @@ import 'package:dio/dio.dart';
 import '../presentation/bloc/payment_bloc.dart';
 import '../../../core/payment/services/i_payment_service.dart';
 import '../../../core/payment/services/alipay_payment_service.dart';
+import '../../../core/payment/services/wechat_payment_service.dart';
+import '../../../core/payment/services/payment_service_factory.dart';
 import '../../../core/api/api_client.dart';
 import '../../../features/orders/domain/usecases/create_order_use_case.dart';
 import '../../../features/orders/domain/repositories/i_order_repository.dart';
@@ -13,6 +15,23 @@ import '../../../core/network/network_info.dart';
 class PaymentDI {
   /// 注册依赖
   static Future<void> init(GetIt sl) async {
+    
+    // 注册 PaymentServiceFactory（核心）
+    if (!sl.isRegistered<PaymentServiceFactory>()) {
+      sl.registerLazySingleton<PaymentServiceFactory>(
+        () => PaymentServiceFactory(sl<ApiClient>()),
+      );
+      print('[payment_di] Registered PaymentServiceFactory');
+    }
+    
+    // 注册微信支付服务
+    if (!sl.isRegistered<WechatPaymentService>()) {
+      sl.registerLazySingleton<WechatPaymentService>(
+        () => WechatPaymentService(sl<ApiClient>()),
+      );
+      print('[payment_di] Registered WechatPaymentService');
+    }
+    
     // 注册 PaymentBloc
     if (!sl.isRegistered<PaymentBloc>()) {
       sl.registerFactory<PaymentBloc>(() => PaymentBloc(
@@ -26,19 +45,19 @@ class PaymentDI {
     if (!sl.isRegistered<ApiClient>()) {
       sl.registerLazySingleton<ApiClient>(
         () => ApiClient.getInstance(
-          baseUrl: 'https://api.duoshaokk.com',
+          baseUrl: 'https://app.duoshaokankan.com/prod-api',
           token: null,
         ),
       );
       print('[payment_di] Registered ApiClient');
     }
 
-    // 注册 IPaymentService 的实现（如果尚未注册）
+    // 注册默认的支付服务（支付宝作为默认）
     if (!sl.isRegistered<IPaymentService>()) {
       sl.registerLazySingleton<IPaymentService>(
         () => AlipayPaymentService(sl<ApiClient>()),
       );
-      print('[payment_di] Registered AlipayPaymentService as IPaymentService');
+      print('[payment_di] Registered AlipayPaymentService as default IPaymentService');
     }
     
     // 确保 CreateOrderUseCase 已注册
