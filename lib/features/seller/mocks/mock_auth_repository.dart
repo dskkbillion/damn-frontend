@@ -1,5 +1,5 @@
 import 'package:mockito/mockito.dart';
-import 'package:dskk_flutter_refactor/core/auth/repositories/auth_repository.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dartz/dartz.dart';
 

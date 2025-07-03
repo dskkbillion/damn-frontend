@@ -17,6 +17,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 引入�
 import '../../../../core/network/network_info.dart'; // 引入网络信息服务
 import '../../../../core/network/mock_network_info.dart' as mock_network; // 引入模拟网络信息服务并添加前缀
 import '../pages/language_settings_page.dart'; // 引入语言设置页面
+import '../pages/assistant_mission_page.dart'; // 引入小帮手的使命页面
 // import '../pages/simple_profile_page.dart'; // 不再需要 SimpleProfilePage
 // import '../pages/edit_profile_page.dart'; // 如果有其他页面
 
@@ -36,6 +37,7 @@ class ProfileRoutes {
   static const String accountSecurityPath = '/profile/account-security';
   static const String walletPath = '/profile/wallet';
   static const String languageSettingsPath = '/profile/language-settings';
+  static const String assistantMissionPath = '/profile/assistant-mission'; // 添加小帮手的使命路径常量
   static const String ordersPath = '/profile/orders'; // 添加订单路径常量
 
   // 模块内部路由定义
@@ -133,6 +135,12 @@ class ProfileRoutes {
           path: 'language-settings',
           name: 'languageSettings',
           builder: (context, state) => const LanguageSettingsPage(),
+        ),
+        // 添加小帮手的使命页面路由
+        GoRoute(
+          path: 'assistant-mission',
+          name: 'assistantMission',
+          builder: (context, state) => const AssistantMissionPage(),
         ),
         // 添加订单页面路由
         GoRoute(

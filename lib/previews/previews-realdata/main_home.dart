@@ -13,7 +13,7 @@ import '../../features/home/domain/usecases/get_home_feed_usecase.dart';
 import '../../features/home/domain/usecases/get_home_page_data_usecase.dart';
 import '../../features/home/presentation/bloc/home_bloc.dart';
 import '../../features/home/presentation/navigation/home_navigation_service.dart';
-import '../../features/home/presentation/navigation/home_router.dart';
+import '../../app/navigation/app_router.dart';
 
 // 导入统一主题
 import '../../core/config/theme/app_theme.dart';
@@ -47,7 +47,7 @@ class HomeApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'Home Module',
       theme: AppTheme.lightTheme,
-      routerConfig: HomeRouter.router,
+      routerConfig: AppRouter.router,
       builder: (context, child) {
         return BlocProvider<HomeBloc>(
           create: (context) => HomeBloc(

@@ -69,7 +69,7 @@ void main() {
       '应该发出 [WalletLoading, WalletError] 当获取钱包摘要失败',
       build: () {
         when(mockGetWalletSummary(any))
-            .thenAnswer((_) async => Left(ServerFailure(message: '服务器错误')));
+            .thenAnswer((_) async => const Left(ServerFailure(message: '服务器错误')));
         return bloc;
       },
       act: (bloc) => bloc.add(const FetchWalletSummary()),
@@ -101,7 +101,7 @@ void main() {
       '应该只发出 WalletError 当刷新钱包摘要失败 (不显示加载状态)',
       build: () {
         when(mockGetWalletSummary(any))
-            .thenAnswer((_) async => Left(NetworkFailure(message: '网络连接失败')));
+            .thenAnswer((_) async => const Left(NetworkFailure(message: '网络连接失败')));
         return bloc;
       },
       act: (bloc) => bloc.add(const RefreshWalletSummary()),

@@ -192,8 +192,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       icon: Icons.smart_toy_outlined,
                       text: s.profile_assistant_mission,
                       onTap: () {
-                        // TODO: 导航到关于我们页面
-                        // navigationService.navigateToAboutUs();
+                        // 导航到小帮手的使命页面
+                        context.go(ProfileRoutes.assistantMissionPath);
                       },
                     ),
                   ],

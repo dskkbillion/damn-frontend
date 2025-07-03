@@ -1,20 +1,21 @@
 # Flutter前端Bug修复清单
 
 ## 📋 概述
-本文档记录了Flutter前端发现的5个关键bug及其详细修复方案，按照优先级进行排序。
+本文档记录了Flutter前端发现的6个关键bug及其详细修复方案，按照优先级进行排序。
 
 **🎯 修复进度总览**:
-- ✅ **5/5 问题已修复** (100% 完成度)
+- ✅ **6/6 问题已修复** (100% 完成度)
 - 🔴 高优先级: 2/2 已完成
 - 🟡 中优先级: 2/2 已完成  
-- 🟢 低优先级: 1/1 已完成
+- 🟢 低优先级: 2/2 已完成
 
 **📊 详细进度**:
 - [x] 🔴 消息撤回功能修复 (8/8) - **撤回时间限制优化已完成**
 - [x] 🔴 商品收藏取消功能修复 (5/5) - **智能ID映射方案已完成**
 - [x] 🟡 评论查看全部修复 (4/4) - **依赖注入配置已修复**
-- [x] 🟡 卖家个人页功能修复 (8/8) - **粉丝数真实统计系统已完成** ⭐ 最终修复
+- [x] 🟡 卖家个人页功能修复 (8/8) - **粉丝数真实统计系统已完成**
 - [x] 🟢 商品详情展开优化 (4/4) - **空状态处理已优化**
+- [x] 🟢 推荐次数提示框关闭修复 (2/2) - **用户体验优化已完成** ⭐ 新发现
 
 ---
 
@@ -171,9 +172,9 @@ class RemoveFromFavoritesByObjectIdUseCase implements UseCase<void, RemoveFromFa
 - [x] **Step 5**: 修复关注API使用错误的问题 ✅
 - [x] **Step 6**: 实现粉丝数量API集成 ✅
 - [x] **Step 7**: 修复粉丝数同步问题(乐观更新+真实数据同步) ✅
-- [x] **Step 8**: 实现粉丝数真实统计系统(基于后端collect系统) ✅ ⭐ 最终修复
+- [x] **Step 8**: 实现粉丝数真实统计系统(基于后端collect系统) ✅
 
-#### 🔧 第七阶段: 粉丝数真实统计系统最终实现 ⭐ 最新完成
+#### 🔧 第七阶段: 粉丝数真实统计系统最终实现 ⭐ 已完成
 **最终问题确认**: 粉丝数在关注/取消关注后不会真实更新，刷新页面后显示原数据
 
 **根本原因发现**:
@@ -327,12 +328,67 @@ Future<SellerInfo?> getSellerInfo(int sellerId) async {
 
 ---
 
+### 6. 推荐次数提示框无法关闭
+
+#### 问题描述
+- **现象**: AI文档聊天页面的推荐次数提示框点击×号无反应，无法关闭
+- **影响范围**: AI文档功能的用户体验
+
+#### 问题定位
+- **位置**: `lib/features/ai_docs/presentation/pages/chat_page.dart:171`
+- **根本原因**: `RateLimitWarningBanner`的`onDismiss`回调为空函数体，只有注释"这里暂时不实现"
+- **用户体验**: 提示框一直显示，影响界面使用
+
+#### 修复TodoList
+- [x] **Step 1**: 添加状态管理控制提示框显示/隐藏 ✅
+- [x] **Step 2**: 实现`onDismiss`回调，支持用户主动关闭提示框 ✅
+
+#### 修复实现
+```dart
+class _ChatPageState extends State<ChatPage> {
+  // 🔥 添加状态来控制推荐次数提示框的显示
+  bool _isRateLimitWarningDismissed = false;
+
+  // 在BlocBuilder中添加关闭状态检查
+  builder: (context, state) {
+    final rateLimit = state.conversationRateLimit;
+    // 如果没有频率限制数据或者用户已经关闭了警告，则不显示
+    if (rateLimit == null || _isRateLimitWarningDismissed) {
+      return const SizedBox.shrink();
+    }
+    
+    return RateLimitWarningBanner(
+      remaining: rateLimit.remaining,
+      resetInSeconds: rateLimit.resetInSeconds,
+      onDismiss: () {
+        // 🔥 实现关闭逻辑：设置状态为已关闭
+        setState(() {
+          _isRateLimitWarningDismissed = true;
+        });
+        print("[ChatPage] 推荐次数提示框已关闭");
+      },
+    );
+  },
+}
+```
+
+#### 修复状态
+✅ **COMPLETED** - 用户体验优化已完成
+
+#### 🎯 修复成果
+1. **用户控制**: 用户可以主动关闭不需要的提示框
+2. **状态管理**: 使用本地状态控制提示框显示，关闭后不再显示
+3. **即时反馈**: 点击×号立即关闭，响应迅速
+4. **会话级别**: 提示框关闭状态在当前页面会话中保持
+
+---
+
 ## 📊 修复进度跟踪
 
 ### 📊 总体进度更新
 - ✅ **高优先级问题**: 2/2 全部完成  
 - ✅ **中优先级问题**: 2/2 全部完成 ✅ 
-- ✅ **低优先级问题**: 1/1 全部完成 ✅
+- ✅ **低优先级问题**: 2/2 全部完成 ✅
 
 **整体完成度: 100%** 🎉
 
@@ -344,6 +400,7 @@ Future<SellerInfo?> getSellerInfo(int sellerId) async {
 3. **商品评论跳转** - 修复依赖注册+API配置问题
 4. **卖家个人页功能** - 基于后端API验证的完整修复+粉丝数真实统计系统 ✅
 5. **商品详情更多按钮** - 空状态处理优化 ✅
+6. **推荐次数提示框关闭** - 用户体验优化，支持主动关闭 ✅
 
 #### 🔧 核心技术成果
 1. **根本原因分析方法** - 从现象到本质的系统化调试

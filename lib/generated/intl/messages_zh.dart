@@ -327,6 +327,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "product_detail_case_showcase": MessageLookupByLibrary.simpleMessage(
       "案例展示",
     ),
+    "product_detail_collapse": MessageLookupByLibrary.simpleMessage("收起"),
     "product_detail_contact_seller": MessageLookupByLibrary.simpleMessage(
       "咨询卖家",
     ),

@@ -1765,6 +1765,16 @@ class S {
     );
   }
 
+  /// `Collapse`
+  String get product_detail_collapse {
+    return Intl.message(
+      'Collapse',
+      name: 'product_detail_collapse',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Delivery Times`
   String get product_detail_delivery_times {
     return Intl.message(

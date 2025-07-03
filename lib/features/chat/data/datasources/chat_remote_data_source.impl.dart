@@ -238,18 +238,27 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
   }) async {
     print("[API Call] Creating room with participantId: $participantId, productId: $productId");
     try {
-      // Prepare request data
+      // 准备请求数据 - 根据participantId判断用户类型
       final Map<String, dynamic> requestData = {
         'doctorId': participantId.toString(), // Send participantId as string
-        'type': 'MEMBER' // 始终使用'MEMBER'作为type值，用于创建与普通卖家的聊天
       };
+      
+      // 根据participantId判断用户类型
+      if (participantId == 1) {
+        // 系统管理员使用ADMIN类型
+        requestData['type'] = 'ADMIN';
+        print("[API Call] Using type: ADMIN for system administrator chat creation.");
+      } else {
+        // 其他用户使用MEMBER类型
+        requestData['type'] = 'MEMBER';
+        print("[API Call] Using type: MEMBER for regular user chat creation.");
+      }
       
       // 如果提供了productId，添加到请求数据中
       if (productId != null) {
         requestData['productId'] = productId;
       }
       
-      print("[API Call] Using type: MEMBER for seller chat creation.");
       print("[API Call] Request data: $requestData");
 
       final response = await dio.post(
@@ -274,10 +283,35 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
       }
     } on DioException catch (e) {
       print("DioException creating room: ${e.message}, Response: ${e.response?.data}");
-      throw ServerException(message: e.message ?? "Network error creating room", statusCode: e.response?.statusCode);
+      
+      // 提供更具体的错误信息
+      String errorMessage = "网络连接失败";
+      if (e.response?.data is Map) {
+        final responseData = e.response!.data as Map;
+        final serverMessage = responseData['msg']?.toString();
+        
+        if (serverMessage != null) {
+          if (serverMessage.contains("用户不存在")) {
+            errorMessage = participantId == 1 
+                ? "系统管理员账户配置异常，请联系技术支持" 
+                : "目标用户不存在";
+          } else if (serverMessage.contains("聊天对象类型要传递")) {
+            errorMessage = "请求参数错误，请重试";
+          } else if (serverMessage.contains("空指针异常") && participantId == 1) {
+            errorMessage = "系统管理员账户未配置，请联系技术支持进行初始化";
+          } else {
+            errorMessage = serverMessage;
+          }
+        }
+      }
+      
+      throw ServerException(
+        message: errorMessage, 
+        statusCode: e.response?.statusCode
+      );
     } catch (e) {
       print("Unexpected error creating room: $e");
-      throw ServerException(message: "An unexpected error occurred while creating room: ${e.runtimeType}");
+      throw ServerException(message: "创建聊天室时发生未知错误");
     }
   }
 

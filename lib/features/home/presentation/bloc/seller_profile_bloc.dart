@@ -45,8 +45,8 @@ class SellerProfileBloc extends Bloc<SellerProfileEvent, SellerProfileState> {
             print('获取卖家信息失败: ${failure.message}');
             // 如果getSellerInfo失败，才回退到使用商品列表中的tenant信息
             seller = products.isNotEmpty && products.first.tenant != null
-                ? products.first.tenant
-                : null;
+            ? products.first.tenant
+            : null;
           },
           (sellerInfo) {
             // ✅ 使用从project/details API获取的准确信息（包含真实粉丝数）

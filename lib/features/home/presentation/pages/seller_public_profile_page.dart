@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:dskk_flutter_refactor/core/router/smart_router_utils.dart';
 
 // 导入国际化
 import '../../../../generated/l10n.dart';
@@ -117,31 +118,31 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
             ),
           ],
           child: BlocBuilder<SellerProfileBloc, SellerProfileState>(
-            builder: (context, state) {
-              if (state is SellerProfileLoading) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (state is SellerProfileError) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(S.of(context).product_detail_loading_failed(state.message)),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {
-                          context.read<SellerProfileBloc>()
-                            ..add(LoadSellerProducts(sellerId: widget.sellerId));
-                        },
-                        child: Text(S.of(context).product_detail_retry),
-                      ),
-                    ],
-                  ),
-                );
-              } else if (state is SellerProfileLoaded) {
-                return _buildSellerProfile(context, state);
-              }
-              return Center(child: Text(S.of(context).product_detail_please_wait));
-            },
+          builder: (context, state) {
+            if (state is SellerProfileLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is SellerProfileError) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(S.of(context).product_detail_loading_failed(state.message)),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<SellerProfileBloc>()
+                          ..add(LoadSellerProducts(sellerId: widget.sellerId));
+                      },
+                      child: Text(S.of(context).product_detail_retry),
+                    ),
+                  ],
+                ),
+              );
+            } else if (state is SellerProfileLoaded) {
+              return _buildSellerProfile(context, state);
+            }
+            return Center(child: Text(S.of(context).product_detail_please_wait));
+          },
           ),
         ),
       ),
@@ -379,8 +380,12 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
         
         return GestureDetector(
           onTap: () {
-            // 修复：使用Home模块内的路由路径
-            GoRouter.of(context).push('/home/product/${product.id}');
+            // 修复：使用智能导航系统
+            SmartRouterUtils.smartNavigate(
+              context,
+              '/home/product/${product.id}',
+              source: 'seller_public_profile_product_grid',
+            );
           },
           child: Container(
             decoration: BoxDecoration(

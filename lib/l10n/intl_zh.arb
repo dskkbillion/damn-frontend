@@ -373,6 +373,7 @@
     "product_detail_verified_label": "已认证",
     "product_detail_published_status": "已发布",
     "product_detail_more": "更多",
+    "product_detail_collapse": "收起",
     "product_detail_delivery_times": "交付次数",
     "product_detail_delivery_period": "交付周期",
     "product_detail_buy_now": "一键购买(1)",

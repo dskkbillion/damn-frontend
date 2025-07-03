@@ -38,6 +38,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
   final PageController _pageController = PageController();
   int _currentIndex = 0;
   Timer? _timer;
+  bool _disposed = false;
 
   @override
   void initState() {
@@ -49,6 +50,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
 
   @override
   void dispose() {
+    _disposed = true;
     _stopAutoPlay();
     _pageController.dispose();
     super.dispose();
@@ -56,20 +58,33 @@ class _BannerCarouselState extends State<BannerCarousel> {
 
   void _startAutoPlay() {
     _timer = Timer.periodic(widget.autoPlayInterval, (timer) {
+      if (_disposed) {
+        timer.cancel();
+        return;
+      }
+      
       if (widget.banners.isEmpty) return;
       
-      if (_pageController.hasClients) {
-        if (_currentIndex < widget.banners.length - 1) {
-          _pageController.nextPage(
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-          );
-        } else {
-          _pageController.animateToPage(
-            0,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-          );
+      if (!_disposed && 
+          _pageController.hasClients && 
+          mounted &&
+          _pageController.page != null) {
+        try {
+          if (_currentIndex < widget.banners.length - 1) {
+            _pageController.nextPage(
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+            );
+          } else {
+            _pageController.animateToPage(
+              0,
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+            );
+          }
+        } catch (e) {
+          debugPrint('BannerCarousel: PageController error: $e');
+          timer.cancel();
         }
       }
     });

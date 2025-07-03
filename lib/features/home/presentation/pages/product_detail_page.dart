@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/core/router/smart_router_utils.dart';
 
 // 导入国际化
 import '../../../../generated/l10n.dart';
@@ -37,6 +38,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
   late final IChatRepository _chatRepository = GetIt.I<IChatRepository>();
   // 加载状态
   bool _isCreatingChat = false;
+  // 添加描述展开状态控制
+  bool _isDescriptionExpanded = false;
   
   @override
   void initState() {
@@ -275,7 +278,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           GestureDetector(
             onTap: () {
               // 导航到卖家主页
-              GoRouter.of(context).push('/seller/${product.sellerId}/profile');
+              SmartRouterUtils.smartNavigate(
+                context,
+                '/seller/:id/profile',
+                params: {'id': product.sellerId.toString()},
+                source: 'product_detail_avatar',
+              );
             },
             child: CircleAvatar(
               radius: 20,
@@ -295,7 +303,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
             child: GestureDetector(
               onTap: () {
                 // 导航到卖家主页
-                GoRouter.of(context).push('/seller/${product.sellerId}/profile');
+                SmartRouterUtils.smartNavigate(
+                  context,
+                  '/seller-profile/${product.sellerId}',
+                  source: 'product_detail_seller_info',
+                );
               },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -408,30 +420,48 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
             ),
           ),
           
-          // 描述区域
+          const SizedBox(height: 8),
+          
+          // 描述区域 - 修复点击事件
           GestureDetector(
             onTap: () {
-              // 点击"更多"
+              setState(() {
+                _isDescriptionExpanded = !_isDescriptionExpanded;
+              });
             },
-              child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                Expanded(
-                  child: Text(
+                Text(
                     product.description,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[600],
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  maxLines: _isDescriptionExpanded ? null : 2,
+                  overflow: _isDescriptionExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
                 ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Spacer(),
                 Text(
-                  S.of(context).product_detail_more,
+                      _isDescriptionExpanded 
+                        ? S.of(context).product_detail_collapse 
+                        : S.of(context).product_detail_more,
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.blue[600],
                     ),
+                    ),
+                    Icon(
+                      _isDescriptionExpanded 
+                        ? Icons.keyboard_arrow_up 
+                        : Icons.keyboard_arrow_down,
+                      color: Colors.blue[600],
+                      size: 16,
+                    ),
+                  ],
                   ),
                 ],
               ),
@@ -631,10 +661,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
               ),
               GestureDetector(
                 onTap: () {
-                  // 跳转到评论详情页
+                  // 跳转到评论详情页 - 使用智能导航
                   final productId = int.tryParse(widget.productId) ?? 0;
                   if (productId > 0) {
-                    GoRouter.of(context).push('/product/$productId/reviews');
+                    SmartRouterUtils.smartNavigate(
+                      context,
+                      '/product/:productId/reviews',
+                      params: {'productId': productId.toString()},
+                      source: 'product_detail_reviews_button',
+                    );
                   }
                 },
                 child: Row(

@@ -55,6 +55,9 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   final TextEditingController _textController = TextEditingController();
+  
+  // 🔥 添加状态来控制推荐次数提示框的显示
+  bool _isRateLimitWarningDismissed = false;
 
   @override
   void initState() {
@@ -161,19 +164,26 @@ class _ChatPageState extends State<ChatPage> {
       // The body is now just the chat area (Column)
       body: Column(
          children: [
-           // 频率限制警告横幅
+           // 🔥 频率限制警告横幅 - 修复关闭功能
            BlocBuilder<AiChatBloc, AiChatState>(
              buildWhen: (previous, current) =>
                  previous.conversationRateLimit != current.conversationRateLimit,
              builder: (context, state) {
                final rateLimit = state.conversationRateLimit;
-               if (rateLimit == null) return const SizedBox.shrink();
+               // 如果没有频率限制数据或者用户已经关闭了警告，则不显示
+               if (rateLimit == null || _isRateLimitWarningDismissed) {
+                 return const SizedBox.shrink();
+               }
                
                return RateLimitWarningBanner(
                  remaining: rateLimit.remaining,
                  resetInSeconds: rateLimit.resetInSeconds,
                  onDismiss: () {
-                   // 可以添加隐藏逻辑，这里暂时不实现
+                   // 🔥 实现关闭逻辑：设置状态为已关闭
+                   setState(() {
+                     _isRateLimitWarningDismissed = true;
+                   });
+                   print("[ChatPage] 推荐次数提示框已关闭");
                  },
                );
              },

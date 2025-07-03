@@ -398,6 +398,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "product_detail_case_showcase": MessageLookupByLibrary.simpleMessage(
       "Case Showcase",
     ),
+    "product_detail_collapse": MessageLookupByLibrary.simpleMessage("Collapse"),
     "product_detail_contact_seller": MessageLookupByLibrary.simpleMessage(
       "Contact Seller",
     ),

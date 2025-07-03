@@ -118,7 +118,7 @@ void main() {
           // act
           final result = await repository.loginWithVerificationCode(tCredentials);
           // assert
-          expect(result, Left(ServerFailure(message: 'Login failed')));
+          expect(result, const Left(ServerFailure(message: 'Login failed')));
           verify(mockRemoteDataSource.loginWithVerificationCode(tCredentials));
           verifyNoMoreInteractions(mockUserInfoRepository);
           verifyNoMoreInteractions(mockSecureStorage);
@@ -136,7 +136,7 @@ void main() {
           // act
           final result = await repository.loginWithVerificationCode(tCredentials);
           // assert
-          expect(result, Left(ServerFailure(message: 'Fetch user failed')));
+          expect(result, const Left(ServerFailure(message: 'Fetch user failed')));
           verify(mockRemoteDataSource.loginWithVerificationCode(tCredentials));
           verify(mockUserInfoRepository.fetchUserInfo(tToken));
           verifyNoMoreInteractions(mockSecureStorage); // Storage should not be called if fetch fails
@@ -158,7 +158,7 @@ void main() {
           final result = await repository.loginWithVerificationCode(tCredentials);
           // assert
           // It returns Left, but the user state in memory might be updated.
-          expect(result, Left(CacheFailure(message: 'Login succeeded but failed to save credentials.')));
+          expect(result, const Left(CacheFailure(message: 'Login succeeded but failed to save credentials.')));
           verify(mockRemoteDataSource.loginWithVerificationCode(tCredentials));
           verify(mockUserInfoRepository.fetchUserInfo(tToken));
           verify(mockSecureStorage.saveInt('user_id', tUserId));
@@ -176,7 +176,7 @@ void main() {
           // act
           final result = await repository.loginWithVerificationCode(tCredentials);
           // assert
-          expect(result, Left(NetworkFailure()));
+          expect(result, const Left(NetworkFailure(message: 'No internet connection')));
           verifyNoMoreInteractions(mockRemoteDataSource);
           verifyNoMoreInteractions(mockUserInfoRepository);
           verifyNoMoreInteractions(mockSecureStorage);
@@ -206,7 +206,7 @@ void main() {
         'should return Right(null) even if clearing storage fails',
         () async {
           // arrange
-           when(mockSecureStorage.delete(any)).thenThrow(CacheException());
+           when(mockSecureStorage.delete(any)).thenThrow(CacheException(message: 'Delete failed'));
           // act
           final result = await repository.logout();
           // assert
@@ -249,7 +249,7 @@ void main() {
           // act
           final result = await repository.sendVerificationCode(phone: tPhone);
           // assert
-          expect(result, Left(ServerFailure(message: 'Failed to send code')));
+          expect(result, const Left(ServerFailure(message: 'Failed to send code')));
           verify(mockRemoteDataSource.sendVerificationCode(phone: tPhone));
           verifyNoMoreInteractions(mockRemoteDataSource);
         },
@@ -263,7 +263,7 @@ void main() {
           // act
           final result = await repository.sendVerificationCode(phone: tPhone);
           // assert
-          expect(result, Left(NetworkFailure()));
+          expect(result, const Left(NetworkFailure(message: 'No internet connection')));
           verifyNoMoreInteractions(mockRemoteDataSource);
         },
       );

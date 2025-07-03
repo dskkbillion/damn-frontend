@@ -24,7 +24,7 @@ import 'package:dskk_flutter_refactor/features/orders/presentation/pages/order_l
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_theme.dart';
-import 'package:dskk_flutter_refactor/core/router/app_router.dart';
+import 'package:dskk_flutter_refactor/app/navigation/app_router.dart'; // 使用正确的应用路由路径
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import secure storage
 import 'package:flutter/services.dart' show rootBundle; // Import rootBundle
 import 'package:get_it/get_it.dart'; // Import GetIt

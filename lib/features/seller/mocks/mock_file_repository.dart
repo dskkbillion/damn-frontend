@@ -1,6 +1,7 @@
+import 'dart:io';
 import 'package:mockito/mockito.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
-import 'package:dskk_flutter_refactor/core/platform/file_repository.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/repositories/i_file_repository.dart';
 import 'package:dartz/dartz.dart';
 
 class MockFileRepository extends Mock implements IFileRepository {
@@ -10,7 +11,7 @@ class MockFileRepository extends Mock implements IFileRepository {
   }
   
   @override
-  Future<Either<Failure, String>> uploadFile(String filePath, String type) async {
+  Future<Either<Failure, String>> uploadFile(File file) async {
     return Right('https://example.com/mock-file.jpg');
   }
   

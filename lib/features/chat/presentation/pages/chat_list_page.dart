@@ -74,44 +74,96 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     // 获取国际化资源
     final s = S.of(context);
     
-    // Create a fake ChatRoom representing the admin chat
-    // Use placeholder IDs and potentially a specific icon/avatar later
-    final adminParticipant = Participant(
-      id: 1, // Admin's internal ID (assuming 1 based on doctorId parameter)
-      referId: 1, // Admin's referId (assuming 1, adjust if known)
-      nickName: s.chat_admin_title,
-      type: 'ADMIN',
-      avatar: null, // TODO: Add a specific admin icon/avatar URL later
-    );
-    // Create a fake participant for the current user for the ChatRoom structure
-    final currentUserParticipant = Participant(
-      id: -1, // Placeholder internal ID
-      referId: currentUserId,
-      nickName: 'Me',
-      type: 'MEMBER',
-    );
+    // 在BlocBuilder中访问当前状态，以获取系统管理员聊天室的真实信息
+    return BlocBuilder<ChatListBloc, ChatListState>(
+      builder: (context, state) {
+        // 从当前聊天列表中查找系统管理员聊天室
+        int adminUnreadCount = 0;
+        ChatMessage? lastAdminMessage;
+        ChatRoom? adminChatRoom;
+        
+        // 查找系统管理员聊天室
+        try {
+          adminChatRoom = state.chatRooms.cast<ChatRoom?>().firstWhere(
+            (room) => room != null && (
+              (room.participant1.type == 'ADMIN' && room.participant1.referId == 1) ||
+              (room.participant2.type == 'ADMIN' && room.participant2.referId == 1)
+            ),
+            orElse: () => null,
+          );
+          
+          if (adminChatRoom != null) {
+            adminUnreadCount = adminChatRoom.unreadCount;
+            lastAdminMessage = adminChatRoom.lastMessage;
+            print("[ChatListPage] Found existing admin chat room ${adminChatRoom.id} with $adminUnreadCount unread messages");
+          }
+        } catch (e) {
+          print("[ChatListPage] Error finding admin chat room: $e");
+        }
+        
+        // Create a fake ChatRoom representing the admin chat
+        final adminParticipant = Participant(
+          id: 1, 
+          referId: 1, 
+          nickName: s.chat_admin_title,
+          type: 'ADMIN',
+          avatar: null, // TODO: Add a specific admin icon/avatar URL later
+        );
+        
+        final currentUserParticipant = Participant(
+          id: -1, 
+          referId: currentUserId,
+          nickName: 'Me',
+          type: 'MEMBER',
+        );
 
-    final fakeAdminChatRoom = ChatRoom(
-      id: -1, // Special ID for admin chat entry, not from API
-      participant1: currentUserParticipant, // Assign based on who should be p1/p2
-      participant2: adminParticipant,
-      unreadCount: 0,
-      lastMessage: null, // Or a placeholder message like "Tap to start chat"
-    );
+        final fakeAdminChatRoom = ChatRoom(
+          id: adminChatRoom?.id ?? -1, // 使用真实ID或占位符ID
+          participant1: currentUserParticipant, 
+          participant2: adminParticipant,
+          unreadCount: adminUnreadCount, // 使用真实的未读数量
+          lastMessage: lastAdminMessage, // 使用真实的最后消息
+        );
 
-    return Material(
-      color: Colors.white, 
-      child: ChatListItem(
-        key: const ValueKey('admin_chat_entry'), // Unique key
-        chatRoom: fakeAdminChatRoom,
-        currentUserId: currentUserId, // Pass the actual current user referId
-        onTap: () {
-          print('[ChatListPage] Admin chat item tapped.');
-          // TODO: Show loading indicator?
-          context.read<ChatListBloc>().add(StartAdminChatRequested());
-        },
-        // TODO: Add visual differentiation (e.g., different icon/background)
-      ),
+        return Material(
+          color: Colors.white, 
+          child: ChatListItem(
+            key: const ValueKey('admin_chat_entry'), 
+            chatRoom: fakeAdminChatRoom,
+            currentUserId: currentUserId, 
+            onTap: () {
+              print('[ChatListPage] Admin chat item tapped.');
+              if (adminChatRoom != null) {
+                // 如果已存在聊天室，直接导航
+                print('[ChatListPage] Navigating to existing admin chat room ${adminChatRoom.id}');
+                                  final chatId = adminChatRoom.id;
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => BlocProvider(
+                        create: (_) => sl<ChatMessagesBloc>(param1: chatId)
+                                      ..add(LoadChatMessages(chatId)),
+                        child: ChatRoomPage(
+                          chatId: chatId,
+                          onMessagesLoaded: () {
+                            print('[ChatListPage] Admin chat messages loaded, updating unread count to 0');
+                            context.read<ChatListBloc>().add(
+                              UpdateChatRoomUnreadCount(chatId: chatId, unreadCount: 0)
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  );
+              } else {
+                // 如果不存在，则创建新的聊天室
+                print('[ChatListPage] Creating new admin chat room');
+                context.read<ChatListBloc>().add(StartAdminChatRequested());
+              }
+            },
+          ),
+        );
+      },
     );
   }
   
@@ -382,7 +434,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     });
   }
   
-  // 新的筛选方法：根据应用模式筛选聊天室
+  // 新的筛选方法：根据应用模式筛选聊天室，同时排除系统管理员聊天室
   List<ChatRoom> _filterChatRoomsByAppMode(List<ChatRoom> chatRooms, AppMode appMode, int referId) {
     final filteredRooms = <ChatRoom>[];
     
@@ -392,6 +444,19 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       print("[ChatListPage] Checking room ${room.id}:");
       print("  - participant1: type=${room.participant1.type}, referId=${room.participant1.referId}, name=${room.participant1.nickName}");
       print("  - participant2: type=${room.participant2.type}, referId=${room.participant2.referId}, name=${room.participant2.nickName}");
+      
+      // 检查是否是系统管理员聊天室
+      bool isAdminChat = false;
+      if ((room.participant1.type == 'ADMIN' && room.participant1.referId == 1) ||
+          (room.participant2.type == 'ADMIN' && room.participant2.referId == 1)) {
+        isAdminChat = true;
+        print("[ChatListPage] 🚫 Skipping admin chat room ${room.id} - will be shown in system items");
+      }
+      
+      // 排除系统管理员聊天室
+      if (isAdminChat) {
+        continue;
+      }
       
       // 检查当前用户是否是这个聊天室的参与者（不管是participant1还是participant2）
       bool isParticipant = false;
@@ -413,7 +478,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       }
     }
     
-    print("[ChatListPage] App mode: $appMode, User type detected: $_currentUserType, filtered ${filteredRooms.length} rooms");
+    print("[ChatListPage] App mode: $appMode, User type detected: $_currentUserType, filtered ${filteredRooms.length} rooms (admin chats excluded)");
     return filteredRooms;
   }
 

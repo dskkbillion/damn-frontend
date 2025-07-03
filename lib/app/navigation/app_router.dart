@@ -9,6 +9,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dskk_flutter_refactor/core/network/network_info.dart';
 import 'package:dskk_flutter_refactor/core/network/mock_network_info.dart' as mock;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dskk_flutter_refactor/core/router/smart_router_utils.dart';
 
 // Import authentication related classes
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_status.dart';
@@ -114,6 +115,13 @@ import 'package:dskk_flutter_refactor/features/seller/domain/repositories/i_sell
 // Import analytics observers
 import 'package:dskk_flutter_refactor/core/analytics/observers/router_analytics_observer.dart';
 
+// Import home related classes
+import 'package:dskk_flutter_refactor/features/home/presentation/bloc/home_bloc.dart';
+import 'package:dskk_flutter_refactor/features/home/presentation/pages/home_page.dart';
+import 'package:dskk_flutter_refactor/features/home/presentation/pages/search_page.dart';
+import 'package:dskk_flutter_refactor/features/home/presentation/pages/search_results_page.dart';
+import 'package:dskk_flutter_refactor/features/home/presentation/cubit/product_detail_cubit.dart';
+
 // Placeholder page (defined once) - Only used if a module's routes aren't ready
 class PlaceholderPage extends StatelessWidget {
   final String title;
@@ -169,7 +177,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       SellerRoutes.home, 
       SellerRoutes.products, // Or maybe just /seller/orders ? Check SellerNav Bar
       '/seller/chat', // Placeholder
-      '/seller/profile' // Placeholder
   ];
 
   // 获取卖家相关依赖，用于手动创建BLoC
@@ -186,7 +193,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   // Define Seller Shell Branch Routes explicitly
   final sellerDashboardRoute = GoRoute(
     path: '/seller/dashboard', 
-    builder: (context, state) => BlocProvider(
+    pageBuilder: (context, state) => state.buildSmartPage(
+      BlocProvider(
       create: (context) {
         try {
           // 尝试从GetIt获取
@@ -214,12 +222,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         }
       },
       child: const SellerStatisticsPage(),
+      ),
+      name: 'sellerDashboard',
+      source: 'app_navigation_seller_shell',
     ),
   );
   
   final sellerOrdersRoute = GoRoute(
       path: '/seller/orders', 
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         // 提取status查询参数
         final statusString = state.uri.queryParameters['status'];
         print('[GoRoute /seller/orders] Received status param: $statusString');
@@ -227,10 +238,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         // 解析status为OrderStatus枚举
         final parsedStatus = OrderStatusExtension.fromString(statusString);
         
-        return BlocProvider(
+        return state.buildSmartPage(
+          BlocProvider(
           create: (_) => GetIt.I<SellerOrderListBloc>()
             ..add(LoadSellerOrdersRequested(statusFilter: parsedStatus)),
           child: SellerOrderListPage(initialStatus: statusString),
+          ),
+          name: 'sellerOrders',
+          source: 'app_navigation_seller_shell',
         );
       },
   );
@@ -238,18 +253,26 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   // 定义商品管理路由
   final sellerProductsRoute = GoRoute(
     path: '/seller/products',
-    builder: (context, state) => BlocProvider(
+    pageBuilder: (context, state) => state.buildSmartPage(
+      BlocProvider(
       create: (_) => productManagementBloc..add(LoadProductList()),
       child: const ProductManagementPage(),
+      ),
+      name: 'sellerProducts',
+      source: 'app_navigation_seller_shell',
     ),
   );
   
   // 直接定义卖家聊天列表路由
   final sellerChatRoute = GoRoute(
       path: '/seller/chat', // 使用聊天路径
-      builder: (context, state) => BlocProvider(
+      pageBuilder: (context, state) => state.buildSmartPage(
+        BlocProvider(
         create: (_) => GetIt.I<ChatListBloc>()..add(LoadChatRoomList()), // 使用ChatListBloc
         child: const ChatListPage(), // 使用ChatListPage
+        ),
+        name: 'sellerChat',
+        source: 'app_navigation_seller_shell',
       ), 
   );
   
@@ -257,7 +280,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final sellerHomeRoute = GoRoute(
     path: SellerRoutes.home,
     name: 'seller_home',
-    builder: (context, state) => BlocProvider(
+    pageBuilder: (context, state) => state.buildSmartPage(
+      BlocProvider(
       create: (context) {
         try {
           // 使用GetIt工厂获取SellerHomeBloc，而不是使用手动创建的实例
@@ -273,6 +297,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         }
       },
       child: const SellerHomePage(),
+      ),
+      name: 'sellerHome',
+      source: 'app_navigation_seller_shell',
     ),
   );
   
@@ -282,25 +309,92 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       sellerOrdersRoute,
       GoRoute(
         path: SellerRoutes.notifications, 
-        builder: (context, state) => const NotificationListPage(),
+        pageBuilder: (context, state) => state.buildSmartPage(
+          const NotificationListPage(),
+          name: 'sellerNotifications',
+          source: 'app_navigation_seller_non_shell',
+        ),
       ),
-      GoRoute(path: SellerRoutes.productCreate, builder: (context, state) => const ProductEditPage()),
-      GoRoute(path: SellerRoutes.productEdit, builder: (context, state) => ProductEditPage(productId: state.pathParameters['id'])), 
-      GoRoute(path: SellerRoutes.authentication, builder: (context, state) => AuthManagementPage()), 
-      GoRoute(path: SellerRoutes.authenticationApply, builder: (context, state) => AuthApplicationPage(type: state.pathParameters['type'] ?? 'other', authInfo: state.extra as SellerAuthenticationInfo?)), 
-      GoRoute(path: SellerRoutes.authenticationDetail, builder: (context, state) => AuthStatusPage(authInfo: state.extra as SellerAuthenticationInfo)), 
-      GoRoute(path: SellerRoutes.timeManagement, builder: (context, state) => const TimeManagementPage()), 
-      GoRoute(path: SellerRoutes.autoReply, builder: (context, state) => const AutoReplyPage()), 
-      GoRoute(path: SellerRoutes.storeSettings, builder: (context, state) => const Placeholder(child: Center(child: Text('店铺设置')))), 
-      GoRoute(path: SellerRoutes.statistics, builder: (context, state) => BlocProvider(
+      GoRoute(
+        path: SellerRoutes.productCreate, 
+        pageBuilder: (context, state) => state.buildSmartPage(
+          const ProductEditPage(),
+          name: 'sellerProductCreate',
+          source: 'app_navigation_seller_non_shell',
+        ),
+      ),
+      GoRoute(
+        path: SellerRoutes.productEdit, 
+        pageBuilder: (context, state) => state.buildSmartPage(
+          ProductEditPage(productId: state.pathParameters['id']),
+          name: 'sellerProductEdit',
+          source: 'app_navigation_seller_non_shell',
+        ),
+      ), 
+      GoRoute(
+        path: SellerRoutes.authentication, 
+        pageBuilder: (context, state) => state.buildSmartPage(
+          AuthManagementPage(),
+          name: 'sellerAuthentication',
+          source: 'app_navigation_seller_non_shell',
+        ),
+      ), 
+      GoRoute(
+        path: SellerRoutes.authenticationApply, 
+        pageBuilder: (context, state) => state.buildSmartPage(
+          AuthApplicationPage(type: state.pathParameters['type'] ?? 'other', authInfo: state.extra as SellerAuthenticationInfo?),
+          name: 'sellerAuthenticationApply',
+          source: 'app_navigation_seller_non_shell',
+        ),
+      ), 
+      GoRoute(
+        path: SellerRoutes.authenticationDetail, 
+        pageBuilder: (context, state) => state.buildSmartPage(
+          AuthStatusPage(authInfo: state.extra as SellerAuthenticationInfo),
+          name: 'sellerAuthenticationDetail',
+          source: 'app_navigation_seller_non_shell',
+        ),
+      ), 
+      GoRoute(
+        path: SellerRoutes.timeManagement, 
+        pageBuilder: (context, state) => state.buildSmartPage(
+          const TimeManagementPage(),
+          name: 'sellerTimeManagement',
+          source: 'app_navigation_seller_non_shell',
+        ),
+      ), 
+      GoRoute(
+        path: SellerRoutes.autoReply, 
+        pageBuilder: (context, state) => state.buildSmartPage(
+          const AutoReplyPage(),
+          name: 'sellerAutoReply',
+          source: 'app_navigation_seller_non_shell',
+        ),
+      ), 
+      GoRoute(
+        path: SellerRoutes.storeSettings, 
+        pageBuilder: (context, state) => state.buildSmartPage(
+          const Placeholder(child: Center(child: Text('店铺设置'))),
+          name: 'sellerStoreSettings',
+          source: 'app_navigation_seller_non_shell',
+        ),
+      ), 
+      GoRoute(
+        path: SellerRoutes.statistics, 
+        pageBuilder: (context, state) => state.buildSmartPage(
+          BlocProvider(
         create: (context) => GetIt.I<SellerStatisticsBloc>(),
         child: const SellerStatisticsPage(),
-      )),
+          ),
+          name: 'sellerStatistics',
+          source: 'app_navigation_seller_non_shell',
+        ),
+      ),
       // 添加卖家钱包路由 - 修复 seller_wallet 路由问题
       GoRoute(
         path: SellerRoutes.wallet,
         name: 'seller_wallet',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           try {
             // 获取主应用的GetIt实例
             final getIt = GetIt.I;
@@ -342,13 +436,18 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               getWalletTransactions: getWalletTransactions,
             );
             
-            return BlocProvider(
+            return state.buildSmartPage(
+              BlocProvider(
               create: (context) => walletBloc,
               child: const WalletPage(),
+              ),
+              name: 'sellerWallet',
+              source: 'app_navigation_seller_non_shell',
             );
           } catch (e) {
             print('Error creating WalletBloc: $e');
-            return Scaffold(
+            return state.buildSmartPage(
+              Scaffold(
               appBar: AppBar(title: const Text('钱包')),
               body: Center(
                 child: Column(
@@ -365,11 +464,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                   ],
                 ),
               ),
+              ),
+              name: 'sellerWalletError',
+              source: 'app_navigation_seller_non_shell',
             );
           }
         },
       ),
-      GoRoute(path: 'orders/:id/delivery', builder: (context, state) => OrderDeliveryPage(orderId: int.parse(state.pathParameters['id'] ?? '0'))), 
+      GoRoute(
+        path: 'orders/:id/delivery', 
+        pageBuilder: (context, state) => state.buildSmartPage(
+          OrderDeliveryPage(orderId: int.parse(state.pathParameters['id'] ?? '0')),
+          name: 'sellerOrderDelivery',
+          source: 'app_navigation_seller_non_shell',
+        ),
+      ), 
       // 确保所有非 Shell 路由都在这里或者在其父路由的 sub-routes 中
   ];
 
@@ -377,7 +486,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final buyerNotificationRoute = GoRoute(
     path: '/notifications',
     name: 'buyerNotifications',
-    builder: (context, state) => const NotificationListPage(), // 复用卖家的通知页面
+    pageBuilder: (context, state) => state.buildSmartPage(
+      const NotificationListPage(), // 复用卖家的通知页面
+      name: 'buyerNotifications',
+      source: 'app_navigation_buyer_non_shell',
+    ),
   );
 
   // Define Buyer Order Detail Route
@@ -410,7 +523,64 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           ),
           // Branch 1: 主页 (Path: /home)
           StatefulShellBranch(
-             routes: HomeRoutes.routes, 
+             routes: [
+               // 买家主页路由 - 直接在Shell中定义避免冲突
+               GoRoute(
+                 path: '/home',
+                 name: 'home',
+                 pageBuilder: (context, state) => state.buildSmartPage(
+                   BlocProvider<HomeBloc>(
+                     create: (_) => getIt<HomeBloc>(),
+                     child: const HomePage(),
+                   ),
+                   name: 'home',
+                   source: 'buyer_shell_home',
+                 ),
+                 routes: [
+                   // 产品详情路由
+                   GoRoute(
+                     path: 'product/:productId',
+                     name: 'productDetail',
+                     pageBuilder: (context, state) {
+                       final productId = state.pathParameters['productId'] ?? '';
+                       return state.buildSmartPage(
+                         BlocProvider(
+                           create: (context) => getIt<ProductDetailCubit>(),
+                           child: ProductDetailPage(productId: productId),
+                         ),
+                         name: 'productDetail',
+                         source: 'buyer_shell_home',
+                       );
+                     },
+                   ),
+                   
+                   // 搜索路由
+                   GoRoute(
+                     path: 'search',
+                     name: 'search',
+                     pageBuilder: (context, state) => state.buildSmartPage(
+                       const SearchPage(),
+                       name: 'search',
+                       source: 'buyer_shell_home',
+                     ),
+                   ),
+                   
+                   // 搜索结果路由
+                   GoRoute(
+                     path: 'search-results',
+                     name: 'searchResults',
+                     pageBuilder: (context, state) {
+                       final keyword = state.uri.queryParameters['keyword'] ?? '';
+                       return state.buildSmartPage(
+                         SearchResultsPage(keyword: keyword),
+                         name: 'searchResults',
+                         source: 'buyer_shell_home',
+                       );
+                     },
+                   ),
+                 ],
+               ),
+             ], 
           ),
           // Branch 2: 消息 (Path: /chat)
           StatefulShellBranch(
@@ -469,20 +639,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ...sellerNonShellRoutes, 
       ...PaymentRoutes.routes, // 添加支付模块路由
 
-      // 添加卖家主页路由
+      // 添加卖家主页路由 - 使用智能路由系统，修复路径冲突
       GoRoute(
-        path: '/seller/:id/profile',
+        path: '/seller-profile/:id', // 修改路径避免与Seller Shell冲突
         name: 'sellerPublicProfile',
         pageBuilder: (context, state) {
           final sellerId = int.parse(state.pathParameters['id'] ?? '0');
-          return MaterialPage(
-            key: ValueKey('seller_profile_$sellerId'),
-            child: SellerPublicProfilePage(sellerId: sellerId),
+          return state.buildSmartPage(
+            SellerPublicProfilePage(sellerId: sellerId),
+            name: 'sellerPublicProfile',
+            source: 'app_navigation_cross_module',
           );
         },
       ),
 
-      // 支付专用路由 - 避免与Home模块的商品详情路由冲突
+      // 支付专用路由 - 使用智能路由系统
       GoRoute(
         path: '/product-payment/:id/confirm',
         name: 'productPaymentConfirm',
@@ -490,9 +661,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           final productId = int.parse(state.pathParameters['id'] ?? '0');
           final Map<String, dynamic> extra = state.extra as Map<String, dynamic>? ?? {};
           
-          return MaterialPage(
-            key: ValueKey('payment_confirm_$productId'),
-            child: BlocProvider(
+          return state.buildSmartPage(
+            BlocProvider(
               create: (_) => getIt<PaymentBloc>(),
               child: OrderConfirmPage(
                 productId: productId,
@@ -503,7 +673,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                 productName: extra['productName'] ?? '',
                 imageUrl: extra['imageUrl'],
               ),
-            ),
+        ),
+            name: 'productPaymentConfirm',
+            source: 'app_navigation_payment',
           );
         },
       ),
@@ -563,14 +735,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ]; 
       
       // 特殊情况：卖家主页路径（公共路径，不应受模式限制）
-      final String sellerPublicProfilePathPrefix = '/seller/';
-      final String sellerPublicProfilePathSuffix = '/profile';
+      final String sellerPublicProfilePathPrefix = '/seller-profile/'; // 更新路径前缀
       
       bool isBuyerShellLocation = buyerPaths.any((p) => location.startsWith(p));
-      // 排除卖家主页路径（检查是否匹配 /seller/{id}/profile 模式）
+      // 排除卖家主页路径（检查是否匹配 /seller-profile/{id} 模式）
       bool isSellerShellLocation = sellerPaths.any((p) => location.startsWith(p)) && 
-          !(location.startsWith(sellerPublicProfilePathPrefix) && location.endsWith(sellerPublicProfilePathSuffix) && 
-             location.split('/').length == 4); // 确保路径格式为 /seller/{id}/profile
+          !location.startsWith(sellerPublicProfilePathPrefix); // 简化检查逻辑
       
       if (currentMode == AppMode.buyer && isSellerShellLocation) {
         print('Redirect: In Buyer Mode, tried to access Seller Shell ($location) -> ${HomeRoutes.homePath}');

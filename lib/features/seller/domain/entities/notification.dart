@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:dskk_flutter_refactor/features/seller/domain/entities/notification_type.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_notification.dart';
 
 /// 通知实体类
 class Notification extends Equatable {

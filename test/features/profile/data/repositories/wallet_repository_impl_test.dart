@@ -9,11 +9,10 @@ import 'package:dskk_flutter_refactor/features/profile/data/datasources/profile_
 import 'package:dskk_flutter_refactor/features/profile/data/models/wallet_summary_dto.dart';
 import 'package:dskk_flutter_refactor/features/profile/data/repositories/wallet_repository_impl.dart';
 import 'package:dskk_flutter_refactor/features/profile/domain/entities/wallet_summary.dart';
-import 'package:dskk_flutter_refactor/features/profile/domain/repositories/i_wallet_repository.dart';
 
-@GenerateMocks([ProfileRemoteDataSource, NetworkInfo])
 import 'wallet_repository_impl_test.mocks.dart';
 
+@GenerateMocks([ProfileRemoteDataSource, NetworkInfo])
 void main() {
   late WalletRepositoryImpl repository;
   late MockProfileRemoteDataSource mockRemoteDataSource;
@@ -85,7 +84,7 @@ void main() {
 
         // 断言
         verify(mockRemoteDataSource.getWalletSummary());
-        expect(result, equals(Left(const ServerFailure(message: '服务器错误'))));
+        expect(result, equals(const Left(ServerFailure(message: '服务器错误'))));
       });
     });
 
@@ -100,7 +99,7 @@ void main() {
 
         // 断言
         verifyZeroInteractions(mockRemoteDataSource);
-        expect(result, equals(Left(const NetworkFailure(message: '无网络连接'))));
+        expect(result, equals(const Left(NetworkFailure(message: '无网络连接'))));
       });
     });
   });

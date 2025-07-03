@@ -1,5 +1,5 @@
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/notification.dart';
-import 'package:dskk_flutter_refactor/features/seller/domain/entities/notification_type.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_notification.dart';
 
 /// 通知模型类
 class NotificationModel extends Notification {

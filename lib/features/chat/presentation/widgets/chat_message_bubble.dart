@@ -660,7 +660,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 value: 'revoke', 
                 child: Text(s.chat_recall)
             ));
-        }
+    }
         // 注意：超过2分钟的消息不显示任何撤回选项
     }
 
@@ -701,7 +701,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 // 再次检查是否可以撤回（防止时间差问题）
                 final revokeResult = _checkRevokeStatus();
                 if (revokeResult.canRevoke) {
-                    context.read<ChatMessagesBloc>().add(RevokeMessageRequested(widget.message.id));
+                context.read<ChatMessagesBloc>().add(RevokeMessageRequested(widget.message.id));
                 } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
