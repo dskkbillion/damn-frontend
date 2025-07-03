@@ -96,7 +96,7 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
     // Optionally emit a loading state specific to this action if needed
     // emit(state.copyWith(status: ChatListStatus.loading)); 
     
-    final result = await createChatRoom(const CreateChatRoomParams(participantId: 1)); // Admin ID is 1
+    final result = await createChatRoom(const CreateChatRoomParams(participantId: 0)); // Admin refer_id is 0
     
     result.fold(
       (failure) {

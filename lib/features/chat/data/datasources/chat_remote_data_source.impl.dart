@@ -244,7 +244,7 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
       };
       
       // 根据participantId判断用户类型
-      if (participantId == 1) {
+      if (participantId == 0) {
         // 系统管理员使用ADMIN类型
         requestData['type'] = 'ADMIN';
         print("[API Call] Using type: ADMIN for system administrator chat creation.");
@@ -292,12 +292,12 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
         
         if (serverMessage != null) {
           if (serverMessage.contains("用户不存在")) {
-            errorMessage = participantId == 1 
+            errorMessage = participantId == 0 
                 ? "系统管理员账户配置异常，请联系技术支持" 
                 : "目标用户不存在";
           } else if (serverMessage.contains("聊天对象类型要传递")) {
             errorMessage = "请求参数错误，请重试";
-          } else if (serverMessage.contains("空指针异常") && participantId == 1) {
+          } else if (serverMessage.contains("空指针异常") && participantId == 0) {
             errorMessage = "系统管理员账户未配置，请联系技术支持进行初始化";
           } else {
             errorMessage = serverMessage;

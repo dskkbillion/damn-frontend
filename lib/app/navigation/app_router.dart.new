@@ -39,7 +39,7 @@ import 'package:dskk_flutter_refactor/app/app_mode.dart';
 import 'package:dskk_flutter_refactor/app/widgets/main_shell_page.dart'; // 使用正确的名字和路径
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_shell_page.dart'; // 卖家 Shell
 
-// --- 引入 Seller 模块相关�?Blocs �?Pages --- 
+// --- 引入 Seller 模块相关�?Blocs �?Pages --- 
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_home/seller_home_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/seller_home_page.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/seller/bloc/seller_order_list_bloc.dart'; // Seller Order List Bloc
@@ -152,11 +152,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         child: const ChatListPage(), // 使用ChatListPage
       ), 
   );
-  // 获取 /seller 路由（作�?我的"Tab内容�?  final sellerMyRoute = SellerRoutes.routes.firstWhere(
+  // 获取 /seller 路由（作�?我的"Tab内容�?  final sellerMyRoute = SellerRoutes.routes.firstWhere(
     (r) => r is GoRoute && r.path == SellerRoutes.home
   ); 
   
-  // 定义 Seller Non-Shell Routes (保持不变或根据需要调�?
+  // 定义 Seller Non-Shell Routes (保持不变或根据需要调�?
   final sellerNonShellRoutes = <RouteBase>[
       GoRoute(
         path: SellerRoutes.notifications, 
@@ -171,7 +171,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: SellerRoutes.autoReply, builder: (context, state) => const AutoReplyPage()), 
       GoRoute(path: SellerRoutes.storeSettings, builder: (context, state) => const Placeholder(child: Center(child: Text('店铺设置')))), 
       GoRoute(path: 'orders/:id/delivery', builder: (context, state) => OrderDeliveryPage(orderId: int.parse(state.pathParameters['id'] ?? '0'))), 
-      // 确保所有非 Shell 路由都在这里或者在其父路由�?sub-routes �?      // 例如�?/seller/products' 本身可能不需要在这里，因为它可以通过 '/seller' 访问
+      // 确保所有非 Shell 路由都在这里或者在其父路由�?sub-routes �?      // 例如�?/seller/products' 本身可能不需要在这里，因为它可以通过 '/seller' 访问
   ];
 
   // 买家通知页面路由
@@ -218,7 +218,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: ProfileRoutes.routes, 
           ),
-          // Branch 4: 开�?(Path: /dev_menu)
+          // Branch 4: 开�?(Path: /dev_menu)
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -278,7 +278,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
     // errorBuilder from HEAD/auth-module
     errorBuilder: (context, state) => Scaffold(
-      appBar: AppBar(title: const Text('页面未找�?)),
+      appBar: AppBar(title: const Text('页面未找�?)),
       body: Center(child: Text('路径错误: ${state.uri}\n错误: ${state.error}')),
     ),
 
@@ -324,13 +324,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           SellerRoutes.notifications,  // 添加通知路径
       ]; 
       
-      // 特殊情况：卖家主页路径（公共路径，不应受模式限制�?      final String sellerPublicProfilePathPrefix = '/seller/';
+      // 特殊情况：卖家主页路径（公共路径，不应受模式限制�?      final String sellerPublicProfilePathPrefix = '/seller/';
       final String sellerPublicProfilePathSuffix = '/profile';
       
       bool isBuyerShellLocation = buyerPaths.any((p) => location.startsWith(p));
-      // 排除卖家主页路径（检查是否匹�?/seller/{id}/profile 模式�?      bool isSellerShellLocation = sellerPaths.any((p) => location.startsWith(p)) && 
+      // 排除卖家主页路径（检查是否匹�?/seller/{id}/profile 模式�?      bool isSellerShellLocation = sellerPaths.any((p) => location.startsWith(p)) && 
           !(location.startsWith(sellerPublicProfilePathPrefix) && location.endsWith(sellerPublicProfilePathSuffix) && 
-             location.split('/').length == 4); // 确保路径格式�?/seller/{id}/profile
+             location.split('/').length == 4); // 确保路径格式�?/seller/{id}/profile
       
       if (currentMode == AppMode.buyer && isSellerShellLocation) {
         print('Redirect: In Buyer Mode, tried to access Seller Shell ($location) -> ${HomeRoutes.homePath}');

@@ -86,8 +86,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         try {
           adminChatRoom = state.chatRooms.cast<ChatRoom?>().firstWhere(
             (room) => room != null && (
-              (room.participant1.type == 'ADMIN' && room.participant1.referId == 1) ||
-              (room.participant2.type == 'ADMIN' && room.participant2.referId == 1)
+              (room.participant1.type == 'ADMIN' && room.participant1.referId == 0) ||
+              (room.participant2.type == 'ADMIN' && room.participant2.referId == 0)
             ),
             orElse: () => null,
           );
@@ -103,8 +103,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         
         // Create a fake ChatRoom representing the admin chat
         final adminParticipant = Participant(
-          id: 1, 
-          referId: 1, 
+          id: 0, 
+          referId: 0, 
           nickName: s.chat_admin_title,
           type: 'ADMIN',
           avatar: null, // TODO: Add a specific admin icon/avatar URL later
@@ -447,8 +447,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       
       // 检查是否是系统管理员聊天室
       bool isAdminChat = false;
-      if ((room.participant1.type == 'ADMIN' && room.participant1.referId == 1) ||
-          (room.participant2.type == 'ADMIN' && room.participant2.referId == 1)) {
+      if ((room.participant1.type == 'ADMIN' && room.participant1.referId == 0) ||
+          (room.participant2.type == 'ADMIN' && room.participant2.referId == 0)) {
         isAdminChat = true;
         print("[ChatListPage] 🚫 Skipping admin chat room ${room.id} - will be shown in system items");
       }
