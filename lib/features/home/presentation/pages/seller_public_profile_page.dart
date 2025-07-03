@@ -379,8 +379,8 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
         
         return GestureDetector(
           onTap: () {
-            // 修复：使用正确的路由路径（复数形式）
-            GoRouter.of(context).push('/products/${product.id}');
+            // 修复：使用Home模块内的路由路径
+            GoRouter.of(context).push('/home/product/${product.id}');
           },
           child: Container(
             decoration: BoxDecoration(

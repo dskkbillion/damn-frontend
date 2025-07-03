@@ -33,6 +33,8 @@ import 'package:dskk_flutter_refactor/core/analytics/observers/analytics_bloc_ob
 
 // Import core auth adapter
 import 'package:dskk_flutter_refactor/core/auth/repositories/i_auth_repository.dart' as core_auth;
+// 导入配置验证工具
+import 'package:dskk_flutter_refactor/core/utils/config_validator.dart';
 
 // Import navigation and app configuration
 import 'package:dskk_flutter_refactor/features/home/presentation/navigation/home_navigation_di.dart';
@@ -64,6 +66,10 @@ Future<void> main() async {
     print("[main_dev_VC] ❌ 环境配置加载失败: $e，使用生产环境地址");
     backendBaseUrl = 'https://app.duoshaokankan.com/prod-api';
   }
+
+  // 验证支付相关配置
+  print('[main_dev_VC] 🔍 验证支付配置...');
+  ConfigValidator.printValidationReport();
 
   // 初始化SharedPreferences
   final prefs = await SharedPreferences.getInstance();

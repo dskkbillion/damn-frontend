@@ -472,18 +472,40 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       // 添加卖家主页路由
       GoRoute(
         path: '/seller/:id/profile',
-        builder: (context, state) => SellerPublicProfilePage(
-          sellerId: int.parse(state.pathParameters['id'] ?? '0'),
-        ),
+        name: 'sellerPublicProfile',
+        pageBuilder: (context, state) {
+          final sellerId = int.parse(state.pathParameters['id'] ?? '0');
+          return MaterialPage(
+            key: ValueKey('seller_profile_$sellerId'),
+            child: SellerPublicProfilePage(sellerId: sellerId),
+          );
+        },
       ),
 
-      // 商品详情路由
+      // 支付专用路由 - 避免与Home模块的商品详情路由冲突
       GoRoute(
-        path: '/products/:id',
-        builder: (context, state) => BlocProvider(
-          create: (context) => GetIt.I<ProductDetailCubit>(),
-          child: ProductDetailPage(productId: state.pathParameters['id']!),
-        ),
+        path: '/product-payment/:id/confirm',
+        name: 'productPaymentConfirm',
+        pageBuilder: (context, state) {
+          final productId = int.parse(state.pathParameters['id'] ?? '0');
+          final Map<String, dynamic> extra = state.extra as Map<String, dynamic>? ?? {};
+          
+          return MaterialPage(
+            key: ValueKey('payment_confirm_$productId'),
+            child: BlocProvider(
+              create: (_) => getIt<PaymentBloc>(),
+              child: OrderConfirmPage(
+                productId: productId,
+                variantId: extra['variantId'] ?? 0,
+                quantity: extra['quantity'] ?? 1,
+                sellerId: extra['sellerId'] ?? 0,
+                price: extra['price'] ?? 0.0,
+                productName: extra['productName'] ?? '',
+                imageUrl: extra['imageUrl'],
+              ),
+            ),
+          );
+        },
       ),
 
     ],

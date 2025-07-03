@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:yaml/yaml.dart';
 
 /// 微信支付配置类
-/// 服务端托管模式 - 简化的配置，只包含必要的显示和初始化信息
+/// 服务端托管模式 - 优先从环境变量读取敏感配置，确保安全性
 class WechatConfig {
   final String environment;
   final bool mockPayment;
@@ -21,25 +23,91 @@ class WechatConfig {
     required this.paymentTypes,
   });
 
-  /// 从配置文件加载微信支付配置
+  /// 从环境变量和配置文件加载微信支付配置
+  /// 优先级：环境变量 > 配置文件 > 默认值
   static Future<WechatConfig> loadFromAssets({
     String configPath = 'config/wechat_config.yaml',
   }) async {
     try {
+      // 加载 YAML 配置文件
       final configContent = await rootBundle.loadString(configPath);
       final yamlMap = loadYaml(configContent) as Map;
       
+      // 从环境变量读取敏感配置，如果不存在则使用YAML配置
+      final envAppId = dotenv.env['WECHAT_APP_ID'];
+      final envUniversalLink = dotenv.env['WECHAT_UNIVERSAL_LINK'];
+      final envEnvironment = dotenv.env['PAYMENT_ENVIRONMENT'];
+      final envMockEnabled = dotenv.env['PAYMENT_MOCK_ENABLED'];
+      
+      // 构建App配置
+      final yamlAppConfig = yamlMap['app_config'] ?? {};
+      final appConfig = WechatAppConfig(
+        appId: envAppId ?? yamlAppConfig['app_id'] ?? '',
+        universalLink: envUniversalLink ?? yamlAppConfig['universal_link'] ?? '',
+      );
+      
+      // 日志记录配置来源
+      print('[WechatConfig] App ID source: ${envAppId != null ? 'Environment Variable' : 'YAML File'}');
+      print('[WechatConfig] Universal Link source: ${envUniversalLink != null ? 'Environment Variable' : 'YAML File'}');
+      
+      // 平台特定的配置提示
+      if (Platform.isAndroid) {
+        print('[WechatConfig] Running on Android - Universal Link is optional');
+      } else if (Platform.isIOS) {
+        print('[WechatConfig] Running on iOS - Universal Link is required');
+      }
+      
       return WechatConfig(
-        environment: yamlMap['environment'] ?? 'production',
-        mockPayment: yamlMap['mock_payment'] ?? false,
+        environment: envEnvironment ?? yamlMap['environment'] ?? 'production',
+        mockPayment: _parseBool(envMockEnabled) ?? yamlMap['mock_payment'] ?? false,
         display: WechatDisplayConfig.fromMap(yamlMap['display'] ?? {}),
-        appConfig: WechatAppConfig.fromMap(yamlMap['app_config'] ?? {}),
+        appConfig: appConfig,
         paymentScenes: List<String>.from(yamlMap['payment_scenes'] ?? ['order']),
         paymentTypes: List<String>.from(yamlMap['payment_types'] ?? ['app']),
       );
     } catch (e) {
-      throw Exception('Failed to load wechat config: $e');
+      print('[WechatConfig] Failed to load config: $e');
+      
+      // 尝试仅从环境变量读取
+      final envAppId = dotenv.env['WECHAT_APP_ID'];
+      final envUniversalLink = dotenv.env['WECHAT_UNIVERSAL_LINK'];
+      
+      // Android平台只需要App ID，iOS平台需要App ID和Universal Link
+      final hasRequiredConfig = Platform.isAndroid 
+          ? (envAppId != null)
+          : (envAppId != null && envUniversalLink != null);
+          
+              if (hasRequiredConfig) {
+          print('[WechatConfig] Using environment variables only');
+          return WechatConfig(
+            environment: dotenv.env['PAYMENT_ENVIRONMENT'] ?? 'production',
+            mockPayment: _parseBool(dotenv.env['PAYMENT_MOCK_ENABLED']) ?? false,
+            display: const WechatDisplayConfig(
+              name: '微信支付',
+              icon: 'wechat',
+              color: '#07c160',
+              description: '安全便捷的移动支付',
+            ),
+            appConfig: WechatAppConfig(
+              appId: envAppId!,
+              universalLink: envUniversalLink ?? '', // Android平台可以为空
+            ),
+            paymentScenes: ['order', 'vip', 'wallet'],
+            paymentTypes: ['app'],
+          );
+        }
+      
+      throw Exception('Failed to load wechat config from both file and environment variables: $e');
     }
+  }
+
+  /// 解析布尔值字符串
+  static bool? _parseBool(String? value) {
+    if (value == null) return null;
+    final lowerValue = value.toLowerCase();
+    if (lowerValue == 'true' || lowerValue == '1') return true;
+    if (lowerValue == 'false' || lowerValue == '0') return false;
+    return null;
   }
 
   /// 是否为生产环境
@@ -72,12 +140,15 @@ class WechatConfig {
   /// 是否支持指定支付类型
   bool supportsType(String type) => paymentTypes.contains(type);
 
+  /// 验证配置是否完整
+  bool get isValid => appConfig.isValid;
+
   @override
   String toString() {
     return 'WechatConfig{'
         'environment: $environment, '
         'mockPayment: $mockPayment, '
-        'appId: ${appConfig.appId}, '
+        'appId: ${appConfig.appId.replaceRange(3, appConfig.appId.length - 3, '***')}, ' // 隐藏部分App ID用于日志安全
         'scenes: $paymentScenes, '
         'types: $paymentTypes'
         '}';
@@ -126,5 +197,21 @@ class WechatAppConfig {
   }
   
   /// 配置是否有效
-  bool get isValid => appId.isNotEmpty && universalLink.isNotEmpty;
+  /// iOS平台需要Universal Link，Android平台可选
+  bool get isValid {
+    if (appId.isEmpty) return false;
+    
+    // iOS平台必需Universal Link
+    if (Platform.isIOS) {
+      return universalLink.isNotEmpty;
+    }
+    
+    // Android平台不强制要求Universal Link
+    if (Platform.isAndroid) {
+      return true; // 只要有App ID就可以
+    }
+    
+    // 其他平台默认需要Universal Link
+    return universalLink.isNotEmpty;
+  }
 } 

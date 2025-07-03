@@ -46,6 +46,7 @@ import 'package:dskk_flutter_refactor/features/orders/di/orders_di.dart';
 // Import payment related modules
 import '../../features/payment/presentation/bloc/payment_bloc.dart';
 import '../../features/orders/domain/usecases/create_order_use_case.dart';
+import '../../core/payment/services/payment_service_factory.dart';
 
 final getIt = GetIt.instance;
 
@@ -55,7 +56,7 @@ Future<void> configurePaymentDependencies() async {
   if (!getIt.isRegistered<PaymentBloc>()) {
     getIt.registerFactory<PaymentBloc>(() => PaymentBloc(
           createOrderUseCase: getIt<CreateOrderUseCase>(),
-          paymentService: getIt<IPaymentService>(),
+          paymentServiceFactory: getIt<PaymentServiceFactory>(),
         ));
     print('[DI] Registered PaymentBloc');
   } else {

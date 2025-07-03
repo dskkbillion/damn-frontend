@@ -1,32 +1,35 @@
-# 微信支付配置
-# 服务端托管模式 - 客户端只负责调用SDK和展示结果，所有密钥和签名处理由后端完成
+# 微信支付配置文件
+# 注意：敏感信息（如App ID、Universal Link）优先从环境变量读取
+# 环境变量配置项：WECHAT_APP_ID, WECHAT_UNIVERSAL_LINK, PAYMENT_ENVIRONMENT, PAYMENT_MOCK_ENABLED
 
-# 环境配置
-environment: production  # production | sandbox
+# 支付环境
+environment: "production"  # 可被环境变量 PAYMENT_ENVIRONMENT 覆盖
 
-# 开发调试配置
-mock_payment: false  # 是否使用Mock支付（开发调试用）
+# 测试模式 (开发调试使用)
+mock_payment: false  # 可被环境变量 PAYMENT_MOCK_ENABLED 覆盖
 
 # 显示配置
 display:
   name: "微信支付"
   icon: "wechat"
-  color: "#07c160"  # 微信绿色
+  color: "#07c160"
   description: "安全便捷的移动支付"
-  
-# 微信App配置（必需，用于初始化SDK）
+
+# App配置（敏感信息已移至环境变量）
 app_config:
-  app_id: "wx8647007008f7b74d"        # 微信开放平台申请的APP ID
-  universal_link: "https://app.duoshaokankan.com/wechat/"  # iOS Universal Link（必需）
+  # 使用占位符，实际值从环境变量 WECHAT_APP_ID 读取
+  app_id: "wx_placeholder_use_env_var"
+  # 使用占位符，实际值从环境变量 WECHAT_UNIVERSAL_LINK 读取
+  universal_link: "https://placeholder.use.env.var/wechat/"
 
-# 支付场景配置
+# 支持的支付场景
 payment_scenes:
-  - order      # 订单支付
-  - vip        # 会员充值
-  - wallet     # 余额充值
+  - "order"      # 订单支付
+  - "vip"        # 会员升级
+  - "wallet"     # 钱包充值
 
-# 支付方式配置
+# 支持的支付类型
 payment_types:
-  - app        # App支付
+  - "app"        # 微信APP支付
   # - mini_program  # 小程序支付（如需要）
   # - h5            # H5支付（如需要） 

@@ -508,7 +508,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
         onPressed: () {
           // 导航到订单确认页面
           context.go(
-            '/products/${product.id}/confirm',
+            '/product-payment/${product.id}/confirm',
             extra: {
               'productId': product.id,
               'variantId': variant.id,

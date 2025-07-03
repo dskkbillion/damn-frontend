@@ -17,6 +17,7 @@ class CreateOrderAndPayEvent extends PaymentEvent {
   final double price;
   final String productName;
   final String? imageUrl;
+  final String paymentMethod;
 
   const CreateOrderAndPayEvent({
     required this.productId,
@@ -26,6 +27,7 @@ class CreateOrderAndPayEvent extends PaymentEvent {
     required this.price,
     required this.productName,
     this.imageUrl,
+    this.paymentMethod = 'alipay',
   });
 
   @override
@@ -37,6 +39,7 @@ class CreateOrderAndPayEvent extends PaymentEvent {
     price,
     productName,
     imageUrl,
+    paymentMethod,
   ];
 }
 

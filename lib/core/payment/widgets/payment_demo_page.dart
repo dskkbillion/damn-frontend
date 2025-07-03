@@ -1,84 +1,322 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 
+import '../services/payment_service_factory.dart';
 import '../models/payment_models.dart';
 import '../services/payment_navigation_service.dart';
 
-/// 支付导航演示页面
-/// 用于测试不同支付结果类型的导航处理效果
-class PaymentDemoPage extends StatelessWidget {
-  const PaymentDemoPage({super.key});
+/// 支付功能演示页面
+class PaymentDemoPage extends StatefulWidget {
+  const PaymentDemoPage({Key? key}) : super(key: key);
+
+  @override
+  State<PaymentDemoPage> createState() => _PaymentDemoPageState();
+}
+
+class _PaymentDemoPageState extends State<PaymentDemoPage> {
+  PaymentMethod _selectedMethod = PaymentMethod.alipay;
+  bool _isProcessing = false;
+  
+  final _amountController = TextEditingController(text: '0.01');
+  final _subjectController = TextEditingController(text: '测试商品');
+  final _orderIdController = TextEditingController(text: 'TEST${DateTime.now().millisecondsSinceEpoch}');
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _subjectController.dispose();
+    _orderIdController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _testPayment() async {
+    if (_isProcessing) return;
+    
+    setState(() {
+      _isProcessing = true;
+    });
+
+    try {
+      final factory = GetIt.instance<PaymentServiceFactory>();
+      final service = await factory.getPaymentService(_selectedMethod.code);
+      
+      final request = PaymentRequest(
+        orderId: _orderIdController.text,
+        amount: _amountController.text,
+        subject: _subjectController.text,
+        description: '${_subjectController.text} - 支付测试',
+        method: _selectedMethod,
+        scene: PaymentScene.order,
+      );
+      
+      final result = await service.createPayment(request);
+      
+      if (mounted) {
+        if (result.success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('支付发起成功：${result.message}'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          // 可以在这里处理支付结果导航
+          // PaymentNavigationService.handlePaymentResult(context, result);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('支付失败：${result.message}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('支付异常: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _checkPaymentAvailability() async {
+    try {
+      final factory = GetIt.instance<PaymentServiceFactory>();
+      
+      final alipayAvailable = await factory.isPaymentMethodAvailable('alipay');
+      final wechatAvailable = await factory.isPaymentMethodAvailable('wechat');
+      
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('支付方式可用性'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      alipayAvailable ? Icons.check_circle : Icons.cancel,
+                      color: alipayAvailable ? Colors.green : Colors.red,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text('支付宝'),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(
+                      wechatAvailable ? Icons.check_circle : Icons.cancel,
+                      color: wechatAvailable ? Colors.green : Colors.red,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text('微信支付'),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('确定'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('检查失败: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('支付导航演示'),
+        title: const Text('支付功能测试'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.info),
+            onPressed: _checkPaymentAvailability,
+            tooltip: '检查支付方式可用性',
+          ),
+        ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 测试参数输入
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              '测试不同支付结果的导航处理',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            
-            _buildDemoButton(
-              context,
-              '支付成功',
-              PaymentResultType.success,
-              Colors.green,
-              '跳转到订单详情页面',
-            ),
-            
-            _buildDemoButton(
-              context,
-              '用户取消支付',
-              PaymentResultType.userCancelled,
-              Colors.orange,
-              '跳转到待付款订单',
-            ),
-            
-            _buildDemoButton(
-              context,
-              '网络连接错误',
-              PaymentResultType.networkError,
-              Colors.red,
-              '显示重试对话框',
-            ),
-            
-            _buildDemoButton(
-              context,
-              '支付结果未知',
-              PaymentResultType.unknown,
-              Colors.purple,
-              '显示状态查询对话框',
-            ),
-            
-            _buildDemoButton(
-              context,
-              '支付处理中',
-              PaymentResultType.processing,
-              Colors.blue,
-              '跳转到待付款订单',
-            ),
-            
-            _buildDemoButton(
-              context,
-              '支付失败',
-              PaymentResultType.failed,
-              Colors.grey,
-              '跳转到支付失败页面',
+                      '测试参数',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    TextField(
+                      controller: _orderIdController,
+                      decoration: const InputDecoration(
+                        labelText: '订单号',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    TextField(
+                      controller: _amountController,
+                      decoration: const InputDecoration(
+                        labelText: '金额 (元)',
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    TextField(
+                      controller: _subjectController,
+                      decoration: const InputDecoration(
+                        labelText: '商品名称',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
             
             const SizedBox(height: 24),
+            
+            // 支付方式选择
             const Text(
-              '注意：这是演示页面，实际导航会根据支付结果类型进行处理',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-              textAlign: TextAlign.center,
+              '选择支付方式',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // 支付宝选项
+            _buildPaymentOption(
+              PaymentMethod.alipay,
+              '支付宝',
+              Icons.payment,
+              Colors.blue,
+            ),
+            
+            const SizedBox(height: 12),
+            
+            // 微信支付选项
+            _buildPaymentOption(
+              PaymentMethod.wechat,
+              '微信支付',
+              Icons.wechat,
+              Colors.green,
+            ),
+            
+            const SizedBox(height: 12),
+            
+            // 余额支付选项
+            _buildPaymentOption(
+              PaymentMethod.wallet,
+              '余额支付',
+              Icons.account_balance_wallet,
+              Colors.orange,
+            ),
+            
+            const SizedBox(height: 32),
+            
+            // 测试按钮
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: _isProcessing ? null : _testPayment,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _getPaymentColor(),
+                  foregroundColor: Colors.white,
+                ),
+                child: _isProcessing
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Text(
+                        '测试${_selectedMethod.displayName} ¥${_amountController.text}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // 说明文字
+            Card(
+              color: Colors.blue.shade50,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      '💡 使用说明',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text('1. 修改上方测试参数'),
+                    Text('2. 选择要测试的支付方式'),
+                    Text('3. 点击测试按钮发起支付'),
+                    Text('4. 点击右上角信息按钮检查支付方式可用性'),
+                    SizedBox(height: 8),
+                    Text(
+                      '⚠️ 注意：测试环境建议使用0.01元进行测试',
+                      style: TextStyle(
+                        color: Colors.orange,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -86,90 +324,75 @@ class PaymentDemoPage extends StatelessWidget {
     );
   }
   
-  Widget _buildDemoButton(
-    BuildContext context,
-    String title,
-    PaymentResultType resultType,
+  Widget _buildPaymentOption(
+    PaymentMethod method,
+    String name,
+    IconData icon,
     Color color,
-    String description,
   ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+    final isSelected = _selectedMethod == method;
+    
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedMethod = method;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: isSelected ? color : Colors.grey[300]!,
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(8),
+          color: isSelected ? color.withOpacity(0.05) : null,
+        ),
+        child: Row(
         children: [
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: color,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
+            Icon(
+              isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+              color: isSelected ? color : Colors.grey,
+            ),
+            const SizedBox(width: 16),
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
+              child: Icon(
+                icon,
+                color: color,
+              ),
             ),
-            onPressed: () => _simulatePaymentResult(context, resultType),
+            const SizedBox(width: 16),
+            Expanded(
             child: Text(
-              title,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                name,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? color : null,
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            description,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-            textAlign: TextAlign.center,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
   
-  void _simulatePaymentResult(BuildContext context, PaymentResultType resultType) {
-    // 创建模拟的支付响应
-    final paymentResponse = PaymentResponse(
-      success: resultType == PaymentResultType.success,
-      data: resultType == PaymentResultType.success ? 'mock_success_data' : null,
-      orderId: '123456', // 模拟订单ID
-      message: _getMessageForResultType(resultType),
-      code: _getCodeForResultType(resultType),
-      resultType: resultType,
-    );
-    
-    // 使用支付导航服务处理结果
-    PaymentNavigationService.handlePaymentResult(context, paymentResponse);
-  }
-  
-  String _getMessageForResultType(PaymentResultType resultType) {
-    switch (resultType) {
-      case PaymentResultType.success:
-        return '支付成功！';
-      case PaymentResultType.userCancelled:
-        return '您已取消支付';
-      case PaymentResultType.networkError:
-        return '网络连接出错，请重试';
-      case PaymentResultType.unknown:
-        return '支付结果未知，请查询订单状态';
-      case PaymentResultType.processing:
-        return '支付正在处理中，请稍后查看订单状态';
-      case PaymentResultType.failed:
-        return '支付失败，请重试';
-    }
-  }
-  
-  int _getCodeForResultType(PaymentResultType resultType) {
-    switch (resultType) {
-      case PaymentResultType.success:
-        return 9000;
-      case PaymentResultType.userCancelled:
-        return 6001;
-      case PaymentResultType.networkError:
-        return 6002;
-      case PaymentResultType.unknown:
-        return 6004;
-      case PaymentResultType.processing:
-        return 8000;
-      case PaymentResultType.failed:
-        return 4000;
+  Color _getPaymentColor() {
+    switch (_selectedMethod) {
+      case PaymentMethod.wechat:
+        return Colors.green;
+      case PaymentMethod.wallet:
+        return Colors.orange;
+      case PaymentMethod.alipay:
+      default:
+        return Colors.blue;
     }
   }
 } 

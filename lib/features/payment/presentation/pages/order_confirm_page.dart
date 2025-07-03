@@ -33,6 +33,9 @@ class OrderConfirmPage extends StatefulWidget {
 }
 
 class _OrderConfirmPageState extends State<OrderConfirmPage> {
+  String _selectedPaymentMethod = 'alipay'; // 默认选择支付宝
+  bool _isProcessing = false; // 防重复提交标志
+
   @override
   void initState() {
     super.initState();
@@ -44,11 +47,20 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
     return BlocListener<PaymentBloc, PaymentState>(
       listener: (context, state) {
         if (state is CreatingOrderState) {
+          setState(() {
+            _isProcessing = true;
+          });
           showLoadingDialog(context, message: '创建订单中...');
         } else if (state is PayingState) {
+          setState(() {
+            _isProcessing = true;
+          });
           dismissLoadingDialog(context);
           showLoadingDialog(context, message: '支付中...');
         } else if (state is PaymentCompletedState || state is PaymentFailedState) {
+          setState(() {
+            _isProcessing = false;
+          });
           dismissLoadingDialog(context);
           
           // 跳转到支付结果页面
@@ -66,6 +78,11 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
           }
           
           context.pushNamed('paymentResult', queryParameters: params);
+        } else if (state is PaymentInitial) {
+          // 重置状态时也重置处理标志
+          setState(() {
+            _isProcessing = false;
+          });
         }
       },
       child: Scaffold(
@@ -216,43 +233,26 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
               
-              // 支付宝支付方式
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Theme.of(context).primaryColor),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.check_circle,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                    const SizedBox(width: 16),
-                    Image.asset(
-                      'assets/images/alipay_logo.png',
-                      width: 80,
-                      height: 40,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          width: 80,
-                          height: 40,
-                          color: Colors.blue[50],
-                          alignment: Alignment.center,
-                          child: const Text(
-                            '支付宝',
-                            style: TextStyle(color: Colors.blue),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(width: 16),
-                    const Text('支付宝'),
-                  ],
-                ),
+              // 支付宝选项
+              _buildPaymentOption(
+                'alipay',
+                '支付宝',
+                'assets/images/alipay_logo.png',
+                Icons.payment,
+                Colors.blue,
+              ),
+              
+              const SizedBox(height: 12),
+              
+              // 微信支付选项
+              _buildPaymentOption(
+                'wechat',
+                '微信支付',
+                null, // 没有微信logo图片，使用图标
+                Icons.wechat,
+                Colors.green,
               ),
               
               const SizedBox(height: 32),
@@ -262,18 +262,42 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: _confirmOrder,
+                  onPressed: _isProcessing ? null : _confirmOrder, // 处理中时禁用按钮
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
+                    backgroundColor: _isProcessing 
+                        ? Colors.grey 
+                        : (_selectedPaymentMethod == 'wechat' ? Colors.green : Colors.blue),
                     foregroundColor: Colors.white,
                   ),
-                  child: const Text(
-                    '确认支付',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: _isProcessing
+                      ? const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            ),
+                            SizedBox(width: 12),
+                            Text(
+                              '处理中...',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Text(
+                          '确认支付 ￥${(widget.price * widget.quantity).toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
             ],
@@ -283,8 +307,107 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
     );
   }
 
+  /// 构建支付方式选项
+  Widget _buildPaymentOption(
+    String method,
+    String name,
+    String? logoAsset,
+    IconData fallbackIcon,
+    Color iconColor,
+  ) {
+    final isSelected = _selectedPaymentMethod == method;
+    
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedPaymentMethod = method;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: isSelected ? Theme.of(context).primaryColor : Colors.grey[300]!,
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(8),
+          color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.05) : null,
+        ),
+        child: Row(
+          children: [
+            // 选择指示器
+            Icon(
+              isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+              color: isSelected ? Theme.of(context).primaryColor : Colors.grey,
+            ),
+            const SizedBox(width: 16),
+            
+            // 支付方式图标/Logo
+            if (logoAsset != null)
+              Image.asset(
+                logoAsset,
+                width: 60,
+                height: 30,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 60,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      color: iconColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Icon(
+                      fallbackIcon,
+                      color: iconColor,
+                      size: 20,
+                    ),
+                  );
+                },
+              )
+            else
+              Container(
+                width: 60,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Icon(
+                  fallbackIcon,
+                  color: iconColor,
+                  size: 20,
+                ),
+              ),
+            
+            const SizedBox(width: 16),
+            
+            // 支付方式名称
+            Expanded(
+              child: Text(
+                name,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? Theme.of(context).primaryColor : null,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// 确认订单
   void _confirmOrder() {
+    // 防重复点击检查
+    if (_isProcessing) {
+      print('[OrderConfirmPage] 正在处理中，忽略重复点击');
+      return;
+    }
+    
+    print('[OrderConfirmPage] 开始创建订单并支付 - 商品: ${widget.productName}, 支付方式: $_selectedPaymentMethod');
+    
     // 发起创建订单并支付事件
     context.read<PaymentBloc>().add(
       CreateOrderAndPayEvent(
@@ -295,6 +418,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
         price: widget.price,
         productName: widget.productName,
         imageUrl: widget.imageUrl,
+        paymentMethod: _selectedPaymentMethod, // 传递选择的支付方式
       ),
     );
   }

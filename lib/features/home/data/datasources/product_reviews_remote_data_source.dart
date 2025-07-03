@@ -6,6 +6,9 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/error/exceptions.dart';
 import '../models/product_review_model.dart';
 
+/// Token获取函数类型定义
+typedef TokenProvider = Future<String> Function();
+
 abstract class ProductReviewsRemoteDataSource {
   /// 获取商品评论列表
   /// 
@@ -18,12 +21,12 @@ abstract class ProductReviewsRemoteDataSource {
 class ProductReviewsRemoteDataSourceImpl implements ProductReviewsRemoteDataSource {
   final http.Client _client;
   final String _baseUrl;
-  final Future<String> Function() _getToken;
+  final TokenProvider _getToken;
 
   ProductReviewsRemoteDataSourceImpl({
     required http.Client client,
     required String baseUrl,
-    required Future<String> Function() getToken,
+    required TokenProvider getToken,
   }) : _client = client,
        _baseUrl = baseUrl,
        _getToken = getToken;

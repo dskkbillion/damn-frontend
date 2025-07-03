@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/features/home/presentation/bloc/home_bloc.dart';
 import 'package:dskk_flutter_refactor/features/home/presentation/bloc/seller_profile_bloc.dart';
+import 'package:dskk_flutter_refactor/features/home/presentation/cubit/product_detail_cubit.dart';
 import 'package:dskk_flutter_refactor/features/home/di/home_di.dart';
 
 import '../pages/home_page.dart';
@@ -64,9 +65,15 @@ class HomeRoutes {
         GoRoute(
           path: productDetailPath,
           name: productDetailName,
-          builder: (context, state) {
+          pageBuilder: (context, state) {
             final productId = state.pathParameters['productId'] ?? '';
-            return ProductDetailPage(productId: productId);
+            return MaterialPage(
+              key: ValueKey('product_detail_$productId'),
+              child: BlocProvider(
+                create: (context) => sl<ProductDetailCubit>(),
+                child: ProductDetailPage(productId: productId),
+              ),
+            );
           },
         ),
         

@@ -33,15 +33,41 @@ class WechatPaymentService implements IPaymentService {
   @override
   Future<void> initialize() async {
     try {
+      print('[WechatPaymentService] Initializing Wechat payment service...');
+      
       // 加载配置
       await _ensureConfigLoaded();
       
-      // 初始化微信SDK（简化版）
+      // 验证配置完整性
+      if (!_config!.isValid) {
+        final errorMsg = 'Wechat payment configuration is invalid. '
+            'Please check environment variables: WECHAT_APP_ID, WECHAT_UNIVERSAL_LINK';
+        print('[WechatPaymentService] Configuration validation failed');
+        print('[WechatPaymentService] App ID: ${_config!.appId.isEmpty ? 'MISSING' : 'PROVIDED'}');
+        print('[WechatPaymentService] Universal Link: ${_config!.universalLink.isEmpty ? 'MISSING' : 'PROVIDED'}');
+        
+        return;
+      }
+      
+      print('[WechatPaymentService] Configuration loaded: ${_config.toString()}');
+      
+      // 如果是Mock模式，跳过SDK初始化
+      if (_config!.mockPayment) {
+        print('[WechatPaymentService] Mock payment mode enabled, skipping SDK initialization');
+        _isInitialized = true;
+        return;
+      }
+      
+      // 初始化微信SDK
       await _initializeWechatSDK();
       
-      print('[WechatPaymentService] 微信支付服务初始化成功（服务端托管模式）');
-    } catch (e) {
-      print('[WechatPaymentService] 微信支付服务初始化失败: $e');
+      _isInitialized = true;
+      print('[WechatPaymentService] WeChat payment service initialized successfully');
+    } catch (e, stackTrace) {
+      print('[WechatPaymentService] Initialization failed: $e');
+      print('[WechatPaymentService] Stack trace: $stackTrace');
+      
+      _isInitialized = false;
     }
   }
 

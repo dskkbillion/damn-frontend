@@ -3,8 +3,8 @@ import 'package:equatable/equatable.dart';
 /// 支付方式枚举
 enum PaymentMethod {
   alipay('alipay', '支付宝'),
-  wechat('wechat', '微信支付'),
-  wallet('wallet', '余额支付');
+  wechat('weapp', '微信支付'),  // 后端期望 'weapp' 代表微信APP支付
+  wallet('balance', '余额支付'); // 后端期望 'balance' 代表余额支付
 
   const PaymentMethod(this.code, this.displayName);
   final String code;

@@ -9,6 +9,8 @@ import 'package:dskk_flutter_refactor/core/analytics/observers/analytics_bloc_ob
 import 'package:dskk_flutter_refactor/core/analytics/di/analytics_injection.dart'; // 导入分析模块初始化
 // 导入core/auth中的IAuthRepository
 import 'package:dskk_flutter_refactor/core/auth/repositories/i_auth_repository.dart' as core_auth;
+// 导入配置验证工具
+import 'package:dskk_flutter_refactor/core/utils/config_validator.dart';
 
 // Import the root App Widget
 import 'package:dskk_flutter_refactor/app/app.dart';
@@ -39,6 +41,9 @@ Future<void> main() async { // Make main async
     backendBaseUrl = 'https://app.duoshaokankan.com/prod-api'; // Fallback on error
     print('Using fallback Base URL due to error: $backendBaseUrl');
   }
+
+  // 验证支付相关配置
+  ConfigValidator.printValidationReport();
 
   // 初始化SharedPreferences
   final prefs = await SharedPreferences.getInstance();

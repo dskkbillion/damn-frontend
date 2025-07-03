@@ -1,0 +1,51 @@
+# 多少看看 环境变量配置模板
+# 使用说明：复制此文件内容到项目根目录的 .env 文件中
+
+# =====================================================
+# 支付配置（必需）
+# =====================================================
+# 微信支付App ID（从微信开放平台获取）- 所有平台必需
+WECHAT_APP_ID=wx8647007008f7b74d
+
+# iOS Universal Link（仅iOS必需，Android可选）
+WECHAT_UNIVERSAL_LINK=https://app.duoshaokankan.com/wechat/
+
+# =====================================================
+# 后端服务配置（必需）
+# =====================================================
+# 后端API基础URL
+BACKEND_BASE_URL=https://app.duoshaokankan.com/prod-api
+
+# AI模型服务URL
+MODEL_BASE_URL=http://47.113.230.11:5102
+
+# =====================================================
+# 可选配置
+# =====================================================
+# 支付环境：production（生产）| sandbox（沙盒）| development（开发）
+PAYMENT_ENVIRONMENT=production
+
+# 是否启用Mock支付（开发调试用）：true | false
+PAYMENT_MOCK_ENABLED=false
+
+# 是否为开发环境：true | false
+DEBUG_MODE=false
+
+# 日志级别：debug | info | warning | error
+LOG_LEVEL=info
+
+# =====================================================
+# 平台特定说明
+# =====================================================
+# iOS平台：需要 WECHAT_APP_ID + WECHAT_UNIVERSAL_LINK
+# Android平台：仅需 WECHAT_APP_ID（Universal Link可选）
+# Web/其他：建议配置Universal Link
+
+# =====================================================
+# 开发配置示例（可选）
+# =====================================================
+# 如果是开发环境，可以使用以下配置：
+# PAYMENT_ENVIRONMENT=development
+# PAYMENT_MOCK_ENABLED=true
+# DEBUG_MODE=true
+# LOG_LEVEL=debug 

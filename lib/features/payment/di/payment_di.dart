@@ -32,11 +32,11 @@ class PaymentDI {
       print('[payment_di] Registered WechatPaymentService');
     }
     
-    // 注册 PaymentBloc
+    // 注册 PaymentBloc - 使用PaymentServiceFactory
     if (!sl.isRegistered<PaymentBloc>()) {
       sl.registerFactory<PaymentBloc>(() => PaymentBloc(
         createOrderUseCase: sl<CreateOrderUseCase>(),
-        paymentService: sl<IPaymentService>(),
+        paymentServiceFactory: sl<PaymentServiceFactory>(),
       ));
       print('[payment_di] Registered PaymentBloc');
     }

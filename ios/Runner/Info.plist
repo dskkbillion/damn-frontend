@@ -59,5 +59,37 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	
+	<!-- 微信支付配置 -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<!-- 支付宝URL Scheme -->
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>alipay</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>dskkapp</string>
+			</array>
+		</dict>
+		<!-- 微信URL Scheme -->
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>wechat</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>wx8647007008f7b74d</string>
+			</array>
+		</dict>
+	</array>
+	
+	<!-- 微信白名单 -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>wechat</string>
+		<string>weixin</string>
+		<string>alipay</string>
+		<string>alipays</string>
+	</array>
 </dict>
 </plist>
