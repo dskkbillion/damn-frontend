@@ -313,26 +313,6 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
               ],
             ),
           ),
-          
-          // 设置按钮
-          Positioned(
-            top: 0,
-            right: 0,
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () => context.go(SellerRoutes.storeSettings),
-                child: const Padding(
-                  padding: EdgeInsets.all(12.0),
-                  child: Icon(
-                    Icons.settings,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );
