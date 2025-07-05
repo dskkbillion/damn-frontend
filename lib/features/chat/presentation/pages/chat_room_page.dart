@@ -15,12 +15,14 @@ class ChatRoomPage extends StatefulWidget {
   final int chatId;
   final VoidCallback? onMessagesLoaded; // 新增回调参数
   final VoidCallback? onMessageRevoked; // 新增消息撤回回调参数
+  final VoidCallback? onMessageSent; // 新增消息发送成功回调参数
 
   const ChatRoomPage({
     super.key, 
     required this.chatId,
     this.onMessagesLoaded, // 添加可选回调
     this.onMessageRevoked, // 添加可选撤回回调
+    this.onMessageSent, // 添加可选发送回调
   });
 
   @override
@@ -333,6 +335,19 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                           Future.delayed(const Duration(milliseconds: 100), () {
                             if (mounted) {
                               context.read<ChatMessagesBloc>().add(const ResetMessageRevokedFlag());
+                            }
+                          });
+                        }
+                        
+                        // 检查是否有消息发送成功
+                        if (state.hasMessageSent) {
+                          print('[ChatRoomPage] Message sent detected, triggering onMessageSent callback');
+                          widget.onMessageSent?.call();
+                          
+                          // 重置发送标志
+                          Future.delayed(const Duration(milliseconds: 100), () {
+                            if (mounted) {
+                              context.read<ChatMessagesBloc>().add(const ResetMessageSentFlag());
                             }
                           });
                         }

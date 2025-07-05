@@ -285,18 +285,13 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
               // );
             },
             onRemove: () {
-              // 从收藏中移除
-              if (service is Favorite) {
-                context.read<FavoritesBloc>().add(
-                      RemoveFromFavoritesEvent(
-                        favoriteIds: [service.id],
-                      ),
-                    );
-              } else {
-                // ScaffoldMessenger.of(context).showSnackBar(
-                //   const SnackBar(content: Text('无法移除收藏，缺少收藏ID')),
-                // );
-              }
+              // 使用正确的事件类型，通过服务ID删除收藏
+              context.read<FavoritesBloc>().add(
+                RemoveFromFavoritesByObjectIdEvent(
+                  type: 'org_product', // 服务类型
+                  objectId: service.id, // 服务ID
+                ),
+              );
             },
           );
         },

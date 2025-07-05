@@ -273,6 +273,11 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                           print('[ChatListPage] Message revoked, refreshing chat list');
                           context.read<ChatListBloc>().add(RefreshChatList());
                         },
+                        onMessageSent: () {
+                          // 消息发送成功后刷新列表
+                          print('[ChatListPage] Message sent, refreshing chat list');
+                          context.read<ChatListBloc>().add(RefreshChatList());
+                        },
                       ),
                     ),
                   ),
@@ -330,6 +335,11 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             onMessageRevoked: () {
               // 消息撤回后刷新列表
               print('[ChatListPage] Message revoked in chat ${chatRoom.id}, refreshing chat list');
+              context.read<ChatListBloc>().add(RefreshChatList());
+            },
+            onMessageSent: () {
+              // 消息发送成功后刷新列表
+              print('[ChatListPage] Message sent in chat ${chatRoom.id}, refreshing chat list');
               context.read<ChatListBloc>().add(RefreshChatList());
             },
           ),

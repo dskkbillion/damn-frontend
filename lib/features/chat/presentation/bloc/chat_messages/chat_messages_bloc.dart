@@ -70,6 +70,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     on<RevokeMessageRequested>(_onRevokeMessageRequested);
     on<DeleteMessageRequested>(_onDeleteMessageRequested);
     on<ResetMessageRevokedFlag>(_onResetMessageRevokedFlag);
+    on<ResetMessageSentFlag>(_onResetMessageSentFlag);
   }
 
   Future<void> _onLoadChatMessages(
@@ -327,6 +328,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
         emit(currentState.copyWith(
           messages: updatedMessages,
           error: () => null,
+          hasMessageSent: true, // 设置发送成功标志
         ));
          print("Message sent successfully: ${sentMessage.id}");
       },
@@ -467,6 +469,16 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     if (state is ChatMessagesLoaded) {
       final currentState = state as ChatMessagesLoaded;
       emit(currentState.copyWith(hasMessageRevoked: false));
+    }
+  }
+
+  void _onResetMessageSentFlag(
+    ResetMessageSentFlag event,
+    Emitter<ChatMessagesState> emit,
+  ) {
+    if (state is ChatMessagesLoaded) {
+      final currentState = state as ChatMessagesLoaded;
+      emit(currentState.copyWith(hasMessageSent: false));
     }
   }
 

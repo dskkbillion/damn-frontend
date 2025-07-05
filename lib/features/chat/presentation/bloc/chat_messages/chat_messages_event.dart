@@ -85,6 +85,14 @@ class ResetMessageRevokedFlag extends ChatMessagesEvent {
   List<Object?> get props => [];
 }
 
+/// Event to reset message sent flag
+class ResetMessageSentFlag extends ChatMessagesEvent {
+  const ResetMessageSentFlag();
+
+  @override
+  List<Object?> get props => [];
+}
+
 // Internal event for WebSocket messages
 class _MessageReceived extends ChatMessagesEvent {
   final ChatMessageDto messageDto;
