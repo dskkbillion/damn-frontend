@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dskk_flutter_refactor/core/router/smart_router_utils.dart';
 
 // 导入国际化
 import '../../../../generated/l10n.dart';
@@ -274,15 +273,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
       padding: const EdgeInsets.all(16.0),
       child: Row(
         children: [
-          // 头像，修复导航路径统一使用seller-profile
+          // 头像，使用标准Go Router导航
           GestureDetector(
             onTap: () {
-              // 统一使用 seller-profile 路径，避免与Seller Shell路径冲突
-              SmartRouterUtils.smartNavigate(
-                context,
-                '/seller-profile/${product.sellerId}',
-                source: 'product_detail_avatar',
-              );
+              // 使用标准Go Router导航
+              context.go('/seller-profile/${product.sellerId}');
             },
             child: CircleAvatar(
               radius: 20,
@@ -297,16 +292,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
             ),
           ),
           const SizedBox(width: 12),
-          // 卖家信息，保持相同的导航路径
+          // 卖家信息，使用标准Go Router导航
           Expanded(
             child: GestureDetector(
               onTap: () {
-                // 使用相同的路径，确保一致性
-                SmartRouterUtils.smartNavigate(
-                  context,
-                  '/seller-profile/${product.sellerId}',
-                  source: 'product_detail_seller_info',
-                );
+                // 使用标准Go Router导航
+                context.go('/seller-profile/${product.sellerId}');
               },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -660,15 +651,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
               ),
               GestureDetector(
                 onTap: () {
-                  // 跳转到评论详情页 - 使用智能导航
+                  // 跳转到评论详情页 - 使用标准Go Router导航
                   final productId = int.tryParse(widget.productId) ?? 0;
                   if (productId > 0) {
-                    SmartRouterUtils.smartNavigate(
-                      context,
-                      '/product/:productId/reviews',
-                      params: {'productId': productId.toString()},
-                      source: 'product_detail_reviews_button',
-                    );
+                    context.go('/product/$productId/reviews');
                   }
                 },
                 child: Row(

@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'dart:math';
 
-/// 智能路由工具类 - 简化版本
+/// 智能路由工具类 - 基础稳定版本
 /// 
 /// 提供统一的路由管理功能，包括：
-/// - 稳定的Key生成策略，避免Navigator重复Key错误
+/// - 基础稳定的Key生成策略，避免Navigator重复Key错误
 /// - 防止快速重复点击
 /// - 跨模块路由统一管理
 class SmartRouterUtils {
   SmartRouterUtils._();
 
-  static final Map<String, DateTime> _navigationCooldown = {}; 
-  static final Random _random = Random();
+  static final Map<String, DateTime> _navigationCooldown = {};
 
-  /// 生成简洁且唯一的路由Key
+  /// 生成基础稳定的路由Key
   /// 
-  /// 核心思路：使用路径+参数的哈希值，而不是复杂的时间戳
+  /// 核心思路：直接使用路径作为key，不添加任何随机性
+  /// 这避免了Go Router内部的key预留机制冲突
   /// [routePath] 路由路径
   /// [params] 路由参数
   /// [source] 来源信息，用于调试
@@ -25,26 +24,17 @@ class SmartRouterUtils {
     Map<String, String>? params,
     String? source,
   }) {
-    // 构建基础路径标识符
-    String baseKey = routePath.replaceAll('/', '_').replaceAll(':', '');
+    // 直接使用路径+参数作为key，确保稳定性
+    final pathWithParams = '${routePath}_${params?.toString() ?? ''}';
+    final finalKey = pathWithParams
+        .replaceAll('/', '_')
+        .replaceAll(':', '')
+        .replaceAll('{', '')
+        .replaceAll('}', '')
+        .replaceAll(' ', '')
+        .replaceAll(',', '_');
     
-    // 添加参数信息
-    if (params != null && params.isNotEmpty) {
-      final paramStr = params.entries
-          .map((e) => '${e.key}_${e.value}')
-          .join('_');
-      baseKey += '_$paramStr';
-    }
-    
-    // 使用路径+参数的稳定哈希，而不是随机数
-    final pathHash = '${routePath}_${params?.toString() ?? ''}'.hashCode.abs();
-    
-    // 添加少量随机性防止极端情况下的冲突
-    final minorRandom = _random.nextInt(999);
-    
-    final finalKey = '${baseKey}_h${pathHash}_r${minorRandom}';
-    
-    debugPrint('SmartRouter: 生成简洁key: $finalKey (路径: $routePath)');
+    debugPrint('SmartRouter: 生成稳定key: $finalKey (路径: $routePath)');
     
     return finalKey;
   }
@@ -154,9 +144,9 @@ class SmartRouterUtils {
   }
 }
 
-/// 页面构建器扩展 - 简化版本
+/// 页面构建器扩展 - 基础稳定版本
 extension SmartPageBuilder on GoRouterState {
-  /// 创建页面，使用简洁的key策略
+  /// 创建页面，使用基础稳定的key策略
   MaterialPage<T> buildSmartPage<T extends Object?>(
     Widget child, {
     String? name,
@@ -165,16 +155,18 @@ extension SmartPageBuilder on GoRouterState {
     bool maintainState = true,
     bool fullscreenDialog = false,
   }) {
-    // 使用路径和参数的稳定哈希作为key
-    // 这避免了Go Router多次调用pageBuilder时产生不同key的问题
+    // 直接使用路径+参数作为key，确保绝对稳定
+    // 相同路径+参数总是生成相同的key，避免Go Router内部冲突
     final pathWithParams = '${matchedLocation}_${pathParameters.toString()}';
-    final stableHash = pathWithParams.hashCode.abs();
+    final finalKey = pathWithParams
+        .replaceAll('/', '_')
+        .replaceAll(':', '')
+        .replaceAll('{', '')
+        .replaceAll('}', '')
+        .replaceAll(' ', '')
+        .replaceAll(',', '_');
     
-    // 只在真正需要区分的时候添加来源信息
-    final keySource = source ?? name ?? 'page';
-    final finalKey = 'page_${stableHash}_${keySource}';
-    
-    debugPrint('SmartPage: 创建页面 $matchedLocation (key: $finalKey)');
+    debugPrint('SmartPage: 创建页面 $matchedLocation (稳定key: $finalKey)');
     
     return MaterialPage<T>(
       key: ValueKey(finalKey),

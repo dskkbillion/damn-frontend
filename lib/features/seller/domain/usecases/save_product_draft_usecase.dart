@@ -8,13 +8,13 @@ import 'package:injectable/injectable.dart';
 
 /// 保存草稿参数
 class SaveProductDraftParams extends Equatable {
-  /// 商品名称
+  /// 商品名称（草稿允许为空）
   final String name;
   
-  /// 商品描述
+  /// 商品描述（草稿允许为空）
   final String description;
   
-  /// 基础价格
+  /// 基础价格（草稿允许为0）
   final double price;
   
   /// 分类ID（可选）
@@ -26,7 +26,7 @@ class SaveProductDraftParams extends Equatable {
   /// 自定义材料问题（可选）
   final List<ProductMaterial>? productMaterials;
   
-  /// 已上传的图片URL列表
+  /// 已上传的图片URL列表（草稿允许为空）
   final List<String> imageUrls;
   
   /// 已上传的详情图URL列表
@@ -36,10 +36,10 @@ class SaveProductDraftParams extends Equatable {
   final int? productId;
 
   const SaveProductDraftParams({
-    required this.name,
-    required this.description,
-    required this.price,
-    required this.imageUrls,
+    this.name = '',
+    this.description = '',
+    this.price = 0,
+    this.imageUrls = const [],
     this.detailImageUrls = const [],
     this.categoryId,
     this.variants,
@@ -70,7 +70,7 @@ class SaveProductDraftUseCase implements UseCase<bool, SaveProductDraftParams> {
         name: params.name,
         description: params.description,
         price: params.price,
-        images: params.imageUrls.join(','),
+        images: params.imageUrls.isNotEmpty ? params.imageUrls.join(',') : null,
         categoryId: params.categoryId,
         variants: params.variants,
         productMaterials: params.productMaterials,
@@ -81,12 +81,12 @@ class SaveProductDraftUseCase implements UseCase<bool, SaveProductDraftParams> {
       
       return _sellerRepository.updateProduct(updateData);
     } else {
-      // 创建新草稿
+      // 创建新草稿 - 允许图片为空
       final creationData = ProductCreationData(
         name: params.name,
         description: params.description,
         price: params.price,
-        images: params.imageUrls.join(','),
+        images: params.imageUrls.isNotEmpty ? params.imageUrls.join(',') : '', // 草稿允许空图片
         categoryId: params.categoryId,
         variants: params.variants,
         productMaterials: params.productMaterials,

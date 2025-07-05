@@ -813,6 +813,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   // 输入时清除该字段的错误
                   _formErrors.remove('price_$_selectedVariantIndex');
                 });
+                // 触发变更检测
+                _onFormFieldChanged();
               },
             ),
           ),
@@ -905,6 +907,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                       setState(() {
                         _variants[_selectedVariantIndex].deliveryDay = int.tryParse(value) ?? 3;
                       });
+                      // 触发变更检测
+                      _onFormFieldChanged();
                     },
                   ),
                 ),
@@ -934,6 +938,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                     setState(() {
                       _variants[_selectedVariantIndex].editNum = int.tryParse(value) ?? 1;
                     });
+                    // 触发变更检测
+                    _onFormFieldChanged();
                   },
                 ),
               ),

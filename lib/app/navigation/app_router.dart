@@ -528,17 +528,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           // Branch 1: 主页 (Path: /home)
           StatefulShellBranch(
              routes: [
-               // 买家主页路由 - 直接在Shell中定义避免冲突
+               // 买家主页路由 - 使用最简单的页面创建方式
                GoRoute(
                  path: '/home',
                  name: 'home',
-                 pageBuilder: (context, state) => state.buildSmartPage(
-                   BlocProvider<HomeBloc>(
+                 pageBuilder: (context, state) => MaterialPage(
+                   key: ValueKey(state.matchedLocation), // 使用最简单的key策略
+                   child: BlocProvider<HomeBloc>(
                      create: (_) => getIt<HomeBloc>(),
                      child: const HomePage(),
                    ),
-                   name: 'home',
-                   source: 'buyer_shell_home',
                  ),
                  routes: [
                    // 产品详情路由
@@ -547,13 +546,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                      name: 'productDetail',
                      pageBuilder: (context, state) {
                        final productId = state.pathParameters['productId'] ?? '';
-                       return state.buildSmartPage(
-                         BlocProvider(
+                       return MaterialPage(
+                         key: ValueKey(state.matchedLocation), // 使用最简单的key策略
+                         child: BlocProvider(
                            create: (context) => getIt<ProductDetailCubit>(),
                            child: ProductDetailPage(productId: productId),
                          ),
-                         name: 'productDetail',
-                         source: 'buyer_shell_home',
                        );
                      },
                    ),
@@ -643,16 +641,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ...sellerNonShellRoutes, 
       ...PaymentRoutes.routes, // 添加支付模块路由
 
-      // 添加卖家主页路由 - 使用智能路由系统，修复路径冲突
+      // 添加卖家主页路由 - 使用最简单的页面创建方式
       GoRoute(
-        path: '/seller-profile/:id', // 修改路径避免与Seller Shell冲突
+        path: '/seller-profile/:id',
         name: 'sellerPublicProfile',
         pageBuilder: (context, state) {
           final sellerId = int.parse(state.pathParameters['id'] ?? '0');
-          return state.buildSmartPage(
-            SellerPublicProfilePage(sellerId: sellerId),
-            name: 'sellerPublicProfile',
-            source: 'app_navigation_cross_module',
+          return MaterialPage(
+            key: ValueKey(state.matchedLocation), // 使用最简单的key策略
+            child: SellerPublicProfilePage(sellerId: sellerId),
           );
         },
       ),

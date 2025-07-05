@@ -313,8 +313,18 @@ class ProductEditState extends Equatable {
     List<String> currentDetailImagePaths,
     ProductFormData? initialData,
   ) {
-    if (initialData == null) return false;
+    // 对于新建商品（没有初始数据），只要用户输入了任何内容就算有变更
+    if (initialData == null) {
+      return currentFormData.name.trim().isNotEmpty ||
+             currentFormData.description.trim().isNotEmpty ||
+             currentFormData.price > 0 ||
+             currentImagePaths.isNotEmpty ||
+             currentDetailImagePaths.isNotEmpty ||
+             (currentFormData.variants.isNotEmpty && 
+              currentFormData.variants.any((v) => v.price > 0));
+    }
     
+    // 对于编辑商品，比较与初始状态的差异
     return currentFormData.name != initialData.name ||
            currentFormData.description != initialData.description ||
            currentFormData.price != initialData.price ||

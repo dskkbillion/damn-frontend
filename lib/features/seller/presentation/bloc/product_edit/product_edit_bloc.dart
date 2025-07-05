@@ -702,36 +702,51 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     emit(state.copyWithSavingDraft());
     
     try {
-      // 如果有本地图片，需要先上传
+      // 获取已上传的图片URL
       List<String> finalImageUrls = List.from(state.uploadedImageUrls);
       List<String> finalDetailUrls = List.from(state.uploadedDetailImageUrls);
       
-      // 上传本地选择的图片
+      // 对于草稿，如果有本地选择的图片，尝试上传但不强制要求成功
       if (state.selectedImagePaths.isNotEmpty) {
-        for (final imagePath in state.selectedImagePaths) {
-          final file = File(imagePath);
-          final uploadResult = await _fileUploadRepository.uploadFile(file);
-          
-          uploadResult.fold(
-            (failure) => throw Exception('图片上传失败: ${failure.message}'),
-            (url) => finalImageUrls.add(url),
-          );
+        try {
+          for (final imagePath in state.selectedImagePaths) {
+            final file = File(imagePath);
+            final uploadResult = await _fileUploadRepository.uploadFile(file);
+            
+            uploadResult.fold(
+              (failure) {
+                // 图片上传失败不阻止草稿保存，只记录日志
+                print('草稿保存：图片上传失败 ${failure.message}，继续保存草稿');
+              },
+              (url) => finalImageUrls.add(url),
+            );
+          }
+        } catch (e) {
+          // 图片上传异常不阻止草稿保存
+          print('草稿保存：图片上传异常 $e，继续保存草稿');
         }
       }
       
-      // 上传本地选择的详情图
+      // 对于详情图也是同样的处理
       if (state.selectedDetailImagePaths.isNotEmpty) {
-        for (final imagePath in state.selectedDetailImagePaths) {
-          final file = File(imagePath);
-          final uploadResult = await _fileUploadRepository.uploadFile(file);
-          
-          uploadResult.fold(
-            (failure) => throw Exception('详情图上传失败: ${failure.message}'),
-            (url) => finalDetailUrls.add(url),
-          );
+        try {
+          for (final imagePath in state.selectedDetailImagePaths) {
+            final file = File(imagePath);
+            final uploadResult = await _fileUploadRepository.uploadFile(file);
+            
+            uploadResult.fold(
+              (failure) {
+                print('草稿保存：详情图上传失败 ${failure.message}，继续保存草稿');
+              },
+              (url) => finalDetailUrls.add(url),
+            );
+          }
+        } catch (e) {
+          print('草稿保存：详情图上传异常 $e，继续保存草稿');
         }
       }
       
+      // 创建草稿参数 - 使用新的可选参数构造方式
       final params = SaveProductDraftParams(
         name: state.formData.name,
         description: state.formData.description,
@@ -750,8 +765,14 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
         (failure) => emit(state.copyWithError(failure.message)),
         (success) {
           emit(state.copyWithDraftSaveSuccess());
-          // 更新初始数据为当前数据
+          // 更新初始数据为当前数据，这样再次编辑时不会误判为有变更
           add(SetInitialFormData(initialData: state.formData));
+          
+          // 清除本地选择的图片路径，避免重复检测为变更
+          emit(state.copyWith(
+            selectedImagePaths: [],
+            selectedDetailImagePaths: [],
+          ));
         },
       );
       

@@ -4,7 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:dskk_flutter_refactor/core/router/smart_router_utils.dart';
 
 // 导入国际化
 import '../../../../generated/l10n.dart';
@@ -380,12 +379,8 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
         
         return GestureDetector(
           onTap: () {
-            // 修复：使用智能导航系统
-            SmartRouterUtils.smartNavigate(
-              context,
-              '/home/product/${product.id}',
-              source: 'seller_public_profile_product_grid',
-            );
+            // 使用标准Go Router导航
+            context.go('/home/product/${product.id}');
           },
           child: Container(
             decoration: BoxDecoration(
