@@ -81,6 +81,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     final result = await updateUserProfile(
       UpdateUserProfileParams(
         nickName: event.nickName,
+        avatar: event.avatar,  // 添加头像参数
         onlineFlag: event.onlineFlag,
       ),
     );

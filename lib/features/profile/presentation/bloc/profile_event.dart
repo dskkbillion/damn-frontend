@@ -17,15 +17,17 @@ class GetUserProfileEvent extends ProfileEvent {}
 /// 更新用户资料
 class UpdateUserProfileEvent extends ProfileEvent {
   final String? nickName;
+  final String? avatar;  // 添加头像字段
   final bool? onlineFlag;
 
   const UpdateUserProfileEvent({
     this.nickName,
+    this.avatar,  // 添加头像参数
     this.onlineFlag,
   });
 
   @override
-  List<Object?> get props => [nickName, onlineFlag];
+  List<Object?> get props => [nickName, avatar, onlineFlag];
 }
 
 /// 上传头像

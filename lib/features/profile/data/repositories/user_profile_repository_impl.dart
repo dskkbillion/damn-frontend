@@ -60,10 +60,9 @@ class UserProfileRepositoryImpl implements IUserProfileRepository {
   Future<Either<Failure, UserProfile>> updateUserProfile(UserProfileUpdateData data) async {
     if (await networkInfo.isConnected) {
       try {
-        final nickName = data.nickName ?? '用户';
-
         final updatedProfile = await remoteDataSource.updateUserProfile(
-          nickName: nickName,
+          nickName: data.nickName,  // 不再有默认值
+          avatar: data.avatar,      // 添加头像参数
           onlineFlag: data.onlineFlag,
         );
         localDataSource.cacheUserProfile(updatedProfile);

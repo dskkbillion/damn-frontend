@@ -28,7 +28,8 @@ class MockProfileRemoteDataSource implements ProfileRemoteDataSource {
 
   @override
   Future<UserProfileDto> updateUserProfile({
-    required String nickName,
+    String? nickName,  // 改为可选参数
+    String? avatar,    // 添加头像参数
     bool? onlineFlag,
   }) async {
     // 模拟网络延迟
@@ -36,8 +37,8 @@ class MockProfileRemoteDataSource implements ProfileRemoteDataSource {
 
     return UserProfileDto(
       userId: 'user123',
-      nickName: nickName,
-      avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
+      nickName: nickName ?? '测试用户',  // 提供默认值
+      avatarUrl: avatar ?? 'https://randomuser.me/api/portraits/men/32.jpg',  // 使用传入的头像或默认头像
       onlineFlag: onlineFlag ?? true,
     );
   }

@@ -22,13 +22,15 @@ abstract class ProfileRemoteDataSource {
 
   /// 更新用户个人资料
   ///
-  /// 必需参数：
+  /// 可选参数：
   /// * [nickName] - 新的昵称
+  /// * [avatar] - 新的头像URL
   /// * [onlineFlag] - 新的在线状态
   ///
   /// 如果服务器返回非200状态码，则抛出 [ServerException]
   Future<UserProfileDto> updateUserProfile({
-    required String nickName,
+    String? nickName,  // 改为可选参数
+    String? avatar,    // 添加头像参数
     bool? onlineFlag,
   });
 
@@ -149,7 +151,8 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
 
   @override
   Future<UserProfileDto> updateUserProfile({
-    required String nickName,
+    String? nickName,  // 改为可选参数
+    String? avatar,    // 添加头像参数
     bool? onlineFlag,
   }) async {
     try {
@@ -158,11 +161,14 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         throw ServerException(message: '无法获取用户 ID', statusCode: 401);
       }
 
-      final requestData = {
-        'nickName': nickName,
-        if (onlineFlag != null) 'onlineFlag': onlineFlag,
-      };
-      final response = await dio.post('/api/member/profile/$userId', data: requestData);
+      final requestData = <String, dynamic>{};
+      
+      if (nickName != null) requestData['nickName'] = nickName;
+      if (avatar != null) requestData['avatar'] = avatar;
+      if (onlineFlag != null) requestData['onlineFlag'] = onlineFlag;
+      
+      // 使用后端的 /api/member/modify 接口
+      final response = await dio.post('/api/member/modify', data: requestData);
 
       if (response.statusCode == 200) {
         final responseData = response.data;

@@ -19,6 +19,7 @@ class UpdateUserProfileUseCase implements UseCase<UserProfile, UpdateUserProfile
     return repository.updateUserProfile(
       UserProfileUpdateData(
         nickName: params.nickName,
+        avatar: params.avatar,  // 添加头像参数
         onlineFlag: params.onlineFlag,
       ),
     );
@@ -28,13 +29,15 @@ class UpdateUserProfileUseCase implements UseCase<UserProfile, UpdateUserProfile
 /// 更新用户资料的参数
 class UpdateUserProfileParams extends Equatable {
   final String? nickName;
+  final String? avatar;  // 添加头像字段
   final bool? onlineFlag;
 
   const UpdateUserProfileParams({
     this.nickName,
+    this.avatar,  // 添加头像参数
     this.onlineFlag,
   });
 
   @override
-  List<Object?> get props => [nickName, onlineFlag];
+  List<Object?> get props => [nickName, avatar, onlineFlag];
 }

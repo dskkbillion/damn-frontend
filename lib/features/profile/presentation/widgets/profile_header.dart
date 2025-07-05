@@ -74,22 +74,50 @@ class ProfileHeader extends ConsumerWidget {
   }
 
   Widget _buildAvatar(BuildContext context, UserProfile? profile) {
-    final imageUrl = profile?.avatarUrl;
-    final hasUrl = imageUrl != null && imageUrl.isNotEmpty;
-    print('[ProfileHeader] Avatar URL: $imageUrl, Has URL: $hasUrl');
+    return BlocBuilder<ProfileBloc, ProfileState>(
+      builder: (context, state) {
+        final imageUrl = profile?.avatarUrl;
+        final hasUrl = imageUrl != null && imageUrl.isNotEmpty;
+        final isUploading = state is ProfileAvatarUploading;
+        print('[ProfileHeader] Avatar URL: $imageUrl, Has URL: $hasUrl, IsUploading: $isUploading');
 
-    // 使用InkWell使头像可点击，点击后跳转到账号与安全页面
-    return InkWell(
-      onTap: () => context.go(ProfileRoutes.accountSecurityPath), // 点击时导航到账号与安全页面
-      child: CircleAvatar(
-        radius: 35,
-        backgroundColor: Colors.white.withOpacity(0.8),
-        backgroundImage: hasUrl ? NetworkImage(imageUrl) : null,
-        // 只有在没有URL时才显示默认用户图标，有URL时不显示任何图标
-        child: !hasUrl
-            ? Icon(Icons.person, size: 35, color: Theme.of(context).primaryColor)
-            : null,
-      ),
+        // 使用InkWell使头像可点击，点击后跳转到账号与安全页面
+        return InkWell(
+          onTap: () => context.go(ProfileRoutes.accountSecurityPath), // 点击时导航到账号与安全页面
+          child: Stack(
+            children: [
+              CircleAvatar(
+                radius: 35,
+                backgroundColor: Colors.white.withOpacity(0.8),
+                backgroundImage: hasUrl ? NetworkImage(imageUrl) : null,
+                // 只有在没有URL时才显示默认用户图标，有URL时不显示任何图标
+                child: !hasUrl
+                    ? Icon(Icons.person, size: 35, color: Theme.of(context).primaryColor)
+                    : null,
+              ),
+              if (isUploading)
+                Positioned.fill(
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.black54,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 

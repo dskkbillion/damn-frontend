@@ -69,103 +69,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     }
   }
 
-  // Helper to build the static admin list item
-  Widget _buildAdminListItem(BuildContext context, int currentUserId) {
-    // 获取国际化资源
-    final s = S.of(context);
-    
-    // 在BlocBuilder中访问当前状态，以获取系统管理员聊天室的真实信息
-    return BlocBuilder<ChatListBloc, ChatListState>(
-      builder: (context, state) {
-        // 从当前聊天列表中查找系统管理员聊天室
-        int adminUnreadCount = 0;
-        ChatMessage? lastAdminMessage;
-        ChatRoom? adminChatRoom;
-        
-        // 查找系统管理员聊天室
-        try {
-          adminChatRoom = state.chatRooms.cast<ChatRoom?>().firstWhere(
-            (room) => room != null && (
-              (room.participant1.type == 'ADMIN' && room.participant1.referId == 0) ||
-              (room.participant2.type == 'ADMIN' && room.participant2.referId == 0)
-            ),
-            orElse: () => null,
-          );
-          
-          if (adminChatRoom != null) {
-            adminUnreadCount = adminChatRoom.unreadCount;
-            lastAdminMessage = adminChatRoom.lastMessage;
-            print("[ChatListPage] Found existing admin chat room ${adminChatRoom.id} with $adminUnreadCount unread messages");
-          }
-        } catch (e) {
-          print("[ChatListPage] Error finding admin chat room: $e");
-        }
-        
-        // Create a fake ChatRoom representing the admin chat
-        final adminParticipant = Participant(
-          id: 0, 
-          referId: 0, 
-          nickName: s.chat_admin_title,
-          type: 'ADMIN',
-          avatar: null, // TODO: Add a specific admin icon/avatar URL later
-        );
-        
-        final currentUserParticipant = Participant(
-          id: -1, 
-          referId: currentUserId,
-          nickName: 'Me',
-          type: 'MEMBER',
-        );
 
-        final fakeAdminChatRoom = ChatRoom(
-          id: adminChatRoom?.id ?? -1, // 使用真实ID或占位符ID
-          participant1: currentUserParticipant, 
-          participant2: adminParticipant,
-          unreadCount: adminUnreadCount, // 使用真实的未读数量
-          lastMessage: lastAdminMessage, // 使用真实的最后消息
-        );
-
-        return Material(
-          color: Colors.white, 
-          child: ChatListItem(
-            key: const ValueKey('admin_chat_entry'), 
-            chatRoom: fakeAdminChatRoom,
-            currentUserId: currentUserId, 
-            onTap: () {
-              print('[ChatListPage] Admin chat item tapped.');
-              if (adminChatRoom != null) {
-                // 如果已存在聊天室，直接导航
-                print('[ChatListPage] Navigating to existing admin chat room ${adminChatRoom.id}');
-                                  final chatId = adminChatRoom.id;
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => BlocProvider(
-                        create: (_) => sl<ChatMessagesBloc>(param1: chatId)
-                                      ..add(LoadChatMessages(chatId)),
-                        child: ChatRoomPage(
-                          chatId: chatId,
-                          onMessagesLoaded: () {
-                            print('[ChatListPage] Admin chat messages loaded, updating unread count to 0');
-                            context.read<ChatListBloc>().add(
-                              UpdateChatRoomUnreadCount(chatId: chatId, unreadCount: 0)
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  );
-              } else {
-                // 如果不存在，则创建新的聊天室
-                print('[ChatListPage] Creating new admin chat room');
-                context.read<ChatListBloc>().add(StartAdminChatRequested());
-              }
-            },
-          ),
-        );
-      },
-    );
-  }
   
   // 添加通知中心条目构建方法
   Widget _buildNotificationItem(BuildContext context, int currentUserId) {
@@ -373,15 +277,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                    // }
                 });
               }
-              // Handle potential error messages from StartAdminChatRequested
-              if (state.status == ChatListStatus.failure && state.errorMessage != null && state.errorMessage!.contains(s.chat_admin_connection_error)) {
-                 // Show SnackBar or Dialog with the error
-                 ScaffoldMessenger.of(context).showSnackBar(
-                   SnackBar(content: Text(state.errorMessage!)),
-                 );
-                 // Optionally reset the error message in the state
-                 // context.read<ChatListBloc>().add(ClearErrorMessage()); // Need to add this event
-              }
+
             },
             child: BlocBuilder<ChatListBloc, ChatListState>(
               builder: (context, state) {
@@ -541,8 +437,6 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         color: Colors.white,
         child: Column(
           children: [
-            _buildAdminListItem(context, currentUserId),
-            const Divider(height: 1, thickness: 1, color: Color(0xFFEDEDED)),
             _buildNotificationItem(context, currentUserId),
             const Divider(height: 8, thickness: 8, color: Color(0xFFEDEDED)),
           ],

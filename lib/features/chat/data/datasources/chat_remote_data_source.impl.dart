@@ -72,11 +72,11 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
   Future<List<ChatRoomDto>> getChatRooms() async {
     print("[API Call] Fetching chat rooms...");
     try {
-      // Request response as plain text to handle potential type inconsistencies manually
+      // 🔥 老版本实现：直接使用POST方法 + 空对象（简单可靠）
       final response = await dio.post(
         '/api/chat/list',
-        data: {}, 
-        options: Options(responseType: ResponseType.plain), // Get raw string
+        data: {}, // 老版本的空对象请求
+        options: Options(responseType: ResponseType.plain),
       );
 
       // Check if response data is a non-empty string

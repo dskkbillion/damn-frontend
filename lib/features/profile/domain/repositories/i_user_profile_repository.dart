@@ -28,10 +28,12 @@ abstract class IUserProfileRepository {
 /// 更新用户资料的数据类
 class UserProfileUpdateData {
   final String? nickName;
+  final String? avatar;  // 添加头像字段
   final bool? onlineFlag;
 
   UserProfileUpdateData({
     this.nickName,
+    this.avatar,  // 添加头像参数
     this.onlineFlag,
   });
 }

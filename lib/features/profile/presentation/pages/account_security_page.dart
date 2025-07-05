@@ -62,6 +62,40 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
               }
             },
           ),
+          // 添加头像上传状态监听
+          BlocListener<ProfileBloc, ProfileState>(
+            listenWhen: (previous, current) => 
+              current is ProfileAvatarUploading ||
+              current is ProfileAvatarUploaded ||
+              (current is ProfileError && previous is ProfileAvatarUploading),
+            listener: (context, state) {
+              if (state is ProfileAvatarUploading) {
+                // 显示上传中提示
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('正在上传头像...')),
+                );
+              } else if (state is ProfileAvatarUploaded) {
+                // 上传成功，使用新的头像URL更新用户资料
+                _profileBloc.add(UpdateUserProfileEvent(avatar: state.avatarUrl));
+                
+                setState(() {
+                  avatarFile = null; // 清除本地文件
+                });
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('头像更新成功！')),
+                );
+              } else if (state is ProfileError) {
+                setState(() {
+                  avatarFile = null; // 清除本地文件
+                });
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('头像上传失败: ${state.message}')),
+                );
+              }
+            },
+          ),
         ],
         child: BlocBuilder<ProfileBloc, ProfileState>(
           builder: (context, state) {
@@ -170,16 +204,64 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
         setState(() {
           avatarFile = File(pickedFile.path);
         });
-        // 显示提示
-        // ignore: use_build_context_synchronously
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('头像已更新，但尚未保存到服务器')),
-        );
+        
+        // 显示确认对话框
+        _showAvatarConfirmDialog();
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('选择图片时出错: $e')),
       );
+    }
+  }
+
+  void _showAvatarConfirmDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('更新头像'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (avatarFile != null)
+              ClipOval(
+                child: Image.file(
+                  avatarFile!,
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            const SizedBox(height: 16),
+            const Text('确定要更新头像吗？'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              setState(() {
+                avatarFile = null; // 取消选择
+              });
+              Navigator.pop(context);
+            },
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _uploadAvatar();
+            },
+            child: const Text('确定'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _uploadAvatar() {
+    if (avatarFile != null) {
+      // 调用BLoC上传头像
+      _profileBloc.add(UploadAvatarEvent(imageFile: avatarFile!));
     }
   }
 
@@ -201,7 +283,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                 color: Colors.grey.shade600,
               ),
             ),
-            onTap: () => _navigateToEditNickname(),
+            onTap: () => _navigateToEditNickname(profile),
           ),
           Divider(height: 1, color: Colors.grey.shade200),
           _buildMenuItem(
@@ -262,13 +344,20 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
     );
   }
 
-  void _navigateToEditNickname() {
-    Navigator.push(
+  void _navigateToEditNickname(UserProfile? profile) async {
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const EditNicknamePage(),
+        builder: (context) => EditNicknamePage(
+          currentProfile: profile, // 传递当前用户资料
+        ),
       ),
     );
+    
+    // 如果编辑成功，刷新当前页面数据
+    if (result == true) {
+      _profileBloc.add(GetUserProfileEvent());
+    }
   }
 
   void _showFeatureNotImplemented(String feature) {
@@ -314,7 +403,12 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
 }
 
 class EditNicknamePage extends StatefulWidget {
-  const EditNicknamePage({Key? key}) : super(key: key);
+  final UserProfile? currentProfile; // 添加参数传递当前资料
+  
+  const EditNicknamePage({
+    Key? key,
+    this.currentProfile,
+  }) : super(key: key);
 
   @override
   State<EditNicknamePage> createState() => _EditNicknamePageState();
@@ -322,11 +416,15 @@ class EditNicknamePage extends StatefulWidget {
 
 class _EditNicknamePageState extends State<EditNicknamePage> {
   final TextEditingController _controller = TextEditingController();
+  late ProfileBloc _profileBloc;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _controller.text = '瑞'; // 初始化为当前昵称
+    _profileBloc = GetIt.instance<ProfileBloc>();
+    // 初始化为当前昵称
+    _controller.text = widget.currentProfile?.nickName ?? '';
   }
 
   @override
@@ -337,75 +435,138 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('编辑昵称'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => context.pop(),
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              controller: _controller,
-              decoration: InputDecoration(
-                hintText: '请输入',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(4),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(4),
-                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                ),
-              ),
-              maxLength: 20,
+    return BlocProvider<ProfileBloc>.value(
+      value: _profileBloc,
+      child: BlocListener<ProfileBloc, ProfileState>(
+        listener: (context, state) {
+          if (state is ProfileUpdating) {
+            setState(() {
+              _isLoading = true;
+            });
+          } else if (state is ProfileUpdated) {
+            setState(() {
+              _isLoading = false;
+            });
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('昵称修改成功！')),
+            );
+            
+            // 返回并刷新父页面
+            Navigator.pop(context, true);
+          } else if (state is ProfileError) {
+            setState(() {
+              _isLoading = false;
+            });
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('昵称修改失败: ${state.message}')),
+            );
+          }
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('编辑昵称'),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios),
+              onPressed: () => Navigator.pop(context),
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Text(
-                '请设置2-20个字符，不包括空格等无效字符',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade600,
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: _controller,
+                  enabled: !_isLoading,
+                  decoration: InputDecoration(
+                    hintText: '请输入',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(4),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(4),
+                      borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                    ),
+                  ),
+                  maxLength: 20,
                 ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  // 模拟提交修改
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('昵称修改功能尚未实现')),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColorLight,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    '请设置2-20个字符，不包括空格等无效字符',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
                   ),
                 ),
-                child: const Text(
-                  '提交修改',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _submitNickname,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).primaryColorLight,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Text(
+                            '提交修改',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
+  }
+
+  void _submitNickname() {
+    final newNickname = _controller.text.trim();
+    
+    if (newNickname.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请输入昵称')),
+      );
+      return;
+    }
+    
+    if (newNickname.length < 2) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('昵称至少需要2个字符')),
+      );
+      return;
+    }
+    
+    if (newNickname == widget.currentProfile?.nickName) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('昵称没有变化')),
+      );
+      return;
+    }
+    
+    // 调用BLoC更新昵称
+    _profileBloc.add(UpdateUserProfileEvent(nickName: newNickname));
   }
 }
