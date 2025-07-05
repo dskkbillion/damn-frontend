@@ -332,9 +332,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     final s = S.of(context);
     
     if (isRevoked) {
+        print("[ChatMessageBubble] 撤回消息 - ID: ${widget.message.id}, withdrawFlag: ${widget.message.withdrawFlag}, type: ${widget.message.type}, context: '$messageContext'");
         return Text(
-          s.chat_message_recalled,
-          // Use a more neutral grey for revoked message text
+          messageContext, // 使用处理后的 messageContext，它已经在 ChatMessageDto.toEntity() 中被处理为 "[已撤回]"
           style: TextStyle(color: Colors.grey[500], fontStyle: FontStyle.italic),
         );
      } else if (widget.message.type == 'text') {

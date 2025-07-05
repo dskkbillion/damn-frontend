@@ -71,6 +71,18 @@ class ProductEditState extends Equatable {
   
   /// 商品类别列表
   final List<ProductCategory>? categories;
+  
+  /// 初始表单数据（用于检测变更）
+  final ProductFormData? initialFormData;
+  
+  /// 是否有未保存的变更
+  final bool hasUnsavedChanges;
+  
+  /// 是否正在保存草稿
+  final bool isSavingDraft;
+  
+  /// 草稿保存成功
+  final bool isDraftSaveSuccess;
 
   /// 构造函数
   const ProductEditState({
@@ -90,6 +102,10 @@ class ProductEditState extends Equatable {
     this.formData = const ProductFormData(),
     this.isCreateMode = true,
     this.categories,
+    this.initialFormData,
+    this.hasUnsavedChanges = false,
+    this.isSavingDraft = false,
+    this.isDraftSaveSuccess = false,
   });
 
   @override
@@ -110,6 +126,10 @@ class ProductEditState extends Equatable {
     formData,
     isCreateMode,
     categories,
+    initialFormData,
+    hasUnsavedChanges,
+    isSavingDraft,
+    isDraftSaveSuccess,
   ];
 
   /// 初始状态
@@ -196,6 +216,44 @@ class ProductEditState extends Equatable {
     );
   }
 
+  /// 设置初始数据状态
+  ProductEditState copyWithInitialData(ProductFormData initialData) {
+    return copyWith(
+      initialFormData: initialData,
+      hasUnsavedChanges: false,
+    );
+  }
+
+  /// 保存草稿中状态
+  ProductEditState copyWithSavingDraft() {
+    return copyWith(
+      isSavingDraft: true,
+      hasError: false,
+      errorMessage: null,
+    );
+  }
+
+  /// 草稿保存成功状态
+  ProductEditState copyWithDraftSaveSuccess() {
+    return copyWith(
+      isSavingDraft: false,
+      isDraftSaveSuccess: true,
+      hasUnsavedChanges: false,
+    );
+  }
+
+  /// 检查表单是否有变更
+  bool _hasFormChanges() {
+    if (initialFormData == null) return false;
+    
+    return formData.name != initialFormData!.name ||
+           formData.description != initialFormData!.description ||
+           formData.price != initialFormData!.price ||
+           formData.variants.length != initialFormData!.variants.length ||
+           selectedImagePaths.isNotEmpty ||
+           selectedDetailImagePaths.isNotEmpty;
+  }
+
   /// 复制状态
   ProductEditState copyWith({
     bool? isLoading,
@@ -214,6 +272,10 @@ class ProductEditState extends Equatable {
     ProductFormData? formData,
     bool? isCreateMode,
     List<ProductCategory>? categories,
+    ProductFormData? initialFormData,
+    bool? hasUnsavedChanges,
+    bool? isSavingDraft,
+    bool? isDraftSaveSuccess,
   }) {
     return ProductEditState(
       isLoading: isLoading ?? this.isLoading,
@@ -232,7 +294,33 @@ class ProductEditState extends Equatable {
       formData: formData ?? this.formData,
       isCreateMode: isCreateMode ?? this.isCreateMode,
       categories: categories ?? this.categories,
+      initialFormData: initialFormData ?? this.initialFormData,
+      isSavingDraft: isSavingDraft ?? this.isSavingDraft,
+      isDraftSaveSuccess: isDraftSaveSuccess ?? this.isDraftSaveSuccess,
+      hasUnsavedChanges: hasUnsavedChanges ?? _computeHasUnsavedChanges(
+        formData ?? this.formData,
+        selectedImagePaths ?? this.selectedImagePaths,
+        selectedDetailImagePaths ?? this.selectedDetailImagePaths,
+        initialFormData ?? this.initialFormData,
+      ),
     );
+  }
+
+  /// 计算是否有未保存的变更
+  bool _computeHasUnsavedChanges(
+    ProductFormData currentFormData,
+    List<String> currentImagePaths,
+    List<String> currentDetailImagePaths,
+    ProductFormData? initialData,
+  ) {
+    if (initialData == null) return false;
+    
+    return currentFormData.name != initialData.name ||
+           currentFormData.description != initialData.description ||
+           currentFormData.price != initialData.price ||
+           currentFormData.variants.length != initialData.variants.length ||
+           currentImagePaths.isNotEmpty ||
+           currentDetailImagePaths.isNotEmpty;
   }
 }
 

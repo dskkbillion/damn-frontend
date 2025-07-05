@@ -40,6 +40,7 @@ import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_store_
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/create_product_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/update_product_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_product_detail_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/save_product_draft_usecase.dart';
 
 // 用例 - 认证管理
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_authentication_status.dart';
@@ -246,6 +247,13 @@ class SellerDI {
         print('[SellerDI] 已注册 GetSellerProductDetailUseCase');
       }
 
+      if (!sl.isRegistered<SaveProductDraftUseCase>()) {
+        sl.registerLazySingleton<SaveProductDraftUseCase>(
+          () => SaveProductDraftUseCase(sl<ISellerRepository>())
+        );
+        print('[SellerDI] 已注册 SaveProductDraftUseCase');
+      }
+
       // 注册BLoC工厂
       _registerBlocs(sl);
       
@@ -298,6 +306,7 @@ class SellerDI {
           sl<GetSellerProductDetailUseCase>(),
           sl<CreateProductUseCase>(),
           sl<UpdateProductUseCase>(),
+          sl<SaveProductDraftUseCase>(),
           sl<IFileUploadRepository>(),
           sl<ISellerRepository>(),
         )

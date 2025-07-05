@@ -4,6 +4,7 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_man
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/create_product_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_product_detail_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/update_product_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/save_product_draft_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_event.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_state.dart';
 import 'package:injectable/injectable.dart';
@@ -26,6 +27,9 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
   /// 更新产品UseCase
   final UpdateProductUseCase _updateProductUseCase;
   
+  /// 保存草稿UseCase
+  final SaveProductDraftUseCase _saveProductDraftUseCase;
+  
   /// 文件上传仓库
   final IFileUploadRepository _fileUploadRepository;
   
@@ -37,6 +41,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     this._getSellerProductDetailUseCase,
     this._createProductUseCase,
     this._updateProductUseCase,
+    this._saveProductDraftUseCase,
     this._fileUploadRepository,
     this._sellerRepository,
   ) : super(ProductEditState.initial()) {
@@ -58,6 +63,9 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     on<ProductImageUploadFailure>(_onProductImageUploadFailure);
     on<SubmitProductForm>(_onSubmitProductForm);
     on<ResetProductForm>(_onResetProductForm);
+    on<SaveProductDraft>(_onSaveProductDraft);
+    on<CheckForUnsavedChanges>(_onCheckForUnsavedChanges);
+    on<SetInitialFormData>(_onSetInitialFormData);
   }
 
   /// 初始化编辑页面处理
@@ -92,7 +100,12 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     
     result.fold(
       (failure) => emit(state.copyWithError(failure.message)),
-      (product) => emit(state.copyWithProductLoaded(product)),
+      (product) {
+        final formData = ProductFormData.fromProduct(product);
+        emit(state.copyWithProductLoaded(product));
+        // 设置初始表单数据用于变更检测
+        add(SetInitialFormData(initialData: formData));
+      },
     );
   }
 
@@ -661,6 +674,89 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     } else if (state.product != null) {
       // 如果是编辑模式，重置为加载的商品数据
       emit(state.copyWithProductLoaded(state.product!));
+    }
+  }
+
+  /// 设置初始表单数据
+  void _onSetInitialFormData(
+    SetInitialFormData event,
+    Emitter<ProductEditState> emit,
+  ) {
+    emit(state.copyWithInitialData(event.initialData));
+  }
+
+  /// 检查未保存变更
+  void _onCheckForUnsavedChanges(
+    CheckForUnsavedChanges event,
+    Emitter<ProductEditState> emit,
+  ) {
+    // hasUnsavedChanges会在copyWith中自动计算
+    emit(state.copyWith());
+  }
+
+  /// 保存草稿处理
+  Future<void> _onSaveProductDraft(
+    SaveProductDraft event,
+    Emitter<ProductEditState> emit,
+  ) async {
+    emit(state.copyWithSavingDraft());
+    
+    try {
+      // 如果有本地图片，需要先上传
+      List<String> finalImageUrls = List.from(state.uploadedImageUrls);
+      List<String> finalDetailUrls = List.from(state.uploadedDetailImageUrls);
+      
+      // 上传本地选择的图片
+      if (state.selectedImagePaths.isNotEmpty) {
+        for (final imagePath in state.selectedImagePaths) {
+          final file = File(imagePath);
+          final uploadResult = await _fileUploadRepository.uploadFile(file);
+          
+          uploadResult.fold(
+            (failure) => throw Exception('图片上传失败: ${failure.message}'),
+            (url) => finalImageUrls.add(url),
+          );
+        }
+      }
+      
+      // 上传本地选择的详情图
+      if (state.selectedDetailImagePaths.isNotEmpty) {
+        for (final imagePath in state.selectedDetailImagePaths) {
+          final file = File(imagePath);
+          final uploadResult = await _fileUploadRepository.uploadFile(file);
+          
+          uploadResult.fold(
+            (failure) => throw Exception('详情图上传失败: ${failure.message}'),
+            (url) => finalDetailUrls.add(url),
+          );
+        }
+      }
+      
+      final params = SaveProductDraftParams(
+        name: state.formData.name,
+        description: state.formData.description,
+        price: state.formData.price,
+        imageUrls: finalImageUrls,
+        detailImageUrls: finalDetailUrls,
+        categoryId: state.formData.categoryId,
+        variants: state.formData.variants,
+        productMaterials: state.formData.productMaterials,
+        productId: state.product?.id,
+      );
+      
+      final result = await _saveProductDraftUseCase(params);
+      
+      result.fold(
+        (failure) => emit(state.copyWithError(failure.message)),
+        (success) {
+          emit(state.copyWithDraftSaveSuccess());
+          // 更新初始数据为当前数据
+          add(SetInitialFormData(initialData: state.formData));
+        },
+      );
+      
+    } catch (e) {
+      emit(state.copyWithError('保存草稿失败: ${e.toString()}'));
     }
   }
 } 

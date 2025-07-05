@@ -227,4 +227,24 @@ class SubmitProductForm extends ProductEditEvent {
 /// 重置表单
 class ResetProductForm extends ProductEditEvent {
   const ResetProductForm();
+}
+
+/// 保存草稿
+class SaveProductDraft extends ProductEditEvent {
+  const SaveProductDraft();
+}
+
+/// 检查是否有未保存的变更
+class CheckForUnsavedChanges extends ProductEditEvent {
+  const CheckForUnsavedChanges();
+}
+
+/// 初始化表单原始数据（用于变更检测）
+class SetInitialFormData extends ProductEditEvent {
+  final ProductFormData initialData;
+  
+  const SetInitialFormData({required this.initialData});
+  
+  @override
+  List<Object?> get props => [initialData];
 } 

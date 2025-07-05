@@ -142,16 +142,26 @@ class _ProductEditPageState extends State<ProductEditPage> {
       productId: widget.productId != null ? int.tryParse(widget.productId!) : null,
     ));
     
+    // 监听输入框变化，自动检查是否有变更
+    _nameController.addListener(_onFormFieldChanged);
+    _descriptionController.addListener(_onFormFieldChanged);
+    
     // 监听状态变化，更新控制器
     _bloc.stream.listen((state) {
       if (!state.isLoading && state.product != null) {
         _updateTextControllers(state.formData);
+        // 设置初始数据用于变更检测
+        if (state.initialFormData == null) {
+          _bloc.add(SetInitialFormData(initialData: state.formData));
+        }
       }
     });
   }
 
   @override
   void dispose() {
+    _nameController.removeListener(_onFormFieldChanged);
+    _descriptionController.removeListener(_onFormFieldChanged);
     _nameController.dispose();
     _descriptionController.dispose();
     
@@ -163,6 +173,79 @@ class _ProductEditPageState extends State<ProductEditPage> {
     }
     
     super.dispose();
+  }
+
+  /// 表单字段变化时检查变更
+  void _onFormFieldChanged() {
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        _bloc.add(const CheckForUnsavedChanges());
+      }
+    });
+  }
+
+  /// 处理返回操作
+  Future<void> _handleBackPress() async {
+    _bloc.add(const CheckForUnsavedChanges());
+    
+    // 等待状态更新
+    await Future.delayed(const Duration(milliseconds: 100));
+    
+    final hasChanges = _bloc.state.hasUnsavedChanges;
+    
+    if (hasChanges) {
+      final shouldSave = await _showSaveDraftDialog();
+      
+      if (shouldSave == true) {
+        // 保存草稿
+        _bloc.add(const SaveProductDraft());
+        
+        // 等待保存完成
+        await _bloc.stream
+            .firstWhere((state) => !state.isSavingDraft)
+            .timeout(const Duration(seconds: 10));
+        
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      } else if (shouldSave == false) {
+        // 直接退出
+        Navigator.of(context).pop();
+      }
+      // shouldSave == null 表示取消
+    } else {
+      // 没有变更，直接退出
+      Navigator.of(context).pop();
+    }
+  }
+
+  /// 显示保存草稿对话框
+  Future<bool?> _showSaveDraftDialog() async {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('检测到未保存的更改'),
+        content: const Text('您有未保存的内容，是否要保存为草稿？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(null),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('不保存'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFBF7D2A),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('保存草稿'),
+          ),
+        ],
+      ),
+    );
   }
 
   /// 更新文本控制器的值
@@ -441,63 +524,101 @@ class _ProductEditPageState extends State<ProductEditPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.productId == null ? '发布服务' : '编辑服务'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: _submitForm,
-            style: TextButton.styleFrom(
-              backgroundColor: const Color(0xFFBF7D2A),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-            ),
-            child: const Text('发布'),
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+        await _handleBackPress();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(widget.productId == null ? '发布服务' : '编辑服务'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () async {
+              await _handleBackPress();
+            },
           ),
-          const SizedBox(width: 16),
-        ],
-      ),
-      body: BlocProvider.value(
-        value: _bloc,
-        child: BlocConsumer<ProductEditBloc, ProductEditState>(
-          listener: (context, state) {
-            if (state.hasError) {
-              // 显示错误提示
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.errorMessage ?? '操作失败'),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            } else if (state.isSubmitSuccess) {
-              // 提交成功，显示提示并返回
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.isCreateMode ? '服务创建成功' : '服务更新成功'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-              // 返回上一页
-              Future.delayed(const Duration(milliseconds: 1500), () {
-                context.pop();
-              });
-            }
-          },
-          builder: (context, state) {
-            if (state.isLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
+          actions: [
+            // 保存草稿按钮
+            BlocBuilder<ProductEditBloc, ProductEditState>(
+              builder: (context, state) {
+                if (state.hasUnsavedChanges) {
+                  return TextButton.icon(
+                    onPressed: state.isSavingDraft ? null : () {
+                      _bloc.add(const SaveProductDraft());
+                    },
+                    icon: state.isSavingDraft
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.save_alt),
+                    label: const Text('草稿'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.orange,
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
             
-            return Stack(
-              children: [
-                _buildFormContent(state),
-              ],
-            );
-          },
+            TextButton(
+              onPressed: _submitForm,
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFFBF7D2A),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+              child: const Text('发布'),
+            ),
+            const SizedBox(width: 16),
+          ],
+        ),
+        body: BlocProvider.value(
+          value: _bloc,
+          child: BlocConsumer<ProductEditBloc, ProductEditState>(
+            listener: (context, state) {
+              if (state.hasError) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.errorMessage ?? '操作失败'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              } else if (state.isDraftSaveSuccess) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('草稿保存成功'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } else if (state.isSubmitSuccess) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.isCreateMode ? '服务创建成功' : '服务更新成功'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                Future.delayed(const Duration(milliseconds: 1500), () {
+                  context.pop();
+                });
+              }
+            },
+            builder: (context, state) {
+              if (state.isLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              
+              return Stack(
+                children: [
+                  _buildFormContent(state),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );

@@ -64,13 +64,16 @@ class ChatMessageDto with _$ChatMessageDto {
         parsedCreateTime = DateTime.now(); // Fallback to now
      }
 
+    // 添加调试信息
+    print("[ChatMessageDto] 转换消息 - ID: $id, withdrawFlag: $withdrawFlag, type: $type, context: '$context'");
+    
     return ChatMessage(
       id: id,
       chatId: chatId,
       senderId: senderId,
       memberId: memberId,
       doctorId: doctorId,
-      context: context,
+      context: withdrawFlag ? '[已撤回]' : context, // 撤回消息显示统一文本
       type: withdrawFlag ? 'revoke' : type, // Handle revoked messages
       createTime: parsedCreateTime,
       withdrawFlag: withdrawFlag,

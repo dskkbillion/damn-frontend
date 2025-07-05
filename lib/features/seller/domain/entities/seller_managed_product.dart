@@ -264,6 +264,9 @@ class ProductCreationData extends Equatable {
   
   /// 详情内容（富文本HTML）
   final String? detailContent;
+  
+  /// 商品类型（product: 正式商品, draft: 草稿）
+  final String productType;
 
   const ProductCreationData({
     required this.name,
@@ -276,6 +279,7 @@ class ProductCreationData extends Equatable {
     this.winImages,
     this.detailImages,
     this.detailContent,
+    this.productType = 'product', // 默认为正式商品
   });
 
   @override
@@ -290,6 +294,7 @@ class ProductCreationData extends Equatable {
     winImages,
     detailImages,
     detailContent,
+    productType,
   ];
   
   /// 转换为API参数格式
@@ -298,6 +303,7 @@ class ProductCreationData extends Equatable {
       'name': name,
       'description': description,
       'images': images.split(','),  // 将逗号分隔的字符串转为数组
+      'productType': productType, // 添加商品类型
     };
     
     // 添加成功案例图

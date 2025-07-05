@@ -274,14 +274,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
       padding: const EdgeInsets.all(16.0),
       child: Row(
         children: [
-          // 头像，添加点击导航
+          // 头像，修复导航路径统一使用seller-profile
           GestureDetector(
             onTap: () {
-              // 导航到卖家主页
+              // 统一使用 seller-profile 路径，避免与Seller Shell路径冲突
               SmartRouterUtils.smartNavigate(
                 context,
-                '/seller/:id/profile',
-                params: {'id': product.sellerId.toString()},
+                '/seller-profile/${product.sellerId}',
                 source: 'product_detail_avatar',
               );
             },
@@ -298,11 +297,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
             ),
           ),
           const SizedBox(width: 12),
-          // 卖家信息，添加点击导航
+          // 卖家信息，保持相同的导航路径
           Expanded(
             child: GestureDetector(
               onTap: () {
-                // 导航到卖家主页
+                // 使用相同的路径，确保一致性
                 SmartRouterUtils.smartNavigate(
                   context,
                   '/seller-profile/${product.sellerId}',
