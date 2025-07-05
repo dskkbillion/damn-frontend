@@ -25,6 +25,7 @@ import '../pages/assistant_mission_page.dart'; // 引入小帮手的使命页面
 import '../../../orders/presentation/pages/order_list_page.dart';
 import '../../../orders/presentation/bloc/order_list_bloc.dart';
 import '../../../orders/domain/entities/order_status.dart';
+import '../../../../core/services/image_compress_service.dart'; // 引入图片压缩服务
 
 class ProfileRoutes {
   ProfileRoutes._(); // 私有构造函数，防止实例化
@@ -81,6 +82,7 @@ class ProfileRoutes {
               final remoteDataSource = ProfileRemoteDataSourceImpl(
                 dio: dio,
                 storage: secureStorage,
+                imageCompressService: getIt<ImageCompressService>(),
               );
               
               // 创建钱包仓库

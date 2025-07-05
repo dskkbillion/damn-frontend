@@ -277,6 +277,7 @@
     "profile_default_name": "用户",
     "profile_online": "在线",
     "profile_offline": "离线",
+    "profile_avatar_upload_failed": "头像上传失败，请重试",
     
     "profile_orders": "我的订单",
     "profile_pending_payment": "待付",

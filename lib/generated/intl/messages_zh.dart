@@ -378,6 +378,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "profile_about_us": MessageLookupByLibrary.simpleMessage("关于我们"),
     "profile_account_security": MessageLookupByLibrary.simpleMessage("账号与安全"),
     "profile_assistant_mission": MessageLookupByLibrary.simpleMessage("小帮手的使命"),
+    "profile_avatar_upload_failed": MessageLookupByLibrary.simpleMessage(
+      "头像上传失败，请重试",
+    ),
     "profile_cancel": MessageLookupByLibrary.simpleMessage("取消"),
     "profile_completed": MessageLookupByLibrary.simpleMessage("完成"),
     "profile_default_name": MessageLookupByLibrary.simpleMessage("用户"),

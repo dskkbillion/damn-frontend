@@ -115,7 +115,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
             children: [
               BlocBuilder<ProfileBloc, ProfileState>(
                 builder: (context, state) {
-                  return ProfileHeader(state: state);
+                  return ProfileHeader();
                 },
               ),
               const SizedBox(height: 16),

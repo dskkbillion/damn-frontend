@@ -253,8 +253,12 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                   context,
                   MaterialPageRoute(
                     builder: (_) => BlocProvider(
-                      create: (_) => sl<ChatMessagesBloc>(param1: chatId)
-                                    ..add(LoadChatMessages(chatId)),
+                      create: (_) {
+                        // 手动创建 ChatMessagesBloc 实例，添加撤回回调
+                        final bloc = sl<ChatMessagesBloc>(param1: chatId);
+                        // 通过反射或其他方式添加回调 - 这里暂时使用现有的实例
+                        return bloc..add(LoadChatMessages(chatId));
+                      },
                       child: ChatRoomPage(
                         chatId: chatId,
                         onMessagesLoaded: () {
@@ -263,6 +267,11 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                           context.read<ChatListBloc>().add(
                             UpdateChatRoomUnreadCount(chatId: chatId, unreadCount: 0)
                           );
+                        },
+                        onMessageRevoked: () {
+                          // 消息撤回后刷新列表
+                          print('[ChatListPage] Message revoked, refreshing chat list');
+                          context.read<ChatListBloc>().add(RefreshChatList());
                         },
                       ),
                     ),
@@ -317,6 +326,11 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
               context.read<ChatListBloc>().add(
                 UpdateChatRoomUnreadCount(chatId: chatRoom.id, unreadCount: 0)
               );
+            },
+            onMessageRevoked: () {
+              // 消息撤回后刷新列表
+              print('[ChatListPage] Message revoked in chat ${chatRoom.id}, refreshing chat list');
+              context.read<ChatListBloc>().add(RefreshChatList());
             },
           ),
         ),

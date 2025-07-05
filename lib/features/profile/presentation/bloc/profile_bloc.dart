@@ -28,6 +28,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final CheckAuthStatusUseCase checkAuthStatus;
   final LogoutUseCase logout;
 
+  // 保存当前用户信息，用于错误状态时保持用户信息
+  UserProfile? _currentProfile;
+
   ProfileBloc({
     required this.getUserProfile,
     required this.updateUserProfile,
@@ -67,6 +70,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     result.fold(
       (failure) => emit(ProfileError(message: failure.toString())),
       (profile) {
+        _currentProfile = profile; // 保存当前用户信息
         print('[ProfileBloc] Emitting ProfileLoaded with profile: ${profile.nickName}');
         emit(ProfileLoaded(profile: profile));
       },
@@ -87,7 +91,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     );
     result.fold(
       (failure) => emit(ProfileError(message: failure.toString())),
-      (profile) => emit(ProfileUpdated(profile: profile)),
+      (profile) {
+        _currentProfile = profile; // 更新当前用户信息
+        emit(ProfileUpdated(profile: profile));
+      },
     );
   }
 
@@ -95,11 +102,11 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     UploadAvatarEvent event,
     Emitter<ProfileState> emit,
   ) async {
-    emit(const ProfileAvatarUploading());
+    emit(ProfileAvatarUploading(profile: _currentProfile));
     final result = await uploadAvatar(UploadAvatarParams(imageFile: event.imageFile));
     result.fold(
-      (failure) => emit(ProfileError(message: failure.toString())),
-      (avatarUrl) => emit(ProfileAvatarUploaded(avatarUrl: avatarUrl)),
+      (failure) => emit(ProfileAvatarUploadError(message: failure.toString(), profile: _currentProfile)),
+      (avatarUrl) => emit(ProfileAvatarUploaded(avatarUrl: avatarUrl, profile: _currentProfile)),
     );
   }
 
@@ -123,7 +130,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     final result = await logout(NoParams());
     result.fold(
       (failure) => emit(ProfileError(message: failure.toString())),
-      (_) => emit(const ProfileLoggedOut()),
+      (_) {
+        _currentProfile = null; // 清空当前用户信息
+        emit(const ProfileLoggedOut());
+      },
     );
   }
 

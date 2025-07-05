@@ -11,6 +11,7 @@ import '../../features/profile/domain/repositories/i_user_profile_repository.dar
 import '../../features/profile/domain/repositories/i_wallet_repository.dart';
 import '../api/api_client.dart';
 import '../network/network_info.dart';
+import '../services/image_compress_service.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -47,6 +48,11 @@ class ServiceLocator {
 
     sl.registerLazySingleton<Dio>(() => sl<ApiClient>().dio);
 
+    // 注册核心服务
+    sl.registerLazySingleton<ImageCompressService>(
+      () => ImageCompressService(),
+    );
+
     // 注册Profile模块数据源
     sl.registerLazySingleton<ProfileLocalDataSource>(
       () => ProfileLocalDataSourceImpl(
@@ -58,6 +64,7 @@ class ServiceLocator {
       () => ProfileRemoteDataSourceImpl(
         dio: sl<Dio>(),
         storage: sl<FlutterSecureStorage>(),
+        imageCompressService: sl<ImageCompressService>(),
       ),
     );
 

@@ -28,7 +28,7 @@ import 'package:dskk_flutter_refactor/features/chat/data/datasources/chat_web_so
 import 'package:dskk_flutter_refactor/features/chat/data/models/chat_message_dto.dart'; // For ChatMessageDto used in event
 // Core Dependencies (Required by Bloc logic/Error handling)
 import 'package:dskk_flutter_refactor/core/error/failures.dart'; 
-import 'package:dskk_flutter_refactor/core/usecases/usecase.dart'; 
+import 'package:dskk_flutter_refactor/core/usecases/usecase.dart';
 // ---------------------------
 
 part 'chat_messages_event.dart';
@@ -69,6 +69,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     on<_MessageReceived>(_onInternalMessageReceived);
     on<RevokeMessageRequested>(_onRevokeMessageRequested);
     on<DeleteMessageRequested>(_onDeleteMessageRequested);
+    on<ResetMessageRevokedFlag>(_onResetMessageRevokedFlag);
   }
 
   Future<void> _onLoadChatMessages(
@@ -384,11 +385,17 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     if (state is! ChatMessagesLoaded) return;
     final loadedState = state as ChatMessagesLoaded;
 
-    // Optimistic update
+    // 保存撤回前的原始消息状态用于失败时恢复
+    final originalMessage = loadedState.messages.firstWhere(
+      (msg) => msg.id == event.messageId,
+      orElse: () => throw Exception('Message not found'),
+    );
+
+    // Optimistic update - 立即标记为撤回
     final updatedMessagesOptimistic = loadedState.messages.map((msg) {
       return msg.id == event.messageId ? msg.copyWith(withdrawFlag: true, type: 'revoke', status: MessageStatus.sent) : msg;
     }).toList();
-    // FIX: Wrap null in ValueGetter
+    
     emit(loadedState.copyWith(messages: updatedMessagesOptimistic, error: () => null));
 
     final result = await revokeMessage(RevokeMessageParams(messageId: event.messageId));
@@ -398,18 +405,24 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
 
     result.fold(
       (failure) {
-         final revertedMessages = currentState.messages.map((msg) { return msg; }).toList();
+        // 撤回失败，恢复到原始状态
+        final revertedMessages = currentState.messages.map((msg) {
+          return msg.id == event.messageId ? originalMessage : msg;
+        }).toList();
+        
         emit(currentState.copyWith(
-             messages: revertedMessages,
-             // FIX: Wrap error message in ValueGetter
-             error: () => 'Failed to revoke: ${failure.message}'
-             ));
-         print("Failed to revoke message: ${failure.message}");
+          messages: revertedMessages,
+          error: () => '撤回失败: ${failure.message}',
+        ));
+        print("Failed to revoke message: ${failure.message}");
       },
       (_) {
-         print("Message revoked successfully: ${event.messageId}");
-         // FIX: Wrap null in ValueGetter
-          emit(currentState.copyWith(error: () => null));
+        print("Message revoked successfully: ${event.messageId}");
+        // 撤回成功，保持当前状态并设置撤回标志
+        emit(currentState.copyWith(
+          error: () => null,
+          hasMessageRevoked: true,
+        ));
       },
     );
   }
@@ -445,6 +458,16 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
          emit(currentState.copyWith(error: () => null));
       },
     );
+  }
+
+  void _onResetMessageRevokedFlag(
+    ResetMessageRevokedFlag event,
+    Emitter<ChatMessagesState> emit,
+  ) {
+    if (state is ChatMessagesLoaded) {
+      final currentState = state as ChatMessagesLoaded;
+      emit(currentState.copyWith(hasMessageRevoked: false));
+    }
   }
 
   void _connectAndSubscribeWebSocket(String commonUserIdForWS, String token) {

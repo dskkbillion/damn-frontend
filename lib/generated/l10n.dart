@@ -1485,6 +1485,16 @@ class S {
     return Intl.message('Offline', name: 'profile_offline', desc: '', args: []);
   }
 
+  /// `Avatar upload failed, please try again`
+  String get profile_avatar_upload_failed {
+    return Intl.message(
+      'Avatar upload failed, please try again',
+      name: 'profile_avatar_upload_failed',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `My Orders`
   String get profile_orders {
     return Intl.message(

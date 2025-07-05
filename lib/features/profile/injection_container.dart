@@ -9,6 +9,7 @@ import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_r
 import '../../core/error/failures.dart';
 import '../../core/network/network_info.dart';
 import '../../core/network/mock_network_info.dart';
+import '../../core/services/image_compress_service.dart';
 import 'data/datasources/profile_local_data_source.dart';
 import 'data/datasources/profile_remote_data_source.dart';
 import 'data/repositories/liked_story_repository_impl.dart';
@@ -105,6 +106,7 @@ Future<void> initProfileDependencies(GetIt locator) async {
     () => ProfileRemoteDataSourceImpl(
       dio: locator<Dio>(),
       storage: locator<FlutterSecureStorage>(), // 正确传递FlutterSecureStorage而不是token和userId
+      imageCompressService: locator<ImageCompressService>(),
     ),
   );
 

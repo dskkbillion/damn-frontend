@@ -35,6 +35,20 @@ class _ProfilePageState extends State<ProfilePage> {
             // 处理登出后的逻辑，导航到登录页面
             print('[ProfilePage] User logged out, redirecting to login page.');
             context.go('/auth/login');
+          } else if (state is ProfileUpdated) {
+            // 用户信息更新成功，重新获取完整的用户资料以确保UI同步
+            print('[ProfilePage] Profile updated successfully, refreshing user data...');
+            context.read<ProfileBloc>().add(GetUserProfileEvent());
+          } else if (state is ProfileAvatarUploadError) {
+            // 处理头像上传失败，显示友好的错误提示，便于调试
+            final s = S.of(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(s.profile_avatar_upload_failed),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
+              ),
+            );
           }
         },
         child: BlocBuilder<ProfileBloc, ProfileState>(
@@ -118,7 +132,7 @@ class _ProfilePageState extends State<ProfilePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 用户信息头部
-                ProfileHeader(state: state),
+                ProfileHeader(),
 
                 // 我的订单
                 const OrderStatusSection(),

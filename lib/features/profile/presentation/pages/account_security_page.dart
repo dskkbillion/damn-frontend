@@ -52,7 +52,9 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             },
           ),
           BlocListener<ProfileBloc, ProfileState>(
-            listenWhen: (previous, current) => current is ProfileError,
+            listenWhen: (previous, current) => 
+              current is ProfileError && 
+              (previous is ProfileLoggingOut || previous is LogoutEvent),
             listener: (context, state) {
               if (state is ProfileError) {
                 print('【退出登录】发生错误: ${state.message}');
@@ -67,31 +69,53 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             listenWhen: (previous, current) => 
               current is ProfileAvatarUploading ||
               current is ProfileAvatarUploaded ||
-              (current is ProfileError && previous is ProfileAvatarUploading),
+              current is ProfileAvatarUploadError,
             listener: (context, state) {
-              if (state is ProfileAvatarUploading) {
-                // 显示上传中提示
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('正在上传头像...')),
-                );
-              } else if (state is ProfileAvatarUploaded) {
+              if (state is ProfileAvatarUploaded) {
                 // 上传成功，使用新的头像URL更新用户资料
                 _profileBloc.add(UpdateUserProfileEvent(avatar: state.avatarUrl));
                 
                 setState(() {
                   avatarFile = null; // 清除本地文件
                 });
-                
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('头像更新成功！')),
-                );
-              } else if (state is ProfileError) {
+              } else if (state is ProfileAvatarUploadError) {
                 setState(() {
                   avatarFile = null; // 清除本地文件
                 });
                 
+                // 显示错误提示，便于调试
+                final errorMessage = state.message.toString();
+                String userFriendlyMessage;
+                if (errorMessage.contains('timeout') || errorMessage.contains('超时')) {
+                  userFriendlyMessage = '头像上传超时，请检查网络连接后重试';
+                } else if (errorMessage.contains('network') || errorMessage.contains('网络')) {
+                  userFriendlyMessage = '网络连接失败，请检查网络后重试';
+                } else {
+                  userFriendlyMessage = '头像上传失败，请重试';
+                }
+                
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('头像上传失败: ${state.message}')),
+                  SnackBar(
+                    content: Text(userFriendlyMessage),
+                    backgroundColor: Colors.red,
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              }
+            },
+          ),
+          // 添加昵称修改成功的状态监听
+          BlocListener<ProfileBloc, ProfileState>(
+            listenWhen: (previous, current) => 
+              current is ProfileUpdated && 
+              previous is ProfileUpdating,
+            listener: (context, state) {
+              if (state is ProfileUpdated) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('个人信息更新成功！'),
+                    duration: Duration(seconds: 2),
+                  ),
                 );
               }
             },
@@ -99,34 +123,43 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
         ],
         child: BlocBuilder<ProfileBloc, ProfileState>(
           builder: (context, state) {
-            // 从state中提取用户资料
+            // 从state中提取用户资料，支持所有包含用户信息的状态
             UserProfile? profile;
             if (state is ProfileLoaded) {
               profile = state.profile;
             } else if (state is ProfileUpdated) {
               profile = state.profile;
+            } else if (state is ProfileAvatarUploading) {
+              profile = state.profile;
+            } else if (state is ProfileAvatarUploaded) {
+              profile = state.profile;
+            } else if (state is ProfileAvatarUploadError) {
+              profile = state.profile;
             }
             
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('账号与安全'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
+            print('[AccountSecurityPage] Current state: ${state.runtimeType}');
+            print('[AccountSecurityPage] Profile: ${profile?.nickName}');
+            
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text('账号与安全'),
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios),
                   onPressed: () => context.pop(),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
+                ),
+              ),
+              body: SingleChildScrollView(
+                child: Column(
+                  children: [
                     _buildProfileAvatar(profile),
-            const SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     _buildMenuItems(profile),
-            const SizedBox(height: 20),
-            _buildLogoutButton(),
-          ],
-        ),
-      ),
-    );
+                    const SizedBox(height: 20),
+                    _buildLogoutButton(),
+                  ],
+                ),
+              ),
+            );
           },
         ),
       ),

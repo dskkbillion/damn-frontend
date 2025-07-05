@@ -122,6 +122,9 @@ import 'package:dskk_flutter_refactor/features/home/presentation/pages/search_pa
 import 'package:dskk_flutter_refactor/features/home/presentation/pages/search_results_page.dart';
 import 'package:dskk_flutter_refactor/features/home/presentation/cubit/product_detail_cubit.dart';
 
+// Import ImageCompressService
+import 'package:dskk_flutter_refactor/core/services/image_compress_service.dart';
+
 // Placeholder page (defined once) - Only used if a module's routes aren't ready
 class PlaceholderPage extends StatelessWidget {
   final String title;
@@ -418,6 +421,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             final remoteDataSource = ProfileRemoteDataSourceImpl(
               dio: dio,
               storage: secureStorage,
+              imageCompressService: getIt<ImageCompressService>(),
             );
             
             // 创建钱包仓库

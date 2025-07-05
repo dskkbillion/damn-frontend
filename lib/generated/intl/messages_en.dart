@@ -465,6 +465,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "profile_assistant_mission": MessageLookupByLibrary.simpleMessage(
       "Assistant\'s Mission",
     ),
+    "profile_avatar_upload_failed": MessageLookupByLibrary.simpleMessage(
+      "Avatar upload failed, please try again",
+    ),
     "profile_cancel": MessageLookupByLibrary.simpleMessage("Cancel"),
     "profile_completed": MessageLookupByLibrary.simpleMessage("Completed"),
     "profile_default_name": MessageLookupByLibrary.simpleMessage("User"),

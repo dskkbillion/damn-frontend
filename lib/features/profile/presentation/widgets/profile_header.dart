@@ -12,11 +12,8 @@ import 'package:dskk_flutter_refactor/app/app_mode.dart';
 import '../routes/profile_routes.dart'; // 导入路由常量
 
 class ProfileHeader extends ConsumerWidget {
-  final ProfileState state;
-
   const ProfileHeader({
     Key? key,
-    required this.state,
   }) : super(key: key);
 
   @override
@@ -24,100 +21,116 @@ class ProfileHeader extends ConsumerWidget {
     // 获取国际化资源
     final s = S.of(context);
     
-    UserProfile? profile;
-    if (state is ProfileLoaded) {
-      profile = (state as ProfileLoaded).profile;
-    } else if (state is ProfileUpdated) {
-      profile = (state as ProfileUpdated).profile;
-    }
-    print('[ProfileHeader] Received state: ${state.runtimeType}');
-    print('[ProfileHeader] Extracted profile nickname: ${profile?.nickName}');
-
-    return Container(
-      margin: const EdgeInsets.all(12.0),
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12.0),
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Theme.of(context).primaryColor.withOpacity(0.8),
-            Theme.of(context).primaryColor.withOpacity(0.6),
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                _buildAvatar(context, profile),
-                const SizedBox(width: 16),
-                _buildNameAndStatus(context, profile, s),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildSwitchToSellerButton(context, ref, s),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAvatar(BuildContext context, UserProfile? profile) {
     return BlocBuilder<ProfileBloc, ProfileState>(
       builder: (context, state) {
-        final imageUrl = profile?.avatarUrl;
-        final hasUrl = imageUrl != null && imageUrl.isNotEmpty;
-        final isUploading = state is ProfileAvatarUploading;
-        print('[ProfileHeader] Avatar URL: $imageUrl, Has URL: $hasUrl, IsUploading: $isUploading');
+        UserProfile? profile;
+        bool isUploading = false;
+        String? pendingAvatarUrl; // 待显示的新头像URL
+        
+        if (state is ProfileLoaded) {
+          profile = (state as ProfileLoaded).profile;
+        } else if (state is ProfileUpdated) {
+          profile = (state as ProfileUpdated).profile;
+        } else if (state is ProfileAvatarUploadError) {
+          profile = (state as ProfileAvatarUploadError).profile;
+        } else if (state is ProfileAvatarUploading) {
+          profile = (state as ProfileAvatarUploading).profile;
+          isUploading = true;
+        } else if (state is ProfileAvatarUploaded) {
+          // 头像上传成功，使用新头像URL和保存的用户信息
+          profile = (state as ProfileAvatarUploaded).profile;
+          pendingAvatarUrl = (state as ProfileAvatarUploaded).avatarUrl;
+          print('[ProfileHeader] Avatar upload completed, pending URL: $pendingAvatarUrl');
+        }
+        
+        print('[ProfileHeader] Received state: ${state.runtimeType}');
+        print('[ProfileHeader] Extracted profile nickname: ${profile?.nickName}');
+        print('[ProfileHeader] Avatar URL: ${profile?.avatarUrl}, Has URL: ${profile?.avatarUrl?.isNotEmpty == true}, IsUploading: $isUploading');
 
-        // 使用InkWell使头像可点击，点击后跳转到账号与安全页面
-        return InkWell(
-          onTap: () => context.go(ProfileRoutes.accountSecurityPath), // 点击时导航到账号与安全页面
-          child: Stack(
-            children: [
-              CircleAvatar(
-                radius: 35,
-                backgroundColor: Colors.white.withOpacity(0.8),
-                backgroundImage: hasUrl ? NetworkImage(imageUrl) : null,
-                // 只有在没有URL时才显示默认用户图标，有URL时不显示任何图标
-                child: !hasUrl
-                    ? Icon(Icons.person, size: 35, color: Theme.of(context).primaryColor)
-                    : null,
+        return Container(
+          margin: const EdgeInsets.all(12.0),
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12.0),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Theme.of(context).primaryColor.withOpacity(0.8),
+                Theme.of(context).primaryColor.withOpacity(0.6),
+              ],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 5,
+                offset: const Offset(0, 2),
               ),
-              if (isUploading)
-                Positioned.fill(
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.black54,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Center(
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
             ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    _buildAvatar(context, profile, state, pendingAvatarUrl),
+                    const SizedBox(width: 16),
+                    _buildNameAndStatus(context, profile, s),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                _buildSwitchToSellerButton(context, ref, s),
+              ],
+            ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildAvatar(BuildContext context, UserProfile? profile, ProfileState state, String? pendingAvatarUrl) {
+    // 优先显示待处理的头像URL，否则使用用户资料中的头像URL
+    final imageUrl = pendingAvatarUrl ?? profile?.avatarUrl;
+    final hasUrl = imageUrl != null && imageUrl.isNotEmpty;
+    final isUploading = state is ProfileAvatarUploading;
+    print('[ProfileHeader] Avatar URL: $imageUrl (pending: $pendingAvatarUrl, profile: ${profile?.avatarUrl}), Has URL: $hasUrl, IsUploading: $isUploading');
+
+    // 使用InkWell使头像可点击，点击后跳转到账号与安全页面
+    return InkWell(
+      onTap: () => context.go(ProfileRoutes.accountSecurityPath), // 点击时导航到账号与安全页面
+      child: Stack(
+        children: [
+          CircleAvatar(
+            radius: 35,
+            backgroundColor: Colors.white.withOpacity(0.8),
+            backgroundImage: hasUrl ? NetworkImage(imageUrl) : null,
+            // 只有在没有URL时才显示默认用户图标，有URL时不显示任何图标
+            child: !hasUrl
+                ? Icon(Icons.person, size: 35, color: Theme.of(context).primaryColor)
+                : null,
+          ),
+          if (isUploading)
+            Positioned.fill(
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.black54,
+                  shape: BoxShape.circle,
+                ),
+                child: const Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 

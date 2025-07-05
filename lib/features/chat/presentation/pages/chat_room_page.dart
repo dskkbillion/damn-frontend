@@ -14,11 +14,13 @@ import 'package:dskk_flutter_refactor/features/home/presentation/pages/product_d
 class ChatRoomPage extends StatefulWidget {
   final int chatId;
   final VoidCallback? onMessagesLoaded; // 新增回调参数
+  final VoidCallback? onMessageRevoked; // 新增消息撤回回调参数
 
   const ChatRoomPage({
     super.key, 
     required this.chatId,
     this.onMessagesLoaded, // 添加可选回调
+    this.onMessageRevoked, // 添加可选撤回回调
   });
 
   @override
@@ -320,6 +322,19 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         if (state.isInitialLoad) {
                           print('[ChatRoomPage] Messages loaded successfully, triggering onMessagesLoaded callback');
                           widget.onMessagesLoaded?.call();
+                        }
+                        
+                        // 检查是否有消息被撤回
+                        if (state.hasMessageRevoked) {
+                          print('[ChatRoomPage] Message revoked detected, triggering onMessageRevoked callback');
+                          widget.onMessageRevoked?.call();
+                          
+                          // 重置撤回标志
+                          Future.delayed(const Duration(milliseconds: 100), () {
+                            if (mounted) {
+                              context.read<ChatMessagesBloc>().add(const ResetMessageRevokedFlag());
+                            }
+                          });
                         }
                         
                         // 如果是初始加载或发送新消息，滚动到底部

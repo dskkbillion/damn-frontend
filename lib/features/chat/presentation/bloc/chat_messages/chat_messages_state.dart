@@ -25,6 +25,7 @@ class ChatMessagesLoaded extends ChatMessagesState {
   final bool isInitialLoad; // 标记是否是初始加载
   final bool hasNewMessage; // 标记是否有新消息
   final bool hasMore; // 标记是否有更多历史消息可加载
+  final bool hasMessageRevoked; // 标记是否有消息被撤回
 
   const ChatMessagesLoaded({
     required this.messages,
@@ -35,10 +36,11 @@ class ChatMessagesLoaded extends ChatMessagesState {
     this.isInitialLoad = true,
     this.hasNewMessage = false,
     this.hasMore = true,
+    this.hasMessageRevoked = false,
   });
 
   @override
-  List<Object?> get props => [messages, opponent, currentUserId, currentUserParticipantId, error, isInitialLoad, hasNewMessage, hasMore];
+  List<Object?> get props => [messages, opponent, currentUserId, currentUserParticipantId, error, isInitialLoad, hasNewMessage, hasMore, hasMessageRevoked];
 
   ChatMessagesLoaded copyWith({
     List<ChatMessage>? messages,
@@ -49,6 +51,7 @@ class ChatMessagesLoaded extends ChatMessagesState {
     bool? isInitialLoad,
     bool? hasNewMessage,
     bool? hasMore,
+    bool? hasMessageRevoked,
   }) {
     return ChatMessagesLoaded(
       messages: messages ?? this.messages,
@@ -59,6 +62,7 @@ class ChatMessagesLoaded extends ChatMessagesState {
       isInitialLoad: isInitialLoad ?? this.isInitialLoad,
       hasNewMessage: hasNewMessage ?? this.hasNewMessage,
       hasMore: hasMore ?? this.hasMore,
+      hasMessageRevoked: hasMessageRevoked ?? this.hasMessageRevoked,
     );
   }
 }

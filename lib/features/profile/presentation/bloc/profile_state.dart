@@ -55,17 +55,34 @@ class ProfileUpdated extends ProfileState {
 
 /// 正在上传头像
 class ProfileAvatarUploading extends ProfileState {
-  const ProfileAvatarUploading();
+  final UserProfile? profile; // 保存当前用户信息
+  
+  const ProfileAvatarUploading({this.profile});
+
+  @override
+  List<Object?> get props => [profile];
 }
 
 /// 头像上传完成
 class ProfileAvatarUploaded extends ProfileState {
   final String avatarUrl;
+  final UserProfile? profile; // 保存当前用户信息
 
-  const ProfileAvatarUploaded({required this.avatarUrl});
+  const ProfileAvatarUploaded({required this.avatarUrl, this.profile});
 
   @override
-  List<Object> get props => [avatarUrl];
+  List<Object?> get props => [avatarUrl, profile];
+}
+
+/// 头像上传失败
+class ProfileAvatarUploadError extends ProfileState {
+  final String message;
+  final UserProfile? profile; // 保持用户信息
+
+  const ProfileAvatarUploadError({required this.message, this.profile});
+
+  @override
+  List<Object?> get props => [message, profile];
 }
 
 /// 钱包摘要加载中

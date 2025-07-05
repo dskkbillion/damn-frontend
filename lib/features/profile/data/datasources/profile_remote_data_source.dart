@@ -12,6 +12,10 @@ import '../models/wallet_summary_dto.dart';
 import '../models/saved_item_dto.dart';
 import '../models/liked_story_dto.dart';
 import '../../domain/repositories/i_user_profile_repository.dart';
+import '../../../../core/error/exceptions.dart';
+import '../../../../core/services/image_compress_service.dart';
+import '../../domain/entities/user_profile.dart';
+import '../../domain/entities/wallet_summary.dart';
 
 /// 远程数据源抽象接口
 abstract class ProfileRemoteDataSource {
@@ -102,8 +106,13 @@ class ServerException implements Exception {
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   final Dio dio;
   final FlutterSecureStorage storage;
+  final ImageCompressService imageCompressService;
 
-  ProfileRemoteDataSourceImpl({required this.dio, required this.storage});
+  ProfileRemoteDataSourceImpl({
+    required this.dio,
+    required this.storage,
+    required this.imageCompressService,
+  });
 
   @override
   Future<UserProfileDto> getUserProfile() async {
@@ -172,10 +181,13 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
 
       if (response.statusCode == 200) {
         final responseData = response.data;
-        if (responseData is Map<String, dynamic> && responseData.containsKey('code') && responseData['code'] == 200 && responseData['data'] != null) {
-          if (responseData['data'] != null) {
+        if (responseData is Map<String, dynamic> && responseData.containsKey('code') && responseData['code'] == 200) {
+          // 检查是否返回了用户数据
+          if (responseData['data'] != null && responseData['data'] is Map<String, dynamic>) {
             return UserProfileDto.fromJson(responseData['data']);
           } else {
+            // 如果只返回成功消息，重新获取用户信息
+            print('Update successful but no user data returned, fetching latest profile...');
             return await getUserProfile();
           }
         } else {
@@ -201,27 +213,66 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   @override
   Future<String> uploadAvatar({required String imageFilePath}) async {
     try {
-      final userId = await storage.read(key: 'user_id');
-      if (userId == null || userId.isEmpty) {
-        throw ServerException(message: '无法获取用户 ID', statusCode: 401);
-      }
-
       final file = File(imageFilePath);
-      String fileName = file.path.split('/').last;
+      
+      // 先压缩图片
+      print('[ProfileRemoteDataSourceImpl] 开始压缩头像图片...');
+      final compressedFile = await imageCompressService.compressAvatar(file);
+      
+      if (compressedFile == null) {
+        throw ServerException(message: '图片压缩失败');
+      }
+      
+      // 检查压缩后的文件大小
+      final compressedSize = await compressedFile.length();
+      print('[ProfileRemoteDataSourceImpl] 压缩后文件大小: ${_formatFileSize(compressedSize)}');
+      
+      // 如果压缩后仍然很大，进一步压缩到5MB以下
+      File finalFile = compressedFile;
+      if (compressedSize > 5 * 1024 * 1024) {
+        print('[ProfileRemoteDataSourceImpl] 文件仍然较大，进一步压缩...');
+        final furtherCompressed = await imageCompressService.compressToMaxSize(
+          compressedFile,
+          maxSizeBytes: 5 * 1024 * 1024, // 5MB
+          maxWidth: 512,
+          maxHeight: 512,
+        );
+        
+        if (furtherCompressed != null) {
+          finalFile = furtherCompressed;
+          final finalSize = await finalFile.length();
+          print('[ProfileRemoteDataSourceImpl] 最终文件大小: ${_formatFileSize(finalSize)}');
+        }
+      }
+      
+      // 创建FormData
+      String fileName = 'avatar.jpg'; // 统一使用jpg格式
       FormData formData = FormData.fromMap({
         "file": await MultipartFile.fromFile(
-          file.path,
+          finalFile.path,
           filename: fileName,
-          contentType: MediaType("image", fileName.split('.').last),
+          contentType: MediaType("image", "jpeg"),
         ),
       });
 
-      final response = await dio.post('/api/member/profile/$userId/avatar', data: formData);
+      // 使用正确的文件上传接口
+      final response = await dio.post('/api/common/public/upload', data: formData);
 
       if (response.statusCode == 200) {
         final responseData = response.data;
-        if (responseData is Map<String, dynamic> && responseData.containsKey('code') && responseData['code'] == 200 && responseData['data']?['url'] != null) {
-          return responseData['data']['url'];
+        if (responseData is Map<String, dynamic> && 
+            responseData.containsKey('code') && 
+            responseData['code'] == 200 && 
+            responseData['data'] != null) {
+          // 根据实际API响应结构获取图片URL
+          final data = responseData['data'];
+          if (data is Map<String, dynamic> && data.containsKey('url')) {
+            return data['url'];
+          } else if (data is String) {
+            return data; // 如果直接返回URL字符串
+          } else {
+            throw ServerException(message: '上传响应格式错误');
+          }
         } else {
           throw ServerException(
             message: (responseData is Map<String, dynamic> ? responseData['msg'] : null) ?? '上传头像失败',
@@ -235,10 +286,32 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         );
       }
     } on DioException catch (e) {
-      throw ServerException(message: e.message ?? '网络请求失败', statusCode: e.response?.statusCode);
+      // 提供更详细的错误信息
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.sendTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw ServerException(message: '上传超时，请检查网络连接或尝试压缩图片');
+      } else if (e.response?.statusCode == 413) {
+        throw ServerException(message: '图片文件过大，请选择较小的图片');
+      } else if (e.response?.statusCode == 415) {
+        throw ServerException(message: '不支持的图片格式，请选择JPG或PNG格式');
+      } else {
+        throw ServerException(message: e.message ?? '网络请求失败', statusCode: e.response?.statusCode);
+      }
     } catch (e) {
       if (e is ServerException) rethrow;
       throw ServerException(message: e.toString());
+    }
+  }
+  
+  /// 格式化文件大小显示
+  String _formatFileSize(int bytes) {
+    if (bytes < 1024) {
+      return '${bytes}B';
+    } else if (bytes < 1024 * 1024) {
+      return '${(bytes / 1024).toStringAsFixed(1)}KB';
+    } else {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
     }
   }
 

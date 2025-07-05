@@ -15,6 +15,7 @@ import 'package:dskk_flutter_refactor/core/network/interceptors/app_info_interce
 import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
 import 'package:dskk_flutter_refactor/core/network/header_interceptor.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:dskk_flutter_refactor/core/services/image_compress_service.dart';
 
 // 添加缺失的依赖
 import 'package:dskk_flutter_refactor/core/network/i_http_client.dart';
@@ -171,6 +172,10 @@ Future<void> registerCoreDependencies() async {
   
   // 注册NetworkInfo
   getIt.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(getIt<InternetConnectionChecker>()));
+  
+  // 注册ImageCompressService
+  getIt.registerLazySingleton<ImageCompressService>(() => ImageCompressService());
+  print('[DI] Registered ImageCompressService');
   
   // 注册AppDatabase
   getIt.registerLazySingleton<AppDatabase>(() => AppDatabase());

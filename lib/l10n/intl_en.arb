@@ -277,6 +277,7 @@
     "profile_default_name": "User",
     "profile_online": "Online",
     "profile_offline": "Offline",
+    "profile_avatar_upload_failed": "Avatar upload failed, please try again",
     
     "profile_orders": "My Orders",
     "profile_pending_payment": "Pending",
