@@ -122,20 +122,37 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
     required int pageSize,
   }) async {
     try {
-      final response = await _dio.post('/api/shop/product/draft/list', data: {
+      print('[SellerRemoteDataSource] 获取草稿列表 - 页码: $pageNum, 每页: $pageSize');
+      
+      // 使用正确的草稿API端点
+      final response = await _dio.post('/api/shop/product/myDraft', data: {
         'pageNum': pageNum,
         'pageSize': pageSize,
       });
       
       _checkResponse(response);
       
-      return PaginatedListDto.fromJson(
-        response.data,
-        (itemJson) => itemJson, // 草稿列表暂时返回原始Map
+      final data = response.data;
+      print('[SellerRemoteDataSource] 草稿API响应: $data');
+      
+      // 处理分页数据
+      final records = data['rows'] as List? ?? data['records'] as List? ?? [];
+      final total = data['total'] as int? ?? records.length;
+      
+      print('[SellerRemoteDataSource] 草稿数量: ${records.length}, 总数: $total');
+      
+      return PaginatedListDto<dynamic>(
+        total: total,
+        records: records,
       );
     } catch (e) {
-      _handleError(e);
-      rethrow;
+      print('[SellerRemoteDataSource] 草稿列表获取失败: $e');
+      
+      // 返回空列表而不是抛出异常，保证UI能正常显示
+      return PaginatedListDto<dynamic>(
+        total: 0,
+        records: [],
+      );
     }
   }
 

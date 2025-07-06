@@ -85,7 +85,8 @@ class MockProfileRemoteDataSource extends _i1.Mock
 
   @override
   _i5.Future<_i2.UserProfileDto> updateUserProfile({
-    required String? nickName,
+    String? nickName,
+    String? avatar,
     bool? onlineFlag,
   }) =>
       (super.noSuchMethod(
@@ -94,6 +95,7 @@ class MockProfileRemoteDataSource extends _i1.Mock
           [],
           {
             #nickName: nickName,
+            #avatar: avatar,
             #onlineFlag: onlineFlag,
           },
         ),
@@ -104,6 +106,7 @@ class MockProfileRemoteDataSource extends _i1.Mock
             [],
             {
               #nickName: nickName,
+              #avatar: avatar,
               #onlineFlag: onlineFlag,
             },
           ),

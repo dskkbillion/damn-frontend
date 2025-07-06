@@ -12,6 +12,7 @@ import '../widgets/empty_state.dart';
 import '../widgets/loading_state.dart';
 import '../widgets/product_card.dart';
 import '../widgets/status_tag.dart';
+import 'product_edit_page.dart';
 
 /// 商品管理页面
 class ProductManagementPage extends StatefulWidget {
@@ -128,10 +129,40 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
         listenWhen: (previous, current) =>
             previous.navigationPath != current.navigationPath &&
             current.navigationPath != null,
-        listener: (context, state) {
-          // Use push for navigating to create/edit screens
-          // This keeps the management page in the stack
-          context.push(state.navigationPath!);
+        listener: (context, state) async {
+          // 检查是否是编辑页面的导航
+          if (state.navigationPath!.contains('/edit') || state.navigationPath! == SellerRoutes.productCreate) {
+            // 直接导航到ProductEditPage并传递回调
+            final productId = state.navigationPath!.contains('/edit') 
+                ? state.navigationPath!.split('/').last 
+                : null;
+            
+            await Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => ProductEditPage(
+                  productId: productId,
+                  onDraftSaved: () {
+                    print('[ProductManagementPage] onDraftSaved callback called');
+                    print('[ProductManagementPage] Current tab index: ${_tabController.index}');
+                    
+                    // 强制刷新草稿列表，不管当前在哪个Tab
+                    try {
+                      context.read<ProductManagementBloc>().add(const LoadProductList(
+                        status: ProductStatus.draft,
+                        forceRefresh: true,
+                      ));
+                      print('[ProductManagementPage] LoadProductList event dispatched successfully');
+                    } catch (e) {
+                      print('[ProductManagementPage] Error dispatching LoadProductList: $e');
+                    }
+                  },
+                ),
+              ),
+            );
+          } else {
+            // 其他导航使用原来的方式
+            context.push(state.navigationPath!);
+          }
         },
         // Previous BlocListener for error messages
         // We need to nest listeners or combine logic if needed

@@ -59,6 +59,8 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     LoadProductList event,
     Emitter<ProductManagementState> emit,
   ) async {
+    print('[ProductManagementBloc] _onLoadProductList called, event.status: ${event.status}, forceRefresh: ${event.forceRefresh}, loadMore: ${event.loadMore}');
+    
     // 如果是强制刷新，重置页码
     if (event.forceRefresh) {
       _resetPages();
@@ -71,11 +73,14 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     
     // 确定要加载的商品状态
     final ProductStatus status = event.status ?? _getStatusByTabIndex(state.tabIndex);
+    print('[ProductManagementBloc] Determined status: $status');
     
     // 根据状态确定加载哪种类型的商品列表
     if (status == ProductStatus.draft) {
+      print('[ProductManagementBloc] Loading draft list...');
       await _loadDraftList(emit, event.loadMore);
     } else {
+      print('[ProductManagementBloc] Loading products by status: $status');
       await _loadProductsByStatus(status, emit, event.loadMore);
     }
   }
@@ -159,11 +164,14 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
   
   /// 加载草稿列表
   Future<void> _loadDraftList(Emitter<ProductManagementState> emit, bool isLoadMore) async {
+    print('[ProductManagementBloc] _loadDraftList called, page: $_draftCurrentPage, isLoadMore: $isLoadMore');
+    
     final params = GetSellerDraftListParams(
       pageNum: _draftCurrentPage,
       pageSize: _pageSize,
     );
     
+    print('[ProductManagementBloc] Calling GetSellerDraftListUseCase with params: $params');
     final result = await _getSellerDraftListUseCase(params);
     
     result.fold(
@@ -221,37 +229,35 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     ChangeProductTab event,
     Emitter<ProductManagementState> emit,
   ) async {
+    print('[ProductManagementBloc] _onChangeProductTab called, tabIndex: ${event.tabIndex}');
+    
     // 更新标签页索引
     emit(state.copyWithTabIndex(event.tabIndex));
 
-    // 如果切换到草稿箱 Tab (index 1)，直接设置为空列表，不加载
-    if (event.tabIndex == 1) {
-      // 使用 copyWith 更新状态
-      emit(state.copyWith(
-        draftProducts: [], // 确保草稿列表为空
-        hasMoreDraftProducts: false, // 明确没有更多
-        isLoading: false, // 设置加载状态为 false
-        errorMessage: null, // 清除错误信息
-        // hasError: false, // 可选: 显式设置无错误状态
-      )); 
-      return; // 不进行后续加载判断
-    }
-
-    // 对于其他 Tab，判断是否需要加载
+    // 判断是否需要加载数据
     bool needLoad = false;
     switch (event.tabIndex) {
       case 0: // 在售
         needLoad = state.onSaleProducts == null;
+        print('[ProductManagementBloc] Tab 0 (在售): onSaleProducts null? ${state.onSaleProducts == null}, needLoad: $needLoad');
         break;
-      // case 1: // 草稿 - 已在上面处理
+      case 1: // 草稿
+        needLoad = state.draftProducts == null;
+        print('[ProductManagementBloc] Tab 1 (草稿): draftProducts null? ${state.draftProducts == null}, length: ${state.draftProducts?.length}, needLoad: $needLoad');
+        break;
       case 2: // 已下架
         needLoad = state.offShelfProducts == null;
+        print('[ProductManagementBloc] Tab 2 (已下架): offShelfProducts null? ${state.offShelfProducts == null}, needLoad: $needLoad');
         break;
     }
 
-    // 如果需要加载（非草稿Tab），触发加载事件
+    // 如果需要加载，触发加载事件
     if (needLoad) {
-      add(LoadProductList(status: _getStatusByTabIndex(event.tabIndex)));
+      final status = _getStatusByTabIndex(event.tabIndex);
+      print('[ProductManagementBloc] Need to load, triggering LoadProductList with status: $status');
+      add(LoadProductList(status: status));
+    } else {
+      print('[ProductManagementBloc] No need to load data for tab ${event.tabIndex}');
     }
   }
   

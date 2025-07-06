@@ -4,15 +4,20 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 // 导入国际化
 import '../../../../generated/l10n.dart';
+// 导入配置
+import '../../../../app/navigation/app_router_config.dart';
+// 导入震动工具类
+import '../../../../core/utils/haptic_utils.dart';
 
 import 'package:dskk_flutter_refactor/features/home/domain/entities/seller_product.dart';
 import 'package:dskk_flutter_refactor/features/home/presentation/bloc/seller_profile_bloc.dart';
-import 'package:dskk_flutter_refactor/features/chat/domain/repositories/i_chat_repository.dart';
 
-class SellerPublicProfilePage extends StatefulWidget {
+class SellerPublicProfilePage extends ConsumerStatefulWidget {
   final int sellerId;
 
   const SellerPublicProfilePage({
@@ -21,13 +26,11 @@ class SellerPublicProfilePage extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<SellerPublicProfilePage> createState() => _SellerPublicProfilePageState();
+  ConsumerState<SellerPublicProfilePage> createState() => _SellerPublicProfilePageState();
 }
 
-class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with SingleTickerProviderStateMixin {
+class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  late final IChatRepository _chatRepository = GetIt.I<IChatRepository>();
-  bool _isCreatingChat = false;
 
   @override
   void initState() {
@@ -41,46 +44,84 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
     super.dispose();
   }
 
-  Future<void> _contactSeller(BuildContext context, int sellerId) async {
-    if (_isCreatingChat) return;
+  // 底部导航栏点击处理
+  void _onNavTap(int index) {
+    HapticUtils.lightTabFeedback();
     
-    setState(() {
-      _isCreatingChat = true;
-    });
-    
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => const Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
-    
-    try {
-      final result = await _chatRepository.createRoom(sellerId);
-      
-      Navigator.of(context, rootNavigator: true).pop();
-      
-      result.fold(
-        (failure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(S.of(context).seller_profile_chat_failed(failure.message))),
-          );
-        },
-        (chatId) {
-          GoRouter.of(context).push('/chat/$chatId');
-        },
-      );
-    } catch (e) {
-      Navigator.of(context, rootNavigator: true).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(S.of(context).seller_profile_error_occurred(e.toString()))),
-      );
-    } finally {
-      setState(() {
-        _isCreatingChat = false;
-      });
+    switch (index) {
+      case 0: // AI助手
+        context.go('/ai_chat');
+        break;
+      case 1: // 主页
+        context.go('/home');
+        break;
+      case 2: // 消息
+        context.go('/chat');
+        break;
+      case 3: // 我的
+        context.go('/profile');
+        break;
+      case 4: // 开发（如果启用）
+        context.go('/dev_menu');
+        break;
     }
+  }
+
+  // 构建底部导航栏
+  Widget _buildBottomNavigationBar() {
+    final showDevTab = ref.watch(showDevTabProvider);
+    final s = S.of(context);
+    
+    final List<BottomNavigationBarItem> items = [
+      BottomNavigationBarItem(
+        icon: SvgPicture.asset(
+          'assets/icons/nav/dskk_logo.svg',
+          width: 24,
+          height: 24,
+          colorFilter: const ColorFilter.mode(Colors.grey, BlendMode.srcIn),
+        ),
+        activeIcon: SvgPicture.asset(
+          'assets/icons/nav/dskk_logo.svg',
+          width: 24,
+          height: 24,
+          colorFilter: ColorFilter.mode(const Color(0xFFD0903D), BlendMode.srcIn),
+        ),
+        label: s.nav_ai_assistant,
+      ),
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.home_outlined),
+        activeIcon: const Icon(Icons.home),
+        label: s.nav_home,
+      ),
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.chat_bubble_outline),
+        activeIcon: const Icon(Icons.chat_bubble),
+        label: s.nav_messages,
+      ),
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.person_outline),
+        activeIcon: const Icon(Icons.person),
+        label: s.nav_profile,
+      ),
+    ];
+    
+    if (showDevTab) {
+      items.add(BottomNavigationBarItem(
+        icon: const Icon(Icons.developer_mode_outlined),
+        activeIcon: const Icon(Icons.developer_mode),
+        label: s.nav_dev,
+      ));
+    }
+
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      selectedItemColor: const Color(0xFFD0903D),
+      unselectedItemColor: Colors.grey,
+      showUnselectedLabels: true,
+      items: items,
+      currentIndex: 1, // 默认选中主页，因为卖家资料是从商品详情进入的
+      onTap: _onNavTap,
+    );
   }
 
   @override
@@ -144,6 +185,8 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
           },
           ),
         ),
+        // 添加底部导航栏
+        bottomNavigationBar: _buildBottomNavigationBar(),
       ),
     );
   }
@@ -151,30 +194,52 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
   Widget _buildSellerProfile(BuildContext context, SellerProfileLoaded state) {
     final seller = state.seller;
     
-    return CustomScrollView(
-      slivers: [
-        SliverAppBar(
-          expandedHeight: 200.0,
-          floating: false,
-          pinned: true,
-          flexibleSpace: FlexibleSpaceBar(
-            title: Text(
-              seller?.nickName ?? S.of(context).seller_profile_default_title,
-              style: const TextStyle(color: Colors.white),
+    return Column(
+      children: [
+        // 简洁的卖家头部信息
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: Colors.amber[700],
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(16),
+              bottomRight: Radius.circular(16),
             ),
-            background: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.amber.shade700, Colors.amber.shade900],
+          ),
+          child: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    // 返回按钮
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    ),
+                    Expanded(
+                      child: Text(
+                        seller?.nickName ?? S.of(context).seller_profile_default_title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(width: 48), // 平衡返回按钮
+                  ],
                 ),
-              ),
+              ],
             ),
           ),
         ),
-        SliverToBoxAdapter(
-          child: Padding(
+        
+        // 页面内容
+        Expanded(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -231,42 +296,23 @@ class _SellerPublicProfilePageState extends State<SellerPublicProfilePage> with 
                 
                 const SizedBox(height: 16),
                 
-                // 操作按钮
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          final bloc = context.read<SellerProfileBloc>();
-                          // 根据当前关注状态切换
-                          if (seller?.memberAttention == true) {
-                            // 已关注，执行取消关注
-                            bloc.add(UnfollowSellerEvent(sellerId: widget.sellerId));
-                          } else {
-                            // 未关注，执行关注
-                            bloc.add(FollowSellerEvent(sellerId: widget.sellerId));
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: seller?.memberAttention == true 
-                              ? Colors.grey[300] 
-                              : Colors.amber[700],
-                          foregroundColor: seller?.memberAttention == true 
-                              ? Colors.black 
-                              : Colors.white,
-                        ),
-                        child: Text(seller?.memberAttention == true ? S.of(context).seller_profile_followed : S.of(context).seller_profile_follow),
-                      ),
+                // 关注按钮
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: seller?.memberAttention == true
+                        ? () => context.read<SellerProfileBloc>().add(UnfollowSellerEvent(sellerId: widget.sellerId))
+                        : () => context.read<SellerProfileBloc>().add(FollowSellerEvent(sellerId: widget.sellerId)),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: seller?.memberAttention == true 
+                          ? Colors.grey[300] 
+                          : Colors.amber[700],
+                      foregroundColor: seller?.memberAttention == true 
+                          ? Colors.black 
+                          : Colors.white,
                     ),
-                    const SizedBox(width: 12),
-                    CircleAvatar(
-                      backgroundColor: Colors.grey[200],
-                      child: IconButton(
-                        icon: const Icon(Icons.chat_bubble_outline, color: Colors.black),
-                        onPressed: () => _contactSeller(context, widget.sellerId),
-                      ),
-                    ),
-                  ],
+                    child: Text(seller?.memberAttention == true ? S.of(context).seller_profile_followed : S.of(context).seller_profile_follow),
+                  ),
                 ),
                 
                 const SizedBox(height: 16),

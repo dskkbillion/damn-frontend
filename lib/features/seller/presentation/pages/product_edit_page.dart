@@ -62,11 +62,15 @@ class PriceVariant {
 class ProductEditPage extends StatefulWidget {
   /// 商品ID（编辑模式）
   final String? productId;
+  
+  /// 草稿保存成功回调
+  final VoidCallback? onDraftSaved;
 
   /// 构造函数
   const ProductEditPage({
     super.key,
     this.productId,
+    this.onDraftSaved,
   });
 
   @override
@@ -540,8 +544,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
             },
           ),
           actions: [
-            // 保存草稿按钮
+            // 保存草稿按钮 - 放在body的BlocConsumer中处理，避免Provider作用域问题
             BlocBuilder<ProductEditBloc, ProductEditState>(
+              bloc: _bloc, // 直接指定bloc实例
               builder: (context, state) {
                 if (state.hasUnsavedChanges) {
                   return TextButton.icon(
@@ -577,8 +582,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
             const SizedBox(width: 16),
           ],
         ),
-        body: BlocProvider.value(
-          value: _bloc,
+        body: BlocProvider<ProductEditBloc>(
+          create: (context) => _bloc,
           child: BlocConsumer<ProductEditBloc, ProductEditState>(
             listener: (context, state) {
               if (state.hasError) {
@@ -595,6 +600,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                     backgroundColor: Colors.green,
                   ),
                 );
+                // 通知父页面刷新草稿列表
+                widget.onDraftSaved?.call();
               } else if (state.isSubmitSuccess) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(

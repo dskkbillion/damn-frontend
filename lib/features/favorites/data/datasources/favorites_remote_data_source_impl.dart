@@ -250,7 +250,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
     try {
       final userId = await getUserId();
       final queryParams = {
-        'type': 'org',
+        'type': 'attentionMember', // 🔥 修改为关注类型，而不是收藏类型
         'memberId': userId,
         'pageNum': (pageNum ?? 1).toString(),
         'pageSize': (pageSize ?? 10).toString(),
@@ -268,108 +268,60 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
       
       _logResponse(response.statusCode, response.body);
 
-      // 由于认证问题，暂时返回模拟数据
+      // 获取关注的卖家列表
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
         if (jsonResponse['code'] == 200 && jsonResponse['rows'] != null) {
           final List<dynamic> rows = jsonResponse['rows'];
           
-          // 获取收藏记录
-          final favorites = rows.map((row) => FavoriteModel.fromJson(row)).toList();
+          print('获取到关注记录数: ${rows.length}');
+          
+          // 获取关注记录
+          final attentionRecords = rows.map((row) => FavoriteModel.fromJson(row)).toList();
           
           // 获取卖家详情
           final List<FavoriteSellerModel> sellers = [];
-          for (final favorite in favorites) {
+          for (final record in attentionRecords) {
             try {
               // 获取卖家详情
-              final sellerDetail = await _getSellerDetail(favorite.objectId);
+              final sellerDetail = await _getSellerDetail(record.objectId);
               sellers.add(sellerDetail);
             } catch (e) {
               print('获取卖家详情出错: $e');
-              // 如果获取详情失败，使用基本信息构造模型
+              
+              // 🔥 如果是API返回错误用户信息的异常，跳过这条记录
+              if (e.toString().contains('API返回了错误的用户信息')) {
+                print('⚠️ 跳过有问题的关注记录 (objectId: ${record.objectId})');
+                continue;
+              }
+              
+              // 🔥 对于其他异常（网络错误等），使用基本信息构造模型
               sellers.add(FavoriteSellerModel(
-                id: favorite.objectId,
-                referId: favorite.objectId,
-                nickName: '卖家 ${favorite.objectId}',
+                id: record.objectId,
+                referId: record.objectId,
+                nickName: '卖家 ${record.objectId}',
                 type: 'MEMBER',
-                isFavorite: true,
+                isFavorite: true, // 关注的卖家在收藏页面显示为已关注
               ));
             }
           }
           
+          print('成功获取关注的卖家数: ${sellers.length}');
           return sellers;
         } else {
-          // 返回模拟数据
-          print('使用模拟数据 - 认证失败或数据格式不正确');
-          return [
-            FavoriteSellerModel(
-              id: 101,
-              referId: 101,
-              nickName: '张师傅家政服务',
-              trueName: '张师傅',
-              avatar: 'https://example.com/avatar1.jpg',
-              type: 'MEMBER',
-              isFavorite: true,
-            ),
-            FavoriteSellerModel(
-              id: 102,
-              referId: 102,
-              nickName: '李师傅维修中心',
-              trueName: '李师傅',
-              avatar: 'https://example.com/avatar2.jpg',
-              type: 'MEMBER',
-              isFavorite: true,
-            ),
-          ];
+          // API调用成功但没有数据，返回空列表
+          print('API调用成功但没有关注的卖家数据');
+          return [];
         }
       } else {
-        // 返回模拟数据
-        print('使用模拟数据 - HTTP状态码不是200');
-        return [
-          FavoriteSellerModel(
-            id: 101,
-            referId: 101,
-            nickName: '张师傅家政服务',
-            trueName: '张师傅',
-            avatar: 'https://example.com/avatar1.jpg',
-            type: 'MEMBER',
-            isFavorite: true,
-          ),
-          FavoriteSellerModel(
-            id: 102,
-            referId: 102,
-            nickName: '李师傅维修中心',
-            trueName: '李师傅',
-            avatar: 'https://example.com/avatar2.jpg',
-            type: 'MEMBER',
-            isFavorite: true,
-          ),
-        ];
+        // 如果API调用失败，返回空列表
+        print('获取关注卖家列表API调用失败 - HTTP状态码: ${response.statusCode}');
+        return [];
       }
     } catch (e) {
-      print('获取收藏卖家列表出错: $e');
-      // 返回模拟数据
-      print('使用模拟数据 - 发生异常');
-      return [
-        FavoriteSellerModel(
-          id: 101,
-          referId: 101,
-          nickName: '张师傅家政服务',
-          trueName: '张师傅',
-          avatar: 'https://example.com/avatar1.jpg',
-          type: 'MEMBER',
-          isFavorite: true,
-        ),
-        FavoriteSellerModel(
-          id: 102,
-          referId: 102,
-          nickName: '李师傅维修中心',
-          trueName: '李师傅',
-          avatar: 'https://example.com/avatar2.jpg',
-          type: 'MEMBER',
-          isFavorite: true,
-        ),
-      ];
+      print('获取关注卖家列表出错: $e');
+      // 发生异常时返回空列表
+      return [];
     }
   }
 
@@ -388,9 +340,17 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
       final jsonResponse = json.decode(response.body);
       if (jsonResponse['code'] == 200 && jsonResponse['data'] != null) {
         final data = jsonResponse['data'];
+        final returnedId = data['id'];
+        
+        // 🔥 检测后端API bug：如果查询的ID与返回的ID不匹配，说明API有问题
+        if (returnedId != sellerId) {
+          print('⚠️ 检测到后端API异常：查询用户ID $sellerId，但返回了用户ID $returnedId 的信息');
+          throw ServerException(message: 'API返回了错误的用户信息');
+        }
+        
         return FavoriteSellerModel(
           id: sellerId,
-          referId: data['id'] ?? sellerId,
+          referId: sellerId, // 🔥 修复：使用正确的sellerId，而不是可能错误的API返回值
           nickName: data['nickName'] ?? '未知卖家',
           trueName: data['trueName'],
           avatar: data['avatar'],
@@ -557,7 +517,13 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
     try {
       final uri = Uri.parse('$baseUrl/api/invitation/collectionMember');
 
-      final body = json.encode(user.toJson());
+      // 🔥 修复：只传递必要的字段，使用referId作为被关注者的ID
+      final body = json.encode({
+        'referId': user.referId, // 使用referId而不是id
+        'nickName': user.nickName ?? '',
+        'avatar': user.avatar ?? '',
+        'type': user.type,
+      });
 
       final headers = await _getHeaders();
       
@@ -596,8 +562,10 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
     try {
       final uri = Uri.parse('$baseUrl/api/invitation/cancelCollectionMember');
 
+      // 🔥 修复：使用referId作为被关注者的ID，与Home模块保持一致
       final body = json.encode({
-        'id': user.id,
+        'referId': user.referId, // 使用referId而不是id
+        'type': user.type,
       });
 
       final headers = await _getHeaders();

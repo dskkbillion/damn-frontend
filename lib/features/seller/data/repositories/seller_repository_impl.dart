@@ -680,22 +680,29 @@ class SellerRepositoryImpl implements ISellerRepository {
       price: _parseDouble(productMap['sellingPrice']),
       images: imageUrl,
       description: productMap['description'] ?? '',
-      status: _mapStringToProductStatus(productMap['state']),
+      status: _mapToProductStatus(productMap),
       createTime: _parseDateTime(productMap['createTime']),
       updateTime: _parseDateTime(productMap['updateTime']),
       sales: productMap['buyedNumber'],
     );
   }
   
-  /// 将字符串状态映射为ProductStatus枚举
-  ProductStatus _mapStringToProductStatus(String? state) {
+  /// 将商品数据映射为ProductStatus枚举
+  ProductStatus _mapToProductStatus(Map<String, dynamic> productData) {
+    final String? productType = productData['productType'] as String?;
+    final String? state = productData['state'] as String?;
+    
+    // 优先根据productType判断草稿
+    if (productType == 'draft') {
+      return ProductStatus.draft;
+    }
+    
+    // 对于正式商品，根据state判断状态
     switch (state?.toLowerCase()) {
       case 'normal':
         return ProductStatus.normal;
       case 'disabled':
         return ProductStatus.disabled;
-      case 'draft':
-        return ProductStatus.draft;
       case 'reviewing':
         return ProductStatus.reviewing;
       case 'rejected':
@@ -703,7 +710,13 @@ class SellerRepositoryImpl implements ISellerRepository {
       case 'sold_out':
         return ProductStatus.soldOut;
       default:
-        print('Warning: Unknown product state "$state" received from API. Defaulting to draft.');
+        // 如果state为null且不是草稿，可能是数据异常，默认为normal
+        if (productType == 'product') {
+          print('Warning: Product has productType="product" but state is null or unknown: "$state". Defaulting to normal.');
+          return ProductStatus.normal;
+        }
+        // 其他情况默认为草稿
+        print('Warning: Unknown product type "$productType" and state "$state". Defaulting to draft.');
         return ProductStatus.draft;
     }
   }

@@ -356,7 +356,8 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
         // 根据当前标签页刷新列表
         if (state.currentTabIndex == 0 && event.type == 'org_product') {
           add(const LoadFavoriteServicesEvent(refresh: true));
-        } else if (state.currentTabIndex == 1 && event.type == 'org') {
+        } else if (state.currentTabIndex == 1 && (event.type == 'org' || event.type == 'attentionMember')) {
+          // 🔥 处理收藏机构或关注成员的移除
           add(const LoadFavoriteSellersEvent(refresh: true));
         }
       },
