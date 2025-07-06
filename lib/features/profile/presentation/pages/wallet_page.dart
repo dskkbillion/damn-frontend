@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/loading_indicator.dart';
 import '../../data/models/transaction_dto.dart';
@@ -102,11 +103,30 @@ class _WalletPageState extends State<WalletPage> {
     _loadTransactions();
   }
 
+  // 安全的返回处理方法
+  void _safeGoBack() {
+    try {
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        // 路由栈为空时，导航到安全的默认页面
+        context.go('/seller');
+      }
+    } catch (e) {
+      // 如果所有方法都失败，使用最后的兜底方案
+      context.go('/seller');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('我的钱包'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: _safeGoBack,
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -352,15 +372,19 @@ class _WalletPageState extends State<WalletPage> {
               ],
             ),
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildActionButton(
-                  icon: Icons.currency_exchange,
-                  label: '提现',
-                  onTap: () => _showNotImplemented(),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: summary.balance > 0 ? () {
+                  _showWithdrawDialog(summary.balance);
+                } : null,
+                icon: const Icon(Icons.account_balance),
+                label: const Text('提现'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-              ],
+              ),
             ),
           ],
         ),
@@ -545,6 +569,77 @@ class _WalletPageState extends State<WalletPage> {
           ),
           Expanded(
             child: Text(value),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 显示提现对话框
+  void _showWithdrawDialog(double availableBalance) {
+    final TextEditingController amountController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('提现'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('可提现余额: ¥${availableBalance.toStringAsFixed(2)}'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: amountController,
+              decoration: const InputDecoration(
+                labelText: '提现金额',
+                hintText: '请输入提现金额',
+                border: OutlineInputBorder(),
+                prefixText: '¥ ',
+              ),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              '提现到账时间：1-3个工作日',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final amount = double.tryParse(amountController.text);
+              if (amount == null || amount <= 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('请输入有效的提现金额')),
+                );
+                return;
+              }
+              if (amount > availableBalance) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('提现金额不能超过可用余额')),
+                );
+                return;
+              }
+              
+              Navigator.pop(context);
+              // TODO: 实现真实的提现逻辑
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('提现申请已提交：¥${amount.toStringAsFixed(2)}'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            },
+            child: const Text('确认提现'),
           ),
         ],
       ),

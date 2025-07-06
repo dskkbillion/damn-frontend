@@ -139,7 +139,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => context.pop(),
           ),
           actions: [
             BlocBuilder<FavoritesBloc, FavoritesState>(

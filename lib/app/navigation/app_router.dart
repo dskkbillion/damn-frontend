@@ -125,6 +125,9 @@ import 'package:dskk_flutter_refactor/features/home/presentation/cubit/product_d
 // Import ImageCompressService
 import 'package:dskk_flutter_refactor/core/services/image_compress_service.dart';
 
+// Import auth application page and bloc
+import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/auth_application/auth_application_bloc.dart';
+
 // Placeholder page (defined once) - Only used if a module's routes aren't ready
 class PlaceholderPage extends StatelessWidget {
   final String title;
@@ -344,17 +347,20 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ), 
       GoRoute(
         path: SellerRoutes.authenticationApply, 
+        name: 'sellerAuthenticationApply',
         pageBuilder: (context, state) => state.buildSmartPage(
-          AuthApplicationPage(type: state.pathParameters['type'] ?? 'other', authInfo: state.extra as SellerAuthenticationInfo?),
-          name: 'sellerAuthenticationApply',
+          BlocProvider(
+            create: (context) => GetIt.I<AuthApplicationBloc>(),
+            child: AuthApplicationPage(type: state.pathParameters['type'] ?? 'other', authInfo: state.extra as SellerAuthenticationInfo?),
+          ),
           source: 'app_navigation_seller_non_shell',
         ),
       ), 
       GoRoute(
         path: SellerRoutes.authenticationDetail, 
+        name: 'sellerAuthenticationDetail',
         pageBuilder: (context, state) => state.buildSmartPage(
           AuthStatusPage(authInfo: state.extra as SellerAuthenticationInfo),
-          name: 'sellerAuthenticationDetail',
           source: 'app_navigation_seller_non_shell',
         ),
       ), 

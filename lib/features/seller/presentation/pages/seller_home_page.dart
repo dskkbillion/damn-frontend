@@ -338,8 +338,8 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                 ),
                 TextButton(
                   onPressed: () {
-                    // 导航到统计页面
-                    context.go(SellerRoutes.statistics);
+                    // 导航到数据tab页面
+                    context.go('/seller/dashboard');
                   },
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
@@ -391,7 +391,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                 TextButton(
                   onPressed: () {
                     // 导航到卖家订单列表页面（全部订单）
-                    context.go('/seller/orders');
+                    context.push('/seller/orders');
                   },
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
@@ -416,28 +416,28 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                   icon: Icons.receipt_long,
                   label: S.of(context).seller_home_orders_all,
                   count: dashboardData.orders.total.toString(),
-                  onTap: () => context.go('/seller/orders'),
+                  onTap: () => context.push('/seller/orders'),
                 ),
                 _buildOrderStatusItem(
                   context,
                   icon: Icons.access_time,
                   label: S.of(context).seller_home_orders_pending,
                   count: dashboardData.orders.pending.toString(),
-                  onTap: () => context.go('/seller/orders?status=awaitingStart'),
+                  onTap: () => context.push('/seller/orders?status=awaitingStart'),
                 ),
                 _buildOrderStatusItem(
                   context,
                   icon: Icons.check_circle_outline,
                   label: S.of(context).seller_home_orders_completed,
                   count: dashboardData.orders.completed.toString(),
-                  onTap: () => context.go('/seller/orders?status=orderCompleted'),
+                  onTap: () => context.push('/seller/orders?status=orderCompleted'),
                 ),
                 _buildOrderStatusItem(
                   context,
                   icon: Icons.cancel_outlined,
                   label: S.of(context).seller_home_orders_canceled,
                   count: dashboardData.orders.canceled.toString(),
-                  onTap: () => context.go('/seller/orders?status=canceled'),
+                  onTap: () => context.push('/seller/orders?status=canceled'),
                 ),
               ],
             ),
@@ -480,19 +480,19 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                   context,
                   icon: Icons.verified_user,
                   label: S.of(context).seller_home_auth_management,
-                  onTap: () => context.go(SellerRoutes.authentication),
+                  onTap: () => context.push(SellerRoutes.authentication),
                 ),
                 _buildFunctionItem(
                   context,
                   icon: Icons.access_time,
                   label: S.of(context).seller_home_time_management,
-                  onTap: () => context.go(SellerRoutes.timeManagement),
+                  onTap: () => context.push(SellerRoutes.timeManagement),
                 ),
                 _buildFunctionItem(
                   context,
                   icon: Icons.reply_all,
                   label: S.of(context).seller_home_auto_reply,
-                  onTap: () => context.go(SellerRoutes.autoReply),
+                  onTap: () => context.push(SellerRoutes.autoReply),
                 ),
               ],
             ),

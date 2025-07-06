@@ -215,7 +215,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                   children: [
                     // 返回按钮
                     IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () => context.pop(),
                       icon: const Icon(Icons.arrow_back, color: Colors.white),
                     ),
                     Expanded(

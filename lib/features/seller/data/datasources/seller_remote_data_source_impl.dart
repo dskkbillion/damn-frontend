@@ -551,13 +551,17 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
   @override
   Future<List<SellerAuthenticationInfo>> getAuthenticationStatus() async {
     try {
-      // 更新API端点路径
-      final response = await _dio.get('/api/project/authentication/list');
+      // 使用正确的POST方法并传递分页参数
+      final response = await _dio.post('/api/project/authentication/list', data: {
+        'pageNum': 1,
+        'pageSize': 100, // 获取所有认证项
+      });
       
       _checkResponse(response);
       
-      // 根据API响应结构处理
-      final data = response.data['rows'] as List<dynamic>; // 注意这里使用rows字段
+      // 根据实际API响应结构处理 - 数据直接在response.data['rows']中
+      final data = response.data['rows'] as List<dynamic>? ?? [];
+      
       // 转换为SellerAuthenticationInfo对象列表
       return data.map((json) {
         // 创建类型和状态
@@ -642,6 +646,7 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       // 创建不同认证类型的请求数据
       final Map<String, dynamic> requestData = {
         'authenticationId': applicationData.authenticationId,
+        'authenticationType': applicationData.authenticationType, // 添加认证类型字段
         'images': applicationData.images?.split(',').where((s) => s.isNotEmpty).toList() ?? [],
       };
       
@@ -801,7 +806,8 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
     }
     
     final int? code = data['code'];
-    if (code != 200) {
+    // 后端API成功时返回code=0，部分API返回code=200
+    if (code != 200 && code != 0) {
       final String message = data['msg'] ?? '未知错误';
       throw ServerException(message: message);
     }

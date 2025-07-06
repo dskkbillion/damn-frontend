@@ -429,7 +429,7 @@ class AuthStatusPage extends StatelessWidget {
   /// 重新申请认证
   void _reapplyAuth(BuildContext context) {
     context.pushNamed(
-      'seller_authentication_apply',
+      'sellerAuthenticationApply',
       pathParameters: {'type': authInfo.type.value.toLowerCase()},
       extra: authInfo,
     );

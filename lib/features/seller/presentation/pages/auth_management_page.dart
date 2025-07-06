@@ -40,12 +40,7 @@ class AuthManagementPage extends StatelessWidget {
             if (state is AuthManagementInitial || state is AuthManagementLoading) {
               return const Center(child: LoadingState());
             } else if (state is AuthManagementError) {
-              return EmptyState.error(
-                text: '加载失败',
-                subText: state.message,
-                onRetryPressed: () => innerContext.read<AuthManagementBloc>()
-                  .add(const LoadAuthenticationList()),
-              );
+              return _buildErrorState(innerContext, state.message);
             } else if (state is AuthManagementEmpty) {
               return const EmptyState(
                 text: '暂无认证项目',
@@ -294,17 +289,150 @@ class AuthManagementPage extends StatelessWidget {
     }
   }
 
+  /// 构建错误状态组件
+  Widget _buildErrorState(BuildContext context, String errorMessage) {
+    // 判断错误类型
+    bool isTimeoutError = errorMessage.contains('超时') || 
+                         errorMessage.contains('timeout') ||
+                         errorMessage.contains('系统请求超时');
+    bool isNetworkError = errorMessage.contains('网络') || 
+                         errorMessage.contains('network') ||
+                         errorMessage.contains('connection');
+    
+    String title;
+    String subtitle;
+    List<String> suggestions = [];
+    
+    if (isTimeoutError) {
+      title = '服务器响应超时';
+      subtitle = '服务器处理请求时间过长，请稍后重试';
+      suggestions = [
+        '• 检查网络连接是否稳定',
+        '• 等待几分钟后重新尝试',
+        '• 如问题持续存在，请联系客服',
+      ];
+    } else if (isNetworkError) {
+      title = '网络连接异常';
+      subtitle = '无法连接到服务器，请检查网络设置';
+      suggestions = [
+        '• 检查WiFi或移动数据连接',
+        '• 尝试切换网络环境',
+        '• 关闭并重新打开应用',
+      ];
+    } else {
+      title = '加载失败';
+      subtitle = errorMessage.isNotEmpty ? errorMessage : '发生未知错误，请重试';
+      suggestions = [
+        '• 检查网络连接状态',
+        '• 稍后重新尝试',
+        '• 如问题持续存在，请联系技术支持',
+      ];
+    }
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isTimeoutError ? Icons.timer_off : Icons.error_outline,
+              size: 64,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '故障排除建议：',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ...suggestions.map((suggestion) => Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Text(
+                      suggestion,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  )).toList(),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: () => context.read<AuthManagementBloc>()
+                    .add(const LoadAuthenticationList()),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('重新加载'),
+                ),
+                const SizedBox(width: 16),
+                TextButton.icon(
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.goNamed('seller_home');
+                    }
+                  },
+                  icon: const Icon(Icons.arrow_back),
+                  label: const Text('返回'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// 导航到认证详情页
   void _navigateToAuthDetail(BuildContext context, SellerAuthenticationInfo auth) {
     if (auth.status != AuthenticationStatus.notSubmitted && 
         auth.status != AuthenticationStatus.rejected) {
       context.pushNamed(
-        'seller_authentication_detail',
+        'sellerAuthenticationDetail',
         extra: auth,
       );
     } else {
       context.pushNamed(
-        'seller_authentication_apply',
+        'sellerAuthenticationApply',
         pathParameters: {'type': auth.type.value.toLowerCase()},
         extra: auth,
       );

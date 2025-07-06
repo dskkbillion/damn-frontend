@@ -44,15 +44,22 @@ import 'package:dskk_flutter_refactor/features/seller/domain/usecases/save_produ
 
 // 用例 - 认证管理
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_authentication_status.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/submit_authentication_application_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_time_settings_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/update_time_settings_usecase.dart';
+
+// 用例 - 自动回复
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_auto_reply_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/set_auto_reply_usecase.dart';
 
 // Bloc - 卖家主页和产品管理
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_home/seller_home_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_management/product_management_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/auth_management/auth_management_bloc.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/auth_application/auth_application_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/time_management/time_management_bloc.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/auto_reply/auto_reply_bloc.dart';
 
 // 统计模块依赖注入
 import 'package:dskk_flutter_refactor/features/seller/di/seller_statistics_di.dart';
@@ -185,6 +192,16 @@ class SellerDI {
         print('[SellerDI] 已注册 GetAuthenticationStatus');
       }
 
+      if (!sl.isRegistered<SubmitAuthenticationApplicationUseCase>()) {
+        sl.registerLazySingleton<SubmitAuthenticationApplicationUseCase>(
+          () => SubmitAuthenticationApplicationUseCase(
+            sl<ISellerRepository>(),
+            sl<IFileUploadRepository>(),
+          )
+        );
+        print('[SellerDI] 已注册 SubmitAuthenticationApplicationUseCase');
+      }
+
       // 用例 - 时间管理
       if (!sl.isRegistered<GetTimeSettingsUseCase>()) {
         sl.registerLazySingleton<GetTimeSettingsUseCase>(
@@ -198,6 +215,21 @@ class SellerDI {
           () => UpdateTimeSettingsUseCase(sl<ISellerRepository>())
         );
         print('[SellerDI] 已注册 UpdateTimeSettingsUseCase');
+      }
+
+      // 用例 - 自动回复
+      if (!sl.isRegistered<GetAutoReplyUseCase>()) {
+        sl.registerLazySingleton<GetAutoReplyUseCase>(
+          () => GetAutoReplyUseCase(sl<ISellerRepository>())
+        );
+        print('[SellerDI] 已注册 GetAutoReplyUseCase');
+      }
+
+      if (!sl.isRegistered<SetAutoReplyUseCase>()) {
+        sl.registerLazySingleton<SetAutoReplyUseCase>(
+          () => SetAutoReplyUseCase(sl<ISellerRepository>())
+        );
+        print('[SellerDI] 已注册 SetAutoReplyUseCase');
       }
 
       // 注册文件上传仓库（如果尚未注册）
@@ -326,6 +358,16 @@ class SellerDI {
       print('[SellerDI] AuthManagementBloc 已存在，跳过注册');
     }
 
+    // BLoC - 认证申请
+    if (!sl.isRegistered<AuthApplicationBloc>()) {
+      sl.registerFactory<AuthApplicationBloc>(
+        () => AuthApplicationBloc(sl<SubmitAuthenticationApplicationUseCase>())
+      );
+      print('[SellerDI] 已注册 AuthApplicationBloc');
+    } else {
+      print('[SellerDI] AuthApplicationBloc 已存在，跳过注册');
+    }
+
     // BLoC - 时间管理
     if (!sl.isRegistered<TimeManagementBloc>()) {
       sl.registerFactory<TimeManagementBloc>(
@@ -337,6 +379,19 @@ class SellerDI {
       print('[SellerDI] 已注册 TimeManagementBloc');
     } else {
       print('[SellerDI] TimeManagementBloc 已存在，跳过注册');
+    }
+
+    // BLoC - 自动回复
+    if (!sl.isRegistered<AutoReplyBloc>()) {
+      sl.registerFactory<AutoReplyBloc>(
+        () => AutoReplyBloc(
+          sl<GetAutoReplyUseCase>(),
+          sl<SetAutoReplyUseCase>(),
+        )
+      );
+      print('[SellerDI] 已注册 AutoReplyBloc');
+    } else {
+      print('[SellerDI] AutoReplyBloc 已存在，跳过注册');
     }
   }
 } 

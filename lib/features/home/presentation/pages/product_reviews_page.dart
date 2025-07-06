@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 
 // 导入国际化
 import '../../../../generated/l10n.dart';
@@ -28,7 +29,7 @@ class ProductReviewsPage extends StatelessWidget {
           title: Text(S.of(context).product_reviews_title),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => context.pop(),
           ),
         ),
         body: BlocBuilder<ProductReviewsCubit, ProductReviewsState>(
