@@ -140,6 +140,9 @@ class SellerManagedProductDto {
   /// 商品状态
   final String? state;
   
+  /// 商品类型 (用于区分草稿和正式商品)
+  final String? productType;
+  
   /// 创建时间
   final String? createTime;
   
@@ -166,6 +169,7 @@ class SellerManagedProductDto {
     this.images,
     this.description,
     this.state,
+    this.productType,
     this.createTime,
     this.updateTime,
     this.sales,
@@ -185,6 +189,7 @@ class SellerManagedProductDto {
       images: json['images'],
       description: json['description'],
       state: json['state'],
+      productType: json['productType'],
       createTime: json['createTime'],
       updateTime: json['updateTime'],
       sales: json['sales'],
@@ -240,13 +245,25 @@ class SellerManagedProductDto {
           .toList();
     }
 
+    // 根据productType和state确定商品状态
+    ProductStatus productStatus;
+    if (productType != null && productType!.toLowerCase() == 'draft') {
+      // 如果productType为draft，则强制设为草稿状态
+      print('SellerManagedProductDto: 检测到productType="$productType"，强制设为草稿状态');
+      productStatus = ProductStatus.draft;
+    } else {
+      // 否则使用state字段
+      print('SellerManagedProductDto: 使用state="$state"字段解析状态');
+      productStatus = ProductStatus.fromValue(state ?? 'UNKNOWN');
+    }
+
     return SellerManagedProduct(
       id: id ?? 0,
       name: name ?? '',
       price: price ?? 0.0,
       images: images ?? '',
       description: description ?? '',
-      status: ProductStatus.fromValue(state ?? 'UNKNOWN'),
+      status: productStatus,
       createTime: parsedCreateTime,
       updateTime: parsedUpdateTime,
       sales: sales,
@@ -266,6 +283,7 @@ class SellerManagedProductDto {
     if (images != null) data['images'] = images;
     if (description != null) data['description'] = description;
     if (state != null) data['state'] = state;
+    if (productType != null) data['productType'] = productType;
     if (createTime != null) data['createTime'] = createTime;
     if (updateTime != null) data['updateTime'] = updateTime;
     if (sales != null) data['sales'] = sales;

@@ -139,8 +139,14 @@ class ProductCard extends StatelessWidget {
         return StatusTags.disabled();
       case ProductStatus.draft:
         return StatusTags.draft();
-      default:
-        return StatusTag(text: product.status.displayName);
+      case ProductStatus.unknown:
+        return StatusTag(text: product.status.displayName, type: StatusTagType.warning);
+      case ProductStatus.reviewing:
+        return StatusTag(text: product.status.displayName, type: StatusTagType.info);
+      case ProductStatus.rejected:
+        return StatusTag(text: product.status.displayName, type: StatusTagType.defaultTag);
+      case ProductStatus.soldOut:
+        return StatusTag(text: product.status.displayName, type: StatusTagType.defaultTag);
     }
   }
   

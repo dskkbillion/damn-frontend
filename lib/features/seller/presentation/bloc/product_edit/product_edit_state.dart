@@ -313,13 +313,16 @@ class ProductEditState extends Equatable {
     List<String> currentDetailImagePaths,
     ProductFormData? initialData,
   ) {
-    // 对于新建商品（没有初始数据），只要用户输入了任何内容就算有变更
+    // 对于新建商品（没有初始数据），只要用户进行了任何操作就算有变更
     if (initialData == null) {
       return currentFormData.name.trim().isNotEmpty ||
              currentFormData.description.trim().isNotEmpty ||
              currentFormData.price > 0 ||
              currentImagePaths.isNotEmpty ||
              currentDetailImagePaths.isNotEmpty ||
+             currentFormData.qaList.isNotEmpty ||
+             currentFormData.buyerInfoItems.isNotEmpty ||
+             currentFormData.successCases.isNotEmpty ||
              (currentFormData.variants.isNotEmpty && 
               currentFormData.variants.any((v) => v.price > 0));
     }
@@ -329,6 +332,9 @@ class ProductEditState extends Equatable {
            currentFormData.description != initialData.description ||
            currentFormData.price != initialData.price ||
            currentFormData.variants.length != initialData.variants.length ||
+           currentFormData.qaList.length != initialData.qaList.length ||
+           currentFormData.buyerInfoItems.length != initialData.buyerInfoItems.length ||
+           currentFormData.successCases.length != initialData.successCases.length ||
            currentImagePaths.isNotEmpty ||
            currentDetailImagePaths.isNotEmpty;
   }
@@ -356,6 +362,15 @@ class ProductFormData extends Equatable {
   
   /// 详情图HTML内容（富文本格式）
   final String detailContent;
+  
+  /// QA问题列表
+  final List<Map<String, String>> qaList;
+  
+  /// 买家信息要求列表
+  final List<Map<String, dynamic>> buyerInfoItems;
+  
+  /// 成功案例列表
+  final List<Map<String, dynamic>> successCases;
 
   /// 构造函数
   const ProductFormData({
@@ -366,6 +381,9 @@ class ProductFormData extends Equatable {
     this.variants = const [],
     this.productMaterials = const [],
     this.detailContent = '',
+    this.qaList = const [],
+    this.buyerInfoItems = const [],
+    this.successCases = const [],
   });
 
   @override
@@ -377,6 +395,9 @@ class ProductFormData extends Equatable {
     variants,
     productMaterials,
     detailContent,
+    qaList,
+    buyerInfoItems,
+    successCases,
   ];
 
   /// 从产品实体创建表单数据
@@ -401,6 +422,9 @@ class ProductFormData extends Equatable {
     List<ProductOptionValue>? variants,
     List<ProductMaterial>? productMaterials,
     String? detailContent,
+    List<Map<String, String>>? qaList,
+    List<Map<String, dynamic>>? buyerInfoItems,
+    List<Map<String, dynamic>>? successCases,
   }) {
     return ProductFormData(
       name: name ?? this.name,
@@ -410,6 +434,9 @@ class ProductFormData extends Equatable {
       variants: variants ?? this.variants,
       productMaterials: productMaterials ?? this.productMaterials,
       detailContent: detailContent ?? this.detailContent,
+      qaList: qaList ?? this.qaList,
+      buyerInfoItems: buyerInfoItems ?? this.buyerInfoItems,
+      successCases: successCases ?? this.successCases,
     );
   }
 

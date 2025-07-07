@@ -544,20 +544,24 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
   }
   
   void _deleteProduct(int productId) {
+    // 在显示对话框前先获取bloc引用，避免Provider作用域问题
+    final bloc = context.read<ProductManagementBloc>();
+    
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('确认删除'),
         content: const Text('确定要删除这个商品吗？此操作不可撤销。'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('取消'),
           ),
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop();
-              context.read<ProductManagementBloc>().add(DeleteProduct(productId: productId));
+              Navigator.of(dialogContext).pop();
+              // 使用之前获取的bloc引用，避免Provider作用域问题
+              bloc.add(DeleteProduct(productId: productId));
             },
             child: const Text('删除'),
             style: TextButton.styleFrom(
@@ -603,8 +607,13 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
         return Colors.orange;
       case ProductStatus.disabled:
         return Colors.grey;
-      default:
+      case ProductStatus.unknown:
+        return Colors.amber; // 琥珀色表示未知状态
+      case ProductStatus.reviewing:
         return Colors.blue;
+      case ProductStatus.rejected:
+      case ProductStatus.soldOut:
+        return Colors.red;
     }
   }
   
@@ -621,8 +630,8 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
         return StatusTagType.defaultTag;
       case ProductStatus.reviewing:
         return StatusTagType.warning;
-      default:
-        return StatusTagType.defaultTag;
+      case ProductStatus.unknown:
+        return StatusTagType.warning; // 未知状态用警告色
     }
   }
 } 

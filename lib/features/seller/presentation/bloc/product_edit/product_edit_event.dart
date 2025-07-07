@@ -167,6 +167,34 @@ class SelectDetailProductImages extends ProductEditEvent {
   List<Object?> get props => [imagePaths];
 }
 
+/// 删除图片（不触发重新上传）
+class RemoveProductImage extends ProductEditEvent {
+  final int index;
+  final bool isDetailImage;
+
+  const RemoveProductImage({
+    required this.index,
+    this.isDetailImage = false,
+  });
+
+  @override
+  List<Object?> get props => [index, isDetailImage];
+}
+
+/// 设置主图
+class SetMainProductImage extends ProductEditEvent {
+  final int index;
+  final bool isDetailImage;
+
+  const SetMainProductImage({
+    required this.index,
+    this.isDetailImage = false,
+  });
+
+  @override
+  List<Object?> get props => [index, isDetailImage];
+}
+
 /// 上传单个图片
 class UploadProductImage extends ProductEditEvent {
   final String imagePath;

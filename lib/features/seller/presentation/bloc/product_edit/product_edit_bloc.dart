@@ -9,6 +9,7 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_state.dart';
 import 'package:injectable/injectable.dart';
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:path/path.dart' as path;
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
@@ -58,6 +59,8 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     on<UpdateProductMaterial>(_onUpdateProductMaterial);
     on<SelectProductImages>(_onSelectProductImages);
     on<SelectDetailProductImages>(_onSelectDetailProductImages);
+    on<RemoveProductImage>(_onRemoveProductImage);
+    on<SetMainProductImage>(_onSetMainProductImage);
     on<UploadProductImage>(_onUploadProductImage);
     on<ProductImageUploadSuccess>(_onProductImageUploadSuccess);
     on<ProductImageUploadFailure>(_onProductImageUploadFailure);
@@ -286,28 +289,34 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     SelectProductImages event,
     Emitter<ProductEditState> emit,
   ) {
-    // 先保存选择的图片路径
-    emit(state.copyWithSelectedImages(event.imagePaths));
-    
     // 验证图片数量限制
     if (event.imagePaths.length > 9) {
       emit(state.copyWithError('最多只能上传9张图片'));
       return;
     }
     
-    // 更新上传状态
-    emit(state.copyWith(
-      uploadStatus: UploadStatus.uploading,
-      totalUploadCount: event.imagePaths.length,
-      uploadedCount: 0,
-    ));
+    // 找出需要上传的新图片（不在已上传列表中的图片）
+    final currentSelectedPaths = state.selectedImagePaths;
+    final newImagePaths = event.imagePaths.where((path) => !currentSelectedPaths.contains(path)).toList();
     
-    // 改为顺序上传，只先上传第一张图片
-    if (event.imagePaths.isNotEmpty) {
-      // 获取第一个图片和剩余图片列表
-      final firstImagePath = event.imagePaths.first;
-      final remainingPaths = event.imagePaths.length > 1 
-          ? event.imagePaths.sublist(1) 
+    // 更新选择的图片路径列表
+    emit(state.copyWithSelectedImages(event.imagePaths));
+    
+    // 如果有新图片需要上传
+    if (newImagePaths.isNotEmpty) {
+      // 检查当前是否已经在上传中
+      final bool isCurrentlyUploading = state.uploadStatus == UploadStatus.uploading;
+      
+      // 更新上传状态 - 累加新增图片的数量到总计数
+      emit(state.copyWith(
+        uploadStatus: UploadStatus.uploading,
+        totalUploadCount: state.totalUploadCount + newImagePaths.length, // 累加新图片数量
+      ));
+      
+      // 开始上传第一张新图片
+      final firstImagePath = newImagePaths.first;
+      final remainingPaths = newImagePaths.length > 1 
+          ? newImagePaths.sublist(1) 
           : <String>[];
       
       add(UploadProductImage(
@@ -315,6 +324,15 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
         isDetailImage: false,
         remainingPaths: remainingPaths,
       ));
+    } else {
+      // 没有新图片需要上传
+      // 如果当前没有在上传，标记为成功状态
+      if (state.uploadStatus != UploadStatus.uploading) {
+        emit(state.copyWith(
+          uploadStatus: UploadStatus.success,
+        ));
+      }
+      // 如果正在上传，保持当前状态不变
     }
   }
 
@@ -323,28 +341,34 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     SelectDetailProductImages event,
     Emitter<ProductEditState> emit,
   ) {
-    // 先保存选择的详情图片路径
-    emit(state.copyWithSelectedDetailImages(event.imagePaths));
-    
     // 验证图片数量限制
     if (event.imagePaths.length > 9) {
       emit(state.copyWithError('最多只能上传9张详情图片'));
       return;
     }
     
-    // 更新上传状态
-    emit(state.copyWith(
-      uploadStatus: UploadStatus.uploading,
-      totalUploadCount: event.imagePaths.length,
-      uploadedCount: 0,
-    ));
+    // 找出需要上传的新详情图片
+    final currentSelectedDetailPaths = state.selectedDetailImagePaths;
+    final newDetailImagePaths = event.imagePaths.where((path) => !currentSelectedDetailPaths.contains(path)).toList();
     
-    // 改为顺序上传，只先上传第一张图片
-    if (event.imagePaths.isNotEmpty) {
-      // 获取第一个图片和剩余图片列表
-      final firstImagePath = event.imagePaths.first;
-      final remainingPaths = event.imagePaths.length > 1 
-          ? event.imagePaths.sublist(1) 
+    // 更新选择的详情图片路径列表
+    emit(state.copyWithSelectedDetailImages(event.imagePaths));
+    
+    // 如果有新详情图片需要上传
+    if (newDetailImagePaths.isNotEmpty) {
+      // 检查当前是否已经在上传中
+      final bool isCurrentlyUploading = state.uploadStatus == UploadStatus.uploading;
+      
+      // 更新上传状态 - 累加新增图片的数量到总计数
+      emit(state.copyWith(
+        uploadStatus: UploadStatus.uploading,
+        totalUploadCount: state.totalUploadCount + newDetailImagePaths.length, // 累加新图片数量
+      ));
+      
+      // 开始上传第一张新详情图片
+      final firstImagePath = newDetailImagePaths.first;
+      final remainingPaths = newDetailImagePaths.length > 1 
+          ? newDetailImagePaths.sublist(1) 
           : <String>[];
       
       add(UploadProductImage(
@@ -352,6 +376,111 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
         isDetailImage: true,
         remainingPaths: remainingPaths,
       ));
+    } else {
+      // 没有新详情图片需要上传
+      // 如果当前没有在上传，标记为成功状态
+      if (state.uploadStatus != UploadStatus.uploading) {
+        emit(state.copyWith(
+          uploadStatus: UploadStatus.success,
+        ));
+      }
+      // 如果正在上传，保持当前状态不变
+    }
+  }
+
+  /// 删除图片处理（不触发重新上传）
+  void _onRemoveProductImage(
+    RemoveProductImage event,
+    Emitter<ProductEditState> emit,
+  ) {
+    if (event.isDetailImage) {
+      // 删除详情图片
+      final currentPaths = List<String>.from(state.selectedDetailImagePaths);
+      if (event.index < currentPaths.length) {
+        currentPaths.removeAt(event.index);
+        
+        // 同时需要删除对应的已上传URL
+        final currentUrls = List<String>.from(state.uploadedDetailImageUrls);
+        if (event.index < currentUrls.length) {
+          currentUrls.removeAt(event.index);
+        }
+        
+        emit(state.copyWith(
+          selectedDetailImagePaths: currentPaths,
+          uploadedDetailImageUrls: currentUrls,
+          uploadedCount: math.max(0, state.uploadedCount - 1), // 减少已上传计数
+          totalUploadCount: math.max(0, state.totalUploadCount - 1), // 减少总计数
+        ));
+      }
+    } else {
+      // 删除主图片
+      final currentPaths = List<String>.from(state.selectedImagePaths);
+      if (event.index < currentPaths.length) {
+        currentPaths.removeAt(event.index);
+        
+        // 同时需要删除对应的已上传URL
+        final currentUrls = List<String>.from(state.uploadedImageUrls);
+        if (event.index < currentUrls.length) {
+          currentUrls.removeAt(event.index);
+        }
+        
+        emit(state.copyWith(
+          selectedImagePaths: currentPaths,
+          uploadedImageUrls: currentUrls,
+          uploadedCount: math.max(0, state.uploadedCount - 1), // 减少已上传计数
+          totalUploadCount: math.max(0, state.totalUploadCount - 1), // 减少总计数
+        ));
+      }
+    }
+  }
+
+  /// 设置主图处理
+  void _onSetMainProductImage(
+    SetMainProductImage event,
+    Emitter<ProductEditState> emit,
+  ) {
+    if (event.isDetailImage) {
+      // 设置详情图片的主图（重新排序）
+      final currentPaths = List<String>.from(state.selectedDetailImagePaths);
+      final currentUrls = List<String>.from(state.uploadedDetailImageUrls);
+      
+      if (event.index < currentPaths.length && event.index > 0) {
+        // 将选中的图片移动到第一位
+        final selectedPath = currentPaths.removeAt(event.index);
+        currentPaths.insert(0, selectedPath);
+        
+        // 同步URL列表
+        if (event.index < currentUrls.length) {
+          final selectedUrl = currentUrls.removeAt(event.index);
+          currentUrls.insert(0, selectedUrl);
+        }
+        
+        emit(state.copyWith(
+          selectedDetailImagePaths: currentPaths,
+          uploadedDetailImageUrls: currentUrls,
+        ));
+      }
+    } else {
+      // 设置主图片的主图（重新排序）
+      final currentPaths = List<String>.from(state.selectedImagePaths);
+      final currentUrls = List<String>.from(state.uploadedImageUrls);
+      
+      if (event.index < currentPaths.length && event.index > 0) {
+        // 将选中的图片移动到第一位
+        final selectedPath = currentPaths.removeAt(event.index);
+        currentPaths.insert(0, selectedPath);
+        
+        // 同步URL列表
+        if (event.index < currentUrls.length) {
+          final selectedUrl = currentUrls.removeAt(event.index);
+          currentUrls.insert(0, selectedUrl);
+        }
+        
+        emit(state.copyWith(
+          selectedImagePaths: currentPaths,
+          uploadedImageUrls: currentUrls,
+        ));
+      }
     }
   }
   
