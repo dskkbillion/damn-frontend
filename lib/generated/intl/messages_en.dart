@@ -392,6 +392,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "product_detail_basic_package": MessageLookupByLibrary.simpleMessage(
       "Basic",
     ),
+    "product_detail_basic_tier": MessageLookupByLibrary.simpleMessage(
+      "Basic Tier",
+    ),
     "product_detail_buy_now": MessageLookupByLibrary.simpleMessage(
       "Buy Now (1)",
     ),
@@ -420,6 +423,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "product_detail_please_wait": MessageLookupByLibrary.simpleMessage(
       "Please wait...",
     ),
+    "product_detail_premium_tier": MessageLookupByLibrary.simpleMessage(
+      "Premium Tier",
+    ),
     "product_detail_published_status": MessageLookupByLibrary.simpleMessage(
       "Published",
     ),
@@ -430,6 +436,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "product_detail_sample_user": MessageLookupByLibrary.simpleMessage(
       "Ray123",
+    ),
+    "product_detail_standard_tier": MessageLookupByLibrary.simpleMessage(
+      "Standard Tier",
     ),
     "product_detail_verified_label": MessageLookupByLibrary.simpleMessage(
       "Verified",

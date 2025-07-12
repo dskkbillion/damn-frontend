@@ -474,7 +474,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           child: TabBar(
             controller: _tabController,
             tabs: product.variants!.map((variant) => Tab(
-              text: variant.name,
+              text: _getLocalizedVariantName(variant.name),
             )).toList(),
             labelColor: Colors.amber[800],
             unselectedLabelColor: Colors.grey,
@@ -484,6 +484,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
         ),
       ],
     );
+  }
+
+  /// 获取本地化的套餐名称
+  String _getLocalizedVariantName(String variantName) {
+    switch (variantName.toLowerCase()) {
+      case 'basic tier':
+        return S.of(context).product_detail_basic_tier;
+      case 'standard tier':
+        return S.of(context).product_detail_standard_tier;
+      case 'premium tier':
+        return S.of(context).product_detail_premium_tier;
+      default:
+        return variantName; // 如果没有匹配的翻译，返回原始名称
+    }
   }
 
   Widget _buildDeliveryInfo(ProductVariant variant) {

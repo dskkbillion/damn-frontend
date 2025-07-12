@@ -323,6 +323,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "nav_seller_profile": MessageLookupByLibrary.simpleMessage("我的"),
     "product_default_name": MessageLookupByLibrary.simpleMessage("商品"),
     "product_detail_basic_package": MessageLookupByLibrary.simpleMessage("基础"),
+    "product_detail_basic_tier": MessageLookupByLibrary.simpleMessage("基础套餐"),
     "product_detail_buy_now": MessageLookupByLibrary.simpleMessage("一键购买(1)"),
     "product_detail_case_showcase": MessageLookupByLibrary.simpleMessage(
       "案例展示",
@@ -345,6 +346,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "product_detail_please_wait": MessageLookupByLibrary.simpleMessage(
       "请稍等...",
     ),
+    "product_detail_premium_tier": MessageLookupByLibrary.simpleMessage("豪华套餐"),
     "product_detail_published_status": MessageLookupByLibrary.simpleMessage(
       "已发布",
     ),
@@ -354,6 +356,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "不错，很有耐心",
     ),
     "product_detail_sample_user": MessageLookupByLibrary.simpleMessage("瑞123"),
+    "product_detail_standard_tier": MessageLookupByLibrary.simpleMessage(
+      "标准套餐",
+    ),
     "product_detail_verified_label": MessageLookupByLibrary.simpleMessage(
       "已认证",
     ),

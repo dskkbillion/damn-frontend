@@ -1880,6 +1880,36 @@ class S {
     );
   }
 
+  /// `Basic Tier`
+  String get product_detail_basic_tier {
+    return Intl.message(
+      'Basic Tier',
+      name: 'product_detail_basic_tier',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Standard Tier`
+  String get product_detail_standard_tier {
+    return Intl.message(
+      'Standard Tier',
+      name: 'product_detail_standard_tier',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Premium Tier`
+  String get product_detail_premium_tier {
+    return Intl.message(
+      'Premium Tier',
+      name: 'product_detail_premium_tier',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Great service, very patient`
   String get product_detail_sample_review {
     return Intl.message(
