@@ -691,32 +691,47 @@ class SellerRepositoryImpl implements ISellerRepository {
   ProductStatus _mapToProductStatus(Map<String, dynamic> productData) {
     final String? productType = productData['productType'] as String?;
     final String? state = productData['state'] as String?;
+    final String? statusAudit = productData['statusAudit'] as String?;
+    
+    print('🔍 [StatusMapping] 商品ID: ${productData['id']}, productType: $productType, state: $state, statusAudit: $statusAudit');
     
     // 优先根据productType判断草稿
     if (productType == 'draft') {
       return ProductStatus.draft;
     }
     
-    // 对于正式商品，根据state判断状态
-    switch (state?.toLowerCase()) {
-      case 'normal':
+    // 对于正式商品，优先检查审核状态
+    if (statusAudit != null) {
+      switch (statusAudit.toUpperCase()) {
+        case 'WAIT':
+          return ProductStatus.reviewing; // 待审核
+        case 'FAIL':
+          return ProductStatus.rejected; // 审核失败
+        case 'SUCCESS':
+          // 审核通过，继续根据state判断上架状态
+          break;
+        default:
+          print('Warning: Unknown statusAudit "$statusAudit"');
+          break;
+      }
+    }
+    
+    // 对于审核通过的商品，根据state判断上架状态
+    switch (state?.toUpperCase()) {
+      case 'NORMAL':
+        print('✅ [StatusMapping] 商品${productData['id']} 映射为 ProductStatus.normal');
         return ProductStatus.normal;
-      case 'disabled':
+      case 'DISABLED':
+      case 'FORCE_DISABLED':
+        print('✅ [StatusMapping] 商品${productData['id']} 映射为 ProductStatus.disabled');
         return ProductStatus.disabled;
-      case 'reviewing':
-        return ProductStatus.reviewing;
-      case 'rejected':
-        return ProductStatus.rejected;
-      case 'sold_out':
-        return ProductStatus.soldOut;
       default:
-        // 如果state为null且不是草稿，可能是数据异常，默认为normal
+        // 如果state和statusAudit都没有有效值，可能是新创建的商品
         if (productType == 'product') {
-          print('Warning: Product has productType="product" but state is null or unknown: "$state". Defaulting to normal.');
-          return ProductStatus.normal;
+          print('⚠️ [StatusMapping] 商品${productData['id']} productType="product" 但无有效state/statusAudit，默认为reviewing');
+          return ProductStatus.reviewing; // 默认为审核中
         }
-        // 其他情况默认为草稿
-        print('Warning: Unknown product type "$productType" and state "$state". Defaulting to draft.');
+        print('✅ [StatusMapping] 商品${productData['id']} 默认映射为 ProductStatus.draft');
         return ProductStatus.draft;
     }
   }

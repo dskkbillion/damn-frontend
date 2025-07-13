@@ -133,9 +133,17 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
           // 检查是否是编辑页面的导航
           if (state.navigationPath!.contains('/edit') || state.navigationPath! == SellerRoutes.productCreate) {
             // 直接导航到ProductEditPage并传递回调
-            final productId = state.navigationPath!.contains('/edit') 
-                ? state.navigationPath!.split('/').last 
-                : null;
+            String? productId;
+            if (state.navigationPath!.contains('/edit')) {
+              // 从路径 /seller/products/243/edit 中提取商品ID (243)
+              final parts = state.navigationPath!.split('/');
+              final editIndex = parts.indexWhere((part) => part == 'edit');
+              if (editIndex > 0) {
+                productId = parts[editIndex - 1]; // 获取edit前面的部分
+              }
+            }
+            
+            print('[ProductManagementPage] Extracted productId: $productId from path: ${state.navigationPath}');
             
             await Navigator.of(context).push(
               MaterialPageRoute(
@@ -314,18 +322,65 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
             '下架',
             Icons.arrow_downward,
             isProcessing,
-            () => _updateProductStatus(product.id, ProductStatus.disabled),
+            () => _confirmOffShelfProduct(product.id, product.name),
           ),
         );
         break;
+        
+      case ProductStatus.reviewing:
+        // 审核中的商品不能进行状态操作，只显示状态标识
+        actions.add(
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.orange[50],
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: Colors.orange[200]!),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.hourglass_empty, size: 16, color: Colors.orange[700]),
+                const SizedBox(width: 4),
+                Text(
+                  '等待审核',
+                  style: TextStyle(
+                    color: Colors.orange[700],
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+        break;
+        
+      case ProductStatus.rejected:
+        actions.add(
+          _buildActionButton(
+            context,
+            '重新提交',
+            Icons.refresh,
+            isProcessing,
+            () {
+              // 重新提交审核（实际上是重新编辑后发布）
+              context.read<ProductManagementBloc>().add(
+                NavigateToProductEdit(productId: product.id),
+              );
+            },
+          ),
+        );
+        break;
+        
       case ProductStatus.draft:
         actions.add(
           _buildActionButton(
             context,
-            '上架',
-            Icons.arrow_upward,
+            '发布',
+            Icons.publish,
             isProcessing,
-            () => _updateProductStatus(product.id, ProductStatus.normal),
+            () => _updateProductStatus(product.id, ProductStatus.reviewing),
           ),
         );
         actions.add(
@@ -338,6 +393,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
           ),
         );
         break;
+        
       case ProductStatus.disabled:
         actions.add(
           _buildActionButton(
@@ -349,23 +405,27 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
           ),
         );
         break;
+        
       default:
         break;
     }
     
-    actions.add(
-      _buildActionButton(
-        context,
-        '编辑',
-        Icons.edit_outlined,
-        isProcessing,
-        () {
-          context.read<ProductManagementBloc>().add(
-            NavigateToProductEdit(productId: product.id),
-          );
-        },
-      ),
-    );
+    // 所有状态的商品都可以编辑（除了审核中的）
+    if (product.status != ProductStatus.reviewing) {
+      actions.add(
+        _buildActionButton(
+          context,
+          '编辑',
+          Icons.edit_outlined,
+          isProcessing,
+          () {
+            context.read<ProductManagementBloc>().add(
+              NavigateToProductEdit(productId: product.id),
+            );
+          },
+        ),
+      );
+    }
     
     return Card(
       margin: const EdgeInsets.only(bottom: 12.0),
@@ -425,10 +485,8 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            // StatusTag( // 注释掉页面内直接构建的状态标签
-                            //   text: product.status.displayName,
-                            //   type: _getStatusType(product.status),
-                            // ),
+                            const SizedBox(width: 8),
+                            _buildStatusTag(product.status),
                           ],
                         ),
                         
@@ -542,6 +600,54 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
       targetStatus: targetStatus,
     ));
   }
+
+  /// 确认下架商品
+  void _confirmOffShelfProduct(int productId, String productName) {
+    // 在显示对话框前先获取bloc引用，避免Provider作用域问题
+    final bloc = context.read<ProductManagementBloc>();
+    
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('确认下架'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('确定要下架商品 "$productName" 吗？'),
+            const SizedBox(height: 8),
+            const Text(
+              '下架后：',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
+            const Text('• 买家将无法看到和购买此商品'),
+            const Text('• 您可以随时重新上架'),
+            const Text('• 商品数据会被保留'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              // 使用之前获取的bloc引用，避免Provider作用域问题
+              bloc.add(UpdateProductStatus(
+                productId: productId,
+                targetStatus: ProductStatus.disabled,
+              ));
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.orange[700],
+            ),
+            child: const Text('确认下架'),
+          ),
+        ],
+      ),
+    );
+  }
   
   void _deleteProduct(int productId) {
     // 在显示对话框前先获取bloc引用，避免Provider作用域问题
@@ -576,7 +682,16 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
   List<SellerManagedProduct>? _getProductListByStatus(ProductManagementState state, ProductStatus status) {
     switch (status) {
       case ProductStatus.normal:
-        return state.onSaleProducts;
+        // 在售列表包含：已上架、审核中、审核失败的商品
+        final List<SellerManagedProduct> result = [];
+        if (state.onSaleProducts != null) {
+          result.addAll(state.onSaleProducts!.where((product) => 
+            product.status == ProductStatus.normal ||
+            product.status == ProductStatus.reviewing ||
+            product.status == ProductStatus.rejected
+          ));
+        }
+        return result.isEmpty ? null : result;
       case ProductStatus.draft:
         return state.draftProducts;
       case ProductStatus.disabled:
@@ -633,5 +748,61 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
       case ProductStatus.unknown:
         return StatusTagType.warning; // 未知状态用警告色
     }
+  }
+
+  /// 构建状态标签
+  Widget _buildStatusTag(ProductStatus status) {
+    Color bgColor;
+    Color textColor;
+    String text;
+    
+    switch (status) {
+      case ProductStatus.reviewing:
+        bgColor = Colors.orange[50]!;
+        textColor = Colors.orange[700]!;
+        text = '审核中';
+        break;
+      case ProductStatus.rejected:
+        bgColor = Colors.red[50]!;
+        textColor = Colors.red[700]!;
+        text = '审核失败';
+        break;
+      case ProductStatus.normal:
+        bgColor = Colors.green[50]!;
+        textColor = Colors.green[700]!;
+        text = '已上架';
+        break;
+      case ProductStatus.disabled:
+        bgColor = Colors.grey[100]!;
+        textColor = Colors.grey[700]!;
+        text = '已下架';
+        break;
+      case ProductStatus.draft:
+        bgColor = Colors.blue[50]!;
+        textColor = Colors.blue[700]!;
+        text = '草稿';
+        break;
+      default:
+        bgColor = Colors.grey[100]!;
+        textColor = Colors.grey[700]!;
+        text = '未知';
+    }
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: textColor.withOpacity(0.3)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
   }
 } 

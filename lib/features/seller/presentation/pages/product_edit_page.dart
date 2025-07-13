@@ -280,6 +280,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
   @override
   void initState() {
     super.initState();
+    
+    print('[ProductEditPage] initState called with productId: ${widget.productId}');
+    
     // 从DI容器获取BLoC实例
     _bloc = getIt<ProductEditBloc>();
     
@@ -288,9 +291,13 @@ class _ProductEditPageState extends State<ProductEditPage> {
     _variants.add(PriceVariant(name: '标准', deliveryDay: 4, editNum: 2, isDefault: true));
     _variants.add(PriceVariant(name: '豪华', deliveryDay: 5, editNum: 2, isDefault: true));
     
+    // 解析商品ID
+    final productIdInt = widget.productId != null ? int.tryParse(widget.productId!) : null;
+    print('[ProductEditPage] Parsed productId as int: $productIdInt');
+    
     // 初始化页面
     _bloc.add(InitializeProductEdit(
-      productId: widget.productId != null ? int.tryParse(widget.productId!) : null,
+      productId: productIdInt,
     ));
     
     // 监听输入框变化，自动检查是否有变更
@@ -896,11 +903,14 @@ class _ProductEditPageState extends State<ProductEditPage> {
               } else if (state.isSubmitSuccess) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(state.isCreateMode ? '服务创建成功' : '服务更新成功'),
+                    content: Text(state.isCreateMode 
+                      ? '服务发布成功！正在审核中，请在"在售"列表中查看' 
+                      : '服务更新成功'),
                     backgroundColor: Colors.green,
+                    duration: const Duration(seconds: 3), // 延长显示时间
                   ),
                 );
-                Future.delayed(const Duration(milliseconds: 1500), () {
+                Future.delayed(const Duration(milliseconds: 2000), () {
                   context.pop();
                 });
               }
@@ -1418,48 +1428,54 @@ class _ProductEditPageState extends State<ProductEditPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 标题栏
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                '常见问题编辑',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Row(
+          // 标题栏 - 整个区域可点击
+          InkWell(
+            onTap: () {
+              setState(() {
+                _isQAExpanded = !_isQAExpanded;
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // QA数量指示器
-                  if (_qaList.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFBF7D2A).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '${_qaList.length}个问题',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFFBF7D2A),
-                        ),
-                      ),
+                  const Text(
+                    '常见问题编辑',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
-                  const SizedBox(width: 8),
-                  // 折叠/展开按钮
-                  IconButton(
-                    icon: Icon(_isQAExpanded ? Icons.expand_less : Icons.expand_more),
-                    onPressed: () {
-                      setState(() {
-                        _isQAExpanded = !_isQAExpanded;
-                      });
-                    },
+                  ),
+                  Row(
+                    children: [
+                      // QA数量指示器
+                      if (_qaList.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFBF7D2A).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '${_qaList.length}个问题',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFFBF7D2A),
+                            ),
+                          ),
+                        ),
+                      const SizedBox(width: 8),
+                      // 展开/折叠图标
+                      Icon(
+                        _isQAExpanded ? Icons.expand_less : Icons.expand_more,
+                        color: Colors.grey[600],
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
           
           // 展开的内容
@@ -1558,48 +1574,54 @@ class _ProductEditPageState extends State<ProductEditPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 标题栏
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                '需要买家提供',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Row(
+          // 标题栏 - 整个区域可点击
+          InkWell(
+            onTap: () {
+              setState(() {
+                _isBuyerInfoExpanded = !_isBuyerInfoExpanded;
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // 信息项数量指示器
-                  if (_buyerInfoItems.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFBF7D2A).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '${_buyerInfoItems.length}项信息',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFFBF7D2A),
-                        ),
-                      ),
+                  const Text(
+                    '需要买家提供',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
-                  const SizedBox(width: 8),
-                  // 折叠/展开按钮
-                  IconButton(
-                    icon: Icon(_isBuyerInfoExpanded ? Icons.expand_less : Icons.expand_more),
-                    onPressed: () {
-                      setState(() {
-                        _isBuyerInfoExpanded = !_isBuyerInfoExpanded;
-                      });
-                    },
+                  ),
+                  Row(
+                    children: [
+                      // 信息项数量指示器
+                      if (_buyerInfoItems.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFBF7D2A).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '${_buyerInfoItems.length}项信息',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFFBF7D2A),
+                            ),
+                          ),
+                        ),
+                      const SizedBox(width: 8),
+                      // 展开/折叠图标
+                      Icon(
+                        _isBuyerInfoExpanded ? Icons.expand_less : Icons.expand_more,
+                        color: Colors.grey[600],
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
           
           // 说明文字

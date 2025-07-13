@@ -276,8 +276,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           // 头像，使用标准Go Router导航
           GestureDetector(
             onTap: () {
-              // 使用标准Go Router导航
-              context.go('/seller-profile/${product.sellerId}');
+              // 修复：使用 push 而不是 go，保持路由栈
+              context.push('/seller-profile/${product.sellerId}');
             },
             child: CircleAvatar(
               radius: 20,
@@ -296,8 +296,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           Expanded(
             child: GestureDetector(
               onTap: () {
-                // 使用标准Go Router导航
-                context.go('/seller-profile/${product.sellerId}');
+                // 修复：使用 push 而不是 go，保持路由栈
+                context.push('/seller-profile/${product.sellerId}');
               },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -527,7 +527,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
       child: ElevatedButton(
         onPressed: () {
           // 导航到订单确认页面
-          context.go(
+          context.push(
             '/product-payment/${product.id}/confirm',
             extra: {
               'productId': product.id,
@@ -547,7 +547,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           ),
         ),
         child: Text(
-          S.of(context).product_detail_buy_now,
+          S.of(context).product_detail_buy_now_with_price(variant.sellingPrice.toStringAsFixed(2)),
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_authentication_info.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/auth_application/auth_application_bloc.dart';
 import 'package:file_picker/file_picker.dart';
+import 'dart:io';
 
 /// 认证申请页面
 class AuthApplicationPage extends StatefulWidget {
@@ -445,6 +446,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // 上传按钮和提示文字
         Row(
           children: [
             _buildUploadButton(),
@@ -459,6 +461,91 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
           _getUploadHint(_authenticationType),
           style: const TextStyle(fontSize: 12, color: Colors.grey),
         ),
+        
+        // 添加已选择图片的显示
+        if (_selectedFiles.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          Text(
+            '已选择的图片：',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey[700],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            height: 120,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _selectedFiles.length,
+              itemBuilder: (context, index) {
+                final filePath = _selectedFiles[index];
+                return Container(
+                  margin: const EdgeInsets.only(right: 12),
+                  width: 100,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[300]!),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Stack(
+                    children: [
+                      // 显示图片
+                      Image.file(
+                        File(filePath),
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: Colors.grey[200],
+                          child: const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.broken_image,
+                                color: Colors.grey,
+                                size: 32,
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                '加载失败',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // 删除按钮
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: GestureDetector(
+                          onTap: () => _removeFile(index),
+                          child: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -574,6 +661,9 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
             onPressed: () {
               Navigator.of(context).pop(); // 关闭对话框
               Navigator.of(context).pop(); // 返回上一页
+              
+              // 修复：返回认证管理页面时刷新状态
+              // 可以通过结果回调来通知刷新
             },
             child: const Text('确定'),
           ),
@@ -621,6 +711,17 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
           authInfo: widget.authInfo,
         ),
       );
+    }
+  }
+  
+  /// 移除选择的文件
+  void _removeFile(int index) {
+    if (index >= 0 && index < _selectedFiles.length) {
+      setState(() {
+        _selectedFiles.removeAt(index);
+        // 清除相关错误
+        _fieldErrors.remove('files');
+      });
     }
   }
   

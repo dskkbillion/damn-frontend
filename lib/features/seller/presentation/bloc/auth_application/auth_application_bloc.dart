@@ -125,9 +125,38 @@ class AuthApplicationBloc extends Bloc<AuthApplicationEvent, AuthApplicationStat
 
   /// 将失败类型映射为错误消息
   String _mapFailureToMessage(Failure failure) {
+    // 修复：增强错误消息处理，特别处理认证相关的特定错误
+    if (failure is ServerFailure) {
+      final message = failure.message ?? '';
+      
+      // 检查是否是重复提交错误
+      if (message.contains('该认证信息已有待审核或已审核通过') || 
+          message.contains('不可再次提交申请')) {
+        return '该认证已提交审核，请勿重复申请。如需查看状态，请返回认证管理页面';
+      }
+      
+      // 检查其他常见错误
+      if (message.contains('认证信息不完整')) {
+        return '认证信息不完整，请检查必填项是否填写正确';
+      }
+      
+      if (message.contains('文件格式不支持')) {
+        return '上传的文件格式不支持，请选择图片文件';
+      }
+      
+      if (message.contains('文件大小超限')) {
+        return '上传的文件过大，请选择较小的图片文件';
+      }
+      
+      // 如果有具体的服务器错误消息，返回该消息
+      if (message.isNotEmpty) {
+        return message;
+      }
+      
+      return '服务器错误，请稍后再试';
+    }
+    
     switch (failure.runtimeType) {
-      case ServerFailure:
-        return '服务器错误，请稍后再试';
       case NetworkFailure:
         return '网络错误，请检查网络连接';
       case CacheFailure:

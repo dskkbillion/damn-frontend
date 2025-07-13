@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:dskk_flutter_refactor/core/error/exceptions.dart';
 import 'package:dskk_flutter_refactor/features/seller/data/models/member_dto.dart';
@@ -96,7 +97,7 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       // 保持移除 pageNum 和 pageSize 参数，因为目标接口不支持分页
       final requestData = <String, dynamic>{};
       if (state != null) {
-        requestData['state'] = state.toLowerCase();
+        requestData['state'] = state; // 保持原状态值，不转换大小写
       }
 
       // 修改 API 端点为 /api/shop/product/myList
@@ -175,15 +176,82 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
   @override
   Future<bool> updateProductStatus(int productId, String state) async {
     try {
-      final response = await _dio.post('/api/shop/product/updateStatus', data: {
+      // 将状态值转换为API期望的大写格式
+      String apiState;
+      switch (state.toLowerCase()) {
+        case 'normal':
+          apiState = 'NORMAL';
+          break;
+        case 'disabled':
+          apiState = 'DISABLED';
+          break;
+        case 'force_disabled':
+          apiState = 'FORCE_DISABLED';
+          break;
+        default:
+          apiState = state.toUpperCase();
+      }
+      
+      print('[SellerRemoteDataSource] 🔄 使用专门的上下架端点更新商品状态: productId=$productId, state=$apiState');
+      
+      // 获取完整的商品信息
+      final getResponse = await _dio.get('/api/shop/product/get', queryParameters: {
         'id': productId,
-        'state': state,
       });
+      
+      _checkResponse(getResponse);
+      
+      final productData = getResponse.data['data'];
+      if (productData == null) {
+        throw Exception('商品信息不存在');
+      }
+      
+      print('[SellerRemoteDataSource] ✅ 获取商品信息成功，准备使用edit端点更新状态');
+      
+      // 构建完整的商品数据，但只修改状态字段
+      final editData = {
+        'id': productData['id'],
+        'tenantId': productData['tenantId'],
+        'images': productData['images'] ?? [],
+        'name': productData['name'] ?? '',
+        'description': productData['description'] ?? '',
+        'selectionMode': productData['selectionMode'] ?? 'CUSTOMIZE',
+        'state': apiState, // 这是我们要更新的字段
+        'statusAudit': productData['statusAudit'] ?? 'SUCCESS',
+        'variants': productData['variants'] ?? [],
+        'productMaterials': productData['productMaterials'] ?? [],
+        'productType': productData['productType'] ?? 'product',
+        // 价格相关字段，确保格式正确
+        'originalPrice': productData['originalPrice'] ?? 0.00,
+        'sellingPrice': productData['sellingPrice'] ?? 0.00,
+        'costPrice': productData['costPrice'] ?? 0.00,
+        'freightPrice': productData['freightPrice'] ?? 0.0,
+        // 其他必需字段
+        'inventory': productData['inventory'] ?? 0,
+        'buyedNumber': productData['buyedNumber'] ?? 0,
+        'viewNumber': productData['viewNumber'] ?? 0,
+        'minimumBuy': productData['minimumBuy'] ?? 1,
+        'top': productData['top'] ?? false,
+        // 添加可能缺失的字段
+        'keyword': productData['keyword'] ?? '',
+        'content': productData['content'] ?? '',
+        'categoryId': productData['categoryId'],
+        'mainImage': productData['mainImage'],
+        'winImages': productData['winImages'] ?? [],
+        'auditRemark': productData['auditRemark'],
+      };
+      
+      print('[SellerRemoteDataSource] 📤 使用edit端点发送上下架请求，数据字段数: ${editData.keys.length}');
+      
+      // 使用专门的上下架端点
+      final response = await _dio.post('/api/shop/product/edit', data: editData);
       
       _checkResponse(response);
       
+      print('[SellerRemoteDataSource] ✅ 商品状态更新成功 (使用edit端点)');
       return true;
     } catch (e) {
+      print('[SellerRemoteDataSource] ❌ 商品状态更新失败: $e');
       _handleError(e);
       rethrow;
     }
@@ -579,14 +647,39 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
         
         if (hasAudit) {
           final auditInfo = json['authenticationAuditVo'];
-          // 根据API返回解析审核状态
-          if (auditInfo['auditStatus'] == 'approved') {
-            status = AuthenticationStatus.approved;
-          } else if (auditInfo['auditStatus'] == 'rejected') {
-            status = AuthenticationStatus.rejected;
-            rejectionReason = auditInfo['rejectReason'];
-          } else if (auditInfo['auditStatus'] == 'pending') {
-            status = AuthenticationStatus.pending;
+          final auditStatus = auditInfo['auditStatus']?.toString();
+          
+          print('[DataSource] 认证审核信息: $auditInfo');
+          print('[DataSource] 审核状态: $auditStatus');
+          
+          // 修复：使用更准确的状态映射，并添加调试信息
+          switch (auditStatus?.toLowerCase()) {
+            case 'pass':
+            case 'approved':
+            case '1':
+              status = AuthenticationStatus.approved;
+              print('[DataSource] 状态映射为: approved');
+              break;
+            case 'fail':
+            case 'rejected':
+            case '2':
+              status = AuthenticationStatus.rejected;
+              rejectionReason = auditInfo['rejectReason']?.toString();
+              print('[DataSource] 状态映射为: rejected, 原因: $rejectionReason');
+              break;
+            case 'pending':
+            case 'wait':
+            case 'waiting':
+            case '0':
+            case 'null':
+            case null:
+              status = AuthenticationStatus.pending;
+              print('[DataSource] 状态映射为: pending');
+              break;
+            default:
+              // 修复：如果有审核信息但状态不明确，默认为pending
+              status = AuthenticationStatus.pending;
+              print('[DataSource] 未知状态 [$auditStatus]，默认映射为: pending');
           }
           
           // 解析提交时间
@@ -594,10 +687,58 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
             submittedAt = DateTime.tryParse(auditInfo['createTime']);
           }
           
-          // 解析提交的特殊字段
-          if (auditInfo['feature'] != null) {
-            fields = auditInfo['feature'];
+          // 解析提交的基本信息和图片
+          Map<String, dynamic> parsedFields = {};
+          
+          // 修复：增强图片解析逻辑并添加调试信息
+          if (auditInfo['images'] != null) {
+            final images = auditInfo['images'];
+            print('[DataSource] 解析认证图片: $images (类型: ${images.runtimeType})');
+            
+            if (images is List && images.isNotEmpty) {
+              final imageUrls = images.map((img) => img.toString()).where((url) => url.isNotEmpty).toList();
+              parsedFields['images'] = imageUrls;
+              print('[DataSource] 图片列表解析结果: $imageUrls');
+            } else if (images is String && images.isNotEmpty) {
+              final imageUrls = images.split(',').where((img) => img.trim().isNotEmpty).map((img) => img.trim()).toList();
+              parsedFields['images'] = imageUrls;
+              print('[DataSource] 图片字符串解析结果: $imageUrls');
+            } else {
+              print('[DataSource] 图片数据为空或格式不正确');
+            }
+          } else {
+            print('[DataSource] 没有找到图片字段');
           }
+          
+          // 获取提交的姓名/公司名称
+          if (auditInfo['name'] != null && auditInfo['name'].toString().isNotEmpty) {
+            parsedFields['name'] = auditInfo['name'].toString();
+          }
+          
+          // 获取备注信息
+          if (auditInfo['remarks'] != null && auditInfo['remarks'].toString().isNotEmpty) {
+            parsedFields['remarks'] = auditInfo['remarks'].toString();
+          }
+          
+          // 解析提交的特殊字段 (feature)
+          if (auditInfo['feature'] != null) {
+            if (auditInfo['feature'] is Map<String, dynamic>) {
+              parsedFields['feature'] = auditInfo['feature'];
+            } else if (auditInfo['feature'] is String) {
+              // 如果feature是JSON字符串，尝试解析
+              try {
+                final featureData = json.decode(auditInfo['feature']);
+                if (featureData is Map<String, dynamic>) {
+                  parsedFields['feature'] = featureData;
+                }
+              } catch (e) {
+                // 解析失败，直接作为字符串存储
+                parsedFields['feature'] = auditInfo['feature'];
+              }
+            }
+          }
+          
+          fields = parsedFields.isNotEmpty ? parsedFields : null;
         }
         
         return SellerAuthenticationInfo(
@@ -625,6 +766,7 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       case 'real_name': return AuthenticationType.idCard;
       case 'background': return AuthenticationType.education;
       case 'corporation': return AuthenticationType.company;
+      case 'other': return AuthenticationType.profession; // 修复：other类型映射为职业认证
       default: return AuthenticationType.other;
     }
   }

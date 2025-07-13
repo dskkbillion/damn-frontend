@@ -43,6 +43,7 @@ class AutoReplyBody extends StatefulWidget {
 class _AutoReplyBodyState extends State<AutoReplyBody> {
   final TextEditingController _contentController = TextEditingController();
   bool _isContentDirty = false;
+  String? _lastLoadedContent; // 记录最后一次加载的内容
 
   @override
   void initState() {
@@ -63,9 +64,26 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),
           );
-        } else if (state is AutoReplyLoaded && !_isContentDirty) {
-          // 只有在首次加载或重置状态时才更新文本控制器
+          // 保存失败时，重置dirty状态
+          setState(() {
+            _isContentDirty = true;
+          });
+        } else if (state is AutoReplyLoaded) {
+          // 保存成功的提示
+          if (_lastLoadedContent != null && _lastLoadedContent != state.settings.content) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('设置已保存')),
+            );
+          }
+          
+          // 更新文本控制器和状态
+          _lastLoadedContent = state.settings.content;
           _contentController.text = state.settings.content ?? '';
+          
+          // 重置dirty状态
+          setState(() {
+            _isContentDirty = false;
+          });
         }
       },
       builder: (context, state) {
@@ -212,9 +230,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
           }
           
           context.read<AutoReplyBloc>().add(UpdateAutoReplyContent(content));
-          setState(() {
-            _isContentDirty = false;
-          });
+          // 不要立即设置 _isContentDirty = false，等待保存完成
         } else {
           // 如果内容没有变化，显示提示
           ScaffoldMessenger.of(context).showSnackBar(

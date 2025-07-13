@@ -378,6 +378,15 @@
     "product_detail_delivery_times": "Delivery Times",
     "product_detail_delivery_period": "Delivery Period",
     "product_detail_buy_now": "Buy Now (1)",
+    "product_detail_buy_now_with_price": "Buy Now ¥{price}",
+    "@product_detail_buy_now_with_price": {
+      "placeholders": {
+        "price": {
+          "type": "String",
+          "example": "99.00"
+        }
+      }
+    },
     "product_detail_faq": "FAQ",
     "product_detail_case_showcase": "Case Showcase",
     "product_detail_no_cases": "No cases available",

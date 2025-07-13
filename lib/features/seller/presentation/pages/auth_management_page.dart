@@ -424,13 +424,25 @@ class AuthManagementPage extends StatelessWidget {
 
   /// 导航到认证详情页
   void _navigateToAuthDetail(BuildContext context, SellerAuthenticationInfo auth) {
-    if (auth.status != AuthenticationStatus.notSubmitted && 
-        auth.status != AuthenticationStatus.rejected) {
+    // 修复：添加更详细的状态判断逻辑和调试信息
+    print('认证状态检查: ${auth.name} - ${auth.status.displayName} (${auth.status.value})');
+    print('认证ID: ${auth.authenticationId}, 类型: ${auth.type.value}');
+    
+    // 如果认证已经提交过（非未提交状态），且不是被拒绝的状态，应该跳转到状态页
+    // 修复：使用更准确的状态判断逻辑
+    final shouldShowStatus = auth.status == AuthenticationStatus.pending || 
+                           auth.status == AuthenticationStatus.approved;
+    
+    if (shouldShowStatus) {
+      print('跳转到认证状态页面 - 状态: ${auth.status.displayName}');
       context.pushNamed(
         'sellerAuthenticationDetail',
+        pathParameters: {'type': auth.type.value.toLowerCase()},
         extra: auth,
       );
     } else {
+      print('跳转到认证申请页面 - 状态: ${auth.status.displayName}');
+      // 只有未提交或被拒绝的认证才能重新申请
       context.pushNamed(
         'sellerAuthenticationApply',
         pathParameters: {'type': auth.type.value.toLowerCase()},

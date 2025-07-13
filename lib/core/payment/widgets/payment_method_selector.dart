@@ -27,6 +27,9 @@ class PaymentMethodSelector extends StatefulWidget {
 class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
   PaymentMethod _selectedMethod = PaymentMethod.alipay;
   bool _isProcessing = false;
+  
+  // 微信支付是否可用（上线前设置为false）
+  static const bool _isWechatPaymentAvailable = false;
 
   Future<void> _handlePayment() async {
     if (_isProcessing) return;
@@ -140,26 +143,54 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
         
         // 微信支付选项
         ListTile(
+          enabled: _isWechatPaymentAvailable,
           leading: Container(
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.green.shade50,
+              color: _isWechatPaymentAvailable 
+                  ? Colors.green.shade50 
+                  : Colors.grey.shade100,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.wechat,
-              color: Colors.green,
+              color: _isWechatPaymentAvailable 
+                  ? Colors.green 
+                  : Colors.grey,
             ),
           ),
-          title: const Text('微信支付'),
-          subtitle: const Text('便捷的移动支付'),
+          title: Text(
+            '微信支付',
+            style: TextStyle(
+              color: _isWechatPaymentAvailable 
+                  ? null 
+                  : Colors.grey,
+            ),
+          ),
+          subtitle: Text(
+            _isWechatPaymentAvailable 
+                ? '便捷的移动支付' 
+                : '🚧 施工中，敬请期待',
+            style: TextStyle(
+              color: _isWechatPaymentAvailable 
+                  ? null 
+                  : Colors.orange,
+              fontWeight: _isWechatPaymentAvailable 
+                  ? FontWeight.normal 
+                  : FontWeight.bold,
+            ),
+          ),
           trailing: Radio<PaymentMethod>(
             value: PaymentMethod.wechat,
             groupValue: _selectedMethod,
-            onChanged: (value) => setState(() => _selectedMethod = value!),
+            onChanged: _isWechatPaymentAvailable 
+                ? (value) => setState(() => _selectedMethod = value!) 
+                : null,
           ),
-          onTap: () => setState(() => _selectedMethod = PaymentMethod.wechat),
+          onTap: _isWechatPaymentAvailable 
+              ? () => setState(() => _selectedMethod = PaymentMethod.wechat)
+              : null,
         ),
         
         const SizedBox(height: 20),

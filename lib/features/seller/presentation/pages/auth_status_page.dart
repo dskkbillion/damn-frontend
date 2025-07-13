@@ -112,6 +112,8 @@ class AuthStatusPage extends StatelessWidget {
   
   /// 构建认证材料部分
   Widget _buildMaterialsSection(BuildContext context) {
+    final images = _getAuthImages();
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -122,41 +124,58 @@ class AuthStatusPage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        Container(
-          height: 120,
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: _getAuthImages().length,
-            itemBuilder: (context, index) {
-              final imageUrl = _getAuthImages()[index];
-              return GestureDetector(
-                onTap: () => _showFullScreenImage(context, imageUrl),
-                child: Container(
-                  margin: const EdgeInsets.only(right: 12),
-                  width: 100,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey[300]!),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: Image.network(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      color: Colors.grey[200],
-                      child: const Icon(
-                        Icons.broken_image,
-                        color: Colors.grey,
-                        size: 40,
+        // 如果没有图片，显示提示
+        if (images.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey[300]!),
+            ),
+            child: const Center(
+              child: Text(
+                '暂无认证材料',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+          )
+        else
+          Container(
+            height: 120,
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: images.length,
+              itemBuilder: (context, index) {
+                final imageUrl = images[index];
+                return GestureDetector(
+                  onTap: () => _showFullScreenImage(context, imageUrl),
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 12),
+                    width: 100,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey[300]!),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: Colors.grey[200],
+                        child: const Icon(
+                          Icons.broken_image,
+                          color: Colors.grey,
+                          size: 40,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
-        ),
       ],
     );
   }
@@ -314,8 +333,8 @@ class AuthStatusPage extends StatelessWidget {
   Widget _buildBottomButtons(BuildContext context) {
     return Column(
       children: [
-        if (authInfo.status == AuthenticationStatus.rejected || 
-            authInfo.status == AuthenticationStatus.approved) ...[
+        // 只有在被拒绝时才显示重新认证按钮
+        if (authInfo.status == AuthenticationStatus.rejected) ...[
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -326,7 +345,51 @@ class AuthStatusPage extends StatelessWidget {
               child: const Text('重新认证', style: TextStyle(fontSize: 16)),
             ),
           ),
-        ],
+        ] else if (authInfo.status == AuthenticationStatus.approved) ...[
+          // 已认证通过，显示状态提示
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.green[50],
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.green[200]!),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '认证已通过，无需重复提交',
+                    style: TextStyle(color: Colors.green, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ] else if (authInfo.status == AuthenticationStatus.pending) ...[
+          // 审核中，显示等待提示
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.orange[50],
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.orange[200]!),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.hourglass_top, color: Colors.orange),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '认证审核中，请耐心等待',
+                    style: TextStyle(color: Colors.orange, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ]
       ],
     );
   }
@@ -453,46 +516,112 @@ class AuthStatusPage extends StatelessWidget {
   
   /// 获取认证字段
   Map<String, String> _getAuthFields() {
-    // 这里根据认证类型和字段构建显示的信息
-    // 实际项目中应从 authInfo.fields 中获取
-    
     final Map<String, String> fields = {};
     
-    switch (authInfo.type) {
-      case AuthenticationType.company:
-        fields['公司名称'] = authInfo.name;
-        fields['统一社会信用代码'] = '91110105MA00B7F30G'; // 示例数据
-        fields['法人代表'] = '张三'; // 示例数据
-        fields['注册资本'] = '1000万元'; // 示例数据
-        fields['成立日期'] = '2020年01月01日'; // 示例数据
-        break;
+    // 基本信息
+    fields['认证名称'] = authInfo.name;
+    fields['认证类型'] = authInfo.type.displayName;
+    
+    // 从实际数据中获取字段
+    if (authInfo.fields != null) {
+      final authFields = authInfo.fields!;
+      
+      // 获取提交的姓名/公司名称
+      if (authFields.containsKey('name')) {
+        switch (authInfo.type) {
+          case AuthenticationType.company:
+            fields['公司名称'] = authFields['name'].toString();
+            break;
+          case AuthenticationType.idCard:
+            fields['姓名'] = authFields['name'].toString();
+            break;
+          case AuthenticationType.education:
+            fields['学校名称'] = authFields['name'].toString();
+            break;
+          case AuthenticationType.profession:
+            fields['职业/职位'] = authFields['name'].toString();
+            break;
+          default:
+            fields['姓名/名称'] = authFields['name'].toString();
+        }
+      }
+      
+      // 获取备注信息
+      if (authFields.containsKey('remarks') && authFields['remarks'].toString().isNotEmpty) {
+        fields['备注'] = authFields['remarks'].toString();
+      }
+      
+      // 根据认证类型显示特定字段
+      if (authFields.containsKey('feature') && authFields['feature'] is Map<String, dynamic>) {
+        final feature = authFields['feature'] as Map<String, dynamic>;
         
-      case AuthenticationType.idCard:
-        fields['姓名'] = authInfo.name;
-        fields['身份证号'] = '110101199001011234'; // 示例数据，实际应用中应部分隐藏
-        fields['有效期'] = '2020.01.01-2030.01.01'; // 示例数据
-        break;
-        
-      case AuthenticationType.education:
-        fields['学校名称'] = authInfo.name;
-        fields['学历'] = '本科'; // 示例数据
-        fields['专业'] = '计算机科学与技术'; // 示例数据
-        fields['毕业年份'] = '2020年'; // 示例数据
-        break;
-        
-      case AuthenticationType.profession:
-        fields['职业'] = authInfo.name;
-        fields['证书编号'] = 'PROF12345678'; // 示例数据
-        fields['发证机构'] = '中国XXX协会'; // 示例数据
-        fields['发证日期'] = '2019年06月01日'; // 示例数据
-        break;
-        
-      default:
-        fields['认证名称'] = authInfo.name;
-        fields['认证类型'] = authInfo.type.displayName;
+        switch (authInfo.type) {
+          case AuthenticationType.profession:
+            if (feature.containsKey('certificateNumber')) {
+              fields['证书编号'] = feature['certificateNumber'].toString();
+            }
+            if (feature.containsKey('workExperience')) {
+              fields['工作经验'] = feature['workExperience'].toString();
+            }
+            if (feature.containsKey('issuer')) {
+              fields['发证机构'] = feature['issuer'].toString();
+            }
+            break;
+            
+          case AuthenticationType.company:
+            if (feature.containsKey('creditCode')) {
+              fields['统一社会信用代码'] = feature['creditCode'].toString();
+            }
+            if (feature.containsKey('legalRepresentative')) {
+              fields['法人代表'] = feature['legalRepresentative'].toString();
+            }
+            if (feature.containsKey('registeredCapital')) {
+              fields['注册资本'] = feature['registeredCapital'].toString();
+            }
+            if (feature.containsKey('establishmentDate')) {
+              fields['成立日期'] = feature['establishmentDate'].toString();
+            }
+            break;
+            
+          case AuthenticationType.education:
+            if (feature.containsKey('degree')) {
+              fields['学历'] = feature['degree'].toString();
+            }
+            if (feature.containsKey('major')) {
+              fields['专业'] = feature['major'].toString();
+            }
+            if (feature.containsKey('graduationYear')) {
+              fields['毕业年份'] = feature['graduationYear'].toString();
+            }
+            break;
+            
+          case AuthenticationType.idCard:
+            if (feature.containsKey('idNumber')) {
+              // 身份证号部分隐藏
+              final idNumber = feature['idNumber'].toString();
+              if (idNumber.length > 10) {
+                fields['身份证号'] = '${idNumber.substring(0, 6)}****${idNumber.substring(idNumber.length - 4)}';
+              } else {
+                fields['身份证号'] = idNumber;
+              }
+            }
+            if (feature.containsKey('validPeriod')) {
+              fields['有效期'] = feature['validPeriod'].toString();
+            }
+            break;
+            
+          default:
+            // 对于其他类型，显示所有feature字段
+            feature.forEach((key, value) {
+              if (value != null && value.toString().isNotEmpty) {
+                fields[key] = value.toString();
+              }
+            });
+        }
+      }
     }
     
-    // 添加认证时间
+    // 添加时间信息
     if (authInfo.submittedAt != null) {
       fields['提交时间'] = _formatDateTime(authInfo.submittedAt!);
     }
@@ -559,12 +688,53 @@ class AuthStatusPage extends StatelessWidget {
   
   /// 获取认证相关图片
   List<String> _getAuthImages() {
-    // 实际项目中应从 authInfo.fields 或其他字段中获取
-    // 这里使用示例图片
-    return [
-      'https://images.unsplash.com/photo-1611503568137-dce2d95e825c?ixlib=rb-4.0.3&q=85&w=320',
-      'https://images.unsplash.com/photo-1611503568137-dce2d95e825c?ixlib=rb-4.0.3&q=85&w=320',
-    ];
+    // 修复：添加调试信息并增强图片获取逻辑
+    print('获取认证图片 - 认证名称: ${authInfo.name}');
+    print('认证字段数据: ${authInfo.fields}');
+    
+    // 修复：从实际认证数据中获取图片
+    if (authInfo.fields != null && authInfo.fields!.containsKey('images')) {
+      final images = authInfo.fields!['images'];
+      print('找到图片数据: $images (类型: ${images.runtimeType})');
+      
+      if (images is List) {
+        final imageUrls = images.map((img) => img.toString()).where((url) => url.isNotEmpty).toList();
+        print('解析图片列表: $imageUrls');
+        return imageUrls;
+      } else if (images is String && images.isNotEmpty) {
+        final imageUrls = images.split(',').where((img) => img.trim().isNotEmpty).map((img) => img.trim()).toList();
+        print('解析图片字符串: $imageUrls');
+        return imageUrls;
+      }
+    }
+    
+    // 修复：如果上面没有找到，尝试从其他可能的字段获取
+    if (authInfo.fields != null) {
+      // 尝试从根级别的其他可能字段获取图片
+      for (final key in ['imageUrls', 'attachments', 'documents', 'files']) {
+        if (authInfo.fields!.containsKey(key)) {
+          final value = authInfo.fields![key];
+          print('尝试从 $key 字段获取图片: $value');
+          
+          if (value is List && value.isNotEmpty) {
+            final imageUrls = value.map((img) => img.toString()).where((url) => url.isNotEmpty).toList();
+            if (imageUrls.isNotEmpty) {
+              print('从 $key 字段找到图片: $imageUrls');
+              return imageUrls;
+            }
+          } else if (value is String && value.isNotEmpty) {
+            final imageUrls = value.split(',').where((img) => img.trim().isNotEmpty).map((img) => img.trim()).toList();
+            if (imageUrls.isNotEmpty) {
+              print('从 $key 字段解析图片: $imageUrls');
+              return imageUrls;
+            }
+          }
+        }
+      }
+    }
+    
+    print('没有找到图片数据');
+    return [];
   }
   
   /// 格式化日期时间

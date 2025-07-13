@@ -76,14 +76,21 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     InitializeProductEdit event,
     Emitter<ProductEditState> emit,
   ) async {
+    print('[ProductEditBloc] InitializeProductEdit called with productId: ${event.productId}');
+    
     // 根据是否有productId判断是创建还是编辑模式
     final bool isCreateMode = event.productId == null;
+    
+    print('[ProductEditBloc] isCreateMode: $isCreateMode');
     
     emit(ProductEditState.initial(isCreateMode: isCreateMode));
     
     // 如果是编辑模式，加载商品数据
     if (!isCreateMode) {
+      print('[ProductEditBloc] Loading product data for productId: ${event.productId}');
       add(LoadProductData(productId: event.productId!));
+    } else {
+      print('[ProductEditBloc] Create mode - not loading existing product data');
     }
     
     // 加载商品类别数据

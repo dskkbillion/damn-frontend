@@ -378,6 +378,15 @@
     "product_detail_delivery_times": "交付次数",
     "product_detail_delivery_period": "交付周期",
     "product_detail_buy_now": "一键购买(1)",
+    "product_detail_buy_now_with_price": "一键购买 ¥{price}",
+    "@product_detail_buy_now_with_price": {
+      "placeholders": {
+        "price": {
+          "type": "String",
+          "example": "99.00"
+        }
+      }
+    },
     "product_detail_faq": "常见问题",
     "product_detail_case_showcase": "案例展示",
     "product_detail_no_cases": "暂无案例展示",

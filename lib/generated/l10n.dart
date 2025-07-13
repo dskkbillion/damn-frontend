@@ -1815,6 +1815,16 @@ class S {
     );
   }
 
+  /// `Buy Now ¥{price}`
+  String product_detail_buy_now_with_price(String price) {
+    return Intl.message(
+      'Buy Now ¥$price',
+      name: 'product_detail_buy_now_with_price',
+      desc: '',
+      args: [price],
+    );
+  }
+
   /// `FAQ`
   String get product_detail_faq {
     return Intl.message('FAQ', name: 'product_detail_faq', desc: '', args: []);

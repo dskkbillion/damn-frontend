@@ -21,87 +21,100 @@ class PaymentResultPage extends StatelessWidget {
         title: Text(success ? '支付成功' : '支付失败'),
         automaticallyImplyLeading: false,
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // 图标
-          Icon(
-            success ? Icons.check_circle : Icons.error,
-            size: 100,
-            color: success ? Colors.green : Colors.red,
-          ),
-          const SizedBox(height: 24),
-          
-          // 结果标题
-          Text(
-            success ? '支付成功' : '支付失败',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height - 
+                         kToolbarHeight - 
+                         MediaQuery.of(context).padding.top - 
+                         MediaQuery.of(context).padding.bottom - 32,
             ),
-          ),
-          const SizedBox(height: 16),
-          
-          // 结果详情
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Text(
-              success
-                  ? orderId != null
-                      ? '订单 $orderId 已支付完成'
-                      : '支付已完成'
-                  : errorMessage ?? '支付过程中出现错误',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[700],
-              ),
-            ),
-          ),
-          const SizedBox(height: 32),
-          
-          // 操作按钮
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (success) ...[
-                ElevatedButton(
-                  onPressed: () {
-                    // 跳转到订单详情页面
-                    if (orderId != null) {
-                      context.go('/orderDetail/$orderId');
-                    } else {
-                      context.go('/profile/orders');
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // 图标
+                Icon(
+                  success ? Icons.check_circle : Icons.error,
+                  size: 80, // 减小图标尺寸，避免溢出
+                  color: success ? Colors.green : Colors.red,
+                ),
+                const SizedBox(height: 24),
+                
+                // 结果标题
+                Text(
+                  success ? '支付成功' : '支付失败',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // 结果详情
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    success
+                        ? orderId != null
+                            ? '订单 $orderId 已支付完成'
+                            : '支付已完成'
+                        : errorMessage ?? '支付过程中出现错误',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[700],
                     ),
                   ),
-                  child: const Text('查看订单'),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(height: 32),
+                
+                // 操作按钮
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (success) ...[
+                      ElevatedButton(
+                        onPressed: () {
+                          // 跳转到订单详情页面
+                          if (orderId != null) {
+                            context.go('/orderDetail/$orderId');
+                          } else {
+                            context.go('/profile/orders');
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                        ),
+                        child: const Text('查看订单'),
+                      ),
+                      const SizedBox(width: 16),
+                    ],
+                    ElevatedButton(
+                      onPressed: () {
+                        // 返回首页
+                        context.go('/home');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        backgroundColor: success ? Colors.grey[200] : null,
+                        foregroundColor: success ? Colors.black87 : null,
+                      ),
+                      child: const Text('返回首页'),
+                    ),
+                  ],
+                ),
               ],
-              ElevatedButton(
-                onPressed: () {
-                  // 返回首页
-                  context.go('/home');
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                  backgroundColor: success ? Colors.grey[200] : null,
-                  foregroundColor: success ? Colors.black87 : null,
-                ),
-                child: const Text('返回首页'),
-              ),
-            ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }

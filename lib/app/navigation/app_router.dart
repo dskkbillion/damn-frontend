@@ -185,16 +185,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       '/seller/chat', // Placeholder
   ];
 
-  // 获取卖家相关依赖，用于手动创建BLoC
+  // 获取卖家相关依赖
   final getIt = GetIt.instance;
-  final sellerRepository = getIt<ISellerRepository>();
-
-  final productManagementBloc = ProductManagementBloc(
-    GetSellerProductListUseCase(sellerRepository),
-    GetSellerDraftListUseCase(sellerRepository),
-    UpdateProductStatusUseCase(sellerRepository),
-    DeleteProductUseCase(sellerRepository),
-  );
 
   // Define Seller Shell Branch Routes explicitly
   final sellerDashboardRoute = GoRoute(
@@ -261,7 +253,22 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     path: '/seller/products',
     pageBuilder: (context, state) => state.buildSmartPage(
       BlocProvider(
-      create: (_) => productManagementBloc..add(LoadProductList()),
+      create: (_) {
+        try {
+          // 优先使用GetIt工厂获取ProductManagementBloc
+          return GetIt.I<ProductManagementBloc>()..add(LoadProductList());
+        } catch (e) {
+          print('[GoRouter] 无法从GetIt获取ProductManagementBloc，创建新实例: $e');
+          // 如果从GetIt获取失败，则手动创建
+          final sellerRepository = GetIt.I<ISellerRepository>();
+          return ProductManagementBloc(
+            GetSellerProductListUseCase(sellerRepository),
+            GetSellerDraftListUseCase(sellerRepository),
+            UpdateProductStatusUseCase(sellerRepository),
+            DeleteProductUseCase(sellerRepository),
+          )..add(LoadProductList());
+        }
+      },
       child: const ProductManagementPage(),
       ),
       name: 'sellerProducts',

@@ -1,7 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dskk_flutter_refactor/core/navigation/services/i_navigation_service.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/enums/product_status.dart';
-import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_managed_product.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/delete_product_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_draft_list_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_product_list_usecase.dart';
@@ -115,10 +113,24 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     // 确定当前页码
     final int currentPage = _getCurrentPageByStatus(status);
     
+    // 根据状态决定API参数
+    String? apiState;
+    switch (status) {
+      case ProductStatus.normal:
+        // 获取所有正式商品（包括各种审核状态），不传state参数
+        apiState = null;
+        break;
+      case ProductStatus.disabled:
+        apiState = 'DISABLED';
+        break;
+      default:
+        apiState = status.value;
+    }
+    
     final params = GetSellerProductListParams(
       pageNum: currentPage,
       pageSize: _pageSize,
-      state: status.value,
+      state: apiState,
     );
     
     final result = await _getSellerProductListUseCase(params);
@@ -132,12 +144,10 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
         // 更新当前页码
         _updateCurrentPageByStatus(status, currentPage + 1);
 
-        // <<< ADD LOGGING HERE >>>
         print('[ProductManagementBloc] Success. Status: $status, Fetched Products: ${products.length}, HasMore: $hasMore, IsLoadMore: $isLoadMore');
         if (products.isNotEmpty) {
-           print('[ProductManagementBloc] First product ID: ${products.first.id}, Name: ${products.first.name}');
+           print('[ProductManagementBloc] First product ID: ${products.first.id}, Name: ${products.first.name}, ProductStatus: ${products.first.status}');
         }
-        // <<< END LOGGING >>>
 
         switch (status) {
           case ProductStatus.normal:
@@ -292,11 +302,13 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
         emit(state.removeProcessingProductId(event.productId));
         
         if (success) {
+          print('🎉 [ProductManagementBloc] 商品${event.productId}状态更新成功，目标状态: ${event.targetStatus}');
           // 更新成功，根据目标状态更新对应列表
           
           // 这里我们选择简单地刷新当前Tab的列表
           // 更复杂的实现可以只更新受影响的列表项
           _resetPages();
+          print('🔄 [ProductManagementBloc] 触发列表刷新，当前tab: ${state.tabIndex}');
           add(LoadProductList(
             status: _getStatusByTabIndex(state.tabIndex),
             forceRefresh: true,
@@ -379,13 +391,14 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     NavigateToProductDetail event,
     Emitter<ProductManagementState> emit,
   ) async {
-    // 假设存在商品详情页面路由
-    // 实际应用中可能需要导航到主应用中的商品详情页面
-    // _navigationService.navigateTo('/products/${event.productId}');
-    // 假设导航到特定商品详情，这里暂时使用 mock 路径或具体方法
-    // 注意：实际应该使用 navigateToProductDetail 或确认 '/products/:id' 路由存在于 AppRouter
-    print('Warning: Navigation to product detail (${event.productId}) requested but INavigationService dependency removed.');
-    // Since we removed the navigation service, we can't navigate here anymore
-    // This logic might need to be moved to the UI layer with BlocListener if detail navigation is still needed
+    // 导航到商品详情页面 - 使用Home模块的商品详情路由
+    final String path = '/home/product/${event.productId}';
+    
+    print('[ProductManagementBloc] Navigating to product detail: $path');
+    
+    // 发出带有导航路径的状态
+    emit(state.copyWith(navigationPath: path));
+    // 立即清除导航路径，防止在无关状态变化时重复导航
+    emit(state.copyWith(clearNavigationPath: true));
   }
 } 

@@ -51,49 +51,51 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m14(name) => "Let them see button clicked: ${name}";
 
-  static String m15(error) => "Loading failed: ${error}";
+  static String m15(price) => "Buy Now ¥${price}";
 
-  static String m16(count) => "Reviews (${count})";
+  static String m16(error) => "Loading failed: ${error}";
 
-  static String m17(count) => "${count} days ago";
+  static String m17(count) => "Reviews (${count})";
 
-  static String m18(count) => "${count} hours ago";
+  static String m18(count) => "${count} days ago";
 
-  static String m19(error) => "Loading failed: ${error}";
+  static String m19(count) => "${count} hours ago";
 
-  static String m20(count) => "${count} minutes ago";
+  static String m20(error) => "Loading failed: ${error}";
 
-  static String m21(count) => "${count} months ago";
+  static String m21(count) => "${count} minutes ago";
 
-  static String m22(count) => "${count} years ago";
+  static String m22(count) => "${count} months ago";
 
-  static String m23(error) => "Loading failed: ${error}";
+  static String m23(count) => "${count} years ago";
 
-  static String m24(error) => "Unable to navigate to order list: ${error}";
+  static String m24(error) => "Loading failed: ${error}";
 
-  static String m25(error) => "Unable to switch to seller mode: ${error}";
+  static String m25(error) => "Unable to navigate to order list: ${error}";
 
-  static String m26(error) => "Search failed: ${error}";
+  static String m26(error) => "Unable to switch to seller mode: ${error}";
 
-  static String m27(rate) => "Completion Rate ${rate}%";
+  static String m27(error) => "Search failed: ${error}";
 
-  static String m28(error) => "Unable to switch to buyer mode: ${error}";
+  static String m28(rate) => "Completion Rate ${rate}%";
 
-  static String m29(error) => "Failed to create chat: ${error}";
+  static String m29(error) => "Unable to switch to buyer mode: ${error}";
 
-  static String m30(error) => "Error occurred: ${error}";
+  static String m30(error) => "Failed to create chat: ${error}";
 
-  static String m31(feature) => "${feature} feature not yet implemented";
+  static String m31(error) => "Error occurred: ${error}";
 
-  static String m32(count) => "${count} followers";
+  static String m32(feature) => "${feature} feature not yet implemented";
 
-  static String m33(days) => "Level 3 Seller for ${days} days";
+  static String m33(count) => "${count} followers";
 
-  static String m34(orderNum) => "Complete ${orderNum} orders";
+  static String m34(days) => "Level 3 Seller for ${days} days";
 
-  static String m35(error) => "Loading failed: ${error}";
+  static String m35(orderNum) => "Complete ${orderNum} orders";
 
-  static String m36(amount) => "Earn \$${amount}";
+  static String m36(error) => "Loading failed: ${error}";
+
+  static String m37(amount) => "Earn \$${amount}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -395,6 +397,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "product_detail_buy_now": MessageLookupByLibrary.simpleMessage(
       "Buy Now (1)",
     ),
+    "product_detail_buy_now_with_price": m15,
     "product_detail_case_showcase": MessageLookupByLibrary.simpleMessage(
       "Case Showcase",
     ),
@@ -409,7 +412,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Delivery Times",
     ),
     "product_detail_faq": MessageLookupByLibrary.simpleMessage("FAQ"),
-    "product_detail_loading_failed": m15,
+    "product_detail_loading_failed": m16,
     "product_detail_more": MessageLookupByLibrary.simpleMessage("More"),
     "product_detail_no_cases": MessageLookupByLibrary.simpleMessage(
       "No cases available",
@@ -424,7 +427,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Published",
     ),
     "product_detail_retry": MessageLookupByLibrary.simpleMessage("Retry"),
-    "product_detail_reviews": m16,
+    "product_detail_reviews": m17,
     "product_detail_sample_review": MessageLookupByLibrary.simpleMessage(
       "Great service, very patient",
     ),
@@ -441,14 +444,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "product_recommend_button": MessageLookupByLibrary.simpleMessage(
       "Let them see",
     ),
-    "product_reviews_days_ago": m17,
-    "product_reviews_hours_ago": m18,
+    "product_reviews_days_ago": m18,
+    "product_reviews_hours_ago": m19,
     "product_reviews_just_now": MessageLookupByLibrary.simpleMessage(
       "Just now",
     ),
-    "product_reviews_loading_failed": m19,
-    "product_reviews_minutes_ago": m20,
-    "product_reviews_months_ago": m21,
+    "product_reviews_loading_failed": m20,
+    "product_reviews_minutes_ago": m21,
+    "product_reviews_months_ago": m22,
     "product_reviews_no_reviews": MessageLookupByLibrary.simpleMessage(
       "No reviews yet",
     ),
@@ -457,7 +460,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Great service, very patient",
     ),
     "product_reviews_title": MessageLookupByLibrary.simpleMessage("Reviews"),
-    "product_reviews_years_ago": m22,
+    "product_reviews_years_ago": m23,
     "profile_about_us": MessageLookupByLibrary.simpleMessage("About Us"),
     "profile_account_security": MessageLookupByLibrary.simpleMessage(
       "Account & Security",
@@ -476,7 +479,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "profile_favorites": MessageLookupByLibrary.simpleMessage("Favorites"),
     "profile_in_progress": MessageLookupByLibrary.simpleMessage("Processing"),
-    "profile_loading_error": m23,
+    "profile_loading_error": m24,
     "profile_login_button": MessageLookupByLibrary.simpleMessage("Login"),
     "profile_login_prompt": MessageLookupByLibrary.simpleMessage(
       "Please login to view your profile",
@@ -486,7 +489,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "profile_my_dskk": MessageLookupByLibrary.simpleMessage("My DSKK"),
     "profile_my_wallet": MessageLookupByLibrary.simpleMessage("My Wallet"),
-    "profile_navigation_error": m24,
+    "profile_navigation_error": m25,
     "profile_nickname_hint": MessageLookupByLibrary.simpleMessage(
       "Please enter new nickname",
     ),
@@ -500,13 +503,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "profile_refund": MessageLookupByLibrary.simpleMessage("Support"),
     "profile_save": MessageLookupByLibrary.simpleMessage("Save"),
     "profile_settings": MessageLookupByLibrary.simpleMessage("Settings"),
-    "profile_switch_error": m25,
+    "profile_switch_error": m26,
     "profile_switch_to_seller": MessageLookupByLibrary.simpleMessage(
       "Switch to Seller Mode",
     ),
     "profile_wallet": MessageLookupByLibrary.simpleMessage("Wallet"),
     "search_button": MessageLookupByLibrary.simpleMessage("Search"),
-    "search_failed": m26,
+    "search_failed": m27,
     "search_history": MessageLookupByLibrary.simpleMessage("Search History"),
     "search_hot_keywords": MessageLookupByLibrary.simpleMessage("Hot Keywords"),
     "search_no_results": MessageLookupByLibrary.simpleMessage(
@@ -517,7 +520,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "seller_home_auto_reply": MessageLookupByLibrary.simpleMessage(
       "Auto Reply",
     ),
-    "seller_home_completion_rate": m27,
+    "seller_home_completion_rate": m28,
     "seller_home_functions": MessageLookupByLibrary.simpleMessage("Functions"),
     "seller_home_income": MessageLookupByLibrary.simpleMessage("Revenue"),
     "seller_home_loading_failed": MessageLookupByLibrary.simpleMessage(
@@ -560,7 +563,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "seller_home_recent_income": MessageLookupByLibrary.simpleMessage(
       "Recent Revenue",
     ),
-    "seller_home_switch_failed": m28,
+    "seller_home_switch_failed": m29,
     "seller_home_switch_to_buyer": MessageLookupByLibrary.simpleMessage(
       "Switch to Buyer Mode",
     ),
@@ -588,12 +591,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "seller_profile_certified": MessageLookupByLibrary.simpleMessage(
       "Certified",
     ),
-    "seller_profile_chat_failed": m29,
+    "seller_profile_chat_failed": m30,
     "seller_profile_default_title": MessageLookupByLibrary.simpleMessage(
       "Seller Profile",
     ),
-    "seller_profile_error_occurred": m30,
-    "seller_profile_feature_not_implemented": m31,
+    "seller_profile_error_occurred": m31,
+    "seller_profile_feature_not_implemented": m32,
     "seller_profile_follow": MessageLookupByLibrary.simpleMessage("Follow"),
     "seller_profile_follow_success": MessageLookupByLibrary.simpleMessage(
       "Followed successfully",
@@ -601,7 +604,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "seller_profile_followed": MessageLookupByLibrary.simpleMessage(
       "Following",
     ),
-    "seller_profile_followers": m32,
+    "seller_profile_followers": m33,
     "seller_profile_image_load_failed": MessageLookupByLibrary.simpleMessage(
       "Image loading failed",
     ),
@@ -675,8 +678,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "seller_statistics_active_orders": MessageLookupByLibrary.simpleMessage(
       "Active Orders",
     ),
-    "seller_statistics_become_level3_seller": m33,
-    "seller_statistics_complete_orders": m34,
+    "seller_statistics_become_level3_seller": m34,
+    "seller_statistics_complete_orders": m35,
     "seller_statistics_completion_rate": MessageLookupByLibrary.simpleMessage(
       "Completion",
     ),
@@ -692,7 +695,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "seller_statistics_indicators": MessageLookupByLibrary.simpleMessage(
       "Metrics",
     ),
-    "seller_statistics_loading_failed": m35,
+    "seller_statistics_loading_failed": m36,
     "seller_statistics_monthly_earnings": MessageLookupByLibrary.simpleMessage(
       "Monthly Revenue",
     ),
@@ -706,7 +709,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "seller_statistics_positive_rate": MessageLookupByLibrary.simpleMessage(
       "Rating",
     ),
-    "seller_statistics_profit_amount": m36,
+    "seller_statistics_profit_amount": m37,
     "seller_statistics_receipt": MessageLookupByLibrary.simpleMessage(
       "Receipt",
     ),

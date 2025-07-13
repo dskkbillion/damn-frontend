@@ -35,11 +35,19 @@ class OrderConfirmPage extends StatefulWidget {
 class _OrderConfirmPageState extends State<OrderConfirmPage> {
   String _selectedPaymentMethod = 'alipay'; // 默认选择支付宝
   bool _isProcessing = false; // 防重复提交标志
+  
+  // 微信支付是否可用（上线前设置为false）
+  static const bool _isWechatPaymentAvailable = false;
 
   @override
   void initState() {
     super.initState();
     context.read<PaymentBloc>().add(ResetPaymentEvent());
+    
+    // 如果微信支付不可用且当前选择的是微信支付，自动切换到支付宝
+    if (!_isWechatPaymentAvailable && _selectedPaymentMethod == 'wechat') {
+      _selectedPaymentMethod = 'alipay';
+    }
   }
 
   @override
@@ -253,6 +261,8 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                 null, // 没有微信logo图片，使用图标
                 Icons.wechat,
                 Colors.green,
+                enabled: _isWechatPaymentAvailable,
+                subtitle: _isWechatPaymentAvailable ? null : '🚧 施工中，敬请期待',
               ),
               
               const SizedBox(height: 32),
@@ -314,85 +324,115 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
     String? logoAsset,
     IconData fallbackIcon,
     Color iconColor,
+    {bool enabled = true, String? subtitle}
   ) {
     final isSelected = _selectedPaymentMethod == method;
+    final effectiveIconColor = enabled ? iconColor : Colors.grey;
+    final effectiveTextColor = enabled 
+        ? (isSelected ? Theme.of(context).primaryColor : null)
+        : Colors.grey;
     
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedPaymentMethod = method;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: isSelected ? Theme.of(context).primaryColor : Colors.grey[300]!,
-            width: isSelected ? 2 : 1,
+    return Opacity(
+      opacity: enabled ? 1.0 : 0.6,
+      child: GestureDetector(
+        onTap: enabled ? () {
+          setState(() {
+            _selectedPaymentMethod = method;
+          });
+        } : null,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: enabled && isSelected 
+                  ? Theme.of(context).primaryColor 
+                  : Colors.grey[300]!,
+              width: isSelected ? 2 : 1,
+            ),
+            borderRadius: BorderRadius.circular(8),
+            color: enabled && isSelected 
+                ? Theme.of(context).primaryColor.withOpacity(0.05) 
+                : null,
           ),
-          borderRadius: BorderRadius.circular(8),
-          color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.05) : null,
-        ),
-        child: Row(
-          children: [
-            // 选择指示器
-            Icon(
-              isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-              color: isSelected ? Theme.of(context).primaryColor : Colors.grey,
-            ),
-            const SizedBox(width: 16),
-            
-            // 支付方式图标/Logo
-            if (logoAsset != null)
-              Image.asset(
-                logoAsset,
-                width: 60,
-                height: 30,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: 60,
-                    height: 30,
-                    decoration: BoxDecoration(
-                      color: iconColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Icon(
-                      fallbackIcon,
-                      color: iconColor,
-                      size: 20,
-                    ),
-                  );
-                },
-              )
-            else
-              Container(
-                width: 60,
-                height: 30,
-                decoration: BoxDecoration(
-                  color: iconColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(4),
+          child: Row(
+            children: [
+              // 选择指示器
+              Icon(
+                enabled && isSelected 
+                    ? Icons.radio_button_checked 
+                    : Icons.radio_button_unchecked,
+                color: enabled && isSelected 
+                    ? Theme.of(context).primaryColor 
+                    : Colors.grey,
+              ),
+              const SizedBox(width: 16),
+              
+              // 支付方式图标/Logo
+              if (logoAsset != null)
+                Image.asset(
+                  logoAsset,
+                  width: 60,
+                  height: 30,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: 60,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: effectiveIconColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Icon(
+                        fallbackIcon,
+                        color: effectiveIconColor,
+                        size: 20,
+                      ),
+                    );
+                  },
+                )
+              else
+                Container(
+                  width: 60,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: effectiveIconColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Icon(
+                    fallbackIcon,
+                    color: effectiveIconColor,
+                    size: 20,
+                  ),
                 ),
-                child: Icon(
-                  fallbackIcon,
-                  color: iconColor,
-                  size: 20,
+              
+              const SizedBox(width: 16),
+              
+              // 支付方式名称
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: effectiveTextColor,
+                      ),
+                    ),
+                    if (subtitle != null)
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: enabled ? Colors.orange : Colors.grey,
+                          fontWeight: enabled ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                  ],
                 ),
               ),
-            
-            const SizedBox(width: 16),
-            
-            // 支付方式名称
-            Expanded(
-              child: Text(
-                name,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? Theme.of(context).primaryColor : null,
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

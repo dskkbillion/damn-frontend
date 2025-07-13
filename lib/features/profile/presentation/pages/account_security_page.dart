@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:io';
@@ -451,19 +452,112 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
   final TextEditingController _controller = TextEditingController();
   late ProfileBloc _profileBloc;
   bool _isLoading = false;
+  bool _isButtonEnabled = false;
+  String? _validationError;
+
+  /// 验证昵称合法性
+  /// 返回null表示合法，返回字符串表示错误信息
+  String? _validateNickname(String nickname) {
+    final trimmed = nickname.trim();
+    
+    // 检查长度
+    if (trimmed.isEmpty) {
+      return '请输入昵称';
+    }
+    
+    if (trimmed.length < 2) {
+      return '昵称至少需要2个字符';
+    }
+    
+    if (trimmed.length > 20) {
+      return '昵称不能超过20个字符';
+    }
+    
+    // 检查是否包含空格
+    if (trimmed.contains(' ')) {
+      return '昵称不能包含空格';
+    }
+    
+    // 检查是否包含非法字符（只允许中文、英文、数字、下划线）
+    final validPattern = RegExp(r'^[\u4e00-\u9fa5a-zA-Z0-9_]+$');
+    if (!validPattern.hasMatch(trimmed)) {
+      return '昵称只能包含中文、英文、数字和下划线';
+    }
+    
+    // 检查是否只包含特殊字符
+    final onlySpecialChars = RegExp(r'^[_]+$');
+    if (onlySpecialChars.hasMatch(trimmed)) {
+      return '昵称不能只包含下划线';
+    }
+    
+    return null; // 验证通过
+  }
 
   @override
   void initState() {
     super.initState();
     _profileBloc = GetIt.instance<ProfileBloc>();
+    
+    // 添加监听器来实时更新按钮状态
+    _controller.addListener(_updateButtonState);
+    
     // 初始化为当前昵称
     _controller.text = widget.currentProfile?.nickName ?? '';
+    
+    // 延迟初始化按钮状态，确保TextController的文本已设置
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateButtonState();
+    });
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_updateButtonState);
     _controller.dispose();
     super.dispose();
+  }
+
+  void _updateButtonState() {
+    final inputText = _controller.text;
+    final newNickname = inputText.trim();
+    final currentNickname = widget.currentProfile?.nickName ?? '';
+    
+    // 获取验证错误信息
+    String? validationError;
+    
+    // 只有当输入不为空时才进行验证
+    if (inputText.isNotEmpty) {
+      validationError = _validateNickname(newNickname);
+      
+      // 如果昵称格式正确，但与当前昵称相同，显示提示
+      if (validationError == null && newNickname == currentNickname) {
+        validationError = '昵称没有变化';
+      }
+    } else {
+      validationError = '请输入昵称';
+    }
+    
+    // 按钮可用条件：
+    // 1. 昵称格式合法（validationError == null）
+    // 2. 不在加载中
+    final shouldEnable = !_isLoading && validationError == null;
+    
+    // 调试信息
+    print('[EditNickname] 输入文本: "$inputText"');
+    print('[EditNickname] 处理后昵称: "$newNickname"');
+    print('[EditNickname] 当前昵称: "$currentNickname"');
+    print('[EditNickname] 验证错误: $validationError');
+    print('[EditNickname] 按钮应该可用: $shouldEnable');
+    print('[EditNickname] 当前按钮状态: $_isButtonEnabled');
+    
+    // 只有在状态发生变化时才更新UI
+    if (shouldEnable != _isButtonEnabled || validationError != _validationError) {
+      setState(() {
+        _isButtonEnabled = shouldEnable;
+        _validationError = validationError;
+      });
+      print('[EditNickname] 状态已更新 - 按钮可用: $_isButtonEnabled');
+    }
   }
 
   @override
@@ -475,11 +569,14 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
           if (state is ProfileUpdating) {
             setState(() {
               _isLoading = true;
+              _validationError = null; // 清除验证错误
             });
+            _updateButtonState(); // 更新按钮状态
           } else if (state is ProfileUpdated) {
             setState(() {
               _isLoading = false;
             });
+            _updateButtonState(); // 更新按钮状态
             
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('昵称修改成功！')),
@@ -491,6 +588,7 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
             setState(() {
               _isLoading = false;
             });
+            _updateButtonState(); // 更新按钮状态
             
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('昵称修改失败: ${state.message}')),
@@ -513,8 +611,13 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
                 TextField(
                   controller: _controller,
                   enabled: !_isLoading,
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatter(20),
+                    // 只允许中文、英文、数字、下划线，禁止空格和其他特殊字符
+                    FilteringTextInputFormatter.allow(RegExp(r'[\u4e00-\u9fa5a-zA-Z0-9_]')),
+                  ],
                   decoration: InputDecoration(
-                    hintText: '请输入',
+                    hintText: '请输入昵称',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4),
                       borderSide: BorderSide(color: Colors.grey.shade300),
@@ -523,31 +626,73 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
                       borderRadius: BorderRadius.circular(4),
                       borderSide: BorderSide(color: Theme.of(context).primaryColor),
                     ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(4),
+                      borderSide: const BorderSide(color: Colors.red),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(4),
+                      borderSide: const BorderSide(color: Colors.red),
+                    ),
                   ),
                   maxLength: 20,
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
-                    '请设置2-20个字符，不包括空格等无效字符',
+                    '请设置2-20个字符，只能包含中文、英文、数字和下划线',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey.shade600,
                     ),
                   ),
                 ),
+                // 显示验证错误信息
+                if (_validationError != null) ...[
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 16,
+                          color: Colors.red.shade600,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            _validationError!,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.red.shade600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _isLoading ? null : _submitNickname,
+                    onPressed: _isButtonEnabled ? _submitNickname : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColorLight,
-                      foregroundColor: Colors.white,
+                      backgroundColor: _isButtonEnabled 
+                          ? const Color(0xFF1976D2) // 使用蓝色表示可用状态
+                          : Colors.grey.shade300,
+                      foregroundColor: _isButtonEnabled 
+                          ? Colors.white 
+                          : Colors.grey.shade500,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(4),
                       ),
+                      elevation: _isButtonEnabled ? 2 : 0,
+                      // 确保按钮状态变化时能正确更新
+                      disabledBackgroundColor: Colors.grey.shade300,
+                      disabledForegroundColor: Colors.grey.shade500,
                     ),
                     child: _isLoading
                         ? const SizedBox(
@@ -578,16 +723,11 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
   void _submitNickname() {
     final newNickname = _controller.text.trim();
     
-    if (newNickname.isEmpty) {
+    // 验证昵称合法性
+    final validationError = _validateNickname(newNickname);
+    if (validationError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请输入昵称')),
-      );
-      return;
-    }
-    
-    if (newNickname.length < 2) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('昵称至少需要2个字符')),
+        SnackBar(content: Text(validationError)),
       );
       return;
     }
