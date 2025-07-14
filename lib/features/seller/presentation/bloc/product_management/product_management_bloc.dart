@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/enums/product_status.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_managed_product.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/delete_product_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_draft_list_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_product_list_usecase.dart';
@@ -326,7 +327,61 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     // 添加到处理中ID列表
     emit(state.addProcessingProductId(event.productId));
     
-    final params = DeleteProductParams(productIds: [event.productId]);
+    // 找到要删除的商品信息 - 根据当前标签页从对应列表中查找
+    SellerManagedProduct? productToDelete;
+    
+    // 根据当前标签页决定从哪个列表中查找
+    switch (state.tabIndex) {
+      case 0: // 在售商品
+        productToDelete = state.onSaleProducts
+            ?.where((p) => p.id == event.productId)
+            .firstOrNull;
+        break;
+      case 1: // 草稿箱
+        productToDelete = state.draftProducts
+            ?.where((p) => p.id == event.productId)
+            .firstOrNull;
+        break;
+      case 2: // 已下架
+        productToDelete = state.offShelfProducts
+            ?.where((p) => p.id == event.productId)
+            .firstOrNull;
+        break;
+      default:
+        // 如果标签页未知，尝试从所有列表中查找
+        productToDelete = state.onSaleProducts
+                ?.where((p) => p.id == event.productId)
+                .firstOrNull ??
+            state.draftProducts
+                ?.where((p) => p.id == event.productId)
+                .firstOrNull ??
+            state.offShelfProducts
+                ?.where((p) => p.id == event.productId)
+                .firstOrNull;
+    }
+        
+    if (productToDelete == null) {
+      // 从处理中ID列表移除
+      emit(state.removeProcessingProductId(event.productId));
+      
+      emit(state.copyWith(
+        errorMessage: '找不到要删除的商品',
+      ));
+      return;
+    }
+    
+    print('=== 开始删除商品 ===');
+    print('商品ID: ${productToDelete.id}');
+    print('商品名称: ${productToDelete.name}');
+    print('商品状态: ${productToDelete.status}');
+    print('状态值: ${productToDelete.status.value}');
+    print('状态显示: ${productToDelete.status.displayName}');
+    
+    // 创建删除参数，包含商品信息
+    final params = DeleteProductParams(
+      productIds: [event.productId],
+      products: [productToDelete],  // 传递商品信息用于状态判断
+    );
     
     final result = await _deleteProductUseCase(params);
     

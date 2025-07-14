@@ -5,6 +5,8 @@ import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化�
 import '../bloc/ai_chat/ai_chat_bloc.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_chat_message_entity.dart';
 import 'chat_message_bubble.dart';
+import 'animated_text_chunk.dart';
+import 'streaming_message_bubble.dart';
 
 class ChatMessageList extends StatefulWidget {
   const ChatMessageList({super.key});
@@ -247,17 +249,13 @@ class _ChatMessageListState extends State<ChatMessageList> {
     // 底部流式响应指示器
     if (state.status == AiChatStatus.streamingResponse && 
         messageIndex == state.messages.length) {
-      final streamingPlaceholder = AiChatMessageEntity(
-        messageId: 'streaming_placeholder',
-        content: state.streamingResponseText,
+      return StreamingMessageBubble(
+        key: const ValueKey('streaming_bubble'),
+                        streamingText: state.streamingResponseText,
+        fullText: state.streamingResponseText,
+        isStreaming: true,
         sender: MessageSender.ai,
         timestamp: DateTime.now(),
-        conversationId: state.selectedConversationId ?? -1,
-      );
-      return ChatMessageBubble(
-        key: const ValueKey('streaming_bubble'),
-        message: streamingPlaceholder,
-        isStreaming: true,
       );
     }
 

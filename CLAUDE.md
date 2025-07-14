@@ -1,0 +1,159 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+This is a Flutter e-commerce application (多少看看 DSKK) being refactored from React Native using Clean Architecture principles. The app follows a modular, incremental refactoring approach where each feature module is developed in isolation with mock dependencies before integration.
+
+## Architecture
+
+### Core Pattern: Clean Architecture with Modular Design
+- **Domain Layer**: Business logic, entities, use cases, repository interfaces
+- **Data Layer**: Repository implementations, data sources, models/DTOs
+- **Presentation Layer**: UI pages, widgets, state management (BLoC/Cubit)
+
+### Key Modules
+- `auth`: Authentication & user management
+- `home`: Main home screen & service discovery
+- `orders`: Order management for buyers and sellers
+- `chat`: Real-time messaging
+- `profile`: User profile management
+- `seller`: Seller-specific features
+- `ai_docs`: AI-powered documentation assistant
+- `favorites`: User favorites/bookmarks
+- `after_sales`: After-sales service handling
+- `payment`: Payment integration (WeChat, Alipay)
+
+## Common Development Commands
+
+### Build & Run
+```bash
+# Run main app
+flutter run
+
+# Run module preview (isolated development)
+flutter run -t lib/main_dev_preview.dart
+flutter run -t lib/previews/CV-demo/main_buyer_preview.dart
+flutter run -t lib/previews/CV-demo/main_seller_preview.dart
+
+# Build APK
+flutter build apk
+flutter build apk --release
+```
+
+### Code Generation
+```bash
+# Run build_runner for code generation (freezed, json_serializable, etc.)
+dart run build_runner build --delete-conflicting-outputs
+
+# Watch mode for continuous generation
+dart run build_runner watch --delete-conflicting-outputs
+```
+
+### Testing
+```bash
+# Run all tests
+flutter test
+
+# Run specific test file
+flutter test test/features/module_name/test_file_test.dart
+
+# Run tests with coverage
+flutter test --coverage
+
+# Run integration tests
+flutter test integration_test/
+```
+
+### Linting & Analysis
+```bash
+# Analyze code
+flutter analyze
+
+# Fix linting issues
+dart fix --apply
+```
+
+## Module Development Workflow
+
+When developing a new feature module, follow the workflow documented in `docs/dev/模块开发核心工作流.md`:
+
+1. Create feature branch: `refactor/module-name`
+2. Define module boundaries in `docs/BD/module_boundary_definition.md`
+3. Implement Domain layer interfaces first
+4. Create Data layer with mock implementations
+5. Build Presentation layer with BLoC/Cubit
+6. Test in isolation using module preview entry points
+7. Integrate with main app replacing mocks with real implementations
+
+## API Development Standards
+
+Before implementing any API calls:
+1. Verify endpoint exists in backend code
+2. Confirm HTTP method, request/response format
+3. Check authentication requirements
+4. Follow patterns in existing data sources (e.g., `OrderRemoteDataSourceImpl`)
+
+Refer to `.cursor/rules/api-development-standards.mdc` for detailed API implementation guidelines.
+
+## Environment Configuration
+
+1. Copy `.env.example` to `.env`
+2. Configure required URLs:
+   - `BACKEND_BASE_URL`: Backend API base URL
+   - `MODEL_BASE_URL`: AI model service URL
+
+## Navigation
+
+The app uses Go Router for navigation. Key points:
+- Main router configuration: `lib/app/navigation/app_router_config.dart`
+- Use standard Go Router navigation: `context.go()`, `context.push()`
+- Each module defines its routes in `presentation/routes/`
+
+## State Management
+
+Primary: BLoC pattern with flutter_bloc
+- BLoCs for complex state with multiple events
+- Cubits for simpler state management
+- Riverpod available for specific use cases
+
+## Dependency Injection
+
+Uses GetIt with injectable for DI:
+- Main DI setup: `lib/app/di/injection_container.dart`
+- Module-specific DI: `lib/features/[module]/di/[module]_di.dart`
+- Mock configurations for isolated development
+
+## Key Development Principles
+
+1. **Modular Independence**: Each module should work in isolation with mocks
+2. **Clean Architecture**: Strict separation between Domain, Data, and Presentation
+3. **Reference-Based Development**: Use existing RN code and HTML prototypes as reference
+4. **Test-Driven**: Write tests for critical business logic
+5. **Mock-First**: Develop with mocks, integrate with real implementations later
+
+## Payment Integration
+
+WeChat and Alipay payment SDKs are integrated:
+- WeChat: Uses `fluwx` package
+- Alipay: Uses `tobias` package
+- Configuration: `config/wechat_config.yaml`
+- Test payments in `PaymentDemoPage`
+
+## Important Files & Directories
+
+- `lib/app/`: Core app configuration, DI, routing
+- `lib/core/`: Shared utilities, network clients, common services
+- `lib/features/`: Feature modules (each with domain/data/presentation)
+- `docs/BD/`: Module boundary definitions
+- `docs/dev/`: Development documentation
+- `.cursor/rules/`: Cursor AI development rules
+- `design-info/`: Reference HTML prototypes and API documentation
+
+## Current Development Focus
+
+The project is actively being refactored from React Native. Check git status and recent commits to understand current work:
+- Multiple modified files indicate ongoing refactoring
+- Feature branches show modules under development
+- `.cursor/rules/` contains specific development guidelines for current features

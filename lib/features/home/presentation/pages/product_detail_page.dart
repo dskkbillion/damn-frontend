@@ -461,8 +461,29 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
     );
   }
 
+  // 获取档位显示名称（用于将来可能需要显示档位名称的场景）
+  String _getTierDisplayName(String tierName, BuildContext context) {
+    switch (tierName) {
+      case 'Basic Tier':
+        return S.of(context).product_detail_basic_tier;
+      case 'Standard Tier':
+        return S.of(context).product_detail_standard_tier;
+      case 'Premium Tier':
+        return S.of(context).product_detail_premium_tier;
+      default:
+        return tierName;
+    }
+  }
+
+  // 获取档位价格显示（包含名称和价格）
+  String _getTierPriceDisplay(BuildContext context, ProductVariant variant) {
+    final tierName = _getTierDisplayName(variant.name, context);
+    final price = '¥${variant.sellingPrice.toStringAsFixed(0)}';
+    return '$tierName $price';
+  }
+
   Widget _buildVariantTabs(ProductDetail product) {
-    // 创建3个Tab：基础、标准、豪华
+    // 根据要求显示价格而不是档位名称
     return Column(
       children: [
         Container(
@@ -474,7 +495,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           child: TabBar(
             controller: _tabController,
             tabs: product.variants!.map((variant) => Tab(
-              text: variant.name,
+              text: _getTierPriceDisplay(context, variant), // 显示价格
             )).toList(),
             labelColor: Colors.amber[800],
             unselectedLabelColor: Colors.grey,
@@ -547,7 +568,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           ),
         ),
         child: Text(
-          S.of(context).product_detail_buy_now_with_price(variant.sellingPrice.toStringAsFixed(2)),
+          '一键购买 (¥${variant.sellingPrice.toStringAsFixed(0)})',
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,

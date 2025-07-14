@@ -148,6 +148,8 @@ class AiChatState extends Equatable {
   final bool hasMoreHistory;
   /// The current text being streamed from the AI.
   final String streamingResponseText;
+  /// List of text chunks for fade-in animation effect
+
   /// An error message if the last operation failed.
   final String? errorMessage;
 
@@ -223,6 +225,7 @@ class AiChatState extends Equatable {
     this.messages = const [],
     this.hasMoreHistory = true,
     this.streamingResponseText = '',
+
     this.errorMessage,
     this.conversationsStatus = ConversationsStatus.initial,
     this.conversations = const [],
@@ -263,6 +266,7 @@ class AiChatState extends Equatable {
     List<AiChatMessageEntity>? messages,
     bool? hasMoreHistory,
     String? streamingResponseText,
+
     String? errorMessage,
     ConversationsStatus? conversationsStatus,
     List<AiConversationEntity>? conversations,
@@ -313,6 +317,7 @@ class AiChatState extends Equatable {
       messages: messages ?? this.messages,
       hasMoreHistory: hasMoreHistory ?? this.hasMoreHistory,
       streamingResponseText: streamingResponseText ?? this.streamingResponseText,
+  
       errorMessage: clearErrorMessage ? null : errorMessage ?? this.errorMessage,
       conversationsStatus: conversationsStatus ?? this.conversationsStatus,
       conversations: conversations ?? this.conversations,
@@ -358,6 +363,7 @@ class AiChatState extends Equatable {
         messages,
         hasMoreHistory,
         streamingResponseText,
+  
         errorMessage,
         conversationsStatus,
         conversations,

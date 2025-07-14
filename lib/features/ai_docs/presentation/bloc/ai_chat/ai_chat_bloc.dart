@@ -9,6 +9,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import S
 import 'package:dio/dio.dart';
 import 'package:dskk_flutter_refactor/core/utils/haptic_utils.dart'; // 导入震动工具类
 
+
 // Core
 import 'package:dskk_flutter_refactor/core/error/failures.dart'; // Use package import
 
@@ -74,6 +75,8 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   // Internal state - Replace with state properties where possible
   // int? _currentConversationId; // REMOVE - Use state.selectedConversationId instead
   StreamSubscription<String>? _chatStreamSubscription;
+  
+
 
   AiChatBloc(
     this._getConversations,
@@ -834,7 +837,12 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       (contentStream) {
         // Successfully initiated stream, start listening
         print("[Bloc] Stream initiated successfully. Listening...");
-        emit(state.copyWith(status: AiChatStatus.streamingResponse)); // Update status
+        
+
+        
+        emit(state.copyWith(
+          status: AiChatStatus.streamingResponse,
+        )); // Update status
         
         _chatStreamSubscription = contentStream.listen(
           (chunk) {
@@ -1115,6 +1123,9 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         chunk == '[DONE]' || 
         chunk == '[CANCELLED]') {
       print("[AiChatBloc] 收到控制标记: $chunk，完成流式响应");
+      
+
+      
       // 这些标记表示流完成，直接完成消息而不添加内容
       if (state.status == AiChatStatus.streamingResponse) {
         final currentMessages = List<AiChatMessageEntity>.from(state.messages);
@@ -1133,11 +1144,11 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
           );
           currentMessages.add(aiMessage);
         }
-        emit(state.copyWith(
-          status: AiChatStatus.messageSendSuccess,
-          streamingResponseText: '',
-          messages: currentMessages,
-        ));
+                  emit(state.copyWith(
+            status: AiChatStatus.messageSendSuccess,
+            streamingResponseText: '',
+            messages: currentMessages,
+          ));
         print("[AiChatBloc] 流式响应完成，添加最终消息到列表");
       }
       return;
@@ -1167,13 +1178,14 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
             print("[AiChatBloc] 流式响应结束，添加最终消息到列表");
        } // else: Stream might finish due to cancellation, state already handled by _onCancelStreaming
     } else {
-      // 只添加非控制标记的内容
-      final newGeneration = (state.streamingResponseText == '...' ? '' : state.streamingResponseText) + event.chunk;
-      print("[AiChatBloc] 更新流式文本: '$newGeneration'");
-      emit(state.copyWith(
-        streamingResponseText: newGeneration,
-        status: AiChatStatus.streamingResponse, // Ensure status remains streaming
-      ));
+      // 直接添加到流式响应文本（恢复简单的逐字符输出）
+      if (!isClosed) {
+        final updatedText = state.streamingResponseText + event.chunk;
+        emit(state.copyWith(
+          streamingResponseText: updatedText,
+          status: AiChatStatus.streamingResponse,
+        ));
+      }
     }
   }
 
@@ -1185,6 +1197,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
        status: AiChatStatus.messageSendFailure,
        errorMessage: "Error during streaming: ${event.errorMessage ?? 'Unknown error'}", 
        streamingResponseText: '', // Clear stream text on error
+       
      ));
   }
 
@@ -1211,7 +1224,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         // Reset status after cancellation
         emit(state.copyWith(
           status: AiChatStatus.messageSendSuccess, // Or a different status like 'cancelled'?
-          streamingResponseText: '', 
+          streamingResponseText: '',
           messages: currentMessages,
         ));
      }
@@ -1286,7 +1299,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
            // 设置成功状态
            emit(state.copyWith(
              status: AiChatStatus.messageSendSuccess,
-             streamingResponseText: '',
+                       streamingResponseText: '',
              messages: currentMessages,
              clearErrorMessage: true,
            ));

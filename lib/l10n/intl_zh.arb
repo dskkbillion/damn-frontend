@@ -402,6 +402,11 @@
     "product_detail_view_all": "查看全部",
     "product_detail_no_reviews": "暂无评价",
     "product_detail_basic_package": "基础",
+    "product_detail_standard_package": "标准",
+    "product_detail_premium_package": "豪华",
+    "product_detail_basic_tier": "基础",
+    "product_detail_standard_tier": "标准",
+    "product_detail_premium_tier": "豪华",
     "product_detail_sample_review": "不错，很有耐心",
     "product_detail_sample_user": "瑞123",
     

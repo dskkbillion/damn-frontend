@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:io';
+import 'dart:async';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart'; // Import the record package
 import 'package:permission_handler/permission_handler.dart'; // Import permission_handler
@@ -8,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 import '../bloc/ai_chat/ai_chat_bloc.dart';
+import 'pulsating_mic_button.dart';
 // Remove direct imports of part files
 // import '../bloc/ai_chat/ai_chat_state.dart';
 // import '../bloc/ai_chat/ai_chat_event.dart';
@@ -34,10 +36,16 @@ class _ChatInputFieldState extends State<ChatInputField> {
   bool _isRecording = false; // Local state to track recording status
   final AudioRecorder _audioRecorder = AudioRecorder(); // Instance of the recorder
   String? _recordingPath; // To store the path of the recording
+  
+  // 录音时间相关
+  final Stopwatch _recordingStopwatch = Stopwatch();
+  Duration _recordingDuration = Duration.zero;
+  Timer? _recordingTimer;
 
   @override
   void dispose() {
     _audioRecorder.dispose(); // Dispose the recorder when widget is removed
+    _recordingTimer?.cancel(); // Cancel the timer
     super.dispose();
   }
 
@@ -101,6 +109,16 @@ class _ChatInputFieldState extends State<ChatInputField> {
                     // Pass uploadStates to the preview row builder
                     _buildImagePreviewRow(context, pendingImages, uploadStates),
                   
+                  // --- Voice Recording Indicator ---
+                  if (_isRecording)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: VoiceRecordingIndicator(
+                        isRecording: _isRecording,
+                        recordingDuration: _recordingDuration,
+                      ),
+                    ),
+                  
                   // --- Input Row --- 
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -113,11 +131,11 @@ class _ChatInputFieldState extends State<ChatInputField> {
                         tooltip: s.ai_docs_add_image, // 使用国际化文本
                       ),
                       // Attach Voice Button (Stateful)
-                      IconButton(
-                         icon: Icon(_isRecording ? Icons.stop_circle_outlined : Icons.mic_none_outlined, 
-                                    color: _isRecording ? Colors.red : null),
-                         onPressed: isBusy ? null : _handleVoiceButtonPress, 
-                         tooltip: _isRecording ? s.ai_docs_stop_recording : s.ai_docs_start_recording, // 使用国际化文本
+                      PulsatingMicButton(
+                         isRecording: _isRecording,
+                         onPressed: _handleVoiceButtonPress,
+                         isEnabled: !isBusy,
+                         size: 40.0, // 减小尺寸
                        ),
                       // Text Input Field
                       Expanded(
@@ -356,6 +374,16 @@ class _ChatInputFieldState extends State<ChatInputField> {
              _recordingPath = filePath; // Store the path
              widget.textController.clear(); // Clear text field
            });
+           
+           // 开始计时
+           _recordingStopwatch.start();
+           _recordingTimer = Timer.periodic(Duration(milliseconds: 100), (timer) {
+             if (mounted) {
+               setState(() {
+                 _recordingDuration = _recordingStopwatch.elapsed;
+               });
+             }
+           });
       } catch (e) {
          print("Error starting recording: $e");
          if (mounted) {
@@ -374,6 +402,12 @@ class _ChatInputFieldState extends State<ChatInputField> {
          setState(() {
            _isRecording = false;
          });
+         
+         // 停止计时
+         _recordingTimer?.cancel();
+         _recordingStopwatch.stop();
+         _recordingStopwatch.reset();
+         _recordingDuration = Duration.zero;
 
          if (path != null) {
             final recordedFile = File(path);
@@ -423,6 +457,12 @@ class _ChatInputFieldState extends State<ChatInputField> {
           // Ensure recording state is reset even if stopping fails
          if (mounted && _isRecording) {
            setState(() => _isRecording = false);
+           
+           // 停止计时
+           _recordingTimer?.cancel();
+           _recordingStopwatch.stop();
+           _recordingStopwatch.reset();
+           _recordingDuration = Duration.zero;
          }
       }
     }

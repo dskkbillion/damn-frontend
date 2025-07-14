@@ -402,6 +402,11 @@
     "product_detail_view_all": "View All",
     "product_detail_no_reviews": "No reviews yet",
     "product_detail_basic_package": "Basic",
+    "product_detail_standard_package": "Standard",
+    "product_detail_premium_package": "Premium",
+    "product_detail_basic_tier": "Basic",
+    "product_detail_standard_tier": "Standard",
+    "product_detail_premium_tier": "Premium",
     "product_detail_sample_review": "Great service, very patient",
     "product_detail_sample_user": "Ray123",
     

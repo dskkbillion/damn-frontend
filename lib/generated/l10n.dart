@@ -1890,6 +1890,56 @@ class S {
     );
   }
 
+  /// `Standard`
+  String get product_detail_standard_package {
+    return Intl.message(
+      'Standard',
+      name: 'product_detail_standard_package',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Premium`
+  String get product_detail_premium_package {
+    return Intl.message(
+      'Premium',
+      name: 'product_detail_premium_package',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Basic`
+  String get product_detail_basic_tier {
+    return Intl.message(
+      'Basic',
+      name: 'product_detail_basic_tier',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Standard`
+  String get product_detail_standard_tier {
+    return Intl.message(
+      'Standard',
+      name: 'product_detail_standard_tier',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Premium`
+  String get product_detail_premium_tier {
+    return Intl.message(
+      'Premium',
+      name: 'product_detail_premium_tier',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Great service, very patient`
   String get product_detail_sample_review {
     return Intl.message(

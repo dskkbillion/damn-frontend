@@ -176,20 +176,20 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
   @override
   Future<bool> updateProductStatus(int productId, String state) async {
     try {
-      // 将状态值转换为API期望的大写格式
+      // 后端期望小写状态值（与ProductState枚举定义一致）
       String apiState;
       switch (state.toLowerCase()) {
         case 'normal':
-          apiState = 'NORMAL';
+          apiState = 'normal';
           break;
         case 'disabled':
-          apiState = 'DISABLED';
+          apiState = 'disabled';
           break;
         case 'force_disabled':
-          apiState = 'FORCE_DISABLED';
+          apiState = 'force_disabled';
           break;
         default:
-          apiState = state.toUpperCase();
+          apiState = state.toLowerCase();
       }
       
       print('[SellerRemoteDataSource] 🔄 使用专门的上下架端点更新商品状态: productId=$productId, state=$apiState');
