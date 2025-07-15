@@ -763,6 +763,9 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
 
     emit(state.copyWith(status: AiChatStatus.sendingMessage, clearErrorMessage: true));
 
+    // 🎯 重置震动反馈计数器
+    HapticUtils.resetStreamingFeedback();
+
     // --- Collect successfully uploaded image URLs for the CURRENT pending images ---
     final List<String> urlsToSend = [];
     final currentPendingPaths = state.pendingImageFiles?.map((f) => f.path).toList() ?? [];
@@ -1181,6 +1184,10 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       // 直接添加到流式响应文本（恢复简单的逐字符输出）
       if (!isClosed) {
         final updatedText = state.streamingResponseText + event.chunk;
+        
+        // 🎯 添加流式输出震动反馈
+        HapticUtils.streamingTextFeedback();
+        
         emit(state.copyWith(
           streamingResponseText: updatedText,
           status: AiChatStatus.streamingResponse,

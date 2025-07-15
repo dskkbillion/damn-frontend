@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod
 import 'package:dskk_flutter_refactor/app/navigation/app_router.dart'; // Import the provider
 import 'package:dskk_flutter_refactor/core/config/theme/app_theme.dart';
 import 'package:dskk_flutter_refactor/core/widgets/global_message_notification.dart'; // 导入全局消息通知组件
+import 'package:dskk_flutter_refactor/core/widgets/mode_flip_transition_overlay.dart'; // 导入翻转动画覆盖层
 import 'package:dskk_flutter_refactor/core/config/locale_provider.dart'; // 导入语言提供者
 import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入生成的国际化类
 
@@ -26,11 +27,12 @@ class MyApp extends ConsumerWidget { // Changed to ConsumerWidget
     // 获取语言设置
     final locale = ref.watch(localeProvider);
 
-    // 使用GlobalMessageNotification包装MaterialApp
+    // 使用GlobalMessageNotification和ModeFlipTransitionOverlay包装MaterialApp
     return GlobalMessageNotification(
-      child: MaterialApp.router(
-        // Use the router instance obtained from the provider
-        routerConfig: router, 
+      child: ModeFlipTransitionOverlay(
+        child: MaterialApp.router(
+          // Use the router instance obtained from the provider
+          routerConfig: router, 
 
         title: 'DSKK Flutter Refactor',
 
@@ -63,6 +65,7 @@ class MyApp extends ConsumerWidget { // Changed to ConsumerWidget
           }
           return const Locale('zh'); // 默认使用中文
         },
+        ),
       ),
     );
   }

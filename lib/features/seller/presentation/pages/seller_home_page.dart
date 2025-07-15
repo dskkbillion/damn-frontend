@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dskk_flutter_refactor/app/app_mode.dart';
+import 'package:dskk_flutter_refactor/core/services/mode_transition_service.dart';
 
 // 导入国际化
 import '../../../../generated/l10n.dart';
@@ -14,6 +15,7 @@ import '../../domain/entities/seller_dashboard_data.dart';
 import '../routes/seller_routes.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/loading_state.dart';
+
 
 /// 卖家中心首页
 class SellerHomePage extends ConsumerStatefulWidget {
@@ -287,17 +289,17 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                     icon: const Icon(Icons.switch_account_outlined, size: 18),
                     label: Text(S.of(context).seller_home_switch_to_buyer),
                     onPressed: () {
-                      // 更新状态
-                      ref.read(appModeProvider.notifier).state = AppMode.buyer;
-                      // 执行导航
-                      try {
-                        context.go('/profile');
-                      } catch (e) {
-                        print('Error navigating to /profile: $e');
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(S.of(context).seller_home_switch_failed(e.toString()))),
-                        );
-                      }
+                      // 使用模式切换服务触发翻转动画
+                      final modeTransitionService = ref.read(modeTransitionServiceProvider);
+                      final appModeNotifier = ref.read(appModeProvider.notifier);
+                      modeTransitionService.triggerTransition(
+                        targetMode: AppMode.buyer,
+                        onAnimationComplete: () {
+                          // 动画完成后切换模式和路由
+                          appModeNotifier.state = AppMode.buyer;
+                          context.go('/profile');
+                        },
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       // 样式参考 ProfileHeader 的按钮，可以调整

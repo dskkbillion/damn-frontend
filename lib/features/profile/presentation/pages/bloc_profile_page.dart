@@ -8,6 +8,8 @@ import '../../domain/entities/user_profile.dart';
 import '../bloc/profile_bloc.dart';
 import '../widgets/profile_header.dart';
 import '../../../seller/presentation/pages/seller_profile_page.dart';
+  import '../../../../core/navigation/navigation_helper.dart';
+  import '../../../../core/animations/page_transitions.dart';
 
 class BlocProfilePage extends StatefulWidget {
   const BlocProfilePage({super.key});
@@ -52,10 +54,90 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
             // Navigator.pushReplacementNamed(context, '/login');
           }
         } else if (state is ProfileSwitchedToSellerMode) {
-          // 导航到卖家中心
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const SellerProfilePage()),
+          // 🔄 买家→卖家：翻转动画（绕垂直轴）
+          Navigator.of(context).push(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => SellerProfilePage(
+                onSwitchToBuyer: () {
+                  context.read<ProfileBloc>().add(const SwitchToBuyerModeEvent());
+                },
+              ),
+              transitionDuration: const Duration(milliseconds: 600),
+              reverseTransitionDuration: const Duration(milliseconds: 600),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                // 🎯 翻转动画：围绕Y轴（垂直轴）旋转
+                return AnimatedBuilder(
+                  animation: animation,
+                  builder: (context, child) {
+                    final rotationValue = animation.value * 3.14159; // 0 到 π
+                    
+                    if (rotationValue >= 3.14159 / 2) {
+                      // 后半段：显示新页面
+                      return Transform(
+                        alignment: Alignment.center,
+                        transform: Matrix4.identity()
+                          ..setEntry(3, 2, 0.001) // 透视效果
+                          ..rotateY(3.14159),
+                        child: child,
+                      );
+                    } else {
+                      // 前半段：隐藏旧页面
+                      return Transform(
+                        alignment: Alignment.center,
+                        transform: Matrix4.identity()
+                          ..setEntry(3, 2, 0.001)
+                          ..rotateY(rotationValue),
+                        child: Container(
+                          color: Theme.of(context).scaffoldBackgroundColor,
+                        ),
+                      );
+                    }
+                  },
+                  child: child,
+                );
+              },
+            ),
+          );
+        } else if (state is ProfileSwitchedToBuyerMode) {
+          // 🔄 卖家→买家：翻转动画（绕垂直轴）
+          Navigator.of(context).pushReplacement(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => BlocProfilePage(),
+              transitionDuration: const Duration(milliseconds: 600),
+              reverseTransitionDuration: const Duration(milliseconds: 600),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                // 🎯 翻转动画：围绕Y轴（垂直轴）旋转
+                return AnimatedBuilder(
+                  animation: animation,
+                  builder: (context, child) {
+                    final rotationValue = animation.value * 3.14159; // 0 到 π
+                    
+                    if (rotationValue >= 3.14159 / 2) {
+                      // 后半段：显示新页面
+                      return Transform(
+                        alignment: Alignment.center,
+                        transform: Matrix4.identity()
+                          ..setEntry(3, 2, 0.001) // 透视效果
+                          ..rotateY(3.14159),
+                        child: child,
+                      );
+                    } else {
+                      // 前半段：隐藏旧页面
+                      return Transform(
+                        alignment: Alignment.center,
+                        transform: Matrix4.identity()
+                          ..setEntry(3, 2, 0.001)
+                          ..rotateY(rotationValue),
+                        child: Container(
+                          color: Theme.of(context).scaffoldBackgroundColor,
+                        ),
+                      );
+                    }
+                  },
+                  child: child,
+                );
+              },
+            ),
           );
         }
       },

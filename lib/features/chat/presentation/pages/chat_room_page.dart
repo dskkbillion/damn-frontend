@@ -10,11 +10,12 @@ import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/product
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart'; // For MessageStatus
 // 导入商品详情页面
 import 'package:dskk_flutter_refactor/features/home/presentation/pages/product_detail_page.dart';
+import '../../../../core/navigation/navigation_helper.dart';
 
 class ChatRoomPage extends StatefulWidget {
   final int chatId;
   final VoidCallback? onMessagesLoaded; // 新增回调参数
-  final VoidCallback? onMessageRevoked; // 新增消息撤回回调参数
+  final Function(int chatId, ChatMessage? newLastMessage)? onMessageRevoked; // 新增消息撤回回调参数
   final VoidCallback? onMessageSent; // 新增消息发送成功回调参数
 
   const ChatRoomPage({
@@ -276,12 +277,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               // 导航到商品详情页
                               if (chatRoom.productId != null) {
                                 print('导航到商品详情页: ${chatRoom.productName}, ID: ${chatRoom.productId}');
-                                Navigator.push(
+                                NavigationHelper.pushDetailPage(
                                   context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ProductDetailPage(
-                                      productId: chatRoom.productId!,
-                                    ),
+                                  ProductDetailPage(
+                                    productId: chatRoom.productId!,
                                   ),
                                 );
                               } else {
@@ -296,12 +295,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               if (chatRoom.productId != null) {
                                 print('点击操作按钮: ${chatRoom.productName}');
                                 // 也可以导航到商品详情页，或者实现其他操作
-                                Navigator.push(
+                                NavigationHelper.pushDetailPage(
                                   context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ProductDetailPage(
-                                      productId: chatRoom.productId!,
-                                    ),
+                                  ProductDetailPage(
+                                    productId: chatRoom.productId!,
                                   ),
                                 );
                               }
@@ -329,7 +326,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         // 检查是否有消息被撤回
                         if (state.hasMessageRevoked) {
                           print('[ChatRoomPage] Message revoked detected, triggering onMessageRevoked callback');
-                          widget.onMessageRevoked?.call();
+                          // 获取新的最后一条消息
+                          final newLastMessage = state.messages.isNotEmpty ? state.messages.last : null;
+                          widget.onMessageRevoked?.call(widget.chatId, newLastMessage);
                           
                           // 重置撤回标志
                           Future.delayed(const Duration(milliseconds: 100), () {

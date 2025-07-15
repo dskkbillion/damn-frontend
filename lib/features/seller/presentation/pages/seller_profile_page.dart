@@ -132,18 +132,27 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                Switch(
-                  value: _sellerModeOn,
-                  onChanged: (value) {
-                    setState(() {
-                      _sellerModeOn = value;
-                    });
-                    if (!value && widget.onSwitchToBuyer != null) {
+                GestureDetector(
+                  onTap: () {
+                    // 如果当前是卖家模式，点击即切换到买家模式
+                    if (_sellerModeOn && widget.onSwitchToBuyer != null) {
                       widget.onSwitchToBuyer!();
+                    } else {
+                      // 其他情况正常切换状态
+                      setState(() {
+                        _sellerModeOn = !_sellerModeOn;
+                      });
                     }
                   },
-                  activeColor: const Color(0xFFB66D0E),
-                  activeTrackColor: const Color(0xFFB66D0E).withOpacity(0.5),
+                  child: Switch(
+                    value: _sellerModeOn,
+                    onChanged: null, // 禁用Switch的自动状态变化
+                    activeColor: const Color(0xFFB66D0E),
+                    activeTrackColor: const Color(0xFFB66D0E).withOpacity(0.5),
+                    // 保持Switch可交互的视觉样式
+                    inactiveThumbColor: Colors.grey[400],
+                    inactiveTrackColor: Colors.grey[300],
+                  ),
                 ),
               ],
             ),

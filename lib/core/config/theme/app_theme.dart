@@ -28,6 +28,17 @@ class AppTheme {
     ),
     useMaterial3: true,
     
+    // 页面切换动画主题
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
+        TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
+      },
+    ),
+    
     // 文字主题
     textTheme: TextTheme(
       displayLarge: AppTextStyles.displayLarge,

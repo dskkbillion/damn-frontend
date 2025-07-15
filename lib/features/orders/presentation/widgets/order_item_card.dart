@@ -1,10 +1,15 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart'; // Import GoRouter
 
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_status_widget.dart';
 // Import the new item card buttons widget
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_item_card_action_buttons.dart';
+import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
+import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_list_bloc.dart';
+import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 
 /// 用于在订单列表中显示单个订单摘要信息的卡片 Widget。
 class OrderItemCard extends StatelessWidget {
@@ -12,6 +17,132 @@ class OrderItemCard extends StatelessWidget {
   final VoidCallback? onTap; // 点击卡片的回调 (导航到详情)
 
   const OrderItemCard({super.key, required this.order, this.onTap});
+
+  /// 显示删除订单确认对话框
+  Future<void> _showDeleteConfirmationDialog(BuildContext context, Order order) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('删除订单'),
+          content: const SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('您确定要删除这个订单吗？删除后将无法恢复。'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('取消'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('确定'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                _performDeleteOrder(context, order);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// 执行删除订单操作
+  Future<void> _performDeleteOrder(BuildContext context, Order order) async {
+    try {
+      // 创建一个临时的 OrderDetailBloc 来处理删除操作
+      final orderDetailBloc = getIt<OrderDetailBloc>();
+      
+      print('[OrderItemCard] 准备删除订单: ${order.id}, 当前状态: ${order.state}');
+      
+      // 显示加载状态
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('正在删除订单...')),
+      );
+
+      // 创建一个 StreamSubscription 来监听结果
+      late StreamSubscription streamSubscription;
+      bool orderLoaded = false;
+      
+      streamSubscription = orderDetailBloc.stream.listen((state) {
+        print('[OrderItemCard] 收到BLoC状态变化: ${state.runtimeType}');
+        
+        if (state is OrderDetailLoaded && !orderLoaded) {
+          // 订单详情加载完成，现在可以执行删除操作
+          print('[OrderItemCard] 订单详情加载完成，执行删除操作');
+          orderLoaded = true;
+          orderDetailBloc.add(OrderActionRequested(
+            action: OrderAction.delete,
+            orderId: order.id.toString(),
+          ));
+        } else if (state is OrderDetailActionSuccess) {
+          print('[OrderItemCard] 删除成功');
+          // 取消订阅
+          streamSubscription.cancel();
+          
+          // 删除成功，隐藏加载提示并显示成功消息
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('订单已删除'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          
+          // 刷新订单列表
+          if (context.mounted) {
+            context.read<OrderListBloc>().add(LoadOrders());
+          }
+        } else if (state is OrderDetailActionFailure) {
+          print('[OrderItemCard] 删除失败: ${state.message}');
+          // 取消订阅
+          streamSubscription.cancel();
+          
+          // 删除失败
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('删除失败：${state.message}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        } else if (state is OrderDetailError) {
+          print('[OrderItemCard] 加载订单详情失败: ${state.message}');
+          // 取消订阅
+          streamSubscription.cancel();
+          
+          // 加载失败
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('加载订单详情失败：${state.message}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      });
+
+      // 先加载订单详情
+      print('[OrderItemCard] 先加载订单详情');
+      orderDetailBloc.add(LoadOrderDetail(orderId: order.id));
+      
+    } catch (e) {
+      print('[OrderItemCard] 删除操作异常: $e');
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('删除失败：$e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -169,8 +300,7 @@ class OrderItemCard extends StatelessWidget {
                      print('[OrderItemCard] Remind delivery: ${order.id}');
                    },
                    onDelete: () {
-                     // TODO: Connect to OrderListBloc if needed
-                     print('[OrderItemCard] Delete order: ${order.id}');
+                     _showDeleteConfirmationDialog(context, order);
                    },
                  ),
               ),

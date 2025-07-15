@@ -223,12 +223,16 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
   Future<void> deleteOrder(int orderId) async {
     // API Doc says POST, query parameter is 'orderId' (string?)
      const String _deleteEndpoint = '/api/shop/order/delete';
+    print('[OrderRemoteDataSourceImpl] 开始删除订单: $orderId');
+    
     try {
       final response = await coreDioClient.post(
         _deleteEndpoint,
         queryParameters: {'orderId': orderId.toString()}, // Send as string to be safe?
         data: {}, // Sending empty data as body might be needed for POST
       );
+      
+      print('[OrderRemoteDataSourceImpl] 删除订单API响应: statusCode=${response.statusCode}, data=${response.data}');
       
       // Check BUSINESS code from response body
       if (response.statusCode == 200 && response.data != null && response.data['code'] == 200) {
@@ -242,6 +246,7 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
       }
     } on DioException catch (e) {
       print('[OrderRemoteDataSourceImpl] deleteOrder DioException: ${e.toString()}');
+      print('[OrderRemoteDataSourceImpl] DioException response: ${e.response?.data}');
        throw ServerFailure(
           message: e.response?.data?['msg'] ?? e.message ?? 'Network error');
     } catch (e) {

@@ -454,18 +454,31 @@ class ProductUpdateData extends Equatable {
     
     if (name != null) data['name'] = name;
     if (description != null) data['description'] = description;
-    if (price != null) data['price'] = price;
+    
+    // 修复：确保价格字段正确映射
+    if (price != null) {
+      data['sellingPrice'] = price; // 后端期望sellingPrice字段
+      data['originalPrice'] = price; // 设置原价相同
+    }
+    
     if (state != null) data['state'] = state;
     if (categoryId != null) data['categoryId'] = categoryId;
     
-    // 添加图片，转为数组格式
+    // 修复：添加图片，转为数组格式，并设置mainImage
     if (images != null && images!.isNotEmpty) {
-      data['images'] = images!.split(',');
+      final imageList = images!.split(',').where((img) => img.trim().isNotEmpty).toList();
+      if (imageList.isNotEmpty) {
+        data['images'] = imageList;
+        data['mainImage'] = imageList.first; // 设置主图为第一张图片
+      }
+    } else {
+      // 如果没有图片，提供空数组
+      data['images'] = <String>[];
     }
     
     // 添加详情图
     if (detailImages != null && detailImages!.isNotEmpty) {
-      data['detailImages'] = detailImages!.split(',');
+      data['detailImages'] = detailImages!.split(',').where((img) => img.trim().isNotEmpty).toList();
     }
     
     // 添加详情内容
@@ -473,20 +486,28 @@ class ProductUpdateData extends Equatable {
       data['detailContent'] = detailContent;
     }
     
+    // 修复：确保variants格式正确
     if (variants != null) {
       data['variants'] = variants!.map((v) => {
-        'optionName': v.optionName,
-        'optionValue': v.optionValue,
-        'price': v.price,
-        'stock': v.stock,
+        'name': v.name.isNotEmpty ? v.name : v.optionName,
+        'sellingPrice': v.sellingPrice > 0 ? v.sellingPrice : v.price,
+        'deliveryDay': v.deliveryDay,
+        'editNum': v.editNum,
+        'feature': v.feature,
       }).toList();
+    } else {
+      data['variants'] = <Map<String, dynamic>>[];
     }
     
+    // 修复：确保productMaterials格式正确
     if (productMaterials != null) {
       data['productMaterials'] = productMaterials!.map((m) => {
         'question': m.question,
+        'answer': m.answer,
         'type': m.type,
       }).toList();
+    } else {
+      data['productMaterials'] = <Map<String, dynamic>>[];
     }
     
     return data;

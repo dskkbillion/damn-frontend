@@ -55,17 +55,47 @@ class PaymentResultPage extends StatelessWidget {
                 // 结果详情
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: Text(
-                    success
-                        ? orderId != null
-                            ? '订单 $orderId 已支付完成'
-                            : '支付已完成'
-                        : errorMessage ?? '支付过程中出现错误',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[700],
-                    ),
+                  child: Column(
+                    children: [
+                      Text(
+                        success
+                            ? orderId != null
+                                ? '订单 $orderId 已支付完成'
+                                : '支付已完成'
+                            : errorMessage ?? '支付过程中出现错误',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                      if (success) ...[
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.orange[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.orange[200]!),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.info_outline, color: Colors.orange[700], size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  '提示：订单状态可能需要几分钟更新，请稍后查看',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.orange[800],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
                 const SizedBox(height: 32),

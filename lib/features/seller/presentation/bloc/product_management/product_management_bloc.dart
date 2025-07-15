@@ -159,9 +159,22 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
             ));
             break;
           case ProductStatus.disabled:
+            // 过滤掉审核中的商品，只保留真正已下架的商品
+            final filteredProducts = products.where((product) {
+              // 只显示状态为disabled且不在审核中的商品
+              return product.status == ProductStatus.disabled;
+            }).toList();
+            
+            print('[ProductManagementBloc] 已下架商品过滤: 原始数量=${products.length}, 过滤后=${filteredProducts.length}');
+            for (var product in products) {
+              if (product.status != ProductStatus.disabled) {
+                print('[ProductManagementBloc] 过滤掉的商品: ID=${product.id}, 状态=${product.status}, 名称=${product.name}');
+              }
+            }
+            
             emit(state.copyWithProducts(
-              offShelfProducts: products,
-              hasMoreOffShelfProducts: hasMore,
+              offShelfProducts: filteredProducts,
+              hasMoreOffShelfProducts: hasMore && filteredProducts.length >= _pageSize,
               appendToExisting: isLoadMore,
             ));
             break;
@@ -446,13 +459,19 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     NavigateToProductDetail event,
     Emitter<ProductManagementState> emit,
   ) async {
-    // 导航到商品详情页面 - 使用Home模块的商品详情路由
-    final String path = '/home/product/${event.productId}';
+    // 导航到商品编辑页面的预览模式
+    final String path = SellerRoutes.buildPath(
+      SellerRoutes.productEdit,
+      params: {'id': event.productId.toString()},
+    );
     
-    print('[ProductManagementBloc] Navigating to product detail: $path');
+    // 添加预览模式参数
+    final String previewPath = '$path?preview=true';
+    
+    print('[ProductManagementBloc] Navigating to product preview: $previewPath');
     
     // 发出带有导航路径的状态
-    emit(state.copyWith(navigationPath: path));
+    emit(state.copyWith(navigationPath: previewPath));
     // 立即清除导航路径，防止在无关状态变化时重复导航
     emit(state.copyWith(clearNavigationPath: true));
   }

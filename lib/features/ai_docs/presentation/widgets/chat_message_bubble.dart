@@ -205,13 +205,14 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
   Widget build(BuildContext context) {
     bool isUser = widget.message.sender == MessageSender.user;
 
+    // 🎨 修改颜色方案 - AI消息使用固定的浅灰色
     Color bubbleColor = isUser
         ? Theme.of(context).colorScheme.primaryContainer
-        : Theme.of(context).colorScheme.secondaryContainer;
+        : Colors.grey[100]!; // AI消息使用固定的浅灰色
 
-    // Use surfaceVariant for AI streaming text messages
+    // 流式输出时也使用相同的浅灰色，保持一致性
     if (!isUser && widget.isStreaming && widget.message.messageType == MessageType.text) {
-       bubbleColor = Theme.of(context).colorScheme.surfaceVariant;
+       bubbleColor = Colors.grey[100]!; // 与非流式状态保持一致
     }
 
     return Align(
@@ -245,20 +246,22 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
                      const Text("不支持的消息类型"),
 
                   // --- Display Timestamp (Optional) ---
+                  // 🕐 移除时间戳显示 - 现在使用时间分隔符来显示时间
                   // Don't show timestamp for streaming text message
-                  if (widget.message.timestamp != null && !(widget.isStreaming && widget.message.messageType == MessageType.text))
-                   Padding(
-                     padding: const EdgeInsets.only(top: 4.0),
-                     child: Text(
-                        _formatTimestamp(widget.message.timestamp!), 
-                        style: TextStyle(
-                            fontSize: 10.0, 
-                            color: isUser 
-                               ? Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.7) 
-                               : Theme.of(context).colorScheme.onSecondaryContainer.withOpacity(0.7),
-                        ),
-                     ),
-                   )
+                  // if (widget.message.timestamp != null && !(widget.isStreaming && widget.message.messageType == MessageType.text))
+                  //  Padding(
+                  //    padding: const EdgeInsets.only(top: 4.0),
+                  //    child: Text(
+                  //       "${widget.message.timestamp!.hour.toString().padLeft(2, '0')}:${widget.message.timestamp!.minute.toString().padLeft(2, '0')}",
+                  //       style: TextStyle(
+                  //           fontSize: 10.0, 
+                  //           // 🎨 修改时间戳颜色 - AI消息使用固定的灰色
+                  //           color: isUser 
+                  //              ? Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.7) 
+                  //              : Colors.grey[600], // AI消息使用固定的灰色时间戳
+                  //       ),
+                  //    ),
+                  //  )
                ],
             ),
           ),
@@ -269,9 +272,10 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
 
   // --- Text content builder (uses widget.message and widget.isStreaming) ---
   Widget _buildTextContent(BuildContext context, bool isUser) {
+     // 🎨 修改文本颜色 - AI消息使用固定的深色文本，匹配固定的浅灰色背景
      final textColor = isUser 
           ? Theme.of(context).colorScheme.onPrimaryContainer 
-          : Theme.of(context).colorScheme.onSecondaryContainer;
+          : Colors.black87; // AI消息使用固定的深色文本，匹配浅灰色背景
          
      // 处理流式响应或空消息的特殊情况
      if (widget.isStreaming && widget.message.content.isEmpty) {
@@ -389,9 +393,10 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
 
   // --- Audio player builder (uses state variables and widget.message) ---
   Widget _buildAudioContent(BuildContext context, bool isUser) {
+     // 🎨 修改音频播放器图标颜色 - AI消息使用固定的深色图标
      final iconColor = isUser 
                       ? Theme.of(context).colorScheme.onPrimaryContainer 
-                      : Theme.of(context).colorScheme.onSecondaryContainer;
+                      : Colors.black87; // AI消息使用固定的深色图标
     
      final url = _audioUrl;
      print('[AudioPlayer] Building audio content - URL: $url, Player: ${_audioPlayer != null}, Message Type: ${widget.message.messageType}');

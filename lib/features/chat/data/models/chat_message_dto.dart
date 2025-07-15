@@ -73,8 +73,8 @@ class ChatMessageDto with _$ChatMessageDto {
       senderId: senderId,
       memberId: memberId,
       doctorId: doctorId,
-      context: withdrawFlag ? '[已撤回]' : context, // 撤回消息显示统一文本
-      type: withdrawFlag ? 'revoke' : type, // Handle revoked messages
+      context: context, // 保持原始内容，不做显示处理
+      type: type, // 保持原始类型
       createTime: parsedCreateTime,
       withdrawFlag: withdrawFlag,
       readFlg: readFlg,

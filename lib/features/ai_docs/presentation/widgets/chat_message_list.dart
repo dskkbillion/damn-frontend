@@ -7,6 +7,8 @@ import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_chat_m
 import 'chat_message_bubble.dart';
 import 'animated_text_chunk.dart';
 import 'streaming_message_bubble.dart';
+import 'time_separator.dart'; // 🕐 导入时间分隔符组件
+import 'package:dskk_flutter_refactor/core/utils/smart_time_formatter.dart'; // 🕐 导入智能时间格式化工具
 
 class ChatMessageList extends StatefulWidget {
   const ChatMessageList({super.key});
@@ -249,23 +251,69 @@ class _ChatMessageListState extends State<ChatMessageList> {
     // 底部流式响应指示器
     if (state.status == AiChatStatus.streamingResponse && 
         messageIndex == state.messages.length) {
-      return StreamingMessageBubble(
-        key: const ValueKey('streaming_bubble'),
-                        streamingText: state.streamingResponseText,
-        fullText: state.streamingResponseText,
-        isStreaming: true,
-        sender: MessageSender.ai,
-        timestamp: DateTime.now(),
+      // 🕐 为流式响应添加时间分隔符检查
+      final currentTimestamp = DateTime.now();
+      final lastMessage = state.messages.isNotEmpty ? state.messages.last : null;
+      final lastTimestamp = lastMessage?.timestamp;
+      
+      final needsTimeSeparator = SmartTimeFormatter.shouldShowTimeSeparator(
+        lastTimestamp, 
+        currentTimestamp
       );
+      
+      if (needsTimeSeparator) {
+        return Column(
+          children: [
+            TimeSeparator(timestamp: currentTimestamp),
+            StreamingMessageBubble(
+              key: const ValueKey('streaming_bubble'),
+              streamingText: state.streamingResponseText,
+              fullText: state.streamingResponseText,
+              isStreaming: true,
+              sender: MessageSender.ai,
+              timestamp: currentTimestamp,
+            ),
+          ],
+        );
+      } else {
+        return StreamingMessageBubble(
+          key: const ValueKey('streaming_bubble'),
+          streamingText: state.streamingResponseText,
+          fullText: state.streamingResponseText,
+          isStreaming: true,
+          sender: MessageSender.ai,
+          timestamp: currentTimestamp,
+        );
+      }
     }
 
     // 普通消息
     if (messageIndex >= 0 && messageIndex < state.messages.length) {
       final message = state.messages[messageIndex];
-      return ChatMessageBubble(
-        key: ValueKey(message.messageId),
-        message: message,
+      
+      // 🕐 检查是否需要时间分隔符
+      final previousMessage = messageIndex > 0 ? state.messages[messageIndex - 1] : null;
+      final needsTimeSeparator = SmartTimeFormatter.shouldShowTimeSeparator(
+        previousMessage?.timestamp, 
+        message.timestamp ?? DateTime.now()
       );
+      
+      if (needsTimeSeparator && message.timestamp != null) {
+        return Column(
+          children: [
+            TimeSeparator(timestamp: message.timestamp!),
+            ChatMessageBubble(
+              key: ValueKey(message.messageId),
+              message: message,
+            ),
+          ],
+        );
+      } else {
+        return ChatMessageBubble(
+          key: ValueKey(message.messageId),
+          message: message,
+        );
+      }
     }
     
     // 应该不会到达这里，但为了安全返回空容器

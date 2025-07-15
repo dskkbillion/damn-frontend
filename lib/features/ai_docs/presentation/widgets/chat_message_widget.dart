@@ -16,9 +16,10 @@ class ChatMessageWidget extends StatelessWidget {
     
     // Define colors based on the new scheme
     final userBubbleColor = Theme.of(context).colorScheme.surfaceVariant; // User uses AI's old color
-    final aiBubbleColor = Theme.of(context).colorScheme.primaryContainer; // AI uses a lighter primary shade
+    // AI使用固定的浅灰色，与StreamingMessageBubble保持一致
+    final aiBubbleColor = Colors.grey[100]!; // AI uses fixed light grey
     final userTextColor = Theme.of(context).colorScheme.onSurfaceVariant;
-    final aiTextColor = Theme.of(context).colorScheme.onPrimaryContainer;
+    final aiTextColor = Colors.black87; // 与固定浅灰色背景匹配的文本颜色
 
     final color = isUser ? userBubbleColor : aiBubbleColor;
     final textColor = isUser ? userTextColor : aiTextColor;
@@ -54,18 +55,20 @@ class ChatMessageWidget extends StatelessWidget {
               message.content,
               style: TextStyle(color: textColor, fontSize: 16),
             ),
+            // 🕐 移除时间戳显示 - 现在使用时间分隔符来显示时间
             // Optionally display timestamp
-            if (message.timestamp != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 4.0),
-                child: Text(
-                  DateFormat('HH:mm').format(message.timestamp!), // Example format
-                  style: TextStyle(
-                    color: textColor.withOpacity(0.7),
-                    fontSize: 12,
-                  ),
-                ),
-              ),
+            // if (message.timestamp != null)
+            //   Padding(
+            //     padding: const EdgeInsets.only(top: 4.0),
+            //     child: Text(
+            //       DateFormat('HH:mm').format(message.timestamp!), // Example format
+            //       style: TextStyle(
+            //         // AI消息时间戳使用固定颜色，与StreamingMessageBubble保持一致
+            //         color: isUser ? textColor.withOpacity(0.7) : Colors.grey[600],
+            //         fontSize: 12,
+            //       ),
+            //     ),
+            //   ),
               // TODO: Add feedback buttons (like/dislike) for AI messages?
           ],
         ),

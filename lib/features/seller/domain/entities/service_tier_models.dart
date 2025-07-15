@@ -297,8 +297,13 @@ class ServiceTierConfig {
     return attributeValues[templateId] ?? '';
   }
   
-  // 更新价格
+  // 更新价格（不修改controller文本，避免输入中断）
   void updatePrice(double newPrice) {
+    price = newPrice;
+  }
+  
+  // 设置价格并更新controller文本（仅用于初始化或外部设置）
+  void setPriceWithController(double newPrice) {
     price = newPrice;
     priceController.text = newPrice > 0 ? newPrice.toString() : '';
   }

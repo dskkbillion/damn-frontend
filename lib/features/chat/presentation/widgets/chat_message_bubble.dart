@@ -218,7 +218,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   @override
   Widget build(BuildContext context) {
     final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
-    final bool isRevoked = widget.message.withdrawFlag || widget.message.type == 'revoke';
+    // 由于撤回的消息已在BLoC层过滤，这里不再需要检查撤回状态
     final alignment = isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start;
     // Updated bubble colors based on frontend.md alignment
     final bubbleColor = isCurrentUser
@@ -248,7 +248,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       : const SizedBox(width: 44);
 
     // 对于allocate类型的消息，使用专门的组件
-    if (widget.message.type == 'allocate' && !isRevoked) {
+    if (widget.message.type == 'allocate') {
       return AllocateMessageBubble(
         message: widget.message,
         sellerName: _getSellerName(),
@@ -257,7 +257,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     }
 
     // 对于图片消息，包含时间显示
-    if (widget.message.type == 'image' && !isRevoked) {
+    if (widget.message.type == 'image') {
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 8.0),
         child: Row(
@@ -285,9 +285,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     // 其他类型消息使用标准气泡
     final bubbleContent = GestureDetector(
       onLongPressStart: (details) {
-        if (!isRevoked) {
-          _showActionMenu(context, details.globalPosition, isCurrentUser);
-        }
+        _showActionMenu(context, details.globalPosition, isCurrentUser);
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 14.0),
@@ -299,7 +297,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
             maxWidth: MediaQuery.of(context).size.width * 0.7, // Keep max width constraint
         ),
         // Pass the determined text color to the content builder
-        child: _buildMessageContent(context, textColor, isCurrentUser, isRevoked, widget.message.context ?? ''),
+        child: _buildMessageContent(context, textColor, isCurrentUser, widget.message.context ?? ''),
       ),
     );
 
@@ -327,17 +325,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     );
   }
 
-  Widget _buildMessageContent(BuildContext context, Color textColor, bool isCurrentUser, bool isRevoked, String messageContext) {
+  Widget _buildMessageContent(BuildContext context, Color textColor, bool isCurrentUser, String messageContext) {
     // 获取国际化资源
     final s = S.of(context);
     
-    if (isRevoked) {
-        print("[ChatMessageBubble] 撤回消息 - ID: ${widget.message.id}, withdrawFlag: ${widget.message.withdrawFlag}, type: ${widget.message.type}, context: '$messageContext'");
-        return Text(
-          messageContext, // 使用处理后的 messageContext，它已经在 ChatMessageDto.toEntity() 中被处理为 "[已撤回]"
-          style: TextStyle(color: Colors.grey[500], fontStyle: FontStyle.italic),
-        );
-     } else if (widget.message.type == 'text') {
+    if (widget.message.type == 'text') {
        // 用GestureDetector包装Markdown组件，确保长按事件能正确触发
        return GestureDetector(
          onLongPressStart: (details) {
@@ -430,7 +422,6 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
      final heroTag = 'imagePreview_${widget.message.id}';
      final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
-     final bool isRevoked = widget.message.withdrawFlag || widget.message.type == 'revoke';
      
      if (imageUrl.isEmpty) {
        return Container(
@@ -447,9 +438,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
        onTap: () => _showImagePreview(context, imageUrl),
        // 添加长按事件处理，支持撤回和复制功能
        onLongPressStart: (details) {
-         if (!isRevoked) {
-           _showActionMenu(context, details.globalPosition, isCurrentUser);
-         }
+         _showActionMenu(context, details.globalPosition, isCurrentUser);
        },
        child: Hero(
          tag: heroTag,

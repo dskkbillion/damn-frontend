@@ -62,17 +62,18 @@ class StreamingMessageBubble extends StatelessWidget {
                 child: _BlinkingCursor(),
               ),
             
-            // 时间戳
-            Container(
-              margin: const EdgeInsets.only(top: 8),
-              child: Text(
-                _formatTimestamp(timestamp),
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ),
+            // 🕐 移除时间戳显示 - 现在使用时间分隔符来显示时间
+            // 时间戳 - 与ChatMessageWidget保持一致的格式
+            // Padding(
+            //   padding: const EdgeInsets.only(top: 4.0),
+            //   child: Text(
+            //     _formatTimestamp(timestamp),
+            //     style: TextStyle(
+            //       color: textColor.withOpacity(0.7),
+            //       fontSize: 12,
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),

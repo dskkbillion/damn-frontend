@@ -9,6 +9,7 @@ import '../bloc/profile_bloc.dart';
 import '../bloc/wallet_bloc.dart';
 import 'wallet_page.dart';
 import 'account_security_page.dart';
+import '../../../../core/navigation/navigation_helper.dart';
 
 class SimpleProfilePage extends StatefulWidget {
   final VoidCallback? onSwitchMode;
@@ -366,13 +367,11 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
 
   void _showFeatureNotImplemented(String featureName) {
     if (featureName == '我的钱包') {
-      Navigator.push(
+      NavigationHelper.pushModalPage(
         context,
-        MaterialPageRoute(
-          builder: (context) => BlocProvider(
-            create: (context) => GetIt.instance<WalletBloc>(),
-            child: const WalletPage(),
-          ),
+        BlocProvider(
+          create: (context) => GetIt.instance<WalletBloc>(),
+          child: const WalletPage(),
         ),
       );
       return;
@@ -384,23 +383,19 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
   }
 
   void _navigateToWallet(BuildContext context) {
-    Navigator.push(
+    NavigationHelper.pushModalPage(
       context,
-      MaterialPageRoute(
-        builder: (context) => BlocProvider(
-          create: (context) => GetIt.instance<WalletBloc>(),
-          child: const WalletPage(),
-        ),
+      BlocProvider(
+        create: (context) => GetIt.instance<WalletBloc>(),
+        child: const WalletPage(),
       ),
     );
   }
 
   void _navigateToAccountSecurity(BuildContext context) {
-    Navigator.push(
+    NavigationHelper.pushPage(
       context,
-      MaterialPageRoute(
-        builder: (context) => const AccountSecurityPage(),
-      ),
+      const AccountSecurityPage(),
     );
   }
 }

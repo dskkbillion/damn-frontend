@@ -159,9 +159,12 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
       await messageResult.fold(
         (failure) async => emit(ChatMessagesError('Failed to load messages: ${failure.message}')),
         (messages) async {
+          // 过滤掉撤回的消息
+          final filteredMessages = messages.where((msg) => !msg.withdrawFlag && msg.type != 'revoke').toList();
+          
           // Emit loaded state with all necessary info
           emit(ChatMessagesLoaded(
-            messages: messages, // Assuming messages are already sorted correctly by use case/repo
+            messages: filteredMessages, // 使用过滤后的消息
             opponent: opponentParticipant!,
             currentUserId: currentReferId, // Pass referId as currentUserId
             currentUserParticipantId: currentUserParticipantId!, // Pass internal ID
@@ -246,7 +249,8 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     final messageIds = <int>{};
     
     for (final message in messages) {
-      if (!messageIds.contains(message.id)) {
+      // 过滤掉撤回的消息
+      if (!message.withdrawFlag && message.type != 'revoke' && !messageIds.contains(message.id)) {
         messageIds.add(message.id);
         uniqueMessages.add(message);
       }
@@ -357,6 +361,12 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
           senderId: senderParticipantId, // Pass determined sender ID
         );
 
+        // 过滤掉撤回的消息，不添加到UI中
+        if (newMessage.withdrawFlag || newMessage.type == 'revoke') {
+          print("[Bloc] Received revoked message ${newMessage.id} from WebSocket, ignoring.");
+          return;
+        }
+
         // Check if message already exists (e.g., from optimistic update)
         final messageExists = currentState.messages.any((m) => m.id == newMessage.id);
         
@@ -393,10 +403,10 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
       orElse: () => throw Exception('Message not found'),
     );
 
-    // Optimistic update - 立即标记为撤回
-    final updatedMessagesOptimistic = loadedState.messages.map((msg) {
-      return msg.id == event.messageId ? msg.copyWith(withdrawFlag: true, type: 'revoke', status: MessageStatus.sent) : msg;
-    }).toList();
+    // Optimistic update - 立即从列表中移除消息
+    final updatedMessagesOptimistic = loadedState.messages
+        .where((msg) => msg.id != event.messageId)
+        .toList();
     
     emit(loadedState.copyWith(messages: updatedMessagesOptimistic, error: () => null));
 
@@ -407,10 +417,17 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
 
     result.fold(
       (failure) {
-        // 撤回失败，恢复到原始状态
-        final revertedMessages = currentState.messages.map((msg) {
-          return msg.id == event.messageId ? originalMessage : msg;
-        }).toList();
+        // 撤回失败，恢复原始消息到列表中
+        final revertedMessages = [...currentState.messages];
+        // 找到原始消息应该插入的位置（保持时间顺序）
+        int insertIndex = revertedMessages.length;
+        for (int i = 0; i < revertedMessages.length; i++) {
+          if (revertedMessages[i].createTime!.isAfter(originalMessage.createTime!)) {
+            insertIndex = i;
+            break;
+          }
+        }
+        revertedMessages.insert(insertIndex, originalMessage);
         
         emit(currentState.copyWith(
           messages: revertedMessages,
@@ -420,7 +437,21 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
       },
       (_) {
         print("Message revoked successfully: ${event.messageId}");
-        // 撤回成功，保持当前状态并设置撤回标志
+        
+        // 更新聊天室的最后一条消息（如果撤回的是最后一条消息）
+        ChatRoom? updatedRoom = _currentRoom;
+        if (_currentRoom != null && 
+            _currentRoom!.lastMessage != null && 
+            _currentRoom!.lastMessage!.id == event.messageId) {
+          // 如果撤回的是最后一条消息，更新为新的最后一条消息
+          final newLastMessage = currentState.messages.isNotEmpty 
+              ? currentState.messages.last 
+              : null;
+          updatedRoom = _currentRoom!.copyWith(lastMessage: newLastMessage);
+          _currentRoom = updatedRoom;
+        }
+        
+        // 撤回成功，消息已从列表中移除，设置撤回标志
         emit(currentState.copyWith(
           error: () => null,
           hasMessageRevoked: true,

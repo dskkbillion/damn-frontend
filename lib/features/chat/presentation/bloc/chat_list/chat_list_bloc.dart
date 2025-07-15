@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart'; // Add this for @immutable in part fil
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart'; // For NoParams
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_room.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_chat_room_list.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/create_chat_room.dart';
 
@@ -31,6 +32,7 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
     on<StartAdminChatRequested>(_onStartAdminChatRequested);
     on<ClearNavigationTrigger>(_onClearNavigationTrigger);
     on<UpdateChatRoomUnreadCount>(_onUpdateChatRoomUnreadCount);
+    on<UpdateChatRoomLastMessage>(_onUpdateChatRoomLastMessage);
   }
 
   Future<void> _onLoadChatRoomList(
@@ -133,6 +135,23 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
     final updatedChatRooms = state.chatRooms.map((room) {
       if (room.id == event.chatId) {
         return room.copyWith(unreadCount: event.unreadCount);
+      }
+      return room;
+    }).toList();
+    
+    emit(state.copyWith(chatRooms: updatedChatRooms));
+  }
+
+  void _onUpdateChatRoomLastMessage(
+    UpdateChatRoomLastMessage event,
+    Emitter<ChatListState> emit,
+  ) {
+    print('[ChatListBloc] Updating last message for chatId ${event.chatId}');
+    
+    // 更新对应聊天室的最后一条消息
+    final updatedChatRooms = state.chatRooms.map((room) {
+      if (room.id == event.chatId) {
+        return room.copyWith(lastMessage: event.lastMessage);
       }
       return room;
     }).toList();

@@ -7,7 +7,7 @@ abstract class ChatListEvent extends Equatable {
   const ChatListEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 /// Event to trigger loading the chat room list.
@@ -33,7 +33,21 @@ class UpdateChatRoomUnreadCount extends ChatListEvent {
   });
 
   @override
-  List<Object> get props => [chatId, unreadCount];
+  List<Object?> get props => [chatId, unreadCount];
+}
+
+/// Event to update the last message for a specific chat room (e.g., after message revoked)
+class UpdateChatRoomLastMessage extends ChatListEvent {
+  final int chatId;
+  final ChatMessage? lastMessage;
+
+  const UpdateChatRoomLastMessage({
+    required this.chatId, 
+    this.lastMessage
+  });
+
+  @override
+  List<Object?> get props => [chatId, lastMessage];
 }
 
 // Add other events like UpdateChatRoomListWithNewMessage later 

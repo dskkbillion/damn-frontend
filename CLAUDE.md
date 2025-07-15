@@ -6,6 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Flutter e-commerce application (多少看看 DSKK) being refactored from React Native using Clean Architecture principles. The app follows a modular, incremental refactoring approach where each feature module is developed in isolation with mock dependencies before integration.
 
+## Requirements
+
+- Flutter SDK: `>=3.4.0 <4.0.0`
+- Dart SDK: Compatible with Flutter version
+- Android/iOS development environment
+
 ## Architecture
 
 ### Core Pattern: Clean Architecture with Modular Design
@@ -44,7 +50,7 @@ flutter build apk --release
 
 ### Code Generation
 ```bash
-# Run build_runner for code generation (freezed, json_serializable, etc.)
+# Run build_runner for code generation (freezed, json_serializable, drift, injectable)
 dart run build_runner build --delete-conflicting-outputs
 
 # Watch mode for continuous generation
@@ -75,6 +81,12 @@ flutter analyze
 dart fix --apply
 ```
 
+### Internationalization
+```bash
+# Generate localization files after modifying ARB files
+flutter gen-l10n
+```
+
 ## Module Development Workflow
 
 When developing a new feature module, follow the workflow documented in `docs/dev/模块开发核心工作流.md`:
@@ -95,14 +107,28 @@ Before implementing any API calls:
 3. Check authentication requirements
 4. Follow patterns in existing data sources (e.g., `OrderRemoteDataSourceImpl`)
 
-Refer to `.cursor/rules/api-development-standards.mdc` for detailed API implementation guidelines.
+Critical rules in `.cursor/rules/`:
+- `api-development-standards.mdc`: Mandatory API verification checklist
+- `backend-api-compliance.mdc`: Backend API compliance rules
+- `order-data-models.mdc`: Order data model specifications
+- `order-demand-development-guide.mdc`: Order feature development guide
 
 ## Environment Configuration
 
 1. Copy `.env.example` to `.env`
-2. Configure required URLs:
+2. Configure required variables:
    - `BACKEND_BASE_URL`: Backend API base URL
    - `MODEL_BASE_URL`: AI model service URL
+   - `WECHAT_APP_ID`: WeChat app identifier
+   - `WECHAT_UNIVERSAL_LINK`: WeChat universal link (default: `https://app.duoshaokankan.com/wechat/`)
+
+## Database
+
+Uses Drift (SQLite ORM) for local data persistence:
+- Database configuration: `lib/core/database/app_database.dart`
+- Current version: 1
+- Includes order caching functionality
+- Run code generation after modifying database schema
 
 ## Navigation
 
@@ -140,6 +166,15 @@ WeChat and Alipay payment SDKs are integrated:
 - Alipay: Uses `tobias` package
 - Configuration: `config/wechat_config.yaml`
 - Test payments in `PaymentDemoPage`
+- Android URL scheme: `com.duoshaokankan.weapp`
+
+## Internationalization
+
+The app supports multiple languages:
+- Primary language: Chinese (`intl_zh.arb`)
+- Secondary: English (`intl_en.arb`)
+- Localization files: `lib/l10n/`
+- Generated localizations: `app_localizations.dart`
 
 ## Important Files & Directories
 
@@ -150,6 +185,8 @@ WeChat and Alipay payment SDKs are integrated:
 - `docs/dev/`: Development documentation
 - `.cursor/rules/`: Cursor AI development rules
 - `design-info/`: Reference HTML prototypes and API documentation
+- `lib/l10n/`: Internationalization ARB files
+- `assets/`: Images, icons, and other static resources
 
 ## Current Development Focus
 

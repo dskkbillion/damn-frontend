@@ -77,8 +77,7 @@ class _ChatListItemState extends State<ChatListItem> {
         return s.chat_image_message;
       case 'audio':
         return s.chat_audio_message;
-      case 'revoke': // Use the actual type string if different
-        return s.chat_revoked_message;
+      // 移除 'revoke' 类型处理，因为撤回消息已在BLoC层过滤
       // TODO: Add cases for other custom types ('order', 'distribute')
       default:
         // Show context for unknown types if not empty, otherwise indicate unknown

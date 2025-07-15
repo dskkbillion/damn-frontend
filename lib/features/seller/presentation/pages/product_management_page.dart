@@ -13,6 +13,7 @@ import '../widgets/loading_state.dart';
 import '../widgets/product_card.dart';
 import '../widgets/status_tag.dart';
 import 'product_edit_page.dart';
+import '../../../../core/navigation/navigation_helper.dart';
 
 /// 商品管理页面
 class ProductManagementPage extends StatefulWidget {
@@ -134,22 +135,44 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
           if (state.navigationPath!.contains('/edit') || state.navigationPath! == SellerRoutes.productCreate) {
             // 直接导航到ProductEditPage并传递回调
             String? productId;
+            bool isPreviewMode = false;
+            
             if (state.navigationPath!.contains('/edit')) {
+              // 先分离查询参数和路径
+              final pathWithoutQuery = state.navigationPath!.split('?')[0];
+              final queryString = state.navigationPath!.contains('?') 
+                  ? state.navigationPath!.split('?')[1] 
+                  : '';
+              
               // 从路径 /seller/products/243/edit 中提取商品ID (243)
-              final parts = state.navigationPath!.split('/');
+              final parts = pathWithoutQuery.split('/');
               final editIndex = parts.indexWhere((part) => part == 'edit');
               if (editIndex > 0) {
                 productId = parts[editIndex - 1]; // 获取edit前面的部分
               }
+              
+              // 检查查询参数中是否包含preview=true
+              if (queryString.contains('preview=true')) {
+                isPreviewMode = true;
+              }
             }
             
-            print('[ProductManagementPage] Extracted productId: $productId from path: ${state.navigationPath}');
+            print('=== DEBUG NAVIGATION ===');
+            print('[ProductManagementPage] Full navigation path: ${state.navigationPath}');
+            print('[ProductManagementPage] Path without query: ${state.navigationPath!.split('?')[0]}');
+            print('[ProductManagementPage] Query string: ${state.navigationPath!.contains('?') ? state.navigationPath!.split('?')[1] : 'none'}');
+            print('[ProductManagementPage] Path parts: ${state.navigationPath!.split('?')[0].split('/')}');
+            print('[ProductManagementPage] Edit index found: ${state.navigationPath!.split('?')[0].split('/').indexWhere((part) => part == 'edit')}');
+            print('[ProductManagementPage] Extracted productId: $productId, isPreviewMode: $isPreviewMode');
+            print('[ProductManagementPage] About to create ProductEditPage with productId: $productId and isPreviewMode: $isPreviewMode');
+            print('======================');
             
-            await Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => ProductEditPage(
-                  productId: productId,
-                  onDraftSaved: () {
+            await NavigationHelper.pushDetailPage(
+              context,
+              ProductEditPage(
+                productId: productId,
+                isPreviewMode: isPreviewMode,
+                onDraftSaved: () {
                     print('[ProductManagementPage] onDraftSaved callback called');
                     print('[ProductManagementPage] Current tab index: ${_tabController.index}');
                     
@@ -165,7 +188,6 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
                     }
                   },
                 ),
-              ),
             );
           } else {
             // 其他导航使用原来的方式
@@ -493,7 +515,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
                         const SizedBox(height: 4.0),
                         
                         Text(
-                          '¥${product.price.toStringAsFixed(2)}',
+                          '¥${_getBasicTierPrice(product).toStringAsFixed(2)}',
                           style: TextStyle(
                             fontSize: 15.0,
                             fontWeight: FontWeight.w500,
@@ -594,6 +616,22 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
     return const SizedBox(height: 60);
   }
   
+  /// 获取基础档价格
+  double _getBasicTierPrice(SellerManagedProduct product) {
+    // 如果没有variants，返回默认价格
+    if (product.variants == null || product.variants!.isEmpty) {
+      return product.price;
+    }
+    
+    // 查找基础档价格
+    final basicTierVariant = product.variants!.firstWhere(
+      (variant) => variant.name == 'Basic Tier' || variant.optionValue == 'Basic Tier',
+      orElse: () => product.variants!.first, // 如果没找到基础档，使用第一个
+    );
+    
+    return basicTierVariant.sellingPrice > 0 ? basicTierVariant.sellingPrice : basicTierVariant.price;
+  }
+
   void _updateProductStatus(int productId, ProductStatus targetStatus) {
     context.read<ProductManagementBloc>().add(UpdateProductStatus(
       productId: productId,

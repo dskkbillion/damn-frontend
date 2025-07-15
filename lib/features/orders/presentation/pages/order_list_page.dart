@@ -14,6 +14,7 @@ import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 // Import the new AfterSalesDetailPage
 import 'package:dskk_flutter_refactor/features/after_sales/presentation/pages/after_sales_detail_page.dart';
 // TODO: Import AfterSalesBloc if needed for AfterSalesDetailPage
+import '../../../../core/navigation/navigation_helper.dart';
 
 /// 订单列表页面
 class OrderListPage extends StatefulWidget {
@@ -220,27 +221,19 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                                 // Option 1: Using go_router (preferred if setup allows)
                                 // context.go('/afterSalesDetail/${order.id}');
 
-                                // Option 2: Using Navigator.push (keeping existing style for now)
-                                Navigator.push(
+                                // Option 2: Using NavigationHelper.pushDetailPage (keeping existing style for now)
+                                NavigationHelper.pushDetailPage(
                                   context,
-                                  MaterialPageRoute(
-                                    builder: (_) {
-                                      // TODO: Provide AfterSalesBloc if the detail page needs it.
-                                      // For now, just navigate to the page.
-                                      return AfterSalesDetailPage(id: order.id.toString());
-                                    },
-                                  ),
+                                  AfterSalesDetailPage(id: order.id.toString()),
                                 );
                               } else {
                                 // Navigate to OrderDetailPage (existing logic)
-                                Navigator.push(
+                                NavigationHelper.pushDetailPage(
                                   context,
-                                  MaterialPageRoute(
-                                    builder: (_) => BlocProvider<OrderDetailBloc>(
-                                      create: (context) => getIt<OrderDetailBloc>()
-                                        ..add(LoadOrderDetail(orderId: order.id)),
-                                      child: OrderDetailPage(orderId: order.id.toString()),
-                                    ),
+                                  BlocProvider<OrderDetailBloc>(
+                                    create: (context) => getIt<OrderDetailBloc>()
+                                      ..add(LoadOrderDetail(orderId: order.id)),
+                                    child: OrderDetailPage(orderId: order.id.toString()),
                                   ),
                                 );
                               }

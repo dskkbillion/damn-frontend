@@ -12,6 +12,7 @@ import '../../features/profile/domain/repositories/i_wallet_repository.dart';
 import '../api/api_client.dart';
 import '../network/network_info.dart';
 import '../services/image_compress_service.dart';
+import '../services/mode_transition_service.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -51,6 +52,10 @@ class ServiceLocator {
     // 注册核心服务
     sl.registerLazySingleton<ImageCompressService>(
       () => ImageCompressService(),
+    );
+    
+    sl.registerLazySingleton<ModeTransitionService>(
+      () => ModeTransitionService(),
     );
 
     // 注册Profile模块数据源

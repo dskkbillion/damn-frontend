@@ -158,6 +158,18 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
       case 'categoryId':
         updatedFormData = currentFormData.copyWith(categoryId: event.value as int);
         break;
+      case 'qaList':
+        updatedFormData = currentFormData.copyWith(qaList: event.value as List<Map<String, String>>);
+        break;
+      case 'buyerInfoItems':
+        updatedFormData = currentFormData.copyWith(buyerInfoItems: event.value as List<Map<String, dynamic>>);
+        break;
+      case 'successCases':
+        updatedFormData = currentFormData.copyWith(successCases: event.value as List<Map<String, dynamic>>);
+        break;
+      case 'variants':
+        updatedFormData = currentFormData.copyWith(variants: event.value as List<ProductOptionValue>);
+        break;
       default:
         updatedFormData = currentFormData;
     }

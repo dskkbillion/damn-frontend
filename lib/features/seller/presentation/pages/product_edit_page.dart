@@ -22,12 +22,16 @@ class ProductEditPage extends StatefulWidget {
   
   /// 草稿保存成功回调
   final VoidCallback? onDraftSaved;
+  
+  /// 是否为预览模式（只读）
+  final bool isPreviewMode;
 
   /// 构造函数
   const ProductEditPage({
     super.key,
     this.productId,
     this.onDraftSaved,
+    this.isPreviewMode = false,
   });
 
   @override
@@ -46,6 +50,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
   
   /// 属性输入控制器映射
   final Map<String, TextEditingController> _attributeControllers = {};
+  
+  /// QA控制器管理（key: qaIndex_type, value: controller）
+  final Map<String, TextEditingController> _qaControllers = {};
 
   
   /// 服务档位管理
@@ -104,7 +111,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
   void initState() {
     super.initState();
     
-    print('[ProductEditPage] initState called with productId: ${widget.productId}');
+    print('[ProductEditPage] initState called with productId: ${widget.productId}, isPreviewMode: ${widget.isPreviewMode}');
     
     // 从DI容器获取BLoC实例
     _bloc = getIt<ProductEditBloc>();
@@ -117,20 +124,25 @@ class _ProductEditPageState extends State<ProductEditPage> {
     print('[ProductEditPage] Parsed productId as int: $productIdInt');
     
     // 初始化页面
+    print('[ProductEditPage] Initializing ProductEdit with productId: $productIdInt, isPreviewMode: ${widget.isPreviewMode}');
     _bloc.add(InitializeProductEdit(
       productId: productIdInt,
     ));
     
-    // 监听输入框变化，自动检查是否有变更
-    _nameController.addListener(_onFormFieldChanged);
-    _descriptionController.addListener(_onFormFieldChanged);
+    // 监听输入框变化，自动检查是否有变更（预览模式下不需要）
+    if (!widget.isPreviewMode) {
+      _nameController.addListener(_onFormFieldChanged);
+      _descriptionController.addListener(_onFormFieldChanged);
+    }
     
-    // 监听状态变化，更新控制器
+    // 监听状态变化，更新控制器（预览模式和编辑模式都需要）
     _bloc.stream.listen((state) {
+      print('[ProductEditPage] State changed - isLoading: ${state.isLoading}, hasProduct: ${state.product != null}, isPreviewMode: ${widget.isPreviewMode}');
       if (!state.isLoading && state.product != null) {
-        _updateTextControllers(state.formData);
-        // 设置初始数据用于变更检测
-        if (state.initialFormData == null) {
+        print('[ProductEditPage] Syncing data from state - productName: ${state.formData.name}');
+        _syncDataFromState(state.formData);
+        // 设置初始数据用于变更检测（仅在编辑模式下）
+        if (state.initialFormData == null && !widget.isPreviewMode) {
           _bloc.add(SetInitialFormData(initialData: state.formData));
         }
       }
@@ -150,6 +162,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
   void _removeQAPair(int index) {
     setState(() {
       _qaList.removeAt(index);
+      // 清理未使用的QA控制器
+      _cleanupUnusedQAControllers();
     });
   }
   
@@ -177,6 +191,20 @@ class _ProductEditPageState extends State<ProductEditPage> {
     _onFormFieldChanged();
   }
   
+  /// 更新买家信息项
+  void _updateBuyerInfoItem(int index, String label, String description, bool isRequired) {
+    setState(() {
+      _buyerInfoItems[index] = BuyerInfoItem(
+        type: _buyerInfoItems[index].type,
+        label: label,
+        description: description,
+        isRequired: isRequired,
+      );
+    });
+    // 触发变更检测
+    _onFormFieldChanged();
+  }
+  
   /// 删除买家信息项
   void _removeBuyerInfoItem(int index) {
     setState(() {
@@ -199,6 +227,19 @@ class _ProductEditPageState extends State<ProductEditPage> {
     _onFormFieldChanged();
   }
   
+  /// 更新成功案例
+  void _updateSuccessCase(int index, String imagePath, String title, String description) {
+    setState(() {
+      _successCases[index] = SuccessCase(
+        imagePath: imagePath,
+        title: title,
+        description: description,
+      );
+    });
+    // 触发变更检测
+    _onFormFieldChanged();
+  }
+  
   /// 删除成功案例
   void _removeSuccessCase(int index) {
     setState(() {
@@ -210,8 +251,11 @@ class _ProductEditPageState extends State<ProductEditPage> {
 
   @override
   void dispose() {
-    _nameController.removeListener(_onFormFieldChanged);
-    _descriptionController.removeListener(_onFormFieldChanged);
+    // 仅在编辑模式下移除监听器（预览模式下没有添加）
+    if (!widget.isPreviewMode) {
+      _nameController.removeListener(_onFormFieldChanged);
+      _descriptionController.removeListener(_onFormFieldChanged);
+    }
     _nameController.dispose();
     _descriptionController.dispose();
     _scrollController.dispose(); // 释放滚动控制器
@@ -221,6 +265,12 @@ class _ProductEditPageState extends State<ProductEditPage> {
       controller.dispose();
     }
     _attributeControllers.clear();
+    
+    // 释放所有QA控制器
+    for (var controller in _qaControllers.values) {
+      controller.dispose();
+    }
+    _qaControllers.clear();
     
     // 释放所有服务档位控制器
     _serviceTiers.dispose();
@@ -241,29 +291,32 @@ class _ProductEditPageState extends State<ProductEditPage> {
 
   /// 同步额外功能的表单数据
   void _syncAdditionalFormData() {
-    final currentFormData = _bloc.state.formData;
-    final updatedFormData = currentFormData.copyWith(
-      qaList: _qaList.map((qa) => {
-        'id': qa.id,
-        'question': qa.question,
-        'answer': qa.answer,
-      }).toList(),
-      buyerInfoItems: _buyerInfoItems.map((item) => {
-        'type': item.type.name,
-        'label': item.label,
-        'description': item.description,
-        'isRequired': item.isRequired,
-      }).toList(),
-      successCases: _successCases.map((case_) => {
-        'id': case_.id,
-        'imagePath': case_.imagePath,
-        'imageUrl': case_.imageUrl,
-        'title': case_.title,
-        'description': case_.description,
-      }).toList(),
-    );
+    // 同步QA列表
+    final qaListJson = _qaList.map((qa) => {
+      'id': qa.id,
+      'question': qa.question,
+      'answer': qa.answer,
+    }).toList();
+    _bloc.add(UpdateFormField(fieldName: 'qaList', value: qaListJson));
     
-    _bloc.add(UpdateFormField(fieldName: 'additionalData', value: updatedFormData));
+    // 同步买家信息列表
+    final buyerInfoJson = _buyerInfoItems.map((item) => {
+      'type': item.type.name,
+      'label': item.label,
+      'description': item.description,
+      'isRequired': item.isRequired,
+    }).toList();
+    _bloc.add(UpdateFormField(fieldName: 'buyerInfoItems', value: buyerInfoJson));
+    
+    // 同步成功案例列表
+    final successCasesJson = _successCases.map((case_) => {
+      'id': case_.id,
+      'imagePath': case_.imagePath,
+      'imageUrl': case_.imageUrl,
+      'title': case_.title,
+      'description': case_.description,
+    }).toList();
+    _bloc.add(UpdateFormField(fieldName: 'successCases', value: successCasesJson));
   }
 
   /// 处理返回操作
@@ -330,17 +383,100 @@ class _ProductEditPageState extends State<ProductEditPage> {
     );
   }
 
-  /// 更新文本控制器
-  void _updateTextControllers(ProductFormData formData) {
-    _nameController.text = formData.name;
-    _descriptionController.text = formData.description;
+  /// 从BLoC状态同步数据到页面组件
+  void _syncDataFromState(ProductFormData formData) {
+    print('[ProductEditPage] _syncDataFromState called with name: "${formData.name}", description: "${formData.description}", variants count: ${formData.variants.length}');
+    print('[ProductEditPage] isPreviewMode: ${widget.isPreviewMode}, productId: ${widget.productId}');
+    print('[ProductEditPage] Current controller values - name: "${_nameController.text}", description: "${_descriptionController.text}"');
     
-    // 如果是编辑模式且有变体数据，更新到本地服务档位
-    if (formData.variants.isNotEmpty && !_bloc.state.isCreateMode) {
+    // 更新基本文本字段
+    if (mounted) {
       setState(() {
-        _serviceTiers = ProductServiceTiers.fromProductOptionValues(formData.variants);
+        _nameController.text = formData.name;
+        _descriptionController.text = formData.description;
       });
+      print('[ProductEditPage] Updated text controllers - name: "${_nameController.text}", description: "${_descriptionController.text}"');
     }
+    
+    // 如果有变体数据，更新到本地服务档位（编辑模式和预览模式都需要）
+    if (formData.variants.isNotEmpty && (!_bloc.state.isCreateMode || widget.isPreviewMode)) {
+      print('[ProductEditPage] Updating service tiers from ${formData.variants.length} variants');
+      for (int i = 0; i < formData.variants.length; i++) {
+        final variant = formData.variants[i];
+        print('[ProductEditPage] Variant $i: name="${variant.name}", price=${variant.price}, sellingPrice=${variant.sellingPrice}');
+      }
+      
+      if (mounted) {
+        setState(() {
+          _serviceTiers = ProductServiceTiers.fromProductOptionValues(formData.variants);
+        });
+        print('[ProductEditPage] Updated service tiers from variants:');
+        print('[ProductEditPage] - Basic: price=${_serviceTiers.basic.price}, delivery=${_serviceTiers.basic.deliveryDay}');
+        print('[ProductEditPage] - Standard: price=${_serviceTiers.standard.price}, delivery=${_serviceTiers.standard.deliveryDay}'); 
+        print('[ProductEditPage] - Premium: price=${_serviceTiers.premium.price}, delivery=${_serviceTiers.premium.deliveryDay}');
+      }
+    }
+    
+    // 同步QA列表数据
+    setState(() {
+      _qaList.clear();
+      for (final qaMap in formData.qaList) {
+        try {
+          // 确保数据格式正确
+          final qaData = <String, dynamic>{
+            'id': qaMap['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
+            'question': qaMap['question'] ?? '',
+            'answer': qaMap['answer'] ?? '',
+          };
+          _qaList.add(QAPair.fromJson(qaData));
+        } catch (e) {
+          print('Error parsing QA data: $e');
+        }
+      }
+      // 清理未使用的QA控制器
+      _cleanupUnusedQAControllers();
+    });
+    
+    // 同步买家信息列表数据
+    setState(() {
+      _buyerInfoItems.clear();
+      for (final buyerInfoMap in formData.buyerInfoItems) {
+        try {
+          _buyerInfoItems.add(BuyerInfoItem.fromJson(buyerInfoMap));
+        } catch (e) {
+          print('Error parsing buyer info data: $e');
+        }
+      }
+    });
+    
+    // 同步成功案例列表数据
+    setState(() {
+      _successCases.clear();
+      for (final successCaseMap in formData.successCases) {
+        try {
+          _successCases.add(SuccessCase.fromJson(successCaseMap));
+        } catch (e) {
+          print('Error parsing success case data: $e');
+        }
+      }
+    });
+    
+    print('[ProductEditPage] Synced data from state:');
+    print('  - QA items: ${_qaList.length}');
+    print('  - Buyer info items: ${_buyerInfoItems.length}');
+    print('  - Success cases: ${_successCases.length}');
+    print('  - Variants: ${formData.variants.length}');
+  }
+
+  /// 将页面组件的本地数据同步到BLoC状态
+  void _syncLocalDataToBLoC() {
+    print('[ProductEditPage] Syncing local data to BLoC:');
+    print('  - QA items: ${_qaList.length}');
+    print('  - Buyer info items: ${_buyerInfoItems.length}');
+    print('  - Success cases: ${_successCases.length}');
+    
+    // 直接调用现有的同步方法
+    _syncAdditionalFormData();
   }
 
   /// 添加服务特性（共享特性）
@@ -467,7 +603,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
       return;
     }
     
-    // 所有验证通过，构建规格数据并提交
+    // 所有验证通过，先同步本地数据到BLoC，然后构建规格数据并提交
+    _syncLocalDataToBLoC();
+    
     List<ProductOptionValue> variants = _serviceTiers.toProductOptionValues();
     
     // 更新表单数据中的规格
@@ -558,36 +696,45 @@ class _ProductEditPageState extends State<ProductEditPage> {
                         selectedType = value!;
                         // 现在只有input和boolean类型，都不需要options
                         options.clear();
+                        // 如果选择boolean类型，清除占位符文本和必填项设置
+                        if (selectedType == ProductAttributeType.boolean) {
+                          placeholderController.clear();
+                          isRequired = false;
+                        }
                       });
                     },
                   ),
                   const SizedBox(height: 12),
                   
-                  // 占位符文本
-                  TextField(
-                    controller: placeholderController,
-                    decoration: _lightBorderDecoration.copyWith(
-                      labelText: '占位符文本',
-                      hintText: '例如：请选择颜色、请输入型号',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  
-                  // 是否必填
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: isRequired,
-                        onChanged: (value) {
-                          setState(() {
-                            isRequired = value ?? false;
-                          });
-                        },
+                  // 占位符文本（仅对input类型显示）
+                  if (selectedType == ProductAttributeType.input) ...[
+                    TextField(
+                      controller: placeholderController,
+                      decoration: _lightBorderDecoration.copyWith(
+                        labelText: '占位符文本',
+                        hintText: '例如：请选择颜色、请输入型号',
                       ),
-                      const Text('必填项'),
-              ],
-            ),
-          ],
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  
+                  // 是否必填（仅对input类型显示）
+                  if (selectedType == ProductAttributeType.input) ...[
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: isRequired,
+                          onChanged: (value) {
+                            setState(() {
+                              isRequired = value ?? false;
+                            });
+                          },
+                        ),
+                        const Text('必填项'),
+                      ],
+                    ),
+                  ],
+                ],
             ),
           ),
         ),
@@ -724,15 +871,44 @@ class _ProductEditPageState extends State<ProductEditPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.productId == null ? '发布服务' : '编辑服务'),
+          title: Text(widget.isPreviewMode 
+            ? '商品预览' 
+            : (widget.productId == null ? '发布服务' : '编辑服务')),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () async {
-              await _handleBackPress();
+              if (widget.isPreviewMode) {
+                Navigator.of(context).pop();
+              } else {
+                await _handleBackPress();
+              }
             },
           ),
-          actions: [
-            // 保存草稿按钮 - 始终显示，让用户随时保存当前状态
+          actions: widget.isPreviewMode ? [
+            // 预览模式下显示编辑按钮
+            TextButton.icon(
+              onPressed: () {
+                // 跳转到编辑模式
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => ProductEditPage(
+                      productId: widget.productId,
+                      isPreviewMode: false,
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.edit),
+              label: const Text('编辑'),
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFFBF7D2A),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+            ),
+            const SizedBox(width: 16),
+          ] : [
+            // 编辑模式下显示保存草稿和发布按钮
             BlocBuilder<ProductEditBloc, ProductEditState>(
               bloc: _bloc, // 直接指定bloc实例
               builder: (context, state) {
@@ -807,10 +983,16 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 return const Center(child: CircularProgressIndicator());
               }
               
-              return Stack(
-                children: [
-                  _buildFormContent(state),
-                ],
+              return GestureDetector(
+                onTap: () {
+                  // 点击空白处取消键盘焦点
+                  FocusScope.of(context).unfocus();
+                },
+                child: Stack(
+                  children: [
+                    _buildFormContent(state),
+                  ],
+                ),
               );
             },
           ),
@@ -869,6 +1051,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               children: [
                 TextField(
               controller: _nameController,
+              readOnly: widget.isPreviewMode,
               decoration: _lightBorderDecoration.copyWith(
                 hintText: '服务名称',
                 hintStyle: const TextStyle(color: Colors.grey),
@@ -901,6 +1084,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             padding: const EdgeInsets.only(bottom: 12.0),
             child: TextField(
               controller: _descriptionController,
+              readOnly: widget.isPreviewMode,
               decoration: _lightBorderDecoration.copyWith(
                 hintText: '描述一下您的服务的具体信息，如...',
                 hintStyle: const TextStyle(color: Colors.grey),
@@ -1070,8 +1254,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
             if (_qaList.isNotEmpty)
               ...List.generate(_qaList.length, (index) => _buildQAItem(index)),
             
-            // 添加QA按钮
-            Container(
+            // 添加QA按钮 - 预览模式下隐藏
+            if (!widget.isPreviewMode) Container(
               width: double.infinity,
               margin: const EdgeInsets.only(top: 16),
               child: OutlinedButton.icon(
@@ -1110,19 +1294,23 @@ class _ProductEditPageState extends State<ProductEditPage> {
               children: [
                 Expanded(
                   child: TextField(
+                    readOnly: widget.isPreviewMode,
                     decoration: _lightBorderDecoration.copyWith(
                     labelText: '问题',
                     hintText: '输入买家可能问的问题',
                     ),
-                  controller: TextEditingController(text: qa.question),
-                    onChanged: (value) {
+                    controller: _getQAController(index, 'question', qa.question),
+                    onChanged: widget.isPreviewMode ? null : (value) {
                     _updateQAPair(index, value, qa.answer);
                     },
+                    // 优化中文输入法体验
+                    enableIMEPersonalizedLearning: true,
+                    keyboardType: TextInputType.text,
                   ),
                 ),
               const SizedBox(width: 8),
-              // 删除按钮
-              IconButton(
+              // 删除按钮 - 预览模式下隐藏
+              if (!widget.isPreviewMode) IconButton(
                 icon: const Icon(Icons.delete_outline, color: Colors.red),
                 onPressed: () => _removeQAPair(index),
                 tooltip: '删除问题',
@@ -1134,15 +1322,19 @@ class _ProductEditPageState extends State<ProductEditPage> {
           
           // 答案输入
           TextField(
+            readOnly: widget.isPreviewMode,
                   decoration: _lightBorderDecoration.copyWith(
               labelText: '答案',
               hintText: '输入对应的答案',
                   ),
-            controller: TextEditingController(text: qa.answer),
+            controller: _getQAController(index, 'answer', qa.answer),
             maxLines: 3,
-                  onChanged: (value) {
+                  onChanged: widget.isPreviewMode ? null : (value) {
               _updateQAPair(index, qa.question, value);
             },
+            // 优化中文输入法体验
+            enableIMEPersonalizedLearning: true,
+            keyboardType: TextInputType.text,
           ),
         ],
       ),
@@ -1361,10 +1553,21 @@ class _ProductEditPageState extends State<ProductEditPage> {
               ],
             ),
           ),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline, color: Colors.red),
-            onPressed: () => _removeBuyerInfoItem(index),
-                          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, color: Color(0xFFBF7D2A)),
+                onPressed: () => _showEditBuyerInfoDialog(index, item),
+                tooltip: '编辑',
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline, color: Colors.red),
+                onPressed: () => _removeBuyerInfoItem(index),
+                tooltip: '删除',
+              ),
+            ],
+          ),
                       ],
                     ),
                   );
@@ -1448,6 +1651,89 @@ class _ProductEditPageState extends State<ProductEditPage> {
               child: const Text('添加'),
           ),
         ],
+        ),
+      ),
+    );
+  }
+  
+  /// 显示编辑买家信息对话框
+  void _showEditBuyerInfoDialog(int index, BuyerInfoItem item) {
+    final labelController = TextEditingController(text: item.label);
+    final descriptionController = TextEditingController(text: item.description);
+    bool isRequired = item.isRequired;
+    
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text('编辑${item.type.displayName}信息'),
+          content: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.5, // 限制最大高度
+              maxWidth: double.maxFinite,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: labelController,
+                    decoration: _lightBorderDecoration.copyWith(
+                      labelText: '信息标签',
+                      hintText: '例如：公司Logo设计需求',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: descriptionController,
+                    maxLines: 3,
+                    decoration: _lightBorderDecoration.copyWith(
+                      labelText: '详细说明',
+                      hintText: '请详细说明需要买家提供的信息内容',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  CheckboxListTile(
+                    title: const Text('必填项'),
+                    value: isRequired,
+                    onChanged: (value) {
+                      setState(() {
+                        isRequired = value ?? false;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('取消'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (labelController.text.isNotEmpty) {
+                  _updateBuyerInfoItem(
+                    index,
+                    labelController.text,
+                    descriptionController.text,
+                    isRequired,
+                  );
+                  Navigator.pop(context);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('请输入信息标签')),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFBF7D2A),
+                foregroundColor: Colors.white,
+                ),
+              child: const Text('保存'),
+            ),
+          ],
         ),
       ),
     );
@@ -1573,22 +1859,41 @@ class _ProductEditPageState extends State<ProductEditPage> {
                           child: const Icon(Icons.image, size: 40, color: Colors.grey),
                         ),
                 ),
-                // 删除按钮
+                // 操作按钮
                 Positioned(
                   top: 8,
                   right: 8,
-                  child: InkWell(
-                    onTap: () => _removeSuccessCase(index),
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.6),
-                        shape: BoxShape.circle,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // 编辑按钮
+                      InkWell(
+                        onTap: () => _showEditSuccessCaseDialog(index),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.6),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.edit, color: Colors.white, size: 16),
+                        ),
                       ),
-                      child: const Icon(Icons.close, color: Colors.white, size: 16),
-                    ),
+                      const SizedBox(width: 4),
+                      // 删除按钮
+                      InkWell(
+                        onTap: () => _removeSuccessCase(index),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.6),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.close, color: Colors.white, size: 16),
+                        ),
+                      ),
+                    ],
                   ),
-              ),
+                ),
             ],
           ),
           ),
@@ -1738,6 +2043,122 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 foregroundColor: Colors.white,
               ),
               child: const Text('添加'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  /// 显示编辑成功案例对话框
+  void _showEditSuccessCaseDialog(int index) {
+    final successCase = _successCases[index];
+    final titleController = TextEditingController(text: successCase.title);
+    final descriptionController = TextEditingController(text: successCase.description);
+    String? selectedImagePath = successCase.imagePath;
+    
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('编辑成功案例'),
+          content: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.6, // 限制最大高度为屏幕高度的60%
+              maxWidth: double.maxFinite,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 图片选择区域
+                  InkWell(
+                    onTap: () async {
+                      final pickedFile = await _imagePicker.pickImage(source: ImageSource.gallery);
+                      if (pickedFile != null) {
+                        setState(() {
+                          selectedImagePath = pickedFile.path;
+                        });
+                      }
+                    },
+                    child: Container(
+                      height: 100, // 减小图片预览高度
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey[300]!),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: selectedImagePath != null && selectedImagePath!.isNotEmpty
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.file(
+                                File(selectedImagePath!),
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : const Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.add_photo_alternate, size: 32, color: Colors.grey),
+                                SizedBox(height: 4),
+                                Text('点击选择图片', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                              ],
+                            ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  // 标题输入
+                  TextField(
+                    controller: titleController,
+                    decoration: _lightBorderDecoration.copyWith(
+                      labelText: '案例标题',
+                      hintText: '简短描述这个案例',
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  // 描述输入
+                  TextField(
+                    controller: descriptionController,
+                    maxLines: 3,
+                    decoration: _lightBorderDecoration.copyWith(
+                      labelText: '案例描述',
+                      hintText: '详细描述案例的背景、执行过程或效果',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('取消'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (selectedImagePath != null && selectedImagePath!.isNotEmpty && titleController.text.isNotEmpty) {
+                  _updateSuccessCase(
+                    index,
+                    selectedImagePath!,
+                    titleController.text,
+                    descriptionController.text,
+                  );
+                  Navigator.pop(context);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('请选择图片并输入标题')),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFBF7D2A),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('保存'),
             ),
           ],
         ),
@@ -2224,6 +2645,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
         // 价格输入框
         TextField(
           controller: tierConfig.priceController,
+          readOnly: widget.isPreviewMode,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           decoration: _lightBorderDecoration.copyWith(
             hintText: '输入价格',
@@ -2258,6 +2680,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             Expanded(
               child: TextField(
                 controller: tierConfig.deliveryController,
+                readOnly: widget.isPreviewMode,
                 keyboardType: TextInputType.number,
                 decoration: _lightBorderDecoration.copyWith(
                   labelText: '交付天数',
@@ -2275,6 +2698,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             Expanded(
               child: TextField(
                 controller: tierConfig.editNumController,
+                readOnly: widget.isPreviewMode,
                 keyboardType: TextInputType.number,
                 decoration: _lightBorderDecoration.copyWith(
                   labelText: '修改次数',
@@ -2447,6 +2871,26 @@ class _ProductEditPageState extends State<ProductEditPage> {
     return controller;
   }
 
+  /// 获取或创建QA控制器
+  TextEditingController _getQAController(int qaIndex, String type, String initialValue) {
+    final key = '${qaIndex}_$type';
+    if (!_qaControllers.containsKey(key)) {
+      _qaControllers[key] = TextEditingController(text: initialValue);
+    }
+    // 如果初始值发生变化，更新控制器的文本（但不移动光标）
+    final controller = _qaControllers[key]!;
+    if (controller.text != initialValue) {
+      // 保存当前的光标位置
+      final selection = controller.selection;
+      controller.text = initialValue;
+      // 恢复光标位置，确保不超出新文本的长度
+      if (selection.isValid && selection.end <= initialValue.length) {
+        controller.selection = selection;
+      }
+    }
+    return controller;
+  }
+
   /// 根据属性类型构建对应的输入控件
   Widget _buildAttributeInput(ProductAttribute feature) {
     final labelText = feature.isRequired ? '${feature.name} *' : feature.name;
@@ -2467,44 +2911,66 @@ class _ProductEditPageState extends State<ProductEditPage> {
         );
         
       case ProductAttributeType.boolean:
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              labelText,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                labelText,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Row(
+              const SizedBox(height: 8),
+              Row(
                 children: [
-                  Expanded(
-                    child: RadioListTile<String>(
-                      title: const Text('是'),
-                      value: 'true',
-                      groupValue: feature.value,
-                      onChanged: (value) => _updateAttributeValue(feature.id, value ?? ''),
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
+                  InkWell(
+                    onTap: () => _updateAttributeValue(feature.id, 'true'),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Radio<String>(
+                            value: 'true',
+                            groupValue: feature.value,
+                            onChanged: (value) => _updateAttributeValue(feature.id, value ?? ''),
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          const Text('是'),
+                        ],
+                      ),
                     ),
                   ),
-                  Expanded(
-                    child: RadioListTile<String>(
-                      title: const Text('否'),
-                      value: 'false',
-                      groupValue: feature.value,
-                      onChanged: (value) => _updateAttributeValue(feature.id, value ?? ''),
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
+                  const SizedBox(width: 16),
+                  InkWell(
+                    onTap: () => _updateAttributeValue(feature.id, 'false'),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Radio<String>(
+                            value: 'false',
+                            groupValue: feature.value,
+                            onChanged: (value) => _updateAttributeValue(feature.id, value ?? ''),
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          const Text('否'),
+                        ],
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         );
     }
   }
@@ -2536,6 +3002,27 @@ class _ProductEditPageState extends State<ProductEditPage> {
     for (final key in keysToRemove) {
       _attributeControllers[key]?.dispose();
       _attributeControllers.remove(key);
+    }
+  }
+
+  /// 清理未使用的QA控制器
+  void _cleanupUnusedQAControllers() {
+    final currentQAKeys = <String>{};
+    
+    // 收集所有当前使用的QA键
+    for (int i = 0; i < _qaList.length; i++) {
+      currentQAKeys.add('${i}_question');
+      currentQAKeys.add('${i}_answer');
+    }
+    
+    // 移除不再使用的控制器
+    final keysToRemove = _qaControllers.keys
+        .where((key) => !currentQAKeys.contains(key))
+        .toList();
+    
+    for (final key in keysToRemove) {
+      _qaControllers[key]?.dispose();
+      _qaControllers.remove(key);
     }
   }
 
@@ -2589,6 +3076,11 @@ class _ProductEditPageState extends State<ProductEditPage> {
                         selectedType = value!;
                         // 现在只有input和boolean类型，都不需要options
                         options.clear();
+                        // 如果选择boolean类型，清除占位符文本和必填项设置
+                        if (selectedType == ProductAttributeType.boolean) {
+                          placeholderController.clear();
+                          isRequired = false;
+                        }
                       });
                     },
                   ),
@@ -2598,30 +3090,34 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   
                   const SizedBox(height: 12),
                   
-                  // 占位符文本
-                  TextField(
-                    controller: placeholderController,
-                    decoration: _lightBorderDecoration.copyWith(
-                      labelText: '占位符文本',
-                      hintText: '例如：请选择颜色、请输入型号',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  
-                  // 是否必填
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: isRequired,
-                        onChanged: (value) {
-                          setState(() {
-                            isRequired = value ?? false;
-                          });
-                        },
+                  // 占位符文本（仅对input类型显示）
+                  if (selectedType == ProductAttributeType.input) ...[
+                    TextField(
+                      controller: placeholderController,
+                      decoration: _lightBorderDecoration.copyWith(
+                        labelText: '占位符文本',
+                        hintText: '例如：请选择颜色、请输入型号',
                       ),
-                      const Text('必填项'),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  
+                  // 是否必填（仅对input类型显示）
+                  if (selectedType == ProductAttributeType.input) ...[
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: isRequired,
+                          onChanged: (value) {
+                            setState(() {
+                              isRequired = value ?? false;
+                            });
+                          },
+                        ),
+                        const Text('必填项'),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),

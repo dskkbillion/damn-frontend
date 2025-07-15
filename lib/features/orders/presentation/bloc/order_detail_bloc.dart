@@ -320,6 +320,17 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         return;
      }
      final currentState = state as OrderDetailLoaded;
+     final order = currentState.order;
+     
+     // 检查订单状态是否允许支付
+     if (order.state != OrderStatus.awaitingPayment) {
+        print('[OrderDetailBloc] 订单状态不允许支付: ${order.state}');
+        emit(OrderDetailActionFailure(
+          message: '该订单状态不允许支付',
+          previousState: currentState,
+        ));
+        return;
+     }
      
      print('[OrderDetailBloc] Initiating payment for order ${event.orderId}');
      
@@ -327,12 +338,16 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
      emit(OrderDetailPaymentLoading(previousState: currentState));
      
      try {
+        // 从订单中获取实际金额和商品信息
+        final payAmount = order.priceSummary.payPrice;
+        final productName = order.items.isNotEmpty ? order.items.first.productName : '商品订单';
+        
         // 调用支付服务创建支付
         final paymentRequest = PaymentRequest(
           orderId: event.orderId.toString(),
-          amount: '0.01', // 这里需要从订单中获取实际金额
-          subject: '订单支付',
-          description: '订单号: ${event.orderId}',
+          amount: payAmount.toStringAsFixed(2), // 使用实际订单金额
+          subject: productName,
+          description: '订单号: ${order.orderSn}',
           method: PaymentMethod.alipay,
           scene: PaymentScene.order,
         );

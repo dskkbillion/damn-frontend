@@ -44,4 +44,31 @@ class HapticUtils {
       HapticFeedback.mediumImpact();
     }
   }
+
+  /// AI流式输出时的轻微震动策略
+  /// 设计为每隔几个字符进行一次轻微震动，模拟打字机效果
+  static int _streamingCharCount = 0; // 字符计数器
+  static DateTime? _lastStreamVibration; // 上次震动时间
+  
+  static void streamingTextFeedback() {
+    _streamingCharCount++;
+    final now = DateTime.now();
+    
+    // 震动策略：每5个字符或每50毫秒进行一次轻微震动（以较慢的为准）
+    final shouldVibrate = _streamingCharCount % 5 == 0 && 
+                         (_lastStreamVibration == null || 
+                          now.difference(_lastStreamVibration!) > const Duration(milliseconds: 50));
+    
+    if (shouldVibrate) {
+      // 使用最轻微的震动，避免打扰用户
+      HapticFeedback.selectionClick();
+      _lastStreamVibration = now;
+    }
+  }
+  
+  /// 重置流式输出震动计数器（在新的AI回复开始时调用）
+  static void resetStreamingFeedback() {
+    _streamingCharCount = 0;
+    _lastStreamVibration = null;
+  }
 } 

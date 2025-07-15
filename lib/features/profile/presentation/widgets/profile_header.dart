@@ -10,6 +10,9 @@ import '../bloc/profile_bloc.dart';
 import '../../domain/entities/user_profile.dart';
 import 'package:dskk_flutter_refactor/app/app_mode.dart';
 import '../routes/profile_routes.dart'; // 导入路由常量
+import 'package:dskk_flutter_refactor/features/seller/presentation/pages/seller_home_page.dart'; // 导入卖家主页
+import 'package:dskk_flutter_refactor/core/services/mode_transition_service.dart';
+
 
 class ProfileHeader extends ConsumerWidget {
   const ProfileHeader({
@@ -192,15 +195,17 @@ class ProfileHeader extends ConsumerWidget {
         icon: const Icon(Icons.storefront_outlined, size: 18),
         label: Text(s.profile_switch_to_seller),
         onPressed: () {
-          ref.read(appModeProvider.notifier).state = AppMode.seller;
-          try {
-            context.go('/seller');
-          } catch (e) {
-            print('Error navigating to /seller: $e');
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(s.profile_switch_error('$e'))),
-            );
-          }
+          // 使用模式切换服务触发翻转动画
+          final modeTransitionService = ref.read(modeTransitionServiceProvider);
+          final appModeNotifier = ref.read(appModeProvider.notifier);
+          modeTransitionService.triggerTransition(
+            targetMode: AppMode.seller,
+            onAnimationComplete: () {
+              // 动画完成后切换模式和路由
+              appModeNotifier.state = AppMode.seller;
+              context.go('/seller');
+            },
+          );
         },
         style: ElevatedButton.styleFrom(
           foregroundColor: Theme.of(context).primaryColor,

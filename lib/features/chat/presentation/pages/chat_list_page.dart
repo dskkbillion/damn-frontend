@@ -28,6 +28,7 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/pages/notific
 
 import '../bloc/chat_list/chat_list_bloc.dart';
 import '../widgets/chat_list_item.dart';
+import '../../../../core/navigation/navigation_helper.dart';
 import '../widgets/grouped_chat_list.dart'; // 导入分组组件
 import '../bloc/chat_messages/chat_messages_bloc.dart'; // Import ChatMessagesBloc
 import 'chat_room_page.dart'; // Import ChatRoomPage
@@ -168,11 +169,10 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             final markAllNotificationsAsReadUseCase = MarkAllNotificationsAsReadUseCase(sellerRepository);
             final getUnreadNotificationCountUseCase = GetUnreadNotificationCountUseCase(sellerRepository);
             
-            // 使用Navigator.push而不是context.go，这样可以保留底部导航栏
-            Navigator.push(
+            // 使用NavigationHelper.pushModalPage而不是context.go，这样可以保留底部导航栏
+            NavigationHelper.pushModalPage(
               context,
-              MaterialPageRoute(
-                builder: (context) => BlocProvider(
+              BlocProvider(
                   create: (context) => NotificationListBloc(
                     getSellerNotificationListUseCase,
                     markNotificationAsReadUseCase,
@@ -192,7 +192,6 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                     body: const NotificationListContent(),
                   ),
                 ),
-              ),
             );
           }
         },
@@ -249,10 +248,9 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                 final chatId = state.navigateToChatId!;
                 print('[ChatListPage] BlocListener triggered navigation to chatId: $chatId');
                 // Navigate to ChatRoomPage
-                Navigator.push(
+                NavigationHelper.pushPage(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => BlocProvider(
+                  BlocProvider(
                       create: (_) {
                         // 手动创建 ChatMessagesBloc 实例，添加撤回回调
                         final bloc = sl<ChatMessagesBloc>(param1: chatId);
@@ -268,10 +266,15 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                             UpdateChatRoomUnreadCount(chatId: chatId, unreadCount: 0)
                           );
                         },
-                        onMessageRevoked: () {
-                          // 消息撤回后刷新列表
-                          print('[ChatListPage] Message revoked, refreshing chat list');
-                          context.read<ChatListBloc>().add(RefreshChatList());
+                        onMessageRevoked: (chatId, newLastMessage) {
+                          // 消息撤回后更新特定聊天室的最后一条消息
+                          print('[ChatListPage] Message revoked in chat $chatId, updating last message');
+                          context.read<ChatListBloc>().add(
+                            UpdateChatRoomLastMessage(
+                              chatId: chatId,
+                              lastMessage: newLastMessage,
+                            ),
+                          );
                         },
                         onMessageSent: () {
                           // 消息发送成功后刷新列表
@@ -280,7 +283,6 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                         },
                       ),
                     ),
-                  ),
                 ).then((result) {
                    // Reset navigation trigger in Bloc state after navigation
                    context.read<ChatListBloc>().add(ClearNavigationTrigger());
@@ -317,10 +319,9 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   
   // 提取导航逻辑到单独方法
   void _navigateToChat(BuildContext context, ChatRoom chatRoom) {
-    Navigator.push(
+    NavigationHelper.pushPage(
       context,
-      MaterialPageRoute(
-        builder: (_) => BlocProvider(
+      BlocProvider(
           create: (_) => sl<ChatMessagesBloc>(param1: chatRoom.id)
                         ..add(LoadChatMessages(chatRoom.id)),
           child: ChatRoomPage(
@@ -332,10 +333,15 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                 UpdateChatRoomUnreadCount(chatId: chatRoom.id, unreadCount: 0)
               );
             },
-            onMessageRevoked: () {
-              // 消息撤回后刷新列表
-              print('[ChatListPage] Message revoked in chat ${chatRoom.id}, refreshing chat list');
-              context.read<ChatListBloc>().add(RefreshChatList());
+            onMessageRevoked: (chatId, newLastMessage) {
+              // 消息撤回后更新特定聊天室的最后一条消息
+              print('[ChatListPage] Message revoked in chat $chatId, updating last message');
+              context.read<ChatListBloc>().add(
+                UpdateChatRoomLastMessage(
+                  chatId: chatId,
+                  lastMessage: newLastMessage,
+                ),
+              );
             },
             onMessageSent: () {
               // 消息发送成功后刷新列表
@@ -344,7 +350,6 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             },
           ),
         ),
-      ),
     ).then((result) {
       // Remove the RefreshChatList since we now update unread count directly
       // if (result == true) {

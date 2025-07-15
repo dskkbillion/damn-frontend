@@ -339,7 +339,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: SellerRoutes.productEdit, 
         pageBuilder: (context, state) => state.buildSmartPage(
-          ProductEditPage(productId: state.pathParameters['id']),
+                      ProductEditPage(
+              productId: state.pathParameters['id'],
+              isPreviewMode: state.uri.queryParameters['preview'] == 'true',
+            ),
           name: 'sellerProductEdit',
           source: 'app_navigation_seller_non_shell',
         ),
