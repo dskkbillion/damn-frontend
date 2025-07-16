@@ -20,8 +20,16 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => GetIt.instance<ProfileBloc>()..add(CheckAuthStatusEvent()),
+    // 使用BlocProvider.value来使用现有的单例BLoC实例
+    final profileBloc = GetIt.instance<ProfileBloc>();
+    
+    // 只有在BLoC状态为初始状态时才触发数据加载
+    if (profileBloc.state is ProfileInitial) {
+      profileBloc.add(CheckAuthStatusEvent());
+    }
+    
+    return BlocProvider.value(
+      value: profileBloc,
       child: BlocListener<ProfileBloc, ProfileState>(
         listener: (context, state) {
           if (state is ProfileAuthStatusLoaded && state.isAuthenticated) {

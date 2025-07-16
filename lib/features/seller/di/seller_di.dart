@@ -305,13 +305,13 @@ class SellerDI {
   static void _registerBlocs(GetIt sl) {
     // BLoC - 卖家主页
     if (!sl.isRegistered<SellerHomeBloc>()) {
-      sl.registerFactory<SellerHomeBloc>(
+      sl.registerLazySingleton<SellerHomeBloc>(
         () => SellerHomeBloc(
           sl<GetSellerDashboardDataUseCase>(),
           sl<GetStoreProfileUseCase>(),
         )
       );
-      print('[SellerDI] 已注册 SellerHomeBloc');
+      print('[SellerDI] 已注册 SellerHomeBloc (LazySingleton)');
     } else {
       print('[SellerDI] SellerHomeBloc 已存在，跳过注册');
     }

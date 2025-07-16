@@ -9,6 +9,7 @@ import 'package:dskk_flutter_refactor/core/payment/models/payment_models.dart';
 // import 'package:dskk_flutter_refactor/core/rating/repositories/i_rating_repository.dart';
 // import 'package:dskk_flutter_refactor/core/logistics/repositories/i_logistics_repository.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 // Import SimpleAfterSaleStatus if used in state
 // import 'package:dskk_flutter_refactor/core/aftersale/repositories/i_aftersale_repository.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/cancel_order_use_case.dart';

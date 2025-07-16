@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart'; // Import Bloc and Events
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_evaluation_use_case.dart';
-import 'package:image_picker/image_picker.dart'; // Import image_picker
+import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'dart:io'; // Import dart:io for File
 
 /// Widget for submitting order evaluation (rating and comment).
@@ -21,8 +21,8 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
   int _score = 5; // Default score as int
   final _contentController = TextEditingController();
   bool _isAnonymous = false;
-  List<String> _selectedImagePaths = []; // Renamed from _selectedImages
-  final ImagePicker _picker = ImagePicker(); // Create an instance of ImagePicker
+  List<ImageProcessResult> _selectedImages = []; // Use ImageProcessResult
+  bool _isProcessingImages = false;
 
   // --- Build Rating Stars --- 
   Widget _buildRatingStars(BuildContext context) {
@@ -61,7 +61,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
         score: _score.toDouble(),
         content: _contentController.text,
         isAnonymous: _isAnonymous,
-        pictures: _selectedImagePaths,
+        pictures: _selectedImages.map((result) => result.finalFile.path).toList(),
       );
 
       context.read<OrderDetailBloc>().add(SubmitEvaluationRequested(params: params));
@@ -120,10 +120,13 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
                 runSpacing: 8.0,
                 children: [
                   // Display selected image thumbnails
-                  ..._selectedImagePaths.map((path) => _buildImageThumbnail(path)).toList(),
+                  ..._selectedImages.map((result) => _buildImageThumbnail(result)).toList(),
                   // Show "Add Picture" button if limit not reached
-                  if (_selectedImagePaths.length < 9)
+                  if (_selectedImages.length < 9 && !_isProcessingImages)
                     _buildAddPictureButton(context),
+                  // Show processing indicator
+                  if (_isProcessingImages)
+                    _buildProcessingIndicator(),
                 ],
               ),
               const SizedBox(height: 16),
@@ -173,7 +176,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
   }
 
   // --- Helper to build image thumbnail --- 
-  Widget _buildImageThumbnail(String imagePath) {
+  Widget _buildImageThumbnail(ImageProcessResult result) {
     return Stack(
       children: [
         Container(
@@ -183,12 +186,51 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
             color: Colors.grey[300],
             borderRadius: BorderRadius.circular(8),
             image: DecorationImage(
-              // Use Image.file to display the selected image
-              image: FileImage(File(imagePath)),
+              // Use the final processed file
+              image: FileImage(result.finalFile),
               fit: BoxFit.cover,
             ),
           ),
         ),
+        // Show compression info on success
+        if (result.isSuccess && result.compressionRatio != null)
+          Positioned(
+            bottom: 2,
+            left: 2,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                '${result.compressionRatio!.toStringAsFixed(0)}%',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        // Show error indicator
+        if (result.error != null)
+          Positioned(
+            bottom: 2,
+            right: 2,
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Icon(
+                Icons.error,
+                color: Colors.white,
+                size: 12,
+              ),
+            ),
+          ),
         Positioned(
           top: -8,
           right: -8,
@@ -198,7 +240,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
             constraints: const BoxConstraints(),
             onPressed: () {
               setState(() {
-                _selectedImagePaths.remove(imagePath);
+                _selectedImages.remove(result);
               });
             },
           ),
@@ -224,37 +266,99 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
     );
   }
 
-  // --- Image Picking Logic --- 
+  // --- Image Picking Logic using ImageUploadHelper --- 
   Future<void> _pickImage() async {
     // Check limit before picking
-    if (_selectedImagePaths.length >= 9) {
+    if (_selectedImages.length >= 9) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('最多只能上传9张图片')),
       );
       return;
     }
 
+    setState(() {
+      _isProcessingImages = true;
+    });
+
     try {
-      // Pick multiple images from the gallery
-      final List<XFile> pickedFiles = await _picker.pickMultiImage(
-        imageQuality: 80, // Optional: Adjust image quality
-        maxWidth: 1024,    // Optional: Limit image width
+      int remainingSlots = 9 - _selectedImages.length;
+      
+      // Use ImageUploadHelper for multiple image selection with review type compression
+      final List<ImageProcessResult> results = await ImageUploadHelper.pickFromGallery(
+        type: ImageUploadType.review,
+        allowMultiple: true,
+        maxImages: remainingSlots,
       );
 
-      if (pickedFiles.isNotEmpty) {
+      if (results.isNotEmpty) {
         setState(() {
-           // Add newly selected images, respecting the limit
-          int remainingSlots = 9 - _selectedImagePaths.length;
-          _selectedImagePaths.addAll(
-              pickedFiles.take(remainingSlots).map((file) => file.path));
+          _selectedImages.addAll(results);
         });
+        
+        // Show compression summary
+        final successCount = results.where((r) => r.isSuccess).length;
+        final errorCount = results.where((r) => r.error != null).length;
+        
+        if (successCount > 0) {
+          final avgCompression = results
+              .where((r) => r.compressionRatio != null)
+              .map((r) => r.compressionRatio!)
+              .fold(0.0, (a, b) => a + b) / successCount;
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('成功处理 $successCount 张图片，平均压缩 ${avgCompression.toStringAsFixed(1)}%'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+        
+        if (errorCount > 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('$errorCount 张图片处理失败'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
       }
     } catch (e) {
-       // Handle potential errors (e.g., permission denied)
        print('Error picking images: $e');
        ScaffoldMessenger.of(context).showSnackBar(
          SnackBar(content: Text('选择图片失败: ${e.toString()}')),
        );
+    } finally {
+      setState(() {
+        _isProcessingImages = false;
+      });
     }
+  }
+  
+  // --- Helper to build processing indicator ---
+  Widget _buildProcessingIndicator() {
+    return Container(
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[400]!),
+      ),
+      child: const Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          SizedBox(height: 4),
+          Text(
+            '处理中...',
+            style: TextStyle(fontSize: 10, color: Colors.grey),
+          ),
+        ],
+      ),
+    );
   }
 } 

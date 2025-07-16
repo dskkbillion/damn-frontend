@@ -7,6 +7,7 @@ import 'package:record/record.dart'; // Import the record package
 import 'package:permission_handler/permission_handler.dart'; // Import permission_handler
 import 'package:image_picker/image_picker.dart';
 import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 
 import '../bloc/ai_chat/ai_chat_bloc.dart';
 import 'pulsating_mic_button.dart';
@@ -315,14 +316,37 @@ class _ChatInputFieldState extends State<ChatInputField> {
 
   // --- Method to handle picking image and dispatching event ---
   Future<void> _pickAndDispatchImage() async {
-     // Use ImagePicker (you might need to import 'package:image_picker/image_picker.dart')
-     final ImagePicker picker = ImagePicker(); 
     try {
-        final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-        if (image != null && mounted) {
-          // Dispatch PickImage event
-          context.read<AiChatBloc>().add(PickImage(imageFile: File(image.path)));
-        } 
+      // Use ImageUploadHelper for AI document images (higher quality)
+      final results = await ImageUploadHelper.pickFromGallery(
+        type: ImageUploadType.aiDocument,
+        allowMultiple: false,
+      );
+      
+      if (results.isNotEmpty && mounted) {
+        final result = results.first;
+        
+        if (result.isSuccess) {
+          // Dispatch PickImage event with the processed file
+          context.read<AiChatBloc>().add(PickImage(imageFile: result.finalFile));
+          
+          // Show compression info for AI documents (important for quality awareness)
+          if (result.compressionRatio != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('图片已优化处理，压缩 ${result.compressionRatio!.toStringAsFixed(1)}%'),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+        } else {
+          // Handle processing error
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('图片处理失败: ${result.error}')),
+          );
+        }
+      }
     } catch (e) {
         print("Error picking image: $e");
         if (mounted) {

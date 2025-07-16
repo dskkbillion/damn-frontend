@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 
 // 导入国际化
 import '../../../../generated/l10n.dart';
+import '../../../profile/presentation/bloc/profile_bloc.dart';
+import '../../../profile/domain/entities/user_profile.dart';
+import '../../../../app/app_mode.dart';
+import '../../../../core/services/mode_transition_service.dart';
 
 class SellerProfilePage extends ConsumerStatefulWidget {
   final VoidCallback? onSwitchToBuyer;
@@ -18,37 +25,97 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
   bool _sellerModeOn = true;
 
   @override
+  void initState() {
+    super.initState();
+    print('[SellerProfilePage] initState called');
+  }
+
+  @override
+  void dispose() {
+    print('[SellerProfilePage] dispose called');
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildProfileHeader(),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    _buildOrderSection(),
-                    _buildMenuSection(S.of(context).seller_profile_auth_management, Icons.verified_user, ''),
-                    _buildMenuSection(S.of(context).seller_profile_my_wallet, Icons.account_balance_wallet_outlined, ''),
-                    _buildMenuSection(S.of(context).seller_profile_time_management, Icons.access_time_outlined, ''),
-                    const SizedBox(height: 10),
-                    _buildSectionTitle(S.of(context).seller_profile_settings),
-                    _buildMenuSection(S.of(context).seller_profile_notifications, Icons.notifications_none_outlined, ''),
-                    const SizedBox(height: 10),
-                    _buildSectionTitle(S.of(context).seller_profile_about_us),
-                    _buildMenuSection(S.of(context).seller_profile_mission, Icons.emoji_objects_outlined, ''),
-                  ],
-                ),
+    print('[SellerProfilePage] build called');
+    // 使用BlocProvider.value来使用现有的单例BLoC实例
+    final profileBloc = GetIt.instance<ProfileBloc>();
+    
+    // 检查当前状态，避免重复初始化
+    final currentState = profileBloc.state;
+    print('[SellerProfilePage] Current ProfileBloc state: ${currentState.runtimeType}');
+    
+    // 只在真正需要时才触发初始化
+    if (currentState is ProfileInitial) {
+      print('[SellerProfilePage] ProfileBloc is in Initial state, triggering CheckAuthStatus');
+      profileBloc.add(CheckAuthStatusEvent());
+    } else if (currentState is ProfileLoaded || currentState is ProfileUpdated) {
+      print('[SellerProfilePage] Profile already loaded: ${(currentState as dynamic).profile?.nickName}');
+      // 已经有数据了，不需要重新加载
+    }
+    
+    return BlocProvider.value(
+      value: profileBloc,
+      child: BlocListener<ProfileBloc, ProfileState>(
+        listener: (context, state) {
+          if (state is ProfileAuthStatusLoaded && state.isAuthenticated) {
+            // 认证成功后，使用缓存优先的方式获取数据
+            context.read<ProfileBloc>().add(GetUserProfileCachedEvent(mode: AppMode.seller));
+          }
+        },
+        child: BlocBuilder<ProfileBloc, ProfileState>(
+          builder: (context, state) {
+            // 处理初始状态和认证检查状态
+            if (state is ProfileInitial || 
+                (state is ProfileAuthStatusLoaded && !state.isAuthenticated)) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+            
+            // 对于其他状态，包括ProfileLoading，继续显示UI
+            // 这样可以避免页面闪烁
+            
+            return Scaffold(
+            body: SafeArea(
+              child: Column(
+                children: [
+                  _buildProfileHeader(state),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          _buildOrderSection(),
+                          _buildMenuSection(S.of(context).seller_profile_auth_management, Icons.verified_user, ''),
+                          _buildMenuSection(S.of(context).seller_profile_my_wallet, Icons.account_balance_wallet_outlined, ''),
+                          _buildMenuSection(S.of(context).seller_profile_time_management, Icons.access_time_outlined, ''),
+                          const SizedBox(height: 10),
+                          _buildSectionTitle(S.of(context).seller_profile_settings),
+                          _buildMenuSection(S.of(context).seller_profile_notifications, Icons.notifications_none_outlined, ''),
+                          const SizedBox(height: 10),
+                          _buildSectionTitle(S.of(context).seller_profile_about_us),
+                          _buildMenuSection(S.of(context).seller_profile_mission, Icons.emoji_objects_outlined, ''),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader(ProfileState state) {
+    UserProfile? profile;
+    if (state is ProfileLoaded) {
+      profile = state.profile;
+    } else if (state is ProfileUpdated) {
+      profile = state.profile;
+    }
     return Container(
       padding: const EdgeInsets.all(20),
       color: const Color(0xFFB66D0E), // 原型中使用的卖家模式主色调
@@ -66,14 +133,27 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                   border: Border.all(color: Colors.white, width: 2),
                 ),
                 child: ClipOval(
-                  child: Container(
-                    color: Colors.grey,
-                    child: const Icon(
-                      Icons.person,
-                      size: 50,
-                      color: Colors.white,
-                    ),
-                  ),
+                  child: profile?.avatarUrl != null && profile!.avatarUrl!.isNotEmpty
+                    ? Image.network(
+                        profile.avatarUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: Colors.grey,
+                          child: const Icon(
+                            Icons.person,
+                            size: 50,
+                            color: Colors.white,
+                          ),
+                        ),
+                      )
+                    : Container(
+                        color: Colors.grey,
+                        child: const Icon(
+                          Icons.person,
+                          size: 50,
+                          color: Colors.white,
+                        ),
+                      ),
                 ),
               ),
               const SizedBox(width: 16),
@@ -83,7 +163,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      S.of(context).seller_profile_user_name,  // 用户名
+                      profile?.nickName ?? S.of(context).seller_profile_user_name,  // 用户名
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w500,

@@ -41,8 +41,19 @@ import 'package:dskk_flutter_refactor/features/ai_docs/di/ai_docs_di.dart';
 // Import analytics module DI
 import 'package:dskk_flutter_refactor/core/analytics/di/analytics_injection.dart';
 
+// Import cache module DI
+import 'package:dskk_flutter_refactor/core/cache/di/cache_injection.dart';
+import 'package:dskk_flutter_refactor/core/network/interceptors/cache_interceptor.dart';
+
 // Import orders module DI
 import 'package:dskk_flutter_refactor/features/orders/di/orders_di.dart';
+
+// Import ProfilePreloader service
+import 'package:dskk_flutter_refactor/core/services/profile_preloader_service.dart';
+import 'package:dskk_flutter_refactor/core/cache/domain/interfaces/i_cache_manager.dart';
+import 'package:dskk_flutter_refactor/features/profile/domain/repositories/i_user_profile_repository.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/repositories/i_order_repository.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/repositories/i_seller_repository.dart';
 
 // Import payment related modules
 import '../../features/payment/presentation/bloc/payment_bloc.dart';
@@ -62,6 +73,21 @@ Future<void> configurePaymentDependencies() async {
     print('[DI] Registered PaymentBloc');
   } else {
     print('[DI] PaymentBloc already registered, skipping registration');
+  }
+}
+
+// 注册ProfilePreloader服务
+Future<void> registerProfilePreloaderService() async {
+  if (!getIt.isRegistered<ProfilePreloaderService>()) {
+    getIt.registerLazySingleton<ProfilePreloaderService>(() => ProfilePreloaderService(
+      cacheManager: getIt<ICacheManager>(),
+      userProfileRepository: getIt<IUserProfileRepository>(),
+      orderRepository: getIt<IOrderRepository>(),
+      sellerRepository: getIt<ISellerRepository>(),
+    ));
+    print('[DI] Registered ProfilePreloaderService');
+  } else {
+    print('[DI] ProfilePreloaderService already registered, skipping registration');
   }
 }
 
@@ -154,6 +180,16 @@ Future<void> configureDependencies({required String backendBaseUrl}) async {
     print('[DI] Failed to initialize Orders module: $e');
     // 不抛出异常，允许应用继续启动，但记录错误信息
   }
+  
+  // 注册ProfilePreloader服务
+  try {
+    print('[DI] Registering ProfilePreloader service...');
+    await registerProfilePreloaderService();
+    print('[DI] ProfilePreloader service registration complete.');
+  } catch (e) {
+    print('[DI] Failed to register ProfilePreloader service: $e');
+    // 不抛出异常，允许应用继续启动，但记录错误信息
+  }
 }
 
 // 注册核心依赖
@@ -176,6 +212,15 @@ Future<void> registerCoreDependencies() async {
   // 注册ImageCompressService
   getIt.registerLazySingleton<ImageCompressService>(() => ImageCompressService());
   print('[DI] Registered ImageCompressService');
+  
+  // 注册缓存系统
+  CacheInjection.init(getIt);
+  print('[DI] Registered Cache System');
+  
+  // 注册HTTP缓存管理器
+  getIt.registerLazySingleton(() => CacheInterceptorManager());
+  getIt.registerFactory<SmartCacheInterceptor>(() => SmartCacheInterceptor());
+  print('[DI] Registered HTTP Cache Manager');
   
   // 注册AppDatabase
   getIt.registerLazySingleton<AppDatabase>(() => AppDatabase());
@@ -216,12 +261,24 @@ Future<void> registerCoreDependencies() async {
   getIt.registerLazySingleton<IHttpClient>(() => DioHttpClient());
   print('[DI] Registered IHttpClient (DioHttpClient)');
   
-  // 注册CoreDioClient
+  // 注册CoreDioClient（默认不带缓存）
   getIt.registerFactory<CoreDioClient>(() => CoreDioClient(
     getIt<String>(instanceName: 'backendBaseUrl'),
     getIt<FlutterSecureStorage>(),
     getIt<AppInfoInterceptor>(),
+    null, // 默认不使用缓存
   ));
+  
+  // 注册带缓存的CoreDioClient
+  getIt.registerFactory<CoreDioClient>(
+    () => CoreDioClient(
+      getIt<String>(instanceName: 'backendBaseUrl'),
+      getIt<FlutterSecureStorage>(),
+      getIt<AppInfoInterceptor>(),
+      getIt<SmartCacheInterceptor>(), // 使用缓存拦截器
+    ),
+    instanceName: 'cachedDioClient',
+  );
   
   // 注册Navigation Service mock
   getIt.registerLazySingleton<INavigationService>(() => MockNavigationService());

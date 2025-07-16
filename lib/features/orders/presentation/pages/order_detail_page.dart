@@ -257,7 +257,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    OrderDetailActionButtons(order: order),
+                    Expanded(
+                      child: OrderDetailActionButtons(order: order),
+                    ),
                   ],
                 ),
               ),

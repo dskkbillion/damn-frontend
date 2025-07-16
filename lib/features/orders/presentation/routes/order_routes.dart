@@ -7,6 +7,7 @@ import '../../../../app/di/injection_container.dart';
 
 // Import Blocs needed for providing
 import '../bloc/order_list_bloc.dart';
+import '../bloc/order_detail_bloc.dart';
 import '../seller/bloc/seller_order_list_bloc.dart';
 // Import OrderStatus and potentially an extension for parsing
 import '../../domain/entities/order_status.dart'; 
@@ -49,13 +50,13 @@ class OrderRoutes {
     GoRoute(
       path: '/orderDetail/:orderId',
       name: 'orderDetail',
-      // Note: Detail page might also need its own BlocProvider
-      // depending on how its state is managed.
-      // Assuming OrderDetailBloc is injected by GetIt if needed inside the page.
       builder: (BuildContext context, GoRouterState state) {
         final String orderId = state.pathParameters['orderId'] ?? 'invalid';
-        // Consider adding validation here
-        return OrderDetailPage(orderId: orderId);
+        // Provide OrderDetailBloc for the page
+        return BlocProvider(
+          create: (_) => getIt<OrderDetailBloc>(),
+          child: OrderDetailPage(orderId: orderId),
+        );
       },
     ),
     // Seller Routes

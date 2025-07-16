@@ -95,9 +95,11 @@ class OrderItemCard extends StatelessWidget {
             ),
           );
           
-          // 刷新订单列表
+          // 刷新订单列表，保持当前的筛选状态
           if (context.mounted) {
-            context.read<OrderListBloc>().add(LoadOrders());
+            final orderListBloc = context.read<OrderListBloc>();
+            // 使用当前的状态筛选条件重新加载
+            context.read<OrderListBloc>().add(LoadOrders(status: orderListBloc.currentStatus));
           }
         } else if (state is OrderDetailActionFailure) {
           print('[OrderItemCard] 删除失败: ${state.message}');

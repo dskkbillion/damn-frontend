@@ -185,7 +185,21 @@ class OrderRepositoryImpl implements IOrderRepository {
 
   @override
   Future<Either<Failure, void>> deleteOrder(int orderId) async {
-    return _handleApiCall(() => remoteDataSource.deleteOrder(orderId));
+    final result = await _handleApiCall(() => remoteDataSource.deleteOrder(orderId));
+    
+    // 如果删除成功，清理本地缓存
+    if (result.isRight()) {
+      try {
+        // 清理所有订单缓存，因为不知道删除的订单属于哪个状态
+        await localDataSource.clearAllOrders();
+        print('[OrderRepository] 删除订单成功，已清理所有本地缓存');
+      } catch (e) {
+        print('[OrderRepository] 清理缓存失败: $e');
+        // 即使缓存清理失败，删除操作本身已经成功，所以不影响返回结果
+      }
+    }
+    
+    return result;
   }
 
   // --- Add Evaluation Repository Method ---

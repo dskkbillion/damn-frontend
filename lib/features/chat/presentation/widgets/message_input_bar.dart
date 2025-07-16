@@ -9,6 +9,7 @@ import 'package:record/record.dart'; // Import record
 import 'package:permission_handler/permission_handler.dart'; // Import permission_handler
 import 'package:path_provider/path_provider.dart'; // Import path_provider
 import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 
 import '../bloc/chat_messages/chat_messages_bloc.dart';
 
@@ -249,81 +250,55 @@ class _MessageInputBarState extends State<MessageInputBar> {
     // 获取国际化资源
     final s = S.of(context);
     
-    // --- Camera Permission Check --- 
-    if (source == ImageSource.camera) {
-      var status = await Permission.camera.status;
-      print('[Permission Check] Camera status BEFORE request: $status');
-
-      if (status.isPermanentlyDenied) {
-        print("[Permission Check] Camera permission permanently denied.");
-        showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-                title: Text(s.chat_camera_permission_denied_title),
-                content: Text(s.chat_camera_permission_denied_message),
-                actions: <Widget>[
-                    TextButton(
-                        child: Text(s.chat_permission_denied_cancel),
-                        onPressed: () => Navigator.of(context).pop(),
-                    ),
-                    TextButton(
-                        child: Text(s.chat_permission_denied_settings),
-                        onPressed: () {
-                            Navigator.of(context).pop();
-                            openAppSettings(); // Open app settings
-                        },
-                    ),
-                ],
-            ),
-        );
-        return; // Stop execution
-      }
-
-      // Request if not granted
-      if (!status.isGranted) {
-          status = await Permission.camera.request();
-          print('[Permission Check] Camera status AFTER request: $status');
-      }
-
-      // Check final status
-      if (!status.isGranted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.chat_camera_permission_denied)),
-        );
-        return;
-      }
-    }
-    // --- End Camera Permission Check --- 
-
-    // --- Permission Granted (or Gallery source) - Proceed with picking --- 
-    final ImagePicker picker = ImagePicker();
     try {
-      final XFile? pickedFile = await picker.pickImage(
-        source: source,
-        maxWidth: 1920,
-        maxHeight: 1920,
-        imageQuality: 85, // 压缩图片质量
-      );
-
-      if (pickedFile != null) {
-        final file = File(pickedFile.path);
-        
-        // 1. 添加到待上传列表，显示上传状态
-        setState(() {
-          _pendingFiles.add(file);
-          _fileUploadStates[file.path] = const FileUploadState.uploading();
-        });
-
-        print('Image picked: ${pickedFile.path}');
-        
-        // 2. 发送消息（会触发上传）
-        context.read<ChatMessagesBloc>().add(
-          SendMessageRequested(type: 'image', file: file),
+      // Use ImageUploadHelper for consistent image processing
+      ImageProcessResult? result;
+      
+      if (source == ImageSource.camera) {
+        result = await ImageUploadHelper.pickFromCamera(type: ImageUploadType.chat);
+      } else {
+        final results = await ImageUploadHelper.pickFromGallery(
+          type: ImageUploadType.chat,
+          allowMultiple: false,
         );
+        result = results.isNotEmpty ? results.first : null;
+      }
+
+      if (result != null) {
+        final processResult = result; // 创建局部变量避免空安全问题
         
-        // 3. 监听上传结果
-        _listenToUploadResult(file);
-        
+        if (processResult.isSuccess) {
+          // 1. 添加到待上传列表，显示上传状态
+          setState(() {
+            _pendingFiles.add(processResult.finalFile);
+            _fileUploadStates[processResult.finalFile.path] = const FileUploadState.uploading();
+          });
+
+          print('Image processed: ${processResult.finalFile.path}, compression: ${processResult.compressionRatio?.toStringAsFixed(1)}%');
+          
+          // 2. 发送消息（会触发上传）
+          context.read<ChatMessagesBloc>().add(
+            SendMessageRequested(type: 'image', file: processResult.finalFile),
+          );
+          
+          // 3. 监听上传结果
+          _listenToUploadResult(processResult.finalFile);
+          
+          // 4. 显示压缩信息
+          if (processResult.compressionRatio != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('图片已压缩 ${processResult.compressionRatio!.toStringAsFixed(1)}%'),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+        } else {
+          // 处理失败
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('图片处理失败: ${processResult.error ?? "未知错误"}')),
+          );
+        }
       } else {
         print('No image selected.');
       }
@@ -337,29 +312,60 @@ class _MessageInputBarState extends State<MessageInputBar> {
   
   // 支持多图片选择
   Future<void> _pickMultipleImages() async {
-    final ImagePicker picker = ImagePicker();
     try {
-      final List<XFile> pickedFiles = await picker.pickMultiImage(
-        maxWidth: 1920,
-        maxHeight: 1920,
-        imageQuality: 85,
+      // Use ImageUploadHelper for multiple image selection
+      final List<ImageProcessResult> results = await ImageUploadHelper.pickFromGallery(
+        type: ImageUploadType.chat,
+        allowMultiple: true,
+        maxImages: 9,
       );
 
-      if (pickedFiles.isNotEmpty) {
-        for (final pickedFile in pickedFiles) {
-          final file = File(pickedFile.path);
-          
-          setState(() {
-            _pendingFiles.add(file);
-            _fileUploadStates[file.path] = const FileUploadState.uploading();
-          });
-          
-          // 逐个发送
-          context.read<ChatMessagesBloc>().add(
-            SendMessageRequested(type: 'image', file: file),
+      if (results.isNotEmpty) {
+        int successCount = 0;
+        int errorCount = 0;
+        double totalCompression = 0;
+        
+        for (final result in results) {
+          if (result.isSuccess) {
+            setState(() {
+              _pendingFiles.add(result.finalFile);
+              _fileUploadStates[result.finalFile.path] = const FileUploadState.uploading();
+            });
+            
+            // 逐个发送
+            context.read<ChatMessagesBloc>().add(
+              SendMessageRequested(type: 'image', file: result.finalFile),
+            );
+            
+            _listenToUploadResult(result.finalFile);
+            successCount++;
+            
+            if (result.compressionRatio != null) {
+              totalCompression += result.compressionRatio!;
+            }
+          } else {
+            errorCount++;
+          }
+        }
+        
+        // 显示处理结果摘要
+        if (successCount > 0) {
+          final avgCompression = totalCompression / successCount;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('成功处理 $successCount 张图片，平均压缩 ${avgCompression.toStringAsFixed(1)}%'),
+              backgroundColor: Colors.green,
+            ),
           );
-          
-          _listenToUploadResult(file);
+        }
+        
+        if (errorCount > 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('$errorCount 张图片处理失败'),
+              backgroundColor: Colors.orange,
+            ),
+          );
         }
       }
     } catch (e) {

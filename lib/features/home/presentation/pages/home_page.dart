@@ -117,6 +117,7 @@ class _HomeViewState extends State<HomeView> {
                 context.read<HomeBloc>().add(const RefreshHomeData());
               },
               child: CustomScrollView(
+                key: const PageStorageKey<String>('buyer_home_scroll'),
                 controller: _scrollController,
                 slivers: [
                   // 轮播图

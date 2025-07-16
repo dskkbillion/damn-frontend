@@ -34,8 +34,8 @@ import 'presentation/bloc/wallet_bloc.dart';
 
 /// 依赖注入容器，注册 Profile 模块相关的服务
 Future<void> initProfileDependencies(GetIt locator) async {
-  // Bloc
-  locator.registerFactory(
+  // Bloc - 改为Singleton以避免重复创建和状态丢失
+  locator.registerLazySingleton(
     () => ProfileBloc(
       getUserProfile: locator(),
       updateUserProfile: locator(),

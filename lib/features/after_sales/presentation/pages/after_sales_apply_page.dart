@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 // Import OrderItem
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_item.dart';
 import 'dart:io'; // Import dart:io for File
-import 'package:file_picker/file_picker.dart'; // Import file_picker
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
 import '../bloc/after_sales_bloc.dart'; // Import Bloc/Event
+import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 
 /// 售后申请表单页面
 class AfterSalesApplyPage extends StatefulWidget {
@@ -30,9 +30,10 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
   String? _selectedReason; // State for selected reason
   final _descriptionController = TextEditingController(); // Controller for description
   final _amountController = TextEditingController(); // Controller for amount
-  // Add state for image paths
-  List<String> _selectedImagePaths = [];
+  // Use ImageProcessResult for better image handling
+  List<ImageProcessResult> _selectedImages = [];
   final int _maxImages = 9; // Define max images based on prototype hint
+  bool _isProcessingImages = false;
 
   // TODO: Define these reasons based on actual requirements/backend enum
   final List<String> _afterSalesReasons = [
@@ -53,7 +54,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
   // --- Image Picking Logic ---
   Future<void> _pickImages() async {
     // Calculate remaining slots
-    final remainingSlots = _maxImages - _selectedImagePaths.length;
+    final remainingSlots = _maxImages - _selectedImages.length;
     if (remainingSlots <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('最多只能上传 $_maxImages 张图片')),
@@ -61,34 +62,65 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
       return;
     }
 
+    setState(() {
+      _isProcessingImages = true;
+    });
+
     try {
-      final result = await FilePicker.platform.pickFiles(
+      // Use ImageUploadHelper for after-sales images
+      final List<ImageProcessResult> results = await ImageUploadHelper.pickFromGallery(
+        type: ImageUploadType.afterSales,
         allowMultiple: true,
-        type: FileType.image,
-        // Ensure we don't try to pick more than allowed, though picker might not enforce it perfectly
-        // allowedExtensions: ['jpg', 'jpeg', 'png'],
+        maxImages: remainingSlots,
       );
 
-      if (result != null && result.files.isNotEmpty) {
-        final pickedPaths = result.paths.whereType<String>().toList();
-        // Limit selection to remaining slots
-        final pathsToAdd = pickedPaths.take(remainingSlots);
+      if (results.isNotEmpty) {
         setState(() {
-          _selectedImagePaths.addAll(pathsToAdd);
+          _selectedImages.addAll(results);
         });
+        
+        // Show processing summary
+        final successCount = results.where((r) => r.isSuccess).length;
+        final errorCount = results.where((r) => r.error != null).length;
+        
+        if (successCount > 0) {
+          final avgCompression = results
+              .where((r) => r.compressionRatio != null)
+              .map((r) => r.compressionRatio!)
+              .fold(0.0, (a, b) => a + b) / successCount;
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('成功处理 $successCount 张图片，平均压缩 ${avgCompression.toStringAsFixed(1)}%'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+        
+        if (errorCount > 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('$errorCount 张图片处理失败'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
       }
     } catch (e) {
-      // Handle potential errors during file picking
       print("Error picking images: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('选择图片时出错')),
+        SnackBar(content: Text('选择图片失败: $e')),
       );
+    } finally {
+      setState(() {
+        _isProcessingImages = false;
+      });
     }
   }
 
   void _removeImage(int index) {
     setState(() {
-      _selectedImagePaths.removeAt(index);
+      _selectedImages.removeAt(index);
     });
   }
   // --------------------------
@@ -224,7 +256,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
                        refundType: widget.afterSalesType, // Use the type passed to the page
                        refundReason: _selectedReason!, // Not null due to validation
                        refundExplain: _descriptionController.text,
-                       imagePaths: _selectedImagePaths,
+                       imagePaths: _selectedImages.map((result) => result.finalFile.path).toList(),
                        refundAmount: refundAmount,
                      );
                      print('Adding event: $submitEvent with amount $refundAmount');
@@ -250,9 +282,9 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
       runSpacing: 8.0,
       children: [
         // Existing images with remove button
-        ..._selectedImagePaths.asMap().entries.map((entry) {
+        ..._selectedImages.asMap().entries.map((entry) {
           int idx = entry.key;
-          String path = entry.value;
+          ImageProcessResult result = entry.value;
           return SizedBox(
             width: 80,
             height: 80,
@@ -261,7 +293,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4.0),
                   child: Image.file(
-                    File(path),
+                    result.finalFile,
                     width: 80,
                     height: 80,
                     fit: BoxFit.cover,
@@ -286,7 +318,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
           );
         }),
         // Add image button (only if slots remaining)
-        if (_selectedImagePaths.length < _maxImages)
+        if (_selectedImages.length < _maxImages && !_isProcessingImages)
           InkWell(
             onTap: _pickImages,
             child: Container(

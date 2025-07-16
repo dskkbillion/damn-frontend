@@ -17,6 +17,7 @@ import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_r
 
 // Import the main shell page which will act as the navigator shell
 import 'package:dskk_flutter_refactor/app/widgets/main_shell_page.dart';
+import 'package:dskk_flutter_refactor/app/widgets/dual_mode_navigation_shell.dart';
 // Import the dev menu page
 import 'package:dskk_flutter_refactor/app/widgets/dev_menu_page.dart';
 
@@ -530,13 +531,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     ],
 
     routes: [
-      // --- Buyer Shell Route --- 
+      // --- 统一的 Shell Route，包含买家和卖家所有分支 --- 
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
-          // 使用 MainShellPage 作为买家 Shell
-          return MainShellPage(navigationShell: navigationShell);
+          // 使用双模式导航 Shell，保持页面状态
+          return DualModeNavigationShell(navigationShell: navigationShell);
         },
         branches: [
+          // === 买家模式分支 ===
           // Branch 0: AI Chat (Path: /ai_chat)
           StatefulShellBranch(
              routes: AiDocsRoutes.routes, 
@@ -619,30 +621,23 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-        ],
-      ),
-
-      // --- Seller Shell Route (using explicitly defined routes) --- 
-      StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) {
-          return SellerShellPage(navigationShell: navigationShell);
-        },
-        branches: [
-          // Branch 0: 卖家数据
+          
+          // === 卖家模式分支 ===
+          // Branch 5 (或4): 卖家数据
           StatefulShellBranch(
             routes: [ sellerDashboardRoute ], 
           ),
-          // Branch 1: 商品管理（修复：原来错误地使用了订单路由）
+          // Branch 6 (或5): 商品管理
           StatefulShellBranch(
              routes: [ sellerProductsRoute ], 
           ),
-          // Branch 2: 卖家消息 (聊天)
+          // Branch 7 (或6): 卖家消息
           StatefulShellBranch(
-            routes: [ sellerChatRoute ], // 使用聊天路由而不是通知路由
+            routes: [ sellerChatRoute ],
           ),
-          // Branch 3: 卖家我的
+          // Branch 8 (或7): 卖家我的
           StatefulShellBranch(
-            routes: [ sellerHomeRoute ], // 使用手动创建的路由替代从SellerRoutes.routes获取的路由
+            routes: [ sellerHomeRoute ],
           ),
         ],
       ),

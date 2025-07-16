@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,6 +7,7 @@ import '../bloc/profile_bloc.dart';
 import '../../domain/entities/user_profile.dart';
 import 'package:get_it/get_it.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 
 class AccountSecurityPage extends StatefulWidget {
   const AccountSecurityPage({Key? key}) : super(key: key);
@@ -17,7 +17,7 @@ class AccountSecurityPage extends StatefulWidget {
 }
 
 class _AccountSecurityPageState extends State<AccountSecurityPage> {
-  File? avatarFile; // 仅用于本地选择的头像
+  ImageProcessResult? avatarResult; // 使用ImageProcessResult而不是直接的File
   late ProfileBloc _profileBloc;
 
   @override
@@ -77,11 +77,11 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                 _profileBloc.add(UpdateUserProfileEvent(avatar: state.avatarUrl));
                 
                 setState(() {
-                  avatarFile = null; // 清除本地文件
+                  avatarResult = null; // 清除本地处理结果
                 });
               } else if (state is ProfileAvatarUploadError) {
                 setState(() {
-                  avatarFile = null; // 清除本地文件
+                  avatarResult = null; // 清除本地处理结果
                 });
                 
                 // 显示错误提示，便于调试
@@ -191,9 +191,9 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                 width: 100,
                 height: 100,
                 color: Colors.grey.shade300,
-                child: avatarFile != null
+                child: avatarResult != null
                   ? Image.file(
-                      avatarFile!,
+                      avatarResult!.finalFile,
                       fit: BoxFit.cover,
                     )
                   : hasAvatarUrl
@@ -231,16 +231,38 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
 
   void _pickImage() async {
     try {
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      // Use ImageUploadHelper for avatar processing
+      final results = await ImageUploadHelper.pickFromGallery(
+        type: ImageUploadType.avatar,
+        allowMultiple: false,
+      );
 
-      if (pickedFile != null) {
-        setState(() {
-          avatarFile = File(pickedFile.path);
-        });
+      if (results.isNotEmpty) {
+        final result = results.first;
         
-        // 显示确认对话框
-        _showAvatarConfirmDialog();
+        if (result.isSuccess) {
+          setState(() {
+            avatarResult = result;
+          });
+          
+          // 显示压缩信息和确认对话框
+          if (result.compressionRatio != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('头像已优化处理，压缩 ${result.compressionRatio!.toStringAsFixed(1)}%'),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+          
+          // 显示确认对话框
+          _showAvatarConfirmDialog();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('头像处理失败: ${result.error}')),
+          );
+        }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -257,10 +279,10 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (avatarFile != null)
+            if (avatarResult != null)
               ClipOval(
                 child: Image.file(
-                  avatarFile!,
+                  avatarResult!.finalFile,
                   width: 100,
                   height: 100,
                   fit: BoxFit.cover,
@@ -274,7 +296,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
           TextButton(
             onPressed: () {
               setState(() {
-                avatarFile = null; // 取消选择
+                avatarResult = null; // 取消选择
               });
               Navigator.pop(context);
             },
@@ -293,9 +315,9 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
   }
 
   void _uploadAvatar() {
-    if (avatarFile != null) {
-      // 调用BLoC上传头像
-      _profileBloc.add(UploadAvatarEvent(imageFile: avatarFile!));
+    if (avatarResult != null) {
+      // 调用BLoC上传头像，使用处理后的文件
+      _profileBloc.add(UploadAvatarEvent(imageFile: avatarResult!.finalFile));
     }
   }
 

@@ -55,3 +55,13 @@ class SwitchToSellerModeEvent extends ProfileEvent {
 class SwitchToBuyerModeEvent extends ProfileEvent {
   const SwitchToBuyerModeEvent();
 }
+
+/// 获取用户资料（缓存优先）
+class GetUserProfileCachedEvent extends ProfileEvent {
+  final AppMode mode;
+  
+  const GetUserProfileCachedEvent({required this.mode});
+  
+  @override
+  List<Object> get props => [mode];
+}

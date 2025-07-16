@@ -1,7 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:dskk_flutter_refactor/core/navigation/services/i_navigation_service.dart';
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
+import 'package:dskk_flutter_refactor/core/services/profile_preloader_service.dart';
+import 'package:dskk_flutter_refactor/app/app_mode.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_dashboard_data.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_store_profile.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_dashboard_data_usecase.dart';
@@ -38,7 +41,40 @@ class SellerHomeBloc extends Bloc<SellerHomeEvent, SellerHomeState> {
     LoadDashboardData event,
     Emitter<SellerHomeState> emit,
   ) async {
-    print('[SellerHomeBloc] Received LoadDashboardData event');
+    print('[SellerHomeBloc] Received LoadDashboardData event, forceRefresh: ${event.forceRefresh}');
+    
+    // 如果不是强制刷新，先尝试从缓存获取数据
+    if (!event.forceRefresh) {
+      try {
+        final preloaderService = GetIt.instance<ProfilePreloaderService>();
+        
+        // 尝试从缓存获取仪表盘数据
+        final cachedDashboard = await preloaderService.getCachedData<SellerDashboardData>(
+          'seller_dashboard', 
+          AppMode.seller,
+        );
+        
+        // 尝试从缓存获取店铺信息
+        final cachedStoreProfile = await preloaderService.getCachedData<SellerStoreProfile>(
+          'seller_store_profile', 
+          AppMode.seller,
+        );
+        
+        if (cachedDashboard != null && cachedStoreProfile != null) {
+          print('[SellerHomeBloc] Using cached data, emitting SellerHomeLoaded state');
+          emit(SellerHomeLoaded(
+            dashboardData: cachedDashboard,
+            storeProfile: cachedStoreProfile,
+          ));
+          return;
+        } else {
+          print('[SellerHomeBloc] Cache miss, will fetch from network');
+        }
+      } catch (e) {
+        print('[SellerHomeBloc] Failed to get cached data: $e');
+      }
+    }
+    
     print('[SellerHomeBloc] Emitting SellerHomeLoading state');
     emit(const SellerHomeLoading());
     

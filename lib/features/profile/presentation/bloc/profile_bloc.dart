@@ -4,8 +4,11 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
+import 'package:get_it/get_it.dart';
 
 import '../../../../core/usecases/usecase.dart';
+import '../../../../core/services/profile_preloader_service.dart';
+import '../../../../app/app_mode.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../domain/entities/wallet_summary.dart';
 import '../../domain/usecases/check_auth_status.dart';
@@ -41,6 +44,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   }) : super(const ProfileInitial()) {
     on<CheckAuthStatusEvent>(_onCheckAuthStatus);
     on<GetUserProfileEvent>(_onGetUserProfile);
+    on<GetUserProfileCachedEvent>(_onGetUserProfileCached);
     on<UpdateUserProfileEvent>(_onUpdateUserProfile);
     on<UploadAvatarEvent>(_onUploadAvatar);
     on<GetWalletSummaryEvent>(_onGetWalletSummary);
@@ -53,6 +57,13 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     CheckAuthStatusEvent event,
     Emitter<ProfileState> emit,
   ) async {
+    // 如果已经有用户数据，不需要重新检查认证状态
+    if (state is ProfileLoaded || state is ProfileUpdated) {
+      print('[ProfileBloc] Already has profile data, skipping auth check');
+      emit(ProfileAuthStatusLoaded(isAuthenticated: true));
+      return;
+    }
+    
     emit(const ProfileLoading());
     final result = await checkAuthStatus(NoParams());
     result.fold(
@@ -65,6 +76,25 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     GetUserProfileEvent event,
     Emitter<ProfileState> emit,
   ) async {
+    // 优先尝试从缓存获取数据
+    try {
+      final preloaderService = GetIt.instance<ProfilePreloaderService>();
+      final cachedProfile = await preloaderService.getCachedData<UserProfile>(
+        'user_profile', 
+        AppMode.buyer, // 默认买家模式，后续可优化为动态获取当前模式
+      );
+      
+      if (cachedProfile != null) {
+        print('[ProfileBloc] Using cached profile data: ${cachedProfile.nickName}');
+        _currentProfile = cachedProfile;
+        emit(ProfileLoaded(profile: cachedProfile));
+        return;
+      }
+    } catch (e) {
+      print('[ProfileBloc] Failed to get cached profile: $e');
+    }
+    
+    // 缓存未命中，执行正常的数据获取流程
     emit(const ProfileLoading());
     final result = await getUserProfile(NoParams());
     result.fold(
@@ -75,6 +105,34 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         emit(ProfileLoaded(profile: profile));
       },
     );
+  }
+
+  Future<void> _onGetUserProfileCached(
+    GetUserProfileCachedEvent event,
+    Emitter<ProfileState> emit,
+  ) async {
+    try {
+      final preloaderService = GetIt.instance<ProfilePreloaderService>();
+      final cachedProfile = await preloaderService.getCachedData<UserProfile>(
+        'user_profile', 
+        event.mode,
+      );
+      
+      if (cachedProfile != null) {
+        print('[ProfileBloc] Using cached profile data for ${event.mode.name}: ${cachedProfile.nickName}');
+        _currentProfile = cachedProfile;
+        emit(ProfileLoaded(profile: cachedProfile));
+        return;
+      } else {
+        print('[ProfileBloc] No cached data found for ${event.mode.name}, triggering normal load');
+        // 缓存未命中，触发普通的获取流程
+        add(GetUserProfileEvent());
+      }
+    } catch (e) {
+      print('[ProfileBloc] Failed to get cached profile for ${event.mode.name}: $e');
+      // 发生错误时，回退到普通获取流程
+      add(GetUserProfileEvent());
+    }
   }
 
   Future<void> _onUpdateUserProfile(

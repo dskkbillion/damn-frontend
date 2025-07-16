@@ -26,12 +26,13 @@ class _ModeFlipTransitionOverlayState extends ConsumerState<ModeFlipTransitionOv
   bool _isAnimating = false;
   bool _callbackExecuted = false;
   StreamSubscription? _subscription;
+  AppMode? _animationStartMode; // 记录动画开始时的模式
   
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
     
@@ -44,6 +45,7 @@ class _ModeFlipTransitionOverlayState extends ConsumerState<ModeFlipTransitionOv
     _animation.addListener(() {
       if (_animation.value >= 0.5 && _currentEvent != null && !_callbackExecuted) {
         _callbackExecuted = true;
+        // 在动画进行到50%时执行模式切换
         _currentEvent?.onComplete();
       }
     });
@@ -51,14 +53,9 @@ class _ModeFlipTransitionOverlayState extends ConsumerState<ModeFlipTransitionOv
     // 监听动画状态
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed && mounted) {
-        // 立即清理状态，停止动画
-        setState(() {
-          _isAnimating = false;
-          _currentEvent = null;
-          _callbackExecuted = false;
-        });
-        _controller.stop();
-        _controller.reset();
+        // 动画完成后立即结束过渡
+        print('[ModeFlip] Animation completed');
+        _completeTransition();
       }
     });
     
@@ -69,10 +66,15 @@ class _ModeFlipTransitionOverlayState extends ConsumerState<ModeFlipTransitionOv
         _subscription = modeTransitionService.transitionStream.listen((event) {
           if (!_isAnimating && _currentEvent == null && mounted) {
             _currentEvent = event;
+            // 记录动画开始时的模式
+            _animationStartMode = ref.read(appModeProvider);
+            
             setState(() {
               _isAnimating = true;
               _callbackExecuted = false;
             });
+            
+            // 开始动画，模式切换会在动画50%时自动触发
             _controller.forward();
           }
         });
@@ -85,6 +87,25 @@ class _ModeFlipTransitionOverlayState extends ConsumerState<ModeFlipTransitionOv
     _subscription?.cancel();
     _controller.dispose();
     super.dispose();
+  }
+  
+  
+  /// 完成过渡动画
+  void _completeTransition() {
+    if (!mounted) return;
+    
+    print('[ModeFlip] Completing transition...');
+    
+    // 重置状态
+    setState(() {
+      _isAnimating = false;
+      _callbackExecuted = false;
+      _currentEvent = null;
+      _animationStartMode = null;
+    });
+    
+    // 重置动画控制器
+    _controller.reset();
   }
   
   @override
@@ -124,7 +145,8 @@ class _ModeFlipTransitionOverlayState extends ConsumerState<ModeFlipTransitionOv
   
   Widget _buildTransitionPage() {
     final targetMode = _currentEvent?.targetMode ?? AppMode.buyer;
-    final currentMode = ref.watch(appModeProvider);
+    // 使用动画开始时的模式，而不是当前模式，因为模式已经切换了
+    final displayMode = _animationStartMode ?? ref.watch(appModeProvider);
     
     // 使用当前主题背景色，并提供Directionality
     return Directionality(
@@ -144,7 +166,7 @@ class _ModeFlipTransitionOverlayState extends ConsumerState<ModeFlipTransitionOv
                     : 0.0,
                 duration: const Duration(milliseconds: 100),
                 child: Icon(
-                  currentMode == AppMode.buyer 
+                  displayMode == AppMode.buyer 
                     ? Icons.shopping_bag_outlined 
                     : Icons.storefront_outlined,
                   size: 80,

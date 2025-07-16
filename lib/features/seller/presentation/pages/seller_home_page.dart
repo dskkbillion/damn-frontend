@@ -29,8 +29,23 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
   @override
   void initState() {
     super.initState();
-    print('[SellerHomePage] initState: Dispatching LoadDashboardData');
-    context.read<SellerHomeBloc>().add(const LoadDashboardData());
+    print('[SellerHomePage] initState called');
+    
+    // 延迟检查状态，避免在build之前访问context
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final bloc = context.read<SellerHomeBloc>();
+      final currentState = bloc.state;
+      
+      print('[SellerHomePage] Current state: ${currentState.runtimeType}');
+      
+      // 只有在没有数据时才加载
+      if (currentState.dashboardData == null && !currentState.isLoading) {
+        print('[SellerHomePage] No data found, dispatching LoadDashboardData');
+        bloc.add(const LoadDashboardData());
+      } else {
+        print('[SellerHomePage] Data already exists or loading, skipping LoadDashboardData');
+      }
+    });
   }
 
   @override
@@ -292,12 +307,13 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                       // 使用模式切换服务触发翻转动画
                       final modeTransitionService = ref.read(modeTransitionServiceProvider);
                       final appModeNotifier = ref.read(appModeProvider.notifier);
+                      
                       modeTransitionService.triggerTransition(
                         targetMode: AppMode.buyer,
                         onAnimationComplete: () {
-                          // 动画完成后切换模式和路由
+                          // 动画完成后切换模式
                           appModeNotifier.state = AppMode.buyer;
-                          context.go('/profile');
+                          // DualModeNavigationShell 会自动处理页面切换
                         },
                       );
                     },

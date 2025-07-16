@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import secure storage
 import 'package:pretty_dio_logger/pretty_dio_logger.dart'; // Remove alias
 import 'interceptors/app_info_interceptor.dart'; // Import the new interceptor
+import 'interceptors/cache_interceptor.dart'; // Import cache interceptor
 
 // import 'interceptors/auth_interceptor.dart';
 // import 'interceptors/pretty_log_interceptor.dart';
@@ -14,11 +15,13 @@ class CoreDioClient {
   late final Dio dio;
   final FlutterSecureStorage _secureStorage;
   final AppInfoInterceptor _appInfoInterceptor; // Add AppInfoInterceptor dependency
+  final SmartCacheInterceptor? _cacheInterceptor; // Cache interceptor (optional)
 
   CoreDioClient(
     @Named('baseUrl') String baseUrl,
     this._secureStorage, // Inject storage directly if AuthInterceptor isn't injectable
     this._appInfoInterceptor, // Inject AppInfoInterceptor
+    @factoryParam this._cacheInterceptor, // Optional cache interceptor
   ) {
     print('[CoreDioClient] Initializing with baseUrl: $baseUrl');
     try {
@@ -53,6 +56,13 @@ class CoreDioClient {
       );
 
       dio.interceptors.add(_appInfoInterceptor); // Add AppInfoInterceptor FIRST (or adjust order as needed)
+      
+      // 添加缓存拦截器（如果提供了）
+      if (_cacheInterceptor != null) {
+        dio.interceptors.add(_cacheInterceptor);
+        print('[CoreDioClient] Cache interceptor added');
+      }
+      
       dio.interceptors.add(authInterceptor);
       // dio.interceptors.add(logInterceptor); // Keep commented out
       dio.interceptors.add(basicLogInterceptor); // Add the built-in logger

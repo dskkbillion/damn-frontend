@@ -20,6 +20,9 @@ import 'package:dskk_flutter_refactor/app/di/injection_container.dart'; // Expor
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
 // 导入语言提供者
 import 'package:dskk_flutter_refactor/core/config/locale_provider.dart';
+// 导入ProfilePreloader服务
+import 'package:dskk_flutter_refactor/core/services/profile_preloader_service.dart';
+import 'package:dskk_flutter_refactor/app/app_mode.dart';
 
 Future<void> main() async { // Make main async
   // Ensure Flutter binding is initialized (required for async operations before runApp)
@@ -81,6 +84,9 @@ Future<void> main() async { // Make main async
   // Configure BLoC observer for analytics
   Bloc.observer = AnalyticsBlocObserver();
   print('[main] Analytics BLoC observer configured.');
+  
+  // 触发预加载（在应用启动后延迟执行，避免阻塞启动）
+  _triggerPreloadingAfterDelay();
 
   // Run the application, wrapped in ProviderScope (from auth-module)
   runApp(
@@ -92,4 +98,26 @@ Future<void> main() async { // Make main async
       child: const MyApp(), // Use MyApp as the root widget name
     ),
   );
+}
+
+/// 延迟触发预加载，避免阻塞应用启动
+void _triggerPreloadingAfterDelay() {
+  // 延迟3秒执行预加载，确保应用完全启动后
+  Future.delayed(const Duration(seconds: 3), () async {
+    try {
+      final preloaderService = getIt<ProfilePreloaderService>();
+      print('[Preloader] Starting preloading process...');
+      
+      // 默认以买家模式为优先，延迟3秒加载卖家模式
+      await preloaderService.preloadBothModes(
+        priorityMode: AppMode.buyer,
+        delayBetweenModes: const Duration(seconds: 3),
+      );
+      
+      print('[Preloader] Preloading process completed successfully');
+    } catch (e) {
+      print('[Preloader] Failed to preload data: $e');
+      // 预加载失败不影响应用正常运行
+    }
+  });
 }

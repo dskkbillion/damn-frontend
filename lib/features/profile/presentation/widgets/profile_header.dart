@@ -198,12 +198,13 @@ class ProfileHeader extends ConsumerWidget {
           // 使用模式切换服务触发翻转动画
           final modeTransitionService = ref.read(modeTransitionServiceProvider);
           final appModeNotifier = ref.read(appModeProvider.notifier);
+          
           modeTransitionService.triggerTransition(
             targetMode: AppMode.seller,
             onAnimationComplete: () {
-              // 动画完成后切换模式和路由
+              // 动画完成后切换模式
               appModeNotifier.state = AppMode.seller;
-              context.go('/seller');
+              // DualModeNavigationShell 会自动处理页面切换
             },
           );
         },
