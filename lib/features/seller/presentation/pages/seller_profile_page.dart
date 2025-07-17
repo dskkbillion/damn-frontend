@@ -78,33 +78,34 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
             // 这样可以避免页面闪烁
             
             return Scaffold(
-            body: SafeArea(
-              child: Column(
-                children: [
-                  _buildProfileHeader(state),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          _buildOrderSection(),
-                          _buildMenuSection(S.of(context).seller_profile_auth_management, Icons.verified_user, ''),
-                          _buildMenuSection(S.of(context).seller_profile_my_wallet, Icons.account_balance_wallet_outlined, ''),
-                          _buildMenuSection(S.of(context).seller_profile_time_management, Icons.access_time_outlined, ''),
-                          const SizedBox(height: 10),
-                          _buildSectionTitle(S.of(context).seller_profile_settings),
-                          _buildMenuSection(S.of(context).seller_profile_notifications, Icons.notifications_none_outlined, ''),
-                          const SizedBox(height: 10),
-                          _buildSectionTitle(S.of(context).seller_profile_about_us),
-                          _buildMenuSection(S.of(context).seller_profile_mission, Icons.emoji_objects_outlined, ''),
-                        ],
+              body: SafeArea(
+                child: Column(
+                  children: [
+                    _buildProfileHeader(state),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            _buildOrderSection(),
+                            _buildMenuSection(S.of(context).seller_profile_auth_management, Icons.verified_user, ''),
+                            _buildMenuSection(S.of(context).seller_profile_my_wallet, Icons.account_balance_wallet_outlined, ''),
+                            _buildMenuSection(S.of(context).seller_profile_time_management, Icons.access_time_outlined, ''),
+                            const SizedBox(height: 10),
+                            _buildSectionTitle(S.of(context).seller_profile_settings),
+                            _buildMenuSection(S.of(context).seller_profile_notifications, Icons.notifications_none_outlined, ''),
+                            const SizedBox(height: 10),
+                            _buildSectionTitle(S.of(context).seller_profile_about_us),
+                            _buildMenuSection(S.of(context).seller_profile_mission, Icons.emoji_objects_outlined, ''),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

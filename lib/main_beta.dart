@@ -28,6 +28,9 @@ import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository_imp
 import 'package:dskk_flutter_refactor/core/analytics/di/analytics_injection.dart';
 import 'package:dskk_flutter_refactor/core/analytics/observers/analytics_bloc_observer.dart';
 
+// Import core auth adapter
+import 'package:dskk_flutter_refactor/core/auth/repositories/i_auth_repository.dart' as core_auth;
+
 // 导入配置验证工具
 import 'package:dskk_flutter_refactor/core/utils/config_validator.dart';
 
@@ -117,7 +120,7 @@ Future<void> main() async {
   // 注意：公测版本不覆盖认证服务，使用默认的真实认证服务
   print('[main_beta] ✅ 真实认证服务已配置，用户需要进行注册/登录');
 
-  // 3. 初始化分析模块
+  // 3. 初始化分析模块（会自动注册core_auth.IAuthRepository适配器）
   await initAnalyticsModule();
   print('[main_beta] ✅ 分析模块依赖配置完成');
   

@@ -50,6 +50,16 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   // 添加用户身份状态
   String? _currentUserType; // 'MEMBER' 或 'DOCTOR'
   
+  // 添加Future存储变量，避免在每次build时创建新的Future
+  late Future<int?> _referIdFuture;
+  
+  @override
+  void initState() {
+    super.initState();
+    // 在initState中初始化Future，只执行一次
+    _referIdFuture = _getReferIdFromStorage();
+  }
+  
   // 添加获取referId的方法
   Future<int?> _getReferIdFromStorage() async {
     try {
@@ -221,7 +231,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       ),
       // 使用FutureBuilder获取referId
       body: FutureBuilder<int?>(
-        future: _getReferIdFromStorage(),
+        future: _referIdFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
