@@ -311,11 +311,27 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
   @override
   Future<bool> updateProduct(ProductUpdateData productData) async {
     try {
-      // 使用ProductUpdateData的toJson()方法获取API需要的格式
-      final data = productData.toJson();
+      print('[SellerRemoteDataSource] 🔄 更新商品信息: productId=${productData.id}');
+      
+      // 获取完整的商品信息
+      final getResponse = await _dio.get('/api/shop/product/get', queryParameters: {
+        'id': productData.id,
+      });
+      
+      _checkResponse(getResponse);
+      
+      final existingData = getResponse.data['data'];
+      if (existingData == null) {
+        throw Exception('商品信息不存在');
+      }
+      
+      print('[SellerRemoteDataSource] ✅ 获取商品信息成功，准备合并更新数据');
+      
+      // 构建完整的商品数据，合并现有数据和更新数据
+      final mergedData = _mergeProductData(existingData, productData);
       
       // 打印请求数据，便于调试
-      print('Updating product with data: $data');
+      print('Updating product with merged data: $mergedData');
       
       // 创建一个专用于商品更新的Dio实例，配置更长的超时时间
       final productUpdateDio = Dio(BaseOptions(
@@ -347,10 +363,11 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       
       // 使用新的Dio实例和更长的超时设置发送请求
       print('Sending product update request with extended timeout (120s)');
-      final response = await productUpdateDio.post('/api/shop/product/update', data: data, options: options);
+      final response = await productUpdateDio.post('/api/shop/product/update', data: mergedData, options: options);
       
       _checkResponse(response);
       
+      print('[SellerRemoteDataSource] ✅ 商品更新成功');
       return true;
     } catch (e) {
       print('Error in updateProduct: $e');
@@ -962,5 +979,73 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
     } else if (error is! ServerException) {
       throw ServerException(message: error.toString());
     }
+  }
+
+  /// 合并现有商品数据和更新数据
+  Map<String, dynamic> _mergeProductData(Map<String, dynamic> existingData, ProductUpdateData updateData) {
+    // 转换更新数据为JSON格式
+    final updateJson = updateData.toJson();
+    
+    // 构建完整的商品数据，确保所有必需字段都存在
+    final mergedData = {
+      // 基础信息（必需）
+      'id': updateData.id,
+      'tenantId': existingData['tenantId'],
+      'selectionMode': existingData['selectionMode'] ?? 'CUSTOMIZE',
+      'statusAudit': existingData['statusAudit'] ?? 'SUCCESS',
+      'productType': existingData['productType'] ?? 'product',
+      
+      // 商品基本信息
+      'name': updateJson['name'] ?? existingData['name'] ?? '',
+      'description': updateJson['description'] ?? existingData['description'] ?? '',
+      'categoryId': updateJson['categoryId'] ?? existingData['categoryId'],
+      'state': updateJson['state'] ?? existingData['state'] ?? 'normal',
+      
+      // 图片处理
+      'images': updateJson['images'] ?? existingData['images'] ?? [],
+      'mainImage': updateJson['mainImage'] ?? existingData['mainImage'] ?? 
+                   (updateJson['images'] is List && (updateJson['images'] as List).isNotEmpty 
+                    ? (updateJson['images'] as List).first 
+                    : existingData['mainImage']),
+      'winImages': existingData['winImages'] ?? [],
+      
+      // 价格相关字段（确保都是数值类型）
+      'originalPrice': updateJson['originalPrice'] ?? existingData['originalPrice'] ?? 0.00,
+      'sellingPrice': updateJson['sellingPrice'] ?? existingData['sellingPrice'] ?? 0.00,
+      'costPrice': existingData['costPrice'] ?? 0.00,
+      'freightPrice': existingData['freightPrice'] ?? 0.0,
+      
+      // 库存和统计字段
+      'inventory': existingData['inventory'] ?? 0,
+      'buyedNumber': existingData['buyedNumber'] ?? 0,
+      'viewNumber': existingData['viewNumber'] ?? 0,
+      'minimumBuy': existingData['minimumBuy'] ?? 1,
+      'top': existingData['top'] ?? false,
+      
+      // 其他字段
+      'keyword': existingData['keyword'] ?? '',
+      'content': existingData['content'] ?? '',
+      'auditRemark': existingData['auditRemark'],
+      
+      // 商品变体和材料（从updateJson获取，如果没有则使用现有数据）
+      'variants': updateJson['variants'] ?? existingData['variants'] ?? [],
+      'productMaterials': updateJson['productMaterials'] ?? existingData['productMaterials'] ?? [],
+    };
+    
+    // 如果有详情图，添加到数据中
+    if (updateJson['detailImages'] != null) {
+      mergedData['detailImages'] = updateJson['detailImages'];
+    } else if (existingData['detailImages'] != null) {
+      mergedData['detailImages'] = existingData['detailImages'];
+    }
+    
+    // 如果有详情内容，添加到数据中
+    if (updateJson['detailContent'] != null) {
+      mergedData['detailContent'] = updateJson['detailContent'];
+    } else if (existingData['detailContent'] != null) {
+      mergedData['detailContent'] = existingData['detailContent'];
+    }
+    
+    return mergedData;
   }
 } 

@@ -341,7 +341,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
               // 取消关注卖家
               final user = CommonUser(
                 referId: seller.referId,
-                type: seller.type,
+                type: 'MEMBER', // 🔥 修复：与Home模块保持一致，固定使用MEMBER类型
                 nickName: seller.nickName,
                 avatar: seller.avatar,
                 trueName: seller.trueName,

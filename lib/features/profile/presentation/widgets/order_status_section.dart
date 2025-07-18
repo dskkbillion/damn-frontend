@@ -27,12 +27,38 @@ class OrderStatusSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            s.profile_orders,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                s.profile_orders,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              GestureDetector(
+                onTap: () => _navigateToAllOrders(context),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '全部',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.chevron_right,
+                      size: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           Row(
@@ -120,6 +146,23 @@ class OrderStatusSection extends StatelessWidget {
       context.go(pathWithQuery);
     } catch (e) {
       print('Error navigating to $pathWithQuery: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.profile_navigation_error('$e'))),
+      );
+    }
+  }
+
+  void _navigateToAllOrders(BuildContext context) {
+    // 获取国际化资源
+    final s = S.of(context);
+    
+    const String basePath = '/profile/orders';
+
+    try {
+      print('Navigating to all orders: $basePath');
+      context.go(basePath);
+    } catch (e) {
+      print('Error navigating to $basePath: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(s.profile_navigation_error('$e'))),
       );

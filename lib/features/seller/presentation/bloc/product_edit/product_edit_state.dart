@@ -180,10 +180,20 @@ class ProductEditState extends Equatable {
 
   /// 加载产品数据完成状态
   ProductEditState copyWithProductLoaded(SellerManagedProduct product) {
+    // 将现有商品的图片转换为可编辑的图片路径
+    List<String> existingImagePaths = [];
+    if (product.images.isNotEmpty) {
+      existingImagePaths = product.images.split(',')
+          .where((img) => img.trim().isNotEmpty)
+          .toList();
+    }
+    
     return copyWith(
       isLoading: false,
       product: product,
       formData: ProductFormData.fromProduct(product),
+      selectedImagePaths: existingImagePaths, // 将现有图片设为可编辑的图片
+      uploadedImageUrls: existingImagePaths, // 这些图片已经是网络URL
     );
   }
 
@@ -324,7 +334,7 @@ class ProductEditState extends Equatable {
              currentFormData.buyerInfoItems.isNotEmpty ||
              currentFormData.successCases.isNotEmpty ||
              (currentFormData.variants.isNotEmpty && 
-              currentFormData.variants.any((v) => v.price > 0));
+              currentFormData.variants.every((v) => v.price > 0));
     }
     
     // 对于编辑商品，比较与初始状态的差异
@@ -444,6 +454,7 @@ class ProductFormData extends Equatable {
   bool get isValid {
     return name.isNotEmpty && 
            description.isNotEmpty && 
-           price > 0;
+           variants.isNotEmpty &&
+           variants.every((v) => v.price > 0 || v.sellingPrice > 0);
   }
 } 

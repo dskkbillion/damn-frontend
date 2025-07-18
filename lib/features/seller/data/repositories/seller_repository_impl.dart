@@ -5,6 +5,7 @@ import 'package:dskk_flutter_refactor/core/network/network_info.dart';
 import 'package:dskk_flutter_refactor/features/seller/data/datasources/i_seller_local_data_source.dart';
 import 'package:dskk_flutter_refactor/features/seller/data/datasources/i_seller_remote_data_source.dart';
 import 'package:dskk_flutter_refactor/features/seller/data/models/order_refund_dto.dart';
+import 'package:dskk_flutter_refactor/features/seller/data/models/seller_managed_product_dto.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/auto_reply_settings.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/enums/product_status.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_authentication_info.dart';
@@ -662,98 +663,8 @@ class SellerRepositoryImpl implements ISellerRepository {
 
   /// 将API响应数据映射为SellerManagedProduct实体
   SellerManagedProduct _mapToSellerManagedProduct(dynamic data) {
-    final Map<String, dynamic> productMap = data as Map<String, dynamic>;
-    
-    // Correctly handle the 'images' field which is a List in the API response
-    String imageUrl = '';
-    final dynamic imagesData = productMap['images'];
-    if (imagesData is List && imagesData.isNotEmpty) {
-      // Assuming the first image is the cover image
-      if (imagesData.first is String) {
-        imageUrl = imagesData.first;
-      }
-    }
-
-    return SellerManagedProduct(
-      id: productMap['id'] ?? 0,
-      name: productMap['name'] ?? '',
-      price: _parseDouble(productMap['sellingPrice']),
-      images: imageUrl,
-      description: productMap['description'] ?? '',
-      status: _mapToProductStatus(productMap),
-      createTime: _parseDateTime(productMap['createTime']),
-      updateTime: _parseDateTime(productMap['updateTime']),
-      sales: productMap['buyedNumber'],
-    );
-  }
-  
-  /// 将商品数据映射为ProductStatus枚举
-  ProductStatus _mapToProductStatus(Map<String, dynamic> productData) {
-    final String? productType = productData['productType'] as String?;
-    final String? state = productData['state'] as String?;
-    final String? statusAudit = productData['statusAudit'] as String?;
-    
-    print('🔍 [StatusMapping] 商品ID: ${productData['id']}, productType: $productType, state: $state, statusAudit: $statusAudit');
-    
-    // 优先根据productType判断草稿
-    if (productType == 'draft') {
-      return ProductStatus.draft;
-    }
-    
-    // 对于正式商品，优先检查审核状态
-    if (statusAudit != null) {
-      switch (statusAudit.toUpperCase()) {
-        case 'WAIT':
-          return ProductStatus.reviewing; // 待审核
-        case 'FAIL':
-          return ProductStatus.rejected; // 审核失败
-        case 'SUCCESS':
-          // 审核通过，继续根据state判断上架状态
-          break;
-        default:
-          print('Warning: Unknown statusAudit "$statusAudit"');
-          break;
-      }
-    }
-    
-    // 对于审核通过的商品，根据state判断上架状态
-    switch (state?.toUpperCase()) {
-      case 'NORMAL':
-        print('✅ [StatusMapping] 商品${productData['id']} 映射为 ProductStatus.normal');
-        return ProductStatus.normal;
-      case 'DISABLED':
-      case 'FORCE_DISABLED':
-        print('✅ [StatusMapping] 商品${productData['id']} 映射为 ProductStatus.disabled');
-        return ProductStatus.disabled;
-      default:
-        // 如果state和statusAudit都没有有效值，可能是新创建的商品
-        if (productType == 'product') {
-          print('⚠️ [StatusMapping] 商品${productData['id']} productType="product" 但无有效state/statusAudit，默认为reviewing');
-          return ProductStatus.reviewing; // 默认为审核中
-        }
-        print('✅ [StatusMapping] 商品${productData['id']} 默认映射为 ProductStatus.draft');
-        return ProductStatus.draft;
-    }
-  }
-  
-  /// 解析日期时间字符串
-  DateTime? _parseDateTime(String? dateTimeStr) {
-    if (dateTimeStr == null) return null;
-    try {
-      return DateTime.parse(dateTimeStr);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  /// 安全地将值解析为 double
-  double _parseDouble(dynamic value) {
-    if (value == null) return 0.0;
-    if (value is double) return value;
-    if (value is int) return value.toDouble();
-    if (value is String) {
-      return double.tryParse(value) ?? 0.0; // 使用 tryParse 避免 FormatException
-    }
-    return 0.0; // 对于其他类型，返回默认值
+    // Use DTO for proper mapping with variants and materials
+    final dto = SellerManagedProductDto.fromJson(data as Map<String, dynamic>);
+    return dto.toEntity();
   }
 } 

@@ -44,12 +44,14 @@ class SellerProductsDataSourceImpl implements SellerProductsDataSource {
   Future<bool> followSeller(int sellerId) async {
     try {
       final response = await dio.post(
-        '/api/invitation/collectionMember',
+        '/api/collect/add',
         data: {
-          'referId': sellerId,
-          'nickName': '',
-          'avatar': '',
-          'type': 'MEMBER',
+          'objectId': sellerId,
+          'type': 'attentionMember',
+          'feature': {
+            'id': sellerId,
+            'name': '卖家信息',
+          },
         },
       );
       
@@ -71,22 +73,42 @@ class SellerProductsDataSourceImpl implements SellerProductsDataSource {
   @override
   Future<bool> unfollowSeller(int sellerId) async {
     try {
-      final response = await dio.post(
-        '/api/invitation/cancelCollectionMember',
-        data: {
-          'referId': sellerId,
-          'type': 'MEMBER',
+      // 🔥 统一使用collect接口：需要先查询收藏记录ID，然后删除
+      // 这里简化处理，直接调用删除接口（假设后端支持按条件删除）
+      final listResponse = await dio.get(
+        '/api/collect/list',
+        queryParameters: {
+          'type': 'attentionMember',
         },
       );
       
-      if (response.statusCode == 200 && response.data['code'] == 200) {
-        await Future.delayed(Duration(milliseconds: 500));
-        return true;
-      } else {
-        throw ServerException(
-          message: response.data['msg'] ?? '取消关注卖家失败',
-        );
+      if (listResponse.statusCode == 200 && listResponse.data['code'] == 200) {
+        final rows = listResponse.data['rows'] as List?;
+        if (rows != null) {
+          // 查找对应的收藏记录
+          final collectRecord = rows.firstWhere(
+            (record) => record['objectId'] == sellerId,
+            orElse: () => null,
+          );
+          
+          if (collectRecord != null) {
+            final collectId = collectRecord['id'];
+            final deleteResponse = await dio.post(
+              '/api/collect/delete',
+              data: [collectId],
+            );
+            
+            if (deleteResponse.statusCode == 200 && deleteResponse.data['code'] == 200) {
+              await Future.delayed(Duration(milliseconds: 500));
+              return true;
+            }
+          }
+        }
       }
+      
+      throw ServerException(
+        message: '取消关注卖家失败',
+      );
     } catch (e) {
       throw ServerException(
         message: e.toString(),

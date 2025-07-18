@@ -250,7 +250,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
     try {
       final userId = await getUserId();
       final queryParams = {
-        'type': 'attentionMember', // 🔥 修改为关注类型，而不是收藏类型
+        'type': 'attentionMember', // 🔥 统一使用collect接口的类型
         'memberId': userId,
         'pageNum': (pageNum ?? 1).toString(),
         'pageSize': (pageSize ?? 10).toString(),
@@ -327,7 +327,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
 
   /// 获取卖家详情
   Future<FavoriteSellerModel> _getSellerDetail(int sellerId) async {
-    final uri = Uri.parse('$baseUrl/api/member/info?id=$sellerId');
+    final uri = Uri.parse('$baseUrl/api/project/details?memberId=$sellerId');
     final headers = await _getHeaders();
     
     _logRequest('GET', uri, headers);
@@ -340,17 +340,10 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
       final jsonResponse = json.decode(response.body);
       if (jsonResponse['code'] == 200 && jsonResponse['data'] != null) {
         final data = jsonResponse['data'];
-        final returnedId = data['id'];
-        
-        // 🔥 检测后端API bug：如果查询的ID与返回的ID不匹配，说明API有问题
-        if (returnedId != sellerId) {
-          print('⚠️ 检测到后端API异常：查询用户ID $sellerId，但返回了用户ID $returnedId 的信息');
-          throw ServerException(message: 'API返回了错误的用户信息');
-        }
         
         return FavoriteSellerModel(
           id: sellerId,
-          referId: sellerId, // 🔥 修复：使用正确的sellerId，而不是可能错误的API返回值
+          referId: sellerId,
           nickName: data['nickName'] ?? '未知卖家',
           trueName: data['trueName'],
           avatar: data['avatar'],
@@ -515,14 +508,18 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
   @override
   Future<void> followSeller(CommonUserModel user) async {
     try {
-      final uri = Uri.parse('$baseUrl/api/invitation/collectionMember');
+      final uri = Uri.parse('$baseUrl/api/collect/add');
 
-      // 🔥 修复：只传递必要的字段，使用referId作为被关注者的ID
+      // 🔥 统一使用collect接口：构造收藏请求体
       final body = json.encode({
-        'referId': user.referId, // 使用referId而不是id
-        'nickName': user.nickName ?? '',
-        'avatar': user.avatar ?? '',
-        'type': user.type,
+        'objectId': user.referId, // 被关注者的ID
+        'type': 'attentionMember', // 关注用户类型
+        'feature': {
+          'id': user.referId,
+          'name': user.nickName ?? '未知用户',
+          'avatar': user.avatar,
+          'type': user.type,
+        },
       });
 
       final headers = await _getHeaders();
@@ -560,36 +557,10 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
   @override
   Future<void> unfollowSeller(CommonUserModel user) async {
     try {
-      final uri = Uri.parse('$baseUrl/api/invitation/cancelCollectionMember');
-
-      // 🔥 修复：使用referId作为被关注者的ID，与Home模块保持一致
-      final body = json.encode({
-        'referId': user.referId, // 使用referId而不是id
-        'type': user.type,
-      });
-
-      final headers = await _getHeaders();
-      
-      print('取消关注卖家API请求URL: $uri');
-      print('取消关注卖家API请求体: $body');
-      
-      final response = await client.post(
-        uri,
-        headers: headers,
-        body: body,
-      );
-      
-      print('取消关注卖家API响应状态码: ${response.statusCode}');
-      print('取消关注卖家API响应内容: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final jsonResponse = json.decode(response.body);
-        if (jsonResponse['code'] != 200) {
-          throw ServerException(message: jsonResponse['msg'] ?? 'Failed to unfollow seller');
-        }
-      } else {
-        throw ServerException(message: 'Failed to unfollow seller');
-      }
+      // 🔥 统一使用collect接口：先查询收藏记录ID，然后删除
+      print('[UnfollowSeller] 开始取消关注: referId=${user.referId}');
+      await removeFromFavoritesByObjectId('attentionMember', user.referId);
+      print('[UnfollowSeller] 取消关注成功');
     } catch (e) {
       print('取消关注卖家出错: $e');
       if (e is ServerException) {

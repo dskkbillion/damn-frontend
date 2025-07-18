@@ -36,7 +36,7 @@ class UserInfoRepositoryImpl implements IUserInfoRepository {
         return Left(UnknownFailure(message: 'Failed to fetch user info'));
       }
     } else {
-      return Left(NetworkFailure());
+      return Left(NetworkFailure(message: '网络连接不可用'));
     }
   }
 }

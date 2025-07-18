@@ -317,16 +317,37 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
         
         if (success) {
           print('🎉 [ProductManagementBloc] 商品${event.productId}状态更新成功，目标状态: ${event.targetStatus}');
-          // 更新成功，根据目标状态更新对应列表
+          // 更新成功，需要刷新相关的列表
           
-          // 这里我们选择简单地刷新当前Tab的列表
-          // 更复杂的实现可以只更新受影响的列表项
+          // 重置所有页码
           _resetPages();
-          print('🔄 [ProductManagementBloc] 触发列表刷新，当前tab: ${state.tabIndex}');
+          
+          // 确定需要刷新的列表
+          final currentStatus = _getStatusByTabIndex(state.tabIndex);
+          final needRefreshStatuses = <ProductStatus>{};
+          
+          // 添加当前标签页对应的状态
+          needRefreshStatuses.add(currentStatus);
+          
+          // 添加目标状态（商品会移动到这个状态的列表）
+          needRefreshStatuses.add(event.targetStatus);
+          
+          // 如果是从其他状态更新过来的，也需要刷新原状态的列表
+          // 例如：从"在售"下架到"已下架"，需要刷新"在售"和"已下架"两个列表
+          
+          print('🔄 [ProductManagementBloc] 需要刷新的状态列表: $needRefreshStatuses');
+          
+          // 刷新当前标签页
           add(LoadProductList(
-            status: _getStatusByTabIndex(state.tabIndex),
+            status: currentStatus,
             forceRefresh: true,
           ));
+          
+          // 如果目标状态不是当前标签页的状态，也要刷新目标状态的列表
+          if (event.targetStatus != currentStatus) {
+            // 刷新目标状态的列表（在后台静默刷新）
+            _refreshStatusListInBackground(event.targetStatus);
+          }
         }
       },
     );
@@ -414,13 +435,25 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
         
         if (success) {
           // 删除成功，更新列表
-          // 这里为简单起见，我们选择刷新整个列表
-          // 更复杂的实现可以只移除受影响的列表项
+          print('🗑️ [ProductManagementBloc] 商品${event.productId}删除成功');
+          
+          // 重置所有页码
           _resetPages();
+          
+          // 刷新当前标签页
+          final currentStatus = _getStatusByTabIndex(state.tabIndex);
           add(LoadProductList(
-            status: _getStatusByTabIndex(state.tabIndex), 
+            status: currentStatus, 
             forceRefresh: true,
           ));
+          
+          // 由于删除操作会影响所有列表，所以刷新其他标签页的数据
+          // 确保用户切换标签时看到最新数据
+          for (final status in [ProductStatus.normal, ProductStatus.draft, ProductStatus.disabled]) {
+            if (status != currentStatus) {
+              _refreshStatusListInBackground(status);
+            }
+          }
         }
       },
     );
@@ -474,5 +507,88 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     emit(state.copyWith(navigationPath: previewPath));
     // 立即清除导航路径，防止在无关状态变化时重复导航
     emit(state.copyWith(clearNavigationPath: true));
+  }
+  
+  /// 在后台刷新指定状态的商品列表
+  void _refreshStatusListInBackground(ProductStatus status) {
+    print('[ProductManagementBloc] 后台刷新 $status 状态的商品列表');
+    
+    // 根据状态确定要刷新的列表
+    switch (status) {
+      case ProductStatus.normal:
+        if (state.onSaleProducts != null) {
+          _getSellerProductListUseCase(
+            const GetSellerProductListParams(
+              state: 'normal',
+              pageNum: 1,
+              pageSize: 10,
+            ),
+          ).then((result) {
+            result.fold(
+              (failure) => print('[ProductManagementBloc] 后台刷新在售商品失败: ${failure.message}'),
+              (paginatedList) {
+                if (state.tabIndex != 0 && isClosed == false) { // 只有当不在当前标签页时才静默更新，且BLoC未关闭
+                  emit(state.copyWith(
+                    onSaleProducts: paginatedList.items,
+                    hasMoreOnSaleProducts: paginatedList.items.length >= 10,
+                  ));
+                }
+              },
+            );
+          });
+        }
+        break;
+        
+      case ProductStatus.draft:
+        if (state.draftProducts != null) {
+          _getSellerProductListUseCase(
+            const GetSellerProductListParams(
+              state: 'draft',
+              pageNum: 1,
+              pageSize: 10,
+            ),
+          ).then((result) {
+            result.fold(
+              (failure) => print('[ProductManagementBloc] 后台刷新草稿商品失败: ${failure.message}'),
+              (paginatedList) {
+                if (state.tabIndex != 1 && isClosed == false) { // 只有当不在当前标签页时才静默更新，且BLoC未关闭
+                  emit(state.copyWith(
+                    draftProducts: paginatedList.items,
+                    hasMoreDraftProducts: paginatedList.items.length >= 10,
+                  ));
+                }
+              },
+            );
+          });
+        }
+        break;
+        
+      case ProductStatus.disabled:
+        if (state.offShelfProducts != null) {
+          _getSellerProductListUseCase(
+            const GetSellerProductListParams(
+              state: 'disabled',
+              pageNum: 1,
+              pageSize: 10,
+            ),
+          ).then((result) {
+            result.fold(
+              (failure) => print('[ProductManagementBloc] 后台刷新已下架商品失败: ${failure.message}'),
+              (paginatedList) {
+                if (state.tabIndex != 2 && isClosed == false) { // 只有当不在当前标签页时才静默更新，且BLoC未关闭
+                  emit(state.copyWith(
+                    offShelfProducts: paginatedList.items,
+                    hasMoreOffShelfProducts: paginatedList.items.length >= 10,
+                  ));
+                }
+              },
+            );
+          });
+        }
+        break;
+        
+      default:
+        break;
+    }
   }
 } 

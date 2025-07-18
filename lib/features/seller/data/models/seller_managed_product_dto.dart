@@ -64,9 +64,7 @@ class ProductOptionValueDto {
       id: json['id'],
       optionName: json['optionName'],
       optionValue: json['optionValue'],
-      price: json['price'] != null 
-          ? double.tryParse(json['price'].toString()) 
-          : null,
+      price: SellerManagedProductDto._parsePrice(json['price']),
       stock: json['stock'],
     );
   }
@@ -143,6 +141,9 @@ class SellerManagedProductDto {
   /// 商品类型 (用于区分草稿和正式商品)
   final String? productType;
   
+  /// 审核状态
+  final String? statusAudit;
+  
   /// 创建时间
   final String? createTime;
   
@@ -170,6 +171,7 @@ class SellerManagedProductDto {
     this.description,
     this.state,
     this.productType,
+    this.statusAudit,
     this.createTime,
     this.updateTime,
     this.sales,
@@ -178,18 +180,58 @@ class SellerManagedProductDto {
     this.productMaterials,
   });
 
+  /// 安全解析价格字段
+  static double? _parsePrice(dynamic value) {
+    if (value == null) return null;
+    if (value is num) return value.toDouble();
+    if (value is String) {
+      final parsed = double.tryParse(value);
+      return parsed;
+    }
+    return null;
+  }
+
   /// 从JSON构造
   factory SellerManagedProductDto.fromJson(Map<String, dynamic> json) {
+    // 处理images字段 - API返回数组，但DTO需要字符串
+    String? imagesString;
+    if (json['images'] != null) {
+      if (json['images'] is List) {
+        // 将数组转换为逗号分隔的字符串
+        final imageList = json['images'] as List;
+        imagesString = imageList.where((img) => img != null && img.toString().isNotEmpty)
+            .map((img) => img.toString())
+            .join(',');
+        if (json['productType'] == 'draft' || json['state'] == 'draft') {
+          print('[SellerManagedProductDto] Draft product ${json['id']} images: $imageList -> "$imagesString"');
+        }
+      } else if (json['images'] is String) {
+        imagesString = json['images'];
+        if (json['productType'] == 'draft' || json['state'] == 'draft') {
+          print('[SellerManagedProductDto] Draft product ${json['id']} images string: "$imagesString"');
+        }
+      }
+    } else {
+      // 如果images为null，检查是否有mainImage字段（草稿商品可能使用mainImage）
+      if (json['mainImage'] != null && json['mainImage'] is String && json['mainImage'].toString().isNotEmpty) {
+        imagesString = json['mainImage'];
+        if (json['productType'] == 'draft' || json['state'] == 'draft') {
+          print('[SellerManagedProductDto] Draft product ${json['id']} using mainImage: "$imagesString"');
+        }
+      } else if (json['productType'] == 'draft' || json['state'] == 'draft') {
+        print('[SellerManagedProductDto] Draft product ${json['id']} has null images and no mainImage');
+      }
+    }
+    
     return SellerManagedProductDto(
       id: json['id'],
       name: json['name'],
-      price: json['price'] != null 
-          ? double.tryParse(json['price'].toString()) 
-          : null,
-      images: json['images'],
+      price: _parsePrice(json['sellingPrice'] ?? json['price']),
+      images: imagesString,
       description: json['description'],
       state: json['state'],
       productType: json['productType'],
+      statusAudit: json['statusAudit'],
       createTime: json['createTime'],
       updateTime: json['updateTime'],
       sales: json['sales'],
@@ -232,9 +274,26 @@ class SellerManagedProductDto {
     // 解析规格选项
     List<ProductOptionValue>? productVariants;
     if (variants != null && variants!.isNotEmpty) {
-      productVariants = variants!
-          .map((v) => ProductOptionValueDto.fromJson(v as Map<String, dynamic>).toEntity())
-          .toList();
+      productVariants = variants!.map((v) {
+        final variantMap = v as Map<String, dynamic>;
+        
+        // 直接从API数据映射到ProductOptionValue
+        return ProductOptionValue(
+          id: variantMap['id'] ?? 0,
+          name: variantMap['name'] ?? '',
+          optionName: variantMap['name'] ?? '', // 兼容性
+          optionValue: variantMap['name'] ?? '', // 兼容性
+          price: _parsePrice(variantMap['sellingPrice']) ?? 0.0,
+          sellingPrice: _parsePrice(variantMap['sellingPrice']) ?? 0.0,
+          stock: 999, // API没有库存字段，使用默认值
+          deliveryDay: variantMap['deliveryDay'] ?? 3,
+          editNum: variantMap['editNum'] ?? 1,
+          feature: (variantMap['feature'] as List?)?.map((f) => {
+            'key': f['key'] ?? '',
+            'val': f['value'] ?? f['val'] ?? '',
+          }).toList().cast<Map<String, String>>() ?? [],
+        );
+      }).toList();
     }
 
     // 解析材料问题
@@ -245,15 +304,19 @@ class SellerManagedProductDto {
           .toList();
     }
 
-    // 根据productType和state确定商品状态
+    // 根据productType、state和statusAudit确定商品状态
     ProductStatus productStatus;
     if (productType != null && productType!.toLowerCase() == 'draft') {
       // 如果productType为draft，则强制设为草稿状态
-      print('SellerManagedProductDto: 检测到productType="$productType"，强制设为草稿状态');
       productStatus = ProductStatus.draft;
+    } else if (statusAudit == 'WAIT' || statusAudit == 'REVIEWING') {
+      // 如果审核状态为等待审核，则设为审核中状态
+      productStatus = ProductStatus.reviewing;
+    } else if (statusAudit == 'FAIL' || statusAudit == 'REJECTED') {
+      // 如果审核失败，则设为审核拒绝状态
+      productStatus = ProductStatus.rejected;
     } else {
       // 否则使用state字段
-      print('SellerManagedProductDto: 使用state="$state"字段解析状态');
       productStatus = ProductStatus.fromValue(state ?? 'UNKNOWN');
     }
 
@@ -284,6 +347,7 @@ class SellerManagedProductDto {
     if (description != null) data['description'] = description;
     if (state != null) data['state'] = state;
     if (productType != null) data['productType'] = productType;
+    if (statusAudit != null) data['statusAudit'] = statusAudit;
     if (createTime != null) data['createTime'] = createTime;
     if (updateTime != null) data['updateTime'] = updateTime;
     if (sales != null) data['sales'] = sales;

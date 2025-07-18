@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_cubit.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/usecases/login_with_verification_code.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/usecases/send_verification_code.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/usecases/get_logged_in_user.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
 import 'package:dskk_flutter_refactor/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:dskk_flutter_refactor/features/auth/data/datasources/auth_remote_data_source.dart';
@@ -10,6 +11,9 @@ import 'package:dskk_flutter_refactor/core/network/network_info.dart';
 import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
 import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository_impl.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_info_repository.dart';
+import 'package:dskk_flutter_refactor/features/auth/data/repositories/user_info_repository_impl.dart';
+import 'package:dskk_flutter_refactor/features/auth/data/datasources/user_info_remote_data_source.dart';
+import 'package:dskk_flutter_refactor/features/auth/data/datasources/user_info_remote_data_source_impl.dart';
 import 'package:dskk_flutter_refactor/core/platform/token_validator.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
@@ -40,6 +44,10 @@ class AuthDI {
       () => LoginWithVerificationCodeUseCase(getIt<IAuthRepository>()),
     );
     
+    getIt.registerLazySingleton<GetLoggedInUserUseCase>(
+      () => GetLoggedInUser(getIt<IAuthRepository>()),
+    );
+    
     // 注册ISecureStorageRepository
     if (!getIt.isRegistered<ISecureStorageRepository>()) {
       getIt.registerLazySingleton<ISecureStorageRepository>(
@@ -55,10 +63,21 @@ class AuthDI {
       print('[AuthDI] Registered TokenValidator');
     }
     
-    // 注册IUserInfoRepository（需要实现）
+    // 注册UserInfoRemoteDataSource
+    if (!getIt.isRegistered<UserInfoRemoteDataSource>()) {
+      getIt.registerLazySingleton<UserInfoRemoteDataSource>(() => UserInfoRemoteDataSourceImpl(
+        getIt<Dio>(),
+      ));
+      print('[AuthDI] Registered UserInfoRemoteDataSourceImpl');
+    }
+    
+    // 注册IUserInfoRepository（真实实现）
     if (!getIt.isRegistered<IUserInfoRepository>()) {
-      getIt.registerLazySingleton<IUserInfoRepository>(() => MockUserInfoRepository());
-      print('[AuthDI] Registered MockUserInfoRepository');
+      getIt.registerLazySingleton<IUserInfoRepository>(() => UserInfoRepositoryImpl(
+        remoteDataSource: getIt<UserInfoRemoteDataSource>(),
+        networkInfo: getIt<NetworkInfo>(),
+      ));
+      print('[AuthDI] Registered UserInfoRepositoryImpl');
     }
     
     // 注册AuthRepositoryImpl
@@ -94,21 +113,4 @@ class SimpleTokenValidator implements TokenValidator {
   }
 }
 
-/// 模拟的UserInfoRepository实现
-class MockUserInfoRepository implements IUserInfoRepository {
-  @override
-  Future<Either<Failure, UserInfo>> fetchUserInfo(String token) async {
-    // 模拟获取用户信息
-    print('[MockUserInfoRepository] Fetching user info with token: $token');
-    await Future.delayed(const Duration(seconds: 1));
-    
-    // 返回成功结果
-    return Right(const UserInfo(
-      id: 12345,
-      mobile: '13800138000',
-      nickName: 'MockUser',
-      avatar: 'https://example.com/avatar.jpg',
-      commonUserId: 67890,
-    ));
-  }
-} 
+ 

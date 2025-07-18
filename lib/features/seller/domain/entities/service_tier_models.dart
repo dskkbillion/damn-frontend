@@ -8,7 +8,7 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_man
 enum ServiceTier {
   basic('Basic Tier', '基础档'),
   standard('Standard Tier', '标准档'),
-  premium('Premium Tier', '高级档');
+  premium('Premium Tier', '豪华档');
   
   const ServiceTier(this.apiName, this.displayName);
   final String apiName;

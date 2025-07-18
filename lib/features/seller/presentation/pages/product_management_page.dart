@@ -13,6 +13,7 @@ import '../widgets/loading_state.dart';
 import '../widgets/product_card.dart';
 import '../widgets/status_tag.dart';
 import 'product_edit_page.dart';
+import 'product_preview_page.dart';
 import '../../../../core/navigation/navigation_helper.dart';
 
 /// 商品管理页面
@@ -136,6 +137,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
             // 直接导航到ProductEditPage并传递回调
             String? productId;
             bool isPreviewMode = false;
+            bool isCreateMode = state.navigationPath! == SellerRoutes.productCreate;
             
             if (state.navigationPath!.contains('/edit')) {
               // 先分离查询参数和路径
@@ -164,31 +166,61 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
             print('[ProductManagementPage] Path parts: ${state.navigationPath!.split('?')[0].split('/')}');
             print('[ProductManagementPage] Edit index found: ${state.navigationPath!.split('?')[0].split('/').indexWhere((part) => part == 'edit')}');
             print('[ProductManagementPage] Extracted productId: $productId, isPreviewMode: $isPreviewMode');
-            print('[ProductManagementPage] About to create ProductEditPage with productId: $productId and isPreviewMode: $isPreviewMode');
+            print('[ProductManagementPage] About to create ${isPreviewMode ? 'ProductPreviewPage' : 'ProductEditPage'} with productId: $productId');
             print('======================');
             
-            await NavigationHelper.pushDetailPage(
-              context,
-              ProductEditPage(
-                productId: productId,
-                isPreviewMode: isPreviewMode,
-                onDraftSaved: () {
-                    print('[ProductManagementPage] onDraftSaved callback called');
-                    print('[ProductManagementPage] Current tab index: ${_tabController.index}');
-                    
-                    // 强制刷新草稿列表，不管当前在哪个Tab
-                    try {
-                      context.read<ProductManagementBloc>().add(const LoadProductList(
-                        status: ProductStatus.draft,
-                        forceRefresh: true,
-                      ));
-                      print('[ProductManagementPage] LoadProductList event dispatched successfully');
-                    } catch (e) {
-                      print('[ProductManagementPage] Error dispatching LoadProductList: $e');
-                    }
-                  },
-                ),
-            );
+            // 如果是预览模式，使用新的ProductPreviewPage
+            if (isPreviewMode) {
+              // 先导入必要的页面
+              await NavigationHelper.pushDetailPage(
+                context,
+                ProductPreviewPage(productId: productId),
+              );
+            } else {
+              final needRefresh = await NavigationHelper.pushDetailPage(
+                context,
+                ProductEditPage(
+                  productId: productId,
+                  isPreviewMode: false,
+                  onDraftSaved: () {
+                      print('[ProductManagementPage] onDraftSaved callback called');
+                      print('[ProductManagementPage] Current tab index: ${_tabController.index}');
+                      
+                      // 强制刷新草稿列表，不管当前在哪个Tab
+                      try {
+                        context.read<ProductManagementBloc>().add(const LoadProductList(
+                          status: ProductStatus.draft,
+                          forceRefresh: true,
+                        ));
+                        print('[ProductManagementPage] LoadProductList event dispatched successfully');
+                      } catch (e) {
+                        print('[ProductManagementPage] Error dispatching LoadProductList: $e');
+                      }
+                    },
+                  ),
+              );
+              
+              // 如果返回值为true，说明需要刷新列表
+              if (needRefresh == true) {
+                print('[ProductManagementPage] Product ${isCreateMode ? "created" : "edited"} successfully, refreshing lists');
+                
+                // 如果是创建商品，切换到在售Tab并刷新
+                if (isCreateMode) {
+                  _tabController.animateTo(0); // 切换到在售Tab
+                  context.read<ProductManagementBloc>().add(const LoadProductList(
+                    status: ProductStatus.normal,
+                    forceRefresh: true,
+                  ));
+                } else {
+                  // 如果是编辑商品，刷新当前Tab
+                  final currentStatus = _getStatusByTabIndex(_tabController.index);
+                  context.read<ProductManagementBloc>().add(LoadProductList(
+                    status: currentStatus,
+                    forceRefresh: true,
+                  ));
+                }
+              }
+            }
           } else {
             // 其他导航使用原来的方式
             context.push(state.navigationPath!);
@@ -250,6 +282,20 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
     );
   }
   
+  /// 根据Tab索引获取对应的商品状态
+  ProductStatus _getStatusByTabIndex(int tabIndex) {
+    switch (tabIndex) {
+      case 0:
+        return ProductStatus.normal;
+      case 1:
+        return ProductStatus.draft;
+      case 2:
+        return ProductStatus.disabled;
+      default:
+        return ProductStatus.normal;
+    }
+  }
+
   Widget _buildProductList(
     BuildContext context,
     int tabIndex,
@@ -426,6 +472,15 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
             () => _updateProductStatus(product.id, ProductStatus.normal),
           ),
         );
+        actions.add(
+          _buildActionButton(
+            context,
+            '删除',
+            Icons.delete_outline,
+            isProcessing,
+            () => _deleteProduct(product.id),
+          ),
+        );
         break;
         
       default:
@@ -453,9 +508,20 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
       margin: const EdgeInsets.only(bottom: 12.0),
       child: InkWell(
         onTap: () {
-          context.read<ProductManagementBloc>().add(
-            NavigateToProductDetail(productId: product.id),
-          );
+          // 只有非草稿状态的商品才能预览
+          if (product.status != ProductStatus.draft) {
+            context.read<ProductManagementBloc>().add(
+              NavigateToProductDetail(productId: product.id),
+            );
+          } else {
+            // 草稿状态显示提示信息
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('草稿状态的商品需要先发布才能预览'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
         },
         child: Padding(
           padding: const EdgeInsets.all(12.0),
@@ -467,25 +533,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4.0),
-                    child: product.images.isNotEmpty
-                        ? Image.network(
-                            product.images,
-                            width: 80,
-                            height: 80,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              width: 80,
-                              height: 80,
-                              color: Colors.grey[300],
-                              child: const Icon(Icons.image_not_supported, color: Colors.grey),
-                            ),
-                          )
-                        : Container(
-                            width: 80,
-                            height: 80,
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.image, color: Colors.grey),
-                          ),
+                    child: _buildProductImage(product),
                   ),
                   
                   const SizedBox(width: 12.0),
@@ -723,11 +771,18 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
         // 在售列表包含：已上架、审核中、审核失败的商品
         final List<SellerManagedProduct> result = [];
         if (state.onSaleProducts != null) {
+          print('[_getProductListByStatus] onSaleProducts count: ${state.onSaleProducts!.length}');
+          for (var product in state.onSaleProducts!) {
+            print('[_getProductListByStatus] Product ${product.id}: status=${product.status}, statusValue=${product.status.value}');
+          }
           result.addAll(state.onSaleProducts!.where((product) => 
             product.status == ProductStatus.normal ||
             product.status == ProductStatus.reviewing ||
             product.status == ProductStatus.rejected
           ));
+          print('[_getProductListByStatus] Filtered result count: ${result.length}');
+        } else {
+          print('[_getProductListByStatus] onSaleProducts is null');
         }
         return result.isEmpty ? null : result;
       case ProductStatus.draft:
@@ -786,6 +841,49 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
       case ProductStatus.unknown:
         return StatusTagType.warning; // 未知状态用警告色
     }
+  }
+
+  /// 构建商品图片
+  Widget _buildProductImage(SellerManagedProduct product) {
+    // 调试日志
+    print('[_buildProductImage] Product ${product.id} - images: "${product.images}"');
+    print('[_buildProductImage] Product ${product.id} - status: ${product.status}');
+    
+    // 从逗号分隔的字符串中获取第一张图片
+    String? firstImage;
+    if (product.images.isNotEmpty) {
+      final imageList = product.images.split(',');
+      print('[_buildProductImage] Product ${product.id} - imageList: $imageList');
+      if (imageList.isNotEmpty) {
+        firstImage = imageList.first.trim();
+        print('[_buildProductImage] Product ${product.id} - firstImage: "$firstImage"');
+      }
+    }
+    
+    if (firstImage != null && firstImage.isNotEmpty) {
+      return Image.network(
+        firstImage,
+        width: 80,
+        height: 80,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          print('[_buildProductImage] Image load error for ${product.id}: $error');
+          return Container(
+            width: 80,
+            height: 80,
+            color: Colors.grey[300],
+            child: const Icon(Icons.image_not_supported, color: Colors.grey),
+          );
+        },
+      );
+    }
+    
+    return Container(
+      width: 80,
+      height: 80,
+      color: Colors.grey[300],
+      child: const Icon(Icons.image, color: Colors.grey),
+    );
   }
 
   /// 构建状态标签

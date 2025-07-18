@@ -1,0 +1,376 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:dskk_flutter_refactor/features/home/domain/entities/product_detail.dart';
+import 'package:dskk_flutter_refactor/features/home/presentation/widgets/product_detail_content.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_bloc.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_event.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_state.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/entities/product_edit_models.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/usecases/get_logged_in_user.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_info_repository.dart';
+import 'package:go_router/go_router.dart';
+import 'product_edit_page.dart'; // 导入ExtendedProductFormData
+
+/// 商品预览页面 - 使用与商品详情页一致的UI
+class ProductPreviewPage extends StatefulWidget {
+  final String? productId;
+  final ExtendedProductFormData? formData; // 从编辑页面传入的表单数据
+
+  const ProductPreviewPage({
+    Key? key,
+    this.productId,
+    this.formData,
+  }) : super(key: key);
+
+  @override
+  State<ProductPreviewPage> createState() => _ProductPreviewPageState();
+}
+
+class _ProductPreviewPageState extends State<ProductPreviewPage> {
+  late final ProductEditBloc _bloc;
+  ProductDetail? _productDetail;
+  String _currentUserName = '当前卖家';
+
+  @override
+  void initState() {
+    super.initState();
+    _bloc = GetIt.I<ProductEditBloc>();
+    _getCurrentUserInfo();
+    
+    if (widget.productId != null) {
+      final productIdInt = int.tryParse(widget.productId!) ?? 0;
+      if (productIdInt > 0) {
+        _bloc.add(InitializeProductEdit(productId: productIdInt));
+      }
+    } else if (widget.formData != null) {
+      // 如果是从编辑页面传入的数据，直接转换
+      _productDetail = _convertFormDataToProductDetail(widget.formData!);
+    }
+  }
+
+  /// 获取当前用户信息
+  void _getCurrentUserInfo() async {
+    try {
+      // 首先获取登录用户
+      final getLoggedInUser = GetIt.I<GetLoggedInUserUseCase>();
+      final userResult = getLoggedInUser.call();
+      
+      userResult.fold(
+        (failure) {
+          print('[PreviewPage] Failed to get logged in user: $failure');
+        },
+        (authUser) async {
+          if (authUser != null) {
+            // 获取用户详细信息
+            final userInfoRepo = GetIt.I<IUserInfoRepository>();
+            final userInfoResult = await userInfoRepo.fetchUserInfo(authUser.token);
+            
+            userInfoResult.fold(
+              (failure) {
+                print('[PreviewPage] Failed to get user info: $failure');
+              },
+              (userInfo) {
+                if (mounted) {
+                  setState(() {
+                    _currentUserName = userInfo.nickName ?? '卖家用户';
+                  });
+                  print('[PreviewPage] Got user name: $_currentUserName');
+                }
+              },
+            );
+          }
+        },
+      );
+    } catch (e) {
+      print('[PreviewPage] Error getting user info: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _bloc.close();
+    super.dispose();
+  }
+
+  /// 将表单数据转换为商品详情数据
+  ProductDetail _convertFormDataToProductDetail(ExtendedProductFormData formData) {
+    print('[PreviewPage] Converting form data:');
+    print('  - Name: "${formData.name}"');
+    print('  - Description: "${formData.description}"');
+    print('  - Price: ${formData.price}');
+    print('  - Variants count: ${formData.variants.length}');
+    print('  - Images count: ${formData.images.length}');
+    print('  - QA count: ${formData.qaList.length}');
+    
+    // 转换服务档位为商品变体
+    final variants = formData.variants.map((tier) {
+      print('  - Converting tier: ${tier.name} - Price: ${tier.sellingPrice}');
+      return ProductVariant(
+        id: tier.id,
+        name: tier.name,
+        sellingPrice: tier.sellingPrice,
+        editNum: tier.editNum,
+        deliveryDay: tier.deliveryDay,
+        features: tier.feature.map<Map<String, dynamic>>((f) => {
+          'key': f['key'] ?? '',
+          'value': f['val'] ?? f['value'] ?? '',
+        }).toList(),
+      );
+    }).toList();
+    
+    print('  - Converted variants count: ${variants.length}');
+    if (variants.isNotEmpty) {
+      print('  - First variant price: ${variants.first.sellingPrice}');
+    }
+
+    // 转换QA为材料信息
+    final materials = formData.qaList.asMap().entries.map((entry) => ProductMaterial(
+      id: entry.key,
+      question: entry.value['question'] ?? '',
+      answer: entry.value['answer'] ?? '',
+      type: 'qa',
+    )).toList();
+    
+    print('  - Converted materials count: ${materials.length}');
+
+    final convertedProduct = ProductDetail(
+      id: formData.productId ?? 0,
+      name: formData.name,
+      description: formData.description,
+      sellingPrice: variants.isNotEmpty ? variants.first.sellingPrice : formData.price,
+      mainImage: formData.images.isNotEmpty ? formData.images.first : '',
+      images: formData.images.isEmpty ? <String>[] : formData.images,
+      detailImages: null,
+      detailContent: null,
+      winImages: null,
+      categoryId: formData.categoryId ?? 0,
+      categoryName: '',
+      sellerId: 0, // 预览模式下使用默认值
+      sellerName: _currentUserName,
+      sellerAvatar: null,
+      sellerRemarks: null,
+      recoverFlag: false,
+      recoverContent: null,
+      variants: variants,
+      materials: materials,
+      sales: 0,
+      views: 0,
+      status: 'preview',
+      selectionMode: 'single',
+      createTime: DateTime.now(),
+      updateTime: DateTime.now(),
+      evaluateNum: 0,
+      score: '5.0',
+    );
+    
+    print('[PreviewPage] Form data conversion completed:');
+    print('  - Final product name: "${convertedProduct.name}"');
+    print('  - Final product price: ${convertedProduct.sellingPrice}');
+    print('  - Final variants count: ${convertedProduct.variants?.length ?? 0}');
+    print('  - Final images count: ${convertedProduct.images.length}');
+    
+    return convertedProduct;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('商品预览'),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        actions: [
+          // 返回编辑按钮
+          TextButton.icon(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            icon: const Icon(Icons.edit),
+            label: const Text('返回编辑'),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFFBF7D2A),
+            ),
+          ),
+          const SizedBox(width: 16),
+        ],
+      ),
+      body: widget.formData != null && _productDetail != null
+          ? _buildContent(_productDetail!)
+          : BlocBuilder<ProductEditBloc, ProductEditState>(
+              bloc: _bloc,
+              builder: (context, state) {
+                if (state.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                
+                if (state.product == null) {
+                  return const Center(child: Text('加载商品信息失败'));
+                }
+                
+                // 从状态中的产品数据构建ProductDetail
+                final productDetail = _convertManagedProductToDetail(state.product!);
+                return _buildContent(productDetail);
+              },
+            ),
+    );
+  }
+
+  /// 将ManagedProduct转换为ProductDetail
+  ProductDetail _convertManagedProductToDetail(dynamic product) {
+    print('[PreviewPage] Converting SellerManagedProduct to ProductDetail:');
+    print('  - Product ID: ${product.id}');
+    print('  - Product Name: "${product.name}"');
+    print('  - Product Description: "${product.description}"');
+    print('  - Product Price: ${product.price}');
+    print('  - Product Images: "${product.images}"');
+    print('  - Product Images Type: ${product.images.runtimeType}');
+    print('  - Product Status: ${product.status}');
+    print('  - Product Category: ${product.category}');
+    
+    // 详细检查变体数据
+    print('  - Product Variants Raw: ${product.variants}');
+    print('  - Product Variants Type: ${product.variants.runtimeType}');
+    print('  - Product Variants Length: ${product.variants?.length ?? 'null'}');
+    
+    if (product.variants != null && product.variants.isNotEmpty) {
+      print('  - First Variant: ${product.variants[0]}');
+      print('  - First Variant Type: ${product.variants[0].runtimeType}');
+      print('  - First Variant Fields: name=${product.variants[0].name}, price=${product.variants[0].price}, sellingPrice=${product.variants[0].sellingPrice}');
+    }
+    
+    print('  - Product Materials Raw: ${product.productMaterials}');
+    print('  - Product Materials Length: ${product.productMaterials?.length ?? 'null'}');
+    
+    // 转换商品变体
+    final variants = (product.variants as List<dynamic>?)?.map<ProductVariant>((variant) {
+      print('  - Converting variant: ${variant.name} - Price: ${variant.sellingPrice} - DeliveryDay: ${variant.deliveryDay}');
+      return ProductVariant(
+        id: variant.id,
+        name: variant.name.isNotEmpty ? variant.name : variant.optionValue,
+        sellingPrice: variant.sellingPrice > 0 ? variant.sellingPrice : variant.price,
+        editNum: variant.editNum,
+        deliveryDay: variant.deliveryDay,
+        features: variant.feature.map<Map<String, dynamic>>((f) => {
+          'key': f['key'] ?? '',
+          'value': f['val'] ?? f['value'] ?? '',
+        }).toList(),
+      );
+    }).toList() ?? [];
+    
+    print('  - Converted variants count: ${variants.length}');
+    
+    // 转换商品材料
+    final materials = (product.productMaterials as List<dynamic>?)?.map<ProductMaterial>((material) {
+      return ProductMaterial(
+        id: material.id,
+        question: material.question,
+        answer: material.answer,
+        type: material.type,
+      );
+    }).toList() ?? [];
+    
+    print('  - Converted materials count: ${materials.length}');
+    
+    // 处理图片 - images字段是逗号分隔的字符串（已经在DTO中处理过）
+    List<String> imageList = <String>[];
+    if (product.images != null && product.images.isNotEmpty) {
+      // 明确类型，避免类型推断问题
+      final splitImages = product.images.split(',');
+      for (final url in splitImages) {
+        final trimmedUrl = url.trim();
+        if (trimmedUrl.isNotEmpty) {
+          imageList.add(trimmedUrl);
+        }
+      }
+    }
+    
+    final convertedProduct = ProductDetail(
+      id: product.id ?? 0,
+      name: product.name ?? '',
+      description: product.description ?? '',
+      sellingPrice: variants.isNotEmpty ? variants.first.sellingPrice : (product.price ?? 0.0),
+      mainImage: imageList.isNotEmpty ? imageList.first : '',
+      images: imageList.isEmpty ? <String>[] : imageList,
+      detailImages: null,
+      detailContent: null,
+      winImages: null,
+      categoryId: product.category?.id ?? 0,
+      categoryName: product.category?.name ?? '',
+      sellerId: 0, // SellerManagedProduct 没有sellerId字段
+      sellerName: _currentUserName,
+      sellerAvatar: null,
+      sellerRemarks: null,
+      recoverFlag: false,
+      recoverContent: null,
+      variants: variants,
+      materials: materials,
+      sales: product.sales ?? 0,
+      views: 0, // SellerManagedProduct 没有views字段
+      status: 'preview',
+      selectionMode: 'single',
+      createTime: product.createTime ?? DateTime.now(),
+      updateTime: product.updateTime ?? DateTime.now(),
+      evaluateNum: 0, // SellerManagedProduct 没有evaluateNum字段
+      score: '5.0', // SellerManagedProduct 没有score字段
+    );
+    
+    print('[PreviewPage] Conversion completed:');
+    print('  - Final product name: "${convertedProduct.name}"');
+    print('  - Final product price: ${convertedProduct.sellingPrice}');
+    print('  - Final variants count: ${convertedProduct.variants?.length ?? 0}');
+    print('  - Final images count: ${convertedProduct.images.length}');
+    
+    return convertedProduct;
+  }
+
+  Widget _buildContent(ProductDetail productDetail) {
+    return ProductDetailContent(
+      product: productDetail,
+      isPreviewMode: true,
+      // 预览模式下的特殊处理
+      customActions: _buildPreviewActions(),
+      onContactSeller: null, // 预览模式下禁用联系卖家
+      onBuyNow: () {
+        // 预览模式下的购买按钮行为
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('预览模式下无法购买，请先发布商品'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPreviewActions() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.amber.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.amber),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.info_outline, color: Colors.amber),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '这是商品预览模式，买家将看到类似的界面',
+              style: TextStyle(
+                color: Colors.amber[800],
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

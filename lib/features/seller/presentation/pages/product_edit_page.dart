@@ -5,15 +5,49 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_managed_product.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/entities/enums/product_status.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_event.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_state.dart';
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 import '../widgets/image_preview_page.dart';
+import 'product_preview_page.dart';
 
 // 导入重构后的数据模型
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/product_edit_models.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/service_tier_models.dart';
+
+// 扩展的产品表单数据，包含额外的字段
+class ExtendedProductFormData extends ProductFormData {
+  final int? productId;
+  final List<String> images;
+  
+  const ExtendedProductFormData({
+    required String name,
+    required String description,
+    required double price,
+    int? categoryId,
+    required List<ProductOptionValue> variants,
+    required List<ProductMaterial> productMaterials,
+    required String detailContent,
+    required List<Map<String, String>> qaList,
+    required List<Map<String, dynamic>> buyerInfoItems,
+    required List<Map<String, dynamic>> successCases,
+    this.productId,
+    required this.images,
+  }) : super(
+    name: name,
+    description: description,
+    price: price,
+    categoryId: categoryId,
+    variants: variants,
+    productMaterials: productMaterials,
+    detailContent: detailContent,
+    qaList: qaList,
+    buyerInfoItems: buyerInfoItems,
+    successCases: successCases,
+  );
+}
 
 /// 商品编辑页面
 class ProductEditPage extends StatefulWidget {
@@ -908,26 +942,47 @@ class _ProductEditPageState extends State<ProductEditPage> {
             ),
             const SizedBox(width: 16),
           ] : [
-            // 编辑模式下显示保存草稿和发布按钮
+            // 编辑模式下显示预览、保存草稿和发布按钮
             BlocBuilder<ProductEditBloc, ProductEditState>(
-              bloc: _bloc, // 直接指定bloc实例
+              bloc: _bloc,
+              buildWhen: (previous, current) => 
+                previous.product?.status != current.product?.status,
               builder: (context, state) {
-                  return TextButton.icon(
-                    onPressed: state.isSavingDraft ? null : () {
-                      _bloc.add(const SaveProductDraft());
-                    },
-                    icon: state.isSavingDraft
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.save_alt),
-                  label: Text(state.hasUnsavedChanges ? '草稿*' : '草稿'),
-                    style: TextButton.styleFrom(
-                    foregroundColor: state.hasUnsavedChanges ? Colors.orange : Colors.grey,
+                // 判断是否是草稿商品
+                final isDraft = state.product?.status == ProductStatus.draft;
+                
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // 预览按钮 - 草稿商品不显示
+                    if (!isDraft) ...[
+                      IconButton(
+                        onPressed: () => _previewProduct(),
+                        icon: const Icon(Icons.preview),
+                        tooltip: '预览',
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    
+                    // 保存草稿按钮
+                    TextButton.icon(
+                      onPressed: state.isSavingDraft ? null : () {
+                        _bloc.add(const SaveProductDraft());
+                      },
+                      icon: state.isSavingDraft
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.save_alt),
+                      label: Text(state.hasUnsavedChanges ? '草稿*' : '草稿'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: state.hasUnsavedChanges ? Colors.orange : Colors.grey,
+                      ),
                     ),
-                  );
+                  ],
+                );
               },
             ),
             
@@ -974,7 +1029,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   ),
                 );
                 Future.delayed(const Duration(milliseconds: 2000), () {
-                  context.pop();
+                  // 返回时带上刷新标志，让商品管理页面知道需要刷新
+                  context.pop(true);
                 });
               }
             },
@@ -2308,18 +2364,12 @@ class _ProductEditPageState extends State<ProductEditPage> {
 
   // 构建图片网格
   Widget _buildImageGrid(ProductEditState state) {
-    // 确定图片来源：本地选择的图片或者已有的产品图片
+    // 使用selectedImagePaths作为统一的图片源（现在包含网络URL和本地路径）
     final List<String> imagePaths = state.selectedImagePaths;
-    final List<String> networkImageUrls = [];
-    
-    // 安全地获取网络图片URLs
-    if (state.product != null && state.product!.images.isNotEmpty) {
-      networkImageUrls.addAll(state.product!.images.split(','));
-    }
         
     // 确定要显示的图片数量，包括"添加"按钮格子
-    final bool hasImages = imagePaths.isNotEmpty || networkImageUrls.isNotEmpty;
-    int totalItemCount = hasImages ? (imagePaths.isNotEmpty ? imagePaths.length : networkImageUrls.length) + 1 : 1;
+    final bool hasImages = imagePaths.isNotEmpty;
+    int totalItemCount = hasImages ? imagePaths.length + 1 : 1;
     
     // 限制最多9张图片 + 1个添加按钮 = 10个格子
     if (totalItemCount > 10) totalItemCount = 10;
@@ -2339,19 +2389,18 @@ class _ProductEditPageState extends State<ProductEditPage> {
         if (hasImages && index == totalItemCount - 1) {
           return _buildAddImageButton(state);
         } 
-        // 显示已有图片
-        else if (index < (imagePaths.isNotEmpty ? imagePaths.length : networkImageUrls.length)) {
-          final String? localImagePath = imagePaths.isNotEmpty && index < imagePaths.length 
-              ? imagePaths[index] 
-              : null;
-              
-          final String? networkImageUrl = imagePaths.isEmpty && 
-                                          networkImageUrls.isNotEmpty && 
-                                          index < networkImageUrls.length 
-              ? networkImageUrls[index] 
-              : null;
-              
-          return _buildImageItem(state, index, localImagePath, networkImageUrl);
+        // 显示图片
+        else if (index < imagePaths.length) {
+          final String imagePath = imagePaths[index];
+          // 判断是否为网络URL
+          final bool isNetworkImage = imagePath.startsWith('http');
+          
+          return _buildImageItem(
+            state, 
+            index, 
+            isNetworkImage ? null : imagePath,  // 本地路径
+            isNetworkImage ? imagePath : null,  // 网络URL
+          );
         } 
         // 添加按钮格子（以防万一）
         else {
@@ -2527,15 +2576,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
 
   /// 打开图片预览页面
   void _openImagePreview(ProductEditState state, int index) {
-    final List<String> allImagePaths = [];
-    
-    // 添加本地选择的图片
-    allImagePaths.addAll(state.selectedImagePaths);
-    
-    // 如果没有本地图片但有网络图片，添加网络图片
-    if (allImagePaths.isEmpty && state.product != null && state.product!.images.isNotEmpty) {
-      allImagePaths.addAll(state.product!.images.split(','));
-    }
+    final List<String> allImagePaths = state.selectedImagePaths;
     
     if (allImagePaths.isNotEmpty) {
       Navigator.of(context).push(
@@ -2589,7 +2630,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               ),
               const SizedBox(height: 4),
               Text(
-                '¥${tierConfig.price}',
+                '¥${tierConfig.price.toStringAsFixed(2)}',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -2688,7 +2729,13 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 ),
                 onChanged: (value) {
                   setState(() {
-                    tierConfig.updateDeliveryDay(int.tryParse(value) ?? 3);
+                    // 允许字段为空，不设置默认值
+                    if (value.isNotEmpty) {
+                      final parsedValue = int.tryParse(value);
+                      if (parsedValue != null) {
+                        tierConfig.updateDeliveryDay(parsedValue);
+                      }
+                    }
                   });
                   _onFormFieldChanged();
                 },
@@ -2706,7 +2753,13 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 ),
                 onChanged: (value) {
                   setState(() {
-                    tierConfig.updateEditNum(int.tryParse(value) ?? 1);
+                    // 允许字段为空，不设置默认值
+                    if (value.isNotEmpty) {
+                      final parsedValue = int.tryParse(value);
+                      if (parsedValue != null) {
+                        tierConfig.updateEditNum(parsedValue);
+                      }
+                    }
                   });
                   _onFormFieldChanged();
                 },
@@ -2983,6 +3036,79 @@ class _ProductEditPageState extends State<ProductEditPage> {
     });
     // 触发变更检测
     _onFormFieldChanged();
+  }
+  
+  /// 预览商品
+  void _previewProduct() {
+    // 获取当前表单数据
+    final formData = _collectFormData();
+    
+    // 导航到预览页面，传递表单数据
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ProductPreviewPage(
+          productId: widget.productId,
+          formData: formData,
+        ),
+      ),
+    );
+  }
+  
+  /// 收集表单数据
+  ExtendedProductFormData _collectFormData() {
+    final state = _bloc.state;
+    
+    // 收集所有启用的服务档位数据
+    final variants = <ProductOptionValue>[];
+    int variantId = 1;
+    
+    for (final tier in ServiceTier.values) {
+      final tierConfig = _serviceTiers.getTierConfig(tier);
+      // 检查该档位是否启用（价格大于0）
+      if (tierConfig.price > 0) {
+        // 获取该档位的属性
+        final attributes = _serviceTiers.getAttributesForTier(tier);
+        
+        variants.add(ProductOptionValue(
+          id: variantId++,
+          name: tier.displayName,
+          sellingPrice: tierConfig.price,
+          deliveryDay: tierConfig.deliveryDay,
+          editNum: tierConfig.editNum,
+          feature: attributes.map((attr) => {
+            'key': attr.name,
+            'val': attr.value,
+            'type': attr.type.value,
+          }).toList(),
+        ));
+      }
+    }
+    
+    return ExtendedProductFormData(
+      productId: widget.productId != null ? int.tryParse(widget.productId!) : null,
+      name: _nameController.text,
+      description: _descriptionController.text,
+      price: variants.isNotEmpty ? variants.first.sellingPrice : 0.0,
+      categoryId: state.formData?.categoryId,
+      variants: variants,
+      productMaterials: [],
+      detailContent: '',
+      qaList: _qaList.map((qa) => {
+        'question': qa.question,
+        'answer': qa.answer,
+      }).toList(),
+      buyerInfoItems: _buyerInfoItems.map((item) => {
+        'type': item.type.name,
+        'label': item.label,
+        'required': item.isRequired ? 'true' : 'false',
+      }).toList(),
+      successCases: _successCases.map((case_) => {
+        'title': case_.title,
+        'description': case_.description,
+        'imageUrl': case_.imageUrl,
+      }).toList(),
+      images: state.selectedImagePaths,
+    );
   }
 
   /// 清理未使用的属性控制器
