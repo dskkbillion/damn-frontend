@@ -188,21 +188,15 @@ class OrderDetailActionButtons extends StatelessWidget {
         const SnackBar(content: Text('正在提交申请...')),
       );
 
-      // TODO: 这里需要实现实际的API调用
-      // 现在使用模拟的延迟来演示流程
-      await Future.delayed(const Duration(seconds: 1));
-      
-      // 模拟成功提交
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('申请已提交，平台客服会在24小时内联系您'),
-          backgroundColor: Colors.green,
+      // 调用BLoC处理平台介入
+      context.read<OrderDetailBloc>().add(
+        PlatformInterventionRequested(
+          orderId: order.id,
+          reasonValue: reasonValue,
+          reasonLabel: reasonLabel,
+          description: description,
         ),
       );
-
-      // TODO: 刷新订单状态
-      // context.read<OrderDetailBloc>().add(LoadOrderDetail(orderId: order.id));
       
     } catch (e) {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -366,21 +360,16 @@ class OrderDetailActionButtons extends StatelessWidget {
         SnackBar(content: Text('正在提交${type == 'replenishment' ? '补充材料' : '重做'}申请...')),
       );
 
-      // TODO: 这里需要实现实际的API调用
-      // 现在使用模拟的延迟来演示流程
-      await Future.delayed(const Duration(seconds: 1));
-      
-      // 模拟成功提交
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('申请已提交，卖家会在24小时内回复处理结果'),
-          backgroundColor: Colors.green,
+      // 调用BLoC处理订单需求
+      context.read<OrderDetailBloc>().add(
+        OrderDemandRequested(
+          orderId: order.id,
+          type: type,
+          reasonValue: reasonValue,
+          reasonLabel: reasonLabel,
+          description: description,
         ),
       );
-
-      // TODO: 刷新订单状态
-      // context.read<OrderDetailBloc>().add(LoadOrderDetail(orderId: order.id));
       
     } catch (e) {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -494,13 +483,10 @@ class OrderDetailActionButtons extends StatelessWidget {
         buttons.add(_buildButton(context, '平台介入', () {
           _showPlatformInterventionDialog(context);
         }));
-        primaryButton = _buildButton(context, '去评价', () {
-           // TODO: Implement navigation to evaluation page or show modal
-           print('去评价 for order ${order.id}');
-           // Example: context.go('/evaluate/${order.id}');
-           // For now, just adding the existing event might be okay if it handles showing the form
-            context.read<OrderDetailBloc>().add(GoToEvaluation(orderId: order.id));
-        }, isPrimary: true);
+        // 暂时移除去评价按钮，仅显示其他操作按钮
+        // primaryButton = _buildButton(context, '去评价', () {
+        //    context.read<OrderDetailBloc>().add(GoToEvaluation(orderId: order.id));
+        // }, isPrimary: true);
         break;
       case OrderStatus.orderCompleted: // 已完成
          buttons.add(_buildButton(context, '申请重做', () {

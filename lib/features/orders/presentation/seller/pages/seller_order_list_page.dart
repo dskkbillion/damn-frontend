@@ -6,6 +6,7 @@ import '../../../domain/entities/order.dart'; // Import Order
 import '../../../domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/seller/widgets/seller_order_item_card.dart';
 import '../bloc/seller_order_list_bloc.dart';
+import 'package:dskk_flutter_refactor/core/config/app_config.dart';
 
 class SellerOrderListPage extends StatefulWidget {
   /// 初始状态参数，可以为null
@@ -132,7 +133,33 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
             : context.go('/seller'), // 如果不能返回，则导航到卖家首页
         ),
         title: const Text('我的订单 (卖家)'),
-        // TODO: Add Search Icon/Action?
+        actions: [
+          // 添加模拟数据切换按钮
+          IconButton(
+            icon: Icon(
+              AppConfig.useMockData ? Icons.cloud_off : Icons.cloud_queue,
+              color: AppConfig.useMockData ? Colors.orange : null,
+            ),
+            tooltip: AppConfig.useMockData ? '正在使用模拟数据' : '正在使用真实数据',
+            onPressed: () {
+              setState(() {
+                AppConfig.toggleMockMode();
+              });
+              // 重新加载当前标签的数据
+              final selectedStatus = _tabStatuses[_tabController.index];
+              context.read<SellerOrderListBloc>().add(SellerOrderStatusFilterChanged(newStatusFilter: selectedStatus));
+              
+              // 显示提示
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(AppConfig.useMockData ? '已切换到模拟数据模式' : '已切换到真实数据模式'),
+                  duration: const Duration(seconds: 2),
+                  backgroundColor: AppConfig.useMockData ? Colors.orange : Colors.green,
+                ),
+              );
+            },
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,

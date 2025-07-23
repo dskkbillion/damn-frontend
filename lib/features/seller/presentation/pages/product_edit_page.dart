@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -16,6 +18,43 @@ import 'product_preview_page.dart';
 // 导入重构后的数据模型
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/product_edit_models.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/service_tier_models.dart';
+
+// 输入验证常量
+class ValidationConstants {
+  static const double maxPrice = 999999.99; // 最大价格
+  static const int maxDeliveryDays = 365; // 最大交付天数
+  static const int maxEditNum = 99; // 最大修改次数
+  static const int maxAttributeNameLength = 8; // 属性名称最大长度
+  static const int maxAttributeValueLength = 50; // 属性值最大长度
+}
+
+/// 自定义的最大值文本输入格式化器
+class _MaxValueTextInputFormatter extends TextInputFormatter {
+  final int maxValue;
+  
+  _MaxValueTextInputFormatter(this.maxValue);
+  
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+    
+    final newInt = int.tryParse(newValue.text);
+    if (newInt == null) {
+      return oldValue;
+    }
+    
+    if (newInt > maxValue) {
+      return oldValue;
+    }
+    
+    return newValue;
+  }
+}
 
 // 扩展的产品表单数据，包含额外的字段
 class ExtendedProductFormData extends ProductFormData {
@@ -140,6 +179,12 @@ class _ProductEditPageState extends State<ProductEditPage> {
 
   /// 添加表单验证错误状态变量
   Map<String, String> _formErrors = {};
+  
+  /// 系统属性控制器映射
+  final Map<String, TextEditingController> _systemControllers = {};
+  
+  /// 防抖计时器
+  Timer? _debounceTimer;
 
   @override
   void initState() {
@@ -294,11 +339,20 @@ class _ProductEditPageState extends State<ProductEditPage> {
     _descriptionController.dispose();
     _scrollController.dispose(); // 释放滚动控制器
     
+    // 释放防抖计时器
+    _debounceTimer?.cancel();
+    
     // 释放所有属性控制器
     for (var controller in _attributeControllers.values) {
       controller.dispose();
     }
     _attributeControllers.clear();
+    
+    // 释放所有系统属性控制器
+    for (var controller in _systemControllers.values) {
+      controller.dispose();
+    }
+    _systemControllers.clear();
     
     // 释放所有QA控制器
     for (var controller in _qaControllers.values) {
@@ -513,28 +567,6 @@ class _ProductEditPageState extends State<ProductEditPage> {
     _syncAdditionalFormData();
   }
 
-  /// 添加服务特性（共享特性）
-  void _addServiceFeature(String key, String value, String type) {
-    setState(() {
-      final template = ProductAttributeTemplate(
-        name: key,
-        type: ProductAttributeType.input, // 使用默认类型
-      );
-      _serviceTiers.addAttributeTemplate(template);
-      // 为当前选中档位设置值
-      _serviceTiers.getTierConfig(_selectedTier).updateAttributeValue(template.id, value);
-    });
-  }
-  
-  /// 删除服务特性（共享特性）
-  void _removeServiceFeature(String featureId) {
-    setState(() {
-      _serviceTiers.removeAttributeTemplate(featureId);
-    });
-  }
-
-
-
   /// 选择服务档位
   void _selectServiceTier(ServiceTier tier) {
     setState(() {
@@ -658,155 +690,54 @@ class _ProductEditPageState extends State<ProductEditPage> {
   /// 显示添加商品属性弹窗
   void _showAddFeatureDialog() {
     final nameController = TextEditingController();
-    final valueController = TextEditingController();
-    final placeholderController = TextEditingController();
-    ProductAttributeType selectedType = ProductAttributeType.input;
-    List<String> options = [];
-    bool isRequired = false;
-
+    String? errorText;
+    
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('添加商品属性'),
-        content: ConstrainedBox(
-          constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.7,
-            maxWidth: double.maxFinite,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-          mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.info_outline, color: Colors.blue[600], size: 16),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            '添加的属性将应用于所有服务档位，如颜色、型号、适用年龄等',
-                            style: TextStyle(
-                              color: Colors.blue[600],
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // 属性名称
-            TextField(
-                    controller: nameController,
-              decoration: _lightBorderDecoration.copyWith(
-                      labelText: '属性名称 *',
-                      hintText: '例如：颜色、型号、材质、适用年龄',
-              ),
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('添加属性'),
+          content: TextField(
+            controller: nameController,
+            maxLength: ValidationConstants.maxAttributeNameLength,
+            decoration: InputDecoration(
+              hintText: '请输入属性名称',
+              helperText: '最多${ValidationConstants.maxAttributeNameLength}个字符',
+              errorText: errorText,
+              border: const OutlineInputBorder(),
+              counterText: '${nameController.text.length}/${ValidationConstants.maxAttributeNameLength}',
             ),
-            const SizedBox(height: 12),
-                  
-                  // 属性类型选择
-                  DropdownButtonFormField<ProductAttributeType>(
-                    value: selectedType,
-                    decoration: _lightBorderDecoration.copyWith(
-                      labelText: '属性类型',
-                    ),
-                    items: ProductAttributeType.values.map((type) => 
-                      DropdownMenuItem(
-                        value: type,
-                        child: Text(type.displayName),
-                      ),
-                    ).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedType = value!;
-                        // 现在只有input和boolean类型，都不需要options
-                        options.clear();
-                        // 如果选择boolean类型，清除占位符文本和必填项设置
-                        if (selectedType == ProductAttributeType.boolean) {
-                          placeholderController.clear();
-                          isRequired = false;
-                        }
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  
-                  // 占位符文本（仅对input类型显示）
-                  if (selectedType == ProductAttributeType.input) ...[
-                    TextField(
-                      controller: placeholderController,
-                      decoration: _lightBorderDecoration.copyWith(
-                        labelText: '占位符文本',
-                        hintText: '例如：请选择颜色、请输入型号',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-                  
-                  // 是否必填（仅对input类型显示）
-                  if (selectedType == ProductAttributeType.input) ...[
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: isRequired,
-                          onChanged: (value) {
-                            setState(() {
-                              isRequired = value ?? false;
-                            });
-                          },
-                        ),
-                        const Text('必填项'),
-                      ],
-                    ),
-                  ],
-                ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (nameController.text.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('请输入属性名称')),
-                );
-                return;
-              }
-              
-                // 现在只有input和boolean类型，不需要检查选项
-                // 删除了选择类型的验证逻辑
-                
-                _addProductAttribute(
-                nameController.text,
-                  valueController.text,
-                  selectedType,
-                  options: options,
-                  isRequired: isRequired,
-                  placeholder: placeholderController.text,
-              );
-              
-              Navigator.pop(context);
+            autofocus: true,
+            onChanged: (value) {
+              setDialogState(() {
+                if (value.length > ValidationConstants.maxAttributeNameLength) {
+                  errorText = '属性名称最多${ValidationConstants.maxAttributeNameLength}个字符';
+                } else {
+                  errorText = null;
+                }
+              });
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFBF7D2A),
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('添加'),
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (nameController.text.isNotEmpty && 
+                    nameController.text.length <= ValidationConstants.maxAttributeNameLength) {
+                  _addProductAttribute(
+                    nameController.text,
+                    '',
+                    ProductAttributeType.input,
+                  );
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text('确定'),
+            ),
+          ],
         ),
       ),
     );
@@ -1178,60 +1109,56 @@ class _ProductEditPageState extends State<ProductEditPage> {
       margin: const EdgeInsets.only(top: 12),
       child: Column(
         children: [
-          // 标题和说明
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "服务档位设置",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+          // 标题
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 12),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "服务档位设置",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
-                Text(
-                  "固定三档服务",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                    ),
-                  ),
-              ],
+              ),
             ),
           ),
           
-          // 显示三个服务档位卡片
-          Padding(
+          // 档位选择标签
+          Container(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                _buildServiceTierCard(ServiceTier.basic),
+                _buildTierSelector(ServiceTier.basic),
                 const SizedBox(width: 8),
-                _buildServiceTierCard(ServiceTier.standard),
+                _buildTierSelector(ServiceTier.standard),
                 const SizedBox(width: 8),
-                _buildServiceTierCard(ServiceTier.premium),
+                _buildTierSelector(ServiceTier.premium),
               ],
             ),
           ),
           
-          // 当前选中档位的编辑区域
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: _buildSelectedTierEditArea(),
+          const SizedBox(height: 16),
+          
+          // 档位价格编辑
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _buildTierPriceEditor(),
           ),
           
-          // 共享商品属性管理
+          const SizedBox(height: 16),
+          
+          // 当前档位的属性列表
           Container(
-            margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
               border: Border.all(color: Colors.grey[300]!),
-                  borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: _buildSharedFeaturesSection(),
+            child: _buildTierAttributesList(),
           ),
+          
+          const SizedBox(height: 16),
         ],
       ),
     );
@@ -2599,278 +2526,671 @@ class _ProductEditPageState extends State<ProductEditPage> {
     _onFormFieldChanged();
   }
 
-  /// 构建服务档位卡片
-  Widget _buildServiceTierCard(ServiceTier tier) {
-    final tierConfig = _serviceTiers.getTierConfig(tier);
+  /// 构建档位选择器
+  Widget _buildTierSelector(ServiceTier tier) {
     final isSelected = _selectedTier == tier;
+    final tierConfig = _serviceTiers.getTierConfig(tier);
+    final hasPrice = tierConfig.price > 0;
     
     return Expanded(
       child: GestureDetector(
         onTap: () => _selectServiceTier(tier),
         child: Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
           decoration: BoxDecoration(
             border: Border.all(
-              color: isSelected ? const Color(0xFFBF7D2A) : Colors.grey[300]!,
+              color: isSelected ? Colors.blue : Colors.grey[300]!,
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(8),
-            color: isSelected ? const Color(0xFFBF7D2A).withOpacity(0.1) : Colors.white,
+            color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.white,
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 tier.displayName,
                 style: TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: isSelected ? const Color(0xFFBF7D2A) : Colors.black,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? Colors.blue : Colors.grey[700],
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                '¥${tierConfig.price.toStringAsFixed(2)}',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: isSelected ? const Color(0xFFBF7D2A) : Colors.black,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                '${tierConfig.deliveryDay}天交付',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-              ),
-              Text(
-                '${tierConfig.editNum}次修改',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-              ),
-              if (_serviceTiers.attributeTemplates.isNotEmpty)
+              if (hasPrice) ...[
+                const SizedBox(height: 2),
                 Text(
-                  '${_serviceTiers.attributeTemplates.length}项特性',
+                  '¥${tierConfig.price.toStringAsFixed(tierConfig.price % 1 == 0 ? 0 : 2)}',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey[600],
+                    fontWeight: FontWeight.normal,
+                    color: isSelected ? Colors.blue : Colors.grey[600],
                   ),
                 ),
+              ],
             ],
           ),
         ),
       ),
     );
   }
-
-  /// 构建选中档位的编辑区域
-  Widget _buildSelectedTierEditArea() {
+  
+  /// 构建档位价格编辑器
+  Widget _buildTierPriceEditor() {
     final tierConfig = _serviceTiers.getTierConfig(_selectedTier);
     
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '${tierConfig.tier.displayName}设置',
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+    return TextField(
+      controller: tierConfig.priceController,
+      readOnly: widget.isPreviewMode,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      style: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.normal,
+        color: Colors.black87,
+      ),
+      decoration: InputDecoration(
+        labelText: '${_selectedTier.displayName}价格',
+        labelStyle: TextStyle(
+          fontSize: 14,
+          color: Colors.grey[600],
+        ),
+        floatingLabelStyle: const TextStyle(
+          fontSize: 12,
+          color: Colors.blue,
+        ),
+        prefixText: '¥',
+        prefixStyle: const TextStyle(
+          fontSize: 16,
+          color: Colors.black87,
+        ),
+        helperText: '最大值：${ValidationConstants.maxPrice}',
+        helperStyle: TextStyle(
+          fontSize: 12,
+          color: Colors.grey[500],
+        ),
+        errorText: _formErrors['price_${_selectedTier.name}'],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(
+            color: Colors.blue,
+            width: 2,
           ),
         ),
-        const SizedBox(height: 16),
-        
-        // 价格输入框
-        TextField(
-          controller: tierConfig.priceController,
-          readOnly: widget.isPreviewMode,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: _lightBorderDecoration.copyWith(
-            hintText: '输入价格',
-            prefixText: '¥ ',
-            labelText: '${tierConfig.tier.displayName}价格',
-            errorText: _formErrors['price_${tierConfig.tier.name}'],
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Colors.red, width: 1),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Colors.red, width: 1.5),
-            ),
-          ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Colors.red, width: 2),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+        filled: true,
+        fillColor: Colors.white,
+      ),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+        TextInputFormatter.withFunction((oldValue, newValue) {
+          if (newValue.text.isEmpty) return newValue;
+          final value = double.tryParse(newValue.text);
+          if (value == null) return oldValue;
+          if (value > ValidationConstants.maxPrice) {
+            return oldValue;
+          }
+          return newValue;
+        }),
+      ],
+      onChanged: (value) {
+        setState(() {
+          final price = double.tryParse(value) ?? 0;
+          tierConfig.updatePrice(price);
+          
+          // 验证价格
+          if (price > ValidationConstants.maxPrice) {
+            _formErrors['price_${_selectedTier.name}'] = '价格不能超过${ValidationConstants.maxPrice}';
+          } else if (price > 0 && price < 0.01) {
+            _formErrors['price_${_selectedTier.name}'] = '价格最小值为0.01';
+          } else {
+            _formErrors.remove('price_${_selectedTier.name}');
+          }
+        });
+        _onFormFieldChanged();
+      },
+    );
+  }
+
+  /// 构建档位属性列表
+  Widget _buildTierAttributesList() {
+    final tierConfig = _serviceTiers.getTierConfig(_selectedTier);
+    
+    // 构建所有属性的列表（包括系统属性和自定义属性）
+    final List<Widget> attributeItems = [];
+    
+    // 添加系统属性：交付期
+    attributeItems.add(_buildFloatingLabelAttribute(
+      labelText: '交付期',
+      value: tierConfig.deliveryDay.toString(),
+      suffix: '天',
+      isSystem: true,
+      keyboardType: TextInputType.number,
+      onChanged: (value) {
+        final parsedValue = int.tryParse(value);
+        if (parsedValue != null && parsedValue > 0) {
+          setState(() {
+            tierConfig.updateDeliveryDay(parsedValue);
+          });
+          _onFormFieldChanged();
+        }
+      },
+    ));
+    
+    // 添加系统属性：次数
+    attributeItems.add(_buildFloatingLabelAttribute(
+      labelText: '次数',
+      value: tierConfig.editNum.toString(),
+      suffix: '次',
+      isSystem: true,
+      keyboardType: TextInputType.number,
+      onChanged: (value) {
+        final parsedValue = int.tryParse(value);
+        if (parsedValue != null && parsedValue > 0) {
+          setState(() {
+            tierConfig.updateEditNum(parsedValue);
+          });
+          _onFormFieldChanged();
+        }
+      },
+    ));
+    
+    // 添加自定义属性
+    final customAttributes = _serviceTiers.getAttributesForTier(_selectedTier);
+    for (final attr in customAttributes) {
+      if (attr.type == ProductAttributeType.boolean) {
+        // 单选属性使用特殊的显示方式
+        attributeItems.add(_buildBooleanAttribute(attr));
+      } else {
+        // 文本输入属性
+        attributeItems.add(_buildFloatingLabelAttribute(
+          labelText: attr.name,
+          value: attr.value,
+          isSystem: false,
+          attributeId: attr.id,
+          keyboardType: TextInputType.text,
           onChanged: (value) {
             setState(() {
-              tierConfig.updatePrice(double.tryParse(value) ?? 0);
-              // 输入时清除该字段的错误
-              _formErrors.remove('price_${tierConfig.tier.name}');
+              _serviceTiers.getTierConfig(_selectedTier).updateAttributeValue(attr.id, value);
             });
-            // 触发变更检测
             _onFormFieldChanged();
           },
-        ),
+        ));
+      }
+    }
+    
+    return Column(
+      children: [
+        // 属性列表
+        ...attributeItems,
         
-        const SizedBox(height: 16),
-        
-        // 交付天数和修改次数
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: tierConfig.deliveryController,
-                readOnly: widget.isPreviewMode,
-                keyboardType: TextInputType.number,
-                decoration: _lightBorderDecoration.copyWith(
-                  labelText: '交付天数',
-                  suffixText: '天',
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    // 允许字段为空，不设置默认值
-                    if (value.isNotEmpty) {
-                      final parsedValue = int.tryParse(value);
-                      if (parsedValue != null) {
-                        tierConfig.updateDeliveryDay(parsedValue);
-                      }
-                    }
-                  });
-                  _onFormFieldChanged();
-                },
-              ),
+        // 底部操作按钮
+        Container(
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(color: Colors.grey[300]!),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextField(
-                controller: tierConfig.editNumController,
-                readOnly: widget.isPreviewMode,
-                keyboardType: TextInputType.number,
-                decoration: _lightBorderDecoration.copyWith(
-                  labelText: '修改次数',
-                  suffixText: '次',
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: InkWell(
+                  onTap: _showAddFeatureDialog,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.add, size: 20, color: Colors.grey),
+                        SizedBox(width: 4),
+                        Text(
+                          '输入',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    // 允许字段为空，不设置默认值
-                    if (value.isNotEmpty) {
-                      final parsedValue = int.tryParse(value);
-                      if (parsedValue != null) {
-                        tierConfig.updateEditNum(parsedValue);
-                      }
-                    }
-                  });
-                  _onFormFieldChanged();
-                },
               ),
-            ),
-          ],
+              Container(
+                width: 1,
+                height: 40,
+                color: Colors.grey[300],
+              ),
+              Expanded(
+                child: InkWell(
+                  onTap: () => _showAddSelectionAttribute(),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.radio_button_checked, size: 20, color: Colors.grey),
+                        SizedBox(width: 4),
+                        Text(
+                          '单选',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-        
-
       ],
     );
   }
 
-  /// 构建共享商品属性管理区域
-  Widget _buildSharedFeaturesSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // 标题和添加按钮
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '商品属性 (${_serviceTiers.attributeTemplates.length})',
+  /// 构建floating label属性输入框
+  Widget _buildFloatingLabelAttribute({
+    required String labelText,
+    required String value,
+    String? suffix,
+    required bool isSystem,
+    String? attributeId,
+    required TextInputType keyboardType,
+    required Function(String) onChanged,
+  }) {
+    // 获取或创建控制器
+    final controller = _getOrCreateController(
+      isSystem: isSystem,
+      attributeId: attributeId,
+      labelText: labelText,
+      initialValue: value,
+    );
+    
+    // 确定验证规则
+    List<TextInputFormatter> inputFormatters = [];
+    String? helperText;
+    
+    // 系统属性的验证
+    if (isSystem) {
+      if (labelText == '交付期' && suffix == '天') {
+        inputFormatters = [
+          FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(3),
+          _MaxValueTextInputFormatter(ValidationConstants.maxDeliveryDays),
+        ];
+        helperText = '最多${ValidationConstants.maxDeliveryDays}天';
+      } else if (labelText == '次数' && suffix == '次') {
+        inputFormatters = [
+          FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(2),
+          _MaxValueTextInputFormatter(ValidationConstants.maxEditNum),
+        ];
+        helperText = '最多${ValidationConstants.maxEditNum}次';
+      }
+    } else {
+      // 自定义属性的验证 - 属性值最大长度
+      inputFormatters = [
+        LengthLimitingTextInputFormatter(ValidationConstants.maxAttributeValueLength),
+      ];
+    }
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          // 主要的输入框
+          Expanded(
+            child: TextField(
+              controller: controller,
+              keyboardType: keyboardType,
+              readOnly: widget.isPreviewMode,
+              inputFormatters: inputFormatters,
               style: const TextStyle(
                 fontSize: 16,
-                fontWeight: FontWeight.bold,
+                color: Colors.black87,
               ),
+              decoration: InputDecoration(
+                labelText: labelText,
+                labelStyle: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+                floatingLabelStyle: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.blue,
+                ),
+                suffixText: suffix,
+                suffixStyle: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+                helperText: helperText,
+                helperStyle: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(
+                    color: Colors.blue,
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              onChanged: (newValue) {
+                // 对于系统属性，直接更新值，inputFormatters已经处理了验证
+                if (isSystem && newValue.isNotEmpty) {
+                  final parsedValue = int.tryParse(newValue);
+                  if (parsedValue != null && parsedValue > 0) {
+                    // 添加防抖机制，避免频繁触发
+                    _debounceTimer?.cancel();
+                    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+                      onChanged(newValue);
+                    });
+                  }
+                } else {
+                  // 自定义属性，使用防抖
+                  _debounceTimer?.cancel();
+                  _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+                    onChanged(newValue);
+                  });
+                }
+              },
             ),
-            TextButton.icon(
-              onPressed: _showAddFeatureDialog,
-              icon: const Icon(Icons.add, size: 16),
-              label: const Text('添加属性'),
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFFBF7D2A),
+          ),
+          
+          // 删除按钮（仅对自定义属性显示）
+          if (!isSystem && attributeId != null) ...[
+            const SizedBox(width: 8),
+            IconButton(
+              onPressed: () => _removeProductAttribute(attributeId),
+              icon: const Icon(
+                Icons.delete_outline,
+                color: Colors.red,
+                size: 20,
+              ),
+              padding: const EdgeInsets.all(8),
+              constraints: const BoxConstraints(
+                minWidth: 36,
+                minHeight: 36,
               ),
             ),
           ],
-        ),
-        
-        const SizedBox(height: 12),
-        
-        // 特性列表（显示当前选中档位的属性值）
-        if (_serviceTiers.attributeTemplates.isNotEmpty)
-          ..._serviceTiers.getAttributesForTier(_selectedTier).map((feature) => _buildFeatureItem(feature)),
-        
-        if (_serviceTiers.attributeTemplates.isEmpty)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              children: [
-                Icon(
-                  Icons.featured_play_list_outlined,
-                  size: 48,
-                  color: Colors.grey[400],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '暂无商品属性',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '点击上方按钮添加属性，所有档位将共享这些属性',
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: 12,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 
-  /// 构建可编辑的属性项
-  Widget _buildFeatureItem(ProductAttribute feature) {
+  /// 构建布尔类型属性（单选）
+  Widget _buildBooleanAttribute(ProductAttribute attribute) {
+    final isTrue = attribute.value == 'true';
+    
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: _buildAttributeInput(feature),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.white,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    attribute.name,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              _serviceTiers.getTierConfig(_selectedTier).updateAttributeValue(attribute.id, 'true');
+                            });
+                            _onFormFieldChanged();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            decoration: BoxDecoration(
+                              color: isTrue ? Colors.blue.withOpacity(0.1) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  isTrue ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                                  size: 20,
+                                  color: isTrue ? Colors.blue : Colors.grey,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '是',
+                                  style: TextStyle(
+                                    color: isTrue ? Colors.blue : Colors.grey[700],
+                                    fontWeight: isTrue ? FontWeight.bold : FontWeight.normal,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              _serviceTiers.getTierConfig(_selectedTier).updateAttributeValue(attribute.id, 'false');
+                            });
+                            _onFormFieldChanged();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            decoration: BoxDecoration(
+                              color: !isTrue ? Colors.blue.withOpacity(0.1) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  !isTrue ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                                  size: 20,
+                                  color: !isTrue ? Colors.blue : Colors.grey,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '否',
+                                  style: TextStyle(
+                                    color: !isTrue ? Colors.blue : Colors.grey[700],
+                                    fontWeight: !isTrue ? FontWeight.bold : FontWeight.normal,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
+          // 删除按钮
           const SizedBox(width: 8),
-          // 编辑按钮
           IconButton(
-            icon: const Icon(Icons.edit_outlined, color: Color(0xFFBF7D2A), size: 20),
-            onPressed: () => _showEditAttributeDialog(feature),
-            tooltip: '编辑属性',
+            onPressed: () => _removeProductAttribute(attribute.id),
+            icon: const Icon(
+              Icons.delete_outline,
+              color: Colors.red,
+              size: 20,
+            ),
             padding: const EdgeInsets.all(8),
-          ),
-          // 删除按钮  
-          IconButton(
-            icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
-            onPressed: () => _removeProductAttribute(feature.id),
-            tooltip: '删除属性',
-            padding: const EdgeInsets.all(8),
+            constraints: const BoxConstraints(
+              minWidth: 36,
+              minHeight: 36,
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// 获取或创建控制器
+  TextEditingController _getOrCreateController({
+    required bool isSystem,
+    String? attributeId,
+    required String labelText,
+    required String initialValue,
+  }) {
+    String key;
+    Map<String, TextEditingController> controllerMap;
+    
+    if (isSystem) {
+      key = '${_selectedTier.name}_$labelText';
+      controllerMap = _systemControllers;
+    } else {
+      key = attributeId ?? labelText;
+      controllerMap = _attributeControllers;
+    }
+    
+    if (!controllerMap.containsKey(key)) {
+      controllerMap[key] = TextEditingController(text: initialValue);
+    } else {
+      // 更新现有控制器的值（如果不同）
+      final controller = controllerMap[key]!;
+      if (controller.text != initialValue) {
+        // 保存当前光标位置
+        final selection = controller.selection;
+        controller.text = initialValue;
+        // 恢复光标位置（如果合理）
+        if (selection.isValid && selection.end <= initialValue.length) {
+          controller.selection = selection;
+        }
+      }
+    }
+    
+    return controllerMap[key]!;
+  }
+  
+  /// 清理不再使用的控制器
+  void _cleanupControllers() {
+    // 清理属性控制器
+    final currentAttributeIds = _serviceTiers.attributeTemplates.map((t) => t.id).toSet();
+    final attributeKeysToRemove = _attributeControllers.keys
+        .where((key) => !currentAttributeIds.contains(key))
+        .toList();
+    
+    for (final key in attributeKeysToRemove) {
+      _attributeControllers[key]?.dispose();
+      _attributeControllers.remove(key);
+    }
+  }
+  
+  /// 显示添加单选属性对话框
+  void _showAddSelectionAttribute() {
+    final nameController = TextEditingController();
+    final List<String> options = ['是', '否'];
+    String? errorText;
+    
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('添加单选属性'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                maxLength: ValidationConstants.maxAttributeNameLength,
+                decoration: InputDecoration(
+                  hintText: '请输入属性名称',
+                  helperText: '最多${ValidationConstants.maxAttributeNameLength}个字符',
+                  errorText: errorText,
+                  border: const OutlineInputBorder(),
+                  counterText: '${nameController.text.length}/${ValidationConstants.maxAttributeNameLength}',
+                ),
+                autofocus: true,
+                onChanged: (value) {
+                  setDialogState(() {
+                    if (value.length > ValidationConstants.maxAttributeNameLength) {
+                      errorText = '属性名称最多${ValidationConstants.maxAttributeNameLength}个字符';
+                    } else {
+                      errorText = null;
+                    }
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '默认选项：是/否',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (nameController.text.isNotEmpty && 
+                    nameController.text.length <= ValidationConstants.maxAttributeNameLength) {
+                  _addProductAttribute(
+                    nameController.text,
+                    'false', // 默认值为"否"
+                    ProductAttributeType.boolean,
+                    options: options,
+                  );
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text('确定'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -2902,7 +3222,11 @@ class _ProductEditPageState extends State<ProductEditPage> {
   void _removeProductAttribute(String attributeId) {
     setState(() {
       _serviceTiers.removeAttributeTemplate(attributeId);
+      // 清理相关的控制器
+      _attributeControllers[attributeId]?.dispose();
+      _attributeControllers.remove(attributeId);
     });
+    _onFormFieldChanged();
   }
 
   /// 获取或创建属性控制器
@@ -2944,89 +3268,6 @@ class _ProductEditPageState extends State<ProductEditPage> {
     return controller;
   }
 
-  /// 根据属性类型构建对应的输入控件
-  Widget _buildAttributeInput(ProductAttribute feature) {
-    final labelText = feature.isRequired ? '${feature.name} *' : feature.name;
-    
-    switch (feature.type) {
-      case ProductAttributeType.input:
-        return TextField(
-          decoration: _lightBorderDecoration.copyWith(
-            labelText: labelText,
-            hintText: feature.placeholder.isNotEmpty ? feature.placeholder : '请输入${feature.name}',
-          ),
-          controller: _getAttributeController(feature.id, feature.value),
-          onChanged: (value) => _updateAttributeValue(feature.id, value),
-          // 优化中文输入法体验
-          enableIMEPersonalizedLearning: true,
-          // 设置键盘类型为文本，支持多语言输入
-          keyboardType: TextInputType.text,
-        );
-        
-      case ProductAttributeType.boolean:
-        return Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                labelText,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  InkWell(
-                    onTap: () => _updateAttributeValue(feature.id, 'true'),
-                    borderRadius: BorderRadius.circular(20),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Radio<String>(
-                            value: 'true',
-                            groupValue: feature.value,
-                            onChanged: (value) => _updateAttributeValue(feature.id, value ?? ''),
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            visualDensity: VisualDensity.compact,
-                          ),
-                          const Text('是'),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  InkWell(
-                    onTap: () => _updateAttributeValue(feature.id, 'false'),
-                    borderRadius: BorderRadius.circular(20),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Radio<String>(
-                            value: 'false',
-                            groupValue: feature.value,
-                            onChanged: (value) => _updateAttributeValue(feature.id, value ?? ''),
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            visualDensity: VisualDensity.compact,
-                          ),
-                          const Text('否'),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-    }
-  }
 
   /// 更新属性值
   void _updateAttributeValue(String attributeId, String newValue) {
@@ -3100,7 +3341,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
       buyerInfoItems: _buyerInfoItems.map((item) => {
         'type': item.type.name,
         'label': item.label,
-        'required': item.isRequired ? 'true' : 'false',
+        'description': item.description,
+        'isRequired': item.isRequired,
       }).toList(),
       successCases: _successCases.map((case_) => {
         'title': case_.title,

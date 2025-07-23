@@ -8,37 +8,7 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_stat
 import 'package:dskk_flutter_refactor/features/orders/domain/repositories/i_order_repository.dart';
 import '../bloc/seller_order_detail_bloc.dart'; // Import Detail Bloc
 
-/// 邀请评价状态数据类
-class InvitationStatus {
-  final int todayCount;
-  final DateTime? lastInviteTime;
-  
-  const InvitationStatus({
-    this.todayCount = 0,
-    this.lastInviteTime,
-  });
-  
-  bool get hasReachedLimit => todayCount >= 3;
-  
-  bool get hasInvitedToday {
-    if (lastInviteTime == null) return false;
-    final now = DateTime.now();
-    final lastDate = lastInviteTime!;
-    return now.year == lastDate.year && 
-           now.month == lastDate.month && 
-           now.day == lastDate.day;
-  }
-  
-  String get statusText {
-    if (hasReachedLimit) {
-      return '今日已邀请 $todayCount/3 次';
-    } else if (hasInvitedToday) {
-      return '今日已邀请 $todayCount/3 次';
-    } else {
-      return '可邀请评价';
-    }
-  }
-}
+// 移除邀请评价状态类
 
 /// Displays action buttons for the SellerOrderDetailPage, typically at the bottom.
 class SellerOrderDetailActions extends StatefulWidget {
@@ -51,17 +21,17 @@ class SellerOrderDetailActions extends StatefulWidget {
 }
 
 class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
-  InvitationStatus? _invitationStatus;
+  // 移除邀请评价相关状态
+  // InvitationStatus? _invitationStatus;
 
   @override
   void initState() {
     super.initState();
-    if (widget.order.state == OrderStatus.orderCompleted) {
-      _loadInvitationStatus();
-    }
+    // 不再加载邀请状态
   }
 
-  /// 加载邀请状态
+  // 移除邀请状态加载方法
+  /*
   Future<void> _loadInvitationStatus() async {
     final prefs = GetIt.instance<SharedPreferences>();
     final key = 'invitation_status_${widget.order.id}';
@@ -110,16 +80,20 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
       });
     }
   }
+  */
 
-  /// 保存邀请状态
+  // 移除保存邀请状态方法
+  /*
   Future<void> _saveInvitationStatus(InvitationStatus status) async {
     final prefs = GetIt.instance<SharedPreferences>();
     final key = 'invitation_status_${widget.order.id}';
     final data = '${status.todayCount}|${status.lastInviteTime?.toIso8601String() ?? ''}';
     await prefs.setString(key, data);
   }
+  */
 
-  /// 处理邀请评价操作
+  // 移除邀请评价处理方法
+  /*
   Future<void> _handleInviteEvaluation(BuildContext context) async {
     final bloc = BlocProvider.of<SellerOrderDetailBloc>(context);
     
@@ -153,8 +127,10 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
       bloc.add(SellerInviteEvaluationRequested(orderId: widget.order.id));
     }
   }
+  */
 
-  /// 显示邀请确认对话框
+  // 移除邀请确认对话框方法
+  /*
   Future<bool?> _showInviteConfirmationDialog(BuildContext context) {
     final status = _invitationStatus ?? const InvitationStatus();
     final remaining = 3 - status.todayCount;
@@ -201,6 +177,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
       },
     );
   }
+  */
 
   @override
   Widget build(BuildContext context) {
@@ -338,48 +315,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
           style: outlineStyle, 
           child: const Text('删除记录')
           ));
-        
-        // 改进的邀请评价按钮
-        if (_invitationStatus != null) {
-          final status = _invitationStatus!;
-          buttons.add(ElevatedButton(
-            onPressed: status.hasReachedLimit ? null : () => _handleInviteEvaluation(context),
-            style: status.hasReachedLimit 
-              ? ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  textStyle: Theme.of(context).textTheme.labelLarge,
-                  backgroundColor: Colors.grey[300],
-                  foregroundColor: Colors.grey[600],
-                )
-              : filledStyle,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(status.hasReachedLimit ? '已达上限' : '邀请评价'),
-                if (status.hasInvitedToday) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    '${status.todayCount}/3',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      // 使用标准小字体，移除硬编码字体大小
-                      color: status.hasReachedLimit ? Colors.grey[600] : Colors.white70,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ));
-        } else {
-          // 加载中状态
-          buttons.add(ElevatedButton(
-            onPressed: null,
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              backgroundColor: Colors.grey[300],
-            ),
-            child: const Text('加载中...'),
-          ));
-        }
+        // 移除邀请评价按钮
         break;
       case OrderStatus.canceled:
           buttons.add(OutlinedButton(

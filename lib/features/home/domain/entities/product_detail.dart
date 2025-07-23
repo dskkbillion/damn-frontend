@@ -29,6 +29,7 @@ class ProductDetail extends Equatable {
   final DateTime updateTime;
   final int evaluateNum;
   final String score;
+  final List<BuyerRequirement>? buyerRequirements;
 
   const ProductDetail({
     required this.id,
@@ -58,6 +59,7 @@ class ProductDetail extends Equatable {
     required this.updateTime,
     required this.evaluateNum,
     required this.score,
+    this.buyerRequirements,
   });
 
   @override
@@ -89,6 +91,7 @@ class ProductDetail extends Equatable {
         updateTime,
         evaluateNum,
         score,
+        buyerRequirements,
       ];
 }
 
@@ -130,4 +133,22 @@ class ProductMaterial extends Equatable {
 
   @override
   List<Object?> get props => [id, question, answer, type];
+}
+
+/// 买家需求信息实体类
+class BuyerRequirement extends Equatable {
+  final String type; // 信息类型：text, image, file, contact, requirement, reference
+  final String label; // 信息标签
+  final String description; // 详细说明
+  final bool isRequired; // 是否必填
+
+  const BuyerRequirement({
+    required this.type,
+    required this.label,
+    required this.description,
+    required this.isRequired,
+  });
+
+  @override
+  List<Object?> get props => [type, label, description, isRequired];
 } 

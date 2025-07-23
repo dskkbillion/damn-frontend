@@ -16,6 +16,8 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_requirements_use_case.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_evaluation_use_case.dart'; // If AddEvaluationParams is defined there
 import '../../domain/entities/order_creation_result.dart';
+import 'package:dskk_flutter_refactor/core/config/app_config.dart';
+import 'package:dskk_flutter_refactor/features/orders/data/datasources/simple_mock_order_data_source.dart';
 
 /// 订单仓库接口的实现类。
 @LazySingleton(as: IOrderRepository) // Add injectable annotation
@@ -59,6 +61,45 @@ class OrderRepositoryImpl implements IOrderRepository {
     required int limit,
     required String userRole,
   }) async {
+    // 如果启用了模拟数据模式，直接返回模拟数据
+    if (AppConfig.useMockData) {
+      try {
+        final allMockOrders = SimpleMockOrderDataSource.getAllMockOrders();
+        
+        // 根据状态筛选
+        List<Order> filteredOrders = status == null 
+            ? allMockOrders 
+            : allMockOrders.where((order) => order.state == status).toList();
+        
+        // 根据关键词筛选
+        if (keyword != null && keyword.isNotEmpty) {
+          filteredOrders = filteredOrders.where((order) =>
+            order.orderSn.contains(keyword) ||
+            order.items.any((item) => item.productName.contains(keyword))
+          ).toList();
+        }
+        
+        // 根据用户角色筛选（如果需要）
+        // 这里假设所有模拟数据都适用于买家和卖家
+        
+        // 分页处理
+        final int startIndex = (page - 1) * limit;
+        final int endIndex = startIndex + limit;
+        
+        final paginatedOrders = filteredOrders.length > startIndex
+            ? filteredOrders.sublist(
+                startIndex, 
+                endIndex > filteredOrders.length ? filteredOrders.length : endIndex
+              )
+            : <Order>[];
+        
+        return Right(paginatedOrders);
+      } catch (e) {
+        return Left(ServerFailure(message: '获取模拟数据失败: ${e.toString()}'));
+      }
+    }
+    
+    // 原有的真实数据获取逻辑
     final int offset = (page - 1) * limit;
     final bool isFetchingAll = status == null;
     final String stateKey = status?.toJsonString() ?? 'all'; // Still useful for logging
@@ -165,6 +206,21 @@ class OrderRepositoryImpl implements IOrderRepository {
 
   @override
   Future<Either<Failure, Order>> getOrderDetail(int orderId) async {
+     // 如果启用了模拟数据模式，从模拟数据中查找
+     if (AppConfig.useMockData) {
+       try {
+         final allMockOrders = SimpleMockOrderDataSource.getAllMockOrders();
+         final order = allMockOrders.firstWhere(
+           (o) => o.id == orderId,
+           orElse: () => throw Exception('未找到订单 ID: $orderId'),
+         );
+         return Right(order);
+       } catch (e) {
+         return Left(ServerFailure(message: '获取模拟订单详情失败: ${e.toString()}'));
+       }
+     }
+     
+     // 原有的真实数据获取逻辑
      // TODO: Implement caching for OrderDetail based on strategy doc
      return _handleApiCall(() async {
        final orderModel = await remoteDataSource.getOrderDetail(orderId);

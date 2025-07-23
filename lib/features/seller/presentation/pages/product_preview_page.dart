@@ -11,6 +11,7 @@ import 'package:dskk_flutter_refactor/features/auth/domain/usecases/get_logged_i
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_info_repository.dart';
 import 'package:go_router/go_router.dart';
 import 'product_edit_page.dart'; // 导入ExtendedProductFormData
+import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/loading_state.dart';
 
 /// 商品预览页面 - 使用与商品详情页一致的UI
 class ProductPreviewPage extends StatefulWidget {
@@ -102,6 +103,17 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
     print('  - Variants count: ${formData.variants.length}');
     print('  - Images count: ${formData.images.length}');
     print('  - QA count: ${formData.qaList.length}');
+    print('  - Buyer info items count: ${formData.buyerInfoItems.length}');
+    
+    // 转换买家需求信息
+    final buyerRequirements = formData.buyerInfoItems.map((item) {
+      return BuyerRequirement(
+        type: item['type'] ?? '',
+        label: item['label'] ?? '',
+        description: item['description'] ?? '',
+        isRequired: item['isRequired'] ?? false,
+      );
+    }).toList();
     
     // 转换服务档位为商品变体
     final variants = formData.variants.map((tier) {
@@ -162,6 +174,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
       updateTime: DateTime.now(),
       evaluateNum: 0,
       score: '5.0',
+      buyerRequirements: buyerRequirements.isEmpty ? null : buyerRequirements,
     );
     
     print('[PreviewPage] Form data conversion completed:');
@@ -205,7 +218,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
               bloc: _bloc,
               builder: (context, state) {
                 if (state.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const LoadingState(text: '正在加载商品信息...');
                 }
                 
                 if (state.product == null) {

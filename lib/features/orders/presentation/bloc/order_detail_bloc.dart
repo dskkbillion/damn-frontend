@@ -19,6 +19,7 @@ import 'package:dskk_flutter_refactor/features/orders/domain/usecases/get_order_
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_evaluation_use_case.dart';
 // import 'package:dskk_flutter_refactor/features/orders/domain/usecases/save_requirement_draft_use_case.dart'; // REMOVED
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_requirements_use_case.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/repositories/i_order_repository.dart'; // For AddOrderDemandParams
 import 'package:equatable/equatable.dart';
 import 'package:dartz/dartz.dart' hide Order;
 import 'package:injectable/injectable.dart' hide Order;
@@ -86,6 +87,8 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     on<GoToPayment>(_onGoToPayment);
     on<GoToTracking>(_onGoToTracking);
     on<GoToEvaluation>(_onGoToEvaluation);
+    on<PlatformInterventionRequested>(_onPlatformInterventionRequested);
+    on<OrderDemandRequested>(_onOrderDemandRequested);
   }
 
   Future<void> _onLoadOrderDetail(LoadOrderDetail event, Emitter<OrderDetailState> emit) async {
@@ -384,6 +387,100 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
      // emit(ShowEvaluationFormState(orderId: event.orderId));
   }
 
+  Future<void> _onPlatformInterventionRequested(
+    PlatformInterventionRequested event,
+    Emitter<OrderDetailState> emit,
+  ) async {
+    if (state is! OrderDetailLoaded) {
+      emit(const OrderDetailError(message: '无法提交平台介入：订单数据未加载'));
+      return;
+    }
+    
+    final currentState = state as OrderDetailLoaded;
+    emit(OrderDetailActionLoading(previousState: currentState));
+    
+    try {
+      // 调用repository的addOrderDemand方法，type为'platform'
+      final params = AddOrderDemandParams(
+        orderId: event.orderId,
+        type: 'platform',
+        reasonValue: event.reasonValue,
+        reasonLabel: event.reasonLabel,
+        remarks: event.description,
+      );
+      
+      // TODO: 需要注入并调用repository
+      // final result = await _orderRepository.addOrderDemand(params);
+      
+      // 临时模拟成功
+      await Future.delayed(const Duration(seconds: 1));
+      
+      emit(OrderDetailActionSuccess(
+        message: '平台介入申请已提交，客服会在24小时内联系您',
+        actionType: OrderAction.platformIntervention,
+        updatedState: currentState,
+      ));
+      
+      // 触发重新加载
+      add(LoadOrderDetail(orderId: event.orderId));
+      
+    } catch (e) {
+      emit(OrderDetailActionFailure(
+        message: '平台介入申请失败: $e',
+        previousState: currentState,
+      ));
+    }
+  }
+  
+  Future<void> _onOrderDemandRequested(
+    OrderDemandRequested event,
+    Emitter<OrderDetailState> emit,
+  ) async {
+    if (state is! OrderDetailLoaded) {
+      emit(const OrderDetailError(message: '无法提交申请：订单数据未加载'));
+      return;
+    }
+    
+    final currentState = state as OrderDetailLoaded;
+    emit(OrderDetailActionLoading(previousState: currentState));
+    
+    try {
+      // 调用repository的addOrderDemand方法
+      final params = AddOrderDemandParams(
+        orderId: event.orderId,
+        type: event.type,
+        reasonValue: event.reasonValue,
+        reasonLabel: event.reasonLabel,
+        remarks: event.description,
+      );
+      
+      // TODO: 需要注入并调用repository
+      // final result = await _orderRepository.addOrderDemand(params);
+      
+      // 临时模拟成功
+      await Future.delayed(const Duration(seconds: 1));
+      
+      final message = event.type == 'replenishment' 
+        ? '补充材料申请已提交，卖家会在24小时内回复'
+        : '重做申请已提交，卖家会重新处理您的订单';
+      
+      emit(OrderDetailActionSuccess(
+        message: message,
+        actionType: OrderAction.orderDemand,
+        updatedState: currentState,
+      ));
+      
+      // 触发重新加载
+      add(LoadOrderDetail(orderId: event.orderId));
+      
+    } catch (e) {
+      emit(OrderDetailActionFailure(
+        message: '申请提交失败: $e',
+        previousState: currentState,
+      ));
+    }
+  }
+
   // --- Helper Function to map Failure to String ---
   // TODO: Move this to a shared utility or base bloc if common
   String _mapFailureToMessage(Failure failure, {String defaultMsg = '操作失败'}) {
@@ -488,6 +585,44 @@ class SubmitEvaluationRequested extends OrderDetailEvent {
 
 // Add other events 
 
+// Event for platform intervention request
+class PlatformInterventionRequested extends OrderDetailEvent {
+  final int orderId;
+  final String reasonValue;
+  final String reasonLabel;
+  final String description;
+  
+  const PlatformInterventionRequested({
+    required this.orderId,
+    required this.reasonValue,
+    required this.reasonLabel,
+    required this.description,
+  });
+  
+  @override
+  List<Object?> get props => [orderId, reasonValue, reasonLabel, description];
+}
+
+// Event for order demand (replenishment/reform) request
+class OrderDemandRequested extends OrderDetailEvent {
+  final int orderId;
+  final String type; // 'replenishment' or 'reform'
+  final String reasonValue;
+  final String reasonLabel;
+  final String description;
+  
+  const OrderDemandRequested({
+    required this.orderId,
+    required this.type,
+    required this.reasonValue,
+    required this.reasonLabel,
+    required this.description,
+  });
+  
+  @override
+  List<Object?> get props => [orderId, type, reasonValue, reasonLabel, description];
+}
+
 // Define OrderAction enum if not already defined
 enum OrderAction {
   cancel,
@@ -499,6 +634,8 @@ enum OrderAction {
   goToTracking,
   submitRequirements,
   submitEvaluation,
+  platformIntervention,
+  orderDemand,
   // Add other actions as needed ONLY ONCE
 }
 

@@ -160,7 +160,10 @@ class AuthRepositoryImpl implements IAuthRepository {
               // 同时保存commonUserId
               if (userInfo.commonUserId != null) {
                 await secureStorage.saveCommonUserId(userInfo.commonUserId!);
+                // 同时保存为 refer_id，供聊天模块使用
+                await secureStorage.saveString('refer_id', userInfo.commonUserId.toString());
                 print('Saved commonUserId: ${userInfo.commonUserId}');
+                print('Saved refer_id: ${userInfo.commonUserId} for chat module');
               } else {
                 print('commonUserId from UserInfo is null. Key will not be saved/updated in secure storage.');
               }
@@ -189,7 +192,8 @@ class AuthRepositoryImpl implements IAuthRepository {
        await secureStorage.delete('user_id');
        await secureStorage.delete('auth_token');
        await secureStorage.delete('common_user_id'); // 同时清理commonUserId
-       print('Cleared local auth data (id, token, commonUserId).');
+       await secureStorage.delete('refer_id'); // 清理refer_id（用于聊天模块）
+       print('Cleared local auth data (id, token, commonUserId, refer_id).');
     } catch (e) {
         print('Error clearing local auth data: $e');
     }

@@ -145,51 +145,86 @@ class _HomeViewState extends State<HomeView> {
                   ),
 
                   // 信息流列表 - 使用SliverPadding和SliverMasonryGrid
-                  SliverPadding(
-                    padding: const EdgeInsets.all(16.0),
-                    sliver: SliverMasonryGrid.count(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 16.0,
-                      crossAxisSpacing: 10.0,
-                      childCount: feedItems.length,
-                      itemBuilder: (context, index) {
-                        final item = feedItems[index];
-                        // 根据索引生成不同的宽高比，使瀑布流更自然
-                        final aspectRatio = 0.8 + (index % 3) * 0.2;
-                        
-                        return ProductCard(
-                          item: item,
-                          aspectRatio: aspectRatio,
-                          onCardClicked: () {
-                            context.read<HomeBloc>().add(ProductCardClicked(
-                                  productId: item.id,
-                                ));
-                            // 显示点击信息
-                            // ScaffoldMessenger.of(context).showSnackBar(
-                            //   SnackBar(
-                            //     content: Text(s.home_product_card_clicked(item.name)),
-                            //     duration: const Duration(seconds: 1),
-                            //   ),
-                            // );
-                          },
-                          onRecommendClicked: () {
-                            context.read<HomeBloc>().add(RecommendButtonClicked(
-                                  productId: item.id,
-                                  productName: item.name,
-                                ));
-                            // 显示点击信息
-                            // ScaffoldMessenger.of(context).showSnackBar(
-                            //   SnackBar(
-                            //     content: Text(s.home_recommend_clicked(item.name)),
-                            //     duration: const Duration(seconds: 1),
-                            //   ),
-                            // );
-                          },
-                          showRecommendButton: false,
-                        );
-                      },
+                  if (feedItems.isEmpty)
+                    SliverToBoxAdapter(
+                      child: Container(
+                        padding: const EdgeInsets.all(32.0),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.explore_outlined,
+                                size: 64,
+                                color: Colors.grey[400],
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                '暂无推荐内容',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '继续浏览，我们会为您推荐更多内容',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[500],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    SliverPadding(
+                      padding: const EdgeInsets.all(16.0),
+                      sliver: SliverMasonryGrid.count(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 16.0,
+                        crossAxisSpacing: 10.0,
+                        childCount: feedItems.length,
+                        itemBuilder: (context, index) {
+                          final item = feedItems[index];
+                          // 根据索引生成不同的宽高比，使瀑布流更自然
+                          final aspectRatio = 0.8 + (index % 3) * 0.2;
+                          
+                          return ProductCard(
+                            item: item,
+                            aspectRatio: aspectRatio,
+                            onCardClicked: () {
+                              context.read<HomeBloc>().add(ProductCardClicked(
+                                    productId: item.id,
+                                  ));
+                              // 显示点击信息
+                              // ScaffoldMessenger.of(context).showSnackBar(
+                              //   SnackBar(
+                              //     content: Text(s.home_product_card_clicked(item.name)),
+                              //     duration: const Duration(seconds: 1),
+                              //   ),
+                              // );
+                            },
+                            onRecommendClicked: () {
+                              context.read<HomeBloc>().add(RecommendButtonClicked(
+                                    productId: item.id,
+                                    productName: item.name,
+                                  ));
+                              // 显示点击信息
+                              // ScaffoldMessenger.of(context).showSnackBar(
+                              //   SnackBar(
+                              //     content: Text(s.home_recommend_clicked(item.name)),
+                              //     duration: const Duration(seconds: 1),
+                              //   ),
+                              // );
+                            },
+                            showRecommendButton: false,
+                          );
+                        },
+                      ),
                     ),
-                  ),
                   
                   // 加载更多指示器
                   if (isLoadingMore)

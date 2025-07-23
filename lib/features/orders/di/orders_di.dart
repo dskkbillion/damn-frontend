@@ -269,7 +269,6 @@ class OrdersDI {
           sl<ConfirmOrderAcceptanceUseCase>(),
           sl<RejectOrderUseCase>(),
           sl<DeliverOrderUseCase>(),
-          sl<InviteEvaluationUseCase>(),
           sl<DeleteSellerRecordUseCase>(),
         )
       );

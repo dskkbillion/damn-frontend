@@ -44,12 +44,13 @@ class SellerDeliverRequested extends SellerOrderDetailEvent {
    @override List<Object?> get props => [orderId, params];
 }
 
-/// Event to invite the buyer for evaluation.
-class SellerInviteEvaluationRequested extends SellerOrderDetailEvent {
-  final int orderId;
-  const SellerInviteEvaluationRequested({required this.orderId});
-   @override List<Object?> get props => [orderId];
-}
+// 移除邀请评价事件
+// /// Event to invite the buyer for evaluation.
+// class SellerInviteEvaluationRequested extends SellerOrderDetailEvent {
+//   final int orderId;
+//   const SellerInviteEvaluationRequested({required this.orderId});
+//    @override List<Object?> get props => [orderId];
+// }
 
 /// Event to delete the seller's record of the order.
 class SellerDeleteRecordRequested extends SellerOrderDetailEvent {

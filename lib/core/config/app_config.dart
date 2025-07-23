@@ -6,4 +6,22 @@ class AppConfig {
 
   // TODO: Add other configuration constants as needed
   // static const String apiBaseUrl = '...';
+  
+  /// 是否使用模拟数据
+  static bool useMockData = false;
+  
+  /// 启用模拟数据模式
+  static void enableMockMode() {
+    useMockData = true;
+  }
+  
+  /// 禁用模拟数据模式
+  static void disableMockMode() {
+    useMockData = false;
+  }
+  
+  /// 切换模拟数据模式
+  static void toggleMockMode() {
+    useMockData = !useMockData;
+  }
 } 

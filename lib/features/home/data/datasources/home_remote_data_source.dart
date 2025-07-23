@@ -281,9 +281,17 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         if (jsonData['code'] == 200 && jsonData['data'] != null && jsonData['data']['items'] != null) {
           final items = jsonData['data']['items'] as List<dynamic>;
           
+          // 如果推荐系统返回空数组，返回空列表而不是抛出异常
+          if (items.isEmpty) {
+            print('推荐系统返回空数据，这是新用户的正常情况');
+            return [];
+          }
+          
           return items.map((item) => HomeFeedItemModel.fromJson(item)).toList();
         } else {
-          throw ServerException(message: jsonData['message'] ?? 'Unknown error');
+          print('推荐系统返回异常: ${jsonData['message']}');
+          // 返回空列表而不是抛出异常，让用户看到空状态而不是错误
+          return [];
         }
       } else {
         throw ServerException(message: 'Failed to get recommended products');

@@ -10,7 +10,8 @@ import 'package:dskk_flutter_refactor/features/orders/domain/usecases/get_order_
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/confirm_order_acceptance_use_case.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/reject_order_use_case.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/deliver_order_use_case.dart';
-import 'package:dskk_flutter_refactor/features/orders/domain/usecases/invite_evaluation_use_case.dart';
+// 移除邀请评价功能
+// import 'package:dskk_flutter_refactor/features/orders/domain/usecases/invite_evaluation_use_case.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/delete_seller_record_use_case.dart';
 // Import Params classes needed
 import 'package:dskk_flutter_refactor/features/orders/domain/repositories/i_order_repository.dart';
@@ -25,7 +26,8 @@ class SellerOrderDetailBloc extends Bloc<SellerOrderDetailEvent, SellerOrderDeta
   final ConfirmOrderAcceptanceUseCase _confirmOrderAcceptanceUseCase;
   final RejectOrderUseCase _rejectOrderUseCase;
   final DeliverOrderUseCase _deliverOrderUseCase;
-  final InviteEvaluationUseCase _inviteEvaluationUseCase;
+  // 移除邀请评价UseCase
+  // final InviteEvaluationUseCase _inviteEvaluationUseCase;
   final DeleteSellerRecordUseCase _deleteSellerRecordUseCase;
 
   SellerOrderDetailBloc(
@@ -34,7 +36,7 @@ class SellerOrderDetailBloc extends Bloc<SellerOrderDetailEvent, SellerOrderDeta
     this._confirmOrderAcceptanceUseCase,
     this._rejectOrderUseCase,
     this._deliverOrderUseCase,
-    this._inviteEvaluationUseCase,
+    // this._inviteEvaluationUseCase,
     this._deleteSellerRecordUseCase,
   ) : super(SellerOrderDetailInitial()) {
     on<LoadSellerOrderDetail>(_onLoadSellerOrderDetail);
@@ -42,7 +44,8 @@ class SellerOrderDetailBloc extends Bloc<SellerOrderDetailEvent, SellerOrderDeta
     on<SellerConfirmAcceptanceRequested>(_onSellerConfirmAcceptanceRequested);
     on<SellerRejectRequested>(_onSellerRejectRequested);
     on<SellerDeliverRequested>(_onSellerDeliverRequested);
-    on<SellerInviteEvaluationRequested>(_onSellerInviteEvaluationRequested);
+    // 移除邀请评价事件处理
+    // on<SellerInviteEvaluationRequested>(_onSellerInviteEvaluationRequested);
     on<SellerDeleteRecordRequested>(_onSellerDeleteRecordRequested);
   }
 
@@ -102,6 +105,8 @@ class SellerOrderDetailBloc extends Bloc<SellerOrderDetailEvent, SellerOrderDeta
      );
    }
 
+  // 移除邀请评价处理方法
+  /*
   Future<void> _onSellerInviteEvaluationRequested(
     SellerInviteEvaluationRequested event,
     Emitter<SellerOrderDetailState> emit,
@@ -111,11 +116,10 @@ class SellerOrderDetailBloc extends Bloc<SellerOrderDetailEvent, SellerOrderDeta
        emit,
        () => _inviteEvaluationUseCase(event.orderId),
        successMessage: '已成功邀请评价',
-       // For invite, maybe just show success message without reload?
-       // Setting reloadOnSuccess to false will emit ActionSuccess state
        reloadOnSuccess: false, 
      );
    }
+  */
 
    Future<void> _onSellerDeleteRecordRequested(
     SellerDeleteRecordRequested event,

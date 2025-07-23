@@ -309,15 +309,16 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
               builder: (context, state) {
                 if (state.status == ChatListStatus.loading && state.chatRooms.isEmpty) {
                   return Center(child: CircularProgressIndicator()); 
-                } else if (state.chatRooms.isNotEmpty) {
+                } else if (state.status == ChatListStatus.failure) {
+                  return _buildSystemItemsOnly(context, currentUserId, s.chat_error_loading(state.errorMessage ?? s.chat_unknown_message));
+                } else if (state.status == ChatListStatus.success || state.chatRooms.isNotEmpty) {
                   // 使用referId和应用模式进行数据匹配
                   final filteredRooms = _filterChatRoomsByAppMode(state.chatRooms, currentAppMode, referId);
                   
                   return _buildChatListView(context, filteredRooms, currentAppMode, currentUserId);
-                } else if (state.status == ChatListStatus.failure) {
-                  return _buildSystemItemsOnly(context, currentUserId, s.chat_error_loading(state.errorMessage ?? s.chat_unknown_message));
                 } else {
-                  return _buildSystemItemsOnly(context, currentUserId, s.chat_loading);
+                  // 真正的加载状态
+                  return Center(child: CircularProgressIndicator());
                 }
               },
             ),

@@ -97,6 +97,9 @@ class _ProductDetailContentState extends State<ProductDetailContent>
           // 自定义操作区域
           if (widget.customActions != null) widget.customActions!,
           
+          // 买家需要提供（折叠面板）
+          _buildBuyerRequirementsSection(),
+          
           // 常见问题（折叠面板）
           _buildFAQSection(),
           
@@ -492,6 +495,101 @@ class _ProductDetailContentState extends State<ProductDetailContent>
         ),
       ),
     );
+  }
+
+  Widget _buildBuyerRequirementsSection() {
+    if (widget.product.buyerRequirements == null || widget.product.buyerRequirements!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
+    return ExpansionTile(
+      title: const Text(
+        '买家需要提供',
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      trailing: const Icon(Icons.keyboard_arrow_down),
+      children: widget.product.buyerRequirements!.map((requirement) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              _getIconForRequirementType(requirement.type),
+              size: 20,
+              color: const Color(0xFFBF7D2A),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        requirement.label,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15,
+                        ),
+                      ),
+                      if (requirement.isRequired)
+                        Container(
+                          margin: const EdgeInsets.only(left: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.red[50],
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            '必填',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  if (requirement.description.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Text(
+                        requirement.description,
+                        style: TextStyle(
+                          color: Colors.grey[700],
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      )).toList(),
+    );
+  }
+
+  IconData _getIconForRequirementType(String type) {
+    switch (type) {
+      case 'text':
+        return Icons.text_fields;
+      case 'image':
+        return Icons.image;
+      case 'file':
+        return Icons.attach_file;
+      case 'contact':
+        return Icons.contact_phone;
+      case 'requirement':
+        return Icons.description;
+      case 'reference':
+        return Icons.link;
+      default:
+        return Icons.info_outline;
+    }
   }
 
   Widget _buildFAQSection() {
