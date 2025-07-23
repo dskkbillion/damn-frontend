@@ -323,8 +323,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
 
   Widget _buildMenuItems(UserProfile? profile) {
     final String nickname = profile?.nickName ?? '用户';
-    // UserProfile中没有phoneNumber属性，使用硬编码的示例号码
-    final String phoneNumber = '18888888888';
+    final String phoneNumber = profile?.mobile ?? '';
     
     return Container(
       color: Colors.white,
@@ -345,7 +344,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
           _buildMenuItem(
             '已绑定手机号',
             trailing: Text(
-              _maskPhoneNumber(phoneNumber),
+              phoneNumber.isNotEmpty ? _maskPhoneNumber(phoneNumber) : '未绑定',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade600,

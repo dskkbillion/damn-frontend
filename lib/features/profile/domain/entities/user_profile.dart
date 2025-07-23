@@ -14,14 +14,18 @@ class UserProfile extends Equatable {
   /// 卖家在线状态 (用于卖家模式显示)
   final bool? onlineFlag;
 
+  /// 用户手机号
+  final String? mobile;
+
   /// 创建 UserProfile 实例
   const UserProfile({
     required this.userId,
     required this.nickName,
     this.avatarUrl,
     this.onlineFlag,
+    this.mobile,
   });
 
   @override
-  List<Object?> get props => [userId, nickName, avatarUrl, onlineFlag];
+  List<Object?> get props => [userId, nickName, avatarUrl, onlineFlag, mobile];
 }

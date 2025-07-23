@@ -6,12 +6,14 @@ class UserProfileDto {
   final String nickName;
   final String? avatarUrl;
   final bool? onlineFlag;
+  final String? mobile;
 
   const UserProfileDto({
     required this.userId,
     required this.nickName,
     this.avatarUrl,
     this.onlineFlag,
+    this.mobile,
   });
 
   /// 从 JSON 映射创建 UserProfileDto 实例
@@ -32,6 +34,7 @@ class UserProfileDto {
       nickName: json['nickName'] ?? json['nickname'] ?? '',
       avatarUrl: json['avatarUrl'] ?? json['avatar'] ?? json['avatarUrl'],
       onlineFlag: json['onlineFlag'] ?? json['online_flag'],
+      mobile: json['mobile'],
     );
   }
 
@@ -42,6 +45,7 @@ class UserProfileDto {
       nickName: nickName,
       avatarUrl: avatarUrl,
       onlineFlag: onlineFlag,
+      mobile: mobile,
     );
   }
 
@@ -52,6 +56,7 @@ class UserProfileDto {
       'nickName': nickName,
       if (avatarUrl != null) 'avatarUrl': avatarUrl,
       if (onlineFlag != null) 'onlineFlag': onlineFlag,
+      if (mobile != null) 'mobile': mobile,
     };
   }
 }

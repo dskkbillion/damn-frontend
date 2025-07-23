@@ -117,12 +117,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   @override
   Future<UserProfileDto> getUserProfile() async {
     try {
-      final commonUserId = await storage.read(key: 'common_user_id');
-      if (commonUserId == null || commonUserId.isEmpty) {
-        throw ServerException(message: '无法获取通用用户 ID', statusCode: 401);
-      }
-
-      final path = '/api/member/profile/$commonUserId';
+      final path = '/api/member/info';
       print('Requesting user profile from: $path');
 
       final response = await dio.get(path);
