@@ -264,7 +264,7 @@ class OrderItemCard extends StatelessWidget {
                            return Container(
                              width: 80, height: 80,
                              color: Colors.grey[200],
-                             child: Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
+                             child: const Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
                            );
                         },
                         errorBuilder: (context, error, stackTrace) => Container(

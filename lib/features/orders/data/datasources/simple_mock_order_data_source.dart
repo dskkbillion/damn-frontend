@@ -61,7 +61,7 @@ class SimpleMockOrderDataSource {
           productName: productName,
           skuId: 200 + orderId,
           skuName: '标准版',
-          imageUrl: 'assets/images/test/product_${orderId % 5}.jpg',
+          imageUrl: 'https://picsum.photos/200/200?random=${orderId}',
           quantity: 1,
           price: price,
           totalPrice: price,

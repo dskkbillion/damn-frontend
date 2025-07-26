@@ -117,7 +117,7 @@ class OrderListBloc extends Bloc<OrderListEvent, OrderListState> {
     if (currentSearchQuery?.isEmpty ?? true) {
       final params = GetOrderListParams(
         page: currentPage,
-        pageSize: _pageSize,
+        limit: _pageSize,
         status: currentStatus == OrderStatus.unknown ? null : currentStatus,
         userRole: 'buyer',
       );
@@ -138,7 +138,7 @@ class OrderListBloc extends Bloc<OrderListEvent, OrderListState> {
     // For production, you'd want to add server-side search support
     final params = GetOrderListParams(
       page: 1, // Load all for client-side filtering
-      pageSize: 100, // Load more items for search
+      limit: 100, // Load more items for search
       status: currentStatus == OrderStatus.unknown ? null : currentStatus,
       userRole: 'buyer',
     );
