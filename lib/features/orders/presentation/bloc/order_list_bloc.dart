@@ -28,6 +28,7 @@ class OrderListBloc extends Bloc<OrderListEvent, OrderListState> {
   final int _pageSize = 10; // Define page size
   int currentPage = 1; // Track current page
   OrderStatus? currentStatus; // Track current filter status
+  String? currentSearchQuery; // Track current search query
 
   OrderListBloc({required GetOrderListUseCase getOrderListUseCase})
       : _getOrderListUseCase = getOrderListUseCase,
@@ -38,6 +39,7 @@ class OrderListBloc extends Bloc<OrderListEvent, OrderListState> {
       _onOrderListLoadMore,
       transformer: throttleDroppable(throttleDuration),
     );
+    on<SearchOrders>(_onSearchOrders);
   }
 
   Future<void> _onLoadOrders(LoadOrders event, Emitter<OrderListState> emit) async {
@@ -103,6 +105,67 @@ class OrderListBloc extends Bloc<OrderListEvent, OrderListState> {
        print('[OrderListBloc] Cannot load more. State: ${state.runtimeType}, hasReachedMax: ${(state is OrderListLoaded ? (state as OrderListLoaded).hasReachedMax : 'N/A')}');
     }
   }
+  
+  Future<void> _onSearchOrders(SearchOrders event, Emitter<OrderListState> emit) async {
+    print('[OrderListBloc _onSearchOrders] Search query: ${event.query}');
+    
+    currentPage = 1; // Reset page for new search
+    currentSearchQuery = event.query.trim();
+    emit(OrderListLoading()); // Indicate loading
+    
+    // If search query is empty, load all orders for current status
+    if (currentSearchQuery?.isEmpty ?? true) {
+      final params = GetOrderListParams(
+        page: currentPage,
+        pageSize: _pageSize,
+        status: currentStatus == OrderStatus.unknown ? null : currentStatus,
+        userRole: 'buyer',
+      );
+      
+      final result = await _getOrderListUseCase(params);
+      result.fold(
+        (failure) => emit(OrderListError(message: failure.message)),
+        (orders) => emit(OrderListLoaded(
+          orders: orders,
+          hasReachedMax: orders.length < _pageSize,
+        )),
+      );
+      return;
+    }
+    
+    // Perform search - filter by order number or product name
+    // Note: This is a client-side search implementation
+    // For production, you'd want to add server-side search support
+    final params = GetOrderListParams(
+      page: 1, // Load all for client-side filtering
+      pageSize: 100, // Load more items for search
+      status: currentStatus == OrderStatus.unknown ? null : currentStatus,
+      userRole: 'buyer',
+    );
+    
+    final result = await _getOrderListUseCase(params);
+    result.fold(
+      (failure) => emit(OrderListError(message: failure.message)),
+      (allOrders) {
+        // Client-side filtering
+        final filteredOrders = allOrders.where((order) {
+          final query = currentSearchQuery!.toLowerCase();
+          // Search in order number
+          if (order.orderSn.toLowerCase().contains(query)) return true;
+          // Search in product names
+          for (final item in order.items) {
+            if (item.productName.toLowerCase().contains(query)) return true;
+          }
+          return false;
+        }).toList();
+        
+        emit(OrderListLoaded(
+          orders: filteredOrders,
+          hasReachedMax: true, // No pagination for search results
+        ));
+      },
+    );
+  }
 }
 
 // --- Events ---
@@ -123,4 +186,11 @@ class LoadOrders extends OrderListEvent {
 /// Event to load the next page of orders.
 class OrderListLoadMore extends OrderListEvent {}
 
-// TODO: Define other events like LoadMoreOrders, FilterOrders etc. 
+/// Event to search orders by query
+class SearchOrders extends OrderListEvent {
+  final String query;
+  const SearchOrders({required this.query});
+  
+  @override
+  List<Object?> get props => [query];
+} 

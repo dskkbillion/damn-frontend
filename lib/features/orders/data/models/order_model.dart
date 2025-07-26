@@ -6,6 +6,7 @@ import '../../domain/entities/order_payment_info.dart';
 import '../../domain/entities/order_price_summary.dart';
 import '../../domain/entities/order_shipping_info.dart';
 import '../../domain/entities/order_status.dart';
+import 'member_model.dart';
 import 'order_item_model.dart';
 
 /// Data Transfer Object (DTO) for an Order, matching the API structure.
@@ -36,6 +37,15 @@ class OrderModel {
   final DateTime? cancelTime;
   // 其他字段
   final String? buyerRemark;
+  // 买家和卖家信息
+  final MemberModel? buyer;
+  final MemberModel? tenant;
+  // 自动处理时间
+  final DateTime? autoCancelTime;
+  final DateTime? autoMaterialTime;
+  final DateTime? deliveryTimestamp;
+  // 是否已评价
+  final bool? evaluate;
 
   const OrderModel({
     required this.id,
@@ -58,6 +68,12 @@ class OrderModel {
     this.completeTime,
     this.cancelTime,
     this.buyerRemark,
+    this.buyer,
+    this.tenant,
+    this.autoCancelTime,
+    this.autoMaterialTime,
+    this.deliveryTimestamp,
+    this.evaluate,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -96,6 +112,25 @@ class OrderModel {
          parsedAddress = null;
        }
     }
+    
+    // Parse buyer and tenant
+    MemberModel? parsedBuyer;
+    if (json['buyer'] != null && json['buyer'] is Map<String, dynamic>) {
+      try {
+        parsedBuyer = MemberModel.fromJson(json['buyer']);
+      } catch (e) {
+        print('Error parsing buyer: $e');
+      }
+    }
+    
+    MemberModel? parsedTenant;
+    if (json['tenant'] != null && json['tenant'] is Map<String, dynamic>) {
+      try {
+        parsedTenant = MemberModel.fromJson(json['tenant']);
+      } catch (e) {
+        print('Error parsing tenant: $e');
+      }
+    }
 
     return OrderModel(
       id: json['id'] as int? ?? 0,
@@ -118,6 +153,12 @@ class OrderModel {
       completeTime: parseOptionalDateTime(json['completeTime']?.toString()),
       cancelTime: parseOptionalDateTime(json['cancelTime']?.toString()),
       buyerRemark: json['buyerRemark'] as String?,
+      buyer: parsedBuyer,
+      tenant: parsedTenant,
+      autoCancelTime: parseOptionalDateTime(json['autoCancelTime']?.toString()),
+      autoMaterialTime: parseOptionalDateTime(json['autoMaterialTime']?.toString()),
+      deliveryTimestamp: parseOptionalDateTime(json['deliveryTimestamp']?.toString()),
+      evaluate: json['evaluate'] as bool?,
     );
   }
 
@@ -160,6 +201,12 @@ class OrderModel {
       completeTime: completeTime,
       cancelTime: cancelTime,
       buyerRemark: buyerRemark,
+      buyer: buyer?.toEntity(),
+      tenant: tenant?.toEntity(),
+      autoCancelTime: autoCancelTime,
+      autoMaterialTime: autoMaterialTime,
+      deliveryTimestamp: deliveryTimestamp,
+      evaluate: evaluate,
     );
   }
 

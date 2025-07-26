@@ -15,6 +15,8 @@ class OrderItemModel extends Equatable {
   final double? unitPrice;    // Changed from price, matches API key (handling integer)
   final double? totalPrice;   // Added, matches API key (handling integer)
   final double? payPrice;     // Kept, matches API key (handling integer)
+  final int? deliveryDay;     // 交付时间（天数）
+  final int? editNum;         // 可修改次数
 
   // Removed: spuId, spuName, skuId, properties, picUrl, price
 
@@ -30,6 +32,8 @@ class OrderItemModel extends Equatable {
     this.unitPrice,
     this.totalPrice,
     required this.payPrice, // Assuming payPrice is most reliable?
+    this.deliveryDay,
+    this.editNum,
   });
 
   /// Factory constructor to create an OrderItemModel from a JSON map.
@@ -52,6 +56,8 @@ class OrderItemModel extends Equatable {
       unitPrice: (json['unitPrice'] as num?)?.toDouble(), // Use unitPrice key
       totalPrice: (json['totalPrice'] as num?)?.toDouble(), // Use totalPrice key
       payPrice: (json['payPrice'] as num?)?.toDouble() ?? 0.0,
+      deliveryDay: json['deliveryDay'] as int?,
+      editNum: json['editNum'] as int?,
     );
   }
 
@@ -69,6 +75,8 @@ class OrderItemModel extends Equatable {
       price: unitPrice ?? 0.0, // Map unitPrice to price
       totalPrice: payPrice ?? 0.0, // Map payPrice to totalPrice (common practice for final item price paid)
                                    // Alternatively, use totalPrice from API if it represents item total before discounts
+      deliveryDay: deliveryDay,
+      editNum: editNum,
     );
   }
 
@@ -85,5 +93,7 @@ class OrderItemModel extends Equatable {
         unitPrice,
         totalPrice,
         payPrice,
+        deliveryDay,
+        editNum,
       ];
 } 

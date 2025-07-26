@@ -194,3 +194,7 @@ The project is actively being refactored from React Native. Check git status and
 - Multiple modified files indicate ongoing refactoring
 - Feature branches show modules under development
 - `.cursor/rules/` contains specific development guidelines for current features
+
+## Development Best Practices
+
+- 在每个flutter文件修改后，运行analyze进行检查

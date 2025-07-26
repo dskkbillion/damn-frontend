@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import 'address.dart';
+import 'member.dart';
 import 'order_item.dart';
 import 'order_payment_info.dart';
 import 'order_price_summary.dart';
@@ -47,6 +48,24 @@ class Order extends Equatable {
 
   /// 买家备注 (可选)。
   final String? buyerRemark;
+  
+  /// 买家信息
+  final Member? buyer;
+  
+  /// 卖家信息
+  final Member? tenant;
+  
+  /// 自动取消时间（待付款状态）
+  final DateTime? autoCancelTime;
+  
+  /// 自动提交材料截止时间（待提交状态）
+  final DateTime? autoMaterialTime;
+  
+  /// 发货时间戳（用于计算自动确认收货）
+  final DateTime? deliveryTimestamp;
+  
+  /// 是否已评价
+  final bool? evaluate;
 
   // 注意：不包含 actions 字段，因为允许的操作应由 Presentation 层
   // 根据当前 state 和业务规则动态推断。
@@ -66,6 +85,12 @@ class Order extends Equatable {
     this.completeTime,
     this.cancelTime,
     this.buyerRemark,
+    this.buyer,
+    this.tenant,
+    this.autoCancelTime,
+    this.autoMaterialTime,
+    this.deliveryTimestamp,
+    this.evaluate,
   });
 
   Order copyWith({
@@ -82,6 +107,12 @@ class Order extends Equatable {
     DateTime? completeTime,
     DateTime? cancelTime,
     String? buyerRemark,
+    Member? buyer,
+    Member? tenant,
+    DateTime? autoCancelTime,
+    DateTime? autoMaterialTime,
+    DateTime? deliveryTimestamp,
+    bool? evaluate,
   }) {
     return Order(
       id: id ?? this.id,
@@ -97,6 +128,12 @@ class Order extends Equatable {
       completeTime: completeTime ?? this.completeTime,
       cancelTime: cancelTime ?? this.cancelTime,
       buyerRemark: buyerRemark ?? this.buyerRemark,
+      buyer: buyer ?? this.buyer,
+      tenant: tenant ?? this.tenant,
+      autoCancelTime: autoCancelTime ?? this.autoCancelTime,
+      autoMaterialTime: autoMaterialTime ?? this.autoMaterialTime,
+      deliveryTimestamp: deliveryTimestamp ?? this.deliveryTimestamp,
+      evaluate: evaluate ?? this.evaluate,
     );
   }
 
@@ -115,5 +152,11 @@ class Order extends Equatable {
         completeTime,
         cancelTime,
         buyerRemark,
+        buyer,
+        tenant,
+        autoCancelTime,
+        autoMaterialTime,
+        deliveryTimestamp,
+        evaluate,
       ];
 } 

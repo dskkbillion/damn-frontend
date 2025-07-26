@@ -31,6 +31,12 @@ class OrderItem extends Equatable {
 
   /// 商品总价 (price * quantity)。
   final double totalPrice;
+  
+  /// 交付时间（天数）
+  final int? deliveryDay;
+  
+  /// 可修改次数
+  final int? editNum;
 
   /// 创建一个 [OrderItem] 实例。
   const OrderItem({
@@ -44,6 +50,8 @@ class OrderItem extends Equatable {
     required this.quantity,
     required this.price,
     required this.totalPrice,
+    this.deliveryDay,
+    this.editNum,
   });
 
   @override
@@ -58,5 +66,7 @@ class OrderItem extends Equatable {
         quantity,
         price,
         totalPrice,
+        deliveryDay,
+        editNum,
       ];
 } 

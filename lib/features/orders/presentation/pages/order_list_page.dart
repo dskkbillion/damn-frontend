@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -31,6 +32,8 @@ class OrderListPage extends StatefulWidget {
 class _OrderListPageState extends State<OrderListPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _scrollController = ScrollController();
+  final _searchController = TextEditingController();
+  bool _showSearchBar = false;
 
   // Define the statuses corresponding to each tab index
   // IMPORTANT: Ensure this list order matches the TabBar tabs order
@@ -110,6 +113,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
     _tabController.dispose();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -142,6 +146,20 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
           title: const Text('我的订单'),
           // automaticallyImplyLeading 默认为 true，会自动显示返回按钮
           actions: [
+            // 搜索按钮
+            IconButton(
+              icon: Icon(_showSearchBar ? Icons.close : Icons.search),
+              onPressed: () {
+                setState(() {
+                  _showSearchBar = !_showSearchBar;
+                  if (!_showSearchBar) {
+                    // 关闭搜索时清空搜索内容并重新加载
+                    _searchController.clear();
+                    _loadOrdersForStatus(_tabStatuses[_tabController.index]);
+                  }
+                });
+              },
+            ),
             // 添加模拟数据切换按钮
             IconButton(
               icon: Icon(
@@ -167,18 +185,59 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
               },
             ),
           ],
-          bottom: TabBar(
-            controller: _tabController,
-            isScrollable: true,
-            tabs: const [
-              Tab(text: '全部'),
-              Tab(text: '待付款'),
-              Tab(text: '待提交'),
-              Tab(text: '待交付'),
-              Tab(text: '待收货'),
-              Tab(text: '待评价'),
-              Tab(text: '售后中'),
-            ],
+          bottom: PreferredSize(
+            preferredSize: Size.fromHeight(_showSearchBar ? 108 : 48),
+            child: Column(
+              children: [
+                TabBar(
+                  controller: _tabController,
+                  isScrollable: true,
+                  tabs: _buildTabsWithBadges(),
+                ),
+                if (_showSearchBar)
+                  Container(
+                    height: 60,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Theme.of(context).dividerColor.withOpacity(0.1),
+                        ),
+                      ),
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        hintText: '搜索订单号或商品名称',
+                        prefixIcon: const Icon(Icons.search),
+                        suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                _searchController.clear();
+                                _performSearch('');
+                              },
+                            )
+                          : null,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Theme.of(context).colorScheme.surfaceVariant,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                      ),
+                      textInputAction: TextInputAction.search,
+                      onSubmitted: (value) => _performSearch(value),
+                      onChanged: (value) {
+                        setState(() {}); // 更新清除按钮显示
+                      },
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
         body: BlocConsumer<OrderListBloc, OrderListState>(
@@ -213,7 +272,16 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                        ),
                      );
                    }
-                   return ListView.builder(
+                   return RefreshIndicator(
+                     onRefresh: () async {
+                       // 触觉反馈
+                       HapticFeedback.mediumImpact();
+                       // 重新加载当前标签的数据
+                       _loadOrdersForStatus(_tabStatuses[_tabController.index]);
+                       // 等待加载完成
+                       await Future.delayed(const Duration(milliseconds: 500));
+                     },
+                     child: ListView.builder(
                       controller: _scrollController,
                       padding: const EdgeInsets.all(16.0),
                       itemCount: state.hasReachedMax ? state.orders.length : state.orders.length + 1,
@@ -236,9 +304,60 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                          // Determine if the current order is in an after-sales state
                          final bool isAfterSalesOrder = afterSalesStatuses.contains(order.state);
 
-                         return OrderItemCard(
-                            order: order,
-                            onTap: () {
+                         return Dismissible(
+                           key: Key(order.id.toString()),
+                           direction: DismissDirection.endToStart,
+                           confirmDismiss: (direction) async {
+                             // 只有特定状态的订单可以删除
+                             const deletableStates = {
+                               OrderStatus.canceled,
+                               OrderStatus.orderCompleted,
+                               OrderStatus.awaitingEvaluation,
+                             };
+                             
+                             if (!deletableStates.contains(order.state)) {
+                               ScaffoldMessenger.of(context).showSnackBar(
+                                 const SnackBar(
+                                   content: Text('该状态的订单不能删除'),
+                                   duration: Duration(seconds: 2),
+                                 ),
+                               );
+                               return false;
+                             }
+                             
+                             // 显示确认对话框
+                             return await showDialog<bool>(
+                               context: context,
+                               builder: (BuildContext context) {
+                                 return AlertDialog(
+                                   title: const Text('删除订单'),
+                                   content: const Text('您确定要删除这个订单吗？删除后将无法恢复。'),
+                                   actions: [
+                                     TextButton(
+                                       child: const Text('取消'),
+                                       onPressed: () => Navigator.of(context).pop(false),
+                                     ),
+                                     TextButton(
+                                       child: const Text('确定'),
+                                       onPressed: () => Navigator.of(context).pop(true),
+                                     ),
+                                   ],
+                                 );
+                               },
+                             ) ?? false;
+                           },
+                           background: Container(
+                             alignment: Alignment.centerRight,
+                             padding: const EdgeInsets.only(right: 16),
+                             color: Theme.of(context).colorScheme.error,
+                             child: Icon(
+                               Icons.delete,
+                               color: Theme.of(context).colorScheme.onError,
+                             ),
+                           ),
+                           child: OrderItemCard(
+                             order: order,
+                             onTap: () {
                               // TODO: Refactor this navigation logic to use context.go() from go_router for better practice.
                               if (isAfterSalesOrder) {
                                 // Navigate to AfterSalesDetailPage
@@ -262,8 +381,10 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                                 );
                               }
                             },
+                           ),
                          );
                       },
+                     ),
                    );
                 } else if (state is OrderListLoading) {
                    return const Center(child: CircularProgressIndicator());
@@ -305,5 +426,67 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
            },
         ),
       );
+  }
+  
+  /// 构建Tab标签，包含数量角标
+  List<Widget> _buildTabsWithBadges() {
+    // 获取当前状态中的数量统计
+    Map<OrderStatus?, int>? statusCounts;
+    final state = context.watch<OrderListBloc>().state;
+    if (state is OrderListLoaded) {
+      statusCounts = state.statusCounts;
+    }
+    
+    // Tab标签名称
+    final tabLabels = ['全部', '待付款', '待提交', '待交付', '待收货', '待评价', '售后中'];
+    
+    return List.generate(_tabStatuses.length, (index) {
+      final status = _tabStatuses[index];
+      final label = tabLabels[index];
+      final count = statusCounts?[status] ?? 0;
+      
+      // 判断是否需要高亮显示（待付款、待提交、待交付）
+      final shouldHighlight = status == OrderStatus.awaitingPayment ||
+                            status == OrderStatus.awaitingSubmission ||
+                            status == OrderStatus.awaitingDelivery;
+      
+      if (count > 0 && status != null) { // 不显示"全部"的数量
+        return Tab(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(label),
+              const SizedBox(width: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: shouldHighlight 
+                    ? Theme.of(context).colorScheme.error 
+                    : Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  count > 99 ? '99+' : count.toString(),
+                  style: TextStyle(
+                    color: shouldHighlight
+                      ? Theme.of(context).colorScheme.onError
+                      : Theme.of(context).colorScheme.onPrimary,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      } else {
+        return Tab(text: label);
+      }
+    });
+  }
+  
+  /// 执行搜索
+  void _performSearch(String query) {
+    context.read<OrderListBloc>().add(SearchOrders(query: query));
   }
 }

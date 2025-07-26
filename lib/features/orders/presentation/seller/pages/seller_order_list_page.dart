@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart'; // For navigation
 
@@ -21,6 +22,7 @@ class SellerOrderListPage extends StatefulWidget {
 class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final ScrollController _scrollController = ScrollController();
+  String? _activeFilter; // 当前活动的快速筛选
 
   // Define Seller Tabs - 单一状态映射，清晰明确
   final List<Tab> _tabs = const [
@@ -160,10 +162,42 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
             },
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          tabs: _tabs,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(88),
+          child: Column(
+            children: [
+              TabBar(
+                controller: _tabController,
+                isScrollable: true,
+                tabs: _buildTabsWithCounts(),
+              ),
+              // 快速筛选栏
+              Container(
+                height: 40,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Theme.of(context).dividerColor.withOpacity(0.1),
+                    ),
+                  ),
+                ),
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    _buildFilterChip('今日订单', 'today'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('待处理', 'pending'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('问题订单', 'problem'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('高价值', 'highValue'),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       body: BlocConsumer<SellerOrderListBloc, SellerOrderListState>(
@@ -283,9 +317,61 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
                      // Consider returning a Future that completes when loading finishes
                      // return context.read<SellerOrderListBloc>().stream.firstWhere((s) => s is! SellerOrderListLoading);
                   },
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      // 待处理订单提醒卡片
+                      if (_hasPendingOrders(successState))
+                        Container(
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                          child: Card(
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(
+                                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                              ),
+                            ),
+                            color: Theme.of(context).colorScheme.primaryContainer,
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Theme.of(context).colorScheme.primary,
+                                child: Icon(
+                                  Icons.notifications_active,
+                                  color: Theme.of(context).colorScheme.onPrimary,
+                                ),
+                              ),
+                              title: Text(
+                                '您有${_getPendingCount(successState)}个订单待处理',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                ),
+                              ),
+                              subtitle: Text(
+                                _getPendingDescription(successState),
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.8),
+                                ),
+                              ),
+                              trailing: Icon(
+                                Icons.arrow_forward_ios,
+                                size: 16,
+                                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                              ),
+                              onTap: () {
+                                // 切换到待处理筛选
+                                setState(() {
+                                  _activeFilter = 'pending';
+                                });
+                              },
+                            ),
+                          ),
+                        ),
+                      // 订单列表
+                      Expanded(
+                        child: ListView.builder(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.all(16.0),
                     itemCount: ordersToShow.length + (isLoading ? 1 : 0), // Add space for loading indicator
                     itemBuilder: (context, index) {
                       if (index >= ordersToShow.length) {
@@ -304,7 +390,10 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
                              print('[SellerOrderListPage] Pushing to seller detail for order ${order.id}');
                           },
                         );
-                    },
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                  // Overlay a progress indicator if an action is in progress
@@ -320,6 +409,140 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
           },
        ),
     );
+  }
+  
+  /// 构建Tab标签，包含数量角标
+  List<Widget> _buildTabsWithCounts() {
+    // 获取当前状态中的数量统计
+    Map<OrderStatus, int>? statusCounts;
+    final state = context.watch<SellerOrderListBloc>().state;
+    if (state is SellerOrderListSuccess) {
+      // TODO: 需要在bloc中实现状态计数功能
+      // statusCounts = state.statusCounts;
+    }
+    
+    return List.generate(_tabs.length, (index) {
+      final status = _tabStatuses[index];
+      final label = _tabs[index].text;
+      final count = statusCounts?[status] ?? 0;
+      
+      // 判断是否需要高亮显示（待接单、待发货）
+      final shouldHighlight = status == OrderStatus.awaitingStart ||
+                            status == OrderStatus.awaitingDelivery;
+      
+      if (count > 0 && status != OrderStatus.unknown) { // 不显示"全部"的数量
+        return Tab(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(label!),
+              const SizedBox(width: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: shouldHighlight 
+                    ? Theme.of(context).colorScheme.error 
+                    : Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  count > 99 ? '99+' : count.toString(),
+                  style: TextStyle(
+                    color: shouldHighlight
+                      ? Theme.of(context).colorScheme.onError
+                      : Theme.of(context).colorScheme.onPrimary,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      } else {
+        return Tab(text: label);
+      }
+    });
+  }
+  
+  /// 构建筛选芯片
+  Widget _buildFilterChip(String label, String filterKey) {
+    final isActive = _activeFilter == filterKey;
+    
+    return FilterChip(
+      label: Text(label),
+      selected: isActive,
+      onSelected: (selected) {
+        setState(() {
+          _activeFilter = selected ? filterKey : null;
+        });
+        // TODO: 实现筛选逻辑
+        if (selected) {
+          _applyFilter(filterKey);
+        } else {
+          // 清除筛选，重新加载当前Tab的数据
+          final selectedStatus = _tabStatuses[_tabController.index];
+          context.read<SellerOrderListBloc>().add(
+            SellerOrderStatusFilterChanged(newStatusFilter: selectedStatus),
+          );
+        }
+      },
+    );
+  }
+  
+  /// 应用筛选
+  void _applyFilter(String filterKey) {
+    switch (filterKey) {
+      case 'today':
+        // 筛选今日订单
+        // TODO: 实现日期筛选
+        break;
+      case 'pending':
+        // 切换到待接单Tab
+        _tabController.animateTo(1); // 待接单是第2个tab
+        break;
+      case 'problem':
+        // 筛选问题订单（售后中）
+        _tabController.animateTo(7); // 售后中是第8个tab
+        break;
+      case 'highValue':
+        // 筛选高价值订单
+        // TODO: 实现价格筛选
+        break;
+    }
+  }
+  
+  /// 判断是否有待处理订单
+  bool _hasPendingOrders(SellerOrderListSuccess? state) {
+    if (state == null) return false;
+    // 检查是否有待接单或待发货的订单
+    return state.orders.any((order) => 
+      order.state == OrderStatus.awaitingStart || 
+      order.state == OrderStatus.awaitingDelivery
+    );
+  }
+  
+  /// 获取待处理订单数量
+  int _getPendingCount(SellerOrderListSuccess? state) {
+    if (state == null) return 0;
+    return state.orders.where((order) => 
+      order.state == OrderStatus.awaitingStart || 
+      order.state == OrderStatus.awaitingDelivery
+    ).length;
+  }
+  
+  /// 获取待处理描述
+  String _getPendingDescription(SellerOrderListSuccess? state) {
+    if (state == null) return '';
+    
+    final awaitingStart = state.orders.where((o) => o.state == OrderStatus.awaitingStart).length;
+    final awaitingDelivery = state.orders.where((o) => o.state == OrderStatus.awaitingDelivery).length;
+    
+    final parts = <String>[];
+    if (awaitingStart > 0) parts.add('$awaitingStart个待接单');
+    if (awaitingDelivery > 0) parts.add('$awaitingDelivery个待发货');
+    
+    return parts.join('、');
   }
 }
 

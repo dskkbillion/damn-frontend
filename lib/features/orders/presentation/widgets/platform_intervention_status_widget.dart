@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/order.dart';
+import '../../domain/entities/order_status.dart';
 
 /// 平台介入状态显示组件
 class PlatformInterventionStatusWidget extends StatelessWidget {

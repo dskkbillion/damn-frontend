@@ -4,7 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart'; // Import GoRouter
 
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_status_widget.dart';
+import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/enhanced_order_status_widget.dart';
 // Import the new item card buttons widget
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_item_card_action_buttons.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
@@ -183,12 +185,64 @@ class OrderItemCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // TODO: 显示卖家信息 (原型中有 sellerName, sellerId, 需要确认 Order 实体是否有相应字段)
-                  Text(
-                    '卖家: 店铺名称', // 占位符
-                    style: textTheme.bodySmall?.copyWith(color: colorScheme.secondary),
+                  // 显示卖家信息
+                  Expanded(
+                    child: Row(
+                      children: [
+                        // 卖家头像
+                        if (order.tenant?.avatar != null && order.tenant!.avatar!.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: CircleAvatar(
+                              radius: 16,
+                              backgroundImage: NetworkImage(order.tenant!.avatar!),
+                              backgroundColor: Colors.grey[200],
+                              onBackgroundImageError: (_, __) {},
+                            ),
+                          )
+                        else
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: CircleAvatar(
+                              radius: 16,
+                              backgroundColor: colorScheme.surfaceVariant,
+                              child: Icon(
+                                Icons.store,
+                                size: 16,
+                                color: colorScheme.secondary,
+                              ),
+                            ),
+                          ),
+                        // 卖家名称
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                order.tenant?.nickname ?? '卖家',
+                                style: textTheme.bodyMedium,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (order.tenant?.shopName != null && order.tenant!.shopName!.isNotEmpty)
+                                Text(
+                                  order.tenant!.shopName!,
+                                  style: textTheme.bodySmall?.copyWith(color: colorScheme.secondary),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  OrderStatusWidget(status: order.state), // 显示订单状态
+                  const SizedBox(width: 8),
+                  // 使用增强版状态标签，显示倒计时
+                  EnhancedOrderStatusWidget(
+                    status: order.state,
+                    countdownEndTime: _getCountdownEndTime(order),
+                  ),
                 ],
               ),
               const SizedBox(height: 12.0),
@@ -259,6 +313,37 @@ class OrderItemCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12.0),
+              // 关键信息提示区
+              if (_hasImportantInfo(order))
+                Container(
+                  margin: const EdgeInsets.only(bottom: 8.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _getInfoBackgroundColor(order, colorScheme),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _getInfoIcon(order),
+                        size: 14,
+                        color: _getInfoColor(order, colorScheme),
+                      ),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          _getInfoText(order),
+                          style: textTheme.bodySmall?.copyWith(
+                            color: _getInfoColor(order, colorScheme),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               Divider(height: 1, color: Colors.grey[200]), // 分隔线
               const SizedBox(height: 8.0), // Reduced spacing slightly
               // 时间戳单独一行，靠左
@@ -311,5 +396,153 @@ class OrderItemCard extends StatelessWidget {
         ),
       ),
     );
+  }
+  
+  /// 判断是否有重要信息需要显示
+  bool _hasImportantInfo(Order order) {
+    switch (order.state) {
+      case OrderStatus.awaitingPayment:
+        return order.autoCancelTime != null;
+      case OrderStatus.awaitingSubmission:
+      case OrderStatus.buyAwaitingSubmission:
+        return order.autoMaterialTime != null;
+      case OrderStatus.awaitingDelivery:
+        // 显示交付天数
+        final firstItem = order.items.isNotEmpty ? order.items.first : null;
+        return firstItem?.deliveryDay != null;
+      case OrderStatus.awaitingConfirmation:
+        return order.deliveryTimestamp != null;
+      case OrderStatus.awaitingEvaluation:
+        return order.evaluate == false;
+      default:
+        return false;
+    }
+  }
+  
+  /// 获取信息图标
+  IconData _getInfoIcon(Order order) {
+    switch (order.state) {
+      case OrderStatus.awaitingPayment:
+      case OrderStatus.awaitingSubmission:
+      case OrderStatus.buyAwaitingSubmission:
+      case OrderStatus.awaitingConfirmation:
+        return Icons.access_time;
+      case OrderStatus.awaitingDelivery:
+        return Icons.local_shipping;
+      case OrderStatus.awaitingEvaluation:
+        return Icons.star_border;
+      default:
+        return Icons.info_outline;
+    }
+  }
+  
+  /// 获取信息文本
+  String _getInfoText(Order order) {
+    switch (order.state) {
+      case OrderStatus.awaitingPayment:
+        if (order.autoCancelTime != null) {
+          final remaining = order.autoCancelTime!.difference(DateTime.now());
+          if (remaining.isNegative) return '已超时，即将取消';
+          return '请在${_formatDuration(remaining)}内付款';
+        }
+        break;
+      case OrderStatus.awaitingSubmission:
+      case OrderStatus.buyAwaitingSubmission:
+        if (order.autoMaterialTime != null) {
+          final remaining = order.autoMaterialTime!.difference(DateTime.now());
+          if (remaining.isNegative) return '已超时，请尽快提交';
+          return '请在${_formatDuration(remaining)}内提交材料';
+        }
+        break;
+      case OrderStatus.awaitingDelivery:
+        final firstItem = order.items.isNotEmpty ? order.items.first : null;
+        if (firstItem?.deliveryDay != null) {
+          return '交付时间：${firstItem!.deliveryDay}天内';
+        }
+        break;
+      case OrderStatus.awaitingConfirmation:
+        if (order.deliveryTimestamp != null) {
+          // 计算7天后自动确认
+          final autoConfirmTime = order.deliveryTimestamp!.add(const Duration(days: 7));
+          final remaining = autoConfirmTime.difference(DateTime.now());
+          if (remaining.isNegative) return '即将自动确认收货';
+          return '${_formatDuration(remaining)}后自动确认';
+        }
+        break;
+      case OrderStatus.awaitingEvaluation:
+        if (order.evaluate == false) {
+          return '待评价，评价后可获得积分';
+        }
+        break;
+      default:
+        break;
+    }
+    return '';
+  }
+  
+  /// 获取信息背景色
+  Color _getInfoBackgroundColor(Order order, ColorScheme colorScheme) {
+    switch (order.state) {
+      case OrderStatus.awaitingPayment:
+      case OrderStatus.awaitingSubmission:
+      case OrderStatus.buyAwaitingSubmission:
+        // 紧急状态使用错误色
+        return colorScheme.errorContainer.withOpacity(0.3);
+      case OrderStatus.awaitingConfirmation:
+      case OrderStatus.awaitingDelivery:
+        // 一般提示使用主色
+        return colorScheme.primaryContainer.withOpacity(0.3);
+      case OrderStatus.awaitingEvaluation:
+        // 评价提示使用次要色
+        return colorScheme.secondaryContainer.withOpacity(0.3);
+      default:
+        return colorScheme.surfaceVariant;
+    }
+  }
+  
+  /// 获取信息文字颜色
+  Color _getInfoColor(Order order, ColorScheme colorScheme) {
+    switch (order.state) {
+      case OrderStatus.awaitingPayment:
+      case OrderStatus.awaitingSubmission:
+      case OrderStatus.buyAwaitingSubmission:
+        return colorScheme.error;
+      case OrderStatus.awaitingConfirmation:
+      case OrderStatus.awaitingDelivery:
+        return colorScheme.primary;
+      case OrderStatus.awaitingEvaluation:
+        return colorScheme.secondary;
+      default:
+        return colorScheme.onSurfaceVariant;
+    }
+  }
+  
+  /// 格式化时间间隔
+  String _formatDuration(Duration duration) {
+    if (duration.inDays > 0) {
+      return '${duration.inDays}天${duration.inHours % 24}小时';
+    } else if (duration.inHours > 0) {
+      return '${duration.inHours}小时${duration.inMinutes % 60}分钟';
+    } else if (duration.inMinutes > 0) {
+      return '${duration.inMinutes}分钟';
+    } else {
+      return '少于1分钟';
+    }
+  }
+  
+  /// 获取倒计时结束时间
+  DateTime? _getCountdownEndTime(Order order) {
+    switch (order.state) {
+      case OrderStatus.awaitingPayment:
+        return order.autoCancelTime;
+      case OrderStatus.awaitingSubmission:
+      case OrderStatus.buyAwaitingSubmission:
+        return order.autoMaterialTime;
+      case OrderStatus.awaitingConfirmation:
+        // 自动确认收货时间（7天后）
+        return order.deliveryTimestamp?.add(const Duration(days: 7));
+      default:
+        return null;
+    }
   }
 } 
