@@ -59,15 +59,53 @@ class SimpleMockOrderDataSource {
         // 待付款订单30分钟后自动取消
         autoCancelTime = _baseTime.add(const Duration(minutes: 30));
         break;
+        
       case OrderStatus.awaitingSubmission:
       case OrderStatus.buyAwaitingSubmission:
         // 待提交材料订单24小时后自动处理
         autoMaterialTime = _baseTime.add(const Duration(hours: 24));
         break;
+        
+      case OrderStatus.awaitingStart:
+        // 等待开始状态，卖家需要在48小时内接单
+        autoMaterialTime = _baseTime.add(const Duration(hours: 48));
+        break;
+        
+      case OrderStatus.awaitingDelivery:
+        // 等待交付状态，根据deliveryDay设置截止时间
+        // 假设已经接单2天了，还剩余时间
+        final deliveryDays = 3 + orderId % 5; // 3-7天交付
+        autoMaterialTime = _baseTime.add(Duration(days: deliveryDays - 2));
+        break;
+        
       case OrderStatus.awaitingConfirmation:
         // 待确认收货订单，发货时间设为2天前，7天后自动确认
         deliveryTimestamp = _baseTime.subtract(const Duration(days: 2));
         break;
+        
+      case OrderStatus.sellerSupplementaryMaterials:
+        // 卖家补充材料状态，发货时间设为5天前，需要重新交付
+        deliveryTimestamp = _baseTime.subtract(const Duration(days: 5));
+        autoMaterialTime = _baseTime.add(const Duration(days: 2)); // 2天内重新交付
+        break;
+        
+      case OrderStatus.awaitingEvaluation:
+        // 已收货但未评价，收货时间设为3天前
+        deliveryTimestamp = _baseTime.subtract(const Duration(days: 3));
+        break;
+        
+      case OrderStatus.orderCompleted:
+        // 已完成订单，收货时间设为7天前
+        deliveryTimestamp = _baseTime.subtract(const Duration(days: 7));
+        break;
+        
+      case OrderStatus.afterSale:
+      case OrderStatus.AfterSaleRejection:
+      case OrderStatus.applyingForMediation:
+        // 售后相关状态，收货时间设为10天前
+        deliveryTimestamp = _baseTime.subtract(const Duration(days: 10));
+        break;
+        
       default:
         break;
     }
