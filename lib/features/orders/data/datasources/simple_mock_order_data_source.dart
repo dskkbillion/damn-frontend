@@ -5,6 +5,7 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_pric
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_payment_info.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_shipping_info.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/address.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/member.dart';
 
 /// 简化的模拟订单数据源，用于测试和开发
 class SimpleMockOrderDataSource {
@@ -47,6 +48,45 @@ class SimpleMockOrderDataSource {
     final DateTime? cancelTime = status == OrderStatus.canceled 
         ? _baseTime.subtract(const Duration(hours: 1)) 
         : null;
+        
+    // 根据状态设置各种自动处理时间
+    DateTime? autoCancelTime;
+    DateTime? autoMaterialTime;
+    DateTime? deliveryTimestamp;
+    
+    switch (status) {
+      case OrderStatus.awaitingPayment:
+        // 待付款订单30分钟后自动取消
+        autoCancelTime = _baseTime.add(const Duration(minutes: 30));
+        break;
+      case OrderStatus.awaitingSubmission:
+      case OrderStatus.buyAwaitingSubmission:
+        // 待提交材料订单24小时后自动处理
+        autoMaterialTime = _baseTime.add(const Duration(hours: 24));
+        break;
+      case OrderStatus.awaitingConfirmation:
+        // 待确认收货订单，发货时间设为2天前，7天后自动确认
+        deliveryTimestamp = _baseTime.subtract(const Duration(days: 2));
+        break;
+      default:
+        break;
+    }
+    
+    // 创建买家和卖家信息
+    const buyer = Member(
+      id: 1001,
+      nickname: '测试买家',
+      avatar: 'https://picsum.photos/100/100?random=buyer',
+      mobile: '138****8000',
+    );
+    
+    final seller = Member(
+      id: 2000 + orderId % 3,
+      nickname: '设计师${orderId % 3 + 1}号',
+      avatar: 'https://picsum.photos/100/100?random=seller$orderId',
+      shopName: '创意设计工作室${orderId % 3 + 1}',
+      mobile: '139****${9000 + orderId % 3}',
+    );
     
     return Order(
       id: orderId,
@@ -65,6 +105,8 @@ class SimpleMockOrderDataSource {
           quantity: 1,
           price: price,
           totalPrice: price,
+          deliveryDay: 3 + orderId % 5, // 3-7天交付
+          editNum: 2, // 可修改2次
         ),
       ],
       shippingAddress: Address(
@@ -93,6 +135,12 @@ class SimpleMockOrderDataSource {
       completeTime: completeTime,
       cancelTime: cancelTime,
       buyerRemark: '测试订单备注',
+      buyer: buyer,
+      tenant: seller,
+      autoCancelTime: autoCancelTime,
+      autoMaterialTime: autoMaterialTime,
+      deliveryTimestamp: deliveryTimestamp,
+      evaluate: status == OrderStatus.awaitingEvaluation ? false : (status == OrderStatus.orderCompleted ? true : null),
     );
   }
   
