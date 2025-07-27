@@ -103,6 +103,10 @@ import '../../features/payment/presentation/bloc/payment_bloc.dart';
 import '../../features/payment/presentation/pages/order_confirm_page.dart';
 import '../../features/payment/presentation/pages/payment_result_page.dart';
 
+// Import mock preview page
+import 'package:dskk_flutter_refactor/features/orders/presentation/pages/mock_orders_preview_page.dart';
+import 'package:dskk_flutter_refactor/features/orders/presentation/pages/test_order_display.dart';
+
 // Import ProductDetailPage and cubit
 import '../../features/home/presentation/pages/product_detail_page.dart';
 import '../../features/home/presentation/cubit/product_detail_cubit.dart';
@@ -651,6 +655,31 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ...FavoritesRoutes.routes, 
       ...sellerNonShellRoutes, 
       ...PaymentRoutes.routes, // 添加支付模块路由
+
+      // Mock预览路由 - 用于测试各种订单状态
+      GoRoute(
+        path: '/mock/orders',
+        name: 'mockOrdersPreview',
+        pageBuilder: (context, state) => state.buildSmartPage(
+          const MockOrdersPreviewPage(),
+          name: 'mockOrdersPreview',
+          source: 'app_navigation_mock',
+        ),
+      ),
+
+      // 测试订单显示路由
+      GoRoute(
+        path: '/test/order/:orderId',
+        name: 'testOrderDisplay',
+        pageBuilder: (context, state) {
+          final orderId = int.parse(state.pathParameters['orderId'] ?? '1001');
+          return state.buildSmartPage(
+            TestOrderDisplayPage(orderId: orderId),
+            name: 'testOrderDisplay',
+            source: 'app_navigation_test',
+          );
+        },
+      ),
 
       // 添加卖家主页路由 - 使用最简单的页面创建方式
       GoRoute(

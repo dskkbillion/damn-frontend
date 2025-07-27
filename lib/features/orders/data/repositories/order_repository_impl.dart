@@ -212,12 +212,18 @@ class OrderRepositoryImpl implements IOrderRepository {
        print('[OrderRepository] Using mock data for order detail');
        try {
          final allMockOrders = SimpleMockOrderDataSource.getAllMockOrders();
+         print('[OrderRepository] Available mock order IDs: ${allMockOrders.map((o) => o.id).toList()}');
          final order = allMockOrders.firstWhere(
            (o) => o.id == orderId,
-           orElse: () => throw Exception('未找到订单 ID: $orderId'),
+           orElse: () => throw Exception('未找到订单 ID: $orderId (可用ID: ${allMockOrders.map((o) => o.id).toList()})'),
          );
+         print('[OrderRepository] Found mock order: ${order.id} - ${order.orderSn}');
+         print('[OrderRepository] Order items: ${order.items.length}');
+         print('[OrderRepository] Order status: ${order.state}');
+         print('[OrderRepository] Order price: ${order.priceSummary.payPrice}');
          return Right(order);
        } catch (e) {
+         print('[OrderRepository] Mock order not found: $e');
          return Left(ServerFailure(message: '获取模拟订单详情失败: ${e.toString()}'));
        }
      }

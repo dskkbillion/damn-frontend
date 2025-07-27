@@ -13,9 +13,6 @@ import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_de
 // Correct import path for DI container
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 // Import the new AfterSalesDetailPage
-import 'package:dskk_flutter_refactor/features/after_sales/presentation/pages/after_sales_detail_page.dart';
-// TODO: Import AfterSalesBloc if needed for AfterSalesDetailPage
-import '../../../../core/navigation/navigation_helper.dart';
 import 'package:dskk_flutter_refactor/core/config/app_config.dart';
 
 /// 订单列表页面
@@ -360,15 +357,8 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                              onTap: () {
                               // TODO: Refactor this navigation logic to use context.go() from go_router for better practice.
                               if (isAfterSalesOrder) {
-                                // Navigate to AfterSalesDetailPage
-                                // Option 1: Using go_router (preferred if setup allows)
-                                // context.go('/afterSalesDetail/${order.id}');
-
-                                // Option 2: Using NavigationHelper.pushDetailPage (keeping existing style for now)
-                                NavigationHelper.pushDetailPage(
-                                  context,
-                                  AfterSalesDetailPage(id: order.id.toString()),
-                                );
+                                // Navigate to AfterSalesDetailPage using GoRouter
+                                context.push('/afterSalesDetail/${order.id}');
                               } else {
                                 // Navigate to OrderDetailPage using GoRouter
                                 context.push('/orderDetail/${order.id}');

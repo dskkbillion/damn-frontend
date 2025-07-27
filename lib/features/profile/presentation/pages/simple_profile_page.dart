@@ -6,10 +6,6 @@ import 'dart:io';
 import 'package:go_router/go_router.dart';
 
 import '../bloc/profile_bloc.dart';
-import '../bloc/wallet_bloc.dart';
-import 'wallet_page.dart';
-import 'account_security_page.dart';
-import '../../../../core/navigation/navigation_helper.dart';
 
 class SimpleProfilePage extends StatefulWidget {
   final VoidCallback? onSwitchMode;
@@ -367,13 +363,8 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
 
   void _showFeatureNotImplemented(String featureName) {
     if (featureName == '我的钱包') {
-      NavigationHelper.pushModalPage(
-        context,
-        BlocProvider(
-          create: (context) => GetIt.instance<WalletBloc>(),
-          child: const WalletPage(),
-        ),
-      );
+      // Navigate to wallet using GoRouter
+      context.push('/profile/wallet');
       return;
     }
 
@@ -383,20 +374,13 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
   }
 
   void _navigateToWallet(BuildContext context) {
-    NavigationHelper.pushModalPage(
-      context,
-      BlocProvider(
-        create: (context) => GetIt.instance<WalletBloc>(),
-        child: const WalletPage(),
-      ),
-    );
+    // Navigate to wallet using GoRouter
+    context.push('/profile/wallet');
   }
 
   void _navigateToAccountSecurity(BuildContext context) {
-    NavigationHelper.pushPage(
-      context,
-      const AccountSecurityPage(),
-    );
+    // Navigate to account security using GoRouter
+    context.push('/profile/account-security');
   }
 }
 

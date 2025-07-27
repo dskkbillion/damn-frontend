@@ -34,25 +34,18 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   @override
   void initState() {
     super.initState();
-    print('[OrderDetailPage] initState called with orderId: ${widget.orderId}');
     _orderIdInt = int.tryParse(widget.orderId);
-    print('[OrderDetailPage] Parsed orderIdInt: $_orderIdInt');
     if (_orderIdInt != null) {
       // 检查当前状态，避免重复加载
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final currentState = context.read<OrderDetailBloc>().state;
-        print('[OrderDetailPage] Current BLoC state in initState: ${currentState.runtimeType}');
         
         // 只有在初始状态时才触发加载
         if (currentState is OrderDetailInitial) {
-          print('[OrderDetailPage] Adding LoadOrderDetail event to BLoC');
           context.read<OrderDetailBloc>().add(LoadOrderDetail(orderId: _orderIdInt!));
-        } else {
-          print('[OrderDetailPage] Skipping LoadOrderDetail - state is not initial: ${currentState.runtimeType}');
         }
       });
     } else {
-      print('[OrderDetailPage] Invalid orderId, showing error');
       // Handle invalid ID case immediately (e.g., show error or pop)
        WidgetsBinding.instance.addPostFrameCallback((_) {
          if (mounted) {
@@ -92,7 +85,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('[OrderDetailPage] build called with orderId: ${widget.orderId}');
+    print('🔥🔥🔥 [买家OrderDetailPage] 正在构建页面，订单ID: ${widget.orderId} 🔥🔥🔥');
     
     // If ID was invalid, show an empty scaffold or error placeholder
     if (_orderIdInt == null) {
@@ -117,7 +110,6 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           // Listen for action results to show feedback
           if (state is OrderDetailActionSuccess) {
             // Show success SnackBar
-            print('[OrderDetailPage] Received OrderDetailActionSuccess: ${state.message}');
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
@@ -142,7 +134,6 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             }
           } else if (state is OrderDetailActionFailure) {
             // Show error SnackBar
-            print('[OrderDetailPage] Received OrderDetailActionFailure: ${state.message}');
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
@@ -154,7 +145,6 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               );
           } else if (state is OrderDetailPaymentResult) {
             // Handle payment result and navigate accordingly
-            print('[OrderDetailPage] Received payment result: ${state.paymentResponse.resultType}');
             PaymentNavigationService.handlePaymentResult(context, state.paymentResponse);
             
             // Reload order details to get updated status
@@ -163,17 +153,15 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         },
         child: BlocBuilder<OrderDetailBloc, OrderDetailState>(
           builder: (context, state) {
-            print('[OrderDetailPage] BlocBuilder received state: ${state.runtimeType}');
-            if (state is OrderDetailLoaded) {
-              print('[OrderDetailPage] OrderDetailLoaded state - order: ${state.order?.id}');
-            }
 
             // --- Handle Initial Loading and Error States ---
             if (state is OrderDetailInitial || (state is OrderDetailLoading && _extractOrder(state) == null)) {
               // Show full screen loading only during initial load
+              print('📱📱📱 [买家OrderDetailPage] 显示加载中状态 📱📱📱');
               return const Center(child: CircularProgressIndicator());
             } else if (state is OrderDetailError) {
               // Show error with retry button
+              print('❌❌❌ [买家OrderDetailPage] 显示错误状态: ${state.message} ❌❌❌');
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -201,11 +189,10 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
              // --- Extract Order Data for Content Building ---
             final order = _extractOrder(state);
-            print('[OrderDetailPage] Extracted order: ${order?.id} - ${order?.orderSn}');
+            print('🎯🎯🎯 [买家OrderDetailPage] 当前状态: ${state.runtimeType}, 提取到的订单: ${order?.id} 🎯🎯🎯');
 
             // If order is somehow still null (edge case, should not happen after above checks)
             if (order == null) {
-               print('[OrderDetailPage] Error: Order is null even after loading/action states.');
                // Show a more informative error in this edge case
                return Center(
                  child: Padding(
@@ -235,19 +222,18 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             // --- Build Main Content with Loading Overlay ---
             return Stack(
               children: [
-                 // Scrollable content built by the helper method
-                 _buildOrderDetailContent(context, order),
-
-                 // Loading Overlay shown during actions
-                 if (state is OrderDetailActionLoading)
-                   Positioned.fill(
-                     child: Container(
-                       color: Colors.black.withOpacity(0.3), // Semi-transparent overlay
-                       child: const Center(child: CircularProgressIndicator()),
-                     ),
-                   ),
+                _buildOrderDetailContent(context, order),
+                
+                // Loading overlay for action processing
+                if (state is OrderDetailActionLoading)
+                  Container(
+                    color: Colors.black.withOpacity(0.3),
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
               ],
-           );
+            );
           },
         ),
       ),
@@ -287,123 +273,80 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   // This method builds the scrollable content part
   Widget _buildOrderDetailContent(BuildContext context, Order order) {
-    print('[OrderDetailPage] Building content for order: ${order.id}');
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    try {
-      // The main scrollable content
-      return RefreshIndicator(
-       onRefresh: () async {
-          if (_orderIdInt != null) {
-             context.read<OrderDetailBloc>().add(LoadOrderDetail(orderId: _orderIdInt!));
-          }
-       },
-       child: SingleChildScrollView(
-          padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 80.0, top: 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ALWAYS use OrderStatusTimelineHeader for the top status display
-              OrderStatusTimelineHeader(order: order),
-              const SizedBox(height: 24),
-              // 添加支付状态检查警告
-              _buildPaymentStatusWarning(context, order),
-              // Dynamic section based on state (e.g., form, info area)
-              _buildDynamicContentSection(context, order),
-              const SizedBox(height: 24),
-              // Order Items Section - 包装为Card
-              if (order.items.isNotEmpty)
-                 Card(
-                   child: Padding(
-                     padding: const EdgeInsets.all(16.0),
-                     child: Column(
-                       crossAxisAlignment: CrossAxisAlignment.start,
-                       children: [
-                          Text('订单商品', style: textTheme.titleMedium),
-                          const SizedBox(height: 8),
-                          OrderDetailItemTile(item: order.items.first),
-                       ],
-                     ),
-                   ),
-                 ),
-              const SizedBox(height: 16),
-              // Pricing Section - 包装为Card
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('价格信息', style: textTheme.titleMedium),
-                      const SizedBox(height: 8),
-                      _buildPriceRow(context, '商品总价', '¥${order.priceSummary.totalPrice.toStringAsFixed(2)}'),
-                      if (order.priceSummary.deliveryPrice > 0)
-                        _buildPriceRow(context, '运费', '+ ¥${order.priceSummary.deliveryPrice.toStringAsFixed(2)}'),
-                      if (order.priceSummary.discountPrice > 0)
-                        _buildPriceRow(context, '优惠金额', '- ¥${order.priceSummary.discountPrice.toStringAsFixed(2)}'),
-                      const Divider(height: 16, thickness: 0.5),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('实付款', style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
-                          Text(
-                            '¥${order.priceSummary.payPrice.toStringAsFixed(2)}',
-                            style: textTheme.titleMedium?.copyWith(color: colorScheme.primary, fontWeight: FontWeight.bold),
-                          ),
-                        ]
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Order Info Section - 包装为Card
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('订单信息', style: textTheme.titleMedium),
-                      const SizedBox(height: 8),
-                      _buildInfoRow(context, '订单编号:', order.orderSn),
-                      _buildInfoRow(context, '创建时间:', _formatDateTime(order.createdAt)),
-                      if (order.paymentInfo.payTime != null)
-                        _buildInfoRow(context, '付款时间:', _formatDateTime(order.paymentInfo.payTime!)),
-                      if (order.completeTime != null)
-                        _buildInfoRow(context, '完成时间:', _formatDateTime(order.completeTime!)),
-                      if (order.cancelTime != null)
-                        _buildInfoRow(context, '取消时间:', _formatDateTime(order.cancelTime!)),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-       ),
-    );
-    } catch (e, stackTrace) {
-      print('[OrderDetailPage] Error building content: $e');
-      print('[OrderDetailPage] StackTrace: $stackTrace');
-      return Center(
+    print('🎨🎨🎨 [买家OrderDetailPage] _buildOrderDetailContent 被调用，订单ID: ${order.id} 🎨🎨🎨');
+    
+    // 极简测试版本 - 直接显示基本信息
+    return Container(
+      color: Colors.white,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(Icons.error, color: Colors.red, size: 48),
-            const SizedBox(height: 16),
-            Text('页面渲染错误', style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
-            Text('$e', textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('返回'),
+            // 大标题测试
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              color: Colors.blue,
+              child: Text(
+                '订单 ${order.id} 测试页面',
+                style: const TextStyle(
+                  color: Colors.white, 
+                  fontSize: 24, 
+                  fontWeight: FontWeight.bold
+                ),
+              ),
             ),
+            
+            const SizedBox(height: 20),
+            
+            // 基本信息
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.green[100],
+                border: Border.all(color: Colors.green, width: 2),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('订单编号: ${order.orderSn}', style: const TextStyle(fontSize: 16)),
+                  Text('状态: ${order.state}', style: const TextStyle(fontSize: 16)),
+                  Text('金额: ¥${order.priceSummary.payPrice}', style: const TextStyle(fontSize: 16)),
+                  Text('商品数量: ${order.items.length}', style: const TextStyle(fontSize: 16)),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 20),
+            
+            // 商品信息
+            if (order.items.isNotEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.orange[100],
+                  border: Border.all(color: Colors.orange, width: 2),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('商品信息:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Text('商品名称: ${order.items.first.productName}', style: const TextStyle(fontSize: 16)),
+                    Text('数量: ${order.items.first.quantity}', style: const TextStyle(fontSize: 16)),
+                    Text('价格: ¥${order.items.first.price}', style: const TextStyle(fontSize: 16)),
+                  ],
+                ),
+              ),
+            
+            const SizedBox(height: 100), // 底部间距，避免被按钮遮挡
           ],
         ),
-      );
-    }
+      ),
+    );
   }
 
   // Builds the section that changes based on order status (e.g., address, requirements)
@@ -546,27 +489,3 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   }
 }
 
-// Simple placeholder widget for dynamic content areas
-class _PlaceholderContentCard extends StatelessWidget {
-  final String title;
-  final OrderStatus status;
-  const _PlaceholderContentCard({required this.title, required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: Colors.grey[100],
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-             Text(title, style: Theme.of(context).textTheme.labelLarge),
-             const SizedBox(height: 8),
-             Text('(当前状态: ${status.name})'),
-          ],
-        ),
-      ),
-    );
-  }
-}

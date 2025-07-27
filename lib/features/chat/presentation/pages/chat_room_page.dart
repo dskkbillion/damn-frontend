@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart'; // Import intl for date formatting
 import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
@@ -8,9 +9,6 @@ import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/chat_me
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/message_input_bar.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/product_chat_header.dart'; // 导入商品头部组件
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart'; // For MessageStatus
-// 导入商品详情页面
-import 'package:dskk_flutter_refactor/features/home/presentation/pages/product_detail_page.dart';
-import '../../../../core/navigation/navigation_helper.dart';
 
 class ChatRoomPage extends StatefulWidget {
   final int chatId;
@@ -277,12 +275,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               // 导航到商品详情页
                               if (chatRoom.productId != null) {
                                 print('导航到商品详情页: ${chatRoom.productName}, ID: ${chatRoom.productId}');
-                                NavigationHelper.pushDetailPage(
-                                  context,
-                                  ProductDetailPage(
-                                    productId: chatRoom.productId!,
-                                  ),
-                                );
+                                // Navigate to product detail using GoRouter
+                                context.push('/product/${chatRoom.productId}');
                               } else {
                                 print('商品ID为空，无法导航到商品详情页');
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -295,12 +289,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               if (chatRoom.productId != null) {
                                 print('点击操作按钮: ${chatRoom.productName}');
                                 // 也可以导航到商品详情页，或者实现其他操作
-                                NavigationHelper.pushDetailPage(
-                                  context,
-                                  ProductDetailPage(
-                                    productId: chatRoom.productId!,
-                                  ),
-                                );
+                                // Navigate to product detail using GoRouter
+                                context.push('/product/${chatRoom.productId}');
                               }
                             },
                           );

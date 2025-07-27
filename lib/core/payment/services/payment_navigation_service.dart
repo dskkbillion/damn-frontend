@@ -70,7 +70,7 @@ class PaymentNavigationService {
     
     // 跳转到订单详情页面
     if (response.orderId != null) {
-      context.go('/orders/detail/${response.orderId}');
+      context.go('/orderDetail/${response.orderId}');
     } else {
       // 没有订单ID，跳转到订单列表
       context.go('/orders');
@@ -176,7 +176,7 @@ class PaymentNavigationService {
       _showInfoSnackBar(context, '正在重新发起支付...');
       
       // 示例：跳转到订单详情页面，用户可以在那里重新支付
-      context.go('/orders/detail/$orderId');
+      context.go('/orderDetail/$orderId');
     } else {
       _showErrorSnackBar(context, '无法重试支付，订单信息丢失');
     }
@@ -189,7 +189,7 @@ class PaymentNavigationService {
       _showInfoSnackBar(context, '正在查询支付状态...');
       
       // 跳转到订单详情页面，用户可以查看最新状态
-      context.go('/orders/detail/$orderId');
+      context.go('/orderDetail/$orderId');
     } else {
       _showErrorSnackBar(context, '无法查询状态，订单信息丢失');
     }

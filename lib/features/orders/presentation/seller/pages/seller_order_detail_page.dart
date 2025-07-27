@@ -28,6 +28,8 @@ class SellerOrderDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('💰💰💰 [卖家OrderDetailPage] 正在构建页面，订单ID: $orderId 💰💰💰');
+    
     return BlocProvider(
       create: (context) => GetIt.instance<SellerOrderDetailBloc>()
         ..add(LoadSellerOrderDetail(orderId: orderId)),

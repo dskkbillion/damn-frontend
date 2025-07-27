@@ -12,9 +12,6 @@ import '../widgets/empty_state.dart';
 import '../widgets/loading_state.dart';
 import '../widgets/product_card.dart';
 import '../widgets/status_tag.dart';
-import 'product_edit_page.dart';
-import 'product_preview_page.dart';
-import '../../../../core/navigation/navigation_helper.dart';
 
 /// 商品管理页面
 class ProductManagementPage extends StatefulWidget {
@@ -172,33 +169,11 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
             // 如果是预览模式，使用新的ProductPreviewPage
             if (isPreviewMode) {
               // 先导入必要的页面
-              await NavigationHelper.pushDetailPage(
-                context,
-                ProductPreviewPage(productId: productId),
-              );
+              // Navigate to product edit page in preview mode using GoRouter
+              await context.push('/seller/products/$productId/edit?preview=true');
             } else {
-              final needRefresh = await NavigationHelper.pushDetailPage(
-                context,
-                ProductEditPage(
-                  productId: productId,
-                  isPreviewMode: false,
-                  onDraftSaved: () {
-                      print('[ProductManagementPage] onDraftSaved callback called');
-                      print('[ProductManagementPage] Current tab index: ${_tabController.index}');
-                      
-                      // 强制刷新草稿列表，不管当前在哪个Tab
-                      try {
-                        context.read<ProductManagementBloc>().add(const LoadProductList(
-                          status: ProductStatus.draft,
-                          forceRefresh: true,
-                        ));
-                        print('[ProductManagementPage] LoadProductList event dispatched successfully');
-                      } catch (e) {
-                        print('[ProductManagementPage] Error dispatching LoadProductList: $e');
-                      }
-                    },
-                  ),
-              );
+              // Navigate to product edit page using GoRouter
+              final needRefresh = await context.push<bool>('/seller/products/$productId/edit');
               
               // 如果返回值为true，说明需要刷新列表
               if (needRefresh == true) {

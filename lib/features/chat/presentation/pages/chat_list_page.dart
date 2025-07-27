@@ -28,7 +28,6 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/pages/notific
 
 import '../bloc/chat_list/chat_list_bloc.dart';
 import '../widgets/chat_list_item.dart';
-import '../../../../core/navigation/navigation_helper.dart';
 import '../widgets/grouped_chat_list.dart'; // 导入分组组件
 import '../bloc/chat_messages/chat_messages_bloc.dart'; // Import ChatMessagesBloc
 import 'chat_room_page.dart'; // Import ChatRoomPage
@@ -180,29 +179,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             final getUnreadNotificationCountUseCase = GetUnreadNotificationCountUseCase(sellerRepository);
             
             // 使用NavigationHelper.pushModalPage而不是context.go，这样可以保留底部导航栏
-            NavigationHelper.pushModalPage(
-              context,
-              BlocProvider(
-                  create: (context) => NotificationListBloc(
-                    getSellerNotificationListUseCase,
-                    markNotificationAsReadUseCase,
-                    markAllNotificationsAsReadUseCase,
-                    getUnreadNotificationCountUseCase,
-                  )..add(LoadNotificationList()), // 加载初始数据
-                  child: Scaffold(
-                    appBar: AppBar(
-                      title: Text(s.chat_notification_center),
-                      centerTitle: true,
-                      // 添加返回按钮
-                      leading: IconButton(
-                        icon: const Icon(Icons.arrow_back),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ),
-                    body: const NotificationListContent(),
-                  ),
-                ),
-            );
+            // 使用 GoRouter 导航到通知页面
+            context.push('/seller/notifications');
           }
         },
       ),
@@ -257,43 +235,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
               if (state.navigateToChatId != null) {
                 final chatId = state.navigateToChatId!;
                 print('[ChatListPage] BlocListener triggered navigation to chatId: $chatId');
-                // Navigate to ChatRoomPage
-                NavigationHelper.pushPage(
-                  context,
-                  BlocProvider(
-                      create: (_) {
-                        // 手动创建 ChatMessagesBloc 实例，添加撤回回调
-                        final bloc = sl<ChatMessagesBloc>(param1: chatId);
-                        // 通过反射或其他方式添加回调 - 这里暂时使用现有的实例
-                        return bloc..add(LoadChatMessages(chatId));
-                      },
-                      child: ChatRoomPage(
-                        chatId: chatId,
-                        onMessagesLoaded: () {
-                          // 当消息加载成功后，更新聊天列表中的未读数量为0
-                          print('[ChatListPage] Admin chat messages loaded, updating unread count to 0');
-                          context.read<ChatListBloc>().add(
-                            UpdateChatRoomUnreadCount(chatId: chatId, unreadCount: 0)
-                          );
-                        },
-                        onMessageRevoked: (chatId, newLastMessage) {
-                          // 消息撤回后更新特定聊天室的最后一条消息
-                          print('[ChatListPage] Message revoked in chat $chatId, updating last message');
-                          context.read<ChatListBloc>().add(
-                            UpdateChatRoomLastMessage(
-                              chatId: chatId,
-                              lastMessage: newLastMessage,
-                            ),
-                          );
-                        },
-                        onMessageSent: () {
-                          // 消息发送成功后刷新列表
-                          print('[ChatListPage] Message sent, refreshing chat list');
-                          context.read<ChatListBloc>().add(RefreshChatList());
-                        },
-                      ),
-                    ),
-                ).then((result) {
+                // Navigate to ChatRoomPage using GoRouter
+                context.push('/chat/$chatId').then((result) {
                    // Reset navigation trigger in Bloc state after navigation
                    context.read<ChatListBloc>().add(ClearNavigationTrigger());
                    // Remove the RefreshChatList since we now update unread count directly
@@ -330,44 +273,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   
   // 提取导航逻辑到单独方法
   void _navigateToChat(BuildContext context, ChatRoom chatRoom) {
-    NavigationHelper.pushPage(
-      context,
-      BlocProvider(
-          create: (_) => sl<ChatMessagesBloc>(param1: chatRoom.id)
-                        ..add(LoadChatMessages(chatRoom.id)),
-          child: ChatRoomPage(
-            chatId: chatRoom.id,
-            onMessagesLoaded: () {
-              // 当消息加载成功后，更新聊天列表中的未读数量为0
-              print('[ChatListPage] Chat ${chatRoom.id} messages loaded, updating unread count to 0');
-              context.read<ChatListBloc>().add(
-                UpdateChatRoomUnreadCount(chatId: chatRoom.id, unreadCount: 0)
-              );
-            },
-            onMessageRevoked: (chatId, newLastMessage) {
-              // 消息撤回后更新特定聊天室的最后一条消息
-              print('[ChatListPage] Message revoked in chat $chatId, updating last message');
-              context.read<ChatListBloc>().add(
-                UpdateChatRoomLastMessage(
-                  chatId: chatId,
-                  lastMessage: newLastMessage,
-                ),
-              );
-            },
-            onMessageSent: () {
-              // 消息发送成功后刷新列表
-              print('[ChatListPage] Message sent in chat ${chatRoom.id}, refreshing chat list');
-              context.read<ChatListBloc>().add(RefreshChatList());
-            },
-          ),
-        ),
-    ).then((result) {
-      // Remove the RefreshChatList since we now update unread count directly
-      // if (result == true) {
-      //   print('[ChatListPage] Refreshing list after viewing chat ${chatRoom.id}');
-      //   context.read<ChatListBloc>().add(RefreshChatList()); 
-      // }
-    });
+    // Navigate to ChatRoomPage using GoRouter
+    context.push('/chat/${chatRoom.id}');
   }
   
   // 新的筛选方法：根据应用模式筛选聊天室，同时排除系统管理员聊天室

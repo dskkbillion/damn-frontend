@@ -21,7 +21,6 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
 
   @override
   Widget build(BuildContext context) {
-    print('[OrderStatusTimelineHeader] Building for order ${widget.order.id} with status ${widget.order.state}');
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -32,7 +31,6 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
     bool showTimeline = widget.order.state != OrderStatus.canceled;
 
     return Container(
-      color: Colors.red.withOpacity(0.3), // 明显的红色调试背景
       width: double.infinity,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
