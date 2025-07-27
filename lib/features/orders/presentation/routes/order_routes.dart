@@ -52,6 +52,8 @@ class OrderRoutes {
       name: 'orderDetail',
       builder: (BuildContext context, GoRouterState state) {
         final String orderId = state.pathParameters['orderId'] ?? 'invalid';
+        print('[OrderRoutes] Building OrderDetailPage with orderId: $orderId');
+        print('[OrderRoutes] Current time: ${DateTime.now()}');
         // Provide OrderDetailBloc for the page
         return BlocProvider(
           create: (_) => getIt<OrderDetailBloc>(),

@@ -370,15 +370,8 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                                   AfterSalesDetailPage(id: order.id.toString()),
                                 );
                               } else {
-                                // Navigate to OrderDetailPage (existing logic)
-                                NavigationHelper.pushDetailPage(
-                                  context,
-                                  BlocProvider<OrderDetailBloc>(
-                                    create: (context) => getIt<OrderDetailBloc>()
-                                      ..add(LoadOrderDetail(orderId: order.id)),
-                                    child: OrderDetailPage(orderId: order.id.toString()),
-                                  ),
-                                );
+                                // Navigate to OrderDetailPage using GoRouter
+                                context.push('/orderDetail/${order.id}');
                               }
                             },
                            ),

@@ -34,11 +34,25 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   @override
   void initState() {
     super.initState();
+    print('[OrderDetailPage] initState called with orderId: ${widget.orderId}');
     _orderIdInt = int.tryParse(widget.orderId);
+    print('[OrderDetailPage] Parsed orderIdInt: $_orderIdInt');
     if (_orderIdInt != null) {
-      // Trigger loading only if ID is valid
-      context.read<OrderDetailBloc>().add(LoadOrderDetail(orderId: _orderIdInt!));
+      // 检查当前状态，避免重复加载
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final currentState = context.read<OrderDetailBloc>().state;
+        print('[OrderDetailPage] Current BLoC state in initState: ${currentState.runtimeType}');
+        
+        // 只有在初始状态时才触发加载
+        if (currentState is OrderDetailInitial) {
+          print('[OrderDetailPage] Adding LoadOrderDetail event to BLoC');
+          context.read<OrderDetailBloc>().add(LoadOrderDetail(orderId: _orderIdInt!));
+        } else {
+          print('[OrderDetailPage] Skipping LoadOrderDetail - state is not initial: ${currentState.runtimeType}');
+        }
+      });
     } else {
+      print('[OrderDetailPage] Invalid orderId, showing error');
       // Handle invalid ID case immediately (e.g., show error or pop)
        WidgetsBinding.instance.addPostFrameCallback((_) {
          if (mounted) {
@@ -78,6 +92,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    print('[OrderDetailPage] build called with orderId: ${widget.orderId}');
+    
     // If ID was invalid, show an empty scaffold or error placeholder
     if (_orderIdInt == null) {
        return Scaffold(appBar: AppBar(title: const Text('错误')), body: const Center(child: Text('无效的订单 ID')));
@@ -148,6 +164,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         child: BlocBuilder<OrderDetailBloc, OrderDetailState>(
           builder: (context, state) {
             print('[OrderDetailPage] BlocBuilder received state: ${state.runtimeType}');
+            if (state is OrderDetailLoaded) {
+              print('[OrderDetailPage] OrderDetailLoaded state - order: ${state.order?.id}');
+            }
 
             // --- Handle Initial Loading and Error States ---
             if (state is OrderDetailInitial || (state is OrderDetailLoading && _extractOrder(state) == null)) {
@@ -182,6 +201,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
              // --- Extract Order Data for Content Building ---
             final order = _extractOrder(state);
+            print('[OrderDetailPage] Extracted order: ${order?.id} - ${order?.orderSn}');
 
             // If order is somehow still null (edge case, should not happen after above checks)
             if (order == null) {
@@ -231,7 +251,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           },
         ),
       ),
-      // --- Bottom Navigation Bar as Footer --- (使用bottomNavigationBar替代persistentFooterButtons避免分隔线)
+      // --- Bottom Navigation Bar as Footer --- 
       bottomNavigationBar: BlocBuilder<OrderDetailBloc, OrderDetailState>(
         builder: (context, state) {
           final order = _extractOrder(state);
@@ -241,27 +261,20 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               return const SizedBox.shrink();
             }
             
-            // 使用Container包装，避免分隔线问题
-            return Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).scaffoldBackgroundColor,
-                border: Border(
-                  top: BorderSide(
-                    color: Colors.transparent, // 透明边框
-                    width: 0,
+            // 修复布局问题：确保bottomNavigationBar不会覆盖主要内容
+            return SafeArea(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  border: Border(
+                    top: BorderSide(
+                      color: Theme.of(context).dividerColor.withOpacity(0.2),
+                      width: 1,
+                    ),
                   ),
                 ),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-              child: SafeArea(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: OrderDetailActionButtons(order: order),
-                    ),
-                  ],
-                ),
+                padding: const EdgeInsets.all(16.0),
+                child: OrderDetailActionButtons(order: order),
               ),
             );
           }
@@ -274,11 +287,13 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   // This method builds the scrollable content part
   Widget _buildOrderDetailContent(BuildContext context, Order order) {
+    print('[OrderDetailPage] Building content for order: ${order.id}');
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
-    // The main scrollable content
-    return RefreshIndicator(
+    try {
+      // The main scrollable content
+      return RefreshIndicator(
        onRefresh: () async {
           if (_orderIdInt != null) {
              context.read<OrderDetailBloc>().add(LoadOrderDetail(orderId: _orderIdInt!));
@@ -368,6 +383,27 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           ),
        ),
     );
+    } catch (e, stackTrace) {
+      print('[OrderDetailPage] Error building content: $e');
+      print('[OrderDetailPage] StackTrace: $stackTrace');
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error, color: Colors.red, size: 48),
+            const SizedBox(height: 16),
+            Text('页面渲染错误', style: Theme.of(context).textTheme.headlineSmall),
+            const SizedBox(height: 8),
+            Text('$e', textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('返回'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   // Builds the section that changes based on order status (e.g., address, requirements)

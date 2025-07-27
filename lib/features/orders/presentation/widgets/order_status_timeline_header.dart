@@ -21,6 +21,7 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
 
   @override
   Widget build(BuildContext context) {
+    print('[OrderStatusTimelineHeader] Building for order ${widget.order.id} with status ${widget.order.state}');
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -30,9 +31,12 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
     int currentStepIndex = _getCurrentStepIndex(widget.order.state);
     bool showTimeline = widget.order.state != OrderStatus.canceled;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+    return Container(
+      color: Colors.red.withOpacity(0.3), // 明显的红色调试背景
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
         // --- 优化后的时间线视觉效果 ---
         if (showTimeline)
           _buildOptimizedTimeline(context, steps, currentStepIndex),
@@ -40,7 +44,8 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
         if (showTimeline)
           const SizedBox(height: 16),
         _buildStatusInfoCard(context, widget.order.state),
-      ],
+        ],
+      ),
     );
   }
 

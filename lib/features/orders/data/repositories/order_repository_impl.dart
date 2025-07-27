@@ -206,8 +206,10 @@ class OrderRepositoryImpl implements IOrderRepository {
 
   @override
   Future<Either<Failure, Order>> getOrderDetail(int orderId) async {
+     print('[OrderRepository] getOrderDetail called for orderId: $orderId, useMockData: ${AppConfig.useMockData}');
      // 如果启用了模拟数据模式，从模拟数据中查找
      if (AppConfig.useMockData) {
+       print('[OrderRepository] Using mock data for order detail');
        try {
          final allMockOrders = SimpleMockOrderDataSource.getAllMockOrders();
          final order = allMockOrders.firstWhere(
