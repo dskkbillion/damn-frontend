@@ -239,6 +239,15 @@
     "profile_personal_center": "Personal Center",
     "profile_login_prompt": "Please login to view your profile",
     "profile_login_button": "Login",
+    
+    "auth_phone_number": "Phone Number",
+    "auth_select_country_region": "Select Country/Region",
+    "auth_phone_validation_empty": "Please enter phone number",
+    "auth_phone_validation_invalid_cn": "Please enter 11-digit phone number",
+    "auth_phone_validation_invalid_cn_start": "Phone number must start with 1",
+    "auth_phone_validation_invalid_us": "Please enter 10-digit phone number",
+    "auth_phone_validation_invalid_jp_kr": "Please enter 10 or 11-digit phone number",
+    "auth_phone_validation_invalid_general": "Please enter a valid phone number",
     "profile_loading_error": "Loading failed: {error}",
     "@profile_loading_error": {
       "placeholders": {

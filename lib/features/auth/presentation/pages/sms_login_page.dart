@@ -6,6 +6,8 @@ import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/phone_input_field.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_input_field.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_button.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/country_code.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // TODO: 需要根据 design-info/HTML原型/HTML-new/outer/login/login.html 和 RN 代码实现具体 UI
 
@@ -20,6 +22,22 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _codeController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  late CountryCode _selectedCountry;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 基于系统语言设置默认国家代码
+    final locale = Localizations.localeOf(context);
+    _selectedCountry = CountryCodes.getDefaultCountryCode(locale.languageCode);
+    
+    // 调试：打印当前语言环境
+    print('Current locale: ${locale.languageCode}');
+    print('AppLocalizations available: ${AppLocalizations.of(context) != null}');
+    if (AppLocalizations.of(context) != null) {
+      print('auth_phone_number: ${AppLocalizations.of(context)!.auth_phone_number}');
+    }
+  }
 
   @override
   void dispose() {
@@ -103,7 +121,15 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                       // 顶部留白间隔
                       const SizedBox(height: 60),
 
-                      PhoneInputField(controller: _phoneController),
+                      PhoneInputField(
+                        controller: _phoneController,
+                        selectedCountry: _selectedCountry,
+                        onCountryChanged: (country) {
+                          setState(() {
+                            _selectedCountry = country;
+                          });
+                        },
+                      ),
                       const SizedBox(height: 16),
 
                       Row(
@@ -115,9 +141,10 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                           VerificationCodeButton(
                             phoneController: _phoneController, // 传递手机号控制器给按钮
                             onSendCode: (phone) async {
-                               // TODO: 调用 cubit.sendCode(phone);
-                               print('Requesting code for $phone');
-                               context.read<SmsLoginCubit>().sendCode(phone);
+                               // 发送验证码时包含区号
+                               final fullPhone = '${_selectedCountry.dialCode}$phone';
+                               print('Requesting code for $fullPhone');
+                               context.read<SmsLoginCubit>().sendCode(fullPhone);
                             },
                             codeSentState: state is SmsLoginCodeSentSuccess ? CodeButtonState.counting : CodeButtonState.idle,
                             isSending: state is SmsLoginCodeSending,
@@ -144,10 +171,11 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                             ? null
                             : () {
                                if (_formKey.currentState!.validate()) {
-                                 // TODO: 调用 cubit.login(...)
-                                 print('Attempting login with phone: ${_phoneController.text}, code: ${_codeController.text}');
+                                 // 登录时包含区号
+                                 final fullPhone = '${_selectedCountry.dialCode}${_phoneController.text}';
+                                 print('Attempting login with phone: $fullPhone, code: ${_codeController.text}');
                                  context.read<SmsLoginCubit>().login(
-                                   _phoneController.text,
+                                   fullPhone,
                                    _codeController.text,
                                  );
                                }

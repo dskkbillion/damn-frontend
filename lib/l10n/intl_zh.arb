@@ -239,6 +239,15 @@
     "profile_personal_center": "个人中心",
     "profile_login_prompt": "请登录以查看您的个人资料",
     "profile_login_button": "去登录",
+    
+    "auth_phone_number": "手机号",
+    "auth_select_country_region": "选择国家/地区",
+    "auth_phone_validation_empty": "请输入手机号",
+    "auth_phone_validation_invalid_cn": "请输入11位手机号",
+    "auth_phone_validation_invalid_cn_start": "手机号必须以1开头",
+    "auth_phone_validation_invalid_us": "请输入10位电话号码",
+    "auth_phone_validation_invalid_jp_kr": "请输入10或11位电话号码",
+    "auth_phone_validation_invalid_general": "请输入有效的电话号码",
     "profile_loading_error": "加载失败: {error}",
     "@profile_loading_error": {
       "placeholders": {
