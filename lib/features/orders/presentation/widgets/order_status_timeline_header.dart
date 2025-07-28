@@ -14,10 +14,6 @@ class OrderStatusTimelineHeader extends StatefulWidget {
 
 class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
 
-  double _getCurrentProgress() {
-    final currentStep = _getCurrentStepIndex(widget.order.state);
-    return currentStep / 5.0; // 总共6步，索引0-5
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,51 +54,13 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
         borderRadius: BorderRadius.circular(12.0),
         color: colorScheme.surface, // 移除透明度
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 顶部进度条 - 左对齐
-          Align(
-            alignment: Alignment.centerLeft,
-            child: _buildProgressBar(context, _getCurrentProgress()), // 直接使用值，避免动画
-          ),
-          const SizedBox(height: 20),
-          // 步骤指示器
-          Row(
-            children: _buildTimelineSteps(context, steps, currentStepIndex),
-          ),
-        ],
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: _buildTimelineSteps(context, steps, currentStepIndex),
       ),
     );
   }
 
-  /// 构建进度条
-  Widget _buildProgressBar(BuildContext context, double progress) {
-    final colorScheme = Theme.of(context).colorScheme;
-    const double progressBarWidth = 280.0; // 固定宽度，避免MediaQuery调用
-    
-    return SizedBox(
-      width: progressBarWidth,
-      child: Container(
-        height: 4,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(2),
-        ),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Container(
-            width: progressBarWidth * progress.clamp(0.0, 1.0),
-            height: 4,
-            decoration: BoxDecoration(
-              color: colorScheme.primary, // 简化为单色，移除渐变
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   /// 构建时间线步骤
   List<Widget> _buildTimelineSteps(BuildContext context, List<String> steps, int currentStepIndex) {
@@ -117,12 +75,7 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
 
       Color currentStepColor = isInactive ? Colors.grey.shade400 : colorScheme.primary;
 
-      // 添加连接线（除了第一个步骤）
-      if (i > 0) {
-        stepWidgets.add(_buildConnectingLine(isCompleted || (i - 1) == currentStepIndex, context));
-      }
-
-      // 添加步骤组件
+      // 添加步骤组件（不再添加连接线）
       stepWidgets.add(_buildStepWidget(
         context,
         steps[i],
@@ -135,21 +88,6 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
     return stepWidgets;
   }
 
-  /// 构建优化的连接线
-  Widget _buildConnectingLine(bool isActive, BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    
-    return Expanded(
-      child: Container(
-        height: 2.0,
-        margin: const EdgeInsets.symmetric(horizontal: 8.0),
-        decoration: BoxDecoration(
-          color: isActive ? colorScheme.primary : Colors.grey.shade300, // 简化为单色
-          borderRadius: BorderRadius.circular(1.0),
-        ),
-      ),
-    );
-  }
 
   /// 构建步骤组件
   Widget _buildStepWidget(

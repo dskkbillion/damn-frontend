@@ -3,20 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart'; // For date formatting
 
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
-import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart'; // Needed for _buildDynamicContentSection
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_action_buttons.dart';
 import 'package:dskk_flutter_refactor/core/payment/services/payment_navigation_service.dart';
-// Import actual widgets confirmed to be used in _buildOrderDetailContent
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_status_timeline_header.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_detail_item_tile.dart';
-import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_requirement_submission_form.dart';
-import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/after_sale_info_area.dart';
-// Add imports for potentially missing dynamic section widgets
-import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/waiting_action_area.dart';
-import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/delivery_confirmation_area.dart';
-import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_evaluation_form.dart';
-import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_completion_summary.dart';
 
 /// 订单详情页面
 class OrderDetailPage extends StatefulWidget {
@@ -219,10 +211,59 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                );
             }
 
-            // --- Build Main Content with Loading Overlay ---
+            // --- Build Main Content with Loading Overlay and Bottom Buttons ---
             return Stack(
               children: [
                 _buildOrderDetailContent(context, order),
+                
+                // 底部按钮固定在屏幕底部
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: BlocBuilder<OrderDetailBloc, OrderDetailState>(
+                    builder: (context, buttonState) {
+                      final buttonOrder = _extractOrder(buttonState);
+                      if (buttonOrder != null) {
+                        // Don't show footer buttons for completed or canceled orders
+                        if (buttonOrder.state == OrderStatus.orderCompleted || buttonOrder.state == OrderStatus.canceled) {
+                          return const SizedBox.shrink();
+                        }
+                        
+                        return Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Theme.of(context).scaffoldBackgroundColor.withOpacity(0.95),
+                                Theme.of(context).scaffoldBackgroundColor,
+                              ],
+                            ),
+                            border: Border(
+                              top: BorderSide(
+                                color: Theme.of(context).dividerColor.withOpacity(0.2),
+                                width: 1,
+                              ),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, -5),
+                              ),
+                            ],
+                          ),
+                          padding: const EdgeInsets.all(16.0),
+                          child: SafeArea(
+                            child: OrderDetailActionButtons(order: buttonOrder),
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ),
                 
                 // Loading overlay for action processing
                 if (state is OrderDetailActionLoading)
@@ -237,155 +278,167 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           },
         ),
       ),
-      // --- Bottom Navigation Bar as Footer --- 
-      bottomNavigationBar: BlocBuilder<OrderDetailBloc, OrderDetailState>(
-        builder: (context, state) {
-          final order = _extractOrder(state);
-          if (order != null) {
-            // Don't show footer buttons for completed or canceled orders
-            if (order.state == OrderStatus.orderCompleted || order.state == OrderStatus.canceled) {
-              return const SizedBox.shrink();
-            }
-            
-            // 修复布局问题：确保bottomNavigationBar不会覆盖主要内容
-            return SafeArea(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  border: Border(
-                    top: BorderSide(
-                      color: Theme.of(context).dividerColor.withOpacity(0.2),
-                      width: 1,
-                    ),
-                  ),
-                ),
-                padding: const EdgeInsets.all(16.0),
-                child: OrderDetailActionButtons(order: order),
-              ),
-            );
-          }
-          // Return empty widget if order is not loaded
-          return const SizedBox.shrink();
-        },
-      ),
+      // --- 临时禁用 Bottom Navigation Bar 来调试内容显示问题 ---
+      // bottomNavigationBar: BlocBuilder<OrderDetailBloc, OrderDetailState>(
+      //   builder: (context, state) {
+      //     final order = _extractOrder(state);
+      //     if (order != null) {
+      //       // Don't show footer buttons for completed or canceled orders
+      //       if (order.state == OrderStatus.orderCompleted || order.state == OrderStatus.canceled) {
+      //         return const SizedBox.shrink();
+      //       }
+      //       
+      //       // 修复布局问题：确保bottomNavigationBar不会覆盖主要内容
+      //       return SafeArea(
+      //         child: Container(
+      //           decoration: BoxDecoration(
+      //             color: Theme.of(context).scaffoldBackgroundColor,
+      //             border: Border(
+      //               top: BorderSide(
+      //                 color: Theme.of(context).dividerColor.withOpacity(0.2),
+      //                 width: 1,
+      //               ),
+      //             ),
+      //           ),
+      //           padding: const EdgeInsets.all(16.0),
+      //           child: OrderDetailActionButtons(order: order),
+      //         ),
+      //       );
+      //     }
+      //     // Return empty widget if order is not loaded
+      //     return const SizedBox.shrink();
+      //   },
+      // ),
     );
   }
 
   // This method builds the scrollable content part
   Widget _buildOrderDetailContent(BuildContext context, Order order) {
-    print('🎨🎨🎨 [买家OrderDetailPage] _buildOrderDetailContent 被调用，订单ID: ${order.id} 🎨🎨🎨');
+    print('🎨🎨🎨 [买家OrderDetailPage] _buildOrderDetailContent 被调用，订单ID: ${order.id}, 状态: ${order.state} 🎨🎨🎨');
     
-    // 极简测试版本 - 直接显示基本信息
-    return Container(
-      color: Colors.white,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+    try {
+      return SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 150), // 增加底部padding，为固定按钮留出更多空间
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 大标题测试
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              color: Colors.blue,
-              child: Text(
-                '订单 ${order.id} 测试页面',
-                style: const TextStyle(
-                  color: Colors.white, 
-                  fontSize: 24, 
-                  fontWeight: FontWeight.bold
-                ),
-              ),
+            // 订单状态时间线头部
+            Builder(
+              builder: (context) {
+                print('🔍 正在构建 OrderStatusTimelineHeader');
+                try {
+                  return OrderStatusTimelineHeader(order: order);
+                } catch (e) {
+                  print('❌ OrderStatusTimelineHeader 出错: $e');
+                  return Container(
+                    padding: const EdgeInsets.all(16),
+                    color: Colors.red.withOpacity(0.3),
+                    child: Text('OrderStatusTimelineHeader 错误: $e'),
+                  );
+                }
+              },
             ),
             
-            const SizedBox(height: 20),
-            
-            // 基本信息
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.green[100],
-                border: Border.all(color: Colors.green, width: 2),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('订单编号: ${order.orderSn}', style: const TextStyle(fontSize: 16)),
-                  Text('状态: ${order.state}', style: const TextStyle(fontSize: 16)),
-                  Text('金额: ¥${order.priceSummary.payPrice}', style: const TextStyle(fontSize: 16)),
-                  Text('商品数量: ${order.items.length}', style: const TextStyle(fontSize: 16)),
-                ],
-              ),
+            // 支付状态警告（如果需要）
+            Builder(
+              builder: (context) {
+                print('🔍 正在构建 PaymentStatusWarning');
+                try {
+                  return _buildPaymentStatusWarning(context, order);
+                } catch (e) {
+                  print('❌ PaymentStatusWarning 出错: $e');
+                  return const SizedBox.shrink();
+                }
+              },
             ),
             
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             
-            // 商品信息
-            if (order.items.isNotEmpty)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.orange[100],
-                  border: Border.all(color: Colors.orange, width: 2),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('商品信息:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Text('商品名称: ${order.items.first.productName}', style: const TextStyle(fontSize: 16)),
-                    Text('数量: ${order.items.first.quantity}', style: const TextStyle(fontSize: 16)),
-                    Text('价格: ¥${order.items.first.price}', style: const TextStyle(fontSize: 16)),
-                  ],
-                ),
-              ),
+            // 商品信息部分
+            Builder(
+              builder: (context) {
+                print('🔍 正在构建 OrderItemsSection');
+                try {
+                  return _buildOrderItemsSection(context, order);
+                } catch (e) {
+                  print('❌ OrderItemsSection 出错: $e');
+                  return Container(
+                    padding: const EdgeInsets.all(16),
+                    color: Colors.red.withOpacity(0.3),
+                    child: Text('OrderItemsSection 错误: $e'),
+                  );
+                }
+              },
+            ),
             
-            const SizedBox(height: 100), // 底部间距，避免被按钮遮挡
+            const SizedBox(height: 16),
+            
+            // 订单信息部分
+            Builder(
+              builder: (context) {
+                print('🔍 正在构建 OrderInfoSection');
+                try {
+                  return _buildOrderInfoSection(context, order);
+                } catch (e) {
+                  print('❌ OrderInfoSection 出错: $e');
+                  return Container(
+                    padding: const EdgeInsets.all(16),
+                    color: Colors.red.withOpacity(0.3),
+                    child: Text('OrderInfoSection 错误: $e'),
+                  );
+                }
+              },
+            ),
+            
+            const SizedBox(height: 8),
+            
+            // 价格明细部分
+            Builder(
+              builder: (context) {
+                print('🔍 正在构建 PriceDetailsSection');
+                try {
+                  return _buildPriceDetailsSection(context, order);
+                } catch (e) {
+                  print('❌ PriceDetailsSection 出错: $e');
+                  return Container(
+                    padding: const EdgeInsets.all(16),
+                    color: Colors.red.withOpacity(0.3),
+                    child: Text('PriceDetailsSection 错误: $e'),
+                  );
+                }
+              },
+            ),
+            
+            const SizedBox(height: 32), // 底部额外空间
           ],
         ),
-      ),
-    );
-  }
-
-  // Builds the section that changes based on order status (e.g., address, requirements)
-  // CORRECTION: Return Widget instances, not call methods
-  Widget _buildDynamicContentSection(BuildContext context, Order order) {
-    switch (order.state) {
-      case OrderStatus.awaitingPayment:
-      case OrderStatus.awaitingDelivery:
-      case OrderStatus.awaitingStart: // Assume these states show a waiting area
-        return WaitingActionArea(order: order); // Return Widget instance
-      case OrderStatus.awaitingSubmission:
-      case OrderStatus.buyAwaitingSubmission:
-        return OrderRequirementSubmissionForm(order: order); // Return Widget instance
-      case OrderStatus.awaitingConfirmation:
-         return DeliveryConfirmationArea(order: order); // Return Widget instance
-       case OrderStatus.awaitingEvaluation:
-         // Wrap the form in a SizedBox to force full width
-         return SizedBox(width: double.infinity, child: OrderEvaluationForm(order: order));
-       case OrderStatus.afterSale:
-       case OrderStatus.AfterSaleRejection:
-         // Assume AfterSaleInfoArea takes the Order object
-         // Remove check for non-existent field and pass order directly
-         return AfterSaleInfoArea(order: order); // Return Widget instance, passing the order
-       case OrderStatus.orderCompleted:
-         return OrderCompletionSummary(order: order); // Return Widget instance
-      case OrderStatus.canceled:
-        // For canceled orders, return empty widget to avoid duplicate status display
-        // (OrderStatusTimelineHeader already shows the cancellation status)
-        return const SizedBox.shrink();
-      // Add cases for other statuses if they have specific content areas
-      // case OrderStatus.applyingForMediation:
-      // case OrderStatus.sellerSupplementaryMaterials:
-      // case OrderStatus.applyForRefuse:
-      // case OrderStatus.unknown:
-      default:
-        // For states with no specific dynamic content, return an empty box
-        return const SizedBox.shrink();
+      );
+    } catch (e, stack) {
+      print('❌❌❌ _buildOrderDetailContent 整体出错: $e');
+      print('Stack trace: $stack');
+      return Container(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          children: [
+            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const SizedBox(height: 16),
+            Text(
+              '页面渲染错误',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              e.toString(),
+              style: Theme.of(context).textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
     }
   }
+
+  
 
   // Helper to build simple info rows
   // Restore original implementation
@@ -486,6 +539,250 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     }
 
     return const SizedBox.shrink();
+  }
+  
+  // 构建商品信息部分
+  Widget _buildOrderItemsSection(BuildContext context, Order order) {
+    print('🔍 OrderItemsSection: 商品数量 ${order.items.length}');
+    final items = order.items;
+    if (items.isEmpty) {
+      print('⚠️ OrderItemsSection: 商品列表为空');
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Center(
+          child: Text('暂无商品信息'),
+        ),
+      );
+    }
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 标题部分
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Theme.of(context).dividerColor.withOpacity(0.1),
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.shopping_bag_outlined,
+                  size: 20,
+                  color: Theme.of(context).primaryColor,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '商品信息',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${items.length}件',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).primaryColor,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // 商品列表
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              children: items.map((item) => OrderDetailItemTile(item: item)).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // 构建订单信息部分
+  Widget _buildOrderInfoSection(BuildContext context, Order order) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 标题部分
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Theme.of(context).dividerColor.withOpacity(0.1),
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.receipt_outlined,
+                  size: 20,
+                  color: Theme.of(context).primaryColor,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '订单信息',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // 内容部分
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildInfoRow(context, '订单编号：', order.orderSn ?? 'N/A'),
+                _buildInfoRow(context, '下单时间：', _formatDateTime(order.createdAt)),
+                if (order.paymentInfo.payTime != null)
+                  _buildInfoRow(context, '付款时间：', _formatDateTime(order.paymentInfo.payTime)),
+                if (order.completeTime != null)
+                  _buildInfoRow(context, '完成时间：', _formatDateTime(order.completeTime)),
+                if (order.buyerRemark != null && order.buyerRemark!.isNotEmpty)
+                  _buildInfoRow(context, '订单备注：', order.buyerRemark!),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // 构建收货信息部分
+  // 构建价格明细部分
+  Widget _buildPriceDetailsSection(BuildContext context, Order order) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 标题部分
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Theme.of(context).dividerColor.withOpacity(0.1),
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.calculate_outlined,
+                  size: 20,
+                  color: Theme.of(context).primaryColor,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '价格明细',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // 内容部分
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildPriceRow(context, '商品总价', '¥${order.priceSummary.totalPrice.toStringAsFixed(2)}'),
+                if (order.priceSummary.deliveryPrice > 0)
+                  _buildPriceRow(context, '运费', '¥${order.priceSummary.deliveryPrice.toStringAsFixed(2)}'),
+                if (order.priceSummary.discountPrice > 0)
+                  _buildPriceRow(context, '优惠金额', '-¥${order.priceSummary.discountPrice.toStringAsFixed(2)}'),
+                const Divider(height: 24, thickness: 1),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '实付金额',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '¥${order.priceSummary.payPrice.toStringAsFixed(2)}',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

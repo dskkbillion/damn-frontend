@@ -39,10 +39,10 @@ class OrderItemModel extends Equatable {
   /// Factory constructor to create an OrderItemModel from a JSON map.
   factory OrderItemModel.fromJson(Map<String, dynamic> json) {
     // Attempt to get image URL from common possible keys
-    final imgUrl = json['productImage'] as String?      // From description text?
-                ?? json['picUrl'] as String?           // From old model?
-                ?? json['imageUrl'] as String?;         // Generic guess?
-                // If none found, it remains null
+    final imgUrl = json['productImage'] as String?      // Current API field
+                ?? json['picUrl'] as String?           // Legacy field
+                ?? json['imageUrl'] as String?         // Alternative field
+                ?? '';                                  // Default empty string
 
     return OrderItemModel(
       id: json['id'] as int? ?? 0,

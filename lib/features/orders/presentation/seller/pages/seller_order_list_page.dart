@@ -22,7 +22,6 @@ class SellerOrderListPage extends StatefulWidget {
 class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final ScrollController _scrollController = ScrollController();
-  String? _activeFilter; // 当前活动的快速筛选
 
   // Define Seller Tabs - 单一状态映射，清晰明确
   final List<Tab> _tabs = const [
@@ -162,42 +161,10 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
             },
           ),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(88),
-          child: Column(
-            children: [
-              TabBar(
-                controller: _tabController,
-                isScrollable: true,
-                tabs: _buildTabsWithCounts(),
-              ),
-              // 快速筛选栏
-              Container(
-                height: 40,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Theme.of(context).dividerColor.withOpacity(0.1),
-                    ),
-                  ),
-                ),
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    _buildFilterChip('今日订单', 'today'),
-                    const SizedBox(width: 8),
-                    _buildFilterChip('待处理', 'pending'),
-                    const SizedBox(width: 8),
-                    _buildFilterChip('问题订单', 'problem'),
-                    const SizedBox(width: 8),
-                    _buildFilterChip('高价值', 'highValue'),
-                  ],
-                ),
-              ),
-            ],
-          ),
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          tabs: _buildTabsWithCounts(),
         ),
       ),
       body: BlocConsumer<SellerOrderListBloc, SellerOrderListState>(
@@ -359,10 +326,8 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
                                 color: Theme.of(context).colorScheme.onPrimaryContainer,
                               ),
                               onTap: () {
-                                // 切换到待处理筛选
-                                setState(() {
-                                  _activeFilter = 'pending';
-                                });
+                                // 切换到待接单Tab
+                                _tabController.animateTo(1); // 待接单是第2个tab
                               },
                             ),
                           ),
@@ -463,53 +428,6 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
         return Tab(text: label);
       }
     });
-  }
-  
-  /// 构建筛选芯片
-  Widget _buildFilterChip(String label, String filterKey) {
-    final isActive = _activeFilter == filterKey;
-    
-    return FilterChip(
-      label: Text(label),
-      selected: isActive,
-      onSelected: (selected) {
-        setState(() {
-          _activeFilter = selected ? filterKey : null;
-        });
-        // TODO: 实现筛选逻辑
-        if (selected) {
-          _applyFilter(filterKey);
-        } else {
-          // 清除筛选，重新加载当前Tab的数据
-          final selectedStatus = _tabStatuses[_tabController.index];
-          context.read<SellerOrderListBloc>().add(
-            SellerOrderStatusFilterChanged(newStatusFilter: selectedStatus),
-          );
-        }
-      },
-    );
-  }
-  
-  /// 应用筛选
-  void _applyFilter(String filterKey) {
-    switch (filterKey) {
-      case 'today':
-        // 筛选今日订单
-        // TODO: 实现日期筛选
-        break;
-      case 'pending':
-        // 切换到待接单Tab
-        _tabController.animateTo(1); // 待接单是第2个tab
-        break;
-      case 'problem':
-        // 筛选问题订单（售后中）
-        _tabController.animateTo(7); // 售后中是第8个tab
-        break;
-      case 'highValue':
-        // 筛选高价值订单
-        // TODO: 实现价格筛选
-        break;
-    }
   }
   
   /// 判断是否有待处理订单
