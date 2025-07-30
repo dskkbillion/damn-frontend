@@ -25,6 +25,9 @@ class OrderDetailLoaded extends OrderDetailState {
   final bool isSubmittingRequirements;
   final bool isSavingDraft;
   final bool isSubmittingEvaluation;
+  // Add materials and deliveries data
+  final List<OrderMaterials>? materials;
+  final List<OrderDelivery>? deliveries;
   // Add other relevant data if needed, e.g., canEvaluate, afterSaleStatus
   // final bool canEvaluate;
   // final SimpleAfterSaleStatus afterSaleStatus;
@@ -34,6 +37,8 @@ class OrderDetailLoaded extends OrderDetailState {
     this.isSubmittingRequirements = false, // Default to false
     this.isSavingDraft = false, // Default to false
     this.isSubmittingEvaluation = false, // Add this field with default
+    this.materials,
+    this.deliveries,
     // this.canEvaluate = false,
     // this.afterSaleStatus = SimpleAfterSaleStatus.none,
   });
@@ -44,6 +49,8 @@ class OrderDetailLoaded extends OrderDetailState {
         isSubmittingRequirements,
         isSavingDraft,
         isSubmittingEvaluation,
+        materials,
+        deliveries,
          /*, canEvaluate, afterSaleStatus*/
       ];
 
@@ -53,6 +60,8 @@ class OrderDetailLoaded extends OrderDetailState {
     bool? isSubmittingRequirements,
     bool? isSavingDraft,
     bool? isSubmittingEvaluation,
+    List<OrderMaterials>? materials,
+    List<OrderDelivery>? deliveries,
     // bool? canEvaluate,
     // SimpleAfterSaleStatus? afterSaleStatus,
   }) {
@@ -61,6 +70,8 @@ class OrderDetailLoaded extends OrderDetailState {
       isSubmittingRequirements: isSubmittingRequirements ?? this.isSubmittingRequirements,
       isSavingDraft: isSavingDraft ?? this.isSavingDraft,
       isSubmittingEvaluation: isSubmittingEvaluation ?? this.isSubmittingEvaluation,
+      materials: materials ?? this.materials,
+      deliveries: deliveries ?? this.deliveries,
       // canEvaluate: canEvaluate ?? this.canEvaluate,
       // afterSaleStatus: afterSaleStatus ?? this.afterSaleStatus,
     );

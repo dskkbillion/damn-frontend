@@ -8,9 +8,12 @@ import '../../../../core/network/network_info.dart';
 // import '../../../../core/platform/network_info.dart'; // 可选：用于检查网络状态
 import '../../domain/entities/order.dart';
 import '../../domain/entities/order_status.dart';
+import '../../domain/entities/order_materials.dart';
+import '../../domain/entities/order_delivery.dart';
 import '../../domain/repositories/i_order_repository.dart';
 import '../datasources/i_order_remote_data_source.dart';
 import '../datasources/i_order_local_data_source.dart'; // Import LocalDataSource
+import '../datasources/i_order_materials_remote_data_source.dart';
 import '../models/order_model.dart'; // 导入 OrderModel 以便调用 toEntity
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart' hide OrderModel;
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_requirements_use_case.dart';
@@ -18,18 +21,23 @@ import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_eva
 import '../../domain/entities/order_creation_result.dart';
 import 'package:dskk_flutter_refactor/core/config/app_config.dart';
 import 'package:dskk_flutter_refactor/features/orders/data/datasources/simple_mock_order_data_source.dart';
+import 'package:dskk_flutter_refactor/core/services/file_upload_service.dart';
 
 /// 订单仓库接口的实现类。
 @LazySingleton(as: IOrderRepository) // Add injectable annotation
 class OrderRepositoryImpl implements IOrderRepository {
   final IOrderRemoteDataSource remoteDataSource;
   final IOrderLocalDataSource localDataSource; // Add LocalDataSource dependency
+  final IOrderMaterialsRemoteDataSource materialsDataSource;
   final NetworkInfo networkInfo;
+  final IFileUploadService fileUploadService;
 
   OrderRepositoryImpl({
     required this.remoteDataSource,
     required this.localDataSource, // Inject LocalDataSource
+    required this.materialsDataSource,
     required this.networkInfo,
+    required this.fileUploadService,
   });
 
   /// 辅助函数，用于执行网络请求并处理通用错误。
@@ -292,9 +300,51 @@ class OrderRepositoryImpl implements IOrderRepository {
   // --- Implement new repository methods ---
 
   @override
-  Future<Either<Failure, void>> submitRequirements(
-      SubmitRequirementsParams params) async {
-    return _handleApiCall(() => remoteDataSource.submitRequirements(params));
+  Future<Either<Failure, void>> submitRequirements(SubmitRequirementsParams params) async {
+    if (!await networkInfo.isConnected) {
+      return Left(NetworkFailure(message: '网络未连接'));
+    }
+
+    try {
+      // 1. 先上传附件文件（如果有）
+      List<String> uploadedFileUrls = [];
+      
+      if (params.attachmentPaths.isNotEmpty) {
+        print('[OrderRepositoryImpl] Uploading ${params.attachmentPaths.length} files...');
+        
+        // 上传所有文件
+        final uploadResult = await fileUploadService.uploadFiles(params.attachmentPaths);
+        
+        return uploadResult.fold(
+          (failure) {
+            print('[OrderRepositoryImpl] File upload failed: $failure');
+            return Left(failure);
+          },
+          (uploadResults) async {
+            // 提取上传后的文件URL
+            uploadedFileUrls = uploadResults.map((result) => result.url).toList();
+            print('[OrderRepositoryImpl] Files uploaded successfully: $uploadedFileUrls');
+            
+            // 2. 调用远程数据源提交材料（包含上传后的文件URL）
+            final updatedParams = SubmitRequirementsParams(
+              orderId: params.orderId,
+              productId: params.productId,
+              feature: params.feature,
+              attachmentPaths: uploadedFileUrls, // 使用上传后的URL
+            );
+            
+            return _handleApiCall(() => remoteDataSource.submitRequirements(updatedParams));
+          },
+        );
+      } else {
+        // 没有附件，直接提交
+        print('[OrderRepositoryImpl] No files to upload, submitting requirements directly');
+        return _handleApiCall(() => remoteDataSource.submitRequirements(params));
+      }
+    } catch (e) {
+      print('[OrderRepositoryImpl] submitRequirements error: $e');
+      return Left(UnknownFailure(message: '提交材料失败: $e'));
+    }
   }
 
   @override
@@ -366,5 +416,37 @@ class OrderRepositoryImpl implements IOrderRepository {
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
     }
+  }
+
+  @override
+  Future<Either<Failure, List<OrderMaterials>>> getOrderMaterials(int orderId) async {
+    return _handleApiCall(() async {
+      final materialModels = await materialsDataSource.getOrderMaterials(orderId);
+      return materialModels.map((model) => model.toEntity()).toList();
+    });
+  }
+
+  @override
+  Future<Either<Failure, List<OrderDelivery>>> getOrderDeliveries(int orderId) async {
+    return _handleApiCall(() async {
+      final deliveryModels = await materialsDataSource.getOrderDeliveries(orderId);
+      return deliveryModels.map((model) => model.toEntity()).toList();
+    });
+  }
+
+  @override
+  Future<Either<Failure, OrderMaterials>> getOrderMaterialById(int materialId) async {
+    return _handleApiCall(() async {
+      final materialModel = await materialsDataSource.getOrderMaterialById(materialId);
+      return materialModel.toEntity();
+    });
+  }
+
+  @override
+  Future<Either<Failure, OrderDelivery>> getOrderDeliveryById(int deliveryId) async {
+    return _handleApiCall(() async {
+      final deliveryModel = await materialsDataSource.getOrderDeliveryById(deliveryId);
+      return deliveryModel.toEntity();
+    });
   }
 } 

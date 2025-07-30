@@ -1,12 +1,12 @@
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
-import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_detail_item_tile.dart'; // Can reuse or adapt
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
 import 'package:file_picker/file_picker.dart'; // Import file_picker
-import 'dart:io'; // Import dart:io for File (potentially needed for display later, though path is String)
+import 'dart:io'; // Import dart:io for File
 import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
 import 'dart:convert'; // Import dart:convert for json handling
+import 'file_upload_item.dart';
 
 /// Widget for submitting order requirements (text and attachments).
 class OrderRequirementSubmissionForm extends StatefulWidget {
@@ -25,8 +25,11 @@ class _OrderRequirementSubmissionFormState
   late TextEditingController _requirementController1;
   late TextEditingController _requirementController2;
   // Add state for attached files
-  List<String> _selectedAttachmentPaths = []; // List to hold selected attachment paths
+  List<FileUploadItem> _fileUploadItems = []; // 文件上传项列表
+  List<String> _uploadedUrls = []; // 已上传的文件URL列表
   bool _isLoadingDraft = true; // Flag to indicate draft loading
+  static const int _maxFileSize = 10 * 1024 * 1024; // 10MB
+  static const int _maxFileCount = 9; // 最多9个文件
 
   // Helper to generate SharedPreferences key for the draft
   String _getDraftKey(String orderId) => 'order_draft_$orderId';
@@ -57,13 +60,10 @@ class _OrderRequirementSubmissionFormState
         final req2 = draftData['requirement2'] as String? ?? '';
         final attachments = (draftData['attachments'] as List<dynamic>? ?? []).cast<String>();
 
-        // Update controllers and attachment list
+        // Update controllers
         _requirementController1.text = req1;
         _requirementController2.text = req2;
-        // Need setState here to update the UI with loaded attachments
-        setState(() {
-          _selectedAttachmentPaths = attachments;
-        });
+        // TODO: 恢复文件列表（需要保存更多信息）
          print('Draft loaded successfully for order ${widget.order.id}');
       } else {
          print('No draft found for order ${widget.order.id}');
@@ -95,7 +95,7 @@ class _OrderRequirementSubmissionFormState
       final draftData = {
         'requirement1': _requirementController1.text,
         'requirement2': _requirementController2.text,
-        'attachments': _selectedAttachmentPaths,
+        'uploadedUrls': _uploadedUrls,
       };
 
       final String draftJson = jsonEncode(draftData);
@@ -147,13 +147,15 @@ class _OrderRequirementSubmissionFormState
       return const Center(child: CircularProgressIndicator());
     }
 
-    return Card(
-      // 使用统一Card主题
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Card(
+        // 使用统一Card主题
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // --- Product Info ---
             // Use a simpler display than the full OrderDetailItemTile if needed
             if (item != null)
@@ -176,54 +178,79 @@ class _OrderRequirementSubmissionFormState
             // --- Requirements Section ---
             Text('要求提交', style: textTheme.titleMedium),
             const SizedBox(height: 8),
-            // TODO: Display seller's questions/required fields here
-            _buildSellerQuestion(context, '1. 您订购的是基本服务 (30¥/150字)...'),
-            TextField(
-              controller: _requirementController1, // Assign controller
-              decoration: InputDecoration(
-                hintText: '在此输入您的回答',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                filled: true,
-                fillColor: Colors.grey[100],
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              ),
-              maxLines: 3,
-            ),
-             const SizedBox(height: 16),
-            _buildSellerQuestion(context, '2. 您的稿件具体字数是多少？'),
-             TextField(
-               controller: _requirementController2, // Assign controller
-              decoration: InputDecoration(
-                hintText: '在此输入您的回答',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                 filled: true,
-                fillColor: Colors.grey[100],
-                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              ),
-              keyboardType: TextInputType.number,
-            ),
+            // 动态显示商品要求
+            _buildRequirementFields(context),
 
             const SizedBox(height: 24),
 
             // --- Attachments Section ---
-             Row(
-               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-               children: [
-                 Text('附件上传', style: textTheme.titleMedium),
-                 TextButton(onPressed: () {/* TODO */}, child: const Text('文本/附件 切换?'))
-               ],
-             ),
-            const SizedBox(height: 8),
-            // Implement file picker and display logic using Wrap
-             Wrap(
-               spacing: 8.0,
-               runSpacing: 8.0,
-               children: [
-                 ..._selectedAttachmentPaths.map((path) => _buildAttachmentThumbnail(path)).toList(),
-                 if (_selectedAttachmentPaths.length < 9)
-                   _buildAddAttachmentButton(context),
-               ],
-             ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('附件上传', style: textTheme.titleMedium),
+                      const SizedBox(height: 4),
+                      Text(
+                        '最多${_maxFileCount}个文件，单个文件不超过${_maxFileSize ~/ (1024 * 1024)}MB',
+                        style: textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                if (_fileUploadItems.length < _maxFileCount)
+                  TextButton.icon(
+                    onPressed: _pickFiles,
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text('添加'),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // 文件上传列表
+            if (_fileUploadItems.isNotEmpty) ...[
+              ...List.generate(_fileUploadItems.length, (index) {
+                final item = _fileUploadItems[index];
+                return FileUploadItemWidget(
+                  key: ValueKey(item.id),
+                  item: item,
+                  maxFileSize: _maxFileSize,
+                  onRemove: () => _removeFile(index),
+                  onUploadSuccess: (url) => _onFileUploaded(index, url),
+                );
+              }),
+            ] else
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: _pickFiles,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey[300]!),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.cloud_upload_outlined, size: 32, color: Colors.grey[400]),
+                          const SizedBox(height: 8),
+                          Text(
+                            '点击此处选择文件',
+                            style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             const SizedBox(height: 24),
 
             // --- Action Buttons for this Form ---
@@ -238,20 +265,41 @@ class _OrderRequirementSubmissionFormState
                     builder: (context, isSubmitting) {
                        return ElevatedButton(
                           onPressed: isSubmitting ? null : () {
-                            // Dispatch SubmitRequirementsSubmitted event with correct parameters
+                            // 检查是否所有文件都已上传完成
+                            final hasUploadingFiles = _fileUploadItems.any(
+                              (item) => item.status == FileUploadStatus.uploading
+                            );
+                            
+                            if (hasUploadingFiles) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('请等待文件上传完成')),
+                              );
+                              return;
+                            }
+                            
+                            // 检查是否有上传失败的文件
+                            final hasFailedFiles = _fileUploadItems.any(
+                              (item) => item.status == FileUploadStatus.failed
+                            );
+                            
+                            if (hasFailedFiles) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('请移除上传失败的文件或重试')),
+                              );
+                              return;
+                            }
+                            
                             // --- Construct feature data --- 
-                            // TODO: This assumes a fixed structure based on current UI.
-                            // Replace with logic to get actual questions/answers if dynamic.
+                            final item = widget.order.items.isNotEmpty ? widget.order.items.first : null;
                             final featureData = [
                               {
-                                'question': '1. 您订购的是基本服务 (30¥/150字)...', // Placeholder, get actual question
+                                'question': '需求描述',
                                 'answer': _requirementController1.text
                               },
                               {
-                                'question': '2. 对于额外需求...', // Placeholder, get actual question
+                                'question': '补充说明',
                                 'answer': _requirementController2.text
                               },
-                              // Add more question/answer pairs if needed
                             ];
                             // --- Get productId --- 
                             final productId = item?.productId ?? -1;
@@ -268,7 +316,7 @@ class _OrderRequirementSubmissionFormState
                                   orderId: widget.order.id.toString(),
                                   productId: productId, // Pass productId
                                   feature: featureData, // Pass structured feature data
-                                  attachmentPaths: _selectedAttachmentPaths, // Pass the correct list
+                                  attachmentPaths: _uploadedUrls, // 使用已上传的URL列表
                                 ),
                               );
                             print('Confirm Submission Tapped');
@@ -284,8 +332,9 @@ class _OrderRequirementSubmissionFormState
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   // Helper for seller question text style
   Widget _buildSellerQuestion(BuildContext context, String text) {
@@ -295,105 +344,197 @@ class _OrderRequirementSubmissionFormState
      );
   }
 
-  // --- Helper to build attachment thumbnail --- 
-  Widget _buildAttachmentThumbnail(String attachmentPath) {
-    // Similar to image thumbnail, but might show different icons/previews
-    final fileName = attachmentPath.split('_').last; // Simple name for simulation
-    return Stack(
+  // 动态构建要求字段
+  Widget _buildRequirementFields(BuildContext context) {
+    // 获取商品信息
+    final item = widget.order.items.isNotEmpty ? widget.order.items.first : null;
+    if (item == null) {
+      return const Text('暂无商品信息');
+    }
+
+    // TODO: 需要实现以下功能：
+    // 1. 调用后端API获取商品的ProductMaterials（商品材料问题列表）
+    //    - 后端需要实现: GET /api/project/productMaterials/list?productId={productId}
+    //    - 返回 List<ProductMaterials>，每个包含: id, productId, question, answer, type
+    // 2. 根据ProductMaterials动态生成输入框
+    //    - type字段可能包含: TEXT, NUMBER, SELECT, FILE等
+    // 3. 将用户填写的答案映射到feature字段的question-answer结构
+    // 
+    // 示例API响应：
+    // [
+    //   {"id": 1, "productId": 123, "question": "您的需求描述", "type": "TEXT"},
+    //   {"id": 2, "productId": 123, "question": "期望完成时间", "type": "DATE"},
+    //   {"id": 3, "productId": 123, "question": "预算范围", "type": "SELECT", "answer": "1000-3000,3000-5000,5000以上"}
+    // ]
+    
+    // 临时解决方案：显示通用问题
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // 显示选择的服务信息
         Container(
-          width: 80,
-          height: 80,
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.grey[200],
+            color: Colors.blue[50],
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade300)
+            border: Border.all(color: Colors.blue[200]!),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Row(
             children: [
-               Icon(_getFileIcon(fileName), size: 30, color: Colors.grey[700]), // Use file icon helper
-               const SizedBox(height: 4),
-               Padding(
-                 padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                 child: Text(
-                   fileName, // Show simulated file name
-                   style: Theme.of(context).textTheme.labelSmall,
-                   maxLines: 1,
-                   overflow: TextOverflow.ellipsis,
-                  ),
-               ),
+              Icon(Icons.info_outline, size: 16, color: Colors.blue[700]),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '您选择的服务：${_getLocalizedSkuName(item.skuName)} - ¥${item.price.toStringAsFixed(2)}',
+                  style: TextStyle(fontSize: 14, color: Colors.blue[700]),
+                ),
+              ),
             ],
-          )
+          ),
         ),
-        Positioned(
-          top: -8,
-          right: -8,
-          child: IconButton(
-            icon: const Icon(Icons.remove_circle, color: Colors.red, size: 20),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            onPressed: () {
-              setState(() {
-                _selectedAttachmentPaths.remove(attachmentPath);
-              });
-            },
+        const SizedBox(height: 16),
+        
+        // 问题1：需求描述
+        _buildSellerQuestion(context, '1. 请详细描述您的需求'),
+        TextField(
+          controller: _requirementController1,
+          decoration: InputDecoration(
+            hintText: '请尽可能详细地描述您的需求，包括具体要求、期望效果等',
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            filled: true,
+            fillColor: Colors.grey[100],
+            contentPadding: const EdgeInsets.all(12),
+            helperText: '如需提供参考资料，可在下方附件区域上传',
+            helperStyle: TextStyle(fontSize: 12, color: Colors.grey[600]),
+          ),
+          maxLines: 4,
+        ),
+        const SizedBox(height: 16),
+        
+        // 问题2：补充说明
+        _buildSellerQuestion(context, '2. 补充说明（选填）'),
+        TextField(
+          controller: _requirementController2,
+          decoration: InputDecoration(
+            hintText: '如有其他补充说明或特殊要求，请在此填写',
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            filled: true,
+            fillColor: Colors.grey[100],
+            contentPadding: const EdgeInsets.all(12),
+          ),
+          maxLines: 3,
+        ),
+        
+        const SizedBox(height: 12),
+        // 提示信息
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.orange[50],
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.warning_amber, size: 14, color: Colors.orange[700]),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  '请认真填写需求，提交后卖家将根据您的需求开始服务',
+                  style: TextStyle(fontSize: 12, color: Colors.orange[700]),
+                ),
+              ),
+            ],
           ),
         ),
       ],
     );
   }
-
-  // --- Helper to build "Add Attachment" button --- 
-  Widget _buildAddAttachmentButton(BuildContext context) {
-    return InkWell(
-      onTap: _pickFiles, // Call the file picking method
-      child: Container(
-        width: 80,
-        height: 80,
-        decoration: BoxDecoration(
-          color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade300, style: BorderStyle.solid)
-        ),
-        child: Icon(Icons.add_circle_outline, color: Colors.grey[600], size: 30),
-      ),
-    );
+  
+  // Helper method to get localized SKU name
+  String _getLocalizedSkuName(String? skuName) {
+    if (skuName == null) return "基础服务";
+    
+    // TODO: 这里需要从商品的本地化数据中获取中文名称
+    // 临时映射常见的SKU名称
+    final Map<String, String> skuNameMap = {
+      'Basic Tier': '基础套餐',
+      'Standard Tier': '标准套餐', 
+      'Premium Tier': '高级套餐',
+      'Professional Tier': '专业套餐',
+      'Enterprise Tier': '企业套餐',
+      // 添加更多映射...
+    };
+    
+    return skuNameMap[skuName] ?? skuName;
   }
+
 
   // --- File Picking Logic --- 
   Future<void> _pickFiles() async {
-     if (_selectedAttachmentPaths.length >= 9) {
+    if (_fileUploadItems.length >= _maxFileCount) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('最多只能上传9个附件')),
+        SnackBar(content: Text('最多只能上传$_maxFileCount个附件')),
       );
       return;
     }
 
     try {
-      // Use FilePicker to pick multiple files
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         allowMultiple: true,
-        // Optional: Specify allowed file types
-        // type: FileType.custom,
-        // allowedExtensions: ['jpg', 'pdf', 'doc'],
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'pdf', 'doc', 'docx', 
+                           'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'rar', '7z', 'txt'],
       );
 
-      if (result != null) {
-         setState(() {
-           int remainingSlots = 9 - _selectedAttachmentPaths.length;
-           // Add paths of newly selected files, ensuring they are not null
-           _selectedAttachmentPaths.addAll(
-             result.files.take(remainingSlots).map((file) => file.path!).where((path) => path != null) // Get non-null paths
-           );
-         });
+      if (result != null && result.files.isNotEmpty) {
+        final remainingSlots = _maxFileCount - _fileUploadItems.length;
+        final filesToAdd = result.files.take(remainingSlots);
+        
+        for (final file in filesToAdd) {
+          if (file.path != null && file.size != null) {
+            final fileItem = FileUploadItem(
+              id: DateTime.now().millisecondsSinceEpoch.toString() + '_${file.name}',
+              localPath: file.path!,
+              fileName: file.name,
+              fileSize: file.size!,
+            );
+            
+            setState(() {
+              _fileUploadItems.add(fileItem);
+            });
+          }
+        }
       }
     } catch (e) {
-       // Handle potential errors (e.g., platform exceptions)
-       print('Error picking files: $e');
-       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text('选择文件失败: ${e.toString()}')),
-       );
+      print('Error picking files: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('选择文件失败: ${e.toString()}')),
+      );
+    }
+  }
+  
+  // 移除文件
+  void _removeFile(int index) {
+    if (index >= 0 && index < _fileUploadItems.length) {
+      final item = _fileUploadItems[index];
+      
+      // 如果文件已上传，从已上传列表中移除
+      if (item.uploadedUrl != null) {
+        _uploadedUrls.remove(item.uploadedUrl);
+      }
+      
+      setState(() {
+        _fileUploadItems.removeAt(index);
+      });
+    }
+  }
+  
+  // 文件上传成功回调
+  void _onFileUploaded(int index, String url) {
+    if (index >= 0 && index < _fileUploadItems.length) {
+      setState(() {
+        _uploadedUrls.add(url);
+      });
     }
   }
 

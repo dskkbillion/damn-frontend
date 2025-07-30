@@ -1,12 +1,17 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart'; // For date formatting
 
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_materials.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_delivery.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_action_buttons.dart';
 import 'package:dskk_flutter_refactor/core/payment/services/payment_navigation_service.dart';
+import 'package:dskk_flutter_refactor/core/payment/models/payment_models.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_status_timeline_header.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_detail_item_tile.dart';
 
@@ -22,6 +27,8 @@ class OrderDetailPage extends StatefulWidget {
 
 class _OrderDetailPageState extends State<OrderDetailPage> {
   int? _orderIdInt; // Store parsed int ID
+  Timer? _pollingTimer;
+  int _pollingAttempts = 0;
 
   @override
   void initState() {
@@ -48,6 +55,55 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
          }
        });
     }
+  }
+
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    super.dispose();
+  }
+
+  // 启动轮询检查订单状态更新
+  void _startPollingForOrderStatusUpdate() {
+    _pollingAttempts = 0;
+    _pollingTimer?.cancel();
+    
+    // 立即查询一次
+    context.read<OrderDetailBloc>().add(LoadOrderDetail(orderId: _orderIdInt!));
+    
+    // 每3秒查询一次，最多查询10次（30秒）
+    _pollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      _pollingAttempts++;
+      
+      final currentState = context.read<OrderDetailBloc>().state;
+      if (currentState is OrderDetailLoaded) {
+        // 如果订单状态已经不是待付款，说明支付成功了
+        if (currentState.order.state != OrderStatus.awaitingPayment) {
+          print('[OrderDetailPage] 订单状态已更新: ${currentState.order.state}');
+          timer.cancel();
+          return;
+        }
+      }
+      
+      if (_pollingAttempts >= 10) {
+        print('[OrderDetailPage] 轮询超时，停止查询');
+        timer.cancel();
+        // 显示提示
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('订单状态更新可能有延迟，请稍后刷新查看'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
+      
+      // 继续查询
+      print('[OrderDetailPage] 轮询订单状态，第 $_pollingAttempts 次');
+      context.read<OrderDetailBloc>().add(LoadOrderDetail(orderId: _orderIdInt!));
+    });
   }
 
   // Helper function to extract Order from various states
@@ -84,19 +140,26 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
        return Scaffold(appBar: AppBar(title: const Text('错误')), body: const Center(child: Text('无效的订单 ID')));
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go('/orders');
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: BlocBuilder<OrderDetailBloc, OrderDetailState>(
+            builder: (context, state) {
+              final extractedOrder = _extractOrder(state);
+              return Text('订单详情${extractedOrder != null ? ' (ID: ${extractedOrder.id})' : ''}');
+            },
+          ),
         ),
-        title: BlocBuilder<OrderDetailBloc, OrderDetailState>(
-          builder: (context, state) {
-            final extractedOrder = _extractOrder(state);
-            return Text('订单详情${extractedOrder != null ? ' (ID: ${extractedOrder.id})' : ''}');
-          },
-        ),
-      ),
       body: BlocListener<OrderDetailBloc, OrderDetailState>(
         listener: (context, state) {
           // Listen for action results to show feedback
@@ -139,8 +202,13 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             // Handle payment result and navigate accordingly
             PaymentNavigationService.handlePaymentResult(context, state.paymentResponse);
             
-            // Reload order details to get updated status
-            context.read<OrderDetailBloc>().add(LoadOrderDetail(orderId: _orderIdInt!));
+            // 如果支付成功，启动轮询检查订单状态更新
+            if (state.paymentResponse.resultType == PaymentResultType.success) {
+              _startPollingForOrderStatusUpdate();
+            } else {
+              // 其他情况直接刷新一次
+              context.read<OrderDetailBloc>().add(LoadOrderDetail(orderId: _orderIdInt!));
+            }
           }
         },
         child: BlocBuilder<OrderDetailBloc, OrderDetailState>(
@@ -387,6 +455,26 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                     child: Text('OrderInfoSection 错误: $e'),
                   );
                 }
+              },
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // 材料展示部分（根据订单状态显示）
+            Builder(
+              builder: (context) {
+                // 只在特定状态下显示材料部分
+                if (order.state == OrderStatus.awaitingConfirmation || 
+                    order.state == OrderStatus.awaitingEvaluation ||
+                    order.state == OrderStatus.orderCompleted) {
+                  try {
+                    return _buildMaterialsSection(context, order);
+                  } catch (e) {
+                    print('❌ MaterialsSection 出错: $e');
+                    return const SizedBox.shrink();
+                  }
+                }
+                return const SizedBox.shrink();
               },
             ),
             
@@ -699,6 +787,265 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       ),
     );
   }
+
+  // 构建材料展示部分
+  Widget _buildMaterialsSection(BuildContext context, Order order) {
+    return BlocBuilder<OrderDetailBloc, OrderDetailState>(
+      builder: (context, state) {
+        // 获取材料和交付数据
+        List<OrderMaterials>? materials;
+        List<OrderDelivery>? deliveries;
+        
+        if (state is OrderDetailLoaded) {
+          materials = state.materials;
+          deliveries = state.deliveries;
+        }
+        
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 标题部分
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Theme.of(context).dividerColor.withOpacity(0.1),
+                      width: 1,
+                    ),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.folder_outlined,
+                      size: 20,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '材料信息',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // 内容部分
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 买家提交的材料
+                    Text(
+                      '买家提交的材料',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildBuyerMaterialsContent(context, materials),
+                    
+                    // 如果是待收货、待评价或已完成状态，显示卖家交付内容
+                    if (order.state == OrderStatus.awaitingConfirmation ||
+                        order.state == OrderStatus.awaitingEvaluation ||
+                        order.state == OrderStatus.orderCompleted) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        '卖家交付内容',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _buildSellerDeliveriesContent(context, deliveries),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+  
+  // 构建买家材料内容
+  Widget _buildBuyerMaterialsContent(BuildContext context, List<OrderMaterials>? materials) {
+    if (materials == null || materials.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey[200]!),
+        ),
+        child: const Text(
+          '暂无买家提交的材料',
+          style: TextStyle(color: Colors.grey),
+        ),
+      );
+    }
+    
+    return Column(
+      children: materials.map((material) => Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.blue[50],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.blue[200]!),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 显示特征问答
+            if (material.features.isNotEmpty) ...[
+              ...material.features.map((feature) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  '${feature.question}: ${feature.answer}',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              )),
+              const SizedBox(height: 8),
+            ],
+            // 显示附件
+            if (material.files.isNotEmpty) ...[
+              const Text(
+                '附件:',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              const SizedBox(height: 4),
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: material.files.map((fileUrl) => _buildFileChip(_extractFileName(fileUrl))).toList(),
+              ),
+            ],
+          ],
+        ),
+      )).toList(),
+    );
+  }
+  
+  // 构建卖家交付内容
+  Widget _buildSellerDeliveriesContent(BuildContext context, List<OrderDelivery>? deliveries) {
+    if (deliveries == null || deliveries.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey[200]!),
+        ),
+        child: const Text(
+          '卖家暂未交付内容',
+          style: TextStyle(color: Colors.grey),
+        ),
+      );
+    }
+    
+    return Column(
+      children: deliveries.map((delivery) => Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.green[50],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.green[200]!),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '交付说明: ${delivery.content}',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            if (delivery.files.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              const Text(
+                '交付文件:',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              const SizedBox(height: 4),
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: delivery.files.map((fileUrl) => _buildFileChip(_extractFileName(fileUrl))).toList(),
+              ),
+            ],
+          ],
+        ),
+      )).toList(),
+    );
+  }
+
+  // 构建文件标签
+  Widget _buildFileChip(String fileName) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            _getFileIcon(fileName),
+            size: 14,
+            color: Colors.grey[600],
+          ),
+          const SizedBox(width: 4),
+          Text(
+            fileName,
+            style: const TextStyle(fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 根据文件扩展名获取图标
+  IconData _getFileIcon(String fileName) {
+    final extension = fileName.contains('.') ? fileName.split('.').last.toLowerCase() : '';
+    switch (extension) {
+      case 'pdf': return Icons.picture_as_pdf;
+      case 'doc': case 'docx': return Icons.description;
+      case 'jpg': case 'jpeg': case 'png': case 'gif': return Icons.image;
+      case 'ai': case 'psd': return Icons.design_services;
+      default: return Icons.insert_drive_file;
+    }
+  }
+  
+  // 从URL中提取文件名
+  String _extractFileName(String fileUrl) {
+    if (fileUrl.contains('/')) {
+      return fileUrl.split('/').last;
+    }
+    return fileUrl;
+  }
   
   // 构建收货信息部分
   // 构建价格明细部分
@@ -782,6 +1129,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           ),
         ],
       ),
+    ),
     );
   }
 }

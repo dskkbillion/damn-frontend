@@ -19,6 +19,9 @@ import 'package:dskk_flutter_refactor/features/orders/domain/usecases/get_order_
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_evaluation_use_case.dart';
 // import 'package:dskk_flutter_refactor/features/orders/domain/usecases/save_requirement_draft_use_case.dart'; // REMOVED
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_requirements_use_case.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/usecases/get_order_materials_use_case.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_materials.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_delivery.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/repositories/i_order_repository.dart'; // For AddOrderDemandParams
 import 'package:equatable/equatable.dart';
 import 'package:dartz/dartz.dart' hide Order;
@@ -41,6 +44,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
   final SubmitEvaluationUseCase _submitEvaluationUseCase;
   // final SaveRequirementDraftUseCase _saveRequirementDraftUseCase; // REMOVED
   final SubmitRequirementsUseCase _submitRequirementsUseCase;
+  final GetOrderMaterialsUseCase _getOrderMaterialsUseCase;
   // Add other dependencies as needed
   // final IAfterSaleRepository _afterSaleRepository;
   // final IRatingRepository _ratingRepository;
@@ -58,6 +62,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     required SubmitEvaluationUseCase submitEvaluationUseCase,
     // required SaveRequirementDraftUseCase saveRequirementDraftUseCase, // REMOVED
     required SubmitRequirementsUseCase submitRequirementsUseCase,
+    required GetOrderMaterialsUseCase getOrderMaterialsUseCase,
     // required IAfterSaleRepository afterSaleRepository,
     // required IRatingRepository ratingRepository,
     // required ILogisticsRepository logisticsRepository,
@@ -72,12 +77,14 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         _submitEvaluationUseCase = submitEvaluationUseCase,
         // _saveRequirementDraftUseCase = saveRequirementDraftUseCase, // REMOVED
         _submitRequirementsUseCase = submitRequirementsUseCase,
+        _getOrderMaterialsUseCase = getOrderMaterialsUseCase,
         // _afterSaleRepository = afterSaleRepository,
         // _ratingRepository = ratingRepository,
         // _logisticsRepository = logisticsRepository,
         super(OrderDetailInitial()) {
 
     on<LoadOrderDetail>(_onLoadOrderDetail);
+    on<LoadOrderMaterials>(_onLoadOrderMaterials);
     on<OrderActionRequested>(_onOrderActionRequested);
     on<SubmitRequirementsSubmitted>(_onSubmitRequirementsSubmitted);
     // on<SaveRequirementDraftRequested>(_onSaveRequirementDraftRequested); // REMOVED Handler Registration
@@ -96,10 +103,45 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     final result = await _getOrderDetailUseCase(event.orderId);
     result.fold(
       (failure) => emit(OrderDetailError(message: 'Failed to load order details: ${failure.toString()}')),
-      (order) => emit(OrderDetailLoaded(order: order)),
+      (order) {
+        emit(OrderDetailLoaded(order: order));
+        // 自动加载材料和交付数据
+        add(LoadOrderMaterials(orderId: event.orderId));
+      },
       // TODO: Fetch additional states like canEvaluate, afterSaleStatus here if needed
       // and include them in OrderDetailLoaded state
     );
+  }
+
+  Future<void> _onLoadOrderMaterials(LoadOrderMaterials event, Emitter<OrderDetailState> emit) async {
+    if (state is! OrderDetailLoaded) {
+      print('[OrderDetailBloc] Cannot load materials: State is not OrderDetailLoaded.');
+      return;
+    }
+    
+    final currentState = state as OrderDetailLoaded;
+    
+    try {
+      final result = await _getOrderMaterialsUseCase(
+        GetOrderMaterialsParams(orderId: event.orderId)
+      );
+      
+      result.fold(
+        (failure) {
+          print('[OrderDetailBloc] Failed to load materials and deliveries: ${failure.toString()}');
+          // 不发出错误状态，保持当前状态，只是记录错误
+        },
+        (materialsAndDeliveries) {
+          print('[OrderDetailBloc] Loaded ${materialsAndDeliveries.materials.length} materials and ${materialsAndDeliveries.deliveries.length} deliveries');
+          emit(currentState.copyWith(
+            materials: materialsAndDeliveries.materials,
+            deliveries: materialsAndDeliveries.deliveries,
+          ));
+        },
+      );
+    } catch (e) {
+      print('[OrderDetailBloc] Exception while loading materials: $e');
+    }
   }
 
   Future<void> _onOrderActionRequested(OrderActionRequested event, Emitter<OrderDetailState> emit) async {
@@ -515,6 +557,14 @@ class LoadOrderDetail extends OrderDetailEvent {
   final int orderId; // Changed to int to match use case
   const LoadOrderDetail({required this.orderId});
    @override
+  List<Object?> get props => [orderId];
+}
+
+/// Event to load materials and deliveries for a specific order.
+class LoadOrderMaterials extends OrderDetailEvent {
+  final int orderId;
+  const LoadOrderMaterials({required this.orderId});
+  @override
   List<Object?> get props => [orderId];
 }
 

@@ -7,12 +7,15 @@ import 'package:dskk_flutter_refactor/core/network/network_info.dart';
 import 'package:dskk_flutter_refactor/core/database/app_database.dart';
 import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
 import 'package:dskk_flutter_refactor/core/payment/services/i_payment_service.dart';
+import 'package:dskk_flutter_refactor/core/services/file_upload_service.dart';
 
 // 数据源
 import '../data/datasources/i_order_remote_data_source.dart';
 import '../data/datasources/order_remote_data_source_impl.dart';
 import '../data/datasources/i_order_local_data_source.dart';
 import '../data/datasources/order_local_data_source_impl.dart';
+import '../data/datasources/i_order_materials_remote_data_source.dart';
+import '../data/datasources/order_materials_remote_data_source_impl.dart';
 
 // 仓库
 import '../domain/repositories/i_order_repository.dart';
@@ -32,6 +35,7 @@ import '../domain/usecases/invite_evaluation_use_case.dart';
 import '../domain/usecases/deliver_order_use_case.dart';
 import '../domain/usecases/delete_seller_record_use_case.dart';
 import '../domain/usecases/confirm_order_acceptance_use_case.dart';
+import '../domain/usecases/get_order_materials_use_case.dart';
 
 // 用例 - 卖家订单 (从seller目录导入，使用别名避免冲突)
 import '../domain/usecases/seller/seller_order_actions_use_cases.dart' as seller_actions;
@@ -92,6 +96,16 @@ class OrdersDI {
     } else {
       print('[OrdersDI] IOrderLocalDataSource 已存在，跳过注册');
     }
+
+    // 材料数据源
+    if (!sl.isRegistered<IOrderMaterialsRemoteDataSource>()) {
+      sl.registerLazySingleton<IOrderMaterialsRemoteDataSource>(
+        () => OrderMaterialsRemoteDataSourceImpl(sl<Dio>())
+      );
+      print('[OrdersDI] 已注册 IOrderMaterialsRemoteDataSource');
+    } else {
+      print('[OrdersDI] IOrderMaterialsRemoteDataSource 已存在，跳过注册');
+    }
   }
 
   /// 注册仓库
@@ -101,7 +115,9 @@ class OrdersDI {
         () => OrderRepositoryImpl(
           remoteDataSource: sl<IOrderRemoteDataSource>(),
           localDataSource: sl<IOrderLocalDataSource>(),
+          materialsDataSource: sl<IOrderMaterialsRemoteDataSource>(),
           networkInfo: sl<NetworkInfo>(),
+          fileUploadService: sl<IFileUploadService>(),
         )
       );
       print('[OrdersDI] 已注册 IOrderRepository');
@@ -167,6 +183,13 @@ class OrdersDI {
         () => SubmitEvaluationUseCase(sl<IOrderRepository>())
       );
       print('[OrdersDI] 已注册 SubmitEvaluationUseCase');
+    }
+
+    if (!sl.isRegistered<GetOrderMaterialsUseCase>()) {
+      sl.registerLazySingleton<GetOrderMaterialsUseCase>(
+        () => GetOrderMaterialsUseCase(sl<IOrderRepository>())
+      );
+      print('[OrdersDI] 已注册 GetOrderMaterialsUseCase');
     }
 
     if (!sl.isRegistered<RejectOrderUseCase>()) {
@@ -238,6 +261,7 @@ class OrdersDI {
           paymentService: sl<IPaymentService>(),
           submitEvaluationUseCase: sl<SubmitEvaluationUseCase>(),
           submitRequirementsUseCase: sl<SubmitRequirementsUseCase>(),
+          getOrderMaterialsUseCase: sl<GetOrderMaterialsUseCase>(),
         )
       );
       print('[OrdersDI] 已注册 OrderDetailBloc');

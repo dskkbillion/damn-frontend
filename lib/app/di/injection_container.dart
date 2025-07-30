@@ -48,6 +48,9 @@ import 'package:dskk_flutter_refactor/core/network/interceptors/cache_intercepto
 // Import orders module DI
 import 'package:dskk_flutter_refactor/features/orders/di/orders_di.dart';
 
+// Import file upload service
+import 'package:dskk_flutter_refactor/core/services/file_upload_service.dart';
+
 // Import ProfilePreloader service
 import 'package:dskk_flutter_refactor/core/services/profile_preloader_service.dart';
 import 'package:dskk_flutter_refactor/core/cache/domain/interfaces/i_cache_manager.dart';
@@ -294,6 +297,10 @@ Future<void> registerCoreDependencies() async {
       ),
     );
   }
+  
+  // 注册FileUploadService
+  getIt.registerLazySingleton<IFileUploadService>(() => FileUploadService(getIt<Dio>()));
+  print('[DI] Registered FileUploadService');
 
   // 注册AlipayPaymentService (使用实际实现替代Mock)
   getIt.registerLazySingleton<IPaymentService>(() => AlipayPaymentService(

@@ -68,9 +68,17 @@ class PaymentNavigationService {
     // 显示支付成功提示
     _showSuccessSnackBar(context, response.message ?? '支付成功');
     
-    // 跳转到订单详情页面
+    // 如果当前已经在订单详情页，触发数据刷新而不是导航
+    final currentRoute = GoRouter.of(context).routeInformationProvider.value.uri.toString();
+    if (currentRoute.contains('/orderDetail/${response.orderId}')) {
+      // 不需要导航，OrderDetailPage 的 BlocListener 会处理刷新
+      return;
+    }
+    
+    // 否则，跳转到订单详情页面
     if (response.orderId != null) {
-      context.go('/orderDetail/${response.orderId}');
+      // 使用 push 而不是 go，保持导航栈
+      context.push('/orderDetail/${response.orderId}');
     } else {
       // 没有订单ID，跳转到订单列表
       context.go('/orders');
@@ -85,6 +93,13 @@ class PaymentNavigationService {
     // 显示失败提示
     _showErrorSnackBar(context, response.message ?? '支付失败');
     
+    // 如果当前在订单详情页，只需返回即可
+    final currentRoute = GoRouter.of(context).routeInformationProvider.value.uri.toString();
+    if (currentRoute.contains('/orderDetail/')) {
+      Navigator.of(context).pop();
+      return;
+    }
+    
     // 跳转到订单列表的待付款状态
     context.go('/orders?status=awaitingPayment');
   }
@@ -98,6 +113,13 @@ class PaymentNavigationService {
   ) {
     // 显示提示消息
     _showInfoSnackBar(context, message);
+    
+    // 如果当前在订单详情页，只需返回即可
+    final currentRoute = GoRouter.of(context).routeInformationProvider.value.uri.toString();
+    if (currentRoute.contains('/orderDetail/')) {
+      Navigator.of(context).pop();
+      return;
+    }
     
     // 跳转到订单列表的指定状态
     final statusString = status.toJsonString();

@@ -4,7 +4,10 @@ import 'package:go_router/go_router.dart';
 
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_materials.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_delivery.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
+import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_requirement_submission_form.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 /// 根据订单状态显示【订单详情页】可用操作按钮的 Widget
@@ -41,13 +44,17 @@ class OrderDetailActionButtons extends StatelessWidget {
             TextButton(
               child: const Text('取消'),
               onPressed: () {
-                Navigator.of(dialogContext).pop(); // Dismiss dialog
+                if (Navigator.of(dialogContext).canPop()) {
+                  Navigator.of(dialogContext).canPop() ? Navigator.of(dialogContext).pop() : null;
+                }
               },
             ),
             TextButton(
               child: const Text('确定'),
               onPressed: () {
-                Navigator.of(dialogContext).pop(); // Dismiss dialog
+                if (Navigator.of(dialogContext).canPop()) {
+                  Navigator.of(dialogContext).canPop() ? Navigator.of(dialogContext).pop() : null;
+                }
                 onConfirm(); // Execute the confirmation action
               },
             ),
@@ -55,6 +62,176 @@ class OrderDetailActionButtons extends StatelessWidget {
         );
       },
     );
+  }
+
+  // --- Helper function for delivery dialog ---
+  Future<void> _showDeliveryDialog(BuildContext context) async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('查看交付'),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 400,
+            child: BlocBuilder<OrderDetailBloc, OrderDetailState>(
+              builder: (context, state) {
+                if (state is! OrderDetailLoaded) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                
+                final deliveries = state.deliveries;
+                final materials = state.materials;
+                
+                return SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('卖家交付内容：'),
+                      const SizedBox(height: 16),
+                      _buildDeliveryDialogContent(deliveries),
+                      const SizedBox(height: 16),
+                      const Text('买家提交的材料：'),
+                      const SizedBox(height: 8),
+                      _buildMaterialsDialogContent(materials),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('关闭'),
+              onPressed: () {
+                if (Navigator.of(dialogContext).canPop()) {
+                  Navigator.of(dialogContext).canPop() ? Navigator.of(dialogContext).pop() : null;
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+  
+  // 构建交付对话框内容
+  Widget _buildDeliveryDialogContent(List<OrderDelivery>? deliveries) {
+    if (deliveries == null || deliveries.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey[300]!),
+        ),
+        child: const Text(
+          '卖家暂未交付内容',
+          style: TextStyle(color: Colors.grey),
+        ),
+      );
+    }
+    
+    return Column(
+      children: deliveries.map((delivery) => Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.green[50],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.green[200]!),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('交付说明: ${delivery.content}'),
+            if (delivery.files.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              const Text('交付文件:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              ...delivery.files.map((fileUrl) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  children: [
+                    const Icon(Icons.attach_file, size: 16),
+                    const SizedBox(width: 4),
+                    Expanded(child: Text(_extractFileName(fileUrl))),
+                  ],
+                ),
+              )),
+            ],
+          ],
+        ),
+      )).toList(),
+    );
+  }
+  
+  // 构建材料对话框内容
+  Widget _buildMaterialsDialogContent(List<OrderMaterials>? materials) {
+    if (materials == null || materials.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey[300]!),
+        ),
+        child: const Text(
+          '暂无买家提交的材料',
+          style: TextStyle(color: Colors.grey),
+        ),
+      );
+    }
+    
+    return Column(
+      children: materials.map((material) => Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.blue[50],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.blue[200]!),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (material.features.isNotEmpty) ...[
+              ...material.features.map((feature) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text('${feature.question}: ${feature.answer}'),
+              )),
+            ],
+            if (material.files.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              const Text('附件:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              ...material.files.map((fileUrl) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  children: [
+                    const Icon(Icons.attach_file, size: 16),
+                    const SizedBox(width: 4),
+                    Expanded(child: Text(_extractFileName(fileUrl))),
+                  ],
+                ),
+              )),
+            ],
+          ],
+        ),
+      )).toList(),
+    );
+  }
+  
+  // 从URL中提取文件名
+  String _extractFileName(String fileUrl) {
+    if (fileUrl.contains('/')) {
+      return fileUrl.split('/').last;
+    }
+    return fileUrl;
   }
 
   // --- Helper function for platform intervention dialog ---
@@ -151,13 +328,13 @@ class OrderDetailActionButtons extends StatelessWidget {
               actions: [
                 TextButton(
                   child: const Text('取消'),
-                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).canPop() ? Navigator.of(dialogContext).pop() : null,
                 ),
                 ElevatedButton(
                   child: const Text('提交申请'),
                   onPressed: () {
                     if (formKey.currentState!.validate()) {
-                      Navigator.of(dialogContext).pop();
+                      Navigator.of(dialogContext).canPop() ? Navigator.of(dialogContext).pop() : null;
                       _submitPlatformIntervention(
                         context,
                         selectedReasonType,
@@ -321,13 +498,13 @@ class OrderDetailActionButtons extends StatelessWidget {
               actions: [
                 TextButton(
                   child: const Text('取消'),
-                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).canPop() ? Navigator.of(dialogContext).pop() : null,
                 ),
                 ElevatedButton(
                   child: const Text('提交申请'),
                   onPressed: () {
                     if (formKey.currentState!.validate()) {
-                      Navigator.of(dialogContext).pop();
+                      Navigator.of(dialogContext).canPop() ? Navigator.of(dialogContext).pop() : null;
                       _submitOrderDemand(
                         context,
                         demandType,
@@ -381,6 +558,72 @@ class OrderDetailActionButtons extends StatelessWidget {
       );
     }
   }
+
+  // --- Helper function to show requirement submission dialog ---
+  Future<void> _showRequirementSubmissionDialog(BuildContext context) async {
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext bottomSheetContext) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.9,
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          child: Column(
+            children: [
+              // 顶部拖动条
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // 标题栏
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.of(bottomSheetContext).canPop() ? Navigator.of(bottomSheetContext).pop() : null,
+                    ),
+                    const Expanded(
+                      child: Text(
+                        '提交材料',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(width: 48), // 平衡左侧图标
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              // 表单内容
+              Expanded(
+                child: BlocProvider.value(
+                  value: context.read<OrderDetailBloc>(),
+                  child: OrderRequirementSubmissionForm(order: order),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
   // --- End Helper function ---
 
   @override
@@ -406,39 +649,74 @@ class OrderDetailActionButtons extends StatelessWidget {
           context.read<OrderDetailBloc>().add(GoToPayment(orderId: order.id));
         }, isPrimary: true);
         break;
-      // 待发货/待交付，允许取消和提醒
-      case OrderStatus.awaitingDelivery:
+      // 待提交状态 - 需要提交材料
       case OrderStatus.awaitingSubmission:
       case OrderStatus.buyAwaitingSubmission:
-      case OrderStatus.awaitingStart:
-        buttons.add(_buildButton(context, '提醒发货', () {
-          // TODO: Implement reminder logic (if any) - maybe a snackbar?
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已提醒卖家发货')));
+        primaryButton = _buildButton(context, '提交材料', () {
+          _showRequirementSubmissionDialog(context);
+        }, isPrimary: true);
+        buttons.add(_buildButton(context, '联系客服', () {
+          // TODO: 跳转到客服聊天或显示客服信息
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('正在连接客服...')),
+          );
         }));
-        buttons.add(_buildButton(context, '平台介入', () {
-          _showPlatformInterventionDialog(context);
-        }));
-        buttons.add(_buildButton(context, '取消订单', () { // 假设这些状态可以取消
+        if (order.state == OrderStatus.buyAwaitingSubmission) {
+          // 如果是材料重传状态，显示查看反馈按钮
+          buttons.add(_buildButton(context, '查看反馈', () {
+            // TODO: 显示卖家的反馈信息
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('查看卖家反馈功能开发中')),
+            );
+          }));
+        }
+        buttons.add(_buildButton(context, '取消订单', () {
            _showConfirmationDialog(
              context: context,
              title: '取消订单',
              content: '您确定要取消这个订单吗？',
              onConfirm: () {
-                // Use correct parameter name 'action'
                 context.read<OrderDetailBloc>().add(OrderActionRequested(action: OrderAction.cancel, orderId: order.id.toString()));
              },
            );
         }));
         break;
-      case OrderStatus.awaitingConfirmation: // 待收货
-        buttons.add(_buildButton(context, '查看物流', () {
-           context.read<OrderDetailBloc>().add(GoToTracking(orderId: order.id));
-        }));
-        buttons.add(_buildButton(context, '补充材料', () {
-          _showOrderDemandDialog(context, 'replenishment');
+      
+      // 待发货/待交付，允许提醒和平台介入
+      case OrderStatus.awaitingDelivery:
+      case OrderStatus.awaitingStart:
+        buttons.add(_buildButton(context, '提醒发货', () {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已提醒卖家发货')));
         }));
         buttons.add(_buildButton(context, '平台介入', () {
           _showPlatformInterventionDialog(context);
+        }));
+        break;
+      case OrderStatus.awaitingConfirmation: // 待收货
+        buttons.add(_buildButton(context, '查看交付', () {
+           // TODO: 显示卖家交付的文件
+           _showDeliveryDialog(context);
+        }));
+        buttons.add(_buildButton(context, '平台介入', () {
+          _showPlatformInterventionDialog(context);
+        }));
+        buttons.add(_buildButton(context, '申请售后', () {
+           if (order.items.isNotEmpty) {
+             final firstItem = order.items.first; // Get the first item
+             final firstItemId = firstItem.id;
+             Future.delayed(const Duration(milliseconds: 50), () {
+                if (context.mounted) {
+                   // Pass the OrderItem object via the 'extra' parameter
+                   context.go('/selectAfterSalesType/$firstItemId', extra: firstItem);
+                   print('Navigate to select after sales type for item ID: $firstItemId, passing item data (after delay)');
+                }
+             });
+           } else {
+             ScaffoldMessenger.of(context).showSnackBar(
+               const SnackBar(content: Text('错误：无法为没有商品的订单申请售后')),
+             );
+             print('Error: Cannot apply after sales for order ${order.id} with no items.');
+           }
         }));
         primaryButton = _buildButton(context, '确认收货', () {
            // Call the confirmation dialog
@@ -459,9 +737,6 @@ class OrderDetailActionButtons extends StatelessWidget {
            print('查看物流 for order ${order.id}');
            // Example: context.go('/tracking/${order.id}');
         }));
-        buttons.add(_buildButton(context, '补充材料', () {
-          _showOrderDemandDialog(context, 'replenishment');
-        }));
         buttons.add(_buildButton(context, '申请售后', () {
            if (order.items.isNotEmpty) {
              final firstItem = order.items.first; // Get the first item
@@ -479,9 +754,6 @@ class OrderDetailActionButtons extends StatelessWidget {
              );
              print('Error: Cannot apply after sales for order ${order.id} with no items.');
            }
-        }));
-        buttons.add(_buildButton(context, '平台介入', () {
-          _showPlatformInterventionDialog(context);
         }));
         // 暂时移除去评价按钮，仅显示其他操作按钮
         // primaryButton = _buildButton(context, '去评价', () {

@@ -4,6 +4,8 @@ import 'package:equatable/equatable.dart'; // Add Equatable import
 import '../../../../core/error/failures.dart'; // 现在这个路径应该有效了
 import '../entities/order.dart';
 import '../entities/order_status.dart';
+import '../entities/order_materials.dart';
+import '../entities/order_delivery.dart';
 // 导入 UseCase 中的 Params 定义
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_requirements_use_case.dart';
 import '../entities/order_creation_result.dart';
@@ -141,6 +143,38 @@ abstract class IOrderRepository {
     required int sellerId,
     required double price,
   });
+
+  /// 获取订单的材料信息
+  /// 
+  /// 参数：
+  /// [orderId] - 订单ID
+  /// 
+  /// 返回 [List<OrderMaterials>] 或 [Failure]
+  Future<Either<Failure, List<OrderMaterials>>> getOrderMaterials(int orderId);
+
+  /// 获取订单的交付信息
+  /// 
+  /// 参数：
+  /// [orderId] - 订单ID
+  /// 
+  /// 返回 [List<OrderDelivery>] 或 [Failure]
+  Future<Either<Failure, List<OrderDelivery>>> getOrderDeliveries(int orderId);
+
+  /// 获取特定材料的详情
+  /// 
+  /// 参数：
+  /// [materialId] - 材料ID
+  /// 
+  /// 返回 [OrderMaterials] 或 [Failure]
+  Future<Either<Failure, OrderMaterials>> getOrderMaterialById(int materialId);
+
+  /// 获取特定交付的详情
+  /// 
+  /// 参数：
+  /// [deliveryId] - 交付ID
+  /// 
+  /// 返回 [OrderDelivery] 或 [Failure]
+  Future<Either<Failure, OrderDelivery>> getOrderDeliveryById(int deliveryId);
 
   // 可选：根据需要添加其他接口方法，例如：
   // Future<Either<Failure, void>> submitMaterials(int orderId, ...);
