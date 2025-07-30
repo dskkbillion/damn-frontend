@@ -524,6 +524,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   // Define Seller Order Detail Route
   final sellerOrderDetailRoute = OrderRoutes.routes.firstWhere((r) => r is GoRoute && r.path == '/seller/orders/:orderId');
   
+  // Define Evaluation Route
+  final evaluationRoute = OrderRoutes.routes.firstWhere((r) => r is GoRoute && r.path == '/evaluation/:itemId');
+  
   // Create the GoRouter instance
   final router = GoRouter(
     navigatorKey: rootNavigatorKey,
@@ -650,6 +653,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ...AuthRoutes.routes, // Login etc.
       buyerOrderDetailRoute, 
       sellerOrderDetailRoute,  // 添加卖家订单详情路由
+      evaluationRoute, // 添加评价路由
       buyerNotificationRoute, // 添加买家通知页面路由
       ...AfterSalesRoutes.routes,
       ...FavoritesRoutes.routes, 
