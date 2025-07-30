@@ -290,8 +290,8 @@
     
     "profile_orders": "我的订单",
     "profile_pending_payment": "待付",
-    "profile_in_progress": "处理中",
-    "profile_completed": "完成",
+    "profile_in_progress": "待提交",
+    "profile_completed": "待收货",
     "profile_refund": "售后",
     "profile_navigation_error": "无法导航到订单列表: {error}",
     "@profile_navigation_error": {

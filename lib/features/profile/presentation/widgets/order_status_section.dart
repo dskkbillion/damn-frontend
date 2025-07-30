@@ -74,13 +74,13 @@ class OrderStatusSection extends StatelessWidget {
                 context,
                 Icons.sync,
                 s.profile_in_progress,
-                onTap: () => _navigateToOrders(context, 'awaitingDelivery'),
+                onTap: () => _navigateToOrders(context, 'awaitingSubmission'),
               ),
               _buildOrderStatusItem(
                 context,
                 Icons.check_circle_outline,
                 s.profile_completed,
-                onTap: () => _navigateToOrders(context, 'orderCompleted'),
+                onTap: () => _navigateToOrders(context, 'awaitingConfirmation'),
               ),
               _buildOrderStatusItem(
                 context,

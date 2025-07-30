@@ -290,8 +290,8 @@
     
     "profile_orders": "My Orders",
     "profile_pending_payment": "Pending",
-    "profile_in_progress": "Processing",
-    "profile_completed": "Completed",
+    "profile_in_progress": "To Submit",
+    "profile_completed": "To Receive",
     "profile_refund": "Support",
     "profile_navigation_error": "Unable to navigate to order list: {error}",
     "@profile_navigation_error": {
