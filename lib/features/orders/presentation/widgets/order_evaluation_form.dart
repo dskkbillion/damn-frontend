@@ -84,92 +84,136 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Card(
-      // 使用统一Card主题
-      child: Padding(
-        padding: const EdgeInsets.all(16.0), // 使用标准间距
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('评价订单', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 24),
-              // --- Replace Slider with Stars ---
-              Center(child: _buildRatingStars(context)),
-              const SizedBox(height: 24), // Add more space after stars
-              TextFormField(
-                controller: _contentController,
-                decoration: InputDecoration(
-                  hintText: '分享您的使用体验吧～',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  filled: true,
-                  fillColor: Colors.grey[100],
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 标题部分
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: Theme.of(context).dividerColor.withOpacity(0.1),
+                    width: 1,
+                  ),
                 ),
-                maxLines: 5,
-                maxLength: 200, // Optional limit
               ),
-              const SizedBox(height: 16),
-
-              // --- Picture Upload Section ---
-              Text('添加图片 (最多9张)', style: textTheme.bodyMedium),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8.0,
-                runSpacing: 8.0,
+              child: Row(
                 children: [
-                  // Display selected image thumbnails
-                  ..._selectedImages.map((result) => _buildImageThumbnail(result)).toList(),
-                  // Show "Add Picture" button if limit not reached
-                  if (_selectedImages.length < 9 && !_isProcessingImages)
-                    _buildAddPictureButton(context),
-                  // Show processing indicator
-                  if (_isProcessingImages)
-                    _buildProcessingIndicator(),
+                  Icon(
+                    Icons.rate_review_outlined,
+                    size: 20,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '评价商品',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
-              const SizedBox(height: 16),
-              // --- Anonymous Checkbox ---
-              Row(
+            ),
+            // 表单内容
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Checkbox(
-                    value: _isAnonymous,
-                    onChanged: (bool? value) {
-                      setState(() {
-                        _isAnonymous = value ?? false;
-                      });
+                  const SizedBox(height: 8),
+                  // --- Replace Slider with Stars ---
+                  Center(child: _buildRatingStars(context)),
+                  const SizedBox(height: 24), // Add more space after stars
+                  TextFormField(
+                    controller: _contentController,
+                    decoration: InputDecoration(
+                      hintText: '分享您的使用体验吧～',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    maxLines: 5,
+                    maxLength: 200, // Optional limit
+                  ),
+                  const SizedBox(height: 16),
+
+                  // --- Picture Upload Section ---
+                  Text('添加图片 (最多9张)', style: textTheme.bodyMedium),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8.0,
+                    runSpacing: 8.0,
+                    children: [
+                      // Display selected image thumbnails
+                      ..._selectedImages.map((result) => _buildImageThumbnail(result)).toList(),
+                      // Show "Add Picture" button if limit not reached
+                      if (_selectedImages.length < 9 && !_isProcessingImages)
+                        _buildAddPictureButton(context),
+                      // Show processing indicator
+                      if (_isProcessingImages)
+                        _buildProcessingIndicator(),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // --- Anonymous Checkbox ---
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _isAnonymous,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            _isAnonymous = value ?? false;
+                          });
+                        },
+                      ),
+                      Text('匿名评价', style: textTheme.bodyMedium),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  // --- Submit Button (already wrapped in BlocSelector) ---
+                  BlocSelector<OrderDetailBloc, OrderDetailState, bool>(
+                    selector: (state) {
+                      return state is OrderDetailLoaded && state.isSubmittingEvaluation;
+                    },
+                    builder: (context, isSubmitting) {
+                      return SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: isSubmitting || _score == 0 ? null : _submitEvaluation, // Disable if submitting or score is 0
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 48),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: isSubmitting
+                              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                              : const Text('提交评价'),
+                        ),
+                      );
                     },
                   ),
-                  Text('匿名评价', style: textTheme.bodyMedium),
                 ],
               ),
-              const SizedBox(height: 24),
-              // --- Submit Button (already wrapped in BlocSelector) ---
-              BlocSelector<OrderDetailBloc, OrderDetailState, bool>(
-                selector: (state) {
-                  return state is OrderDetailLoaded && state.isSubmittingEvaluation;
-                },
-                builder: (context, isSubmitting) {
-                  return SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: isSubmitting || _score == 0 ? null : _submitEvaluation, // Disable if submitting or score is 0
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 48),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: isSubmitting
-                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : const Text('提交评价'),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
