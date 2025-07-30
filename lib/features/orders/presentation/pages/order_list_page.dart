@@ -8,7 +8,6 @@ import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_li
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_item_card.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 // Import the new AfterSalesDetailPage
-import 'package:dskk_flutter_refactor/core/config/app_config.dart';
 
 /// 订单列表页面
 class OrderListPage extends StatefulWidget {
@@ -150,30 +149,6 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                     _loadOrdersForStatus(_tabStatuses[_tabController.index]);
                   }
                 });
-              },
-            ),
-            // 添加模拟数据切换按钮
-            IconButton(
-              icon: Icon(
-                AppConfig.useMockData ? Icons.cloud_off : Icons.cloud_queue,
-                color: AppConfig.useMockData ? Colors.orange : null,
-              ),
-              tooltip: AppConfig.useMockData ? '正在使用模拟数据' : '正在使用真实数据',
-              onPressed: () {
-                setState(() {
-                  AppConfig.toggleMockMode();
-                });
-                // 重新加载当前标签的数据
-                _loadOrdersForStatus(_tabStatuses[_tabController.index]);
-                
-                // 显示提示
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(AppConfig.useMockData ? '已切换到模拟数据模式' : '已切换到真实数据模式'),
-                    duration: const Duration(seconds: 2),
-                    backgroundColor: AppConfig.useMockData ? Colors.orange : Colors.green,
-                  ),
-                );
               },
             ),
           ],
