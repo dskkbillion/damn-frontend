@@ -367,7 +367,13 @@ class OrderItemCard extends StatelessWidget {
                    // Navigation actions mostly point to detail for now
                    onPay: navigateToDetail, // Go to detail, which might handle payment trigger
                    onViewLogistics: navigateToDetail,
-                   onEvaluate: navigateToDetail,
+                   onEvaluate: () {
+                     // 直接导航到评价页面
+                     if (order.items.isNotEmpty) {
+                       final firstItemId = order.items.first.id;
+                       context.push('/evaluation/$firstItemId', extra: order.items.first);
+                     }
+                   },
                    onApplyAfterSale: navigateToDetail,
                    onViewDetails: navigateToDetail,
                    // Actions that modify state (might interact with OrderListBloc later)
