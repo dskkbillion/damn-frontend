@@ -1,0 +1,190 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:get_it/get_it.dart';
+
+import '../bloc/order_detail_bloc.dart';
+import '../widgets/order_evaluation_form.dart';
+import '../../domain/entities/order_item.dart';
+import '../../domain/entities/order.dart';
+import '../../domain/entities/order_status.dart';
+import '../../domain/entities/order_price_summary.dart';
+import '../../domain/entities/order_payment_info.dart';
+import '../../domain/entities/order_shipping_info.dart';
+import '../../domain/entities/address.dart';
+
+/// 订单评价页面
+class OrderEvaluationPage extends StatefulWidget {
+  final int itemId;
+  final OrderItem? orderItem;
+
+  const OrderEvaluationPage({
+    super.key,
+    required this.itemId,
+    this.orderItem,
+  });
+
+  @override
+  State<OrderEvaluationPage> createState() => _OrderEvaluationPageState();
+}
+
+class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('评价订单'),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        elevation: 0,
+      ),
+      body: BlocProvider(
+        create: (_) => GetIt.instance<OrderDetailBloc>(),
+        child: BlocListener<OrderDetailBloc, OrderDetailState>(
+          listener: (context, state) {
+            if (state is OrderDetailActionSuccess) {
+              // 评价提交成功
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              // 延迟返回，让用户看到成功消息
+              Future.delayed(const Duration(seconds: 1), () {
+                if (mounted && context.canPop()) {
+                  context.pop(true); // 返回true表示评价成功，需要刷新
+                }
+              });
+            } else if (state is OrderDetailActionFailure) {
+              // 评价提交失败
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 商品信息卡片
+                if (widget.orderItem != null) _buildOrderItemCard(),
+                const SizedBox(height: 16),
+                
+                // 评价表单
+                _buildEvaluationForm(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 构建订单商品信息卡片
+  Widget _buildOrderItemCard() {
+    final item = widget.orderItem!;
+    
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            // 商品图片
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.grey[200],
+              ),
+              child: item.imageUrl.isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        item.imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Icon(Icons.broken_image, color: Colors.grey[500]),
+                        loadingBuilder: (context, child, progress) =>
+                            progress == null
+                                ? child
+                                : const Center(
+                                    child: CircularProgressIndicator(strokeWidth: 2)
+                                  ),
+                      ),
+                    )
+                  : Icon(Icons.image, color: Colors.grey[500], size: 40),
+            ),
+            const SizedBox(width: 16),
+            
+            // 商品信息
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.productName,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  if (item.skuName != null && item.skuName!.isNotEmpty)
+                    Text(
+                      item.skuName!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '¥${item.price.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 构建评价表单
+  Widget _buildEvaluationForm() {
+    final itemPrice = widget.orderItem?.price ?? 0.0;
+    
+    // 创建一个模拟的Order对象，只包含当前商品项
+    final mockOrder = Order(
+      id: widget.itemId,
+      orderSn: '',
+      state: OrderStatus.awaitingEvaluation,
+      items: widget.orderItem != null ? [widget.orderItem!] : [],
+      shippingAddress: Address.empty,
+      priceSummary: OrderPriceSummary(
+        totalPrice: itemPrice,
+        discountPrice: 0.0,
+        deliveryPrice: 0.0,
+        payPrice: itemPrice,
+      ),
+      paymentInfo: OrderPaymentInfo.empty,
+      shippingInfo: OrderShippingInfo.empty,
+      createdAt: DateTime.now(),
+    );
+
+    return OrderEvaluationForm(order: mockOrder);
+  }
+}

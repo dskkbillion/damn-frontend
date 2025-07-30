@@ -12,6 +12,7 @@ import '../../domain/usecases/cancel_after_sales_use_case.dart';
 import '../../domain/usecases/delete_after_sales_use_case.dart';
 import '../../domain/usecases/get_after_sales_detail_use_case.dart';
 import '../../domain/usecases/get_after_sales_list_use_case.dart';
+import '../../domain/usecases/get_refund_id_by_order_id_use_case.dart';
 
 // Define these if Event/State are in separate files without 'part of'
 part 'after_sales_event.dart';
@@ -34,6 +35,7 @@ class AfterSalesBloc extends Bloc<AfterSalesEvent, AfterSalesState> {
   final ApplyForAfterSalesUseCase _applyForAfterSalesUseCase;
   final CancelAfterSalesUseCase _cancelAfterSalesUseCase;
   final DeleteAfterSalesUseCase _deleteAfterSalesUseCase;
+  final GetRefundIdByOrderIdUseCase _getRefundIdByOrderIdUseCase;
   // TODO: Inject image upload use case when available
 
   // Constants for pagination
@@ -46,6 +48,7 @@ class AfterSalesBloc extends Bloc<AfterSalesEvent, AfterSalesState> {
     this._applyForAfterSalesUseCase,
     this._cancelAfterSalesUseCase,
     this._deleteAfterSalesUseCase,
+    this._getRefundIdByOrderIdUseCase,
   ) : super(AfterSalesInitial()) {
     // Register event handlers
     on<LoadAfterSalesListRequested>(
@@ -53,6 +56,7 @@ class AfterSalesBloc extends Bloc<AfterSalesEvent, AfterSalesState> {
       transformer: throttleDroppable(_throttleDuration), // Apply throttle
     );
     on<LoadAfterSalesDetail>(_onLoadAfterSalesDetail);
+    on<LoadAfterSalesDetailByOrderId>(_onLoadAfterSalesDetailByOrderId);
     on<ApplyForAfterSalesSubmitted>(_onApplyForAfterSalesSubmitted);
     on<CancelAfterSalesRequested>(_onCancelAfterSalesRequested);
     on<DeleteAfterSalesRequested>(_onDeleteAfterSalesRequested);
@@ -122,6 +126,68 @@ class AfterSalesBloc extends Bloc<AfterSalesEvent, AfterSalesState> {
       (failure) => emit(AfterSalesDetailError(id: event.id, message: _mapFailureToMessage(failure))),
       (application) => emit(AfterSalesDetailLoaded(application)),
     );
+  }
+
+  // Handler for LoadAfterSalesDetailByOrderId
+  Future<void> _onLoadAfterSalesDetailByOrderId(
+    LoadAfterSalesDetailByOrderId event,
+    Emitter<AfterSalesState> emit,
+  ) async {
+    print('[AfterSalesBloc] Loading after-sales detail by order ID: ${event.orderId}');
+    emit(AfterSalesDetailLoading(event.orderId.toString()));
+    
+    try {
+      // First, get the refund ID by order ID
+      final refundIdParams = GetRefundIdByOrderIdParams(orderId: event.orderId);
+      print('[AfterSalesBloc] Calling getRefundIdByOrderIdUseCase with orderId: ${event.orderId}');
+      final refundIdResult = await _getRefundIdByOrderIdUseCase(refundIdParams);
+
+      await refundIdResult.fold(
+        (failure) async {
+          print('[AfterSalesBloc] Failed to get refund ID: ${_mapFailureToMessage(failure)}');
+          emit(AfterSalesDetailError(
+            id: event.orderId.toString(), 
+            message: _mapFailureToMessage(failure)
+          ));
+        },
+        (refundId) async {
+          print('[AfterSalesBloc] Got refund ID: $refundId for order ID: ${event.orderId}');
+          if (refundId == null) {
+            print('[AfterSalesBloc] No refund record found for order ID: ${event.orderId}');
+            emit(AfterSalesDetailError(
+              id: event.orderId.toString(), 
+              message: '该订单没有对应的售后记录'
+            ));
+            return;
+          }
+
+          // Now load the after-sales detail using the refund ID
+          print('[AfterSalesBloc] Loading after-sales detail with refund ID: $refundId');
+          final detailParams = GetAfterSalesDetailParams(id: refundId.toString());
+          final detailResult = await _getAfterSalesDetailUseCase(detailParams);
+
+          detailResult.fold(
+            (failure) {
+              print('[AfterSalesBloc] Failed to load after-sales detail: ${_mapFailureToMessage(failure)}');
+              emit(AfterSalesDetailError(
+                id: event.orderId.toString(), 
+                message: _mapFailureToMessage(failure)
+              ));
+            },
+            (application) {
+              print('[AfterSalesBloc] Successfully loaded after-sales detail: ${application.id}');
+              emit(AfterSalesDetailLoaded(application));
+            },
+          );
+        },
+      );
+    } catch (e) {
+      print('[AfterSalesBloc] Unexpected error in _onLoadAfterSalesDetailByOrderId: $e');
+      emit(AfterSalesDetailError(
+        id: event.orderId.toString(), 
+        message: '加载售后详情时发生未知错误: $e'
+      ));
+    }
   }
 
 

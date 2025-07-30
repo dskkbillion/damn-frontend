@@ -31,4 +31,9 @@ abstract class IAfterSalesRemoteDataSource {
   ///
   /// Throws a [ServerException] for all error codes.
   Future<void> deleteAfterSales(List<int> refundIds);
+
+  /// Gets the refund ID for a given order ID by querying the list API.
+  ///
+  /// Throws a [ServerException] for all error codes.
+  Future<int?> getRefundIdByOrderId(int orderId);
 } 

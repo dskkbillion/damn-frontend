@@ -90,11 +90,34 @@ class AfterSalesRemoteDataSource implements IAfterSalesRemoteDataSource {
     try {
        // API doc says GET for detail
       final response = await _dioClient.get(_detailEndpoint, queryParameters: queryParameters);
-      // Assuming response is like: { "code": 200, "msg": "...", "data": { ... } }
-      if (response.data != null && response.data['code'] == 200 && response.data['data'] is Map) {
-         return AfterSalesApplicationModel.fromJson(response.data['data'] as Map<String, dynamic>);
+      
+      print('[AfterSalesRemoteDataSource] getAfterSalesDetail response: ${response.data}');
+      
+      // Check if response has data field
+      if (response.data != null && response.data['code'] == 200) {
+        final responseData = response.data['data'];
+        
+        if (responseData == null) {
+          // No data field means the record doesn't exist or was deleted
+          throw ServerException(
+            message: '售后申请不存在或已被删除 (ID: $refundId)', 
+            statusCode: 404
+          );
+        }
+        
+        if (responseData is Map) {
+          return AfterSalesApplicationModel.fromJson(responseData as Map<String, dynamic>);
+        } else {
+          throw ServerException(
+            message: '服务器返回数据格式错误', 
+            statusCode: response.statusCode
+          );
+        }
       } else {
-         throw ServerException(message: response.data?['msg'] ?? 'Failed to fetch refund detail', statusCode: response.statusCode);
+        throw ServerException(
+          message: response.data?['msg'] ?? 'Failed to fetch refund detail', 
+          statusCode: response.statusCode
+        );
       }
     } on DioException catch (e) {
       throw ServerException(message: e.message, statusCode: e.response?.statusCode);
@@ -141,6 +164,55 @@ class AfterSalesRemoteDataSource implements IAfterSalesRemoteDataSource {
       throw ServerException(message: e.message, statusCode: e.response?.statusCode);
     } catch (e) {
        throw ServerException(message: 'An unexpected error occurred: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<int?> getRefundIdByOrderId(int orderId) async {
+    try {
+      // Use list API to find refund record by order ID
+      // We can use a large page size to get all records and filter by order ID
+      final queryParameters = {
+        'page': 1,
+        'pageSize': 1000, // Large page size to ensure we get the record
+      };
+
+      final response = await _dioClient.post(_listEndpoint, data: queryParameters);
+      
+      print('[AfterSalesRemoteDataSource] getRefundIdByOrderId response: ${response.data}');
+      
+      if (response.data != null && response.data['code'] == 200) {
+        // Check if 'rows' exists directly in response.data (not nested under 'data')
+        List<dynamic> results = [];
+        if (response.data['rows'] is List) {
+          results = response.data['rows'];
+        } else if (response.data['data']?['rows'] is List) {
+          results = response.data['data']['rows'];
+        }
+        
+        print('[AfterSalesRemoteDataSource] Found ${results.length} refund records');
+        
+        // Find the refund record that matches the order ID
+        for (final json in results) {
+          final refundData = json as Map<String, dynamic>;
+          print('[AfterSalesRemoteDataSource] Checking refund record: orderId=${refundData['orderId']}, looking for=$orderId');
+          if (refundData['orderId'] == orderId) {
+            final refundId = refundData['id'] as int?;
+            print('[AfterSalesRemoteDataSource] Found matching refund ID: $refundId for order ID: $orderId');
+            return refundId;
+          }
+        }
+        
+        print('[AfterSalesRemoteDataSource] No matching refund found for order ID: $orderId');
+        // No matching refund found for this order ID
+        return null;
+      } else {
+        throw ServerException(message: response.data?['msg'] ?? 'Failed to fetch refund list', statusCode: response.statusCode);
+      }
+    } on DioException catch (e) {
+      throw ServerException(message: e.message, statusCode: e.response?.statusCode);
+    } catch (e) {
+      throw ServerException(message: 'An unexpected error occurred: ${e.toString()}');
     }
   }
 

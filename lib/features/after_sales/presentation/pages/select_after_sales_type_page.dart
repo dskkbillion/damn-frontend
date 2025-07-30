@@ -93,7 +93,7 @@ class SelectAfterSalesTypePage extends StatelessWidget {
           onTap: () {
              print('Selected: 重新制作 for item $currentItemId');
              // Pass orderItem as extra
-             context.go('/afterSalesApply?itemId=$currentItemId&type=REMAKE', extra: orderItem);
+             context.push('/afterSalesApply?itemId=$currentItemId&type=REMAKE', extra: orderItem);
           },
         ),
          _buildTypeTile(
@@ -104,7 +104,7 @@ class SelectAfterSalesTypePage extends StatelessWidget {
            onTap: () {
              print('Selected: 补充 for item $currentItemId');
              // Pass orderItem as extra
-             context.go('/afterSalesApply?itemId=$currentItemId&type=SUPPLEMENT', extra: orderItem);
+             context.push('/afterSalesApply?itemId=$currentItemId&type=SUPPLEMENT', extra: orderItem);
           },
         ),
         _buildTypeTile(
@@ -115,7 +115,7 @@ class SelectAfterSalesTypePage extends StatelessWidget {
            onTap: () {
              print('Selected: 退款 for item $currentItemId');
              // Pass orderItem as extra
-              context.go('/afterSalesApply?itemId=$currentItemId&type=REFUND', extra: orderItem);
+              context.push('/afterSalesApply?itemId=$currentItemId&type=REFUND', extra: orderItem);
           },
         ),
       ],

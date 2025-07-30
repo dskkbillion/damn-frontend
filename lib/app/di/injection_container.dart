@@ -47,6 +47,7 @@ import 'package:dskk_flutter_refactor/core/network/interceptors/cache_intercepto
 
 // Import orders module DI
 import 'package:dskk_flutter_refactor/features/orders/di/orders_di.dart';
+import 'package:dskk_flutter_refactor/features/after_sales/di/after_sales_di.dart';
 
 // Import file upload service
 import 'package:dskk_flutter_refactor/core/services/file_upload_service.dart';
@@ -181,6 +182,16 @@ Future<void> configureDependencies({required String backendBaseUrl}) async {
     print('[DI] Orders module dependencies initialization complete.');
   } catch (e) {
     print('[DI] Failed to initialize Orders module: $e');
+    // 不抛出异常，允许应用继续启动，但记录错误信息
+  }
+  
+  // 初始化售后模块依赖
+  try {
+    print('[DI] Starting After Sales module initialization...');
+    await AfterSalesDI.init(getIt);
+    print('[DI] After Sales module dependencies initialization complete.');
+  } catch (e) {
+    print('[DI] Failed to initialize After Sales module: $e');
     // 不抛出异常，允许应用继续启动，但记录错误信息
   }
   

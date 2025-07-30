@@ -92,4 +92,17 @@ class AfterSalesRepositoryImpl implements IAfterSalesRepository {
       return Left(ServerFailure(message: '删除售后记录时发生未知错误: ${e.toString()}'));
     }
   }
+
+  @override
+  Future<Either<Failure, int?>> getRefundIdByOrderId(int orderId) async {
+    try {
+      final refundId = await remoteDataSource.getRefundIdByOrderId(orderId);
+      return Right(refundId);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message ?? '查询售后记录时发生服务器错误'));
+    } catch (e) {
+      print('[AfterSalesRepositoryImpl] Unexpected error getting refund ID by order ID: ${e.toString()}');
+      return Left(ServerFailure(message: '查询售后记录时发生未知错误: ${e.toString()}'));
+    }
+  }
 } 

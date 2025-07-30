@@ -68,4 +68,8 @@ abstract class IAfterSalesRepository {
   /// Deletes an after-sales application record (buyer side).
   /// Corresponds to POST /api/shop/order-refund/delete
   Future<Either<Failure, void>> deleteAfterSales(List<int> refundIds);
+
+  /// Gets the refund ID for a given order ID.
+  /// Returns null if no after-sales record exists for the order.
+  Future<Either<Failure, int?>> getRefundIdByOrderId(int orderId);
 } 

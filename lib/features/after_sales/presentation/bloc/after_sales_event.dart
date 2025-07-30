@@ -83,4 +83,14 @@ class LoadAfterSalesDetail extends AfterSalesEvent {
   List<Object?> get props => [id];
 }
 
+// Event to load after-sales detail by order ID (frontend will resolve refund ID)
+class LoadAfterSalesDetailByOrderId extends AfterSalesEvent {
+  final int orderId; // Order ID to find the corresponding after-sales record
+
+  const LoadAfterSalesDetailByOrderId({required this.orderId});
+
+  @override
+  List<Object?> get props => [orderId];
+}
+
 // TODO: Add events for uploading images if needed as a separate step 

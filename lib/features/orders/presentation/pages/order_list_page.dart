@@ -7,11 +7,6 @@ import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_list_bloc.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_item_card.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
-import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
-import 'package:dskk_flutter_refactor/features/orders/presentation/pages/order_detail_page.dart';
-import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
-// Correct import path for DI container
-import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 // Import the new AfterSalesDetailPage
 import 'package:dskk_flutter_refactor/core/config/app_config.dart';
 
@@ -354,14 +349,19 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                            ),
                            child: OrderItemCard(
                              order: order,
-                             onTap: () {
+                             onTap: () async {
                               // TODO: Refactor this navigation logic to use context.go() from go_router for better practice.
                               if (isAfterSalesOrder) {
                                 // Navigate to AfterSalesDetailPage using GoRouter
                                 context.push('/afterSalesDetail/${order.id}');
                               } else {
-                                // Navigate to OrderDetailPage using GoRouter
-                                context.push('/orderDetail/${order.id}');
+                                // Navigate to OrderDetailPage using GoRouter and wait for result
+                                final shouldRefresh = await context.push<bool>('/orderDetail/${order.id}');
+                                // If the detail page indicates a refresh is needed (e.g., after cancel/delete)
+                                if (shouldRefresh == true) {
+                                  // Reload the current tab's orders
+                                  _loadOrdersForStatus(_tabStatuses[_tabController.index]);
+                                }
                               }
                             },
                            ),

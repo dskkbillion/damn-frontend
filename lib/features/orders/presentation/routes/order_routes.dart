@@ -10,11 +10,13 @@ import '../bloc/order_list_bloc.dart';
 import '../bloc/order_detail_bloc.dart';
 import '../seller/bloc/seller_order_list_bloc.dart';
 // Import OrderStatus and potentially an extension for parsing
-import '../../domain/entities/order_status.dart'; 
+import '../../domain/entities/order_status.dart';
+import '../../domain/entities/order_item.dart'; 
 
 // Import pages used in this module's routes
 import '../pages/order_list_page.dart';
 import '../pages/order_detail_page.dart';
+import '../pages/order_evaluation_page.dart';
 import '../seller/pages/seller_order_list_page.dart';
 import '../seller/pages/seller_order_detail_page.dart';
 
@@ -56,6 +58,27 @@ class OrderRoutes {
         return BlocProvider(
           create: (_) => getIt<OrderDetailBloc>(),
           child: OrderDetailPage(orderId: orderId),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/evaluation/:itemId',
+      name: 'evaluation',
+      builder: (BuildContext context, GoRouterState state) {
+        final String itemIdStr = state.pathParameters['itemId'] ?? 'invalid';
+        final int? itemId = int.tryParse(itemIdStr);
+        if (itemId == null) {
+          print('Error: Invalid itemId parameter in route: $itemIdStr');
+          return Scaffold(
+            appBar: AppBar(title: const Text('错误')),
+            body: Center(child: Text('无效的商品ID: $itemIdStr')),
+          );
+        }
+        // Get orderItem from extra if available
+        final orderItem = state.extra as OrderItem?;
+        return OrderEvaluationPage(
+          itemId: itemId,
+          orderItem: orderItem,
         );
       },
     ),
