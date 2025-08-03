@@ -136,15 +136,15 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
               context: context,
               builder: (BuildContext dialogContext) {
                 return AlertDialog(
-                  title: const Text('确认发货'),
-                  content: const Text('您确定要标记此订单为已发货吗？\n(注意：实际交付物需在此步骤或后续上传)'), // Placeholder text
+                  title: const Text('确认交付'),
+                  content: const Text('您确定要标记此订单为已交付吗？\n(请进入订单详情页上传交付内容)'), // Placeholder text
                   actions: <Widget>[
                     TextButton(
                       child: const Text('取消'),
                       onPressed: () => Navigator.of(dialogContext).pop(false),
                     ),
                     TextButton(
-                      child: const Text('确认发货'),
+                      child: const Text('确认交付'),
                       onPressed: () => Navigator.of(dialogContext).pop(true),
                     ),
                   ],
@@ -194,9 +194,9 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
           ));
         break;
       case OrderStatus.awaitingConfirmation:
-        // Seller has shipped, waiting for buyer
-         buttons.add(OutlinedButton(onPressed: () { print('[SellerButtons] View logistics ${order.id}'); /* TODO: Navigate/Show logistics */ }, style: outlineStyle, child: const Text('查看物流')));
-         buttons.add(ElevatedButton(onPressed: () { print('[SellerButtons] Remind confirmation ${order.id}'); /* TODO: Show reminder confirmation? */ }, style: filledStyle, child: const Text('提醒确认收货')));
+        // Seller has delivered, waiting for buyer confirmation
+         buttons.add(OutlinedButton(onPressed: () { print('[SellerButtons] View delivery ${order.id}'); /* TODO: Navigate/Show delivery details */ }, style: outlineStyle, child: const Text('查看交付')));
+         buttons.add(ElevatedButton(onPressed: () { print('[SellerButtons] Remind confirmation ${order.id}'); /* TODO: Show reminder confirmation? */ }, style: filledStyle, child: const Text('提醒确认')));
         break;
       case OrderStatus.orderCompleted:
         // Order finished, can invite evaluation or delete record

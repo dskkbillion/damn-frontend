@@ -269,15 +269,15 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
               
               const SizedBox(height: 12),
               
-              // Stripe支付选项
+              // 信用卡支付选项（Stripe）
               _buildPaymentOption(
                 'stripe',
-                'Stripe支付',
+                '信用卡支付',
                 null, // 没有Stripe logo图片，使用图标
                 Icons.credit_card,
                 Colors.purple,
                 enabled: _isStripePaymentAvailable,
-                subtitle: _isStripePaymentAvailable ? '国际信用卡支付' : '🚧 施工中，敬请期待',
+                subtitle: _isStripePaymentAvailable ? '支持Visa、MasterCard等' : '🚧 施工中，敬请期待',
               ),
               
               const SizedBox(height: 32),

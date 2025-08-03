@@ -134,7 +134,7 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
                       color: stripeAvailable ? Colors.green : Colors.red,
                     ),
                     const SizedBox(width: 8),
-                    const Text('Stripe支付'),
+                    const Text('信用卡支付'),
                   ],
                 ),
               ],
@@ -267,10 +267,10 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
             
             const SizedBox(height: 12),
             
-            // Stripe支付选项
+            // 信用卡支付选项（Stripe）
             _buildPaymentOption(
               PaymentMethod.stripe,
-              'Stripe支付',
+              '信用卡支付',
               Icons.credit_card,
               Colors.purple,
             ),

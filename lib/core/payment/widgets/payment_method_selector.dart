@@ -195,7 +195,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
               : null,
         ),
         
-        // Stripe支付选项
+        // 信用卡支付选项（Stripe）
         ListTile(
           enabled: _isStripePaymentAvailable,
           leading: Container(
@@ -215,7 +215,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
             ),
           ),
           title: Text(
-            'Stripe支付',
+            '信用卡支付',
             style: TextStyle(
               color: _isStripePaymentAvailable 
                   ? null 
@@ -224,7 +224,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
           ),
           subtitle: Text(
             _isStripePaymentAvailable 
-                ? '国际信用卡支付' 
+                ? '支持Visa、MasterCard等' 
                 : '🚧 施工中，敬请期待',
             style: TextStyle(
               color: _isStripePaymentAvailable 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
@@ -269,29 +270,30 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
           ));
         break;
       case OrderStatus.awaitingDelivery:
-         buttons.add(OutlinedButton(onPressed: () { /* TODO: Contact buyer */ }, style: outlineStyle, child: const Text('联系买家')));
+         buttons.add(OutlinedButton(
+           onPressed: () => _showContactBuyerDialog(context), 
+           style: outlineStyle, 
+           child: const Text('联系买家')
+         ));
          buttons.add(ElevatedButton(
           onPressed: () async {
              // Show dialog to collect delivery info
              final Map<String, String>? deliveryInfo = await _showDeliveryInputDialog(context);
              
              if (deliveryInfo != null) {
-               final String deliverySn = deliveryInfo['sn'] ?? '';
-               final String deliveryCompany = deliveryInfo['company'] ?? ''; // Default if needed
+               final String content = deliveryInfo['content'] ?? '';
 
-               if (deliverySn.isNotEmpty) { // Require SN at least
+               if (content.isNotEmpty) { // Require content
                   final params = DeliverOrderParams(
                     orderId: widget.order.id, 
-                    content: '已发货', // Or use custom content?
-                    files: [], // TODO: Handle file uploads
-                    deliverySn: deliverySn, // Pass the collected SN
-                    deliveryCompany: deliveryCompany.isNotEmpty ? deliveryCompany : null, // Pass company if provided
+                    content: content, // Use the actual delivery content
+                    files: [], // TODO: Handle file uploads in future
                   );
                   bloc.add(SellerDeliverRequested(orderId: widget.order.id, params: params));
                } else {
-                 // SN was empty, even if dialog was confirmed
+                 // Content was empty, even if dialog was confirmed
                   ScaffoldMessenger.of(context).showSnackBar(
-                   const SnackBar(content: Text('请输入物流单号'), backgroundColor: Colors.orange),
+                   const SnackBar(content: Text('请输入交付说明'), backgroundColor: Colors.orange),
                  );
                }
              } // If deliveryInfo is null, user canceled dialog - do nothing
@@ -301,8 +303,8 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
             ));
         break;
       case OrderStatus.awaitingConfirmation:
-         buttons.add(OutlinedButton(onPressed: () { /* TODO: Show logistics */ }, style: outlineStyle, child: const Text('查看物流')));
-         // buttons.add(ElevatedButton(onPressed: () { /* TODO: Remind buyer */ }, style: filledStyle, child: const Text('提醒确认收货'))); // Maybe not needed here?
+         buttons.add(OutlinedButton(onPressed: () { /* TODO: Show delivery details */ }, style: outlineStyle, child: const Text('查看交付内容')));
+         buttons.add(ElevatedButton(onPressed: () { /* TODO: Remind buyer */ }, style: filledStyle, child: const Text('提醒买家确认')));
         break;
       case OrderStatus.orderCompleted:
         buttons.add(OutlinedButton(
@@ -426,43 +428,57 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
     );
   }
 
-  // Helper to show an input dialog for delivery SN and Company
+  // Helper to show an input dialog for delivery content
   Future<Map<String, String>?> _showDeliveryInputDialog(BuildContext context) {
-    final TextEditingController snController = TextEditingController();
-    final TextEditingController companyController = TextEditingController(); // Controller for company
-    final formKey = GlobalKey<FormState>(); // Add form key for potential validation
+    final TextEditingController contentController = TextEditingController();
+    final formKey = GlobalKey<FormState>(); // Add form key for validation
 
     return showDialog<Map<String, String>?>(
       context: context,
       barrierDismissible: false, // Prevent dismissing by tapping outside
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text('填写发货信息'),
+          title: const Text('交付内容'),
           content: Form( // Wrap with Form
             key: formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min, // Prevent dialog from taking full height
               children: [
                 TextFormField( // Use TextFormField for validation
-                  controller: snController,
+                  controller: contentController,
                   decoration: const InputDecoration(
-                    labelText: '物流单号 *', // Mark as required
-                    hintText: '请输入物流单号'
+                    labelText: '交付说明 *', // Mark as required
+                    hintText: '请描述您的交付内容'
                   ),
                   autofocus: true,
+                  maxLines: 3,
                   validator: (value) { // Basic validation
                     if (value == null || value.trim().isEmpty) {
-                      return '物流单号不能为空';
+                      return '交付说明不能为空';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
-                TextField( // Company is optional for now
-                  controller: companyController,
-                  decoration: const InputDecoration(
-                    labelText: '物流公司',
-                    hintText: '请输入物流公司 (可选)'
+                // 附件上传提示
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue[200]!),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, size: 16, color: Colors.blue[700]),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '附件请在确认后通过文件选择器上传',
+                          style: TextStyle(fontSize: 12, color: Colors.blue[700]),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -474,14 +490,13 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
               onPressed: () => Navigator.of(dialogContext).pop(null), // Return null on cancel
             ),
             TextButton(
-              child: const Text('确认发货'),
+              child: const Text('确认交付'),
               onPressed: () {
                  // Validate the form
                  if (formKey.currentState!.validate()) {
-                    // Return a map with both values if valid
+                    // Return a map with content
                     Navigator.of(dialogContext).pop({
-                       'sn': snController.text.trim(),
-                       'company': companyController.text.trim(),
+                       'content': contentController.text.trim(),
                      });
                   }
               },

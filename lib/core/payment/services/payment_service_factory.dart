@@ -146,7 +146,7 @@ class PaymentServiceFactory {
       case 'stripe':
         return {
           'method': 'stripe',
-          'name': 'Stripe支付',
+          'name': '信用卡支付',
           'icon': 'stripe',
           'available': (await getStripeService()).isAvailable,
           'mock': false,
