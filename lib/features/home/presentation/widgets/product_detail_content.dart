@@ -498,7 +498,16 @@ class _ProductDetailContentState extends State<ProductDetailContent>
   }
 
   Widget _buildBuyerRequirementsSection() {
-    if (widget.product.buyerRequirements == null || widget.product.buyerRequirements!.isEmpty) {
+    if (widget.product.materials == null || widget.product.materials!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
+    // 过滤出ATTACHMENT和TEXT类型的材料作为需要买家提供的内容
+    final requirementMaterials = widget.product.materials!
+        .where((m) => m.type == 'ATTACHMENT' || m.type == 'TEXT')
+        .toList();
+    
+    if (requirementMaterials.isEmpty) {
       return const SizedBox.shrink();
     }
     
@@ -511,13 +520,13 @@ class _ProductDetailContentState extends State<ProductDetailContent>
         ),
       ),
       trailing: const Icon(Icons.keyboard_arrow_down),
-      children: widget.product.buyerRequirements!.map((requirement) => Padding(
+      children: requirementMaterials.map((material) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(
-              _getIconForRequirementType(requirement.type),
+              _getIconForMaterialType(material.type),
               size: 20,
               color: const Color(0xFFBF7D2A),
             ),
@@ -526,38 +535,18 @@ class _ProductDetailContentState extends State<ProductDetailContent>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        requirement.label,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 15,
-                        ),
-                      ),
-                      if (requirement.isRequired)
-                        Container(
-                          margin: const EdgeInsets.only(left: 8),
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.red[50],
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Text(
-                            '必填',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: Colors.red,
-                            ),
-                          ),
-                        ),
-                    ],
+                  Text(
+                    material.question,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 15,
+                    ),
                   ),
-                  if (requirement.description.isNotEmpty)
+                  if (material.answer != null && material.answer!.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 4.0),
                       child: Text(
-                        requirement.description,
+                        material.answer!,
                         style: TextStyle(
                           color: Colors.grey[700],
                           fontSize: 14,
@@ -573,20 +562,14 @@ class _ProductDetailContentState extends State<ProductDetailContent>
     );
   }
 
-  IconData _getIconForRequirementType(String type) {
+  IconData _getIconForMaterialType(String type) {
     switch (type) {
-      case 'text':
-        return Icons.text_fields;
-      case 'image':
-        return Icons.image;
-      case 'file':
+      case 'ATTACHMENT':
         return Icons.attach_file;
-      case 'contact':
-        return Icons.contact_phone;
-      case 'requirement':
-        return Icons.description;
-      case 'reference':
-        return Icons.link;
+      case 'TEXT':
+        return Icons.text_fields;
+      case 'PROBLEM':
+        return Icons.help_outline;
       default:
         return Icons.info_outline;
     }
@@ -594,6 +577,15 @@ class _ProductDetailContentState extends State<ProductDetailContent>
 
   Widget _buildFAQSection() {
     if (widget.product.materials == null || widget.product.materials!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
+    // 过滤出PROBLEM类型的材料作为常见问题
+    final faqMaterials = widget.product.materials!
+        .where((m) => m.type == 'PROBLEM')
+        .toList();
+    
+    if (faqMaterials.isEmpty) {
       return const SizedBox.shrink();
     }
     
@@ -606,7 +598,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
         ),
       ),
       trailing: const Icon(Icons.keyboard_arrow_down),
-      children: widget.product.materials!.map((material) => Padding(
+      children: faqMaterials.map((material) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

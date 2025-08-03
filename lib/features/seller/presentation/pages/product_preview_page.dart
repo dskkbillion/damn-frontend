@@ -105,13 +105,20 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
     print('  - QA count: ${formData.qaList.length}');
     print('  - Buyer info items count: ${formData.buyerInfoItems.length}');
     
-    // 转换买家需求信息
-    final buyerRequirements = formData.buyerInfoItems.map((item) {
-      return BuyerRequirement(
-        type: item['type'] ?? '',
-        label: item['label'] ?? '',
-        description: item['description'] ?? '',
-        isRequired: item['isRequired'] ?? false,
+    // 转换买家需求信息为材料信息（ATTACHMENT或TEXT类型）
+    final buyerMaterials = formData.buyerInfoItems.asMap().entries.map((entry) {
+      final item = entry.value;
+      final type = item['type'] ?? '';
+      // 根据类型映射到productMaterials的type
+      String materialType = 'TEXT'; // 默认为TEXT
+      if (type == 'file' || type == 'image') {
+        materialType = 'ATTACHMENT';
+      }
+      return ProductMaterial(
+        id: 1000 + entry.key, // 使用1000+索引作为ID，避免与QA冲突
+        question: item['label'] ?? '',
+        answer: item['description'] ?? '',
+        type: materialType,
       );
     }).toList();
     
@@ -136,13 +143,16 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
       print('  - First variant price: ${variants.first.sellingPrice}');
     }
 
-    // 转换QA为材料信息
-    final materials = formData.qaList.asMap().entries.map((entry) => ProductMaterial(
+    // 转换QA为材料信息（PROBLEM类型）
+    final qaMaterials = formData.qaList.asMap().entries.map((entry) => ProductMaterial(
       id: entry.key,
       question: entry.value['question'] ?? '',
       answer: entry.value['answer'] ?? '',
-      type: 'qa',
+      type: 'PROBLEM', // 常见问题使用PROBLEM类型
     )).toList();
+    
+    // 合并所有材料信息
+    final materials = [...qaMaterials, ...buyerMaterials];
     
     print('  - Converted materials count: ${materials.length}');
 
@@ -174,7 +184,6 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
       updateTime: DateTime.now(),
       evaluateNum: 0,
       score: '5.0',
-      buyerRequirements: buyerRequirements.isEmpty ? null : buyerRequirements,
     );
     
     print('[PreviewPage] Form data conversion completed:');
