@@ -152,6 +152,11 @@ class OrderItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+    
+    // 调试日志
+    print('[OrderItemCard] Building card for order ${order.id}');
+    print('[OrderItemCard] Tenant info - id: ${order.tenant?.id}, nickname: ${order.tenant?.nickname}, shopName: ${order.tenant?.shopName}');
+    print('[OrderItemCard] Buyer info - id: ${order.buyer?.id}, nickname: ${order.buyer?.nickname}');
 
     // 假设 order.items 非空，并且我们显示第一个 item 的信息作为预览
     final firstItem = order.items.isNotEmpty ? order.items.first : null;
@@ -181,7 +186,7 @@ class OrderItemCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 头部：卖家信息和订单状态
+              // 头部：卖家信息和订单状态（买家视角）
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -213,7 +218,7 @@ class OrderItemCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                        // 卖家名称
+                        // 卖家昵称
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

@@ -283,16 +283,17 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
          buttons.add(ElevatedButton(
           onPressed: () async {
              // Show dialog to collect delivery info
-             final Map<String, String>? deliveryInfo = await _showDeliveryInputDialog(context);
+             final Map<String, dynamic>? deliveryInfo = await _showDeliveryInputDialog(context);
              
              if (deliveryInfo != null) {
                final String content = deliveryInfo['content'] ?? '';
+               final List<String> files = deliveryInfo['files'] ?? [];
 
                if (content.isNotEmpty) { // Require content
                   final params = DeliverOrderParams(
                     orderId: widget.order.id, 
                     content: content, // Use the actual delivery content
-                    files: [], // TODO: Handle file uploads in future
+                    files: files, // Pass the selected files
                   );
                   bloc.add(SellerDeliverRequested(orderId: widget.order.id, params: params));
                } else {
@@ -434,76 +435,153 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
   }
 
   // Helper to show an input dialog for delivery content
-  Future<Map<String, String>?> _showDeliveryInputDialog(BuildContext context) {
+  Future<Map<String, dynamic>?> _showDeliveryInputDialog(BuildContext context) {
     final TextEditingController contentController = TextEditingController();
-    final formKey = GlobalKey<FormState>(); // Add form key for validation
+    final formKey = GlobalKey<FormState>();
+    final ValueNotifier<List<String>> selectedFiles = ValueNotifier<List<String>>([]);
 
-    return showDialog<Map<String, String>?>(
+    return showDialog<Map<String, dynamic>?>(
       context: context,
-      barrierDismissible: false, // Prevent dismissing by tapping outside
+      barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: const Text('交付内容'),
-          content: Form( // Wrap with Form
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min, // Prevent dialog from taking full height
-              children: [
-                TextFormField( // Use TextFormField for validation
-                  controller: contentController,
-                  decoration: const InputDecoration(
-                    labelText: '交付说明 *', // Mark as required
-                    hintText: '请描述您的交付内容'
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextFormField(
+                    controller: contentController,
+                    decoration: const InputDecoration(
+                      labelText: '交付说明 *',
+                      hintText: '请描述您的交付内容',
+                      alignLabelWithHint: true,
+                    ),
+                    autofocus: true,
+                    maxLines: 4,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return '交付说明不能为空';
+                      }
+                      return null;
+                    },
                   ),
-                  autofocus: true,
-                  maxLines: 3,
-                  validator: (value) { // Basic validation
-                    if (value == null || value.trim().isEmpty) {
-                      return '交付说明不能为空';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                // 附件上传提示
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.blue[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.blue[200]!),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.info_outline, size: 16, color: Colors.blue[700]),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          '附件请在确认后通过文件选择器上传',
-                          style: TextStyle(fontSize: 12, color: Colors.blue[700]),
+                  const SizedBox(height: 20),
+                  // 附件上传区域
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Theme.of(context).dividerColor),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.attach_file, size: 20, color: Theme.of(context).primaryColor),
+                            const SizedBox(width: 8),
+                            const Text('附件', style: TextStyle(fontWeight: FontWeight.bold)),
+                          ],
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 12),
+                        ValueListenableBuilder<List<String>>(
+                          valueListenable: selectedFiles,
+                          builder: (context, files, _) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                if (files.isEmpty)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 24),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[50],
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(
+                                        color: Colors.grey[300]!,
+                                        style: BorderStyle.solid,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Icon(Icons.cloud_upload_outlined, 
+                                          size: 40, 
+                                          color: Colors.grey[400]
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          '点击下方按钮选择文件',
+                                          style: TextStyle(color: Colors.grey[600]),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                else
+                                  ...files.map((file) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.insert_drive_file, size: 16),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            file.split('/').last,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.close, size: 16),
+                                          onPressed: () {
+                                            final newFiles = List<String>.from(files)..remove(file);
+                                            selectedFiles.value = newFiles;
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  )).toList(),
+                                const SizedBox(height: 12),
+                                OutlinedButton.icon(
+                                  onPressed: () {
+                                    // TODO: 实现文件选择功能
+                                    // 这里暂时使用模拟数据
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('文件选择功能即将实现'),
+                                        duration: Duration(seconds: 2),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.add),
+                                  label: const Text('添加附件'),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           actions: <Widget>[
             TextButton(
               child: const Text('取消'),
-              onPressed: () => Navigator.of(dialogContext).pop(null), // Return null on cancel
+              onPressed: () => Navigator.of(dialogContext).pop(null),
             ),
             TextButton(
               child: const Text('确认交付'),
               onPressed: () {
-                 // Validate the form
-                 if (formKey.currentState!.validate()) {
-                    // Return a map with content
-                    Navigator.of(dialogContext).pop({
-                       'content': contentController.text.trim(),
-                     });
-                  }
+                if (formKey.currentState!.validate()) {
+                  Navigator.of(dialogContext).pop({
+                    'content': contentController.text.trim(),
+                    'files': selectedFiles.value,
+                  });
+                }
               },
             ),
           ],

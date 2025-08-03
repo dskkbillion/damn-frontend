@@ -94,6 +94,27 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
             _isProcessing = false;
           });
           dismissLoadingDialog(context); // 关闭加载对话框
+        } else if (state is ExternalPaymentProcessingState) {
+          // 外部支付处理中（如Stripe）
+          setState(() {
+            _isProcessing = false;
+          });
+          dismissLoadingDialog(context); // 关闭加载对话框
+          
+          // 显示提示信息
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('正在跳转到支付页面，请在浏览器中完成支付'),
+              duration: const Duration(seconds: 3),
+              action: SnackBarAction(
+                label: '查看订单',
+                onPressed: () {
+                  // 跳转到订单详情页
+                  context.go('/orders?status=awaitingPayment');
+                },
+              ),
+            ),
+          );
         }
       },
       child: Scaffold(

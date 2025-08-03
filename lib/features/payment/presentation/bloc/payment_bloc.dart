@@ -99,10 +99,12 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
             if (paymentResult.resultType == payment_models.PaymentResultType.processing) {
               // 支付处理中（如Stripe跳转）
               _isProcessing = false; // 重置处理标志
-              // 不emit完成状态，让用户在外部完成支付
+              // emit外部支付处理中状态
               print('[PaymentBloc] 支付链接已打开，等待用户完成支付');
-              // 可以emit一个处理中的状态，或者什么都不做
-              emit(PaymentInitial()); // 重置状态
+              emit(ExternalPaymentProcessingState(
+                orderId: creationResult.orderId,
+                paymentUrl: paymentResult.data ?? '',
+              ));
             } else {
               // 支付成功
               _isProcessing = false; // 重置处理标志

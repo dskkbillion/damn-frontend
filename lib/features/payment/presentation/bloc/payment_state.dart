@@ -50,4 +50,18 @@ class PaymentFailedState extends PaymentState {
   
   @override
   List<Object?> get props => [errorMessage, orderId];
+}
+
+/// 外部支付处理中状态（如Stripe跳转）
+class ExternalPaymentProcessingState extends PaymentState {
+  final String orderId;
+  final String paymentUrl;
+  
+  const ExternalPaymentProcessingState({
+    required this.orderId,
+    required this.paymentUrl,
+  });
+  
+  @override
+  List<Object?> get props => [orderId, paymentUrl];
 } 

@@ -139,34 +139,9 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
           child: const Text('联系买家')
         ));
         buttons.add(ElevatedButton(
-          onPressed: () async { // Make onPressed async
-            // Show confirmation dialog before delivering
-            // TODO: This dialog should ideally collect delivery info (content, files)
-            final confirmed = await showDialog<bool>(
-              context: context,
-              builder: (BuildContext dialogContext) {
-                return AlertDialog(
-                  title: const Text('确认交付'),
-                  content: const Text('您确定要标记此订单为已交付吗？\n(请进入订单详情页上传交付内容)'), // Placeholder text
-                  actions: <Widget>[
-                    TextButton(
-                      child: const Text('取消'),
-                      onPressed: () => Navigator.of(dialogContext).pop(false),
-                    ),
-                    TextButton(
-                      child: const Text('确认交付'),
-                      onPressed: () => Navigator.of(dialogContext).pop(true),
-                    ),
-                  ],
-                );
-              },
-            );
-            // If confirmed, trigger the event
-            if (confirmed == true) {
-              print('[SellerButtons] Deliver order ${order.id}'); 
-              // TODO: Pass actual delivery info to the event later
-              BlocProvider.of<SellerOrderListBloc>(context).add(DeliverOrderRequested(orderId: order.id));
-            }
+          onPressed: () {
+            // 导航到订单详情页进行交付操作
+            context.push('/seller/orders/${order.id}');
           }, 
           style: filledStyle, 
           child: const Text('去交付')

@@ -17,19 +17,22 @@ class MemberModel {
   });
   
   factory MemberModel.fromJson(Map<String, dynamic> json) {
-    return MemberModel(
+    print('[MemberModel] Parsing member from JSON: $json');
+    final model = MemberModel(
       id: json['id'] ?? 0,
-      nickname: json['nickname'] as String?,
+      nickname: json['nickName'] as String?, // API返回的是nickName
       avatar: json['avatar'] as String?,
       shopName: json['shopName'] as String?,
       mobile: json['mobile'] as String?,
     );
+    print('[MemberModel] Parsed member - id: ${model.id}, nickname: ${model.nickname}');
+    return model;
   }
   
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'nickname': nickname,
+      'nickName': nickname, // 发送给API时使用nickName
       'avatar': avatar,
       'shopName': shopName,
       'mobile': mobile,

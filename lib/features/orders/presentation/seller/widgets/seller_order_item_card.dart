@@ -19,6 +19,11 @@ class SellerOrderItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+    
+    // 调试日志
+    print('[SellerOrderItemCard] Building card for order ${order.id}');
+    print('[SellerOrderItemCard] Buyer info - id: ${order.buyer?.id}, nickname: ${order.buyer?.nickname}');
+    print('[SellerOrderItemCard] Tenant info - id: ${order.tenant?.id}, nickname: ${order.tenant?.nickname}');
 
     // 假设 order.items 非空，并且我们显示第一个 item 的信息作为预览
     final firstItem = order.items.isNotEmpty ? order.items.first : null;
@@ -56,15 +61,42 @@ class SellerOrderItemCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Display BUYER name from shipping address
-                  Expanded( // Use Expanded to prevent overflow if name is long
+                  // 显示买家信息
+                  Expanded(
                     child: Row(
                       children: [
-                        Text(
-                          // Use recipientName from the shipping address
-                          '买家: ${order.shippingAddress.recipientName}', 
-                          style: textTheme.bodySmall?.copyWith(color: colorScheme.secondary),
-                          overflow: TextOverflow.ellipsis, // Prevent overflow
+                        // 买家头像
+                        if (order.buyer?.avatar != null && order.buyer!.avatar!.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: CircleAvatar(
+                              radius: 16,
+                              backgroundImage: NetworkImage(order.buyer!.avatar!),
+                              backgroundColor: Colors.grey[200],
+                              onBackgroundImageError: (_, __) {},
+                            ),
+                          )
+                        else
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: CircleAvatar(
+                              radius: 16,
+                              backgroundColor: colorScheme.surfaceVariant,
+                              child: Icon(
+                                Icons.person,
+                                size: 16,
+                                color: colorScheme.secondary,
+                              ),
+                            ),
+                          ),
+                        // 买家昵称
+                        Expanded(
+                          child: Text(
+                            order.buyer?.nickname ?? '买家',
+                            style: textTheme.bodyMedium,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                         // 如果有买家材料且订单状态适合显示
                         if (hasBuyerMaterials && _shouldShowMaterials(order.state)) ...[
@@ -99,7 +131,7 @@ class SellerOrderItemCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 8), // Add some space
+                  const SizedBox(width: 8),
                   OrderStatusWidget(status: order.state), // 显示订单状态
                 ],
               ),
