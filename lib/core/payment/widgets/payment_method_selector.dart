@@ -30,6 +30,8 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
   
   // 微信支付是否可用（上线前设置为false）
   static const bool _isWechatPaymentAvailable = false;
+  // Stripe支付是否可用
+  static const bool _isStripePaymentAvailable = true;
 
   Future<void> _handlePayment() async {
     if (_isProcessing) return;
@@ -193,6 +195,58 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
               : null,
         ),
         
+        // Stripe支付选项
+        ListTile(
+          enabled: _isStripePaymentAvailable,
+          leading: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: _isStripePaymentAvailable 
+                  ? Colors.purple.shade50 
+                  : Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.credit_card,
+              color: _isStripePaymentAvailable 
+                  ? Colors.purple 
+                  : Colors.grey,
+            ),
+          ),
+          title: Text(
+            'Stripe支付',
+            style: TextStyle(
+              color: _isStripePaymentAvailable 
+                  ? null 
+                  : Colors.grey,
+            ),
+          ),
+          subtitle: Text(
+            _isStripePaymentAvailable 
+                ? '国际信用卡支付' 
+                : '🚧 施工中，敬请期待',
+            style: TextStyle(
+              color: _isStripePaymentAvailable 
+                  ? null 
+                  : Colors.orange,
+              fontWeight: _isStripePaymentAvailable 
+                  ? FontWeight.normal 
+                  : FontWeight.bold,
+            ),
+          ),
+          trailing: Radio<PaymentMethod>(
+            value: PaymentMethod.stripe,
+            groupValue: _selectedMethod,
+            onChanged: _isStripePaymentAvailable 
+                ? (value) => setState(() => _selectedMethod = value!) 
+                : null,
+          ),
+          onTap: _isStripePaymentAvailable 
+              ? () => setState(() => _selectedMethod = PaymentMethod.stripe)
+              : null,
+        ),
+        
         const SizedBox(height: 20),
         
         // 支付按钮
@@ -206,7 +260,9 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: _selectedMethod == PaymentMethod.wechat 
                     ? Colors.green 
-                    : Colors.blue,
+                    : _selectedMethod == PaymentMethod.stripe
+                        ? Colors.purple
+                        : Colors.blue,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),

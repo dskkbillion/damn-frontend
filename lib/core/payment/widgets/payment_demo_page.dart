@@ -94,6 +94,7 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
       
       final alipayAvailable = await factory.isPaymentMethodAvailable('alipay');
       final wechatAvailable = await factory.isPaymentMethodAvailable('wechat');
+      final stripeAvailable = await factory.isPaymentMethodAvailable('stripe');
       
       if (mounted) {
         showDialog(
@@ -123,6 +124,17 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
                     ),
                     const SizedBox(width: 8),
                     const Text('微信支付'),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(
+                      stripeAvailable ? Icons.check_circle : Icons.cancel,
+                      color: stripeAvailable ? Colors.green : Colors.red,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text('Stripe支付'),
                   ],
                 ),
               ],
@@ -251,6 +263,16 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
               '余额支付',
               Icons.account_balance_wallet,
               Colors.orange,
+            ),
+            
+            const SizedBox(height: 12),
+            
+            // Stripe支付选项
+            _buildPaymentOption(
+              PaymentMethod.stripe,
+              'Stripe支付',
+              Icons.credit_card,
+              Colors.purple,
             ),
             
             const SizedBox(height: 32),
@@ -390,6 +412,8 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
         return Colors.green;
       case PaymentMethod.wallet:
         return Colors.orange;
+      case PaymentMethod.stripe:
+        return Colors.purple;
       case PaymentMethod.alipay:
       default:
         return Colors.blue;

@@ -6,6 +6,7 @@ import '../config/wechat_config.dart';
 import 'i_payment_service.dart';
 import 'alipay_payment_service.dart';
 import 'wechat_payment_service.dart';
+import 'stripe_payment_service.dart';
 
 /// 支付服务工厂
 /// 根据配置和支付方式动态创建对应的支付服务实例
@@ -16,6 +17,7 @@ class PaymentServiceFactory {
   // 缓存服务实例
   AlipayPaymentService? _alipayService;
   WechatPaymentService? _wechatService;
+  StripePaymentService? _stripeService;
 
   PaymentServiceFactory(this._apiClient);
 
@@ -33,13 +35,23 @@ class PaymentServiceFactory {
     return _wechatService!;
   }
 
+  /// 获取Stripe支付服务
+  Future<IPaymentService> getStripeService() async {
+    _stripeService ??= StripePaymentService(_apiClient);
+    await _stripeService!.initialize();
+    return _stripeService!;
+  }
+
   /// 根据支付方式获取对应的服务
   Future<IPaymentService> getPaymentService(String paymentMethod) async {
     switch (paymentMethod.toLowerCase()) {
       case 'alipay':
         return await getAlipayService();
       case 'wechat':
+      case 'weapp':  // 兼容后端返回的weapp
         return await getWechatService();
+      case 'stripe':
+        return await getStripeService();
       default:
         throw UnsupportedError('不支持的支付方式: $paymentMethod');
     }
@@ -65,6 +77,15 @@ class PaymentServiceFactory {
       }
     } catch (e) {
       print('[PaymentServiceFactory] Failed to load Wechat service: $e');
+    }
+    
+    try {
+      final stripeService = await getStripeService();
+      if (stripeService.isAvailable) {
+        services.add(stripeService);
+      }
+    } catch (e) {
+      print('[PaymentServiceFactory] Failed to load Stripe service: $e');
     }
     
     return services;
@@ -122,6 +143,14 @@ class PaymentServiceFactory {
             'error': e.toString(),
           };
         }
+      case 'stripe':
+        return {
+          'method': 'stripe',
+          'name': 'Stripe支付',
+          'icon': 'stripe',
+          'available': (await getStripeService()).isAvailable,
+          'mock': false,
+        };
       default:
         return {
           'method': paymentMethod,
@@ -135,9 +164,10 @@ class PaymentServiceFactory {
 
   /// 释放资源
   void dispose() {
-    // AlipayPaymentService 没有dispose方法
+    // AlipayPaymentService 和 StripePaymentService 没有dispose方法
     _wechatService?.dispose();
     _alipayService = null;
     _wechatService = null;
+    _stripeService = null;
   }
 } 
