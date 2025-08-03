@@ -119,6 +119,7 @@ class _HomeViewState extends State<HomeView> {
               child: CustomScrollView(
                 key: const PageStorageKey<String>('buyer_home_scroll'),
                 controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
                   // 轮播图
                   SliverToBoxAdapter(
@@ -146,7 +147,8 @@ class _HomeViewState extends State<HomeView> {
 
                   // 信息流列表 - 使用SliverPadding和SliverMasonryGrid
                   if (feedItems.isEmpty)
-                    SliverToBoxAdapter(
+                    SliverFillRemaining(
+                      hasScrollBody: false,
                       child: Container(
                         padding: const EdgeInsets.all(32.0),
                         child: Center(
@@ -168,7 +170,7 @@ class _HomeViewState extends State<HomeView> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                '继续浏览，我们会为您推荐更多内容',
+                                '下拉刷新获取推荐内容',
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.grey[500],

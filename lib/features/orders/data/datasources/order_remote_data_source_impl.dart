@@ -483,6 +483,7 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
         '/api/shop/order/create',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
         data: {
+          'tenantId': sellerId, // 添加卖家ID（tenantId）
           'couponId': null, // 优惠券ID，可为null
           'remark': '通过应用下单',
           'items': [

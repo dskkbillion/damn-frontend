@@ -345,6 +345,7 @@ class AlipayPaymentService implements IPaymentService {
     try {
       // 构建请求参数（根据API文档修正参数格式）
       final requestData = {
+        'tenantId': orderData['sellerId'] ?? orderData['tenantId'], // 添加卖家ID（tenantId）
         'couponId': orderData['couponId'], // 优惠券ID，可为null
         'remark': orderData['remark'] ?? '通过应用下单',
         'items': [

@@ -32,10 +32,11 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
     null, // Index 0: 全部 (All)
     OrderStatus.awaitingPayment, // Index 1: 待付款
     OrderStatus.awaitingSubmission, // Index 2: 待提交
-    OrderStatus.awaitingDelivery, // Index 3: 待交付
-    OrderStatus.awaitingConfirmation, // Index 4: 待收货
-    OrderStatus.awaitingEvaluation, // Index 5: 待评价
-    OrderStatus.afterSale, // Index 6: 售后中 (NEW)
+    OrderStatus.awaitingStart, // Index 3: 待接单
+    OrderStatus.awaitingDelivery, // Index 4: 待交付
+    OrderStatus.awaitingConfirmation, // Index 5: 待收货
+    OrderStatus.awaitingEvaluation, // Index 6: 待评价
+    OrderStatus.afterSale, // Index 7: 售后中 (NEW)
   ];
 
   // Helper to find index for a given status string
@@ -271,75 +272,23 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                          // Determine if the current order is in an after-sales state
                          final bool isAfterSalesOrder = afterSalesStatuses.contains(order.state);
 
-                         return Dismissible(
-                           key: Key(order.id.toString()),
-                           direction: DismissDirection.endToStart,
-                           confirmDismiss: (direction) async {
-                             // 只有特定状态的订单可以删除
-                             const deletableStates = {
-                               OrderStatus.canceled,
-                               OrderStatus.orderCompleted,
-                               OrderStatus.awaitingEvaluation,
-                             };
-                             
-                             if (!deletableStates.contains(order.state)) {
-                               ScaffoldMessenger.of(context).showSnackBar(
-                                 const SnackBar(
-                                   content: Text('该状态的订单不能删除'),
-                                   duration: Duration(seconds: 2),
-                                 ),
-                               );
-                               return false;
-                             }
-                             
-                             // 显示确认对话框
-                             return await showDialog<bool>(
-                               context: context,
-                               builder: (BuildContext context) {
-                                 return AlertDialog(
-                                   title: const Text('删除订单'),
-                                   content: const Text('您确定要删除这个订单吗？删除后将无法恢复。'),
-                                   actions: [
-                                     TextButton(
-                                       child: const Text('取消'),
-                                       onPressed: () => Navigator.of(context).pop(false),
-                                     ),
-                                     TextButton(
-                                       child: const Text('确定'),
-                                       onPressed: () => Navigator.of(context).pop(true),
-                                     ),
-                                   ],
-                                 );
-                               },
-                             ) ?? false;
-                           },
-                           background: Container(
-                             alignment: Alignment.centerRight,
-                             padding: const EdgeInsets.only(right: 16),
-                             color: Theme.of(context).colorScheme.error,
-                             child: Icon(
-                               Icons.delete,
-                               color: Theme.of(context).colorScheme.onError,
-                             ),
-                           ),
-                           child: OrderItemCard(
-                             order: order,
-                             onTap: () async {
-                              // TODO: Refactor this navigation logic to use context.go() from go_router for better practice.
-                              if (isAfterSalesOrder) {
-                                // Navigate to AfterSalesDetailPage using GoRouter
-                                context.push('/afterSalesDetail/${order.id}');
-                              } else {
-                                // Navigate to OrderDetailPage using GoRouter and wait for result
-                                final shouldRefresh = await context.push<bool>('/orderDetail/${order.id}');
-                                // If the detail page indicates a refresh is needed (e.g., after cancel/delete)
-                                if (shouldRefresh == true) {
-                                  // Reload the current tab's orders
-                                  _loadOrdersForStatus(_tabStatuses[_tabController.index]);
-                                }
+                         return OrderItemCard(
+                           order: order,
+                           onTap: () async {
+                            // TODO: Refactor this navigation logic to use context.go() from go_router for better practice.
+                            if (isAfterSalesOrder) {
+                              // Navigate to AfterSalesDetailPage using GoRouter
+                              context.push('/afterSalesDetail/${order.id}');
+                            } else {
+                              // Navigate to OrderDetailPage using GoRouter and wait for result
+                              final shouldRefresh = await context.push<bool>('/orderDetail/${order.id}');
+                              // If the detail page indicates a refresh is needed (e.g., after cancel/delete)
+                              if (shouldRefresh == true) {
+                                // Reload the current tab's orders
+                                _loadOrdersForStatus(_tabStatuses[_tabController.index]);
                               }
-                            },
-                           ),
+                            }
+                          },
                          );
                       },
                      ),
@@ -396,7 +345,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
     }
     
     // Tab标签名称
-    final tabLabels = ['全部', '待付款', '待提交', '待交付', '待收货', '待评价', '售后中'];
+    final tabLabels = ['全部', '待付款', '待提交', '待接单', '待交付', '待收货', '待评价', '售后中'];
     
     return List.generate(_tabStatuses.length, (index) {
       final status = _tabStatuses[index];

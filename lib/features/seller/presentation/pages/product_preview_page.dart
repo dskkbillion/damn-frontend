@@ -221,8 +221,35 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
                   return const LoadingState(text: '正在加载商品信息...');
                 }
                 
+                if (state.hasError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                        const SizedBox(height: 16),
+                        Text(
+                          state.errorMessage ?? '加载商品信息失败',
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            final productIdInt = int.tryParse(widget.productId!) ?? 0;
+                            if (productIdInt > 0) {
+                              _bloc.add(InitializeProductEdit(productId: productIdInt));
+                            }
+                          },
+                          child: const Text('重试'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                
+                // 如果没有错误但产品为空，显示加载中
                 if (state.product == null) {
-                  return const Center(child: Text('加载商品信息失败'));
+                  return const LoadingState(text: '正在获取商品数据...');
                 }
                 
                 // 从状态中的产品数据构建ProductDetail
@@ -344,19 +371,8 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
   Widget _buildContent(ProductDetail productDetail) {
     return ProductDetailContent(
       product: productDetail,
-      isPreviewMode: true,
-      // 预览模式下的特殊处理
-      customActions: _buildPreviewActions(),
-      onContactSeller: null, // 预览模式下禁用联系卖家
-      onBuyNow: () {
-        // 预览模式下的购买按钮行为
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('预览模式下无法购买，请先发布商品'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      },
+      isPreviewMode: false, // 设置为false，显示与买家一致的界面
+      // 不传递任何自定义内容，让预览页面与买家看到的完全一致
     );
   }
 

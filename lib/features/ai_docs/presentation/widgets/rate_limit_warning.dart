@@ -18,41 +18,323 @@ class RateLimitWarningBanner extends StatelessWidget {
     if (remaining > 5) return const SizedBox.shrink();
     
     return Container(
-      margin: const EdgeInsets.all(8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: remaining <= 2 ? Colors.red.shade50 : Colors.orange.shade50,
-        border: Border.all(
-          color: remaining <= 2 ? Colors.red.shade300 : Colors.orange.shade300,
+        gradient: LinearGradient(
+          colors: remaining <= 2 
+            ? [Colors.amber.shade50, Colors.amber.shade100]
+            : [Colors.blue.shade50, Colors.blue.shade100],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            remaining <= 2 ? Icons.warning : Icons.info,
-            color: remaining <= 2 ? Colors.red.shade700 : Colors.orange.shade700,
-            size: 20,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              remaining <= 2 
-                ? '推荐次数即将用完，剩余${remaining}次，${_formatResetTime(resetInSeconds)}后重置'
-                : '推荐次数较少，剩余${remaining}次',
-              style: TextStyle(
-                color: remaining <= 2 ? Colors.red.shade700 : Colors.orange.shade700,
-                fontSize: 13,
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => _showDetailedInfo(context),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    remaining <= 2 ? Icons.access_time : Icons.info_outline,
+                    color: remaining <= 2 ? Colors.amber.shade700 : Colors.blue.shade700,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        remaining <= 2 ? '使用次数即将耗尽' : '今日剩余次数',
+                        style: TextStyle(
+                          color: remaining <= 2 ? Colors.amber.shade800 : Colors.blue.shade800,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '还可使用 $remaining 次，${_formatResetTime(resetInSeconds)}后重置',
+                        style: TextStyle(
+                          color: remaining <= 2 ? Colors.amber.shade700 : Colors.blue.shade700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: remaining <= 2 ? Colors.amber.shade600 : Colors.blue.shade600,
+                  size: 20,
+                ),
+                if (onDismiss != null)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: InkWell(
+                      onTap: onDismiss,
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(
+                          Icons.close,
+                          size: 16,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatResetTime(int seconds) {
+    final minutes = (seconds / 60).ceil();
+    if (minutes > 60) {
+      return '${(minutes / 60).ceil()}小时';
+    }
+    return '${minutes}分钟';
+  }
+
+  void _showDetailedInfo(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.75,
+      ),
+      builder: (context) => _DetailedRateLimitSheet(
+        remaining: remaining,
+        resetInSeconds: resetInSeconds,
+      ),
+    );
+  }
+}
+
+/// 详细的频率限制信息底部弹窗
+class _DetailedRateLimitSheet extends StatelessWidget {
+  final int remaining;
+  final int resetInSeconds;
+
+  const _DetailedRateLimitSheet({
+    required this.remaining,
+    required this.resetInSeconds,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-          ),
-          if (onDismiss != null)
-            IconButton(
-              icon: const Icon(Icons.close, size: 16),
-              onPressed: onDismiss,
-              color: remaining <= 2 ? Colors.red.shade700 : Colors.orange.shade700,
+            const SizedBox(height: 24),
+            Text(
+              '使用次数详情',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
+            const SizedBox(height: 20),
+            _buildProgressCard(context),
+            const SizedBox(height: 16),
+            _buildRuleCard(context),
+            const SizedBox(height: 20),
+            _buildUpgradeButton(context),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressCard(BuildContext context) {
+    const totalLimit = 30; // 假设总限制为30次
+    final usedPercentage = ((totalLimit - remaining) / totalLimit).clamp(0.0, 1.0);
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.blue.shade50, Colors.blue.shade100],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '今日使用情况',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.blue.shade800,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                '${totalLimit - remaining}/$totalLimit',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.blue.shade700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: usedPercentage,
+              backgroundColor: Colors.blue.shade100,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                remaining <= 2 ? Colors.amber.shade600 : Colors.blue.shade600,
+              ),
+              minHeight: 8,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${_formatResetTime(resetInSeconds)}后重置',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.blue.shade600,
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildRuleCard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '使用规则',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade800,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildRuleItem('突发限制', '5分钟内最多3次'),
+          const SizedBox(height: 8),
+          _buildRuleItem('小时限制', '60分钟内最多30次'),
+          const SizedBox(height: 8),
+          _buildRuleItem('重置时间', '每小时0分钟重置'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRuleItem(String title, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.grey.shade600,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.grey.shade800,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUpgradeButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () {
+          // TODO: 实现升级引导逻辑
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('升级功能即将推出'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue.shade600,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.star, size: 20),
+            const SizedBox(width: 8),
+            const Text(
+              '升级获取更多次数',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

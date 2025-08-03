@@ -89,8 +89,17 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
           listener: (context, state) {
             // 处理副作用，如显示 SnackBar, 导航等
             if (state is SmsLoginFailure) {
+              // 检查是否是验证码相关的错误
+              String errorMessage = state.failure.message;
+              if (errorMessage.contains('验证码') || 
+                  errorMessage.contains('code') || 
+                  errorMessage.contains('Code')) {
+                errorMessage = '验证码已过期';
+              } else {
+                errorMessage = '登录失败: $errorMessage';
+              }
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('登录失败: ${state.failure.message}')),
+                SnackBar(content: Text(errorMessage)),
               );
             } else if (state is SmsLoginCodeSendFailure) {
                ScaffoldMessenger.of(context).showSnackBar(

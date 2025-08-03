@@ -16,6 +16,7 @@ class SellerRoutes {
   static const String products = '$basePath/products';
   static const String productCreate = '$basePath/products/create';
   static const String productEdit = '$basePath/products/:id/edit';
+  static const String productPreview = '$basePath/products/:id/preview';
   static const String authentication = '$basePath/authentication';
   static const String authenticationApply = '$basePath/authentication/:type/apply';
   static const String authenticationDetail = '$basePath/authentication/:type/detail';

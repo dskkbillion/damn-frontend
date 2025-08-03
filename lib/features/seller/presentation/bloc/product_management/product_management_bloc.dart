@@ -492,19 +492,13 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     NavigateToProductDetail event,
     Emitter<ProductManagementState> emit,
   ) async {
-    // 导航到商品编辑页面的预览模式
-    final String path = SellerRoutes.buildPath(
-      SellerRoutes.productEdit,
-      params: {'id': event.productId.toString()},
-    );
+    // 在卖家模式下，使用卖家的预览页面路由
+    final String path = '/seller/products/${event.productId}/preview';
     
-    // 添加预览模式参数
-    final String previewPath = '$path?preview=true';
-    
-    print('[ProductManagementBloc] Navigating to product preview: $previewPath');
+    print('[ProductManagementBloc] Navigating to product preview: $path');
     
     // 发出带有导航路径的状态
-    emit(state.copyWith(navigationPath: previewPath));
+    emit(state.copyWith(navigationPath: path));
     // 立即清除导航路径，防止在无关状态变化时重复导航
     emit(state.copyWith(clearNavigationPath: true));
   }

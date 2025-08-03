@@ -241,10 +241,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                 // 购买按钮
                 _buildBuyButton(product),
                 
-                // 需要卖家提供
+                // 需要买家提供 - 使用productMaterials中ATTACHMENT和TEXT类型
                 _buildBuyerRequirementsSection(product),
                 
-                // 常见问题（折叠面板）
+                // 常见问题（折叠面板）- 使用productMaterials中PROBLEM类型
                 _buildFAQSection(product),
                 
                 // 案例展示
@@ -586,6 +586,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
       return const SizedBox.shrink();
     }
     
+    // 过滤出PROBLEM类型的材料作为常见问题
+    final faqMaterials = product.materials!.where((m) => m.type == 'PROBLEM').toList();
+    
+    if (faqMaterials.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
     return ExpansionTile(
       title: Text(
                       S.of(context).product_detail_faq,
@@ -595,7 +602,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                       ),
                     ),
       trailing: const Icon(Icons.keyboard_arrow_down),
-      children: product.materials!.map((material) => Padding(
+      children: faqMaterials.map((material) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -764,9 +771,18 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
     );
   }
 
-  // 需要卖家提供板块
+  // 需要卖家提供板块 - 使用productMaterials中的ATTACHMENT和TEXT类型
   Widget _buildBuyerRequirementsSection(ProductDetail product) {
-    if (product.buyerRequirements == null || product.buyerRequirements!.isEmpty) {
+    if (product.materials == null || product.materials!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
+    // 过滤出ATTACHMENT和TEXT类型的材料作为需要买家提供的内容
+    final requirementMaterials = product.materials!
+        .where((m) => m.type == 'ATTACHMENT' || m.type == 'TEXT')
+        .toList();
+    
+    if (requirementMaterials.isEmpty) {
       return const SizedBox.shrink();
     }
     
@@ -788,13 +804,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
             ),
           ),
           const SizedBox(height: 12),
-          ...product.buyerRequirements!.map((requirement) => Padding(
+          ...requirementMaterials.map((material) => Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
-                  _getRequirementIcon(requirement.type),
+                  _getMaterialIcon(material.type),
                   size: 20,
                   color: Colors.grey[700],
                 ),
@@ -804,14 +820,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        requirement.label,
+                        material.question,
                         style: const TextStyle(
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      if (requirement.description.isNotEmpty)
+                      if (material.answer != null && material.answer!.isNotEmpty)
                         Text(
-                          requirement.description,
+                          material.answer!,
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -820,21 +836,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                     ],
                   ),
                 ),
-                if (requirement.isRequired)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.red[100],
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: const Text(
-                      '必填',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.red,
-                      ),
-                    ),
-                  ),
               ],
             ),
           )),
@@ -843,21 +844,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
     );
   }
   
-  // 根据需求类型获取图标
-  IconData _getRequirementIcon(String type) {
+  // 根据材料类型获取图标
+  IconData _getMaterialIcon(String type) {
     switch (type) {
-      case 'text':
-        return Icons.text_fields;
-      case 'image':
-        return Icons.image;
-      case 'file':
+      case 'ATTACHMENT':
         return Icons.attach_file;
-      case 'contact':
-        return Icons.contact_phone;
-      case 'requirement':
-        return Icons.assignment;
-      case 'reference':
-        return Icons.link;
+      case 'TEXT':
+        return Icons.text_fields;
+      case 'PROBLEM':
+        return Icons.help_outline;
       default:
         return Icons.info_outline;
     }

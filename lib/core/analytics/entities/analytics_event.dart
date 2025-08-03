@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:equatable/equatable.dart';
 
 /// 用户行为分析事件实体
@@ -47,7 +49,10 @@ class AnalyticsEvent extends Equatable {
     if (path != null) json['path'] = path;
     if (businessId != null) json['businessId'] = businessId;
     if (feature != null) json['feature'] = feature;
-    if (deviceInfo != null) json['deviceInfo'] = deviceInfo;
+    // 后端期望 deviceInfo 是字符串类型，需要将对象序列化为 JSON 字符串
+    if (deviceInfo != null) {
+      json['deviceInfo'] = jsonEncode(deviceInfo);
+    }
     if (userSign != null) json['userSign'] = userSign;
     if (interval != null) json['interval'] = interval;
 

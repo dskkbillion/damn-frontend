@@ -55,8 +55,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         return AuthenticatedUserModel.fromJson(response.data);
       } else {
         print('登录失败: HTTP状态码 ${response.statusCode}, 业务状态码 ${response.data['code']}, 响应消息: ${response.data['msg']}');
-        throw ServerException(
-            message: '登录失败: ${response.data['msg']}');
+        String errorMsg = response.data['msg'] ?? '登录失败';
+        // 统一验证码相关错误信息
+        if (errorMsg.contains('验证码') || errorMsg.contains('code') || errorMsg.contains('Code')) {
+          errorMsg = '验证码已过期';
+        }
+        throw ServerException(message: errorMsg);
       }
     } on DioException catch (e) {
       print('DIO错误: ${e.message}');
@@ -65,8 +69,17 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (e.response != null) {
         print('错误响应状态码: ${e.response?.statusCode}');
         print('错误响应数据: ${e.response?.data}');
+        // 检查响应中是否有具体的错误信息
+        if (e.response?.data is Map && e.response?.data['msg'] != null) {
+          String errorMsg = e.response?.data['msg'];
+          // 统一验证码相关错误信息
+          if (errorMsg.contains('验证码') || errorMsg.contains('code') || errorMsg.contains('Code')) {
+            errorMsg = '验证码已过期';
+          }
+          throw ServerException(message: errorMsg);
+        }
       }
-      throw ServerException(message: '登录失败，网络或服务器错误: ${e.message}');
+      throw ServerException(message: '登录失败，网络或服务器错误');
     } on FormatException catch (e) {
       print('响应解析错误: ${e.toString()}');
       throw ServerException(message: '登录响应解析失败');

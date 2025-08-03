@@ -61,6 +61,9 @@ class Order extends Equatable {
   /// 自动提交材料截止时间（待提交状态）
   final DateTime? autoMaterialTime;
   
+  /// 自动接单时间（待接单状态）
+  final DateTime? autoOrderReceivinTime;
+  
   /// 发货时间戳（用于计算自动确认收货）
   final DateTime? deliveryTimestamp;
   
@@ -89,6 +92,7 @@ class Order extends Equatable {
     this.tenant,
     this.autoCancelTime,
     this.autoMaterialTime,
+    this.autoOrderReceivinTime,
     this.deliveryTimestamp,
     this.evaluate,
   });
@@ -111,6 +115,7 @@ class Order extends Equatable {
     Member? tenant,
     DateTime? autoCancelTime,
     DateTime? autoMaterialTime,
+    DateTime? autoOrderReceivinTime,
     DateTime? deliveryTimestamp,
     bool? evaluate,
   }) {
@@ -132,6 +137,7 @@ class Order extends Equatable {
       tenant: tenant ?? this.tenant,
       autoCancelTime: autoCancelTime ?? this.autoCancelTime,
       autoMaterialTime: autoMaterialTime ?? this.autoMaterialTime,
+      autoOrderReceivinTime: autoOrderReceivinTime ?? this.autoOrderReceivinTime,
       deliveryTimestamp: deliveryTimestamp ?? this.deliveryTimestamp,
       evaluate: evaluate ?? this.evaluate,
     );
@@ -156,6 +162,7 @@ class Order extends Equatable {
         tenant,
         autoCancelTime,
         autoMaterialTime,
+        autoOrderReceivinTime,
         deliveryTimestamp,
         evaluate,
       ];

@@ -412,6 +412,8 @@ class OrderItemCard extends StatelessWidget {
       case OrderStatus.awaitingSubmission:
       case OrderStatus.buyAwaitingSubmission:
         return order.autoMaterialTime != null;
+      case OrderStatus.awaitingStart:
+        return order.autoOrderReceivinTime != null;
       case OrderStatus.awaitingDelivery:
         // 显示交付天数
         final firstItem = order.items.isNotEmpty ? order.items.first : null;
@@ -431,6 +433,7 @@ class OrderItemCard extends StatelessWidget {
       case OrderStatus.awaitingPayment:
       case OrderStatus.awaitingSubmission:
       case OrderStatus.buyAwaitingSubmission:
+      case OrderStatus.awaitingStart:
       case OrderStatus.awaitingConfirmation:
         return Icons.access_time;
       case OrderStatus.awaitingDelivery:
@@ -458,6 +461,13 @@ class OrderItemCard extends StatelessWidget {
           final remaining = order.autoMaterialTime!.difference(DateTime.now());
           if (remaining.isNegative) return '已超时，请尽快提交';
           return '请在${_formatDuration(remaining)}内提交材料';
+        }
+        break;
+      case OrderStatus.awaitingStart:
+        if (order.autoOrderReceivinTime != null) {
+          final remaining = order.autoOrderReceivinTime!.difference(DateTime.now());
+          if (remaining.isNegative) return '卖家超时未接单';
+          return '卖家将在${_formatDuration(remaining)}内接单';
         }
         break;
       case OrderStatus.awaitingDelivery:
@@ -494,6 +504,9 @@ class OrderItemCard extends StatelessWidget {
       case OrderStatus.buyAwaitingSubmission:
         // 紧急状态使用错误色
         return colorScheme.errorContainer.withOpacity(0.3);
+      case OrderStatus.awaitingStart:
+        // 待接单使用主色
+        return colorScheme.primaryContainer.withOpacity(0.3);
       case OrderStatus.awaitingConfirmation:
       case OrderStatus.awaitingDelivery:
         // 一般提示使用主色
@@ -513,6 +526,7 @@ class OrderItemCard extends StatelessWidget {
       case OrderStatus.awaitingSubmission:
       case OrderStatus.buyAwaitingSubmission:
         return colorScheme.error;
+      case OrderStatus.awaitingStart:
       case OrderStatus.awaitingConfirmation:
       case OrderStatus.awaitingDelivery:
         return colorScheme.primary;
@@ -544,6 +558,8 @@ class OrderItemCard extends StatelessWidget {
       case OrderStatus.awaitingSubmission:
       case OrderStatus.buyAwaitingSubmission:
         return order.autoMaterialTime;
+      case OrderStatus.awaitingStart:
+        return order.autoOrderReceivinTime;
       case OrderStatus.awaitingConfirmation:
         // 自动确认收货时间（7天后）
         return order.deliveryTimestamp?.add(const Duration(days: 7));

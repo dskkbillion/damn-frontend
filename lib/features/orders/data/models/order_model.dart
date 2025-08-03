@@ -43,6 +43,7 @@ class OrderModel {
   // 自动处理时间
   final DateTime? autoCancelTime;
   final DateTime? autoMaterialTime;
+  final DateTime? autoOrderReceivinTime;
   final DateTime? deliveryTimestamp;
   // 是否已评价
   final bool? evaluate;
@@ -72,6 +73,7 @@ class OrderModel {
     this.tenant,
     this.autoCancelTime,
     this.autoMaterialTime,
+    this.autoOrderReceivinTime,
     this.deliveryTimestamp,
     this.evaluate,
   });
@@ -157,6 +159,7 @@ class OrderModel {
       tenant: parsedTenant,
       autoCancelTime: parseOptionalDateTime(json['autoCancelTime']?.toString()),
       autoMaterialTime: parseOptionalDateTime(json['autoMaterialTime']?.toString()),
+      autoOrderReceivinTime: parseOptionalDateTime(json['autoOrderReceivinTime']?.toString()),
       deliveryTimestamp: parseOptionalDateTime(json['deliveryTimestamp']?.toString()),
       evaluate: json['evaluate'] as bool?,
     );
@@ -205,6 +208,7 @@ class OrderModel {
       tenant: tenant?.toEntity(),
       autoCancelTime: autoCancelTime,
       autoMaterialTime: autoMaterialTime,
+      autoOrderReceivinTime: autoOrderReceivinTime,
       deliveryTimestamp: deliveryTimestamp,
       evaluate: evaluate,
     );

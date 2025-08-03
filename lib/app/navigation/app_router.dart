@@ -59,6 +59,7 @@ import 'package:dskk_flutter_refactor/features/orders/presentation/seller/bloc/s
 import 'package:dskk_flutter_refactor/features/orders/presentation/seller/pages/seller_order_list_page.dart'; // Seller Order List Page
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/notification_list_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/product_edit_page.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/pages/product_preview_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/product_management_page.dart'; // 导入商品管理页面
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_management/product_management_bloc.dart'; // 导入商品管理Bloc
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/auth_management_page.dart';
@@ -351,7 +352,17 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           name: 'sellerProductEdit',
           source: 'app_navigation_seller_non_shell',
         ),
-      ), 
+      ),
+      GoRoute(
+        path: SellerRoutes.productPreview,
+        pageBuilder: (context, state) => state.buildSmartPage(
+          ProductPreviewPage(
+            productId: state.pathParameters['id'],
+          ),
+          name: 'sellerProductPreview',
+          source: 'app_navigation_seller_non_shell',
+        ),
+      ),
       GoRoute(
         path: SellerRoutes.authentication, 
         pageBuilder: (context, state) => state.buildSmartPage(

@@ -23,10 +23,16 @@ class OrderStatusWidget extends StatelessWidget {
         statusColor = colorScheme.error;
         break;
       case OrderStatus.awaitingSubmission:
-      case OrderStatus.buyAwaitingSubmission:
-      case OrderStatus.awaitingStart:       // 这些状态统一显示为处理中？
-        statusText = '处理中';
+        statusText = '待提交';
         statusColor = Colors.orange;
+        break;
+      case OrderStatus.buyAwaitingSubmission:
+        statusText = '待重传';
+        statusColor = Colors.orange;
+        break;
+      case OrderStatus.awaitingStart:
+        statusText = '待接单';
+        statusColor = Colors.blue;
         break;
       case OrderStatus.awaitingDelivery: // 待发货
         statusText = '待发货';
