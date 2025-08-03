@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart' hide CarouselController;
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
@@ -22,9 +21,9 @@ class ProductDetailPage extends StatefulWidget {
   final String productId;
 
   const ProductDetailPage({
-    Key? key,
+    super.key,
     required this.productId,
-  }) : super(key: key);
+  });
 
   @override
   State<ProductDetailPage> createState() => _ProductDetailPageState();
@@ -242,6 +241,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                 // 购买按钮
                 _buildBuyButton(product),
                 
+                // 需要卖家提供
+                _buildBuyerRequirementsSection(product),
+                
                 // 常见问题（折叠面板）
                 _buildFAQSection(product),
                 
@@ -318,7 +320,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
+                          color: Colors.green.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Row(
@@ -557,7 +559,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
               'sellerId': product.sellerId,
               'productName': product.name,
               'price': variant.sellingPrice,
-              'imageUrl': product.images?.isNotEmpty == true ? product.images!.first : null,
+              'imageUrl': product.images.isNotEmpty ? product.images.first : null,
             },
           );
         },
@@ -622,6 +624,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
   }
 
   Widget _buildCaseShowcase(ProductDetail product) {
+    // 如果没有案例图片，不显示该板块
+    if (product.winImages == null || product.winImages!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
       child: Column(
@@ -632,21 +639,28 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              ),
             ),
+          ),
           const SizedBox(height: 12),
-          Container(
+          // 横向滚动的案例图片列表
+          SizedBox(
             height: 150,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Center(
-              child: Text(
-                S.of(context).product_detail_no_cases,
-                style: TextStyle(color: Colors.grey[600]),
-              ),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: product.winImages!.length,
+              itemBuilder: (context, index) {
+                return Container(
+                  width: 200,
+                  margin: const EdgeInsets.only(right: 12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    image: DecorationImage(
+                      image: NetworkImage(product.winImages![index]),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -748,6 +762,105 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
         ],
       ),
     );
+  }
+
+  // 需要卖家提供板块
+  Widget _buildBuyerRequirementsSection(ProductDetail product) {
+    if (product.buyerRequirements == null || product.buyerRequirements!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
+    return Container(
+      margin: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '需要买家提供',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...product.buyerRequirements!.map((requirement) => Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  _getRequirementIcon(requirement.type),
+                  size: 20,
+                  color: Colors.grey[700],
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        requirement.label,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      if (requirement.description.isNotEmpty)
+                        Text(
+                          requirement.description,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                if (requirement.isRequired)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.red[100],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      '必填',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          )),
+        ],
+      ),
+    );
+  }
+  
+  // 根据需求类型获取图标
+  IconData _getRequirementIcon(String type) {
+    switch (type) {
+      case 'text':
+        return Icons.text_fields;
+      case 'image':
+        return Icons.image;
+      case 'file':
+        return Icons.attach_file;
+      case 'contact':
+        return Icons.contact_phone;
+      case 'requirement':
+        return Icons.assignment;
+      case 'reference':
+        return Icons.link;
+      default:
+        return Icons.info_outline;
+    }
   }
 
   // 移除旧的方法，不再使用
