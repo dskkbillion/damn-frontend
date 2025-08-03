@@ -38,6 +38,8 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
   
   // 微信支付是否可用（上线前设置为false）
   static const bool _isWechatPaymentAvailable = false;
+  // Stripe支付是否可用
+  static const bool _isStripePaymentAvailable = true;
 
   @override
   void initState() {
@@ -265,6 +267,19 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                 subtitle: _isWechatPaymentAvailable ? null : '🚧 施工中，敬请期待',
               ),
               
+              const SizedBox(height: 12),
+              
+              // Stripe支付选项
+              _buildPaymentOption(
+                'stripe',
+                'Stripe支付',
+                null, // 没有Stripe logo图片，使用图标
+                Icons.credit_card,
+                Colors.purple,
+                enabled: _isStripePaymentAvailable,
+                subtitle: _isStripePaymentAvailable ? '国际信用卡支付' : '🚧 施工中，敬请期待',
+              ),
+              
               const SizedBox(height: 32),
               
               // 确认支付按钮
@@ -276,7 +291,11 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _isProcessing 
                         ? Colors.grey 
-                        : (_selectedPaymentMethod == 'wechat' ? Colors.green : Colors.blue),
+                        : (_selectedPaymentMethod == 'wechat' 
+                            ? Colors.green 
+                            : _selectedPaymentMethod == 'stripe'
+                                ? Colors.purple
+                                : Colors.blue),
                     foregroundColor: Colors.white,
                   ),
                   child: _isProcessing

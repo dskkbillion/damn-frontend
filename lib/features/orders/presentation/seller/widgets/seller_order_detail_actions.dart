@@ -297,7 +297,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
              } // If deliveryInfo is null, user canceled dialog - do nothing
             }, 
             style: filledStyle, 
-            child: const Text('去发货')
+            child: const Text('去交付')
             ));
         break;
       case OrderStatus.awaitingConfirmation:

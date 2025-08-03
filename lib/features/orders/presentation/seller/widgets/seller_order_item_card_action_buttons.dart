@@ -159,7 +159,7 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
             }
           }, 
           style: filledStyle, 
-          child: const Text('去发货')
+          child: const Text('去交付')
           ));
         buttons.add(ElevatedButton(
           onPressed: () async { // Make onPressed async
@@ -230,15 +230,6 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
           }, 
           style: outlineStyle, 
           child: const Text('删除记录')
-          ));
-        buttons.add(ElevatedButton(
-          onPressed: () {
-            print('[SellerButtons] Invite evaluation ${order.id}'); 
-            // Trigger the Invite event
-            BlocProvider.of<SellerOrderListBloc>(context).add(InviteEvaluationRequested(orderId: order.id));
-          }, 
-          style: filledStyle, 
-          child: const Text('邀请评价')
           ));
         break;
       case OrderStatus.canceled:
