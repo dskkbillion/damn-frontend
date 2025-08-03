@@ -498,18 +498,10 @@ class _ProductDetailContentState extends State<ProductDetailContent>
   }
 
   Widget _buildBuyerRequirementsSection() {
-    if (widget.product.materials == null || widget.product.materials!.isEmpty) {
-      return const SizedBox.shrink();
-    }
-    
     // 过滤出ATTACHMENT和TEXT类型的材料作为需要买家提供的内容
-    final requirementMaterials = widget.product.materials!
-        .where((m) => m.type == 'ATTACHMENT' || m.type == 'TEXT')
-        .toList();
-    
-    if (requirementMaterials.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    final requirementMaterials = widget.product.materials
+        ?.where((m) => m.type == 'ATTACHMENT' || m.type == 'TEXT')
+        .toList() ?? [];
     
     return ExpansionTile(
       title: const Text(
@@ -520,7 +512,20 @@ class _ProductDetailContentState extends State<ProductDetailContent>
         ),
       ),
       trailing: const Icon(Icons.keyboard_arrow_down),
-      children: requirementMaterials.map((material) => Padding(
+      children: requirementMaterials.isEmpty
+          ? [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  '卖家暂未设置需要买家提供的信息',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ]
+          : requirementMaterials.map((material) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -576,18 +581,10 @@ class _ProductDetailContentState extends State<ProductDetailContent>
   }
 
   Widget _buildFAQSection() {
-    if (widget.product.materials == null || widget.product.materials!.isEmpty) {
-      return const SizedBox.shrink();
-    }
-    
     // 过滤出PROBLEM类型的材料作为常见问题
-    final faqMaterials = widget.product.materials!
-        .where((m) => m.type == 'PROBLEM')
-        .toList();
-    
-    if (faqMaterials.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    final faqMaterials = widget.product.materials
+        ?.where((m) => m.type == 'PROBLEM')
+        .toList() ?? [];
     
     return ExpansionTile(
       title: Text(
@@ -598,7 +595,20 @@ class _ProductDetailContentState extends State<ProductDetailContent>
         ),
       ),
       trailing: const Icon(Icons.keyboard_arrow_down),
-      children: faqMaterials.map((material) => Padding(
+      children: faqMaterials.isEmpty
+          ? [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  '暂无常见问题',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ]
+          : faqMaterials.map((material) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

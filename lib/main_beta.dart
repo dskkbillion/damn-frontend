@@ -129,7 +129,8 @@ Future<void> main() async {
   print('[main_beta] ✅ BLoC分析观察者配置完成');
 
   // ==================== 清理存储状态 ====================
-  await _clearPreviousUserSession();
+  // 注释掉自动清理，让用户保持登录状态
+  // await _clearPreviousUserSession();
 
   // ==================== 应用配置 ====================
   print('[main_beta] ⚙️  配置应用设置...');

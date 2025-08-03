@@ -1,5 +1,8 @@
 part of 'seller_order_detail_bloc.dart';
 
+import '../../domain/entities/order_materials.dart';
+import '../../domain/entities/order_delivery.dart';
+
 abstract class SellerOrderDetailState extends Equatable {
   const SellerOrderDetailState();
 
@@ -22,10 +25,17 @@ class SellerOrderDetailLoading extends SellerOrderDetailState {
 /// State representing successfully loaded order details.
 class SellerOrderDetailLoadSuccess extends SellerOrderDetailState {
   final Order order;
-  const SellerOrderDetailLoadSuccess({required this.order});
+  final List<OrderMaterials>? materials;
+  final List<OrderDelivery>? deliveries;
+  
+  const SellerOrderDetailLoadSuccess({
+    required this.order,
+    this.materials,
+    this.deliveries,
+  });
 
   @override
-  List<Object?> get props => [order];
+  List<Object?> get props => [order, materials, deliveries];
 }
 
 /// State representing an error while loading order details.

@@ -582,16 +582,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
   }
 
   Widget _buildFAQSection(ProductDetail product) {
-    if (product.materials == null || product.materials!.isEmpty) {
-      return const SizedBox.shrink();
-    }
-    
     // 过滤出PROBLEM类型的材料作为常见问题
-    final faqMaterials = product.materials!.where((m) => m.type == 'PROBLEM').toList();
-    
-    if (faqMaterials.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    final faqMaterials = product.materials
+        ?.where((m) => m.type == 'PROBLEM')
+        .toList() ?? [];
     
     return ExpansionTile(
       title: Text(
@@ -602,7 +596,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                       ),
                     ),
       trailing: const Icon(Icons.keyboard_arrow_down),
-      children: faqMaterials.map((material) => Padding(
+      children: faqMaterials.isEmpty
+          ? [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  '暂无常见问题',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ]
+          : faqMaterials.map((material) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -773,18 +780,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
 
   // 需要卖家提供板块 - 使用productMaterials中的ATTACHMENT和TEXT类型
   Widget _buildBuyerRequirementsSection(ProductDetail product) {
-    if (product.materials == null || product.materials!.isEmpty) {
-      return const SizedBox.shrink();
-    }
-    
     // 过滤出ATTACHMENT和TEXT类型的材料作为需要买家提供的内容
-    final requirementMaterials = product.materials!
-        .where((m) => m.type == 'ATTACHMENT' || m.type == 'TEXT')
-        .toList();
-    
-    if (requirementMaterials.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    final requirementMaterials = product.materials
+        ?.where((m) => m.type == 'ATTACHMENT' || m.type == 'TEXT')
+        .toList() ?? [];
     
     return Container(
       margin: const EdgeInsets.all(16.0),
@@ -804,7 +803,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
             ),
           ),
           const SizedBox(height: 12),
-          ...requirementMaterials.map((material) => Padding(
+          if (requirementMaterials.isEmpty)
+            Text(
+              '卖家暂未设置需要买家提供的信息',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 14,
+              ),
+            )
+          else
+            ...requirementMaterials.map((material) => Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
