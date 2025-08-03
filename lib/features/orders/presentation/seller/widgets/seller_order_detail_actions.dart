@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get_it/get_it.dart';
@@ -271,7 +272,11 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
         break;
       case OrderStatus.awaitingDelivery:
          buttons.add(OutlinedButton(
-           onPressed: () => _showContactBuyerDialog(context), 
+           onPressed: () {
+             // 跳转到聊天列表页面
+             // TODO: 后续实现直接跳转到与买家关于该商品的聊天室
+             context.push('/chat');
+           }, 
            style: outlineStyle, 
            child: const Text('联系买家')
          ));
@@ -506,5 +511,6 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
       },
     );
   }
+  
 }
 

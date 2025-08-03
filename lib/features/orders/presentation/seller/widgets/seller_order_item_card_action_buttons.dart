@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
@@ -127,7 +129,15 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
         break;
       case OrderStatus.awaitingDelivery:
         // Seller needs to ship
-        buttons.add(OutlinedButton(onPressed: () { print('[SellerButtons] Contact buyer ${order.id}'); /* TODO: Implement contact */ }, style: outlineStyle, child: const Text('联系买家')));
+        buttons.add(OutlinedButton(
+          onPressed: () {
+            // 跳转到聊天列表页面
+            // TODO: 后续实现直接跳转到与买家关于该商品的聊天室
+            context.push('/chat');
+          }, 
+          style: outlineStyle, 
+          child: const Text('联系买家')
+        ));
         buttons.add(ElevatedButton(
           onPressed: () async { // Make onPressed async
             // Show confirmation dialog before delivering
@@ -160,37 +170,6 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
           }, 
           style: filledStyle, 
           child: const Text('去交付')
-          ));
-        buttons.add(ElevatedButton(
-          onPressed: () async { // Make onPressed async
-            // Show confirmation dialog before inviting evaluation
-            final confirmed = await showDialog<bool>(
-              context: context,
-              builder: (BuildContext dialogContext) {
-                return AlertDialog(
-                  title: const Text('邀请评价'),
-                  content: const Text('您确定要邀请买家评价此订单吗？'),
-                  actions: <Widget>[
-                    TextButton(
-                      child: const Text('取消'),
-                      onPressed: () => Navigator.of(dialogContext).pop(false),
-                    ),
-                    TextButton(
-                      child: const Text('确认邀请'),
-                      onPressed: () => Navigator.of(dialogContext).pop(true),
-                    ),
-                  ],
-                );
-              },
-            );
-            // If confirmed, trigger the event
-            if (confirmed == true) {
-              print('[SellerButtons] Invite evaluation ${order.id}'); 
-              BlocProvider.of<SellerOrderListBloc>(context).add(InviteEvaluationRequested(orderId: order.id));
-            }
-          }, 
-          style: filledStyle, 
-          child: const Text('邀请评价')
           ));
         break;
       case OrderStatus.awaitingConfirmation:

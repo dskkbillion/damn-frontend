@@ -151,11 +151,44 @@ class StripePaymentService implements IPaymentService {
 
   /// 启动支付URL
   Future<void> _launchPaymentUrl(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      throw Exception('无法打开支付页面: $url');
+    try {
+      print('[StripePaymentService] 尝试打开支付URL: $url');
+      final uri = Uri.parse(url);
+      
+      // 首先检查是否可以启动URL
+      final canLaunch = await canLaunchUrl(uri);
+      print('[StripePaymentService] canLaunchUrl结果: $canLaunch');
+      
+      if (canLaunch) {
+        // 尝试在外部浏览器中打开
+        final launched = await launchUrl(
+          uri, 
+          mode: LaunchMode.externalApplication,
+          webViewConfiguration: const WebViewConfiguration(
+            enableJavaScript: true,
+            enableDomStorage: true,
+          ),
+        );
+        print('[StripePaymentService] launchUrl结果: $launched');
+        
+        if (!launched) {
+          throw Exception('launchUrl返回false');
+        }
+      } else {
+        // 如果不能直接启动，尝试使用platformDefault模式
+        print('[StripePaymentService] 尝试使用platformDefault模式');
+        final launched = await launchUrl(
+          uri,
+          mode: LaunchMode.platformDefault,
+        );
+        
+        if (!launched) {
+          throw Exception('无法使用任何模式打开URL');
+        }
+      }
+    } catch (e) {
+      print('[StripePaymentService] 打开支付页面失败: $e');
+      throw Exception('无法打开支付页面: $url, 错误: $e');
     }
   }
 

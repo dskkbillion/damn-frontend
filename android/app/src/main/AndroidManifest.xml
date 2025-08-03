@@ -98,5 +98,14 @@
         </intent>
         <!-- 微信查询权限 -->
         <package android:name="com.tencent.mm" />
+        <!-- url_launcher需要的查询权限 -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="http" />
+        </intent>
     </queries>
 </manifest>

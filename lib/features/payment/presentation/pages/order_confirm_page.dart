@@ -93,6 +93,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
           setState(() {
             _isProcessing = false;
           });
+          dismissLoadingDialog(context); // 关闭加载对话框
         }
       },
       child: Scaffold(
