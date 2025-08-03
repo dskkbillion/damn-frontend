@@ -13,6 +13,8 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_crea
 import 'package:dskk_flutter_refactor/features/orders/domain/repositories/i_order_repository.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_evaluation_use_case.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_requirements_use_case.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_materials.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_delivery.dart';
 import 'package:injectable/injectable.dart' hide Order;
 
 // TODO: Consider if @LazySingleton or @Injectable is needed for this mock in preview
@@ -428,6 +430,134 @@ class MockSellerOrderRepository implements IOrderRepository {
       orderId: mockOrderId,
       orderInfo: mockOrderInfo,
       totalAmount: price * quantity,
+    ));
+  }
+  
+  @override
+  Future<Either<Failure, List<OrderMaterials>>> getOrderMaterials(int orderId) async {
+    print('[MockSellerOrderRepository] Getting materials for order: $orderId');
+    await Future.delayed(const Duration(milliseconds: 300)); // 模拟网络延迟
+    
+    // 为待接单及之后的订单生成模拟材料数据
+    final order = _mockSellerOrders.firstWhere(
+      (o) => o.id == orderId,
+      orElse: () => _mockSellerOrders.first,
+    );
+    
+    if (order.state == OrderStatus.awaitingStart ||
+        order.state == OrderStatus.awaitingDelivery ||
+        order.state == OrderStatus.awaitingConfirmation ||
+        order.state == OrderStatus.awaitingEvaluation ||
+        order.state == OrderStatus.orderCompleted) {
+      
+      // 创建模拟材料数据
+      final materials = [
+        OrderMaterials(
+          id: 1,
+          productId: order.items.first.productId,
+          orderId: orderId,
+          features: [
+            const MaterialFeature(
+              question: '您的项目名称是什么？',
+              answer: '多少看看电商平台重构项目',
+            ),
+            const MaterialFeature(
+              question: '主要功能需求描述',
+              answer: '需要实现订单管理、用户管理、商品管理等核心功能，支持买家和卖家双端操作',
+            ),
+            const MaterialFeature(
+              question: '期望的完成时间',
+              answer: '2周内完成第一版',
+            ),
+          ],
+          files: [
+            'project_requirements.pdf',
+            'ui_design_v2.sketch',
+            'logo_assets.zip',
+          ],
+          createdAt: DateTime.now().subtract(const Duration(hours: 2)),
+          updatedAt: DateTime.now().subtract(const Duration(hours: 2)),
+        ),
+      ];
+      
+      return Right(materials);
+    }
+    
+    // 其他状态返回空列表
+    return const Right([]);
+  }
+  
+  @override
+  Future<Either<Failure, List<OrderDelivery>>> getOrderDeliveries(int orderId) async {
+    print('[MockSellerOrderRepository] Getting deliveries for order: $orderId');
+    await Future.delayed(const Duration(milliseconds: 300)); // 模拟网络延迟
+    
+    // 为已发货及之后的订单生成模拟交付数据
+    final order = _mockSellerOrders.firstWhere(
+      (o) => o.id == orderId,
+      orElse: () => _mockSellerOrders.first,
+    );
+    
+    if (order.state == OrderStatus.awaitingConfirmation ||
+        order.state == OrderStatus.awaitingEvaluation ||
+        order.state == OrderStatus.orderCompleted) {
+      
+      // 创建模拟交付数据
+      final deliveries = [
+        OrderDelivery(
+          id: 1,
+          orderId: orderId,
+          content: '已完成UI设计初稿，包含首页、订单列表、详情页等核心页面设计',
+          files: [
+            'ui_design_final.sketch',
+            'design_assets.zip',
+            'style_guide.pdf',
+          ],
+          createdAt: DateTime.now().subtract(const Duration(hours: 1)),
+        ),
+      ];
+      
+      return Right(deliveries);
+    }
+    
+    // 其他状态返回空列表
+    return const Right([]);
+  }
+  
+  @override
+  Future<Either<Failure, OrderMaterials>> getOrderMaterialById(int materialId) async {
+    print('[MockSellerOrderRepository] Getting material by id: $materialId');
+    await Future.delayed(const Duration(milliseconds: 300)); // 模拟网络延迟
+    
+    // 返回模拟的材料数据
+    return Right(OrderMaterials(
+      id: materialId,
+      productId: 2003,
+      orderId: 640,
+      features: [
+        const MaterialFeature(
+          question: '您的项目名称是什么？',
+          answer: '多少看看电商平台重构项目',
+        ),
+      ],
+      files: ['project_requirements.pdf'],
+      createdAt: DateTime.now().subtract(const Duration(hours: 2)),
+      updatedAt: DateTime.now().subtract(const Duration(hours: 2)),
+    ));
+  }
+  
+  @override
+  Future<Either<Failure, OrderDelivery>> getOrderDeliveryById(int deliveryId) async {
+    print('[MockSellerOrderRepository] Getting delivery by id: $deliveryId');
+    await Future.delayed(const Duration(milliseconds: 300)); // 模拟网络延迟
+    
+    // 返回模拟的交付数据
+    return Right(OrderDelivery(
+      id: deliveryId,
+      orderId: 640,
+      content: '已完成UI设计初稿',
+      files: ['ui_design_final.sketch'],
+      createdAt: DateTime.now().subtract(const Duration(hours: 1)),
     ));
   }
 }

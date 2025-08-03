@@ -51,95 +51,11 @@ class SellerDynamicContentArea extends StatelessWidget {
 
   /// Builds content for the 'Awaiting Delivery' state.
   Widget _buildAwaitingDeliveryContent(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-    final bool hasRemarks = order.buyerRemark != null && order.buyerRemark!.isNotEmpty;
-    // Assume an attachment field exists - replace with actual field name later
-    final List<Map<String, String>> buyerAttachments = []; // Placeholder - GET FROM order.buyerAttachments LATER
-    final bool hasAttachments = buyerAttachments.isNotEmpty;
-
-    // Build content sections conditionally
-    List<Widget> contentWidgets = [];
-
-    // Section 1: Buyer Remarks
-    if (hasRemarks) {
-      contentWidgets.add(_buildSectionHeader(context, Icons.notes_rounded, '买家备注'));
-      contentWidgets.add(Padding(
-         padding: const EdgeInsets.only(top: 8.0, bottom: 16.0), // Add bottom padding
-         child: Text(order.buyerRemark!, style: textTheme.bodyMedium),
-      ));
-    }
-
-    // Section 2: Buyer Attachments (Based on assumed field)
-    if (hasAttachments) {
-        contentWidgets.add(_buildSectionHeader(context, Icons.attachment_rounded, '买家附件'));
-        contentWidgets.addAll(
-           buyerAttachments.map((attachment) => _buildAttachmentTile(context, attachment)).toList()
-        );
-        contentWidgets.add(const SizedBox(height: 8)); // Padding after last attachment
-    }
-
-    // If no remarks and no attachments, show nothing for this state in dynamic area
-    if (contentWidgets.isEmpty) {
-       return const SizedBox.shrink();
-    }
-
-    // Combine sections in a Card
-    return Card(
-       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-       elevation: 0,
-       shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.circular(12.0),
-         side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3))
-       ),
-       child: Padding(
-         padding: const EdgeInsets.all(16.0),
-         child: Column(
-           crossAxisAlignment: CrossAxisAlignment.start,
-           children: contentWidgets,
-         ),
-       ),
-    );
+    // 买家材料现在在 SellerOrderMaterialsSection 中显示
+    // 这里可以显示其他特定于"待交付"状态的内容
+    return const SizedBox.shrink();
   }
 
-  // Helper widget for section headers
-  Widget _buildSectionHeader(BuildContext context, IconData icon, String title) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: Theme.of(context).colorScheme.secondary),
-        const SizedBox(width: 8),
-        Text(title, style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
-      ],
-    );
-  }
-
-  // Helper widget to display a single attachment
-  Widget _buildAttachmentTile(BuildContext context, Map<String, String> attachment) {
-    final String name = attachment['name'] ?? '未知文件';
-    final String? url = attachment['url']; // URL might be null
-
-    return ListTile(
-      leading: Icon(Icons.insert_drive_file_outlined, color: Theme.of(context).colorScheme.primary),
-      title: Text(name, style: Theme.of(context).textTheme.bodyMedium),
-      dense: true,
-      visualDensity: VisualDensity.compact,
-      contentPadding: EdgeInsets.zero,
-      onTap: url != null ? () {
-        // TODO: Implement file download/preview functionality using the url
-        print('Tapped attachment: $name, URL: $url');
-         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('查看附件功能待实现: $name')),
-          );
-        // Example using url_launcher:
-        // if (await canLaunchUrl(Uri.parse(url))) {
-        //   await launchUrl(Uri.parse(url));
-        // } else {
-        //   print('Could not launch $url');
-        // }
-      } : null, // Disable tap if no URL
-      trailing: url != null ? const Icon(Icons.download_for_offline_outlined, size: 20) : null,
-    );
-  }
 
   /// Builds content for the 'Awaiting Confirmation' state.
   Widget _buildAwaitingConfirmationContent(BuildContext context) {

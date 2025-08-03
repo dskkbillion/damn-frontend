@@ -294,6 +294,7 @@ class OrdersDI {
           sl<RejectOrderUseCase>(),
           sl<DeliverOrderUseCase>(),
           sl<DeleteSellerRecordUseCase>(),
+          sl<IOrderRepository>(),
         )
       );
       print('[OrdersDI] 已注册 SellerOrderDetailBloc');

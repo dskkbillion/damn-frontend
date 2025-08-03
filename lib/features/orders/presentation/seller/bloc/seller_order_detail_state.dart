@@ -1,8 +1,5 @@
 part of 'seller_order_detail_bloc.dart';
 
-import '../../domain/entities/order_materials.dart';
-import '../../domain/entities/order_delivery.dart';
-
 abstract class SellerOrderDetailState extends Equatable {
   const SellerOrderDetailState();
 

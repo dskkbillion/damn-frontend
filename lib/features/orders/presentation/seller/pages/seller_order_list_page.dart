@@ -27,7 +27,6 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
   final List<Tab> _tabs = const [
     Tab(text: '全部'),        // 所有订单
     Tab(text: '待接单'),      // 等待卖家确认接单
-    Tab(text: '待提交'),      // 等待卖家提交要求
     Tab(text: '待发货'),      // 等待卖家发货/交付
     Tab(text: '待确认收货'),  // 等待买家确认收货
     Tab(text: '待评价'),      // 等待买家评价
@@ -39,7 +38,6 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
   final List<OrderStatus> _tabStatuses = [
     OrderStatus.unknown,              // 全部
     OrderStatus.awaitingStart,        // 待接单
-    OrderStatus.awaitingSubmission,   // 待提交
     OrderStatus.awaitingDelivery,     // 待发货
     OrderStatus.awaitingConfirmation, // 待确认收货
     OrderStatus.awaitingEvaluation,   // 待评价
@@ -349,6 +347,7 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
                       final order = ordersToShow[index];
                       return SellerOrderItemCard(
                           order: order,
+                          hasBuyerMaterials: _checkHasBuyerMaterials(order),
                           onTap: () {
                             // Navigate to the seller detail page using push instead of go
                             context.push('/seller/orders/${order.id}'); 
@@ -461,6 +460,15 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
     if (awaitingDelivery > 0) parts.add('$awaitingDelivery个待发货');
     
     return parts.join('、');
+  }
+  
+  /// 检查订单是否有买家提供的材料
+  /// 这是一个简化的实现，基于订单状态和买家备注判断
+  /// 在实际生产环境中，应该通过API或State获取实际的材料数据
+  bool _checkHasBuyerMaterials(Order order) {
+    // 简单判断：如果有买家备注，则认为有材料
+    // TODO: 后续应该从实际的材料数据判断
+    return order.buyerRemark != null && order.buyerRemark!.isNotEmpty;
   }
 }
 

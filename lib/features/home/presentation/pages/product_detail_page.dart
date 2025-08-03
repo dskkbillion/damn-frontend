@@ -588,6 +588,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
         .toList() ?? [];
     
     return ExpansionTile(
+      initiallyExpanded: true, // 默认展开
       title: Text(
                       S.of(context).product_detail_faq,
                       style: const TextStyle(

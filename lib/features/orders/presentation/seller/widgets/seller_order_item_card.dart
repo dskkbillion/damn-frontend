@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart'; // Import GoRouter
 
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_status_widget.dart';
 // Import the new seller buttons widget
 import 'seller_order_item_card_action_buttons.dart';
@@ -10,8 +11,9 @@ import 'seller_order_item_card_action_buttons.dart';
 class SellerOrderItemCard extends StatelessWidget {
   final Order order;
   final VoidCallback? onTap; // 点击卡片的回调 (导航到详情)
+  final bool hasBuyerMaterials; // 是否有买家提供的材料
 
-  const SellerOrderItemCard({super.key, required this.order, this.onTap});
+  const SellerOrderItemCard({super.key, required this.order, this.onTap, this.hasBuyerMaterials = false});
 
   @override
   Widget build(BuildContext context) {
@@ -56,11 +58,45 @@ class SellerOrderItemCard extends StatelessWidget {
                 children: [
                   // Display BUYER name from shipping address
                   Expanded( // Use Expanded to prevent overflow if name is long
-                    child: Text(
-                      // Use recipientName from the shipping address
-                      '买家: ${order.shippingAddress.recipientName}', 
-                      style: textTheme.bodySmall?.copyWith(color: colorScheme.secondary),
-                       overflow: TextOverflow.ellipsis, // Prevent overflow
+                    child: Row(
+                      children: [
+                        Text(
+                          // Use recipientName from the shipping address
+                          '买家: ${order.shippingAddress.recipientName}', 
+                          style: textTheme.bodySmall?.copyWith(color: colorScheme.secondary),
+                          overflow: TextOverflow.ellipsis, // Prevent overflow
+                        ),
+                        // 如果有买家材料且订单状态适合显示
+                        if (hasBuyerMaterials && _shouldShowMaterials(order.state)) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.blue[50],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.blue[200]!),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.folder_outlined,
+                                  size: 12,
+                                  color: Colors.blue[600],
+                                ),
+                                const SizedBox(width: 2),
+                                Text(
+                                  '含材料',
+                                  style: textTheme.bodySmall?.copyWith(
+                                    fontSize: 10,
+                                    color: Colors.blue[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                   const SizedBox(width: 8), // Add some space
@@ -161,5 +197,16 @@ class SellerOrderItemCard extends StatelessWidget {
         ),
       ),
     );
+  }
+  
+  /// 判断是否应该显示买家材料标签
+  bool _shouldShowMaterials(OrderStatus status) {
+    return status == OrderStatus.awaitingStart ||
+        status == OrderStatus.awaitingDelivery ||
+        status == OrderStatus.awaitingConfirmation ||
+        status == OrderStatus.awaitingEvaluation ||
+        status == OrderStatus.orderCompleted ||
+        status == OrderStatus.afterSale ||
+        status == OrderStatus.applyForRefuse;
   }
 } 

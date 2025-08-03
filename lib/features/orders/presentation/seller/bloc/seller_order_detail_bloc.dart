@@ -15,6 +15,8 @@ import 'package:dskk_flutter_refactor/features/orders/domain/usecases/deliver_or
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/delete_seller_record_use_case.dart';
 // Import Params classes needed
 import 'package:dskk_flutter_refactor/features/orders/domain/repositories/i_order_repository.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_materials.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_delivery.dart';
 
 part 'seller_order_detail_event.dart';
 part 'seller_order_detail_state.dart';
@@ -29,6 +31,7 @@ class SellerOrderDetailBloc extends Bloc<SellerOrderDetailEvent, SellerOrderDeta
   // 移除邀请评价UseCase
   // final InviteEvaluationUseCase _inviteEvaluationUseCase;
   final DeleteSellerRecordUseCase _deleteSellerRecordUseCase;
+  final IOrderRepository _orderRepository;
 
   SellerOrderDetailBloc(
     this._getOrderDetailUseCase,
@@ -38,6 +41,7 @@ class SellerOrderDetailBloc extends Bloc<SellerOrderDetailEvent, SellerOrderDeta
     this._deliverOrderUseCase,
     // this._inviteEvaluationUseCase,
     this._deleteSellerRecordUseCase,
+    this._orderRepository,
   ) : super(SellerOrderDetailInitial()) {
     on<LoadSellerOrderDetail>(_onLoadSellerOrderDetail);
     // Register handlers for seller actions
@@ -57,12 +61,35 @@ class SellerOrderDetailBloc extends Bloc<SellerOrderDetailEvent, SellerOrderDeta
   ) async {
     emit(SellerOrderDetailLoading(loadingOrderId: event.orderId));
     final result = await _getOrderDetailUseCase(event.orderId);
-    result.fold(
-      (failure) => emit(SellerOrderDetailLoadFailure(
+    
+    await result.fold(
+      (failure) async => emit(SellerOrderDetailLoadFailure(
         failedOrderId: event.orderId,
         message: _mapFailureToMessage(failure),
       )),
-      (order) => emit(SellerOrderDetailLoadSuccess(order: order)),
+      (order) async {
+        // 获取订单材料
+        List<OrderMaterials>? materials;
+        final materialsResult = await _orderRepository.getOrderMaterials(event.orderId);
+        materialsResult.fold(
+          (failure) => print('Failed to load materials: ${_mapFailureToMessage(failure)}'),
+          (data) => materials = data,
+        );
+        
+        // 获取交付内容
+        List<OrderDelivery>? deliveries;
+        final deliveriesResult = await _orderRepository.getOrderDeliveries(event.orderId);
+        deliveriesResult.fold(
+          (failure) => print('Failed to load deliveries: ${_mapFailureToMessage(failure)}'),
+          (data) => deliveries = data,
+        );
+        
+        emit(SellerOrderDetailLoadSuccess(
+          order: order,
+          materials: materials,
+          deliveries: deliveries,
+        ));
+      },
     );
   }
 
