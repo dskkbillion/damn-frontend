@@ -223,12 +223,13 @@ class OrderItemCard extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                order.tenant?.nickname ?? '卖家',
-                                style: textTheme.bodyMedium,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                              if (order.tenant?.nickname != null && order.tenant!.nickname!.isNotEmpty)
+                                Text(
+                                  order.tenant!.nickname!,
+                                  style: textTheme.bodyMedium,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               if (order.tenant?.shopName != null && order.tenant!.shopName!.isNotEmpty)
                                 Text(
                                   order.tenant!.shopName!,

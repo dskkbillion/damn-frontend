@@ -90,14 +90,15 @@ class SellerOrderItemCard extends StatelessWidget {
                             ),
                           ),
                         // 买家昵称
-                        Expanded(
-                          child: Text(
-                            order.buyer?.nickname ?? '买家',
-                            style: textTheme.bodyMedium,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        if (order.buyer?.nickname != null && order.buyer!.nickname!.isNotEmpty)
+                          Expanded(
+                            child: Text(
+                              order.buyer!.nickname!,
+                              style: textTheme.bodyMedium,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
                         // 如果有买家材料且订单状态适合显示
                         if (hasBuyerMaterials && _shouldShowMaterials(order.state)) ...[
                           const SizedBox(width: 8),

@@ -717,6 +717,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           final productId = int.parse(state.pathParameters['id'] ?? '0');
           final Map<String, dynamic> extra = state.extra as Map<String, dynamic>? ?? {};
           
+          print('[Router] productPaymentConfirm - productId: $productId, extra: $extra');
+          
           return state.buildSmartPage(
             BlocProvider(
               create: (_) => getIt<PaymentBloc>(),
