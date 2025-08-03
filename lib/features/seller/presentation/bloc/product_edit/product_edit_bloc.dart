@@ -738,6 +738,41 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     
     emit(state.copyWithSubmitting());
     
+    // 转换qaList和buyerInfoItems为productMaterials
+    final List<ProductMaterial> materials = [];
+    
+    // 转换qaList为PROBLEM类型的materials
+    if (state.formData.qaList.isNotEmpty) {
+      int materialId = 1;
+      for (final qa in state.formData.qaList) {
+        materials.add(ProductMaterial(
+          id: materialId++,
+          question: qa['question'] ?? '',
+          answer: qa['answer'] ?? '',
+          type: 'PROBLEM',
+        ));
+      }
+    }
+    
+    // 转换buyerInfoItems为ATTACHMENT或TEXT类型的materials
+    if (state.formData.buyerInfoItems.isNotEmpty) {
+      int materialId = 1000; // 从1000开始，避免与QA的ID冲突
+      for (final item in state.formData.buyerInfoItems) {
+        final type = item['type'] ?? 'text';
+        String materialType = 'TEXT';
+        if (type == 'file' || type == 'image') {
+          materialType = 'ATTACHMENT';
+        }
+        
+        materials.add(ProductMaterial(
+          id: materialId++,
+          question: item['label'] ?? '',
+          answer: item['description'],
+          type: materialType,
+        ));
+      }
+    }
+    
     if (state.isCreateMode) {
       // 创建商品
       try {
@@ -749,7 +784,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
           images: state.uploadedImageUrls.join(','), // 使用已上传的URL
           categoryId: state.formData.categoryId,
           variants: state.formData.variants,
-          productMaterials: state.formData.productMaterials,
+          productMaterials: materials, // 使用转换后的materials
           detailImages: state.uploadedDetailImageUrls.isNotEmpty ? state.uploadedDetailImageUrls.join(',') : null,
           detailContent: state.formData.detailContent.isNotEmpty ? state.formData.detailContent : null,
         );
@@ -787,7 +822,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
           images: state.uploadedImageUrls.isNotEmpty ? state.uploadedImageUrls.join(',') : null,
           categoryId: state.formData.categoryId,
           variants: state.formData.variants,
-          productMaterials: state.formData.productMaterials,
+          productMaterials: materials, // 使用转换后的materials
           detailImages: state.uploadedDetailImageUrls.isNotEmpty ? state.uploadedDetailImageUrls.join(',') : null,
           detailContent: state.formData.detailContent.isNotEmpty ? state.formData.detailContent : null,
         );
@@ -894,6 +929,41 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
         }
       }
       
+      // 转换qaList和buyerInfoItems为productMaterials
+      final List<ProductMaterial> materials = [];
+      
+      // 转换qaList为PROBLEM类型的materials
+      if (state.formData.qaList.isNotEmpty) {
+        int materialId = 1;
+        for (final qa in state.formData.qaList) {
+          materials.add(ProductMaterial(
+            id: materialId++,
+            question: qa['question'] ?? '',
+            answer: qa['answer'] ?? '',
+            type: 'PROBLEM',
+          ));
+        }
+      }
+      
+      // 转换buyerInfoItems为ATTACHMENT或TEXT类型的materials
+      if (state.formData.buyerInfoItems.isNotEmpty) {
+        int materialId = 1000; // 从1000开始，避免与QA的ID冲突
+        for (final item in state.formData.buyerInfoItems) {
+          final type = item['type'] ?? 'text';
+          String materialType = 'TEXT';
+          if (type == 'file' || type == 'image') {
+            materialType = 'ATTACHMENT';
+          }
+          
+          materials.add(ProductMaterial(
+            id: materialId++,
+            question: item['label'] ?? '',
+            answer: item['description'] ?? '',
+            type: materialType,
+          ));
+        }
+      }
+      
       // 创建草稿参数 - 使用新的可选参数构造方式
       final params = SaveProductDraftParams(
         name: state.formData.name,
@@ -903,7 +973,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
         detailImageUrls: finalDetailUrls,
         categoryId: state.formData.categoryId,
         variants: state.formData.variants,
-        productMaterials: state.formData.productMaterials,
+        productMaterials: materials, // 使用转换后的materials
         productId: state.product?.id,
       );
       
