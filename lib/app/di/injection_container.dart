@@ -63,22 +63,10 @@ import 'package:dskk_flutter_refactor/features/seller/domain/repositories/i_sell
 import '../../features/payment/presentation/bloc/payment_bloc.dart';
 import '../../features/orders/domain/usecases/create_order_use_case.dart';
 import '../../core/payment/services/payment_service_factory.dart';
+import '../../features/payment/di/payment_di.dart';
 
 final getIt = GetIt.instance;
 
-// 初始化函数，用于替代generated文件中的init函数
-Future<void> configurePaymentDependencies() async {
-  // 注册PaymentBloc
-  if (!getIt.isRegistered<PaymentBloc>()) {
-    getIt.registerFactory<PaymentBloc>(() => PaymentBloc(
-          createOrderUseCase: getIt<CreateOrderUseCase>(),
-          paymentServiceFactory: getIt<PaymentServiceFactory>(),
-        ));
-    print('[DI] Registered PaymentBloc');
-  } else {
-    print('[DI] PaymentBloc already registered, skipping registration');
-  }
-}
 
 // 注册ProfilePreloader服务
 Future<void> registerProfilePreloaderService() async {
@@ -142,8 +130,14 @@ Future<void> configureDependencies({required String backendBaseUrl}) async {
   }
   
   // 注册支付模块依赖
-  await configurePaymentDependencies();
-  print('[DI] Payment dependencies initialization complete.');
+  try {
+    print('[DI] Starting Payment module initialization...');
+    await PaymentDI.init(getIt);
+    print('[DI] Payment module dependencies initialization complete.');
+  } catch (e) {
+    print('[DI] Failed to initialize Payment module: $e');
+    // 不抛出异常，允许应用继续启动，但记录错误信息
+  }
   
   // 注册卖家模块依赖
   try {

@@ -317,6 +317,8 @@
     },
     "home_retry": "重试",
     "home_end_of_list": "已经到底了",
+    "home_no_content": "暂无推荐内容",
+    "home_pull_to_refresh": "下拉刷新获取推荐内容",
     "home_banner_clicked": "点击了轮播图: {targetType} - {targetValue}",
     "@home_banner_clicked": {
       "placeholders": {

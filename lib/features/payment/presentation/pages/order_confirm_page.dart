@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // For Clipboard
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart'; // For launchUrl
 
 import '../../../../core/widgets/custom_loading_dialog.dart';
 import '../bloc/payment_bloc.dart';
@@ -35,15 +37,37 @@ class OrderConfirmPage extends StatefulWidget {
 class _OrderConfirmPageState extends State<OrderConfirmPage> {
   String _selectedPaymentMethod = 'alipay'; // 默认选择支付宝
   bool _isProcessing = false; // 防重复提交标志
+  bool _isLoadingDialogShowing = false; // 跟踪加载对话框状态
   
   // 微信支付是否可用（上线前设置为false）
   static const bool _isWechatPaymentAvailable = false;
   // Stripe支付是否可用
   static const bool _isStripePaymentAvailable = true;
+  
+  // 计算美元金额（假设汇率为7.2）
+  double get _usdAmount => (widget.price * widget.quantity) / 7.2;
+  
+  @override
+  void dispose() {
+    print('[OrderConfirmPage] dispose() called');
+    // 如果有对话框显示，确保关闭它
+    if (_isLoadingDialogShowing && mounted) {
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
+    print('[OrderConfirmPage] initState() called');
+    print('[OrderConfirmPage] productId: ${widget.productId}');
+    print('[OrderConfirmPage] variantId: ${widget.variantId}');
+    print('[OrderConfirmPage] quantity: ${widget.quantity}');
+    print('[OrderConfirmPage] sellerId: ${widget.sellerId}');
+    print('[OrderConfirmPage] price: ${widget.price}');
+    print('[OrderConfirmPage] productName: ${widget.productName}');
+    
     context.read<PaymentBloc>().add(ResetPaymentEvent());
     
     // 如果微信支付不可用且当前选择的是微信支付，自动切换到支付宝
@@ -60,18 +84,18 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
           setState(() {
             _isProcessing = true;
           });
-          showLoadingDialog(context, message: '创建订单中...');
+          _showLoadingDialog('创建订单中...');
         } else if (state is PayingState) {
           setState(() {
             _isProcessing = true;
           });
-          dismissLoadingDialog(context);
-          showLoadingDialog(context, message: '支付中...');
+          _dismissLoadingDialog();
+          _showLoadingDialog('支付中...');
         } else if (state is PaymentCompletedState || state is PaymentFailedState) {
           setState(() {
             _isProcessing = false;
           });
-          dismissLoadingDialog(context);
+          _dismissLoadingDialog();
           
           // 跳转到支付结果页面
           final params = <String, String>{
@@ -93,27 +117,107 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
           setState(() {
             _isProcessing = false;
           });
-          dismissLoadingDialog(context); // 关闭加载对话框
+          // 不需要调用 dismissLoadingDialog，因为可能没有对话框显示
         } else if (state is ExternalPaymentProcessingState) {
           // 外部支付处理中（如Stripe）
           setState(() {
             _isProcessing = false;
           });
-          dismissLoadingDialog(context); // 关闭加载对话框
+          _dismissLoadingDialog(); // 关闭加载对话框
           
-          // 显示提示信息
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('正在跳转到支付页面，请在浏览器中完成支付'),
-              duration: const Duration(seconds: 3),
-              action: SnackBarAction(
-                label: '查看订单',
-                onPressed: () {
-                  // 跳转到订单详情页
-                  context.go('/orders?status=awaitingPayment');
-                },
-              ),
-            ),
+          print('[OrderConfirmPage] 收到ExternalPaymentProcessingState, URL: ${state.paymentUrl}');
+          
+          // 显示支付链接对话框
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext dialogContext) {
+              return AlertDialog(
+                title: const Text('信用卡支付'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('支付链接已准备就绪'),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: const [
+                          Icon(Icons.info_outline, size: 16, color: Colors.orange),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '注意：信用卡支付将以美元结算，具体汇率以银行为准',
+                              style: TextStyle(fontSize: 12, color: Colors.orange),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text('如果浏览器没有自动打开，请选择以下操作：', style: TextStyle(fontSize: 14, color: Colors.grey)),
+                    const SizedBox(height: 16),
+                    // 显示支付URL（截断显示）
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        state.paymentUrl.length > 50 
+                          ? '${state.paymentUrl.substring(0, 50)}...' 
+                          : state.paymentUrl,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () async {
+                      // 尝试再次打开URL
+                      try {
+                        final uri = Uri.parse(state.paymentUrl);
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      } catch (e) {
+                        print('[OrderConfirmPage] 手动打开URL失败: $e');
+                      }
+                      Navigator.of(dialogContext).pop();
+                    },
+                    child: const Text('打开链接'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop();
+                      // 复制链接到剪贴板
+                      Clipboard.setData(ClipboardData(text: state.paymentUrl));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('支付链接已复制到剪贴板'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                    child: const Text('复制链接'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop();
+                      // 跳转到订单列表
+                      context.go('/orders?status=awaitingPayment');
+                    },
+                    child: const Text('查看订单'),
+                  ),
+                ],
+              );
+            },
           );
         }
       },
@@ -299,7 +403,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                 Icons.credit_card,
                 Colors.purple,
                 enabled: _isStripePaymentAvailable,
-                subtitle: _isStripePaymentAvailable ? '支持Visa、MasterCard等' : '🚧 施工中，敬请期待',
+                subtitle: _isStripePaymentAvailable ? '支持Visa、MasterCard等（美元结算）' : '🚧 施工中，敬请期待',
               ),
               
               const SizedBox(height: 32),
@@ -343,7 +447,9 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                           ],
                         )
                       : Text(
-                          '确认支付 ￥${(widget.price * widget.quantity).toStringAsFixed(2)}',
+                          _selectedPaymentMethod == 'stripe' 
+                            ? '确认支付 ￥${(widget.price * widget.quantity).toStringAsFixed(2)} (≈\$${_usdAmount.toStringAsFixed(2)})'
+                            : '确认支付 ￥${(widget.price * widget.quantity).toStringAsFixed(2)}',
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -477,6 +583,22 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
         ),
       ),
     );
+  }
+
+  /// 显示加载对话框
+  void _showLoadingDialog(String message) {
+    if (!_isLoadingDialogShowing) {
+      _isLoadingDialogShowing = true;
+      showLoadingDialog(context, message: message);
+    }
+  }
+  
+  /// 关闭加载对话框
+  void _dismissLoadingDialog() {
+    if (_isLoadingDialogShowing && mounted) {
+      _isLoadingDialogShowing = false;
+      dismissLoadingDialog(context);
+    }
   }
 
   /// 确认订单

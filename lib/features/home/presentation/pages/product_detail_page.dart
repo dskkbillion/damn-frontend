@@ -31,7 +31,7 @@ class ProductDetailPage extends StatefulWidget {
 
 class _ProductDetailPageState extends State<ProductDetailPage> with SingleTickerProviderStateMixin {
   int _selectedVariantIndex = 0;
-  late TabController _tabController;
+  TabController? _tabController;
   // 获取聊天仓库
   late final IChatRepository _chatRepository = GetIt.I<IChatRepository>();
   // 加载状态
@@ -42,20 +42,33 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _tabController.addListener(() {
-      if (!_tabController.indexIsChanging) {
-        setState(() {
-          _selectedVariantIndex = _tabController.index;
-        });
-      }
-    });
+    // Don't initialize TabController here, wait for product data
   }
   
   @override
   void dispose() {
-    _tabController.dispose();
+    _tabController?.dispose();
     super.dispose();
+  }
+  
+  void _initializeTabController(int length) {
+    // Dispose old controller if it exists
+    _tabController?.dispose();
+    
+    // Create new controller with correct length
+    _tabController = TabController(
+      length: length,
+      vsync: this,
+      initialIndex: _selectedVariantIndex < length ? _selectedVariantIndex : 0,
+    );
+    
+    _tabController!.addListener(() {
+      if (!_tabController!.indexIsChanging) {
+        setState(() {
+          _selectedVariantIndex = _tabController!.index;
+        });
+      }
+    });
   }
 
   // 咨询卖家方法
@@ -196,14 +209,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
               );
             } else if (state is ProductDetailLoaded) {
               final product = state.product;
-              // 初始化TabController长度
-              if (_tabController.length != (product.variants?.length ?? 0)) {
-                _tabController = TabController(
-                  length: product.variants?.length ?? 1, 
-                  vsync: this,
-                  initialIndex: _selectedVariantIndex < (product.variants?.length ?? 0) ? _selectedVariantIndex : 0,
-                );
+              final variantsCount = product.variants?.length ?? 1;
+              
+              // Initialize TabController if needed
+              if (_tabController == null || _tabController!.length != variantsCount) {
+                _initializeTabController(variantsCount);
               }
+              
               return _buildProductDetail(context, product);
             }
             return Center(child: Text(S.of(context).product_detail_please_wait));
@@ -495,7 +507,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
             ),
           ),
           child: TabBar(
-            controller: _tabController,
+            controller: _tabController!,
             tabs: product.variants!.map((variant) => Tab(
               text: _getTierPriceDisplay(context, variant), // 显示价格
             )).toList(),
@@ -549,6 +561,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
       height: 50,
       child: ElevatedButton(
         onPressed: () {
+          print('[ProductDetailPage] 一键购买按钮被点击');
+          print('[ProductDetailPage] Product ID: ${product.id}');
+          print('[ProductDetailPage] Variant ID: ${variant.id}');
+          print('[ProductDetailPage] Price: ${variant.sellingPrice}');
+          
           // 导航到订单确认页面
           context.push(
             '/product-payment/${product.id}/confirm',

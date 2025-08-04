@@ -720,18 +720,33 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           print('[Router] productPaymentConfirm - productId: $productId, extra: $extra');
           
           return state.buildSmartPage(
-            BlocProvider(
-              create: (_) => getIt<PaymentBloc>(),
-              child: OrderConfirmPage(
-                productId: productId,
-                variantId: extra['variantId'] ?? 0,
-                quantity: extra['quantity'] ?? 1,
-                sellerId: extra['sellerId'] ?? 0,
-                price: extra['price'] ?? 0.0,
-                productName: extra['productName'] ?? '',
-                imageUrl: extra['imageUrl'],
-              ),
-        ),
+            Builder(
+              builder: (context) {
+                print('[Router] Building OrderConfirmPage widget');
+                return BlocProvider(
+                  create: (_) {
+                    print('[Router] Creating PaymentBloc instance');
+                    try {
+                      final bloc = getIt<PaymentBloc>();
+                      print('[Router] PaymentBloc created successfully');
+                      return bloc;
+                    } catch (e) {
+                      print('[Router] Error creating PaymentBloc: $e');
+                      rethrow;
+                    }
+                  },
+                  child: OrderConfirmPage(
+                    productId: productId,
+                    variantId: extra['variantId'] ?? 0,
+                    quantity: extra['quantity'] ?? 1,
+                    sellerId: extra['sellerId'] ?? 0,
+                    price: extra['price'] ?? 0.0,
+                    productName: extra['productName'] ?? '',
+                    imageUrl: extra['imageUrl'],
+                  ),
+                );
+              },
+            ),
             name: 'productPaymentConfirm',
             source: 'app_navigation_payment',
           );
@@ -776,7 +791,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           '/chat', 
           '/profile', 
           '/dev_menu',
-          '/notifications' // 添加买家通知路径
+          '/notifications', // 添加买家通知路径
+          '/product-payment', // 添加支付路径
+          '/payment/result' // 添加支付结果路径
       ]; 
       // 更新卖家 Shell 路径列表
       final List<String> sellerPaths = [

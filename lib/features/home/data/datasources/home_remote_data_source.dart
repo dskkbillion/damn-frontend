@@ -123,7 +123,9 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       print('Feed API响应内容: ${response.body}');
 
       if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
+        // 确保使用UTF-8解码
+        final responseBody = utf8.decode(response.bodyBytes);
+        final jsonData = json.decode(responseBody);
         if (jsonData['code'] == 200 && jsonData['data'] != null) {
           final List<dynamic> productsList = jsonData['data']['products'] ?? [];
           print('产品列表: $productsList');
@@ -168,7 +170,9 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       print('商品详情API响应内容: ${response.body}');
 
       if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
+        // 确保使用UTF-8解码
+        final responseBody = utf8.decode(response.bodyBytes);
+        final jsonData = json.decode(responseBody);
         if (jsonData['code'] == 200 && jsonData['data'] != null) {
           final data = jsonData['data'];
           print('商品详情数据: $data');
@@ -214,7 +218,9 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       print('Banner API响应内容: ${response.body}');
 
       if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
+        // 确保使用UTF-8解码
+        final responseBody = utf8.decode(response.bodyBytes);
+        final jsonData = json.decode(responseBody);
         if (jsonData['code'] == 200) {
           final List<dynamic> bannersList = jsonData['rows'] ?? [];
           print('Banner列表: $bannersList');
@@ -275,7 +281,9 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       print('推荐系统API响应状态码: ${response.statusCode}');
       
       if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
+        // 确保使用UTF-8解码
+        final responseBody = utf8.decode(response.bodyBytes);
+        final jsonData = json.decode(responseBody);
         print('推荐系统API响应内容: $jsonData');
         
         if (jsonData['code'] == 200 && jsonData['data'] != null && jsonData['data']['items'] != null) {
@@ -333,7 +341,9 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       print('搜索API响应内容: ${response.body}');
 
       if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
+        // 确保使用UTF-8解码
+        final responseBody = utf8.decode(response.bodyBytes);
+        final jsonData = json.decode(responseBody);
         if (jsonData['code'] == 200 && jsonData['rows'] != null) {
           final List<dynamic> productsList = jsonData['rows'] ?? [];
           print('搜索结果列表: $productsList');

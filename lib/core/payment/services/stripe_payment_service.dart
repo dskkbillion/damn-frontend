@@ -20,19 +20,28 @@ class StripePaymentService implements IPaymentService {
   @override
   Future<models.PaymentResponse> createPayment(models.PaymentRequest request) async {
     try {
+      print('[StripePaymentService] createPayment开始 - orderId: ${request.orderId}');
+      
       // 1. 调用后端创建Stripe支付会话
       final response = await _createPaymentSession(request);
       if (!response.success) {
+        print('[StripePaymentService] 创建支付会话失败: ${response.message}');
         return response;
       }
       
       // 2. 跳转到Stripe支付页面
       final paymentUrl = response.data;
+      print('[StripePaymentService] 准备打开支付URL: $paymentUrl');
+      
       if (paymentUrl != null && paymentUrl.isNotEmpty) {
-        // 直接打开支付URL
-        await _launchPaymentUrl(paymentUrl);
+        // 尝试打开支付URL，但不等待结果，避免阻塞支付流程
+        _launchPaymentUrl(paymentUrl).then((_) {
+          print('[StripePaymentService] 支付URL打开尝试完成');
+        }).catchError((e) {
+          print('[StripePaymentService] 支付URL打开失败，但不影响支付流程: $e');
+        });
         
-        // 返回成功状态，表示支付链接已打开
+        // 立即返回成功状态，让用户可以选择其他方式打开链接
         return models.PaymentResponse(
           success: true,
           data: paymentUrl,
@@ -41,13 +50,14 @@ class StripePaymentService implements IPaymentService {
           resultType: models.PaymentResultType.processing,
         );
       } else {
+        print('[StripePaymentService] 支付URL为空');
         return models.PaymentResponse.failure(
           message: '未获取到支付链接',
           orderId: request.orderId,
         );
       }
     } catch (e) {
-      print('Stripe支付异常: $e');
+      print('[StripePaymentService] Stripe支付异常: $e');
       return models.PaymentResponse.failure(
         message: _getErrorMessage(e),
         orderId: request.orderId,
@@ -122,12 +132,16 @@ class StripePaymentService implements IPaymentService {
       'payway': request.method.code, // 'stripe'
     };
 
+    print('[StripePaymentService] 发送支付请求: $requestData');
     final response = await _apiClient.dio.post('/api/payment', data: requestData);
+    print('[StripePaymentService] 收到响应: ${response.data}');
 
-    // 后端返回格式: {"msg":"支付成功","code":200,"data":"https://checkout.stripe.com/..."}
+    // 后端返回格式: {"msg":"支付成功","code":200,"data":{"url":"https://checkout.stripe.com/..."}}
     if (response.statusCode == 200 && response.data['code'] == 200) {
-      // data字段直接就是Stripe的支付链接
-      final stripeUrl = response.data['data'];
+      // 从data对象中获取url字段
+      final data = response.data['data'];
+      final stripeUrl = data is Map ? data['url'] : data;
+      print('[StripePaymentService] 解析出的URL: $stripeUrl');
       if (stripeUrl != null && stripeUrl.toString().startsWith('http')) {
         return models.PaymentResponse.success(
           data: stripeUrl,
@@ -135,12 +149,14 @@ class StripePaymentService implements IPaymentService {
           message: response.data['msg'] ?? '获取支付链接成功',
         );
       } else {
+        print('[StripePaymentService] URL格式无效: $stripeUrl');
         return models.PaymentResponse.failure(
           message: '返回的支付链接格式无效',
           orderId: request.orderId,
         );
       }
     } else {
+      print('[StripePaymentService] 请求失败: ${response.data}');
       return models.PaymentResponse.failure(
         message: response.data['msg'] ?? '创建支付会话失败',
         code: response.data['code'],
@@ -155,40 +171,56 @@ class StripePaymentService implements IPaymentService {
       print('[StripePaymentService] 尝试打开支付URL: $url');
       final uri = Uri.parse(url);
       
-      // 首先检查是否可以启动URL
-      final canLaunch = await canLaunchUrl(uri);
-      print('[StripePaymentService] canLaunchUrl结果: $canLaunch');
+      // 对于Windows平台，直接使用platformDefault模式
+      // 这会在默认浏览器中打开URL
+      print('[StripePaymentService] 使用platformDefault模式打开URL');
       
-      if (canLaunch) {
-        // 尝试在外部浏览器中打开
-        final launched = await launchUrl(
-          uri, 
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.platformDefault,
+      );
+      
+      print('[StripePaymentService] launchUrl结果: $launched');
+      
+      if (!launched) {
+        // 如果第一次失败，尝试使用externalApplication模式
+        print('[StripePaymentService] platformDefault失败，尝试externalApplication模式');
+        
+        final externalLaunched = await launchUrl(
+          uri,
           mode: LaunchMode.externalApplication,
           webViewConfiguration: const WebViewConfiguration(
             enableJavaScript: true,
             enableDomStorage: true,
           ),
         );
-        print('[StripePaymentService] launchUrl结果: $launched');
         
-        if (!launched) {
-          throw Exception('launchUrl返回false');
-        }
-      } else {
-        // 如果不能直接启动，尝试使用platformDefault模式
-        print('[StripePaymentService] 尝试使用platformDefault模式');
-        final launched = await launchUrl(
-          uri,
-          mode: LaunchMode.platformDefault,
-        );
+        print('[StripePaymentService] externalApplication模式结果: $externalLaunched');
         
-        if (!launched) {
-          throw Exception('无法使用任何模式打开URL');
+        if (!externalLaunched) {
+          // 最后尝试使用externalNonBrowserApplication
+          print('[StripePaymentService] 尝试externalNonBrowserApplication模式');
+          
+          final nonBrowserLaunched = await launchUrl(
+            uri,
+            mode: LaunchMode.externalNonBrowserApplication,
+          );
+          
+          print('[StripePaymentService] externalNonBrowserApplication模式结果: $nonBrowserLaunched');
+          
+          if (!nonBrowserLaunched) {
+            throw Exception('所有launchUrl模式都失败了');
+          }
         }
       }
+      
+      print('[StripePaymentService] URL成功打开');
     } catch (e) {
       print('[StripePaymentService] 打开支付页面失败: $e');
-      throw Exception('无法打开支付页面: $url, 错误: $e');
+      print('[StripePaymentService] 错误堆栈: ${StackTrace.current}');
+      // 不要抛出异常，让支付流程继续
+      // 用户可以手动复制链接到浏览器
+      print('[StripePaymentService] 用户可能需要手动复制链接: $url');
     }
   }
 

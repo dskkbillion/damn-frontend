@@ -13,7 +13,11 @@ void showLoadingDialog(BuildContext context, {String message = '处理中...'}) 
 
 /// 关闭加载对话框
 void dismissLoadingDialog(BuildContext context) {
-  Navigator.of(context, rootNavigator: true).pop();
+  // 检查是否有路由可以弹出，避免意外关闭页面
+  if (Navigator.of(context, rootNavigator: true).canPop()) {
+    // 确保只关闭对话框，不关闭页面
+    Navigator.of(context, rootNavigator: true).pop('dialog');
+  }
 }
 
 /// 自定义加载对话框

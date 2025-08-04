@@ -317,6 +317,8 @@
     },
     "home_retry": "Retry",
     "home_end_of_list": "End of list",
+    "home_no_content": "No recommended content",
+    "home_pull_to_refresh": "Pull to refresh for recommendations",
     "home_banner_clicked": "Banner clicked: {targetType} - {targetValue}",
     "@home_banner_clicked": {
       "placeholders": {
