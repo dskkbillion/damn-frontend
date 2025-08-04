@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/country_code.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/country_code_selector.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 手机号输入框 Widget，支持国际区号选择
 class PhoneInputField extends StatelessWidget {

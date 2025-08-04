@@ -7,7 +7,7 @@ import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/phone_i
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_input_field.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_button.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/country_code.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 // TODO: 需要根据 design-info/HTML原型/HTML-new/outer/login/login.html 和 RN 代码实现具体 UI
 
