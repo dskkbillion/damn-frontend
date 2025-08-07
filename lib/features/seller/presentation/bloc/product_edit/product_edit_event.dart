@@ -275,4 +275,127 @@ class SetInitialFormData extends ProductEditEvent {
   
   @override
   List<Object?> get props => [initialData];
+}
+
+/// 添加成功案例（选择图片后自动触发）
+class AddSuccessCaseImage extends ProductEditEvent {
+  /// 选择的图片路径
+  final String imagePath;
+  
+  /// 成功案例标题
+  final String title;
+  
+  /// 成功案例描述
+  final String description;
+
+  const AddSuccessCaseImage({
+    required this.imagePath,
+    required this.title,
+    required this.description,
+  });
+
+  @override
+  List<Object?> get props => [imagePath, title, description];
+}
+
+/// 更新成功案例
+class UpdateSuccessCase extends ProductEditEvent {
+  /// 成功案例ID
+  final String caseId;
+  
+  /// 新的图片路径（可选）
+  final String? imagePath;
+  
+  /// 新的标题（可选）
+  final String? title;
+  
+  /// 新的描述（可选）
+  final String? description;
+
+  const UpdateSuccessCase({
+    required this.caseId,
+    this.imagePath,
+    this.title,
+    this.description,
+  });
+
+  @override
+  List<Object?> get props => [caseId, imagePath, title, description];
+}
+
+/// 重试成功案例上传
+class RetrySuccessCaseUpload extends ProductEditEvent {
+  /// 成功案例ID
+  final String caseId;
+
+  const RetrySuccessCaseUpload({
+    required this.caseId,
+  });
+
+  @override
+  List<Object?> get props => [caseId];
+}
+
+/// 移除成功案例
+class RemoveSuccessCase extends ProductEditEvent {
+  /// 成功案例ID
+  final String caseId;
+
+  const RemoveSuccessCase({
+    required this.caseId,
+  });
+
+  @override
+  List<Object?> get props => [caseId];
+}
+
+/// 成功案例图片上传成功
+class SuccessCaseUploadSuccess extends ProductEditEvent {
+  /// 成功案例ID
+  final String caseId;
+  
+  /// 上传后的图片URL
+  final String imageUrl;
+
+  const SuccessCaseUploadSuccess({
+    required this.caseId,
+    required this.imageUrl,
+  });
+
+  @override
+  List<Object?> get props => [caseId, imageUrl];
+}
+
+/// 成功案例图片上传失败
+class SuccessCaseUploadFailure extends ProductEditEvent {
+  /// 成功案例ID
+  final String caseId;
+  
+  /// 错误信息
+  final String errorMessage;
+
+  const SuccessCaseUploadFailure({
+    required this.caseId,
+    required this.errorMessage,
+  });
+
+  @override
+  List<Object?> get props => [caseId, errorMessage];
+}
+
+/// 成功案例图片上传进度更新
+class SuccessCaseUploadProgress extends ProductEditEvent {
+  /// 成功案例ID
+  final String caseId;
+  
+  /// 上传进度（0-100）
+  final double progress;
+
+  const SuccessCaseUploadProgress({
+    required this.caseId,
+    required this.progress,
+  });
+
+  @override
+  List<Object?> get props => [caseId, progress];
 } 

@@ -19,6 +19,7 @@ import 'package:dskk_flutter_refactor/features/ai_docs/domain/repositories/i_fil
 
 // 导入重构后的数据模型
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/product_edit_models.dart';
+import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/service_tier_models.dart';
 
 // 输入验证常量
@@ -155,7 +156,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
   bool _isBuyerInfoExpanded = false;
   
   /// 成功案例相关状态
-  final List<SuccessCase> _successCases = [];
+  // Success cases are now managed in BLoC state
+  // final List<SuccessCase> _successCases = []; // Removed - now in BLoC
   
   /// 表单键
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -298,201 +300,39 @@ class _ProductEditPageState extends State<ProductEditPage> {
     _onFormFieldChanged();
   }
 
-  /// 添加成功案例
-  void _addSuccessCase(String imagePath, String title, String description) async {
-    // 创建成功案例对象
-    final successCase = SuccessCase(
+  /// 添加成功案例 - 简化版本
+  void _addSuccessCase(String imagePath, String title, String description) {
+    // Simply add to BLoC, which will handle upload automatically
+    _bloc.add(AddSuccessCaseImage(
       imagePath: imagePath,
       title: title,
       description: description,
-    );
-    
-    setState(() {
-      _successCases.add(successCase);
-    });
-    
-    // 显示上传进度对话框
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const AlertDialog(
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('正在上传成功案例图片...'),
-          ],
-        ),
-      ),
-    );
-    
-    // 触发图片上传并等待完成
-    await _uploadSuccessCaseImage(successCase);
-    
-    // 关闭进度对话框
-    if (mounted) {
-      Navigator.of(context).pop();
-    }
+    ));
     
     // 触发变更检测
     _onFormFieldChanged();
   }
   
-  /// 上传成功案例图片
-  Future<void> _uploadSuccessCaseImage(SuccessCase successCase) async {
-    print('[DEBUG] 开始上传成功案例图片: imagePath=${successCase.imagePath}, imageUrl=${successCase.imageUrl}');
-    
-    if (successCase.imagePath.isEmpty) {
-      print('[DEBUG] 成功案例图片路径为空，跳过上传');
-      return;
-    }
-    
-    // 如果已经有 imageUrl，说明已上传
-    if (successCase.imageUrl.isNotEmpty) {
-      print('[DEBUG] 成功案例已有imageUrl: ${successCase.imageUrl}，跳过上传');
-      return;
-    }
-    
-    try {
-      // 先对图片进行预处理（转换格式、压缩等）
-      // 使用 GetIt 获取 bloc 实例，避免 Provider context 错误
-      final bloc = GetIt.instance<ProductEditBloc>();
-      final processedPath = await bloc.preprocessImage(successCase.imagePath);
-      print('[DEBUG] 图片预处理完成: 原路径=${successCase.imagePath}, 处理后路径=$processedPath');
-      
-      // 创建要上传的文件
-      final file = File(processedPath);
-      if (!await file.exists()) {
-        print('[DEBUG] 图片文件不存在: $processedPath');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('图片文件不存在')),
-          );
-        }
-        return;
-      }
-      
-      print('[DEBUG] 开始调用文件上传仓库...');
-      // 调用文件上传仓库上传图片
-      final uploadRepository = GetIt.instance<IFileUploadRepository>();
-      final result = await uploadRepository.uploadFile(file);
-      
-      print('[DEBUG] 文件上传完成，处理结果...');
-      result.fold(
-        (failure) {
-          print('[DEBUG] 成功案例图片上传失败: ${failure.message}');
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('成功案例图片上传失败: ${failure.message}')),
-            );
-          }
-        },
-        (imageUrl) {
-          print('[DEBUG] 成功案例图片上传成功，URL: $imageUrl');
-          // 更新成功案例的 imageUrl
-          final index = _successCases.indexOf(successCase);
-          if (index != -1) {
-            print('[DEBUG] 找到成功案例索引: $index，更新imageUrl');
-            setState(() {
-              _successCases[index] = SuccessCase(
-                id: successCase.id,
-                imagePath: successCase.imagePath,
-                imageUrl: imageUrl, // 设置上传后的 URL
-                title: successCase.title,
-                description: successCase.description,
-                createTime: successCase.createTime,
-              );
-            });
-            
-            print('[DEBUG] 成功案例更新完成，调用_onFormFieldChanged');
-            // 更新表单数据
-            _onFormFieldChanged();
-            
-            print('[DEBUG] 成功案例图片上传流程完成: $imageUrl');
-            
-            // 自动保存草稿，确保成功案例图片被持久化到后端
-            print('[DEBUG] 自动触发保存草稿，持久化成功案例图片...');
-            if (mounted) {
-              // 使用BlocProvider触发保存草稿事件
-              context.read<ProductEditBloc>().add(const SaveProductDraft());
-              
-              // 显示自动保存提示
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('成功案例已自动保存'),
-                  duration: Duration(seconds: 2),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            }
-          } else {
-            print('[DEBUG] 警告：找不到成功案例索引');
-          }
-        },
-      );
-    } catch (e) {
-      print('[DEBUG] 上传成功案例图片时出错: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('成功案例图片上传失败: $e')),
-        );
-      }
-    }
-  }
+  // 成功案例图片上传功能已移至BLoC中自动处理
+  // 参见 ProductEditBloc 中的 AddSuccessCaseImage 事件处理
   
-  /// 更新成功案例
-  Future<void> _updateSuccessCase(int index, String imagePath, String title, String description) async {
-    final oldCase = _successCases[index];
-    final bool imageChanged = oldCase.imagePath != imagePath;
-    
-    // 先更新基本信息
-    setState(() {
-      _successCases[index] = SuccessCase(
-        id: oldCase.id,
-        imagePath: imagePath,
-        imageUrl: imageChanged ? '' : oldCase.imageUrl, // 如果图片改变，清空 URL
-        title: title,
-        description: description,
-        createTime: oldCase.createTime,
-      );
-    });
-    
-    // 如果图片改变了，重新上传
-    if (imageChanged && imagePath.isNotEmpty) {
-      // 显示上传进度
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const AlertDialog(
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text('正在上传成功案例图片...'),
-            ],
-          ),
-        ),
-      );
-      
-      await _uploadSuccessCaseImage(_successCases[index]);
-      
-      // 关闭进度对话框
-      if (mounted) {
-        Navigator.of(context).pop();
-      }
-    }
+  /// 更新成功案例 - 简化版本
+  void _updateSuccessCase(String caseId, {String? imagePath, String? title, String? description}) {
+    // Update through BLoC
+    _bloc.add(UpdateSuccessCase(
+      caseId: caseId,
+      imagePath: imagePath,
+      title: title,
+      description: description,
+    ));
     
     // 触发变更检测
     _onFormFieldChanged();
   }
   
-  /// 删除成功案例
-  void _removeSuccessCase(int index) {
-    setState(() {
-      _successCases.removeAt(index);
-    });
+  /// 删除成功案例 - 简化版本
+  void _removeSuccessCase(String caseId) {
+    _bloc.add(RemoveSuccessCase(caseId: caseId));
     // 触发变更检测
     _onFormFieldChanged();
   }
@@ -565,15 +405,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
     }).toList();
     _bloc.add(UpdateFormField(fieldName: 'buyerInfoItems', value: buyerInfoJson));
     
-    // 同步成功案例列表
-    final successCasesJson = _successCases.map((case_) => {
-      'id': case_.id,
-      'imagePath': case_.imagePath,
-      'imageUrl': case_.imageUrl,
-      'title': case_.title,
-      'description': case_.description,
-    }).toList();
-    _bloc.add(UpdateFormField(fieldName: 'successCases', value: successCasesJson));
+    // Success cases are now synced from BLoC state automatically
+    // No need to sync manually as they are managed in BLoC
   }
 
   /// 处理返回操作
@@ -719,22 +552,13 @@ class _ProductEditPageState extends State<ProductEditPage> {
       }
     });
     
-    // 同步成功案例列表数据
-    setState(() {
-      _successCases.clear();
-      for (final successCaseMap in formData.successCases) {
-        try {
-          _successCases.add(SuccessCase.fromJson(successCaseMap));
-        } catch (e) {
-          print('Error parsing success case data: $e');
-        }
-      }
-    });
+    // Success cases are now managed in BLoC state
+    // No need to sync here
     
     print('[ProductEditPage] Synced data from state:');
     print('  - QA items: ${_qaList.length}');
     print('  - Buyer info items: ${_buyerInfoItems.length}');
-    print('  - Success cases: ${_successCases.length}');
+    print('  - Success cases: managed in BLoC');
     print('  - Variants: ${formData.variants.length}');
   }
 
@@ -743,7 +567,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
     print('[ProductEditPage] Syncing local data to BLoC:');
     print('  - QA items: ${_qaList.length}');
     print('  - Buyer info items: ${_buyerInfoItems.length}');
-    print('  - Success cases: ${_successCases.length}');
+    print('  - Success cases: managed in BLoC');
     
     // 直接调用现有的同步方法
     _syncAdditionalFormData();
@@ -1955,7 +1779,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              if (_successCases.isNotEmpty)
+              if (state.successCases.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
@@ -1963,7 +1787,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    '${_successCases.length}个案例',
+                    '${state.successCases.length}个案例',
                     style: const TextStyle(
                       fontSize: 12,
                       color: Color(0xFFBF7D2A),
@@ -1985,12 +1809,12 @@ class _ProductEditPageState extends State<ProductEditPage> {
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
             ),
-            itemCount: _successCases.length + 1, // +1 for add button
+            itemCount: state.successCases.length + 1, // +1 for add button
             itemBuilder: (context, index) {
-              if (index == _successCases.length) {
+              if (index == state.successCases.length) {
                 return _buildAddSuccessCaseButton();
               }
-              return _buildSuccessCaseItem(index);
+              return _buildSuccessCaseItem(state, index);
                 },
               ),
             ],
@@ -2109,9 +1933,80 @@ class _ProductEditPageState extends State<ProductEditPage> {
 
   /// 构建成功案例图片
   Widget _buildSuccessCaseImage(SuccessCase successCase) {
-    // 优先使用网络图片URL
-    if (successCase.imageUrl.isNotEmpty) {
-      return Image.network(
+    Widget imageWidget;
+    
+    // 根据上传状态显示不同内容
+    if (successCase.uploadStatus == SuccessCaseUploadStatus.uploading) {
+      // 上传中 - 显示进度
+      imageWidget = Stack(
+        children: [
+          // 显示本地图片作为背景
+          if (successCase.imagePath.isNotEmpty)
+            Image.file(
+              File(successCase.imagePath),
+              width: double.infinity,
+              height: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          // 半透明遮罩
+          Container(
+            color: Colors.black.withOpacity(0.3),
+          ),
+          // 进度指示器
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(
+                  value: successCase.uploadProgress / 100,
+                  backgroundColor: Colors.white30,
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${successCase.uploadProgress.toInt()}%',
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    } else if (successCase.uploadStatus == SuccessCaseUploadStatus.failed) {
+      // 上传失败 - 显示错误状态
+      imageWidget = Stack(
+        children: [
+          // 显示本地图片作为背景
+          if (successCase.imagePath.isNotEmpty)
+            Image.file(
+              File(successCase.imagePath),
+              width: double.infinity,
+              height: double.infinity,
+              fit: BoxFit.cover,
+              color: Colors.grey,
+              colorBlendMode: BlendMode.saturation,
+            ),
+          // 错误图标
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 40),
+                const SizedBox(height: 4),
+                const Text('上传失败', style: TextStyle(color: Colors.red, fontSize: 12)),
+                if (successCase.canRetry)
+                  TextButton(
+                    onPressed: () => _bloc.add(RetrySuccessCaseUpload(caseId: successCase.id)),
+                    child: const Text('重试', style: TextStyle(fontSize: 12)),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      );
+    } else if (successCase.imageUrl.isNotEmpty) {
+      // 已上传 - 显示网络图片
+      imageWidget = Image.network(
         successCase.imageUrl,
         width: double.infinity,
         height: double.infinity,
@@ -2143,8 +2038,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
         },
       );
     } else if (successCase.imagePath.isNotEmpty) {
-      // 如果没有网络URL，使用本地图片
-      return Image.file(
+      // 待上传 - 显示本地图片
+      imageWidget = Image.file(
         File(successCase.imagePath),
         width: double.infinity,
         height: double.infinity,
@@ -2160,18 +2055,20 @@ class _ProductEditPageState extends State<ProductEditPage> {
       );
     } else {
       // 没有图片
-      return Container(
+      imageWidget = Container(
         width: double.infinity,
         height: double.infinity,
         color: Colors.grey[200],
         child: const Icon(Icons.image, size: 40, color: Colors.grey),
       );
     }
+    
+    return imageWidget;
   }
 
   /// 构建成功案例项
-  Widget _buildSuccessCaseItem(int index) {
-    final successCase = _successCases[index];
+  Widget _buildSuccessCaseItem(ProductEditState state, int index) {
+    final successCase = state.successCases[index];
     
     return Container(
       decoration: BoxDecoration(
@@ -2199,7 +2096,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                     children: [
                       // 编辑按钮
                       InkWell(
-                        onTap: () => _showEditSuccessCaseDialog(index),
+                        onTap: () => _showEditSuccessCaseDialog(state, successCase.id),
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
@@ -2212,7 +2109,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                       const SizedBox(width: 4),
                       // 删除按钮
                       InkWell(
-                        onTap: () => _removeSuccessCase(index),
+                        onTap: () => _removeSuccessCase(successCase.id),
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
@@ -2287,13 +2184,16 @@ class _ProductEditPageState extends State<ProductEditPage> {
       child: Column(
                 mainAxisSize: MainAxisSize.min,
         children: [
-                  // 图片选择区域
+                  // 图片选择区域 - 使用ImageUploadHelper
                   InkWell(
                     onTap: () async {
-                      final pickedFile = await _imagePicker.pickImage(source: ImageSource.gallery);
-                      if (pickedFile != null) {
+                      final results = await ImageUploadHelper.pickFromGallery(
+                        type: ImageUploadType.product,
+                        allowMultiple: false,
+                      );
+                      if (results.isNotEmpty) {
                         setState(() {
-                          selectedImagePath = pickedFile.path;
+                          selectedImagePath = results.first.finalFile.path;
                         });
                       }
                     },
@@ -2382,8 +2282,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
   }
   
   /// 显示编辑成功案例对话框
-  void _showEditSuccessCaseDialog(int index) {
-    final successCase = _successCases[index];
+  void _showEditSuccessCaseDialog(ProductEditState state, String caseId) {
+    final successCase = state.successCases.firstWhere((c) => c.id == caseId);
     final titleController = TextEditingController(text: successCase.title);
     final descriptionController = TextEditingController(text: successCase.description);
     String? selectedImagePath = successCase.imagePath;
@@ -2404,13 +2304,16 @@ class _ProductEditPageState extends State<ProductEditPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // 图片选择区域
+                  // 图片选择区域 - 使用ImageUploadHelper
                   InkWell(
                     onTap: () async {
-                      final pickedFile = await _imagePicker.pickImage(source: ImageSource.gallery);
-                      if (pickedFile != null) {
+                      final results = await ImageUploadHelper.pickFromGallery(
+                        type: ImageUploadType.product,
+                        allowMultiple: false,
+                      );
+                      if (results.isNotEmpty) {
                         setState(() {
-                          selectedImagePath = pickedFile.path;
+                          selectedImagePath = results.first.finalFile.path;
                           imageChanged = true;
                         });
                       }
@@ -2464,11 +2367,11 @@ class _ProductEditPageState extends State<ProductEditPage> {
               onPressed: () async {
                 if (selectedImagePath != null && selectedImagePath!.isNotEmpty && titleController.text.isNotEmpty) {
                   Navigator.pop(context);
-                  await _updateSuccessCase(
-                    index,
-                    selectedImagePath!,
-                    titleController.text,
-                    descriptionController.text,
+                  _updateSuccessCase(
+                    caseId,
+                    imagePath: imageChanged ? selectedImagePath : null,
+                    title: titleController.text,
+                    description: descriptionController.text,
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -3683,11 +3586,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
         'description': item.description,
         'isRequired': item.isRequired,
       }).toList(),
-      successCases: _successCases.map((case_) => {
-        'title': case_.title,
-        'description': case_.description,
-        'imageUrl': case_.imageUrl,
-      }).toList(),
+      successCases: state.successCases.map((case_) => case_.toJson()).toList(),
       images: state.selectedImagePaths,
     );
   }

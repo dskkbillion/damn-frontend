@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_managed_product.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/entities/product_edit_models.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/create_product_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_product_detail_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/update_product_usecase.dart';
@@ -15,6 +17,8 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/repositories/i_file_upload_repository.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/repositories/i_seller_repository.dart';
+import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
+import 'package:dskk_flutter_refactor/core/services/image_compress_service.dart';
 
 /// 产品编辑BLoC
 @injectable
@@ -69,6 +73,13 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     on<SaveProductDraft>(_onSaveProductDraft);
     on<CheckForUnsavedChanges>(_onCheckForUnsavedChanges);
     on<SetInitialFormData>(_onSetInitialFormData);
+    on<AddSuccessCaseImage>(_onAddSuccessCaseImage);
+    on<UpdateSuccessCase>(_onUpdateSuccessCase);
+    on<RetrySuccessCaseUpload>(_onRetrySuccessCaseUpload);
+    on<RemoveSuccessCase>(_onRemoveSuccessCase);
+    on<SuccessCaseUploadSuccess>(_onSuccessCaseUploadSuccess);
+    on<SuccessCaseUploadFailure>(_onSuccessCaseUploadFailure);
+    on<SuccessCaseUploadProgress>(_onSuccessCaseUploadProgress);
   }
 
   /// 初始化编辑页面处理
@@ -112,7 +123,25 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
       (failure) => emit(state.copyWithError(failure.message)),
       (product) {
         final formData = ProductFormData.fromProduct(product);
-        emit(state.copyWithProductLoaded(product));
+        
+        // 从winImages恢复成功案例
+        List<SuccessCase> successCases = [];
+        if (product.winImages != null && product.winImages!.isNotEmpty) {
+          final winImageList = product.winImages!.split(',').where((img) => img.trim().isNotEmpty).toList();
+          for (int i = 0; i < winImageList.length; i++) {
+            successCases.add(SuccessCase(
+              imagePath: '',
+              imageUrl: winImageList[i].trim(),
+              title: '',
+              description: '',
+              uploadStatus: SuccessCaseUploadStatus.completed,
+            ));
+          }
+        }
+        
+        emit(state.copyWithProductLoaded(product).copyWith(
+          successCases: successCases,
+        ));
         // 设置初始表单数据用于变更检测
         add(SetInitialFormData(initialData: formData));
       },
@@ -794,20 +823,20 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
       }
     }
     
-    // 处理成功案例图片
+    // 处理成功案例图片 - 使用新的successCases状态
     List<String> winImageUrls = [];
-    if (state.formData.successCases.isNotEmpty) {
-      for (final successCase in state.formData.successCases) {
-        // 只使用imageUrl字段
-        final imageUrl = successCase['imageUrl']?.toString() ?? '';
-        
-        if (imageUrl.isNotEmpty) {
+    if (state.successCases.isNotEmpty) {
+      for (final successCase in state.successCases) {
+        // 只使用已上传完成的imageUrl
+        if (successCase.isCompleted && successCase.imageUrl.isNotEmpty) {
           // 避免重复添加
-          if (!winImageUrls.contains(imageUrl)) {
-            winImageUrls.add(imageUrl);
+          if (!winImageUrls.contains(successCase.imageUrl)) {
+            winImageUrls.add(successCase.imageUrl);
           }
-        } else {
-          print('警告：提交表单时发现成功案例缺少imageUrl');
+        } else if (successCase.uploadStatus == SuccessCaseUploadStatus.uploading) {
+          print('警告：提交表单时发现成功案例正在上传中');
+        } else if (successCase.uploadStatus == SuccessCaseUploadStatus.failed) {
+          print('警告：提交表单时发现成功案例上传失败');
         }
       }
     }
@@ -980,38 +1009,35 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
         }
       }
       
-      // 处理成功案例图片
+      // 处理成功案例图片 - 使用新的successCases状态
       List<String> winImageUrls = [];
       List<Map<String, dynamic>> updatedSuccessCases = [];
       
-      print('[DEBUG] 保存草稿 - 处理成功案例，数量: ${state.formData.successCases.length}');
+      print('[DEBUG] 保存草稿 - 处理成功案例，数量: ${state.successCases.length}');
       
-      if (state.formData.successCases.isNotEmpty) {
-        for (int i = 0; i < state.formData.successCases.length; i++) {
-          final successCase = Map<String, dynamic>.from(state.formData.successCases[i]);
+      if (state.successCases.isNotEmpty) {
+        for (final successCase in state.successCases) {
+          print('[DEBUG] 成功案例 ${successCase.id}: status=${successCase.uploadStatus.name}, imageUrl=${successCase.imageUrl}');
           
-          print('[DEBUG] 成功案例 $i: $successCase');
+          // 转换为Map用于保存
+          final caseMap = successCase.toJson();
+          updatedSuccessCases.add(caseMap);
           
-          // 只使用imageUrl字段，忽略imagePath
-          if (successCase['imageUrl'] != null && successCase['imageUrl'].toString().isNotEmpty) {
-            final imageUrl = successCase['imageUrl'].toString();
-            print('[DEBUG] 找到有效的imageUrl: $imageUrl');
+          // 只收集已上传完成的imageUrl
+          if (successCase.isCompleted && successCase.imageUrl.isNotEmpty) {
+            print('[DEBUG] 找到有效的imageUrl: ${successCase.imageUrl}');
             // 避免重复添加相同的URL
-            if (!winImageUrls.contains(imageUrl)) {
-              winImageUrls.add(imageUrl);
+            if (!winImageUrls.contains(successCase.imageUrl)) {
+              winImageUrls.add(successCase.imageUrl);
             }
-            
-            // 清理successCase数据，移除不必要的imagePath
-            final cleanedCase = Map<String, dynamic>.from(successCase);
-            cleanedCase.remove('imagePath'); // 移除imagePath字段
-            updatedSuccessCases.add(cleanedCase);
-          } else {
-            // 如果没有imageUrl，说明图片未上传，跳过此案例
-            print('[DEBUG] 警告：成功案例缺少imageUrl，imageUrl=${successCase['imageUrl']}');
+          } else if (successCase.uploadStatus == SuccessCaseUploadStatus.uploading) {
+            print('[DEBUG] 成功案例 ${successCase.id} 正在上传中');
+          } else if (successCase.uploadStatus == SuccessCaseUploadStatus.failed) {
+            print('[DEBUG] 成功案例 ${successCase.id} 上传失败: ${successCase.errorMessage}');
           }
         }
         
-        // 更新state中的successCases，确保包含新上传的URLs
+        // 更新formData中的successCases以保持同步
         if (updatedSuccessCases.isNotEmpty) {
           emit(state.copyWith(
             formData: state.formData.copyWith(
@@ -1057,5 +1083,273 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     } catch (e) {
       emit(state.copyWithError('保存草稿失败: ${e.toString()}'));
     }
+  }
+
+  /// 添加成功案例图片处理
+  Future<void> _onAddSuccessCaseImage(
+    AddSuccessCaseImage event,
+    Emitter<ProductEditState> emit,
+  ) async {
+    try {
+      // 创建新的成功案例
+      final newCase = SuccessCase(
+        imagePath: event.imagePath,
+        title: event.title,
+        description: event.description,
+        uploadStatus: SuccessCaseUploadStatus.pending,
+      );
+
+      // 更新状态，添加新案例
+      final updatedCases = List<SuccessCase>.from(state.successCases)..add(newCase);
+      emit(state.copyWith(successCases: updatedCases));
+
+      // 立即开始上传图片
+      await _uploadSuccessCaseImage(newCase, emit);
+
+      // 触发自动保存（防抖处理）
+      _scheduleAutoSave();
+    } catch (e) {
+      print('[ProductEditBloc] Error adding success case: $e');
+      emit(state.copyWithError('添加成功案例失败: ${e.toString()}'));
+    }
+  }
+
+  /// 更新成功案例处理
+  Future<void> _onUpdateSuccessCase(
+    UpdateSuccessCase event,
+    Emitter<ProductEditState> emit,
+  ) async {
+    try {
+      final updatedCases = state.successCases.map((case_) {
+        if (case_.id == event.caseId) {
+          var updatedCase = case_;
+          
+          // 更新标题和描述
+          if (event.title != null) {
+            updatedCase = updatedCase.copyWith(title: event.title);
+          }
+          if (event.description != null) {
+            updatedCase = updatedCase.copyWith(description: event.description);
+          }
+          
+          // 如果更换了图片，需要重新上传
+          if (event.imagePath != null && event.imagePath != case_.imagePath) {
+            updatedCase = updatedCase.copyWith(
+              imagePath: event.imagePath!,
+              imageUrl: '', // 清空旧的URL
+              uploadStatus: SuccessCaseUploadStatus.pending,
+              errorMessage: null,
+            );
+            
+            // 异步上传新图片
+            _uploadSuccessCaseImage(updatedCase, emit);
+          }
+          
+          return updatedCase;
+        }
+        return case_;
+      }).toList();
+
+      emit(state.copyWith(successCases: updatedCases));
+      
+      // 触发自动保存
+      _scheduleAutoSave();
+    } catch (e) {
+      print('[ProductEditBloc] Error updating success case: $e');
+      emit(state.copyWithError('更新成功案例失败: ${e.toString()}'));
+    }
+  }
+
+  /// 重试成功案例上传处理
+  Future<void> _onRetrySuccessCaseUpload(
+    RetrySuccessCaseUpload event,
+    Emitter<ProductEditState> emit,
+  ) async {
+    try {
+      final caseToRetry = state.successCases.firstWhere(
+        (case_) => case_.id == event.caseId,
+      );
+
+      if (caseToRetry.canRetry) {
+        // 更新状态为待上传
+        final updatedCases = state.successCases.map((case_) {
+          if (case_.id == event.caseId) {
+            return case_.copyWith(
+              uploadStatus: SuccessCaseUploadStatus.pending,
+              errorMessage: null,
+            );
+          }
+          return case_;
+        }).toList();
+
+        emit(state.copyWith(successCases: updatedCases));
+
+        // 重新尝试上传
+        await _uploadSuccessCaseImage(caseToRetry, emit);
+      }
+    } catch (e) {
+      print('[ProductEditBloc] Error retrying success case upload: $e');
+      emit(state.copyWithError('重试上传失败: ${e.toString()}'));
+    }
+  }
+
+  /// 移除成功案例处理
+  Future<void> _onRemoveSuccessCase(
+    RemoveSuccessCase event,
+    Emitter<ProductEditState> emit,
+  ) async {
+    try {
+      final updatedCases = state.successCases
+          .where((case_) => case_.id != event.caseId)
+          .toList();
+      
+      emit(state.copyWith(successCases: updatedCases));
+      
+      // 触发自动保存
+      _scheduleAutoSave();
+    } catch (e) {
+      print('[ProductEditBloc] Error removing success case: $e');
+      emit(state.copyWithError('移除成功案例失败: ${e.toString()}'));
+    }
+  }
+
+  /// 成功案例上传成功处理
+  Future<void> _onSuccessCaseUploadSuccess(
+    SuccessCaseUploadSuccess event,
+    Emitter<ProductEditState> emit,
+  ) async {
+    final updatedCases = state.successCases.map((case_) {
+      if (case_.id == event.caseId) {
+        return case_.copyWith(
+          imageUrl: event.imageUrl,
+          uploadStatus: SuccessCaseUploadStatus.completed,
+          uploadProgress: 100,
+          errorMessage: null,
+        );
+      }
+      return case_;
+    }).toList();
+
+    emit(state.copyWith(successCases: updatedCases));
+    
+    // 触发自动保存
+    _scheduleAutoSave();
+  }
+
+  /// 成功案例上传失败处理
+  Future<void> _onSuccessCaseUploadFailure(
+    SuccessCaseUploadFailure event,
+    Emitter<ProductEditState> emit,
+  ) async {
+    final updatedCases = state.successCases.map((case_) {
+      if (case_.id == event.caseId) {
+        return case_.copyWith(
+          uploadStatus: SuccessCaseUploadStatus.failed,
+          errorMessage: event.errorMessage,
+          uploadProgress: 0,
+        );
+      }
+      return case_;
+    }).toList();
+
+    emit(state.copyWith(successCases: updatedCases));
+  }
+
+  /// 成功案例上传进度更新处理
+  Future<void> _onSuccessCaseUploadProgress(
+    SuccessCaseUploadProgress event,
+    Emitter<ProductEditState> emit,
+  ) async {
+    final updatedCases = state.successCases.map((case_) {
+      if (case_.id == event.caseId) {
+        return case_.copyWith(
+          uploadStatus: SuccessCaseUploadStatus.uploading,
+          uploadProgress: event.progress,
+        );
+      }
+      return case_;
+    }).toList();
+
+    emit(state.copyWith(successCases: updatedCases));
+  }
+
+  /// 上传成功案例图片
+  Future<void> _uploadSuccessCaseImage(
+    SuccessCase successCase,
+    Emitter<ProductEditState> emit,
+  ) async {
+    try {
+      // 更新状态为上传中
+      add(SuccessCaseUploadProgress(
+        caseId: successCase.id,
+        progress: 0,
+      ));
+
+      // 预处理图片
+      final processedPath = await preprocessImage(successCase.imagePath);
+      
+      // 模拟进度更新
+      add(SuccessCaseUploadProgress(
+        caseId: successCase.id,
+        progress: 30,
+      ));
+
+      // 上传图片
+      final uploadResult = await _fileUploadRepository.uploadFile(
+        File(processedPath)
+      );
+
+      // 更新进度
+      add(SuccessCaseUploadProgress(
+        caseId: successCase.id,
+        progress: 80,
+      ));
+
+      uploadResult.fold(
+        (failure) {
+          // 上传失败
+          add(SuccessCaseUploadFailure(
+            caseId: successCase.id,
+            errorMessage: failure.message,
+          ));
+        },
+        (imageUrl) {
+          // 上传成功
+          add(SuccessCaseUploadSuccess(
+            caseId: successCase.id,
+            imageUrl: imageUrl,
+          ));
+        },
+      );
+    } catch (e) {
+      print('[ProductEditBloc] Error uploading success case image: $e');
+      add(SuccessCaseUploadFailure(
+        caseId: successCase.id,
+        errorMessage: e.toString(),
+      ));
+    }
+  }
+
+  // 自动保存定时器
+  Timer? _autoSaveTimer;
+
+  /// 调度自动保存（防抖处理）
+  void _scheduleAutoSave() {
+    // 取消之前的定时器
+    _autoSaveTimer?.cancel();
+    
+    // 设置新的定时器，2秒后触发保存
+    _autoSaveTimer = Timer(const Duration(seconds: 2), () {
+      // 检查是否有需要保存的变更
+      if (state.hasUnsavedChanges && !state.isSavingDraft) {
+        add(const SaveProductDraft());
+      }
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _autoSaveTimer?.cancel();
+    return super.close();
   }
 } 

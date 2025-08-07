@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_managed_product.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/entities/product_edit_models.dart';
 
 /// 上传状态枚举
 enum UploadStatus {
@@ -83,6 +84,12 @@ class ProductEditState extends Equatable {
   
   /// 草稿保存成功
   final bool isDraftSaveSuccess;
+  
+  /// 成功案例列表（作为实体，而非Map）
+  final List<SuccessCase> successCases;
+  
+  /// 自动保存定时器标记（用于判断是否需要触发自动保存）
+  final DateTime? lastAutoSaveTime;
 
   /// 构造函数
   const ProductEditState({
@@ -106,6 +113,8 @@ class ProductEditState extends Equatable {
     this.hasUnsavedChanges = false,
     this.isSavingDraft = false,
     this.isDraftSaveSuccess = false,
+    this.successCases = const [],
+    this.lastAutoSaveTime,
   });
 
   @override
@@ -130,6 +139,8 @@ class ProductEditState extends Equatable {
     hasUnsavedChanges,
     isSavingDraft,
     isDraftSaveSuccess,
+    successCases,
+    lastAutoSaveTime,
   ];
 
   /// 初始状态
@@ -293,6 +304,8 @@ class ProductEditState extends Equatable {
     bool? hasUnsavedChanges,
     bool? isSavingDraft,
     bool? isDraftSaveSuccess,
+    List<SuccessCase>? successCases,
+    DateTime? lastAutoSaveTime,
   }) {
     return ProductEditState(
       isLoading: isLoading ?? this.isLoading,
@@ -314,6 +327,8 @@ class ProductEditState extends Equatable {
       initialFormData: initialFormData ?? this.initialFormData,
       isSavingDraft: isSavingDraft ?? this.isSavingDraft,
       isDraftSaveSuccess: isDraftSaveSuccess ?? this.isDraftSaveSuccess,
+      successCases: successCases ?? this.successCases,
+      lastAutoSaveTime: lastAutoSaveTime ?? this.lastAutoSaveTime,
       hasUnsavedChanges: hasUnsavedChanges ?? _computeHasUnsavedChanges(
         formData ?? this.formData,
         selectedImagePaths ?? this.selectedImagePaths,
