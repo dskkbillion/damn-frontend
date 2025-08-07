@@ -347,6 +347,14 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       // 打印请求数据，便于调试
       print('Updating product with merged data: $mergedData');
       
+      // 特别调试productMaterials字段
+      if (mergedData['productMaterials'] != null && mergedData['productMaterials'] is List) {
+        final materialsList = mergedData['productMaterials'] as List;
+        print('[DEBUG] 最终发送的productMaterials: 数量=${materialsList.length}, 内容=$materialsList');
+      } else {
+        print('[DEBUG] 最终发送的productMaterials为空或格式不正确: ${mergedData['productMaterials']}');
+      }
+      
       // 特别调试winImages字段
       if (mergedData['winImages'] != null && mergedData['winImages'] is List) {
         final winImagesList = mergedData['winImages'] as List;
@@ -385,10 +393,10 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       
       // 使用新的Dio实例和更长的超时设置发送请求
       print('Sending product update request with extended timeout (120s)');
-      // 对于草稿商品，使用edit端点，避免重置审核状态
-      final isDraft = existingData['productType'] == 'draft';
-      final endpoint = isDraft ? '/api/shop/product/edit' : '/api/shop/product/update';
-      print('Using endpoint: $endpoint for product type: ${existingData['productType']}');
+      // 修复：始终使用update端点，因为edit端点不会保存productMaterials
+      // update端点会正确处理productMaterials的保存
+      final endpoint = '/api/shop/product/update';
+      print('Using endpoint: $endpoint for all product updates to ensure productMaterials are saved');
       final response = await productUpdateDio.post(endpoint, data: mergedData, options: options);
       
       _checkResponse(response);
@@ -1012,7 +1020,9 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
     // 转换更新数据为JSON格式
     final updateJson = updateData.toJson();
     
-    // 调试日志：检查winImages的处理
+    // 调试日志：检查productMaterials和winImages的处理
+    print('[DEBUG] _mergeProductData - updateJson[productMaterials]: ${updateJson['productMaterials']}');
+    print('[DEBUG] _mergeProductData - existingData[productMaterials]: ${existingData['productMaterials']}');
     print('[DEBUG] _mergeProductData - updateJson[winImages]: ${updateJson['winImages']}');
     print('[DEBUG] _mergeProductData - existingData[winImages]: ${existingData['winImages']}');
     
@@ -1022,7 +1032,10 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       'id': updateData.id,
       'tenantId': existingData['tenantId'],
       'selectionMode': existingData['selectionMode'] ?? 'CUSTOMIZE',
-      'statusAudit': existingData['statusAudit'] ?? 'SUCCESS',
+      // 修复：对于草稿商品，不要改变审核状态
+      'statusAudit': existingData['productType'] == 'draft' 
+          ? (existingData['statusAudit'] ?? 'SUCCESS')  // 草稿保持原状态
+          : 'WAIT',  // 正式商品更新后需要重新审核
       'productType': existingData['productType'] ?? 'product',
       
       // 商品基本信息

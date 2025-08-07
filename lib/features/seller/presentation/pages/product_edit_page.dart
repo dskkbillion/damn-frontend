@@ -2533,12 +2533,15 @@ class _ProductEditPageState extends State<ProductEditPage> {
 
   // 构建图片网格
   Widget _buildImageGrid(ProductEditState state) {
-    // 使用selectedImagePaths作为统一的图片源（现在包含网络URL和本地路径）
-    final List<String> imagePaths = state.selectedImagePaths;
+    // 合并已上传的图片URL和新选择的图片路径
+    final List<String> allImages = [
+      ...state.uploadedImageUrls,  // 已上传的图片（网络URL）
+      ...state.selectedImagePaths, // 新选择的图片（本地路径）
+    ];
         
     // 确定要显示的图片数量，包括"添加"按钮格子
-    final bool hasImages = imagePaths.isNotEmpty;
-    int totalItemCount = hasImages ? imagePaths.length + 1 : 1;
+    final bool hasImages = allImages.isNotEmpty;
+    int totalItemCount = hasImages ? allImages.length + 1 : 1;
     
     // 限制最多9张图片 + 1个添加按钮 = 10个格子
     if (totalItemCount > 10) totalItemCount = 10;
@@ -2559,8 +2562,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
           return _buildAddImageButton(state);
         } 
         // 显示图片
-        else if (index < imagePaths.length) {
-          final String imagePath = imagePaths[index];
+        else if (index < allImages.length) {
+          final String imagePath = allImages[index];
           // 判断是否为网络URL
           final bool isNetworkImage = imagePath.startsWith('http');
           
@@ -2745,7 +2748,11 @@ class _ProductEditPageState extends State<ProductEditPage> {
 
   /// 打开图片预览页面
   void _openImagePreview(ProductEditState state, int index) {
-    final List<String> allImagePaths = state.selectedImagePaths;
+    // 合并已上传的图片URL和新选择的图片路径
+    final List<String> allImagePaths = [
+      ...state.uploadedImageUrls,
+      ...state.selectedImagePaths,
+    ];
     
     if (allImagePaths.isNotEmpty) {
       Navigator.of(context).push(

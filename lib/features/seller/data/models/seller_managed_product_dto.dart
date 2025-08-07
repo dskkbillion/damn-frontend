@@ -89,6 +89,9 @@ class ProductMaterialDto {
   /// 问题内容
   final String? question;
   
+  /// 答案/默认值
+  final String? answer;
+  
   /// 问题类型
   final String? type;
   
@@ -96,6 +99,7 @@ class ProductMaterialDto {
   ProductMaterialDto({
     this.id,
     this.question,
+    this.answer,
     this.type,
   });
   
@@ -104,6 +108,7 @@ class ProductMaterialDto {
     return ProductMaterialDto(
       id: json['id'],
       question: json['question'],
+      answer: json['answer'],
       type: json['type'],
     );
   }
@@ -113,6 +118,7 @@ class ProductMaterialDto {
     return ProductMaterial(
       id: id ?? 0,
       question: question ?? '',
+      answer: answer ?? '',
       type: type ?? 'TEXT',
     );
   }
@@ -211,32 +217,47 @@ class SellerManagedProductDto {
   factory SellerManagedProductDto.fromJson(Map<String, dynamic> json) {
     // 处理images字段 - API返回数组，但DTO需要字符串
     String? imagesString;
-    if (json['images'] != null) {
+    
+    // 优先使用mainImage字段（如果存在）
+    if (json['mainImage'] != null && json['mainImage'] is String && json['mainImage'].toString().trim().isNotEmpty) {
+      imagesString = json['mainImage'].toString().trim();
+      if (json['productType'] == 'draft' || json['state'] == 'draft') {
+        print('[SellerManagedProductDto] Draft product ${json['id']} using mainImage: "$imagesString"');
+      }
+    }
+    // 如果没有mainImage，再使用images字段
+    else if (json['images'] != null) {
       if (json['images'] is List) {
         // 将数组转换为逗号分隔的字符串
         final imageList = json['images'] as List;
-        imagesString = imageList.where((img) => img != null && img.toString().isNotEmpty)
-            .map((img) => img.toString())
-            .join(',');
+        // 过滤并处理每个图片URL
+        final processedImages = imageList
+            .where((img) => img != null)
+            .map((img) => img.toString().trim())
+            .where((img) => img.isNotEmpty && img != 'null')
+            .toList();
+        
+        if (processedImages.isNotEmpty) {
+          imagesString = processedImages.join(',');
+        }
+        
         if (json['productType'] == 'draft' || json['state'] == 'draft') {
           print('[SellerManagedProductDto] Draft product ${json['id']} images: $imageList -> "$imagesString"');
         }
       } else if (json['images'] is String) {
-        imagesString = json['images'];
+        final imgStr = json['images'].toString().trim();
+        if (imgStr.isNotEmpty && imgStr != 'null') {
+          imagesString = imgStr;
+        }
         if (json['productType'] == 'draft' || json['state'] == 'draft') {
           print('[SellerManagedProductDto] Draft product ${json['id']} images string: "$imagesString"');
         }
       }
-    } else {
-      // 如果images为null，检查是否有mainImage字段（草稿商品可能使用mainImage）
-      if (json['mainImage'] != null && json['mainImage'] is String && json['mainImage'].toString().isNotEmpty) {
-        imagesString = json['mainImage'];
-        if (json['productType'] == 'draft' || json['state'] == 'draft') {
-          print('[SellerManagedProductDto] Draft product ${json['id']} using mainImage: "$imagesString"');
-        }
-      } else if (json['productType'] == 'draft' || json['state'] == 'draft') {
-        print('[SellerManagedProductDto] Draft product ${json['id']} has null images and no mainImage');
-      }
+    }
+    
+    // 调试日志
+    if ((json['productType'] == 'draft' || json['state'] == 'draft') && imagesString == null) {
+      print('[SellerManagedProductDto] Draft product ${json['id']} has no valid images');
     }
     
     return SellerManagedProductDto(
@@ -316,8 +337,13 @@ class SellerManagedProductDto {
     // 解析材料问题
     List<ProductMaterial>? materials;
     if (productMaterials != null && productMaterials!.isNotEmpty) {
+      print('[SellerManagedProductDto] Converting ${productMaterials!.length} productMaterials to entities');
       materials = productMaterials!
-          .map((m) => ProductMaterialDto.fromJson(m as Map<String, dynamic>).toEntity())
+          .map((m) {
+            final material = ProductMaterialDto.fromJson(m as Map<String, dynamic>).toEntity();
+            print('[SellerManagedProductDto] Material: type=${material.type}, question="${material.question}", answer="${material.answer}"');
+            return material;
+          })
           .toList();
     }
 

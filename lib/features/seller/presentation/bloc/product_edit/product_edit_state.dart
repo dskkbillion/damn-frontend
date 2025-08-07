@@ -439,7 +439,9 @@ class ProductFormData extends Equatable {
     final List<Map<String, dynamic>> buyerInfoItems = [];
     
     if (product.productMaterials != null) {
+      print('[ProductFormData.fromProduct] Processing ${product.productMaterials!.length} productMaterials');
       for (final material in product.productMaterials!) {
+        print('[ProductFormData.fromProduct] Material: type=${material.type}, question="${material.question}", answer="${material.answer}"');
         if (material.type == 'PROBLEM') {
           // 这是QA项
           qaList.add({
@@ -447,6 +449,7 @@ class ProductFormData extends Equatable {
             'question': material.question,
             'answer': material.answer,
           });
+          print('[ProductFormData.fromProduct] Added to qaList');
         } else if (material.type == 'TEXT' || material.type == 'ATTACHMENT') {
           // 这是买家需要提供的信息
           String type = 'text';
@@ -459,8 +462,11 @@ class ProductFormData extends Equatable {
             'description': material.answer,
             'isRequired': false,
           });
+          print('[ProductFormData.fromProduct] Added to buyerInfoItems as $type');
         }
       }
+    } else {
+      print('[ProductFormData.fromProduct] No productMaterials found');
     }
     
     // 处理成功案例 - 从winImages恢复
@@ -478,6 +484,8 @@ class ProductFormData extends Equatable {
         });
       }
     }
+    
+    print('[ProductFormData.fromProduct] Final counts: qaList=${qaList.length}, buyerInfoItems=${buyerInfoItems.length}');
     
     return ProductFormData(
       name: product.name,
