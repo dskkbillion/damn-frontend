@@ -59,7 +59,7 @@ class AppTheme {
     ),
     
     // 卡片主题 - 使用淡主题色背景
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       // 添加轻微阴影提升立体感
       elevation: 1,
       shadowColor: AppColors.grey[300]!.withOpacity(0.3),
@@ -170,7 +170,7 @@ class AppTheme {
     ),
     
     // TabBar主题 - 去除Material 3默认的分隔线
-    tabBarTheme: TabBarTheme(
+    tabBarTheme: TabBarThemeData(
       dividerColor: Colors.transparent, // 隐藏TabBar下方的分隔线
       dividerHeight: 0, // 设置分隔线高度为0
       indicatorColor: AppColors.primary, // 选中指示器颜色

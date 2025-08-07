@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/country_code.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 class CountryCodeSelector extends StatelessWidget {
   final CountryCode selectedCountry;
