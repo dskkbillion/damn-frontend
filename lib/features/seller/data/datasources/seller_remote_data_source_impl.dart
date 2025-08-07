@@ -188,6 +188,9 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
         case 'force_disabled':
           apiState = 'force_disabled';
           break;
+        case 'reviewing':
+          apiState = 'normal'; // 草稿发布时，将状态设置为normal
+          break;
         default:
           apiState = state.toLowerCase();
       }
@@ -220,7 +223,10 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
         'statusAudit': productData['statusAudit'] ?? 'SUCCESS',
         'variants': productData['variants'] ?? [],
         'productMaterials': productData['productMaterials'] ?? [],
-        'productType': productData['productType'] ?? 'product',
+        // 草稿发布时，需要将productType从draft改为product
+        'productType': (state.toLowerCase() == 'reviewing' && productData['productType'] == 'draft') 
+            ? 'product' 
+            : (productData['productType'] ?? 'product'),
         // 价格相关字段，确保格式正确
         'originalPrice': productData['originalPrice'] ?? 0.00,
         'sellingPrice': productData['sellingPrice'] ?? 0.00,
@@ -265,6 +271,14 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       
       // 打印请求数据，便于调试
       print('Creating product with data: $data');
+      
+      // 特别调试winImages字段
+      if (data['winImages'] != null && data['winImages'] is List) {
+        final winImagesList = data['winImages'] as List;
+        print('[DEBUG] 创建商品时的winImages: 数量=${winImagesList.length}, 内容=$winImagesList');
+      } else {
+        print('[DEBUG] 创建商品时的winImages为空或格式不正确: ${data['winImages']}');
+      }
 
       // 创建一个专用于商品创建的Dio实例，配置更长的超时时间
       final productCreateDio = Dio(BaseOptions(
@@ -333,6 +347,14 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       // 打印请求数据，便于调试
       print('Updating product with merged data: $mergedData');
       
+      // 特别调试winImages字段
+      if (mergedData['winImages'] != null && mergedData['winImages'] is List) {
+        final winImagesList = mergedData['winImages'] as List;
+        print('[DEBUG] 最终发送的winImages: 数量=${winImagesList.length}, 内容=$winImagesList');
+      } else {
+        print('[DEBUG] 最终发送的winImages为空或格式不正确: ${mergedData['winImages']}');
+      }
+      
       // 创建一个专用于商品更新的Dio实例，配置更长的超时时间
       final productUpdateDio = Dio(BaseOptions(
         baseUrl: _dio.options.baseUrl,
@@ -363,7 +385,11 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       
       // 使用新的Dio实例和更长的超时设置发送请求
       print('Sending product update request with extended timeout (120s)');
-      final response = await productUpdateDio.post('/api/shop/product/update', data: mergedData, options: options);
+      // 对于草稿商品，使用edit端点，避免重置审核状态
+      final isDraft = existingData['productType'] == 'draft';
+      final endpoint = isDraft ? '/api/shop/product/edit' : '/api/shop/product/update';
+      print('Using endpoint: $endpoint for product type: ${existingData['productType']}');
+      final response = await productUpdateDio.post(endpoint, data: mergedData, options: options);
       
       _checkResponse(response);
       
@@ -986,6 +1012,10 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
     // 转换更新数据为JSON格式
     final updateJson = updateData.toJson();
     
+    // 调试日志：检查winImages的处理
+    print('[DEBUG] _mergeProductData - updateJson[winImages]: ${updateJson['winImages']}');
+    print('[DEBUG] _mergeProductData - existingData[winImages]: ${existingData['winImages']}');
+    
     // 构建完整的商品数据，确保所有必需字段都存在
     final mergedData = {
       // 基础信息（必需）
@@ -1007,7 +1037,7 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
                    (updateJson['images'] is List && (updateJson['images'] as List).isNotEmpty 
                     ? (updateJson['images'] as List).first 
                     : existingData['mainImage']),
-      'winImages': existingData['winImages'] ?? [],
+      'winImages': updateJson['winImages'] ?? existingData['winImages'] ?? [],
       
       // 价格相关字段（确保都是数值类型）
       'originalPrice': updateJson['originalPrice'] ?? existingData['originalPrice'] ?? 0.00,

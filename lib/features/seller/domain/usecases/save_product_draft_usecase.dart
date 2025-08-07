@@ -32,6 +32,9 @@ class SaveProductDraftParams extends Equatable {
   /// 已上传的详情图URL列表
   final List<String> detailImageUrls;
   
+  /// 成功案例图片URL列表
+  final List<String> winImageUrls;
+  
   /// 商品ID（编辑草稿时使用）
   final int? productId;
 
@@ -41,6 +44,7 @@ class SaveProductDraftParams extends Equatable {
     this.price = 0,
     this.imageUrls = const [],
     this.detailImageUrls = const [],
+    this.winImageUrls = const [],
     this.categoryId,
     this.variants,
     this.productMaterials,
@@ -49,7 +53,7 @@ class SaveProductDraftParams extends Equatable {
 
   @override
   List<Object?> get props => [
-    name, description, price, imageUrls, detailImageUrls,
+    name, description, price, imageUrls, detailImageUrls, winImageUrls,
     categoryId, variants, productMaterials, productId,
   ];
 }
@@ -77,6 +81,9 @@ class SaveProductDraftUseCase implements UseCase<bool, SaveProductDraftParams> {
         detailImages: params.detailImageUrls.isNotEmpty 
             ? params.detailImageUrls.join(',') 
             : null,
+        winImages: params.winImageUrls.isNotEmpty 
+            ? params.winImageUrls.join(',') 
+            : null,
       );
       
       return _sellerRepository.updateProduct(updateData);
@@ -92,6 +99,9 @@ class SaveProductDraftUseCase implements UseCase<bool, SaveProductDraftParams> {
         productMaterials: params.productMaterials,
         detailImages: params.detailImageUrls.isNotEmpty 
             ? params.detailImageUrls.join(',') 
+            : null,
+        winImages: params.winImageUrls.isNotEmpty 
+            ? params.winImageUrls.join(',') 
             : null,
         productType: 'draft', // 标记为草稿
       );

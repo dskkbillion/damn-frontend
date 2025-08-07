@@ -161,6 +161,9 @@ class SellerManagedProductDto {
   
   /// 定制材料问题
   final List<dynamic>? productMaterials;
+  
+  /// 成功案例图片
+  final String? winImages;
 
   /// 构造函数
   SellerManagedProductDto({
@@ -178,6 +181,7 @@ class SellerManagedProductDto {
     this.category,
     this.variants,
     this.productMaterials,
+    this.winImages,
   });
 
   /// 安全解析价格字段
@@ -188,6 +192,18 @@ class SellerManagedProductDto {
       final parsed = double.tryParse(value);
       return parsed;
     }
+    return null;
+  }
+  
+  /// 处理成功案例图片
+  static String? _processWinImages(dynamic value) {
+    if (value == null) return null;
+    if (value is List) {
+      return value.where((img) => img != null && img.toString().isNotEmpty)
+          .map((img) => img.toString())
+          .join(',');
+    }
+    if (value is String) return value;
     return null;
   }
 
@@ -240,6 +256,7 @@ class SellerManagedProductDto {
           : null,
       variants: json['variants'] as List<dynamic>?,
       productMaterials: json['productMaterials'] as List<dynamic>?,
+      winImages: _processWinImages(json['winImages']),
     );
   }
 
@@ -333,6 +350,7 @@ class SellerManagedProductDto {
       category: productCategory,
       variants: productVariants,
       productMaterials: materials,
+      winImages: winImages,
     );
   }
 

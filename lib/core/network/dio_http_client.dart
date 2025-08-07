@@ -305,8 +305,15 @@ class DioHttpClient implements IHttpClient {
         break;
       case DioExceptionType.badResponse:
         // Try to get message from response data, fallback to status message
-        if (error.response?.data is Map<String, dynamic> && error.response!.data['message'] != null) {
-          errorMessage = error.response!.data['message'];
+        if (error.response?.data is Map<String, dynamic>) {
+          // 优先使用msg字段（后端常用），然后是message字段
+          errorMessage = error.response!.data['msg']?.toString() ?? 
+                        error.response!.data['message']?.toString() ??
+                        error.response?.statusMessage ?? 
+                        "Invalid response from server";
+        } else if (error.response?.data is String) {
+          // 如果响应是字符串，直接使用
+          errorMessage = error.response!.data;
         } else {
           errorMessage = error.response?.statusMessage ?? "Invalid response from server";
         }

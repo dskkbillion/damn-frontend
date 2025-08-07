@@ -192,7 +192,7 @@ class ProductEditState extends Equatable {
       isLoading: false,
       product: product,
       formData: ProductFormData.fromProduct(product),
-      selectedImagePaths: existingImagePaths, // 将现有图片设为可编辑的图片
+      selectedImagePaths: [], // 清空选择的图片路径，因为已有的图片已经在uploadedImageUrls中
       uploadedImageUrls: existingImagePaths, // 这些图片已经是网络URL
     );
   }
@@ -249,6 +249,13 @@ class ProductEditState extends Equatable {
       isSavingDraft: false,
       isDraftSaveSuccess: true,
       hasUnsavedChanges: false,
+    );
+  }
+  
+  /// 重置草稿保存成功状态
+  ProductEditState resetDraftSaveSuccess() {
+    return copyWith(
+      isDraftSaveSuccess: false,
     );
   }
 
@@ -412,6 +419,51 @@ class ProductFormData extends Equatable {
 
   /// 从产品实体创建表单数据
   factory ProductFormData.fromProduct(SellerManagedProduct product) {
+    // 将productMaterials转换回qaList和buyerInfoItems
+    final List<Map<String, String>> qaList = [];
+    final List<Map<String, dynamic>> buyerInfoItems = [];
+    
+    if (product.productMaterials != null) {
+      for (final material in product.productMaterials!) {
+        if (material.type == 'PROBLEM') {
+          // 这是QA项
+          qaList.add({
+            'id': material.id.toString(),
+            'question': material.question,
+            'answer': material.answer,
+          });
+        } else if (material.type == 'TEXT' || material.type == 'ATTACHMENT') {
+          // 这是买家需要提供的信息
+          String type = 'text';
+          if (material.type == 'ATTACHMENT') {
+            type = 'file';
+          }
+          buyerInfoItems.add({
+            'type': type,
+            'label': material.question,
+            'description': material.answer,
+            'isRequired': false,
+          });
+        }
+      }
+    }
+    
+    // 处理成功案例 - 从winImages恢复
+    final List<Map<String, dynamic>> successCases = [];
+    if (product.winImages != null && product.winImages!.isNotEmpty) {
+      // winImages是逗号分隔的字符串
+      final winImageList = product.winImages!.split(',').where((img) => img.trim().isNotEmpty).toList();
+      for (int i = 0; i < winImageList.length; i++) {
+        successCases.add({
+          'id': DateTime.now().millisecondsSinceEpoch + i,
+          'imageUrl': winImageList[i].trim(),
+          'imagePath': '',
+          'title': '',
+          'description': '',
+        });
+      }
+    }
+    
     return ProductFormData(
       name: product.name,
       description: product.description,
@@ -420,6 +472,9 @@ class ProductFormData extends Equatable {
       variants: product.variants ?? [],
       productMaterials: product.productMaterials ?? [],
       detailContent: '',  // 详情内容可能需要从其他字段获取
+      qaList: qaList,
+      buyerInfoItems: buyerInfoItems,
+      successCases: successCases,
     );
   }
 

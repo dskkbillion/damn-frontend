@@ -129,6 +129,9 @@ class SellerManagedProduct extends Equatable {
   
   /// 商品定制材料问题
   final List<ProductMaterial>? productMaterials;
+  
+  /// 成功案例图片
+  final String? winImages;
 
   const SellerManagedProduct({
     required this.id,
@@ -143,6 +146,7 @@ class SellerManagedProduct extends Equatable {
     this.category,
     this.variants,
     this.productMaterials,
+    this.winImages,
   });
 
   @override
@@ -159,6 +163,7 @@ class SellerManagedProduct extends Equatable {
     category,
     variants,
     productMaterials,
+    winImages,
   ];
   
   /// 创建商品副本，可选择性更新部分字段
@@ -175,6 +180,7 @@ class SellerManagedProduct extends Equatable {
     ProductCategory? category,
     List<ProductOptionValue>? variants,
     List<ProductMaterial>? productMaterials,
+    String? winImages,
   }) {
     return SellerManagedProduct(
       id: id ?? this.id,
@@ -189,6 +195,7 @@ class SellerManagedProduct extends Equatable {
       category: category ?? this.category,
       variants: variants ?? this.variants,
       productMaterials: productMaterials ?? this.productMaterials,
+      winImages: winImages ?? this.winImages,
     );
   }
   
@@ -306,6 +313,10 @@ class ProductCreationData extends Equatable {
       'productType': productType, // 添加商品类型
     };
     
+    // 添加价格字段
+    data['sellingPrice'] = price;
+    data['originalPrice'] = price;
+    
     // 添加成功案例图
     if (winImages != null && winImages!.isNotEmpty) {
       data['winImages'] = winImages!.split(',');
@@ -331,6 +342,7 @@ class ProductCreationData extends Equatable {
       data['categoryId'] = categoryId;
     }
     
+    // 确保variants字段始终存在，即使为空数组
     if (variants != null && variants!.isNotEmpty) {
       data['variants'] = variants!.map((v) => {
         'name': v.name.isNotEmpty ? v.name : v.optionName,
@@ -339,14 +351,21 @@ class ProductCreationData extends Equatable {
         'editNum': v.editNum,
         'feature': v.feature,
       }).toList();
+    } else {
+      // 提供空数组作为默认值，确保后端能正确处理
+      data['variants'] = <Map<String, dynamic>>[];
     }
     
+    // 确保productMaterials字段始终存在，即使为空数组
     if (productMaterials != null && productMaterials!.isNotEmpty) {
       data['productMaterials'] = productMaterials!.map((m) => {
         'question': m.question,
         'answer': m.answer,
         'type': m.type,
       }).toList();
+    } else {
+      // 提供空数组作为默认值，确保后端能正确处理
+      data['productMaterials'] = <Map<String, dynamic>>[];
     }
     
     return data;
@@ -387,6 +406,9 @@ class ProductUpdateData extends Equatable {
   
   /// 详情内容（富文本HTML）
   final String? detailContent;
+  
+  /// 成功案例图片（win images）
+  final String? winImages;
 
   const ProductUpdateData({
     required this.id,
@@ -400,6 +422,7 @@ class ProductUpdateData extends Equatable {
     this.productMaterials,
     this.detailImages,
     this.detailContent,
+    this.winImages,
   });
 
   @override
@@ -415,6 +438,7 @@ class ProductUpdateData extends Equatable {
     productMaterials,
     detailImages,
     detailContent,
+    winImages,
   ];
   
   /// 创建新实例，可选择性更新部分字段
@@ -430,6 +454,7 @@ class ProductUpdateData extends Equatable {
     List<ProductMaterial>? productMaterials,
     String? detailImages,
     String? detailContent,
+    String? winImages,
   }) {
     return ProductUpdateData(
       id: id ?? this.id,
@@ -443,6 +468,7 @@ class ProductUpdateData extends Equatable {
       productMaterials: productMaterials ?? this.productMaterials,
       detailImages: detailImages ?? this.detailImages,
       detailContent: detailContent ?? this.detailContent,
+      winImages: winImages ?? this.winImages,
     );
   }
   
@@ -484,6 +510,11 @@ class ProductUpdateData extends Equatable {
     // 添加详情内容
     if (detailContent != null && detailContent!.isNotEmpty) {
       data['detailContent'] = detailContent;
+    }
+    
+    // 添加成功案例图片
+    if (winImages != null && winImages!.isNotEmpty) {
+      data['winImages'] = winImages!.split(',').where((img) => img.trim().isNotEmpty).toList();
     }
     
     // 修复：确保variants格式正确

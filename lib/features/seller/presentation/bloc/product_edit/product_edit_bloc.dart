@@ -505,7 +505,8 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
   
   /// 处理图片，包括格式转换和压缩
   /// 返回处理后的图片路径
-  Future<String> _preprocessImage(String imagePath) async {
+  /// 公开此方法以供外部调用（如成功案例图片上传）
+  Future<String> preprocessImage(String imagePath) async {
     try {
       final File imageFile = File(imagePath);
       
@@ -523,8 +524,12 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
       final int maxSize = 5 * 1024 * 1024; // 5MB最大限制
       final int targetSize = 1 * 1024 * 1024; // 目标1MB
       
-      // 只处理HEIC格式或大于目标大小的图片
-      bool needProcess = extension == '.heic' || extension == '.heif' || fileSize > targetSize;
+      // 处理HEIC、HEIF、WebP格式或大于目标大小的图片
+      // 注意：WebP格式需要转换，因为后端不支持
+      bool needProcess = extension == '.heic' || 
+                        extension == '.heif' || 
+                        extension == '.webp' ||  // 添加webp格式处理
+                        fileSize > targetSize;
       
       if (!needProcess) {
         return imagePath; // 如果不需要处理，返回原路径
@@ -585,7 +590,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
       final String originalPath = event.imagePath;
       
       // 图片预处理：转换格式和压缩
-      final String processedPath = await _preprocessImage(originalPath);
+      final String processedPath = await preprocessImage(originalPath);
       final File file = File(processedPath);
       
       // 检查文件大小是否超过限制 (5MB)
@@ -648,14 +653,28 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     List<String> updatedMainUrls = List.from(state.uploadedImageUrls);
     List<String> updatedDetailUrls = List.from(state.uploadedDetailImageUrls);
     
+    // 从选择的路径列表中移除已上传的图片路径
+    List<String> updatedSelectedPaths = List.from(state.selectedImagePaths);
+    List<String> updatedSelectedDetailPaths = List.from(state.selectedDetailImagePaths);
+    
     if (event.isDetailImage) {
       updatedDetailUrls.add(event.imageUrl);
+      // 移除已上传的本地路径
+      updatedSelectedDetailPaths.remove(event.imagePath);
     } else {
       updatedMainUrls.add(event.imageUrl);
+      // 移除已上传的本地路径
+      updatedSelectedPaths.remove(event.imagePath);
     }
     
     // 检查是否全部上传完成
     final bool allDone = newCount >= state.totalUploadCount;
+    
+    // 如果全部上传完成，清空所有本地路径
+    if (allDone) {
+      updatedSelectedPaths.clear();
+      updatedSelectedDetailPaths.clear();
+    }
     
     // 更新状态
     emit(state.copyWith(
@@ -663,6 +682,8 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
       uploadStatus: allDone ? UploadStatus.success : UploadStatus.uploading,
       uploadedImageUrls: updatedMainUrls,
       uploadedDetailImageUrls: updatedDetailUrls,
+      selectedImagePaths: updatedSelectedPaths,
+      selectedDetailImagePaths: updatedSelectedDetailPaths,
       errorMessage: null, // 清除之前的错误信息
       hasError: false,    // 清除错误状态
     ));
@@ -773,6 +794,24 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
       }
     }
     
+    // 处理成功案例图片
+    List<String> winImageUrls = [];
+    if (state.formData.successCases.isNotEmpty) {
+      for (final successCase in state.formData.successCases) {
+        // 只使用imageUrl字段
+        final imageUrl = successCase['imageUrl']?.toString() ?? '';
+        
+        if (imageUrl.isNotEmpty) {
+          // 避免重复添加
+          if (!winImageUrls.contains(imageUrl)) {
+            winImageUrls.add(imageUrl);
+          }
+        } else {
+          print('警告：提交表单时发现成功案例缺少imageUrl');
+        }
+      }
+    }
+    
     if (state.isCreateMode) {
       // 创建商品
       try {
@@ -785,6 +824,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
           categoryId: state.formData.categoryId,
           variants: state.formData.variants,
           productMaterials: materials, // 使用转换后的materials
+          winImages: winImageUrls.isNotEmpty ? winImageUrls.join(',') : null, // 添加成功案例图片
           detailImages: state.uploadedDetailImageUrls.isNotEmpty ? state.uploadedDetailImageUrls.join(',') : null,
           detailContent: state.formData.detailContent.isNotEmpty ? state.formData.detailContent : null,
         );
@@ -823,6 +863,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
           categoryId: state.formData.categoryId,
           variants: state.formData.variants,
           productMaterials: materials, // 使用转换后的materials
+          winImages: winImageUrls.isNotEmpty ? winImageUrls.join(',') : null, // 添加成功案例图片
           detailImages: state.uploadedDetailImageUrls.isNotEmpty ? state.uploadedDetailImageUrls.join(',') : null,
           detailContent: state.formData.detailContent.isNotEmpty ? state.formData.detailContent : null,
         );
@@ -885,48 +926,23 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     emit(state.copyWithSavingDraft());
     
     try {
-      // 获取已上传的图片URL
-      List<String> finalImageUrls = List.from(state.uploadedImageUrls);
-      List<String> finalDetailUrls = List.from(state.uploadedDetailImageUrls);
+      // 获取已上传的图片URL，使用Set去重
+      Set<String> finalImageUrlsSet = Set.from(state.uploadedImageUrls);
+      Set<String> finalDetailUrlsSet = Set.from(state.uploadedDetailImageUrls);
       
-      // 对于草稿，如果有本地选择的图片，尝试上传但不强制要求成功
+      // 只处理尚未上传的本地图片
+      // 如果selectedImagePaths不为空，说明有未上传的本地图片
       if (state.selectedImagePaths.isNotEmpty) {
-        try {
-          for (final imagePath in state.selectedImagePaths) {
-            final file = File(imagePath);
-            final uploadResult = await _fileUploadRepository.uploadFile(file);
-            
-            uploadResult.fold(
-              (failure) {
-                // 图片上传失败不阻止草稿保存，只记录日志
-                print('草稿保存：图片上传失败 ${failure.message}，继续保存草稿');
-              },
-              (url) => finalImageUrls.add(url),
-            );
-          }
-        } catch (e) {
-          // 图片上传异常不阻止草稿保存
-          print('草稿保存：图片上传异常 $e，继续保存草稿');
-        }
+        print('警告：保存草稿时发现未上传的本地图片，数量：${state.selectedImagePaths.length}');
+        
+        // 可以选择：1. 触发上传流程 2. 忽略未上传的图片
+        // 这里选择忽略，因为正常流程中图片应该已经上传完成
+        // 如果需要上传，应该在保存草稿前完成
       }
       
-      // 对于详情图也是同样的处理
+      // 同样处理详情图
       if (state.selectedDetailImagePaths.isNotEmpty) {
-        try {
-          for (final imagePath in state.selectedDetailImagePaths) {
-            final file = File(imagePath);
-            final uploadResult = await _fileUploadRepository.uploadFile(file);
-            
-            uploadResult.fold(
-              (failure) {
-                print('草稿保存：详情图上传失败 ${failure.message}，继续保存草稿');
-              },
-              (url) => finalDetailUrls.add(url),
-            );
-          }
-        } catch (e) {
-          print('草稿保存：详情图上传异常 $e，继续保存草稿');
-        }
+        print('警告：保存草稿时发现未上传的详情图片，数量：${state.selectedDetailImagePaths.length}');
       }
       
       // 转换qaList和buyerInfoItems为productMaterials
@@ -964,33 +980,77 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
         }
       }
       
+      // 处理成功案例图片
+      List<String> winImageUrls = [];
+      List<Map<String, dynamic>> updatedSuccessCases = [];
+      
+      print('[DEBUG] 保存草稿 - 处理成功案例，数量: ${state.formData.successCases.length}');
+      
+      if (state.formData.successCases.isNotEmpty) {
+        for (int i = 0; i < state.formData.successCases.length; i++) {
+          final successCase = Map<String, dynamic>.from(state.formData.successCases[i]);
+          
+          print('[DEBUG] 成功案例 $i: $successCase');
+          
+          // 只使用imageUrl字段，忽略imagePath
+          if (successCase['imageUrl'] != null && successCase['imageUrl'].toString().isNotEmpty) {
+            final imageUrl = successCase['imageUrl'].toString();
+            print('[DEBUG] 找到有效的imageUrl: $imageUrl');
+            // 避免重复添加相同的URL
+            if (!winImageUrls.contains(imageUrl)) {
+              winImageUrls.add(imageUrl);
+            }
+            
+            // 清理successCase数据，移除不必要的imagePath
+            final cleanedCase = Map<String, dynamic>.from(successCase);
+            cleanedCase.remove('imagePath'); // 移除imagePath字段
+            updatedSuccessCases.add(cleanedCase);
+          } else {
+            // 如果没有imageUrl，说明图片未上传，跳过此案例
+            print('[DEBUG] 警告：成功案例缺少imageUrl，imageUrl=${successCase['imageUrl']}');
+          }
+        }
+        
+        // 更新state中的successCases，确保包含新上传的URLs
+        if (updatedSuccessCases.isNotEmpty) {
+          emit(state.copyWith(
+            formData: state.formData.copyWith(
+              successCases: updatedSuccessCases,
+            ),
+          ));
+        }
+      }
+      
       // 创建草稿参数 - 使用新的可选参数构造方式
+      print('[DEBUG] 创建SaveProductDraftParams，winImageUrls数量: ${winImageUrls.length}');
+      print('[DEBUG] winImageUrls内容: $winImageUrls');
+      
       final params = SaveProductDraftParams(
         name: state.formData.name,
         description: state.formData.description,
         price: state.formData.price,
-        imageUrls: finalImageUrls,
-        detailImageUrls: finalDetailUrls,
+        imageUrls: finalImageUrlsSet.toList(),
+        detailImageUrls: finalDetailUrlsSet.toList(),
+        winImageUrls: winImageUrls,
         categoryId: state.formData.categoryId,
         variants: state.formData.variants,
         productMaterials: materials, // 使用转换后的materials
         productId: state.product?.id,
       );
       
+      print('[DEBUG] 调用保存草稿UseCase...');
       final result = await _saveProductDraftUseCase(params);
       
       result.fold(
         (failure) => emit(state.copyWithError(failure.message)),
         (success) {
-          emit(state.copyWithDraftSaveSuccess());
-          // 更新初始数据为当前数据，这样再次编辑时不会误判为有变更
-          add(SetInitialFormData(initialData: state.formData));
-          
-          // 清除本地选择的图片路径，避免重复检测为变更
-          emit(state.copyWith(
+          // 合并状态更新，避免多次emit
+          emit(state.copyWithDraftSaveSuccess().copyWith(
             selectedImagePaths: [],
             selectedDetailImagePaths: [],
           ));
+          // 更新初始数据为当前数据，这样再次编辑时不会误判为有变更
+          add(SetInitialFormData(initialData: state.formData));
         },
       );
       
