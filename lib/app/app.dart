@@ -35,10 +35,13 @@ class MyApp extends ConsumerWidget { // Changed to ConsumerWidget
           // Use the router instance obtained from the provider
           routerConfig: router, 
 
-        title: 'DSKK Flutter Refactor',
+          title: 'DSKK Flutter Refactor',
 
-        // Use the centralized light theme
-        theme: AppTheme.lightTheme,
+          // Hide debug banner
+          debugShowCheckedModeBanner: false,
+
+          // Use the centralized light theme
+          theme: AppTheme.lightTheme,
 
         // 添加国际化配置
         localizationsDelegates: const [

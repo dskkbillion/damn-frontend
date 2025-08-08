@@ -151,7 +151,9 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                             phoneController: _phoneController, // 传递手机号控制器给按钮
                             onSendCode: (phone) async {
                                // 发送验证码时包含区号
-                               final fullPhone = '${_selectedCountry.dialCode}$phone';
+                               // TODO: 暂时注释掉区号，因为国际短信暂时还没有开通
+                               // final fullPhone = '${_selectedCountry.dialCode}$phone';
+                               final fullPhone = phone; // 暂时不使用区号
                                print('Requesting code for $fullPhone');
                                context.read<SmsLoginCubit>().sendCode(fullPhone);
                             },
@@ -181,7 +183,9 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                             : () {
                                if (_formKey.currentState!.validate()) {
                                  // 登录时包含区号
-                                 final fullPhone = '${_selectedCountry.dialCode}${_phoneController.text}';
+                                 // TODO: 暂时注释掉区号，因为国际短信暂时还没有开通
+                                 // final fullPhone = '${_selectedCountry.dialCode}${_phoneController.text}';
+                                 final fullPhone = _phoneController.text; // 暂时不使用区号
                                  print('Attempting login with phone: $fullPhone, code: ${_codeController.text}');
                                  context.read<SmsLoginCubit>().login(
                                    fullPhone,
