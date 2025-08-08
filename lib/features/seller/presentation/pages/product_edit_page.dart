@@ -155,6 +155,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
   final List<BuyerInfoItem> _buyerInfoItems = [];
   bool _isBuyerInfoExpanded = false;
   
+  /// 数据同步标志位
+  bool _isInitialDataLoad = true;
+  
   /// 成功案例相关状态
   // Success cases are now managed in BLoC state
   // final List<SuccessCase> _successCases = []; // Removed - now in BLoC
@@ -338,6 +341,31 @@ class _ProductEditPageState extends State<ProductEditPage> {
   }
 
   @override
+  void didUpdateWidget(ProductEditPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    
+    // 如果产品ID发生变化，重新初始化页面
+    if (oldWidget.productId != widget.productId) {
+      print('[ProductEditPage] Product ID changed from ${oldWidget.productId} to ${widget.productId}, reinitializing...');
+      
+      // 重置数据同步标志位
+      _isInitialDataLoad = true;
+      
+      // 清空本地列表
+      _qaList.clear();
+      _buyerInfoItems.clear();
+      
+      // 解析新的商品ID
+      final productIdInt = widget.productId != null ? int.tryParse(widget.productId!) : null;
+      
+      // 重新初始化页面
+      _bloc.add(InitializeProductEdit(
+        productId: productIdInt,
+      ));
+    }
+  }
+  
+  @override
   void dispose() {
     // 仅在编辑模式下移除监听器（预览模式下没有添加）
     if (!widget.isPreviewMode) {
@@ -520,37 +548,48 @@ class _ProductEditPageState extends State<ProductEditPage> {
       }
     }
     
-    // 同步QA列表数据
-    setState(() {
-      _qaList.clear();
-      for (final qaMap in formData.qaList) {
-        try {
-          // 确保数据格式正确
-          final qaData = <String, dynamic>{
-            'id': qaMap['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
-            'question': qaMap['question'] ?? '',
-            'answer': qaMap['answer'] ?? '',
-          };
-          _qaList.add(QAPair.fromJson(qaData));
-        } catch (e) {
-          print('Error parsing QA data: $e');
-        }
+    // 同步QA列表数据和买家信息列表数据
+    if (mounted) {
+      // 只在初始加载时同步（避免覆盖用户正在编辑的数据）
+      if (_isInitialDataLoad) {
+        setState(() {
+          // 同步QA列表
+          _qaList.clear();
+          for (final qaMap in formData.qaList) {
+            try {
+              // 确保数据格式正确
+              final qaData = <String, dynamic>{
+                'id': qaMap['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
+                'question': qaMap['question'] ?? '',
+                'answer': qaMap['answer'] ?? '',
+              };
+              _qaList.add(QAPair.fromJson(qaData));
+              print('[ProductEditPage] Added QA item: question="${qaMap['question']}", answer="${qaMap['answer']}"');
+            } catch (e) {
+              print('[ProductEditPage] Error parsing QA data: $e, qaMap: $qaMap');
+            }
+          }
+          // 清理未使用的QA控制器
+          _cleanupUnusedQAControllers();
+          print('[ProductEditPage] Synced ${_qaList.length} QA items from formData');
+          
+          // 同步买家信息列表
+          _buyerInfoItems.clear();
+          for (final buyerInfoMap in formData.buyerInfoItems) {
+            try {
+              _buyerInfoItems.add(BuyerInfoItem.fromJson(buyerInfoMap));
+              print('[ProductEditPage] Added buyer info item: type="${buyerInfoMap['type']}", label="${buyerInfoMap['label']}"');
+            } catch (e) {
+              print('[ProductEditPage] Error parsing buyer info data: $e, buyerInfoMap: $buyerInfoMap');
+            }
+          }
+          print('[ProductEditPage] Synced ${_buyerInfoItems.length} buyer info items from formData');
+          
+          // 标记初始数据已加载
+          _isInitialDataLoad = false;
+        });
       }
-      // 清理未使用的QA控制器
-      _cleanupUnusedQAControllers();
-    });
-    
-    // 同步买家信息列表数据
-    setState(() {
-      _buyerInfoItems.clear();
-      for (final buyerInfoMap in formData.buyerInfoItems) {
-        try {
-          _buyerInfoItems.add(BuyerInfoItem.fromJson(buyerInfoMap));
-        } catch (e) {
-          print('Error parsing buyer info data: $e');
-        }
-      }
-    });
+    }
     
     // Success cases are now managed in BLoC state
     // No need to sync here

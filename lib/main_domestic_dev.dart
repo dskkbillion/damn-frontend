@@ -25,14 +25,19 @@ import 'package:dskk_flutter_refactor/features/seller/di/seller_di.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 
 /// 国服开发版本入口
-/// 使用国内服务器地址：https://app.duoshaokankan.com/prod-api
+/// 国内开发版本入口 - 从环境变量读取服务器地址
 /// 包含测试账号自动登录功能
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 配置国服设置
   RegionConfig.setRegion(RegionType.domestic);
-  const String backendBaseUrl = 'https://app.duoshaokankan.com/prod-api';
+  // 从环境变量获取后端URL
+  await dotenv.load(fileName: ".env");
+  final backendBaseUrl = dotenv.env['BACKEND_BASE_URL'];
+  if (backendBaseUrl == null || backendBaseUrl.isEmpty) {
+    throw Exception('BACKEND_BASE_URL environment variable is not set. Please configure it in your .env file.');
+  }
   print('[Domestic Dev] Using API: $backendBaseUrl');
   print('[Domestic Dev] Model API: ${RegionConfig.modelBaseUrl}');
   print('[Domestic Dev] Currency: ${RegionConfig.defaultCurrency.code} (${RegionConfig.currencySymbol})');

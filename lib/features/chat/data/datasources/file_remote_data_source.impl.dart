@@ -1,16 +1,24 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart'; // Import Dio
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dskk_flutter_refactor/core/error/exceptions.dart'; // Import ServerException
 import 'package:injectable/injectable.dart'; // Add injectable import
 
 // Correct import for Interface using package path
 import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_file_remote_data_source.dart';
 
-// TODO: Inject Dio instance properly via DI
-// For now, creating a basic instance here for simplicity
-// Ensure base URL matches your API gateway
-final _dio = Dio(BaseOptions(baseUrl: "http://app.duoshaokankan.com/prod-api")); 
+// Create Dio instance with proper base URL from environment
+// TODO: This should be injected via DI instead of created here
+final _dio = Dio(BaseOptions(
+  baseUrl: () {
+    final url = dotenv.env['BACKEND_BASE_URL'];
+    if (url == null || url.isEmpty) {
+      throw Exception('BACKEND_BASE_URL environment variable is not set');
+    }
+    return url;
+  }(),
+));
 // NOTE: Configure interceptors (auth, logging)
 
 // @LazySingleton(as: IFileRemoteDataSource) // Add injectable annotation

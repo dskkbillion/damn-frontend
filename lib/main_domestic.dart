@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/core/analytics/observers/analytics_bloc_observer.dart';
 import 'package:dskk_flutter_refactor/core/analytics/di/analytics_injection.dart';
 import 'package:dskk_flutter_refactor/core/utils/config_validator.dart';
+import 'package:dskk_flutter_refactor/core/config/config_validator.dart' as config;
 import 'package:dskk_flutter_refactor/app/app.dart';
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 import 'package:dskk_flutter_refactor/core/config/locale_provider.dart';
@@ -24,13 +25,18 @@ import 'package:dskk_flutter_refactor/features/seller/di/seller_di.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 
 /// 国服生产版本入口
-/// 使用国内服务器地址：https://app.duoshaokankan.com/prod-api
+/// 国内版本入口 - 从环境变量读取服务器地址
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 配置国服设置
   RegionConfig.setRegion(RegionType.domestic);
-  const String backendBaseUrl = 'https://app.duoshaokankan.com/prod-api';
+  // 从环境变量获取后端URL
+  await dotenv.load(fileName: ".env");
+  final backendBaseUrl = dotenv.env['BACKEND_BASE_URL'];
+  if (backendBaseUrl == null || backendBaseUrl.isEmpty) {
+    throw Exception('BACKEND_BASE_URL environment variable is not set. Please configure it in your .env file.');
+  }
   print('[Domestic Production] Using API: $backendBaseUrl');
   print('[Domestic Production] Model API: ${RegionConfig.modelBaseUrl}');
   print('[Domestic Production] Currency: ${RegionConfig.defaultCurrency.code} (${RegionConfig.currencySymbol})');

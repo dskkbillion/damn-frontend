@@ -1,3 +1,4 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../domain/entities/home_feed_item.dart';
 
 /// HomeFeedItem 模型，用于序列化和反序列化 API 响应
@@ -142,7 +143,11 @@ class HomeFeedItemModel extends HomeFeedItem {
     }
     
     // 如果是相对URL，转为完整URL
-    final baseUrl = 'https://app.duoshaokankan.com/prod-api';
+    final baseUrl = dotenv.env['BACKEND_BASE_URL'] ?? '';
+    if (baseUrl.isEmpty) {
+      // 如果环境变量未设置，返回原始URL
+      return relativeUrl;
+    }
     
     // 确保baseUrl不以斜杠结尾，relativeUrl以斜杠开头
     final cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;

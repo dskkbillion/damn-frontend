@@ -41,9 +41,20 @@ class OrderDetailActionButtons extends StatelessWidget {
             },
           );
         }));
-        primaryButton = _buildButton(context, '去支付', () {
-          context.read<OrderDetailBloc>().add(GoToPayment(orderId: order.id));
-        }, isPrimary: true);
+        primaryButton = BlocBuilder<OrderDetailBloc, OrderDetailState>(
+          builder: (context, state) {
+            final isLoading = state is OrderDetailPaymentLoading;
+            return _buildButton(
+              context,
+              isLoading ? '处理中...' : '去支付',
+              isLoading ? null : () {
+                context.read<OrderDetailBloc>().add(GoToPayment(orderId: order.id));
+              },
+              isPrimary: true,
+              isLoading: isLoading,
+            );
+          },
+        );
         break;
 
       // 待提交状态 - 需要提交材料
@@ -105,21 +116,32 @@ class OrderDetailActionButtons extends StatelessWidget {
         buttons.add(_buildButton(context, '申请售后', () {
           _navigateToAfterSales(context);
         }));
-        primaryButton = _buildButton(context, '确认收货', () {
-          dialogs.showConfirmationDialog(
-            context: context,
-            title: '确认收货',
-            content: '您确定已经收到货品，并确认收货吗？',
-            onConfirm: () {
-              context.read<OrderDetailBloc>().add(
-                OrderActionRequested(
-                  action: OrderAction.confirmReceipt, 
-                  orderId: order.id.toString()
-                )
-              );
-            },
-          );
-        }, isPrimary: true);
+        primaryButton = BlocBuilder<OrderDetailBloc, OrderDetailState>(
+          builder: (context, state) {
+            final isLoading = state is OrderDetailActionLoading;
+            return _buildButton(
+              context, 
+              isLoading ? '处理中...' : '确认收货',
+              isLoading ? null : () {
+                dialogs.showConfirmationDialog(
+                  context: context,
+                  title: '确认收货',
+                  content: '您确定已经收到货品，并确认收货吗？',
+                  onConfirm: () {
+                    context.read<OrderDetailBloc>().add(
+                      OrderActionRequested(
+                        action: OrderAction.confirmReceipt, 
+                        orderId: order.id.toString()
+                      )
+                    );
+                  },
+                );
+              },
+              isPrimary: true,
+              isLoading: isLoading,
+            );
+          },
+        );
         break;
 
       case OrderStatus.awaitingEvaluation: // 待评价
@@ -204,14 +226,15 @@ class OrderDetailActionButtons extends StatelessWidget {
   Widget _buildButton(
     BuildContext context, 
     String text, 
-    VoidCallback onPressed, 
-    {bool isPrimary = false}
+    VoidCallback? onPressed, 
+    {bool isPrimary = false, bool isLoading = false}
   ) {
     return OrderActionButtonBuilder.buildButton(
       context, 
       text, 
       onPressed, 
-      isPrimary: isPrimary
+      isPrimary: isPrimary,
+      isLoading: isLoading,
     );
   }
 

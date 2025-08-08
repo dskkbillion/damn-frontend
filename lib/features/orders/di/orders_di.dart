@@ -262,6 +262,7 @@ class OrdersDI {
           submitEvaluationUseCase: sl<SubmitEvaluationUseCase>(),
           submitRequirementsUseCase: sl<SubmitRequirementsUseCase>(),
           getOrderMaterialsUseCase: sl<GetOrderMaterialsUseCase>(),
+          orderRepository: sl<IOrderRepository>(), // Added
         )
       );
       print('[OrdersDI] 已注册 OrderDetailBloc');

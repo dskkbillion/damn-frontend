@@ -1,3 +1,4 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../domain/entities/banner.dart';
 
 /// Banner 模型，用于序列化和反序列化 API 响应
@@ -63,7 +64,16 @@ class BannerModel extends Banner {
     }
     
     // 如果是相对URL，转为完整URL
-    final baseUrl = 'https://app.duoshaokankan.com';
+    // 从环境变量获取基础URL，去掉路径部分只保留域名
+    String baseUrl = dotenv.env['BACKEND_BASE_URL'] ?? '';
+    if (baseUrl.isEmpty) {
+      // 如果环境变量未设置，返回原始URL
+      return relativeUrl;
+    }
+    
+    // 从完整的backend URL中提取域名部分
+    final uri = Uri.parse(baseUrl);
+    baseUrl = '${uri.scheme}://${uri.host}${uri.hasPort ? ':${uri.port}' : ''}';
     
     // 确保baseUrl不以斜杠结尾，relativeUrl以斜杠开头
     final cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;

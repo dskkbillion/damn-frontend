@@ -56,9 +56,14 @@ class _PlatformInterventionApplyPageState extends State<PlatformInterventionAppl
           onPressed: () => context.pop(),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
+      body: GestureDetector(
+        onTap: () {
+          // 点击空白区域收起键盘
+          FocusScope.of(context).unfocus();
+        },
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -240,6 +245,7 @@ class _PlatformInterventionApplyPageState extends State<PlatformInterventionAppl
             ],
           ),
         ),
+      ),
       ),
     );
   }

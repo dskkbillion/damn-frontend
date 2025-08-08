@@ -113,8 +113,8 @@ class OrderActionButtonBuilder {
   static Widget buildButton(
     BuildContext context, 
     String text, 
-    VoidCallback onPressed, 
-    {bool isPrimary = false}
+    VoidCallback? onPressed, 
+    {bool isPrimary = false, bool isLoading = false}
   ) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
@@ -125,9 +125,30 @@ class OrderActionButtonBuilder {
     final buttonShape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(8));
     const buttonMinSize = Size(0, 36);
 
+    // Button content with loading indicator
+    final buttonChild = isLoading
+        ? Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    isPrimary ? colorScheme.onPrimary : colorScheme.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(text, maxLines: 1, overflow: TextOverflow.ellipsis),
+            ],
+          )
+        : Text(text, maxLines: 1, overflow: TextOverflow.ellipsis);
+
     return isPrimary
         ? ElevatedButton(
-            onPressed: onPressed,
+            onPressed: isLoading ? null : onPressed,
             style: ElevatedButton.styleFrom(
                backgroundColor: colorScheme.primary,
                foregroundColor: colorScheme.onPrimary,
@@ -137,10 +158,10 @@ class OrderActionButtonBuilder {
                minimumSize: buttonMinSize,
                elevation: 2,
             ),
-            child: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis),
+            child: buttonChild,
           )
         : OutlinedButton(
-            onPressed: onPressed,
+            onPressed: isLoading ? null : onPressed,
             style: OutlinedButton.styleFrom(
               foregroundColor: colorScheme.primary,
               side: BorderSide(color: colorScheme.primary),
@@ -149,7 +170,7 @@ class OrderActionButtonBuilder {
               shape: buttonShape,
               minimumSize: buttonMinSize,
             ),
-            child: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis),
+            child: buttonChild,
           );
   }
 }

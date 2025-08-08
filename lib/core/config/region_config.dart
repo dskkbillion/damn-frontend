@@ -120,11 +120,22 @@ class RegionConfig {
   static String get apiBaseUrl {
     switch (_currentRegion) {
       case RegionType.domestic:
-        return dotenv.env['BACKEND_BASE_URL'] ?? 'https://app.duoshaokankan.com/prod-api';
+        final url = dotenv.env['BACKEND_BASE_URL'];
+        if (url == null || url.isEmpty) {
+          throw Exception('BACKEND_BASE_URL environment variable is not set. Please configure it in your .env file.');
+        }
+        return url;
       case RegionType.international:
-        return dotenv.env['INTERNATIONAL_API_URL'] ?? 
-               dotenv.env['BACKEND_BASE_URL'] ?? 
-               'https://app.duoshaokankan.com/prod-api';
+        // Try international URL first, then fall back to regular backend URL
+        final internationalUrl = dotenv.env['INTERNATIONAL_API_URL'];
+        if (internationalUrl != null && internationalUrl.isNotEmpty) {
+          return internationalUrl;
+        }
+        final backendUrl = dotenv.env['BACKEND_BASE_URL'];
+        if (backendUrl == null || backendUrl.isEmpty) {
+          throw Exception('BACKEND_BASE_URL environment variable is not set. Please configure it in your .env file.');
+        }
+        return backendUrl;
     }
   }
   
@@ -132,11 +143,22 @@ class RegionConfig {
   static String get modelBaseUrl {
     switch (_currentRegion) {
       case RegionType.domestic:
-        return dotenv.env['MODEL_BASE_URL'] ?? 'http://47.113.230.11:5107';
+        final url = dotenv.env['MODEL_BASE_URL'];
+        if (url == null || url.isEmpty) {
+          throw Exception('MODEL_BASE_URL environment variable is not set. Please configure it in your .env file.');
+        }
+        return url;
       case RegionType.international:
-        return dotenv.env['INTERNATIONAL_MODEL_URL'] ?? 
-               dotenv.env['MODEL_BASE_URL'] ?? 
-               'http://47.113.230.11:5107';
+        // Try international model URL first, then fall back to regular model URL
+        final internationalUrl = dotenv.env['INTERNATIONAL_MODEL_URL'];
+        if (internationalUrl != null && internationalUrl.isNotEmpty) {
+          return internationalUrl;
+        }
+        final modelUrl = dotenv.env['MODEL_BASE_URL'];
+        if (modelUrl == null || modelUrl.isEmpty) {
+          throw Exception('MODEL_BASE_URL environment variable is not set. Please configure it in your .env file.');
+        }
+        return modelUrl;
     }
   }
 }

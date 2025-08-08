@@ -24,7 +24,7 @@ import 'package:dskk_flutter_refactor/features/seller/di/seller_di.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 
 /// 外服生产版本入口
-/// 使用国际服务器地址：https://api-global.duoshaokankan.com
+/// 国际版本入口 - 从环境变量读取服务器地址
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -39,10 +39,15 @@ Future<void> main() async {
   // 配置国际服设置
   RegionConfig.setRegion(RegionType.international);
   
-  // 使用环境变量配置的API地址，开发阶段与国服使用相同地址
-  String backendBaseUrl = dotenv.env['INTERNATIONAL_API_URL'] ?? 
-                          dotenv.env['BACKEND_BASE_URL'] ?? 
-                          'https://app.duoshaokankan.com/prod-api';
+  // 使用环境变量配置的API地址
+  // 优先使用国际服URL，如果没有配置则使用默认的BACKEND_BASE_URL
+  String? backendBaseUrl = dotenv.env['INTERNATIONAL_API_URL'];
+  if (backendBaseUrl == null || backendBaseUrl.isEmpty) {
+    backendBaseUrl = dotenv.env['BACKEND_BASE_URL'];
+    if (backendBaseUrl == null || backendBaseUrl.isEmpty) {
+      throw Exception('BACKEND_BASE_URL environment variable is not set. Please configure it in your .env file.');
+    }
+  }
   print('[International Production] Using API: $backendBaseUrl');
   print('[International Production] Model API: ${RegionConfig.modelBaseUrl}');
   print('[International Production] Currency: ${RegionConfig.defaultCurrency.code} (${RegionConfig.currencySymbol})');

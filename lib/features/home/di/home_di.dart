@@ -118,9 +118,11 @@ Future<void> initHomeDi() async {
       () {
         final backendUrlFromEnv = dotenv.env['BACKEND_BASE_URL'];
         print('[home_di] 读取到的 BACKEND_BASE_URL: $backendUrlFromEnv');
-        final baseUrlToRegister = backendUrlFromEnv ?? 'https://app.duoshaokankan.com/prod-api';
-        print('[home_di] 最终注册为 baseUrl 的值: $baseUrlToRegister');
-        return baseUrlToRegister;
+        if (backendUrlFromEnv == null || backendUrlFromEnv.isEmpty) {
+          throw Exception('BACKEND_BASE_URL environment variable is not set. Please configure it in your .env file.');
+        }
+        print('[home_di] 最终注册为 baseUrl 的值: $backendUrlFromEnv');
+        return backendUrlFromEnv;
       },
       instanceName: 'baseUrl',
     );

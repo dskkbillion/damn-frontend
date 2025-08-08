@@ -7,6 +7,7 @@ import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import Secure Storage
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dskk_flutter_refactor/core/utils/haptic_utils.dart'; // 导入震动工具类
 
 
@@ -1562,8 +1563,12 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
        print('准备发送消息给商家ID: $merchantId, 商品: ${item['name']}');
            
       // 创建新的Dio实例并设置基础URL和超时配置
+      final baseUrl = dotenv.env['BACKEND_BASE_URL'];
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception('BACKEND_BASE_URL environment variable is not set');
+      }
       final dio = Dio(BaseOptions(
-        baseUrl: "http://app.duoshaokankan.com/prod-api",
+        baseUrl: baseUrl,
         connectTimeout: const Duration(seconds: 30), // 连接超时30秒
         receiveTimeout: const Duration(seconds: 30), // 接收超时30秒
         sendTimeout: const Duration(seconds: 30), // 发送超时30秒

@@ -147,13 +147,18 @@ class _OrderRequirementSubmissionFormState
       return const Center(child: CircularProgressIndicator());
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Card(
-        // 使用统一Card主题
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
+    return GestureDetector(
+      onTap: () {
+        // 点击空白区域收起键盘
+        FocusScope.of(context).unfocus();
+      },
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Card(
+          // 使用统一Card主题
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
             // --- Product Info ---
@@ -329,7 +334,8 @@ class _OrderRequirementSubmissionFormState
                  ),
               ],
             ),
-          ],
+            ],
+          ),
         ),
       ),
     ),

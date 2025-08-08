@@ -11,11 +11,20 @@ import '../models/chat_message_dto.dart';
 import '../models/chat_room_dto.dart';
 import 'i_chat_remote_data_source.dart';
 import 'package:injectable/injectable.dart'; // Add injectable import
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-// TODO: Inject Dio instance properly via DI
-// For now, creating a basic instance here for simplicity
-final _dio = Dio(BaseOptions(baseUrl: "http://app.duoshaokankan.com/prod-api")); 
-// NOTE: Replace with your actual base URL and configure interceptors (auth, logging)
+// Create Dio instance with proper base URL from environment
+// TODO: This should be injected via DI instead of created here
+final _dio = Dio(BaseOptions(
+  baseUrl: () {
+    final url = dotenv.env['BACKEND_BASE_URL'];
+    if (url == null || url.isEmpty) {
+      throw Exception('BACKEND_BASE_URL environment variable is not set');
+    }
+    return url;
+  }(),
+));
+// NOTE: Configure interceptors (auth, logging)
 
 // @LazySingleton(as: IChatRemoteDataSource) // Add injectable annotation
 class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {

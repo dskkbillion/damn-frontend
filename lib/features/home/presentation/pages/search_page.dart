@@ -40,7 +40,10 @@ class _SearchPageState extends State<SearchPage> {
 
     try {
       // 获取API基础URL
-      final baseUrl = dotenv.env['BACKEND_BASE_URL'] ?? 'https://app.duoshaokankan.com/prod-api';
+      final baseUrl = dotenv.env['BACKEND_BASE_URL'];
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception('BACKEND_BASE_URL environment variable is not set');
+      }
       final url = Uri.parse('$baseUrl/api/common/config');
 
       // 发起请求

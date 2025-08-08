@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../presentation/bloc/payment_bloc.dart';
 import '../../../core/payment/services/i_payment_service.dart';
@@ -43,13 +44,17 @@ class PaymentDI {
     
     // 注册 ApiClient（如果尚未注册）
     if (!sl.isRegistered<ApiClient>()) {
+      final baseUrl = dotenv.env['BACKEND_BASE_URL'];
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception('BACKEND_BASE_URL environment variable is not set');
+      }
       sl.registerLazySingleton<ApiClient>(
         () => ApiClient.getInstance(
-          baseUrl: 'https://app.duoshaokankan.com/prod-api',
+          baseUrl: baseUrl,
           token: null,
         ),
       );
-      print('[payment_di] Registered ApiClient');
+      print('[payment_di] Registered ApiClient with URL: $baseUrl');
     }
 
     // 注册默认的支付服务（支付宝作为默认）

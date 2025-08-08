@@ -26,7 +26,11 @@ class DioHttpClient implements IHttpClient {
       print("使用区域配置的模型服务URL: $_baseUrl");
     } catch (e) {
       // 如果RegionConfig还没初始化，回退到环境变量
-      _baseUrl = dotenv.env['MODEL_BASE_URL'] ?? 'http://47.113.230.11:5107';
+      final modelUrl = dotenv.env['MODEL_BASE_URL'];
+      if (modelUrl == null || modelUrl.isEmpty) {
+        throw Exception('MODEL_BASE_URL environment variable is not set. Please configure it in your .env file.');
+      }
+      _baseUrl = modelUrl;
       print("使用环境变量的MODEL_BASE_URL: $_baseUrl");
     }
     

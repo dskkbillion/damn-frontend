@@ -22,7 +22,10 @@ class AiDocsFileUploadDataSourceImpl implements IFileUploadDataSource {
     // 定义上传路径
     const String uploadPath = '/api/common/public/upload';
     // 从环境变量获取后端基础URL
-    final String backendBaseUrl = dotenv.env['BACKEND_BASE_URL'] ?? 'http://fallback-backend-url'; 
+    final String? backendBaseUrl = dotenv.env['BACKEND_BASE_URL'];
+    if (backendBaseUrl == null || backendBaseUrl.isEmpty) {
+      throw Exception('BACKEND_BASE_URL environment variable is not set');
+    }
 
     // 构造完整URL
     final String fullUrl = backendBaseUrl + uploadPath;

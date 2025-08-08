@@ -32,7 +32,10 @@ class FileUploadDataSourceImpl implements IFileUploadDataSource {
     // Define the specific path for upload
     const String uploadPath = '/api/common/public/upload';
     // Get the backend base URL from environment variables
-    final String backendBaseUrl = dotenv.env['BACKEND_BASE_URL'] ?? 'http://fallback-backend-url'; // Provide a fallback
+    final String? backendBaseUrl = dotenv.env['BACKEND_BASE_URL'];
+    if (backendBaseUrl == null || backendBaseUrl.isEmpty) {
+      throw Exception('BACKEND_BASE_URL environment variable is not set');
+    }
 
     // Construct the full URL
     final String fullUrl = backendBaseUrl + uploadPath;

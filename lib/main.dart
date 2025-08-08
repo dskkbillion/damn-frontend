@@ -9,6 +9,7 @@ import 'package:dskk_flutter_refactor/core/analytics/observers/analytics_bloc_ob
 import 'package:dskk_flutter_refactor/core/analytics/di/analytics_injection.dart'; // 导入分析模块初始化
 // 导入配置验证工具
 import 'package:dskk_flutter_refactor/core/utils/config_validator.dart';
+import 'package:dskk_flutter_refactor/core/config/config_validator.dart' as config;
 
 // Import the root App Widget
 import 'package:dskk_flutter_refactor/app/app.dart';
@@ -26,22 +27,38 @@ Future<void> main() async { // Make main async
   // Ensure Flutter binding is initialized (required for async operations before runApp)
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load environment variables from .env file (from auth-module)
-  String? backendBaseUrl;
+  // Load environment variables from .env file
   try {
      await dotenv.load(fileName: ".env");
-     backendBaseUrl = dotenv.env['BACKEND_BASE_URL']; // Get URL after loading
-     print('.env file loaded successfully. Base URL: $backendBaseUrl');
-     if (backendBaseUrl == null || backendBaseUrl.isEmpty) {
-       print('WARNING: BACKEND_BASE_URL is empty or not found in .env file.');
-       backendBaseUrl = 'https://app.duoshaokankan.com/prod-api'; // Fallback
-       print('Using fallback Base URL: $backendBaseUrl');
+     print('.env file loaded successfully.');
+     
+     // Validate required environment variables
+     config.ConfigValidator.validateRequired();
+     
+     // Get validated URL
+     final backendBaseUrl = config.ConfigValidator.getRequired('BACKEND_BASE_URL');
+     print('Backend Base URL: $backendBaseUrl');
+     
+     // Check optional variables and log warnings
+     final warnings = config.ConfigValidator.validateOptional();
+     if (warnings.isNotEmpty) {
+       print('\nConfiguration warnings:');
+       for (final warning in warnings) {
+         print('  - $warning');
+       }
      }
   } catch (e) {
-    print('Error loading .env file: $e. Ensure it exists in the project root.');
-    backendBaseUrl = 'https://app.duoshaokankan.com/prod-api'; // Fallback on error
-    print('Using fallback Base URL due to error: $backendBaseUrl');
+    print('\n====== Configuration Error ======');
+    print('$e');
+    if (e is config.ConfigurationException) {
+      config.ConfigValidator.printConfigurationHelp();
+    }
+    print('\nApplication cannot start without required configuration.');
+    print('Please create a .env file with the required environment variables.');
+    rethrow; // Re-throw to stop the application
   }
+  
+  final backendBaseUrl = config.ConfigValidator.getRequired('BACKEND_BASE_URL');
 
   // 验证支付相关配置
   ConfigValidator.printValidationReport();
@@ -49,8 +66,8 @@ Future<void> main() async { // Make main async
   // 初始化SharedPreferences
   final prefs = await SharedPreferences.getInstance();
 
-  // Initialize dependencies, passing the Base URL (from auth-module)
-  await configureDependencies(backendBaseUrl: backendBaseUrl!); // Pass the non-null URL
+  // Initialize dependencies, passing the Base URL
+  await configureDependencies(backendBaseUrl: backendBaseUrl);
   print('[main] Dependency injection configured.');
   
   // --- Manually Inject Test Token and User ID for development (from HEAD) ---

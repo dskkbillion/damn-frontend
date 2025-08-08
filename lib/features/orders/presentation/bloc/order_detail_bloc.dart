@@ -45,6 +45,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
   // final SaveRequirementDraftUseCase _saveRequirementDraftUseCase; // REMOVED
   final SubmitRequirementsUseCase _submitRequirementsUseCase;
   final GetOrderMaterialsUseCase _getOrderMaterialsUseCase;
+  final IOrderRepository _orderRepository; // Added for platform intervention
   // Add other dependencies as needed
   // final IAfterSaleRepository _afterSaleRepository;
   // final IRatingRepository _ratingRepository;
@@ -63,6 +64,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     // required SaveRequirementDraftUseCase saveRequirementDraftUseCase, // REMOVED
     required SubmitRequirementsUseCase submitRequirementsUseCase,
     required GetOrderMaterialsUseCase getOrderMaterialsUseCase,
+    required IOrderRepository orderRepository, // Added
     // required IAfterSaleRepository afterSaleRepository,
     // required IRatingRepository ratingRepository,
     // required ILogisticsRepository logisticsRepository,
@@ -78,6 +80,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         // _saveRequirementDraftUseCase = saveRequirementDraftUseCase, // REMOVED
         _submitRequirementsUseCase = submitRequirementsUseCase,
         _getOrderMaterialsUseCase = getOrderMaterialsUseCase,
+        _orderRepository = orderRepository, // Added
         // _afterSaleRepository = afterSaleRepository,
         // _ratingRepository = ratingRepository,
         // _logisticsRepository = logisticsRepository,
@@ -451,21 +454,27 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         remarks: event.description,
       );
       
-      // TODO: 需要注入并调用repository
-      // final result = await _orderRepository.addOrderDemand(params);
+      // 调用真实的repository方法
+      final result = await _orderRepository.addOrderDemand(params);
       
-      // 临时模拟成功
-      await Future.delayed(const Duration(seconds: 1));
-      
-      emit(OrderDetailActionSuccess(
-        message: '平台介入申请已提交，客服会在24小时内联系您',
-        actionType: OrderAction.platformIntervention,
-        updatedState: currentState,
-      ));
-      
-      // 触发重新加载
-      add(LoadOrderDetail(orderId: event.orderId));
-      
+      result.fold(
+        (failure) {
+          emit(OrderDetailActionFailure(
+            message: '平台介入申请失败: ${_mapFailureToMessage(failure)}',
+            previousState: currentState,
+          ));
+        },
+        (_) {
+          emit(OrderDetailActionSuccess(
+            message: '平台介入申请已提交，客服会在24小时内联系您',
+            actionType: OrderAction.platformIntervention,
+            updatedState: currentState,
+          ));
+          
+          // 触发重新加载
+          add(LoadOrderDetail(orderId: event.orderId));
+        },
+      );
     } catch (e) {
       emit(OrderDetailActionFailure(
         message: '平台介入申请失败: $e',
@@ -496,25 +505,31 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         remarks: event.description,
       );
       
-      // TODO: 需要注入并调用repository
-      // final result = await _orderRepository.addOrderDemand(params);
+      // 调用真实的repository方法
+      final result = await _orderRepository.addOrderDemand(params);
       
-      // 临时模拟成功
-      await Future.delayed(const Duration(seconds: 1));
-      
-      final message = event.type == 'replenishment' 
-        ? '补充材料申请已提交，卖家会在24小时内回复'
-        : '重做申请已提交，卖家会重新处理您的订单';
-      
-      emit(OrderDetailActionSuccess(
-        message: message,
-        actionType: OrderAction.orderDemand,
-        updatedState: currentState,
-      ));
-      
-      // 触发重新加载
-      add(LoadOrderDetail(orderId: event.orderId));
-      
+      result.fold(
+        (failure) {
+          emit(OrderDetailActionFailure(
+            message: '申请提交失败: ${_mapFailureToMessage(failure)}',
+            previousState: currentState,
+          ));
+        },
+        (_) {
+          final message = event.type == 'replenishment' 
+            ? '补充材料申请已提交，卖家会在24小时内回复'
+            : '重做申请已提交，卖家会重新处理您的订单';
+          
+          emit(OrderDetailActionSuccess(
+            message: message,
+            actionType: OrderAction.orderDemand,
+            updatedState: currentState,
+          ));
+          
+          // 触发重新加载
+          add(LoadOrderDetail(orderId: event.orderId));
+        },
+      );
     } catch (e) {
       emit(OrderDetailActionFailure(
         message: '申请提交失败: $e',

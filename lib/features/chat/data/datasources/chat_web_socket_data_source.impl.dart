@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io'; // For Platform check
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dskk_flutter_refactor/core/events/event_bus.dart'; // 导入事件总线
 import 'package:dskk_flutter_refactor/features/chat/data/models/chat_message_dto.dart'; // Import DTO
 import 'package:web_socket_channel/io.dart';
@@ -58,8 +59,23 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
       return;
     }
 
-    // FIX: Revert to ws:// as confirmed by user
-    final url = 'ws://app.duoshaokankan.com/prod-api/websocket/message/$_commonUserId/member';
+    // Construct WebSocket URL from backend URL
+    final backendUrl = dotenv.env['BACKEND_BASE_URL'];
+    if (backendUrl == null || backendUrl.isEmpty) {
+      throw Exception('BACKEND_BASE_URL environment variable is not set');
+    }
+    
+    // Convert HTTP/HTTPS to WS/WSS
+    String wsBaseUrl;
+    if (backendUrl.startsWith('https://')) {
+      wsBaseUrl = backendUrl.replaceFirst('https://', 'wss://');
+    } else if (backendUrl.startsWith('http://')) {
+      wsBaseUrl = backendUrl.replaceFirst('http://', 'ws://');
+    } else {
+      wsBaseUrl = 'ws://$backendUrl';
+    }
+    
+    final url = '$wsBaseUrl/websocket/message/$_commonUserId/member';
     print("[WebSocket] Connecting to: $url");
 
     try {
