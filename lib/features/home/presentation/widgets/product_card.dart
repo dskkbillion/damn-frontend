@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 
 import '../../domain/entities/home_feed_item.dart';
 
@@ -130,7 +131,7 @@ class ProductCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '¥${item.sellingPrice.toStringAsFixed(2)}',
+                        PriceFormatter.format(item.sellingPrice),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

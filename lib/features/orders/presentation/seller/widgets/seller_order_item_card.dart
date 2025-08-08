@@ -6,6 +6,7 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_stat
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_status_widget.dart';
 // Import the new seller buttons widget
 import 'seller_order_item_card_action_buttons.dart';
+import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 
 /// 用于在**卖家**订单列表中显示单个订单摘要信息的卡片 Widget。
 class SellerOrderItemCard extends StatelessWidget {
@@ -194,7 +195,7 @@ class SellerOrderItemCard extends StatelessWidget {
                         const SizedBox(height: 8.0),
                         Text(
                            // 显示订单总价
-                          '¥${order.priceSummary.payPrice.toStringAsFixed(2)}',
+                          '${RegionConfig.currencySymbol}${order.priceSummary.payPrice.toStringAsFixed(2)}',
                           style: textTheme.titleMedium?.copyWith(color: colorScheme.primary, fontWeight: FontWeight.bold),
                         ),
                       ],

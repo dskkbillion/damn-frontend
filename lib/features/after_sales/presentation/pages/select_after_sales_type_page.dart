@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart'; // Import GoRouter
+import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 
 // Import OrderItem entity using the correct path
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_item.dart';
@@ -69,7 +70,7 @@ class SelectAfterSalesTypePage extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(item.skuName ?? '', style: const TextStyle(fontSize: 12, color: Colors.grey)),
                   const SizedBox(height: 4),
-                  Text('¥${item.price.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text('${RegionConfig.currencySymbol}${item.price.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
                 ],
               ),
             ),

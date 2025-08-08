@@ -12,6 +12,7 @@ import '../widgets/empty_state.dart';
 import '../widgets/loading_state.dart';
 import '../widgets/product_card.dart';
 import '../widgets/status_tag.dart';
+import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 
 /// 商品管理页面
 class ProductManagementPage extends StatefulWidget {
@@ -538,7 +539,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
                         const SizedBox(height: 4.0),
                         
                         Text(
-                          '¥${_getBasicTierPrice(product).toStringAsFixed(2)}',
+                          '${RegionConfig.currencySymbol}${_getBasicTierPrice(product).toStringAsFixed(2)}',
                           style: TextStyle(
                             fontSize: 15.0,
                             fontWeight: FontWeight.w500,

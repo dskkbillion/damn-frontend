@@ -10,6 +10,7 @@ import '../widgets/profile_header.dart';
 import '../../../seller/presentation/pages/seller_profile_page.dart';
   import '../../../../core/navigation/navigation_helper.dart';
   import '../../../../core/animations/page_transitions.dart';
+import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 
 class BlocProfilePage extends StatefulWidget {
   const BlocProfilePage({super.key});
@@ -281,7 +282,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                               children: [
                                 const Text('待结算'),
                                 const SizedBox(height: 4),
-                                Text('¥ ${state.walletSummary.pendingAmount?.toStringAsFixed(2) ?? '0.00'}'),
+                                Text('${RegionConfig.currencySymbol} ${state.walletSummary.pendingAmount?.toStringAsFixed(2) ?? '0.00'}'),
                               ],
                             ),
                             Column(
@@ -289,7 +290,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                               children: [
                                 const Text('总收入'),
                                 const SizedBox(height: 4),
-                                Text('¥ ${state.walletSummary.totalIncome?.toStringAsFixed(2) ?? '0.00'}'),
+                                Text('${RegionConfig.currencySymbol} ${state.walletSummary.totalIncome?.toStringAsFixed(2) ?? '0.00'}'),
                               ],
                             ),
                             const Icon(Icons.arrow_forward_ios, size: 16),

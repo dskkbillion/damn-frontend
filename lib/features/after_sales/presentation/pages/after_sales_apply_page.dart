@@ -5,6 +5,7 @@ import 'dart:io'; // Import dart:io for File
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
 import '../bloc/after_sales_bloc.dart'; // Import Bloc/Event
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
+import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 
 /// 售后申请表单页面
 class AfterSalesApplyPage extends StatefulWidget {
@@ -206,8 +207,8 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
                       controller: _amountController, // Use controller
                       decoration: InputDecoration(
                         labelText: '退款金额',
-                        hintText: '最多可退 ¥${maxRefundAmount.toStringAsFixed(2)}', // Show max amount
-                        prefixText: '¥ ',
+                        hintText: '最多可退 ${RegionConfig.currencySymbol}${maxRefundAmount.toStringAsFixed(2)}', // Show max amount
+                        prefixText: '${RegionConfig.currencySymbol} ',
                         border: const OutlineInputBorder(),
                       ),
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -368,7 +369,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
                   const SizedBox(height: 4),
                   Text(item.skuName ?? '', style: const TextStyle(fontSize: 12, color: Colors.grey)),
                   const SizedBox(height: 4),
-                  Text('¥${item.price.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text('${RegionConfig.currencySymbol}${item.price.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
                 ],
               ),
             ),

@@ -15,6 +15,7 @@ import '../../../../features/favorites/presentation/bloc/favorites_state.dart';
 import '../../../../features/favorites/presentation/bloc/favorites_event.dart';
 // 导入聊天模块
 import '../../../../features/chat/domain/repositories/i_chat_repository.dart';
+import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 
 /// 商品详情页面
 class ProductDetailPage extends StatefulWidget {
@@ -492,7 +493,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
   // 获取档位价格显示（包含名称和价格）
   String _getTierPriceDisplay(BuildContext context, ProductVariant variant) {
     final tierName = _getTierDisplayName(variant.name, context);
-    final price = '¥${variant.sellingPrice.toStringAsFixed(2)}';
+    final price = '${RegionConfig.currencySymbol}${variant.sellingPrice.toStringAsFixed(2)}';
     return '$tierName $price';
   }
 
@@ -587,7 +588,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           ),
         ),
         child: Text(
-          '一键购买 (¥${variant.sellingPrice.toStringAsFixed(2)})',
+          '一键购买 (${RegionConfig.currencySymbol}${variant.sellingPrice.toStringAsFixed(2)})',
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,

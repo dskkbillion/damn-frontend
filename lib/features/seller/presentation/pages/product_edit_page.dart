@@ -21,6 +21,7 @@ import 'package:dskk_flutter_refactor/features/ai_docs/domain/repositories/i_fil
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/product_edit_models.dart';
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/service_tier_models.dart';
+import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 
 // 输入验证常量
 class ValidationConstants {
@@ -2885,7 +2886,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
           fontSize: 12,
           color: Colors.blue,
         ),
-        prefixText: '¥',
+        prefixText: RegionConfig.currencySymbol,
         prefixStyle: const TextStyle(
           fontSize: 16,
           color: Colors.black87,

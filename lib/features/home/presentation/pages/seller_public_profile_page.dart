@@ -13,6 +13,8 @@ import '../../../../generated/l10n.dart';
 import '../../../../app/navigation/app_router_config.dart';
 // 导入震动工具类
 import '../../../../core/utils/haptic_utils.dart';
+// 导入价格格式化工具
+import '../../../../core/utils/price_formatter.dart';
 
 import 'package:dskk_flutter_refactor/features/home/domain/entities/seller_product.dart';
 import 'package:dskk_flutter_refactor/features/home/presentation/bloc/seller_profile_bloc.dart';
@@ -507,7 +509,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                       
                       // 价格
                       Text(
-                        '¥${product.sellingPrice.toStringAsFixed(2)}',
+                        PriceFormatter.format(product.sellingPrice),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

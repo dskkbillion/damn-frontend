@@ -10,6 +10,7 @@ import '../../domain/entities/wallet_summary.dart';
 import '../bloc/wallet_bloc.dart';
 import '../bloc/wallet_event.dart';
 import '../bloc/wallet_state.dart';
+import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -360,7 +361,7 @@ class _WalletPageState extends State<WalletPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('待结算金额'),
-                Text('¥${(summary.pendingAmount ?? 0.0).toStringAsFixed(2)}'),
+                Text('${RegionConfig.currencySymbol}${(summary.pendingAmount ?? 0.0).toStringAsFixed(2)}'),
               ],
             ),
             const SizedBox(height: 8),
@@ -368,7 +369,7 @@ class _WalletPageState extends State<WalletPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('总收入'),
-                Text('¥${(summary.totalIncome ?? 0.0).toStringAsFixed(2)}'),
+                Text('${RegionConfig.currencySymbol}${(summary.totalIncome ?? 0.0).toStringAsFixed(2)}'),
               ],
             ),
             const SizedBox(height: 16),
@@ -587,15 +588,15 @@ class _WalletPageState extends State<WalletPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('可提现余额: ¥${availableBalance.toStringAsFixed(2)}'),
+            Text('可提现余额: ${RegionConfig.currencySymbol}${availableBalance.toStringAsFixed(2)}'),
             const SizedBox(height: 16),
             TextField(
               controller: amountController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: '提现金额',
                 hintText: '请输入提现金额',
-                border: OutlineInputBorder(),
-                prefixText: '¥ ',
+                border: const OutlineInputBorder(),
+                prefixText: '${RegionConfig.currencySymbol} ',
               ),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
             ),
@@ -634,7 +635,7 @@ class _WalletPageState extends State<WalletPage> {
               // TODO: 实现真实的提现逻辑
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('提现申请已提交：¥${amount.toStringAsFixed(2)}'),
+                  content: Text('提现申请已提交：${RegionConfig.currencySymbol}${amount.toStringAsFixed(2)}'),
                   backgroundColor: Colors.green,
                 ),
               );

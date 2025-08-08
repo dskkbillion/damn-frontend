@@ -1,6 +1,7 @@
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 
 /// Widget displaying information related to the after-sale process.
 class AfterSaleInfoArea extends StatelessWidget {
@@ -26,7 +27,7 @@ class AfterSaleInfoArea extends StatelessWidget {
         message = '您的售后申请正在处理中，卖家将在xx小时内处理，请耐心等待。';
         iconData = Icons.hourglass_bottom_outlined;
         // Placeholder details for refund processing
-        detailsSection = _buildRefundDetailsPlaceholder(context, '处理中', '¥50.00');
+        detailsSection = _buildRefundDetailsPlaceholder(context, '处理中', '${RegionConfig.currencySymbol}50.00');
         // Placeholder actions
         actionButtons = [
           TextButton(onPressed: () {}, child: const Text('联系卖家')),

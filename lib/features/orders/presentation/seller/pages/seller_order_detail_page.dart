@@ -13,6 +13,7 @@ import '../../widgets/order_status_timeline_header.dart';
 import '../../widgets/order_status_widget.dart';
 // Import the item tile widget
 import '../../widgets/order_detail_item_tile.dart';
+import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 // Import the action buttons widget
 import '../widgets/seller_order_detail_actions.dart';
 // Import the dynamic content area widget
@@ -127,7 +128,7 @@ class SellerOrderDetailPage extends StatelessWidget {
         children: [
           Text(label, style: textTheme.bodyMedium),
           Text(
-            '${isDiscount ? '-' : ''}¥${value.toStringAsFixed(2)}',
+            '${isDiscount ? '-' : ''}${RegionConfig.currencySymbol}${value.toStringAsFixed(2)}',
             style: textTheme.bodyMedium?.copyWith(
               fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
               color: isDiscount ? Colors.green : (isTotal ? colorScheme.primary : null),

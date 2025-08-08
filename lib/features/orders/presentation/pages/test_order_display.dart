@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/features/orders/data/datasources/simple_mock_order_data_source.dart';
+import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 
 /// 测试页面：直接显示mock订单数据，不通过Bloc
 class TestOrderDisplayPage extends StatelessWidget {
@@ -51,7 +52,7 @@ class TestOrderDisplayPage extends StatelessWidget {
                     Text('ID: ${order.id}'),
                     Text('编号: ${order.orderSn}'),
                     Text('状态: ${order.state}'),
-                    Text('价格: ¥${order.priceSummary.payPrice}'),
+                    Text('价格: ${RegionConfig.currencySymbol}${order.priceSummary.payPrice}'),
                   ],
                 ),
               ),
@@ -79,7 +80,7 @@ class TestOrderDisplayPage extends StatelessWidget {
                       Text('商品名称: ${order.items.first.productName}'),
                       Text('SKU: ${order.items.first.skuName}'),
                       Text('数量: ${order.items.first.quantity}'),
-                      Text('单价: ¥${order.items.first.price}'),
+                      Text('单价: ${RegionConfig.currencySymbol}${order.items.first.price}'),
                     ] else
                       Text('没有商品信息'),
                   ],

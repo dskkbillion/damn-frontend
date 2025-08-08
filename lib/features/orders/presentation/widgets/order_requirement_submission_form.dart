@@ -7,6 +7,7 @@ import 'dart:io'; // Import dart:io for File
 import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
 import 'dart:convert'; // Import dart:convert for json handling
 import 'file_upload_item.dart';
+import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 
 /// Widget for submitting order requirements (text and attachments).
 class OrderRequirementSubmissionForm extends StatefulWidget {
@@ -175,7 +176,7 @@ class _OrderRequirementSubmissionFormState
                   ),
                   title: Text(item.productName, style: textTheme.titleSmall),
                   subtitle: Text(item.skuName ?? '', style: textTheme.bodySmall),
-                   trailing: Text('¥${item.price.toStringAsFixed(2)}', style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+                   trailing: Text('${RegionConfig.currencySymbol}${item.price.toStringAsFixed(2)}', style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
                    contentPadding: EdgeInsets.zero,
               ),
             if (item != null) const Divider(height: 24),

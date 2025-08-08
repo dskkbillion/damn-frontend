@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/currency.dart';
 import '../../domain/entities/money.dart';
 import '../../domain/services/currency_service.dart';
+import '../../../config/region_config.dart';
 
 part 'currency_cubit.freezed.dart';
 part 'currency_state.dart';
@@ -11,7 +12,7 @@ part 'currency_state.dart';
 class CurrencyCubit extends Cubit<CurrencyState> {
   final CurrencyService _currencyService;
   
-  Currency _selectedCurrency = Currency.cny;
+  Currency _selectedCurrency = RegionConfig.defaultCurrency;
   final Map<String, Money> _convertedPricesCache = {};
   
   CurrencyCubit(this._currencyService) : super(const CurrencyState.initial());
@@ -156,11 +157,17 @@ class CurrencyCubit extends Cubit<CurrencyState> {
   Future<void> _preloadCommonConversions() async {
     final commonPrices = [10.0, 50.0, 100.0, 500.0, 1000.0];
     
-    await convertMultiplePrices(
-      amounts: commonPrices,
-      sourceCurrency: Currency.cny,
-      targetCurrency: _selectedCurrency,
-    );
+    // Use the base currency for the current region
+    final baseCurrency = RegionConfig.defaultCurrency;
+    
+    // Only preload if we're converting to a different currency
+    if (baseCurrency.code != _selectedCurrency.code) {
+      await convertMultiplePrices(
+        amounts: commonPrices,
+        sourceCurrency: baseCurrency,
+        targetCurrency: _selectedCurrency,
+      );
+    }
   }
   
   /// 获取支持的货币列表
