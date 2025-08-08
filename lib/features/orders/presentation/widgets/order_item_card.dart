@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart'; // Import GoRouter
+import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
@@ -310,7 +311,7 @@ class OrderItemCard extends StatelessWidget {
                         Text(
                            // 显示订单总价还是商品单价？原型显示 {orderPrice}
                            // 假设显示订单总价
-                          '¥${order.priceSummary.payPrice.toStringAsFixed(2)}',
+                          PriceFormatter.format(order.priceSummary.payPrice),
                           style: textTheme.titleMedium?.copyWith(color: colorScheme.primary, fontWeight: FontWeight.bold),
                         ),
                       ],

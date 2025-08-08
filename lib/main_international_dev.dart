@@ -30,20 +30,24 @@ import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 配置国际服设置
-  RegionConfig.setRegion(RegionType.international);
-  const String backendBaseUrl = 'https://api-global.duoshaokankan.com';
-  print('[International Dev] Using API: $backendBaseUrl');
-  print('[International Dev] Currency: ${RegionConfig.defaultCurrency.code} (${RegionConfig.currencySymbol})');
-  print('[International Dev] Payment methods: ${RegionConfig.supportedPaymentMethods.map((m) => m.displayName).join(', ')}');
-
-  // 尝试加载.env文件（可选，允许环境变量覆盖）
+  // 先加载.env文件
   try {
     await dotenv.load(fileName: ".env");
     print('.env file loaded successfully.');
   } catch (e) {
     print('No .env file found, using default configuration.');
   }
+  
+  // 配置国际服设置
+  RegionConfig.setRegion(RegionType.international);
+  
+  // 使用环境变量配置的API地址，开发阶段与国服使用相同地址
+  String backendBaseUrl = dotenv.env['INTERNATIONAL_API_URL'] ?? 
+                          dotenv.env['BACKEND_BASE_URL'] ?? 
+                          'https://app.duoshaokankan.com/prod-api';
+  print('[International Dev] Using API: $backendBaseUrl');
+  print('[International Dev] Currency: ${RegionConfig.defaultCurrency.code} (${RegionConfig.currencySymbol})');
+  print('[International Dev] Payment methods: ${RegionConfig.supportedPaymentMethods.map((m) => m.displayName).join(', ')}');
 
   // 验证支付相关配置
   ConfigValidator.printValidationReport();

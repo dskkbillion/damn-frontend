@@ -3,6 +3,7 @@ import 'package:dskk_flutter_refactor/features/home/domain/entities/product_deta
 import 'package:dskk_flutter_refactor/features/home/presentation/widgets/product_images_carousel.dart';
 import 'package:dskk_flutter_refactor/generated/l10n.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 
 /// 商品详情内容组件 - 可在详情页和预览页复用
 class ProductDetailContent extends StatefulWidget {
@@ -333,7 +334,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
 
   String _getTierPriceDisplay(BuildContext context, ProductVariant variant) {
     final tierName = _getTierDisplayName(variant.name, context);
-    final price = '¥${variant.sellingPrice.toStringAsFixed(2)}';
+    final price = PriceFormatter.format(variant.sellingPrice);
     return '$tierName $price';
   }
 
@@ -353,7 +354,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
               ),
             ),
             Text(
-              '¥${widget.product.sellingPrice.toStringAsFixed(2)}',
+              PriceFormatter.format(widget.product.sellingPrice),
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -385,7 +386,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
     if (widget.product.variants != null) {
       for (int i = 0; i < widget.product.variants!.length; i++) {
         final variant = widget.product.variants![i];
-        print('  - Variant $i: ${variant.name} - ¥${variant.sellingPrice}');
+        print('  - Variant $i: ${variant.name} - ${PriceFormatter.format(variant.sellingPrice)}');
       }
     }
     
@@ -486,7 +487,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
           ),
         ),
         child: Text(
-          '一键购买 (¥${displayPrice.toStringAsFixed(2)})',
+          '一键购买 (${PriceFormatter.format(displayPrice)})',
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
