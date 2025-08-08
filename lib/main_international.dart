@@ -44,6 +44,7 @@ Future<void> main() async {
                           dotenv.env['BACKEND_BASE_URL'] ?? 
                           'https://app.duoshaokankan.com/prod-api';
   print('[International Production] Using API: $backendBaseUrl');
+  print('[International Production] Model API: ${RegionConfig.modelBaseUrl}');
   print('[International Production] Currency: ${RegionConfig.defaultCurrency.code} (${RegionConfig.currencySymbol})');
   print('[International Production] Payment methods: ${RegionConfig.supportedPaymentMethods.map((m) => m.displayName).join(', ')}');
 

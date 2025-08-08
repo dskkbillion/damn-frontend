@@ -34,6 +34,7 @@ Future<void> main() async {
   RegionConfig.setRegion(RegionType.domestic);
   const String backendBaseUrl = 'https://app.duoshaokankan.com/prod-api';
   print('[Domestic Dev] Using API: $backendBaseUrl');
+  print('[Domestic Dev] Model API: ${RegionConfig.modelBaseUrl}');
   print('[Domestic Dev] Currency: ${RegionConfig.defaultCurrency.code} (${RegionConfig.currencySymbol})');
   print('[Domestic Dev] Payment methods: ${RegionConfig.supportedPaymentMethods.map((m) => m.displayName).join(', ')}');
 

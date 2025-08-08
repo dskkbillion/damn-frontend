@@ -5,6 +5,7 @@ import 'dart:convert'; // For jsonEncode
 import 'package:http/http.dart' as http; // Import http package
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart'; // Import dotenv
+import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 
 import 'i_http_client.dart';
 import '../error/exceptions.dart'; // Assuming exceptions are in core/error
@@ -18,9 +19,16 @@ class DioHttpClient implements IHttpClient {
   late final String _baseUrl;
 
   DioHttpClient() {
-    // 从环境变量获取BASE_URL，有默认值
-    _baseUrl = dotenv.env['MODEL_BASE_URL'] ?? 'http://47.113.230.11:5102';
-    print("使用MODEL_BASE_URL: $_baseUrl");
+    // 动态获取模型服务URL
+    // 先尝试从RegionConfig获取，如果还没初始化则使用环境变量
+    try {
+      _baseUrl = RegionConfig.modelBaseUrl;
+      print("使用区域配置的模型服务URL: $_baseUrl");
+    } catch (e) {
+      // 如果RegionConfig还没初始化，回退到环境变量
+      _baseUrl = dotenv.env['MODEL_BASE_URL'] ?? 'http://47.113.230.11:5107';
+      print("使用环境变量的MODEL_BASE_URL: $_baseUrl");
+    }
     
     final options = BaseOptions(
       baseUrl: _baseUrl,

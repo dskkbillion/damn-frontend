@@ -18,6 +18,7 @@ import '../models/related_service_model.dart';
 import 'i_ai_chat_remote_data_source.dart';
 import 'exceptions.dart' as ds_exceptions;
 import 'package:dio/dio.dart';
+import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 
 /// {@template ai_chat_remote_data_source_impl}
 /// Implementation of [IAiChatRemoteDataSource] that uses an [IHttpClient]
@@ -32,9 +33,9 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
 
   AiChatRemoteDataSourceImpl(this._httpClient);
 
-  // Helper to get base URL, providing a fallback
+  // Helper to get base URL from region config
   String _getModelBaseUrl() {
-     return dotenv.env['MODEL_BASE_URL'] ?? 'http://default-model-url/api';
+     return RegionConfig.modelBaseUrl;
   }
 
   // Helper to extract data or throw ServerException

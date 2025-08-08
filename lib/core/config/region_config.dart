@@ -1,3 +1,4 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dskk_flutter_refactor/core/currency/domain/entities/currency.dart';
 import 'package:dskk_flutter_refactor/core/payment/models/payment_models.dart';
 
@@ -113,5 +114,29 @@ class RegionConfig {
   /// 获取功能是否启用
   static bool isFeatureEnabled(String feature) {
     return features[feature] ?? false;
+  }
+  
+  /// 获取API基础地址
+  static String get apiBaseUrl {
+    switch (_currentRegion) {
+      case RegionType.domestic:
+        return dotenv.env['BACKEND_BASE_URL'] ?? 'https://app.duoshaokankan.com/prod-api';
+      case RegionType.international:
+        return dotenv.env['INTERNATIONAL_API_URL'] ?? 
+               dotenv.env['BACKEND_BASE_URL'] ?? 
+               'https://app.duoshaokankan.com/prod-api';
+    }
+  }
+  
+  /// 获取模型服务地址
+  static String get modelBaseUrl {
+    switch (_currentRegion) {
+      case RegionType.domestic:
+        return dotenv.env['MODEL_BASE_URL'] ?? 'http://47.113.230.11:5107';
+      case RegionType.international:
+        return dotenv.env['INTERNATIONAL_MODEL_URL'] ?? 
+               dotenv.env['MODEL_BASE_URL'] ?? 
+               'http://47.113.230.11:5107';
+    }
   }
 }

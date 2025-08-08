@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/storage/secure_storage_repository.dart';
@@ -132,11 +133,10 @@ Future<void> initHomeDi() async {
   if (!sl.isRegistered<String>(instanceName: 'modelBaseUrl')) {
     sl.registerLazySingleton<String>(
       () {
-        final modelUrlFromEnv = dotenv.env['MODEL_BASE_URL'];
-        print('[home_di] 读取到的 MODEL_BASE_URL: $modelUrlFromEnv');
-        final modelUrlToRegister = modelUrlFromEnv ?? 'http://47.113.230.11:5102';
-        print('[home_di] 最终注册为 modelBaseUrl 的值: $modelUrlToRegister');
-        return modelUrlToRegister;
+        final modelUrl = RegionConfig.modelBaseUrl;
+        print('[home_di] 使用区域配置的模型服务URL: $modelUrl');
+        print('[home_di] 当前区域: ${RegionConfig.currentRegion.displayName}');
+        return modelUrl;
       },
       instanceName: 'modelBaseUrl',
     );
