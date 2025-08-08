@@ -18,20 +18,17 @@ class S {
   static S? _current;
 
   static S get current {
-    assert(
-      _current != null,
-      'No instance of S was loaded. Try to initialize the S delegate before accessing S.current.',
-    );
+    assert(_current != null,
+        'No instance of S was loaded. Try to initialize the S delegate before accessing S.current.');
     return _current!;
   }
 
   static const AppLocalizationDelegate delegate = AppLocalizationDelegate();
 
   static Future<S> load(Locale locale) {
-    final name =
-        (locale.countryCode?.isEmpty ?? false)
-            ? locale.languageCode
-            : locale.toString();
+    final name = (locale.countryCode?.isEmpty ?? false)
+        ? locale.languageCode
+        : locale.toString();
     final localeName = Intl.canonicalizedLocale(name);
     return initializeMessages(localeName).then((_) {
       Intl.defaultLocale = localeName;
@@ -44,10 +41,8 @@ class S {
 
   static S of(BuildContext context) {
     final instance = S.maybeOf(context);
-    assert(
-      instance != null,
-      'No instance of S present in the widget tree. Did you add S.delegate in localizationsDelegates?',
-    );
+    assert(instance != null,
+        'No instance of S present in the widget tree. Did you add S.delegate in localizationsDelegates?');
     return instance!;
   }
 
@@ -477,7 +472,12 @@ class S {
 
   /// `Retry`
   String get ai_docs_retry {
-    return Intl.message('Retry', name: 'ai_docs_retry', desc: '', args: []);
+    return Intl.message(
+      'Retry',
+      name: 'ai_docs_retry',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `No conversations yet`
@@ -522,12 +522,22 @@ class S {
 
   /// `Cancel`
   String get ai_docs_cancel {
-    return Intl.message('Cancel', name: 'ai_docs_cancel', desc: '', args: []);
+    return Intl.message(
+      'Cancel',
+      name: 'ai_docs_cancel',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Delete`
   String get ai_docs_delete {
-    return Intl.message('Delete', name: 'ai_docs_delete', desc: '', args: []);
+    return Intl.message(
+      'Delete',
+      name: 'ai_docs_delete',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Please select the conversation to delete first`
@@ -652,27 +662,52 @@ class S {
 
   /// `DSKK`
   String get nav_ai_assistant {
-    return Intl.message('DSKK', name: 'nav_ai_assistant', desc: '', args: []);
+    return Intl.message(
+      'DSKK',
+      name: 'nav_ai_assistant',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Home`
   String get nav_home {
-    return Intl.message('Home', name: 'nav_home', desc: '', args: []);
+    return Intl.message(
+      'Home',
+      name: 'nav_home',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Messages`
   String get nav_messages {
-    return Intl.message('Messages', name: 'nav_messages', desc: '', args: []);
+    return Intl.message(
+      'Messages',
+      name: 'nav_messages',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Profile`
   String get nav_profile {
-    return Intl.message('Profile', name: 'nav_profile', desc: '', args: []);
+    return Intl.message(
+      'Profile',
+      name: 'nav_profile',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Dev`
   String get nav_dev {
-    return Intl.message('Dev', name: 'nav_dev', desc: '', args: []);
+    return Intl.message(
+      'Dev',
+      name: 'nav_dev',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Analytics`
@@ -727,7 +762,12 @@ class S {
 
   /// `Loading...`
   String get chat_loading {
-    return Intl.message('Loading...', name: 'chat_loading', desc: '', args: []);
+    return Intl.message(
+      'Loading...',
+      name: 'chat_loading',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Loading failed: {error}`
@@ -882,12 +922,22 @@ class S {
 
   /// `Copy`
   String get chat_copy {
-    return Intl.message('Copy', name: 'chat_copy', desc: '', args: []);
+    return Intl.message(
+      'Copy',
+      name: 'chat_copy',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Recall`
   String get chat_recall {
-    return Intl.message('Recall', name: 'chat_recall', desc: '', args: []);
+    return Intl.message(
+      'Recall',
+      name: 'chat_recall',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Copied to clipboard`
@@ -902,12 +952,22 @@ class S {
 
   /// `Me`
   String get chat_me {
-    return Intl.message('Me', name: 'chat_me', desc: '', args: []);
+    return Intl.message(
+      'Me',
+      name: 'chat_me',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Buyer`
   String get chat_buyer {
-    return Intl.message('Buyer', name: 'chat_buyer', desc: '', args: []);
+    return Intl.message(
+      'Buyer',
+      name: 'chat_buyer',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `I want the seller to see`
@@ -932,12 +992,22 @@ class S {
 
   /// `Collapse`
   String get chat_collapse {
-    return Intl.message('Collapse', name: 'chat_collapse', desc: '', args: []);
+    return Intl.message(
+      'Collapse',
+      name: 'chat_collapse',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Expand`
   String get chat_expand {
-    return Intl.message('Expand', name: 'chat_expand', desc: '', args: []);
+    return Intl.message(
+      'Expand',
+      name: 'chat_expand',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Unable to connect to system admin`
@@ -952,12 +1022,22 @@ class S {
 
   /// `Pause`
   String get chat_audio_pause {
-    return Intl.message('Pause', name: 'chat_audio_pause', desc: '', args: []);
+    return Intl.message(
+      'Pause',
+      name: 'chat_audio_pause',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Play`
   String get chat_audio_play {
-    return Intl.message('Play', name: 'chat_audio_play', desc: '', args: []);
+    return Intl.message(
+      'Play',
+      name: 'chat_audio_play',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `This is a level 1 heading`
@@ -1142,7 +1222,12 @@ class S {
 
   /// `Send`
   String get chat_send {
-    return Intl.message('Send', name: 'chat_send', desc: '', args: []);
+    return Intl.message(
+      'Send',
+      name: 'chat_send',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Send Image/File`
@@ -1325,6 +1410,86 @@ class S {
     );
   }
 
+  /// `Phone Number`
+  String get auth_phone_number {
+    return Intl.message(
+      'Phone Number',
+      name: 'auth_phone_number',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Select Country/Region`
+  String get auth_select_country_region {
+    return Intl.message(
+      'Select Country/Region',
+      name: 'auth_select_country_region',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter phone number`
+  String get auth_phone_validation_empty {
+    return Intl.message(
+      'Please enter phone number',
+      name: 'auth_phone_validation_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter 11-digit phone number`
+  String get auth_phone_validation_invalid_cn {
+    return Intl.message(
+      'Please enter 11-digit phone number',
+      name: 'auth_phone_validation_invalid_cn',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Phone number must start with 1`
+  String get auth_phone_validation_invalid_cn_start {
+    return Intl.message(
+      'Phone number must start with 1',
+      name: 'auth_phone_validation_invalid_cn_start',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter 10-digit phone number`
+  String get auth_phone_validation_invalid_us {
+    return Intl.message(
+      'Please enter 10-digit phone number',
+      name: 'auth_phone_validation_invalid_us',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter 10 or 11-digit phone number`
+  String get auth_phone_validation_invalid_jp_kr {
+    return Intl.message(
+      'Please enter 10 or 11-digit phone number',
+      name: 'auth_phone_validation_invalid_jp_kr',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter a valid phone number`
+  String get auth_phone_validation_invalid_general {
+    return Intl.message(
+      'Please enter a valid phone number',
+      name: 'auth_phone_validation_invalid_general',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Loading failed: {error}`
   String profile_loading_error(String error) {
     return Intl.message(
@@ -1337,7 +1502,12 @@ class S {
 
   /// `My DSKK`
   String get profile_my_dskk {
-    return Intl.message('My DSKK', name: 'profile_my_dskk', desc: '', args: []);
+    return Intl.message(
+      'My DSKK',
+      name: 'profile_my_dskk',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Favorites`
@@ -1362,7 +1532,12 @@ class S {
 
   /// `Wallet`
   String get profile_wallet {
-    return Intl.message('Wallet', name: 'profile_wallet', desc: '', args: []);
+    return Intl.message(
+      'Wallet',
+      name: 'profile_wallet',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Settings`
@@ -1457,12 +1632,22 @@ class S {
 
   /// `Cancel`
   String get profile_cancel {
-    return Intl.message('Cancel', name: 'profile_cancel', desc: '', args: []);
+    return Intl.message(
+      'Cancel',
+      name: 'profile_cancel',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Save`
   String get profile_save {
-    return Intl.message('Save', name: 'profile_save', desc: '', args: []);
+    return Intl.message(
+      'Save',
+      name: 'profile_save',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `User`
@@ -1477,12 +1662,22 @@ class S {
 
   /// `Online`
   String get profile_online {
-    return Intl.message('Online', name: 'profile_online', desc: '', args: []);
+    return Intl.message(
+      'Online',
+      name: 'profile_online',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Offline`
   String get profile_offline {
-    return Intl.message('Offline', name: 'profile_offline', desc: '', args: []);
+    return Intl.message(
+      'Offline',
+      name: 'profile_offline',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Avatar upload failed, please try again`
@@ -1515,20 +1710,20 @@ class S {
     );
   }
 
-  /// `Processing`
+  /// `To Submit`
   String get profile_in_progress {
     return Intl.message(
-      'Processing',
+      'To Submit',
       name: 'profile_in_progress',
       desc: '',
       args: [],
     );
   }
 
-  /// `Completed`
+  /// `To Receive`
   String get profile_completed {
     return Intl.message(
-      'Completed',
+      'To Receive',
       name: 'profile_completed',
       desc: '',
       args: [],
@@ -1537,7 +1732,12 @@ class S {
 
   /// `Support`
   String get profile_refund {
-    return Intl.message('Support', name: 'profile_refund', desc: '', args: []);
+    return Intl.message(
+      'Support',
+      name: 'profile_refund',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Unable to navigate to order list: {error}`
@@ -1552,7 +1752,12 @@ class S {
 
   /// `Home`
   String get home_title {
-    return Intl.message('Home', name: 'home_title', desc: '', args: []);
+    return Intl.message(
+      'Home',
+      name: 'home_title',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Search services`
@@ -1567,7 +1772,12 @@ class S {
 
   /// `Loading...`
   String get home_loading {
-    return Intl.message('Loading...', name: 'home_loading', desc: '', args: []);
+    return Intl.message(
+      'Loading...',
+      name: 'home_loading',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Loading failed: {error}`
@@ -1582,7 +1792,12 @@ class S {
 
   /// `Retry`
   String get home_retry {
-    return Intl.message('Retry', name: 'home_retry', desc: '', args: []);
+    return Intl.message(
+      'Retry',
+      name: 'home_retry',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `End of list`
@@ -1590,6 +1805,26 @@ class S {
     return Intl.message(
       'End of list',
       name: 'home_end_of_list',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No recommended content`
+  String get home_no_content {
+    return Intl.message(
+      'No recommended content',
+      name: 'home_no_content',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pull to refresh for recommendations`
+  String get home_pull_to_refresh {
+    return Intl.message(
+      'Pull to refresh for recommendations',
+      name: 'home_pull_to_refresh',
       desc: '',
       args: [],
     );
@@ -1657,12 +1892,22 @@ class S {
 
   /// `Search`
   String get search_title {
-    return Intl.message('Search', name: 'search_title', desc: '', args: []);
+    return Intl.message(
+      'Search',
+      name: 'search_title',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Search`
   String get search_button {
-    return Intl.message('Search', name: 'search_button', desc: '', args: []);
+    return Intl.message(
+      'Search',
+      name: 'search_button',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Hot Keywords`
@@ -1827,7 +2072,12 @@ class S {
 
   /// `FAQ`
   String get product_detail_faq {
-    return Intl.message('FAQ', name: 'product_detail_faq', desc: '', args: []);
+    return Intl.message(
+      'FAQ',
+      name: 'product_detail_faq',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Case Showcase`

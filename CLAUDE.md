@@ -34,19 +34,35 @@ This is a Flutter e-commerce application (多少看看 DSKK) being refactored fr
 ## Common Development Commands
 
 ### Build & Run
+
+#### Entry Points
+The application has multiple entry points for different environments and regions:
+
+**Production Entries:**
+- `lib/main_domestic.dart` - Domestic production (China server: https://app.duoshaokankan.com/prod-api)
+- `lib/main_international.dart` - International production (Global server: https://api-global.duoshaokankan.com)
+
+**Development Entries:**
+- `lib/main.dart` - Default development entry (with test credentials)
+- `lib/main_domestic_dev.dart` - Domestic development with test account auto-login
+- `lib/main_international_dev.dart` - International development with test account auto-login
+
 ```bash
-# Run main app
+# Run default development version
 flutter run
 
-# Run module preview (isolated development)
-flutter run -t lib/main_dev_preview.dart
-flutter run -t lib/previews/CV-demo/main_buyer_preview.dart
-flutter run -t lib/previews/CV-demo/main_seller_preview.dart
+# Run specific environment
+flutter run -t lib/main_domestic.dart        # Domestic production
+flutter run -t lib/main_international.dart   # International production
+flutter run -t lib/main_domestic_dev.dart    # Domestic dev with test account
+flutter run -t lib/main_international_dev.dart # International dev with test account
 
-# Build APK
-flutter build apk
-flutter build apk --release
+# Build APK for specific environment
+flutter build apk -t lib/main_domestic.dart --release
+flutter build apk -t lib/main_international.dart --release
 ```
+
+**Note:** Module preview entries have been archived to `lib/archived_entries/` for reference.
 
 ### Code Generation
 ```bash

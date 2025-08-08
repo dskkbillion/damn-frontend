@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
 import '../services/payment_service_factory.dart';
-import '../models/payment_models.dart';
+import '../models/payment_models.dart' as models;
 import '../services/payment_navigation_service.dart';
+import '../../config/region_config.dart';
 
 /// 支付方式选择器
 class PaymentMethodSelector extends StatefulWidget {
@@ -13,25 +14,32 @@ class PaymentMethodSelector extends StatefulWidget {
   final String description;
 
   const PaymentMethodSelector({
-    Key? key,
+    super.key,
     required this.orderId,
     required this.amount,
     required this.subject,
     required this.description,
-  }) : super(key: key);
+  });
 
   @override
   State<PaymentMethodSelector> createState() => _PaymentMethodSelectorState();
 }
 
 class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
-  PaymentMethod _selectedMethod = PaymentMethod.alipay;
+  late models.PaymentMethod _selectedMethod;
   bool _isProcessing = false;
+  late List<models.PaymentMethod> _availablePaymentMethods;
   
-  // 微信支付是否可用（上线前设置为false）
-  static const bool _isWechatPaymentAvailable = false;
-  // Stripe支付是否可用
-  static const bool _isStripePaymentAvailable = true;
+  @override
+  void initState() {
+    super.initState();
+    // 根据区域配置获取可用的支付方式
+    _availablePaymentMethods = RegionConfig.supportedPaymentMethods;
+    // 设置默认选中的支付方式
+    _selectedMethod = _availablePaymentMethods.isNotEmpty 
+        ? _availablePaymentMethods.first 
+        : models.PaymentMethod.wallet;
+  }
 
   Future<void> _handlePayment() async {
     if (_isProcessing) return;
@@ -44,19 +52,38 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
       final factory = GetIt.instance<PaymentServiceFactory>();
       final service = await factory.getPaymentService(_selectedMethod.code);
       
-      final request = PaymentRequest(
+      final request = models.PaymentRequest(
         orderId: widget.orderId,
         amount: widget.amount,
         subject: widget.subject,
         description: widget.description,
         method: _selectedMethod,
-        scene: PaymentScene.order,
+        scene: models.PaymentScene.order,
       );
       
-      final result = await service.createPayment(request);
+      // 创建支付订单
+      final response = await service.createPayment(request);
       
-      if (mounted) {
-        PaymentNavigationService.handlePaymentResult(context, result);
+      if (response.success && response.data != null) {
+        // 发起支付
+        final result = await service.pay(response.data!);
+        
+        // 导航到相应页面
+        final navigationService = GetIt.instance<PaymentNavigationService>();
+        if (mounted) {
+          // 将PaymentResult转换为PaymentResponse以便导航处理
+          final navResponse = models.PaymentResponse(
+            success: result.isSuccess,
+            message: result.message,
+            orderId: result.orderId,
+            resultType: result.isSuccess 
+                ? models.PaymentResultType.success 
+                : models.PaymentResultType.failed,
+          );
+          PaymentNavigationService.handlePaymentResult(context, navResponse);
+        }
+      } else {
+        throw Exception(response.message ?? '创建支付订单失败');
       }
     } catch (e) {
       if (mounted) {
@@ -76,6 +103,63 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     }
   }
 
+  Widget _buildPaymentMethodTile(models.PaymentMethod method) {
+    IconData iconData;
+    Color iconColor;
+    Color bgColor;
+    String subtitle;
+    
+    switch (method) {
+      case models.PaymentMethod.alipay:
+        iconData = Icons.payment;
+        iconColor = Colors.blue;
+        bgColor = Colors.blue.shade50;
+        subtitle = '安全快捷支付';
+        break;
+      case models.PaymentMethod.wechat:
+        iconData = Icons.wechat;
+        iconColor = Colors.green;
+        bgColor = Colors.green.shade50;
+        subtitle = '微信安全支付';
+        break;
+      case models.PaymentMethod.stripe:
+        iconData = Icons.credit_card;
+        iconColor = Colors.purple;
+        bgColor = Colors.purple.shade50;
+        subtitle = 'Credit/Debit Card';
+        break;
+      case models.PaymentMethod.wallet:
+        iconData = Icons.account_balance_wallet;
+        iconColor = Colors.orange;
+        bgColor = Colors.orange.shade50;
+        subtitle = RegionConfig.currentRegion == RegionType.domestic ? '余额支付' : 'Wallet Balance';
+        break;
+    }
+    
+    return ListTile(
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          iconData,
+          color: iconColor,
+        ),
+      ),
+      title: Text(method.displayName),
+      subtitle: Text(subtitle),
+      trailing: Radio<models.PaymentMethod>(
+        value: method,
+        groupValue: _selectedMethod,
+        onChanged: (value) => setState(() => _selectedMethod = value!),
+      ),
+      onTap: () => setState(() => _selectedMethod = method),
+    );
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -86,12 +170,12 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                '支付金额：',
-                style: TextStyle(fontSize: 16),
+              Text(
+                RegionConfig.currentRegion == RegionType.domestic ? '支付金额：' : 'Amount: ',
+                style: const TextStyle(fontSize: 16),
               ),
               Text(
-                '¥${widget.amount}',
+                '${RegionConfig.currencySymbol}${widget.amount}',
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -105,13 +189,13 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
         const Divider(),
         
         // 支付方式选择
-        const Padding(
-          padding: EdgeInsets.all(16.0),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              '选择支付方式',
-              style: TextStyle(
+              RegionConfig.currentRegion == RegionType.domestic ? '选择支付方式' : 'Payment Method',
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -119,133 +203,8 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
           ),
         ),
         
-        // 支付宝选项
-        ListTile(
-          leading: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              Icons.payment,
-              color: Colors.blue,
-            ),
-          ),
-          title: const Text('支付宝'),
-          subtitle: const Text('安全快捷支付'),
-          trailing: Radio<PaymentMethod>(
-            value: PaymentMethod.alipay,
-            groupValue: _selectedMethod,
-            onChanged: (value) => setState(() => _selectedMethod = value!),
-          ),
-          onTap: () => setState(() => _selectedMethod = PaymentMethod.alipay),
-        ),
-        
-        // 微信支付选项
-        ListTile(
-          enabled: _isWechatPaymentAvailable,
-          leading: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: _isWechatPaymentAvailable 
-                  ? Colors.green.shade50 
-                  : Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.wechat,
-              color: _isWechatPaymentAvailable 
-                  ? Colors.green 
-                  : Colors.grey,
-            ),
-          ),
-          title: Text(
-            '微信支付',
-            style: TextStyle(
-              color: _isWechatPaymentAvailable 
-                  ? null 
-                  : Colors.grey,
-            ),
-          ),
-          subtitle: Text(
-            _isWechatPaymentAvailable 
-                ? '便捷的移动支付' 
-                : '🚧 施工中，敬请期待',
-            style: TextStyle(
-              color: _isWechatPaymentAvailable 
-                  ? null 
-                  : Colors.orange,
-              fontWeight: _isWechatPaymentAvailable 
-                  ? FontWeight.normal 
-                  : FontWeight.bold,
-            ),
-          ),
-          trailing: Radio<PaymentMethod>(
-            value: PaymentMethod.wechat,
-            groupValue: _selectedMethod,
-            onChanged: _isWechatPaymentAvailable 
-                ? (value) => setState(() => _selectedMethod = value!) 
-                : null,
-          ),
-          onTap: _isWechatPaymentAvailable 
-              ? () => setState(() => _selectedMethod = PaymentMethod.wechat)
-              : null,
-        ),
-        
-        // 信用卡支付选项（Stripe）
-        ListTile(
-          enabled: _isStripePaymentAvailable,
-          leading: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: _isStripePaymentAvailable 
-                  ? Colors.purple.shade50 
-                  : Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.credit_card,
-              color: _isStripePaymentAvailable 
-                  ? Colors.purple 
-                  : Colors.grey,
-            ),
-          ),
-          title: Text(
-            '信用卡支付',
-            style: TextStyle(
-              color: _isStripePaymentAvailable 
-                  ? null 
-                  : Colors.grey,
-            ),
-          ),
-          subtitle: Text(
-            _isStripePaymentAvailable 
-                ? '支持Visa、MasterCard等' 
-                : '🚧 施工中，敬请期待',
-            style: TextStyle(
-              color: _isStripePaymentAvailable 
-                  ? null 
-                  : Colors.orange,
-              fontWeight: _isStripePaymentAvailable 
-                  ? FontWeight.normal 
-                  : FontWeight.bold,
-            ),
-          ),
-          trailing: Radio<PaymentMethod>(
-            value: PaymentMethod.stripe,
-            groupValue: _selectedMethod,
-            onChanged: _isStripePaymentAvailable 
-                ? (value) => setState(() => _selectedMethod = value!) 
-                : null,
-          ),
-          onTap: _isStripePaymentAvailable 
-              ? () => setState(() => _selectedMethod = PaymentMethod.stripe)
-              : null,
-        ),
+        // 动态生成支付方式选项
+        ..._availablePaymentMethods.map((method) => _buildPaymentMethodTile(method)),
         
         const SizedBox(height: 20),
         
@@ -258,41 +217,34 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
             child: ElevatedButton(
               onPressed: _isProcessing ? null : _handlePayment,
               style: ElevatedButton.styleFrom(
-                backgroundColor: _selectedMethod == PaymentMethod.wechat 
-                    ? Colors.green 
-                    : _selectedMethod == PaymentMethod.stripe
-                        ? Colors.purple
-                        : Colors.blue,
-                foregroundColor: Colors.white,
+                backgroundColor: _getButtonColor(),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
               child: _isProcessing
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
+                  ? const CircularProgressIndicator(color: Colors.white)
                   : Text(
-                      '确认支付 ¥${widget.amount}',
+                      RegionConfig.currentRegion == RegionType.domestic ? '确认支付' : 'Pay Now',
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
             ),
           ),
         ),
         
+        const SizedBox(height: 10),
+        
         // 支付说明
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Text(
-            '点击"确认支付"即表示您同意并接受相关服务条款',
+            RegionConfig.currentRegion == RegionType.domestic 
+                ? '点击"确认支付"即表示您同意并接受相关服务条款'
+                : 'By clicking "Pay Now" you agree to our terms of service',
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey.shade600,
@@ -303,4 +255,17 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
       ],
     );
   }
-} 
+
+  Color _getButtonColor() {
+    switch (_selectedMethod) {
+      case models.PaymentMethod.alipay:
+        return Colors.blue;
+      case models.PaymentMethod.wechat:
+        return Colors.green;
+      case models.PaymentMethod.stripe:
+        return Colors.purple;
+      case models.PaymentMethod.wallet:
+        return Colors.orange;
+    }
+  }
+}

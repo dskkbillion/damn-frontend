@@ -1,0 +1,120 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/core/analytics/observers/analytics_bloc_observer.dart';
+import 'package:dskk_flutter_refactor/core/analytics/di/analytics_injection.dart';
+import 'package:dskk_flutter_refactor/core/utils/config_validator.dart';
+import 'package:dskk_flutter_refactor/app/app.dart';
+import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
+import 'package:dskk_flutter_refactor/core/config/locale_provider.dart';
+import 'package:dskk_flutter_refactor/core/services/profile_preloader_service.dart';
+import 'package:dskk_flutter_refactor/app/app_mode.dart';
+
+// Import all module DI configurations
+import 'package:dskk_flutter_refactor/features/home/di/home_di.dart';
+import 'package:dskk_flutter_refactor/features/favorites/di/favorites_di.dart';
+import 'package:dskk_flutter_refactor/features/seller/di/seller_statistics_di.dart';
+import 'package:dskk_flutter_refactor/features/payment/di/payment_di.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/di/ai_docs_di.dart';
+import 'package:dskk_flutter_refactor/features/chat/di/chat_di.dart';
+import 'package:dskk_flutter_refactor/features/profile/di/profile_di.dart';
+import 'package:dskk_flutter_refactor/features/seller/di/seller_di.dart';
+import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+
+/// 国服生产版本入口
+/// 使用国内服务器地址：https://app.duoshaokankan.com/prod-api
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 配置国服设置
+  RegionConfig.setRegion(RegionType.domestic);
+  const String backendBaseUrl = 'https://app.duoshaokankan.com/prod-api';
+  print('[Domestic Production] Using API: $backendBaseUrl');
+  print('[Domestic Production] Currency: ${RegionConfig.defaultCurrency.code} (${RegionConfig.currencySymbol})');
+  print('[Domestic Production] Payment methods: ${RegionConfig.supportedPaymentMethods.map((m) => m.displayName).join(', ')}');
+
+  // 尝试加载.env文件（可选，允许环境变量覆盖）
+  try {
+    await dotenv.load(fileName: ".env");
+    print('.env file loaded successfully.');
+  } catch (e) {
+    print('No .env file found, using default configuration.');
+  }
+
+  // 验证支付相关配置
+  ConfigValidator.printValidationReport();
+
+  // 初始化SharedPreferences
+  final prefs = await SharedPreferences.getInstance();
+
+  // 初始化依赖注入，使用国服API地址
+  await configureDependencies(backendBaseUrl: backendBaseUrl);
+  print('[Domestic Production] Core dependencies configured.');
+  
+  // 初始化各个模块依赖
+  await initHomeDi();
+  print('[Domestic Production] Home module initialized.');
+  
+  await FavoritesDI.init(getIt);
+  print('[Domestic Production] Favorites module initialized.');
+  
+  await AiDocsDI.init(getIt);
+  print('[Domestic Production] AI Docs module initialized.');
+  
+  await ChatDI.init(getIt);
+  print('[Domestic Production] Chat module initialized.');
+  
+  await ProfileDI.init(getIt);
+  print('[Domestic Production] Profile module initialized.');
+  
+  SellerStatisticsDI.init(getIt);
+  print('[Domestic Production] Seller Statistics module initialized.');
+  
+  await SellerDI.init(getIt);
+  print('[Domestic Production] Seller module initialized.');
+  
+  await PaymentDI.init(getIt);
+  print('[Domestic Production] Payment module initialized.');
+
+  // 初始化分析模块
+  await initAnalyticsModule();
+  print('[Domestic Production] Analytics module initialized.');
+
+  // 配置BLoC观察者
+  Bloc.observer = AnalyticsBlocObserver();
+  print('[Domestic Production] Analytics BLoC observer configured.');
+
+  // 触发预加载
+  _triggerPreloadingAfterDelay();
+
+  // 启动应用
+  runApp(
+    ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+      ],
+      child: const MyApp(),
+    ),
+  );
+}
+
+/// 延迟触发预加载，避免阻塞应用启动
+void _triggerPreloadingAfterDelay() {
+  Future.delayed(const Duration(seconds: 3), () async {
+    try {
+      final preloaderService = getIt<ProfilePreloaderService>();
+      print('[Preloader] Starting preloading process...');
+      
+      await preloaderService.preloadBothModes(
+        priorityMode: AppMode.buyer,
+        delayBetweenModes: const Duration(seconds: 3),
+      );
+      
+      print('[Preloader] Preloading process completed successfully');
+    } catch (e) {
+      print('[Preloader] Failed to preload data: $e');
+    }
+  });
+}

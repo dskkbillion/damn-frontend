@@ -7,8 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart'; // 导入SharedPref
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import BLoC
 import 'package:dskk_flutter_refactor/core/analytics/observers/analytics_bloc_observer.dart'; // Import Analytics Observer
 import 'package:dskk_flutter_refactor/core/analytics/di/analytics_injection.dart'; // 导入分析模块初始化
-// 导入core/auth中的IAuthRepository
-import 'package:dskk_flutter_refactor/core/auth/repositories/i_auth_repository.dart' as core_auth;
 // 导入配置验证工具
 import 'package:dskk_flutter_refactor/core/utils/config_validator.dart';
 
@@ -71,11 +69,6 @@ Future<void> main() async { // Make main async
      // Consider how fatal this error should be
   }
   // -------------------------------------------------------------
-  
-  // 注册core_auth.IAuthRepository适配器
-  getIt.registerLazySingleton<core_auth.IAuthRepository>(
-    () => AuthRepositoryAdapter()
-  );
   
   // 初始化分析模块 - 需要在IAuthRepository注册之后
   await initAnalyticsModule();

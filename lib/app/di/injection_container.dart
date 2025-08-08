@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
-import 'package:injectable/injectable.dart';
 import 'package:dskk_flutter_refactor/core/navigation/services/mocks/mock_navigation_service.dart';
 import 'package:dskk_flutter_refactor/core/navigation/services/i_navigation_service.dart';
 import 'package:dskk_flutter_refactor/core/payment/services/i_payment_service.dart';
@@ -26,8 +25,6 @@ import 'package:dskk_flutter_refactor/features/chat/di/chat_di.dart';
 // Import database and DAO
 import 'package:dskk_flutter_refactor/core/database/app_database.dart';
 
-// Import chat module DI
-import 'package:dskk_flutter_refactor/features/chat/di/chat_di.dart';
 
 // Import seller module DI
 import 'package:dskk_flutter_refactor/features/seller/di/seller_di.dart';
@@ -60,9 +57,6 @@ import 'package:dskk_flutter_refactor/features/orders/domain/repositories/i_orde
 import 'package:dskk_flutter_refactor/features/seller/domain/repositories/i_seller_repository.dart';
 
 // Import payment related modules
-import '../../features/payment/presentation/bloc/payment_bloc.dart';
-import '../../features/orders/domain/usecases/create_order_use_case.dart';
-import '../../core/payment/services/payment_service_factory.dart';
 import '../../features/payment/di/payment_di.dart';
 
 final getIt = GetIt.instance;
