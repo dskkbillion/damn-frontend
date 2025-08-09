@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_notification.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/notification_list/notification_list_bloc.dart';
 import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
@@ -18,6 +19,7 @@ import 'package:dskk_flutter_refactor/features/seller/domain/repositories/i_sell
 import 'package:dskk_flutter_refactor/features/seller/data/repositories/seller_repository_impl.dart';
 import 'package:dskk_flutter_refactor/features/seller/data/datasources/seller_remote_data_source_impl.dart';
 import 'package:dskk_flutter_refactor/features/seller/data/datasources/seller_local_data_source_impl.dart';
+import 'package:dskk_flutter_refactor/core/services/notification_navigation_service.dart';
 
 /// 通知列表页面
 class NotificationListPage extends StatelessWidget {
@@ -388,18 +390,23 @@ class _NotificationListContentState extends State<NotificationListContent> with 
   
   /// 根据通知类型导航到相关页面
   void _navigateToRelatedPage(BuildContext context, SellerNotification notification) {
-    // 实现导航逻辑
-    switch (notification.type) {
-      case NotificationType.order:
-        // 跳转到订单详情页
-        break;
-      case NotificationType.refund:
-        // 跳转到售后详情页
-        break;
-      default:
-        // 其他类型可能不需要跳转
-        break;
-    }
+    // 使用统一的通知导航服务处理跳转
+    // 注意：这里假设从NotificationListPage访问的都是当前用户角色的通知
+    // 可以根据页面路由来判断是买家还是卖家
+    final currentPath = ModalRoute.of(context)?.settings.name ?? '';
+    final isSeller = currentPath.contains('seller');
+    
+    NotificationNavigationService.handleNotificationNavigation(
+      context: context,
+      notificationType: notification.type.toString().split('.').last, // 获取枚举名称
+      entityId: notification.relatedEntityId?.toString(),
+      receiverType: isSeller ? 'TenantUser' : 'Member', // 根据当前路由判断用户类型
+      extra: {
+        'notificationId': notification.notificationId,
+        'title': notification.title,
+        'content': notification.content,
+      },
+    );
   }
 }
 
