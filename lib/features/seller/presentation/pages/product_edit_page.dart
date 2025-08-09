@@ -2848,7 +2848,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               if (hasPrice) ...[
                 const SizedBox(height: 2),
                 Text(
-                  '¥${tierConfig.price.toStringAsFixed(tierConfig.price % 1 == 0 ? 0 : 2)}',
+                  '${RegionConfig.currencySymbol}${tierConfig.price.toStringAsFixed(tierConfig.price % 1 == 0 ? 0 : 2)}',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.normal,
