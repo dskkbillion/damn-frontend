@@ -795,5 +795,109 @@
           "type": "String"
         }
       }
+    },
+    
+    "product_management_title": "商品管理",
+    "product_management_tab_on_sale": "在售",
+    "product_management_tab_draft": "草稿箱",
+    "product_management_tab_off_shelf": "已下架",
+    "product_management_action_off_shelf": "下架",
+    "product_management_action_on_shelf": "上架",
+    "product_management_action_edit": "编辑",
+    "product_management_action_delete": "删除",
+    "product_management_action_publish": "发布",
+    "product_management_action_resubmit": "重新提交",
+    "product_management_status_reviewing": "审核中",
+    "product_management_status_rejected": "审核失败",
+    "product_management_status_on_shelf": "已上架",
+    "product_management_status_off_shelf": "已下架",
+    "product_management_status_draft": "草稿",
+    "product_management_status_waiting_review": "等待审核",
+    "product_management_status_unknown": "未知",
+    "product_management_stock_label": "库存",
+    "product_management_sales_label": "销量",
+    "product_management_create_product": "创建商品",
+    "product_management_no_more_products": "没有更多商品了",
+    "product_management_empty_on_sale": "暂无在售商品",
+    "product_management_empty_draft": "暂无草稿商品",
+    "product_management_empty_off_shelf": "暂无已下架商品",
+    "product_management_empty_default": "暂无商品数据",
+    "product_management_draft_preview_hint": "草稿状态的商品需要先发布才能预览",
+    "product_management_confirm_off_shelf_title": "确认下架",
+    "product_management_confirm_off_shelf_message": "确定要下架商品 \"{name}\" 吗？",
+    "@product_management_confirm_off_shelf_message": {
+      "placeholders": {
+        "name": {
+          "type": "String"
+        }
+      }
+    },
+    "product_management_confirm_off_shelf_desc": "下架后：",
+    "product_management_confirm_off_shelf_point1": "• 买家将无法看到和购买此商品",
+    "product_management_confirm_off_shelf_point2": "• 您可以随时重新上架",
+    "product_management_confirm_off_shelf_point3": "• 商品数据会被保留",
+    "product_management_confirm_delete_title": "确认删除",
+    "product_management_confirm_delete_message": "确定要删除这个商品吗？此操作不可撤销。",
+    "product_management_cancel": "取消",
+    "product_management_confirm": "确认下架",
+    "product_management_delete": "删除",
+    
+    "product_edit_title_create": "创建商品",
+    "product_edit_title_edit": "编辑商品",
+    "product_edit_basic_info": "基础信息",
+    "product_edit_product_name": "商品名称",
+    "product_edit_product_name_hint": "请输入商品名称",
+    "product_edit_product_description": "商品描述",
+    "product_edit_product_description_hint": "请输入商品描述",
+    "product_edit_product_price": "商品价格",
+    "product_edit_product_images": "商品图片",
+    "product_edit_add_image": "添加图片",
+    "product_edit_uploading": "上传中...",
+    "product_edit_service_tiers": "服务档位设置",
+    "product_edit_detail_intro": "详情介绍",
+    "product_edit_save_draft": "保存草稿",
+    "product_edit_publish_product": "发布商品",
+    "product_edit_preview_product": "预览商品",
+    "product_edit_at_least_one_image": "请至少上传一张商品图片",
+    "product_edit_save_draft_dialog_title": "保存草稿",
+    "product_edit_save_draft_dialog_message": "是否保存为草稿？",
+    "product_edit_save_draft_dialog_confirm": "保存",
+    "product_edit_edit_attribute": "编辑商品属性",
+    "product_edit_validation_name_required": "请输入商品名称",
+    "product_edit_validation_description_required": "请输入商品描述",
+    "product_edit_validation_image_required": "请至少上传一张商品图片",
+    
+    "product_preview_current_seller": "当前卖家",
+    "product_preview_seller_user": "卖家用户",
+    
+    "product_edit_success_cases": "成功案例",
+    "product_edit_add_success_case": "添加成功案例",
+    "product_edit_edit_success_case": "编辑成功案例",
+    "product_edit_uploading_progress": "上传中 {uploaded}/{total}",
+    "@product_edit_uploading_progress": {
+      "placeholders": {
+        "uploaded": {
+          "type": "int"
+        },
+        "total": {
+          "type": "int"
+        }
+      }
+    },
+    "product_edit_please_enter_label": "请输入信息标签",
+    "product_edit_please_enter_attribute_name": "请输入属性名称",
+    "product_edit_attribute_name_hint": "请输入属性名称",
+    "product_edit_placeholder_hint": "例如：请选择颜色、请输入型号",
+    "product_edit_placeholder_label": "占位符文本",
+    "product_edit_product_preview_title": "商品预览",
+    "product_edit_publish_service": "发布服务",
+    "product_edit_edit_service": "编辑服务",
+    "product_edit_max_characters": "最多{max}个字符",
+    "@product_edit_max_characters": {
+      "placeholders": {
+        "max": {
+          "type": "int"
+        }
+      }
     }
 }

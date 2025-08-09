@@ -12,6 +12,7 @@ import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_i
 import 'package:go_router/go_router.dart';
 import 'product_edit_page.dart'; // 导入ExtendedProductFormData
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/loading_state.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// 商品预览页面 - 使用与商品详情页一致的UI
 class ProductPreviewPage extends StatefulWidget {
@@ -31,7 +32,7 @@ class ProductPreviewPage extends StatefulWidget {
 class _ProductPreviewPageState extends State<ProductPreviewPage> {
   late final ProductEditBloc _bloc;
   ProductDetail? _productDetail;
-  String _currentUserName = '当前卖家';
+  String _currentUserName = '';
 
   @override
   void initState() {
@@ -52,6 +53,12 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
 
   /// 获取当前用户信息
   void _getCurrentUserInfo() async {
+    // Set default value first
+    if (mounted) {
+      setState(() {
+        _currentUserName = AppLocalizations.of(context)?.product_preview_current_seller ?? 'Current Seller';
+      });
+    }
     try {
       // 首先获取登录用户
       final getLoggedInUser = GetIt.I<GetLoggedInUserUseCase>();
@@ -74,7 +81,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
               (userInfo) {
                 if (mounted) {
                   setState(() {
-                    _currentUserName = userInfo.nickName ?? '卖家用户';
+                    _currentUserName = userInfo.nickName ?? (AppLocalizations.of(context)?.product_preview_seller_user ?? 'Seller User');
                   });
                   print('[PreviewPage] Got user name: $_currentUserName');
                 }

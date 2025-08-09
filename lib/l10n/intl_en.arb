@@ -795,5 +795,109 @@
           "type": "String"
         }
       }
+    },
+    
+    "product_management_title": "Product Management",
+    "product_management_tab_on_sale": "On Sale",
+    "product_management_tab_draft": "Drafts",
+    "product_management_tab_off_shelf": "Off Shelf",
+    "product_management_action_off_shelf": "Off Shelf",
+    "product_management_action_on_shelf": "On Shelf",
+    "product_management_action_edit": "Edit",
+    "product_management_action_delete": "Delete",
+    "product_management_action_publish": "Publish",
+    "product_management_action_resubmit": "Resubmit",
+    "product_management_status_reviewing": "Under Review",
+    "product_management_status_rejected": "Review Failed",
+    "product_management_status_on_shelf": "On Shelf",
+    "product_management_status_off_shelf": "Off Shelf",
+    "product_management_status_draft": "Draft",
+    "product_management_status_waiting_review": "Waiting for Review",
+    "product_management_status_unknown": "Unknown",
+    "product_management_stock_label": "Stock",
+    "product_management_sales_label": "Sales",
+    "product_management_create_product": "Create Product",
+    "product_management_no_more_products": "No more products",
+    "product_management_empty_on_sale": "No products on sale",
+    "product_management_empty_draft": "No draft products",
+    "product_management_empty_off_shelf": "No off-shelf products",
+    "product_management_empty_default": "No product data",
+    "product_management_draft_preview_hint": "Draft products need to be published before preview",
+    "product_management_confirm_off_shelf_title": "Confirm Off Shelf",
+    "product_management_confirm_off_shelf_message": "Are you sure you want to take the product \"{name}\" off shelf?",
+    "@product_management_confirm_off_shelf_message": {
+      "placeholders": {
+        "name": {
+          "type": "String"
+        }
+      }
+    },
+    "product_management_confirm_off_shelf_desc": "After off shelf:",
+    "product_management_confirm_off_shelf_point1": "• Buyers will not be able to see or purchase this product",
+    "product_management_confirm_off_shelf_point2": "• You can put it back on shelf at any time",
+    "product_management_confirm_off_shelf_point3": "• Product data will be retained",
+    "product_management_confirm_delete_title": "Confirm Delete",
+    "product_management_confirm_delete_message": "Are you sure you want to delete this product? This action cannot be undone.",
+    "product_management_cancel": "Cancel",
+    "product_management_confirm": "Confirm Off Shelf",
+    "product_management_delete": "Delete",
+    
+    "product_edit_title_create": "Create Product",
+    "product_edit_title_edit": "Edit Product",
+    "product_edit_basic_info": "Basic Information",
+    "product_edit_product_name": "Product Name",
+    "product_edit_product_name_hint": "Please enter product name",
+    "product_edit_product_description": "Product Description",
+    "product_edit_product_description_hint": "Please enter product description",
+    "product_edit_product_price": "Product Price",
+    "product_edit_product_images": "Product Images",
+    "product_edit_add_image": "Add Image",
+    "product_edit_uploading": "Uploading...",
+    "product_edit_service_tiers": "Service Tier Settings",
+    "product_edit_detail_intro": "Detail Introduction",
+    "product_edit_save_draft": "Save Draft",
+    "product_edit_publish_product": "Publish Product",
+    "product_edit_preview_product": "Preview Product",
+    "product_edit_at_least_one_image": "Please upload at least one product image",
+    "product_edit_save_draft_dialog_title": "Save Draft",
+    "product_edit_save_draft_dialog_message": "Do you want to save as draft?",
+    "product_edit_save_draft_dialog_confirm": "Save",
+    "product_edit_edit_attribute": "Edit Product Attributes",
+    "product_edit_validation_name_required": "Please enter product name",
+    "product_edit_validation_description_required": "Please enter product description",
+    "product_edit_validation_image_required": "Please upload at least one product image",
+    
+    "product_preview_current_seller": "Current Seller",
+    "product_preview_seller_user": "Seller User",
+    
+    "product_edit_success_cases": "Success Cases",
+    "product_edit_add_success_case": "Add Success Case",
+    "product_edit_edit_success_case": "Edit Success Case",
+    "product_edit_uploading_progress": "Uploading {uploaded}/{total}",
+    "@product_edit_uploading_progress": {
+      "placeholders": {
+        "uploaded": {
+          "type": "int"
+        },
+        "total": {
+          "type": "int"
+        }
+      }
+    },
+    "product_edit_please_enter_label": "Please enter information label",
+    "product_edit_please_enter_attribute_name": "Please enter attribute name",
+    "product_edit_attribute_name_hint": "Please enter attribute name",
+    "product_edit_placeholder_hint": "e.g., Please select color, Please enter model",
+    "product_edit_placeholder_label": "Placeholder Text",
+    "product_edit_product_preview_title": "Product Preview",
+    "product_edit_publish_service": "Publish Service",
+    "product_edit_edit_service": "Edit Service",
+    "product_edit_max_characters": "Max {max} characters",
+    "@product_edit_max_characters": {
+      "placeholders": {
+        "max": {
+          "type": "int"
+        }
+      }
     }
 }

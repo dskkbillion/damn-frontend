@@ -18,13 +18,21 @@ class NotificationNavigationService {
     String? receiverType,
     Map<String, dynamic>? extra,
   }) {
+    debugPrint('handleNotificationNavigation called with:');
+    debugPrint('  notificationType: $notificationType');
+    debugPrint('  entityId: $entityId');
+    debugPrint('  receiverType: $receiverType');
+    debugPrint('  extra: $extra');
+    
     if (entityId == null || entityId.isEmpty) {
       // 如果没有实体ID，则不进行跳转
+      debugPrint('No entityId provided, skipping navigation');
       return;
     }
 
     // 判断是否为卖家模式
     final isSeller = receiverType == 'TenantUser' || receiverType == 'seller';
+    debugPrint('  isSeller: $isSeller');
 
     switch (notificationType.toLowerCase()) {
       case 'order':

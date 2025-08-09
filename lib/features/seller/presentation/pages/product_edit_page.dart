@@ -22,6 +22,7 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/product_ed
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/service_tier_models.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // 输入验证常量
 class ValidationConstants {
@@ -508,7 +509,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               backgroundColor: const Color(0xFFBF7D2A),
               foregroundColor: Colors.white,
             ),
-            child: const Text('保存草稿'),
+            child: Text(AppLocalizations.of(context)?.product_edit_save_draft ?? 'Save Draft'),
           ),
         ],
       ),
@@ -668,7 +669,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
     // 验证商品名称
     if (_nameController.text.trim().isEmpty) {
       setState(() {
-        _formErrors['name'] = '请输入服务名称';
+        _formErrors['name'] = AppLocalizations.of(context)?.product_edit_validation_name_required ?? 'Please enter service name';
       });
       isValid = false;
     }
@@ -676,7 +677,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
     // 验证商品描述
     if (_descriptionController.text.trim().isEmpty) {
       setState(() {
-        _formErrors['description'] = '请输入服务描述';
+        _formErrors['description'] = AppLocalizations.of(context)?.product_edit_validation_description_required ?? 'Please enter service description';
       });
       isValid = false;
     }
@@ -685,7 +686,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
     if (_bloc.state.selectedImagePaths.isEmpty && (_bloc.state.product?.images.isEmpty ?? true)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('请至少上传一张商品图片'),
+          content: Text(AppLocalizations.of(context)?.product_edit_at_least_one_image ?? 'Please upload at least one product image'),
           backgroundColor: Colors.red,
         ),
       );
@@ -747,8 +748,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
             controller: nameController,
             maxLength: ValidationConstants.maxAttributeNameLength,
             decoration: InputDecoration(
-              hintText: '请输入属性名称',
-              helperText: '最多${ValidationConstants.maxAttributeNameLength}个字符',
+              hintText: AppLocalizations.of(context)?.product_edit_attribute_name_hint ?? 'Please enter attribute name',
+              helperText: AppLocalizations.of(context)?.product_edit_max_characters?.replaceAll('{max}', ValidationConstants.maxAttributeNameLength.toString()) ?? 'Max ${ValidationConstants.maxAttributeNameLength} characters',
               errorText: errorText,
               border: const OutlineInputBorder(),
               counterText: '${nameController.text.length}/${ValidationConstants.maxAttributeNameLength}',
@@ -883,8 +884,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.isPreviewMode 
-            ? '商品预览' 
-            : (widget.productId == null ? '发布服务' : '编辑服务')),
+            ? AppLocalizations.of(context)?.product_edit_preview_product ?? 'Preview Product' 
+            : (widget.productId == null ? AppLocalizations.of(context)?.product_edit_publish_product ?? 'Publish Product' : AppLocalizations.of(context)?.product_edit_title_edit ?? 'Edit Product')),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () async {
@@ -910,7 +911,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 );
               },
               icon: const Icon(Icons.edit),
-              label: const Text('编辑'),
+              label: Text(AppLocalizations.of(context)?.product_management_action_edit ?? 'Edit'),
               style: TextButton.styleFrom(
                 backgroundColor: const Color(0xFFBF7D2A),
                 foregroundColor: Colors.white,
@@ -936,7 +937,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                       IconButton(
                         onPressed: () => _previewProduct(),
                         icon: const Icon(Icons.preview),
-                        tooltip: '预览',
+                        tooltip: AppLocalizations.of(context)?.product_edit_preview_product ?? 'Preview',
                       ),
                       const SizedBox(width: 8),
                     ],
@@ -1193,7 +1194,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                "服务档位设置",
+                AppLocalizations.of(context)?.product_edit_service_tiers ?? 'Service Tier Settings',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -1701,7 +1702,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   Navigator.pop(context);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('请输入信息标签')),
+                    SnackBar(content: Text(AppLocalizations.of(context)?.product_edit_please_enter_label ?? 'Please enter information label')),
                   );
                 }
               },
@@ -1784,7 +1785,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   Navigator.pop(context);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('请输入信息标签')),
+                    SnackBar(content: Text(AppLocalizations.of(context)?.product_edit_please_enter_label ?? 'Please enter information label')),
                   );
                 }
               },
@@ -1813,7 +1814,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                '成功案例',
+                AppLocalizations.of(context)?.product_edit_success_cases ?? 'Success Cases',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -2214,7 +2215,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('添加成功案例'),
+          title: Text(AppLocalizations.of(context)?.product_edit_add_success_case ?? 'Add Success Case'),
           content: ConstrainedBox(
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.6, // 限制最大高度为屏幕高度的60%
@@ -2334,7 +2335,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('编辑成功案例'),
+          title: Text(AppLocalizations.of(context)?.product_edit_edit_success_case ?? 'Edit Success Case'),
           content: ConstrainedBox(
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.6, // 限制最大高度为屏幕高度的60%
@@ -2513,7 +2514,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             ),
             const SizedBox(width: 8),
             Text(
-              '上传中 ${state.uploadedCount}/${state.totalUploadCount}',
+              AppLocalizations.of(context)?.product_edit_uploading_progress?.replaceAll('{uploaded}', state.uploadedCount.toString()).replaceAll('{total}', state.totalUploadCount.toString()) ?? 'Uploading ${state.uploadedCount}/${state.totalUploadCount}',
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.blue[700],
@@ -2765,7 +2766,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             ),
             const SizedBox(height: 4),
             Text(
-              isUploading ? '上传中...' : '添加图片',
+              isUploading ? (AppLocalizations.of(context)?.product_edit_uploading ?? 'Uploading...') : (AppLocalizations.of(context)?.product_edit_add_image ?? 'Add Image'),
               style: TextStyle(
                 fontSize: 12,
                 color: canAdd ? Colors.grey[700] : Colors.grey,
@@ -3431,8 +3432,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 controller: nameController,
                 maxLength: ValidationConstants.maxAttributeNameLength,
                 decoration: InputDecoration(
-                  hintText: '请输入属性名称',
-                  helperText: '最多${ValidationConstants.maxAttributeNameLength}个字符',
+                  hintText: AppLocalizations.of(context)?.product_edit_attribute_name_hint ?? 'Please enter attribute name',
+                  helperText: AppLocalizations.of(context)?.product_edit_max_characters?.replaceAll('{max}', ValidationConstants.maxAttributeNameLength.toString()) ?? 'Max ${ValidationConstants.maxAttributeNameLength} characters',
                   errorText: errorText,
                   border: const OutlineInputBorder(),
                   counterText: '${nameController.text.length}/${ValidationConstants.maxAttributeNameLength}',
@@ -3691,7 +3692,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('编辑商品属性'),
+          title: Text(AppLocalizations.of(context)?.product_edit_edit_attribute ?? 'Edit Product Attributes'),
           content: ConstrainedBox(
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.7,
@@ -3748,8 +3749,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                     TextField(
                       controller: placeholderController,
                       decoration: _lightBorderDecoration.copyWith(
-                        labelText: '占位符文本',
-                        hintText: '例如：请选择颜色、请输入型号',
+                        labelText: AppLocalizations.of(context)?.product_edit_placeholder_label ?? 'Placeholder Text',
+                        hintText: AppLocalizations.of(context)?.product_edit_placeholder_hint ?? 'e.g., Please select color, Please enter model',
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -3784,7 +3785,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               onPressed: () {
                 if (nameController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('请输入属性名称')),
+                    SnackBar(content: Text(AppLocalizations.of(context)?.product_edit_please_enter_attribute_name ?? 'Please enter attribute name')),
                   );
                   return;
                 }

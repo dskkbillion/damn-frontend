@@ -390,15 +390,26 @@ class _NotificationListContentState extends State<NotificationListContent> with 
   
   /// 根据通知类型导航到相关页面
   void _navigateToRelatedPage(BuildContext context, SellerNotification notification) {
+    print('_navigateToRelatedPage called with notification:');
+    print('  type: ${notification.type}');
+    print('  relatedEntityId: ${notification.relatedEntityId}');
+    print('  title: ${notification.title}');
+    
     // 使用统一的通知导航服务处理跳转
     // 注意：这里假设从NotificationListPage访问的都是当前用户角色的通知
     // 可以根据页面路由来判断是买家还是卖家
     final currentPath = ModalRoute.of(context)?.settings.name ?? '';
     final isSeller = currentPath.contains('seller');
     
+    print('  currentPath: $currentPath');
+    print('  isSeller: $isSeller');
+    
+    final typeString = notification.type.toString().split('.').last;
+    print('  typeString for navigation: $typeString');
+    
     NotificationNavigationService.handleNotificationNavigation(
       context: context,
-      notificationType: notification.type.toString().split('.').last, // 获取枚举名称
+      notificationType: typeString, // 获取枚举名称
       entityId: notification.relatedEntityId?.toString(),
       receiverType: isSeller ? 'TenantUser' : 'Member', // 根据当前路由判断用户类型
       extra: {

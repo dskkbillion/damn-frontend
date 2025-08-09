@@ -13,6 +13,7 @@ import '../widgets/loading_state.dart';
 import '../widgets/product_card.dart';
 import '../widgets/status_tag.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// 商品管理页面
 class ProductManagementPage extends StatefulWidget {
@@ -113,10 +114,10 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
           // TabBar直接放在Column顶部
           TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: '在售'),
-            Tab(text: '草稿箱'),
-            Tab(text: '已下架'),
+          tabs: [
+            Tab(text: AppLocalizations.of(context)?.product_management_tab_on_sale ?? 'On Sale'),
+            Tab(text: AppLocalizations.of(context)?.product_management_tab_draft ?? 'Drafts'),
+            Tab(text: AppLocalizations.of(context)?.product_management_tab_off_shelf ?? 'Off Shelf'),
           ],
           indicatorColor: Theme.of(context).primaryColor,
           labelColor: Theme.of(context).primaryColor,
@@ -253,7 +254,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
           context.read<ProductManagementBloc>().add(const NavigateToProductCreate());
         },
         child: const Icon(Icons.add),
-        tooltip: '创建商品',
+        tooltip: AppLocalizations.of(context)?.product_management_create_product ?? 'Create Product',
       ),
     );
   }
@@ -363,7 +364,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
         actions.add(
           _buildActionButton(
             context,
-            '下架',
+            AppLocalizations.of(context)?.product_management_action_off_shelf ?? 'Off Shelf',
             Icons.arrow_downward,
             isProcessing,
             () => _confirmOffShelfProduct(product.id, product.name),
@@ -387,7 +388,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
                 Icon(Icons.hourglass_empty, size: 16, color: Colors.orange[700]),
                 const SizedBox(width: 4),
                 Text(
-                  '等待审核',
+                  AppLocalizations.of(context)?.product_management_status_waiting_review ?? 'Waiting for Review',
                   style: TextStyle(
                     color: Colors.orange[700],
                     fontSize: 12,
@@ -404,7 +405,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
         actions.add(
           _buildActionButton(
             context,
-            '重新提交',
+            AppLocalizations.of(context)?.product_management_action_resubmit ?? 'Resubmit',
             Icons.refresh,
             isProcessing,
             () {
@@ -421,7 +422,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
         actions.add(
           _buildActionButton(
             context,
-            '发布',
+            AppLocalizations.of(context)?.product_management_action_publish ?? 'Publish',
             Icons.publish,
             isProcessing,
             () => _updateProductStatus(product.id, ProductStatus.reviewing),
@@ -430,7 +431,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
         actions.add(
           _buildActionButton(
             context,
-            '删除',
+            AppLocalizations.of(context)?.product_management_action_delete ?? 'Delete',
             Icons.delete_outline,
             isProcessing,
             () => _deleteProduct(product.id),
@@ -442,7 +443,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
         actions.add(
           _buildActionButton(
             context,
-            '上架',
+            AppLocalizations.of(context)?.product_management_action_on_shelf ?? 'On Shelf',
             Icons.arrow_upward,
             isProcessing,
             () => _updateProductStatus(product.id, ProductStatus.normal),
@@ -451,7 +452,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
         actions.add(
           _buildActionButton(
             context,
-            '删除',
+            AppLocalizations.of(context)?.product_management_action_delete ?? 'Delete',
             Icons.delete_outline,
             isProcessing,
             () => _deleteProduct(product.id),
@@ -468,7 +469,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
       actions.add(
         _buildActionButton(
           context,
-          '编辑',
+          AppLocalizations.of(context)?.product_management_action_edit ?? 'Edit',
           Icons.edit_outlined,
           isProcessing,
           () {
@@ -493,7 +494,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
             // 草稿状态显示提示信息
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('草稿状态的商品需要先发布才能预览'),
+                content: Text(AppLocalizations.of(context)?.product_management_draft_preview_hint ?? 'Draft products need to be published before preview'),
                 duration: Duration(seconds: 2),
               ),
             );
@@ -552,7 +553,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
                         Row(
                           children: [
                             Text(
-                              '库存: --',
+                              '${AppLocalizations.of(context)?.product_management_stock_label ?? 'Stock'}: --',
                               style: TextStyle(
                                 fontSize: 13.0,
                                 color: Colors.grey[600],
@@ -560,7 +561,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
                             ),
                             const SizedBox(width: 12.0),
                             Text(
-                              '销量: ${product.sales ?? 0}',
+                              '${AppLocalizations.of(context)?.product_management_sales_label ?? 'Sales'}: ${product.sales ?? 0}',
                               style: TextStyle(
                                 fontSize: 13.0,
                                 color: Colors.grey[600],
@@ -619,7 +620,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 16.0),
         child: Center(
-          child: Text('没有更多商品了', style: TextStyle(color: Colors.grey)),
+          child: Text(AppLocalizations.of(context)?.product_management_no_more_products ?? 'No more products', style: TextStyle(color: Colors.grey)),
         ),
       );
     }
@@ -671,26 +672,26 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('确认下架'),
+        title: Text(AppLocalizations.of(context)?.product_management_confirm_off_shelf_title ?? 'Confirm Off Shelf'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('确定要下架商品 "$productName" 吗？'),
+            Text(AppLocalizations.of(context)?.product_management_confirm_off_shelf_message?.replaceAll('{name}', productName) ?? 'Are you sure you want to take the product "$productName" off shelf?'),
             const SizedBox(height: 8),
-            const Text(
-              '下架后：',
+            Text(
+              AppLocalizations.of(context)?.product_management_confirm_off_shelf_desc ?? 'After off shelf:',
               style: TextStyle(fontWeight: FontWeight.w500),
             ),
-            const Text('• 买家将无法看到和购买此商品'),
-            const Text('• 您可以随时重新上架'),
-            const Text('• 商品数据会被保留'),
+            Text(AppLocalizations.of(context)?.product_management_confirm_off_shelf_point1 ?? '• Buyers will not be able to see or purchase this product'),
+            Text(AppLocalizations.of(context)?.product_management_confirm_off_shelf_point2 ?? '• You can put it back on shelf at any time'),
+            Text(AppLocalizations.of(context)?.product_management_confirm_off_shelf_point3 ?? '• Product data will be retained'),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('取消'),
+            child: Text(AppLocalizations.of(context)?.product_management_cancel ?? 'Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -704,7 +705,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
             style: TextButton.styleFrom(
               foregroundColor: Colors.orange[700],
             ),
-            child: const Text('确认下架'),
+            child: Text(AppLocalizations.of(context)?.product_management_confirm ?? 'Confirm Off Shelf'),
           ),
         ],
       ),
@@ -718,12 +719,12 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('确认删除'),
-        content: const Text('确定要删除这个商品吗？此操作不可撤销。'),
+        title: Text(AppLocalizations.of(context)?.product_management_confirm_delete_title ?? 'Confirm Delete'),
+        content: Text(AppLocalizations.of(context)?.product_management_confirm_delete_message ?? 'Are you sure you want to delete this product? This action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('取消'),
+            child: Text(AppLocalizations.of(context)?.product_management_cancel ?? 'Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -731,7 +732,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
               // 使用之前获取的bloc引用，避免Provider作用域问题
               bloc.add(DeleteProduct(productId: productId));
             },
-            child: const Text('删除'),
+            child: Text(AppLocalizations.of(context)?.product_management_delete ?? 'Delete'),
             style: TextButton.styleFrom(
               foregroundColor: Colors.red,
             ),
@@ -773,13 +774,13 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
   String _getEmptyStateText(ProductStatus status) {
     switch (status) {
       case ProductStatus.normal:
-        return '暂无在售商品';
+        return AppLocalizations.of(context)?.product_management_empty_on_sale ?? 'No products on sale';
       case ProductStatus.draft:
-        return '暂无草稿商品';
+        return AppLocalizations.of(context)?.product_management_empty_draft ?? 'No draft products';
       case ProductStatus.disabled:
-        return '暂无已下架商品';
+        return AppLocalizations.of(context)?.product_management_empty_off_shelf ?? 'No off-shelf products';
       default:
-        return '暂无商品数据';
+        return AppLocalizations.of(context)?.product_management_empty_default ?? 'No product data';
     }
   }
   
@@ -872,32 +873,32 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
       case ProductStatus.reviewing:
         bgColor = Colors.orange[50]!;
         textColor = Colors.orange[700]!;
-        text = '审核中';
+        text = AppLocalizations.of(context)?.product_management_status_reviewing ?? 'Under Review';
         break;
       case ProductStatus.rejected:
         bgColor = Colors.red[50]!;
         textColor = Colors.red[700]!;
-        text = '审核失败';
+        text = AppLocalizations.of(context)?.product_management_status_rejected ?? 'Review Failed';
         break;
       case ProductStatus.normal:
         bgColor = Colors.green[50]!;
         textColor = Colors.green[700]!;
-        text = '已上架';
+        text = AppLocalizations.of(context)?.product_management_status_on_shelf ?? 'On Shelf';
         break;
       case ProductStatus.disabled:
         bgColor = Colors.grey[100]!;
         textColor = Colors.grey[700]!;
-        text = '已下架';
+        text = AppLocalizations.of(context)?.product_management_status_off_shelf ?? 'Off Shelf';
         break;
       case ProductStatus.draft:
         bgColor = Colors.blue[50]!;
         textColor = Colors.blue[700]!;
-        text = '草稿';
+        text = AppLocalizations.of(context)?.product_management_status_draft ?? 'Draft';
         break;
       default:
         bgColor = Colors.grey[100]!;
         textColor = Colors.grey[700]!;
-        text = '未知';
+        text = AppLocalizations.of(context)?.product_management_status_unknown ?? 'Unknown';
     }
     
     return Container(
