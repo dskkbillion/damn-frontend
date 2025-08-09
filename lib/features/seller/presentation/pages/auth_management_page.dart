@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_authentication_info.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/auth_management/auth_management_bloc.dart';
@@ -21,59 +22,61 @@ class AuthManagementPage extends StatelessWidget {
         bloc.add(const LoadAuthenticationList());
         return bloc;
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('认证管理'),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.goNamed('seller_home');
-              }
-            },
+      child: Builder(
+        builder: (innerContext) => Scaffold(
+          appBar: AppBar(
+            title: Text(AppLocalizations.of(innerContext)?.seller_auth_management_title ?? 'Authentication Management'),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.goNamed('seller_home');
+                }
+              },
+            ),
           ),
-        ),
-        body: BlocBuilder<AuthManagementBloc, AuthManagementState>(
-          builder: (innerContext, state) {
-            if (state is AuthManagementInitial || state is AuthManagementLoading) {
-              return const Center(child: LoadingState());
-            } else if (state is AuthManagementError) {
-              return _buildErrorState(innerContext, state.message);
-            } else if (state is AuthManagementEmpty) {
-              return const EmptyState(
-                text: '暂无认证项目',
-                icon: Icons.verified_user_outlined,
-              );
-            } else if (state is AuthManagementLoaded) {
-              return RefreshIndicator(
-                onRefresh: () async {
-                  innerContext.read<AuthManagementBloc>()
-                    .add(RefreshAuthenticationList());
-                },
+          body: BlocBuilder<AuthManagementBloc, AuthManagementState>(
+            builder: (blocContext, state) {
+              if (state is AuthManagementInitial || state is AuthManagementLoading) {
+                return const Center(child: LoadingState());
+              } else if (state is AuthManagementError) {
+                return _buildErrorState(blocContext, state.message);
+              } else if (state is AuthManagementEmpty) {
+                return EmptyState(
+                  text: AppLocalizations.of(innerContext)?.seller_auth_management_no_items ?? 'No authentication items',
+                  icon: Icons.verified_user_outlined,
+                );
+              } else if (state is AuthManagementLoaded) {
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    blocContext.read<AuthManagementBloc>()
+                      .add(RefreshAuthenticationList());
+                  },
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (state.submittedAuthList.isNotEmpty)
-                          _buildSubmittedAuthSection(innerContext, state.submittedAuthList),
-                        const SizedBox(height: 24),
-                        _buildAvailableAuthSection(innerContext, state.availableAuthList),
-                      ],
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (state.submittedAuthList.isNotEmpty)
+                            _buildSubmittedAuthSection(blocContext, state.submittedAuthList),
+                          const SizedBox(height: 24),
+                          _buildAvailableAuthSection(blocContext, state.availableAuthList),
+                        ],
                     ),
                   ),
                 ),
               );
-            } else {
-              return const Center(
-                child: Text('未知状态'),
-              );
-            }
-          },
+              } else {
+                return Center(
+                  child: Text(AppLocalizations.of(innerContext)?.seller_auth_management_unknown_status ?? 'Unknown status'),
+                );
+              }
+            },
+          ),
         ),
       ),
     );
@@ -90,7 +93,7 @@ class AuthManagementPage extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(bottom: 12.0),
           child: Text(
-            '已认证项目',
+            AppLocalizations.of(context)?.seller_auth_management_certified_items ?? 'Certified Items',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -112,7 +115,7 @@ class AuthManagementPage extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(bottom: 16.0),
           child: Text(
-            '开放认证',
+            AppLocalizations.of(context)?.seller_auth_management_open_certification ?? 'Available Certifications',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -165,7 +168,7 @@ class AuthManagementPage extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
               ),
-              _buildStatusTag(auth.status),
+              _buildStatusTag(context, auth.status),
               const SizedBox(width: 8),
               Icon(
                 Icons.chevron_right,
@@ -213,7 +216,8 @@ class AuthManagementPage extends StatelessWidget {
   }
 
   /// 构建状态标签
-  Widget _buildStatusTag(AuthenticationStatus status) {
+  Widget _buildStatusTag(BuildContext context, AuthenticationStatus status) {
+    final l10n = AppLocalizations.of(context);
     Color backgroundColor;
     Color textColor;
     String text;
@@ -222,22 +226,22 @@ class AuthManagementPage extends StatelessWidget {
       case AuthenticationStatus.approved:
         backgroundColor = Colors.green[50]!;
         textColor = Colors.green[800]!;
-        text = '已认证';
+        text = l10n?.seller_auth_management_certified ?? 'Certified';
         break;
       case AuthenticationStatus.pending:
         backgroundColor = Colors.orange[50]!;
         textColor = Colors.orange[800]!;
-        text = '审核中';
+        text = l10n?.seller_auth_management_pending ?? 'Pending';
         break;
       case AuthenticationStatus.rejected:
         backgroundColor = Colors.red[50]!;
         textColor = Colors.red[800]!;
-        text = '未通过';
+        text = l10n?.seller_auth_management_rejected ?? 'Rejected';
         break;
       default:
         backgroundColor = Colors.grey[50]!;
         textColor = Colors.grey[800]!;
-        text = '未提交';
+        text = l10n?.seller_auth_management_not_submitted ?? 'Not Submitted';
     }
 
     return Container(
@@ -291,6 +295,7 @@ class AuthManagementPage extends StatelessWidget {
 
   /// 构建错误状态组件
   Widget _buildErrorState(BuildContext context, String errorMessage) {
+    final l10n = AppLocalizations.of(context);
     // 判断错误类型
     bool isTimeoutError = errorMessage.contains('超时') || 
                          errorMessage.contains('timeout') ||
@@ -304,28 +309,28 @@ class AuthManagementPage extends StatelessWidget {
     List<String> suggestions = [];
     
     if (isTimeoutError) {
-      title = '服务器响应超时';
-      subtitle = '服务器处理请求时间过长，请稍后重试';
+      title = l10n?.seller_auth_management_server_timeout ?? 'Server Timeout';
+      subtitle = l10n?.seller_auth_management_server_timeout_desc ?? 'The server is taking too long to respond';
       suggestions = [
-        '• 检查网络连接是否稳定',
-        '• 等待几分钟后重新尝试',
-        '• 如问题持续存在，请联系客服',
+        l10n?.seller_auth_management_check_network ?? 'Check network connection',
+        l10n?.seller_auth_management_wait_retry ?? 'Wait and retry',
+        l10n?.seller_auth_management_contact_support ?? 'Contact support',
       ];
     } else if (isNetworkError) {
-      title = '网络连接异常';
-      subtitle = '无法连接到服务器，请检查网络设置';
+      title = l10n?.seller_auth_management_network_error ?? 'Network Error';
+      subtitle = l10n?.seller_auth_management_network_error_desc ?? 'Unable to connect to the network';
       suggestions = [
-        '• 检查WiFi或移动数据连接',
-        '• 尝试切换网络环境',
-        '• 关闭并重新打开应用',
+        l10n?.seller_auth_management_check_wifi ?? 'Check WiFi connection',
+        l10n?.seller_auth_management_switch_network ?? 'Switch network',
+        l10n?.seller_auth_management_restart_app ?? 'Restart app',
       ];
     } else {
-      title = '加载失败';
-      subtitle = errorMessage.isNotEmpty ? errorMessage : '发生未知错误，请重试';
+      title = l10n?.seller_auth_management_loading_failed ?? 'Loading Failed';
+      subtitle = errorMessage.isNotEmpty ? errorMessage : (l10n?.seller_auth_management_unknown_error ?? 'Unknown error occurred');
       suggestions = [
-        '• 检查网络连接状态',
-        '• 稍后重新尝试',
-        '• 如问题持续存在，请联系技术支持',
+        l10n?.seller_auth_management_check_connection ?? 'Check connection',
+        l10n?.seller_auth_management_try_later ?? 'Try again later',
+        l10n?.seller_auth_management_contact_tech ?? 'Contact technical support',
       ];
     }
 
@@ -371,7 +376,7 @@ class AuthManagementPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '故障排除建议：',
+                    l10n?.seller_auth_management_troubleshooting ?? 'Troubleshooting Steps',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -400,7 +405,7 @@ class AuthManagementPage extends StatelessWidget {
                   onPressed: () => context.read<AuthManagementBloc>()
                     .add(const LoadAuthenticationList()),
                   icon: const Icon(Icons.refresh),
-                  label: const Text('重新加载'),
+                  label: Text(l10n?.seller_auth_management_reload ?? 'Reload'),
                 ),
                 const SizedBox(width: 16),
                 TextButton.icon(
@@ -412,7 +417,7 @@ class AuthManagementPage extends StatelessWidget {
                     }
                   },
                   icon: const Icon(Icons.arrow_back),
-                  label: const Text('返回'),
+                  label: Text(l10n?.seller_auth_management_back ?? 'Back'),
                 ),
               ],
             ),
@@ -424,24 +429,17 @@ class AuthManagementPage extends StatelessWidget {
 
   /// 导航到认证详情页
   void _navigateToAuthDetail(BuildContext context, SellerAuthenticationInfo auth) {
-    // 修复：添加更详细的状态判断逻辑和调试信息
-    print('认证状态检查: ${auth.name} - ${auth.status.displayName} (${auth.status.value})');
-    print('认证ID: ${auth.authenticationId}, 类型: ${auth.type.value}');
-    
     // 如果认证已经提交过（非未提交状态），且不是被拒绝的状态，应该跳转到状态页
-    // 修复：使用更准确的状态判断逻辑
     final shouldShowStatus = auth.status == AuthenticationStatus.pending || 
                            auth.status == AuthenticationStatus.approved;
     
     if (shouldShowStatus) {
-      print('跳转到认证状态页面 - 状态: ${auth.status.displayName}');
       context.pushNamed(
         'sellerAuthenticationDetail',
         pathParameters: {'type': auth.type.value.toLowerCase()},
         extra: auth,
       );
     } else {
-      print('跳转到认证申请页面 - 状态: ${auth.status.displayName}');
       // 只有未提交或被拒绝的认证才能重新申请
       context.pushNamed(
         'sellerAuthenticationApply',

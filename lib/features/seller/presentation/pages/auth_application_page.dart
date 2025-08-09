@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_authentication_info.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/auth_application/auth_application_bloc.dart';
 import 'package:file_picker/file_picker.dart';
@@ -85,18 +86,24 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
             _fieldErrors.clear();
             _fieldErrors.addAll(state.fieldErrors);
           });
-          _showErrorSnackBar('请检查表单填写是否正确');
+          final l10n = AppLocalizations.of(context);
+          _showErrorSnackBar(l10n?.seller_auth_application_check_form ?? 'Please check the form');
         } else if (state is AuthApplicationFailure) {
           _showErrorSnackBar(state.message);
         } else if (state is AuthApplicationSuccess) {
           _showSuccessDialog();
         }
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('${_getAuthenticationTypeName(_authenticationType)}认证'),
-        ),
-        body: BlocBuilder<AuthApplicationBloc, AuthApplicationState>(
+      child: Builder(
+        builder: (innerContext) {
+          final l10n = AppLocalizations.of(innerContext);
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(l10n?.seller_auth_application_title?.call(
+                _getAuthenticationTypeName(_authenticationType)
+              ) ?? 'Authentication Application'),
+            ),
+            body: BlocBuilder<AuthApplicationBloc, AuthApplicationState>(
           builder: (context, state) {
             final isSubmitting = state is AuthApplicationSubmitting;
             
@@ -124,7 +131,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
                           
                           // 上传证明材料
                           Text(
-                            '上传证明材料',
+                            AppLocalizations.of(innerContext)?.seller_auth_application_upload_materials ?? 'Upload Materials',
                             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -157,7 +164,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
                               ),
                               child: isSubmitting 
                                 ? const CircularProgressIndicator() 
-                                : const Text('提交认证申请', style: TextStyle(fontSize: 16)),
+                                : Text(AppLocalizations.of(innerContext)?.seller_auth_application_submit ?? 'Submit', style: const TextStyle(fontSize: 16)),
                             ),
                           ),
                         ],
@@ -169,8 +176,10 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
             );
           },
         ),
-      ),
-    );
+      );
+      },
+    ),
+  );
   }
   
   /// 构建认证介绍部分
@@ -185,7 +194,9 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '${_getAuthenticationTypeName(_authenticationType)}认证说明',
+            (AppLocalizations.of(context)?.seller_auth_application_desc?.call(
+              _getAuthenticationTypeName(_authenticationType)
+            ) ?? 'Please prepare the following materials'),
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -200,9 +211,9 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            '认证审核通常需要1-3个工作日，请耐心等待。',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context)?.seller_auth_application_review_time ?? 'Review time: 1-3 business days',
+            style: const TextStyle(
               fontSize: 14,
               color: Colors.black54,
             ),
@@ -223,7 +234,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
         children: [
           const SizedBox(height: 16),
           Text(
-            '基本信息',
+            AppLocalizations.of(context)?.seller_auth_application_basic_info ?? 'Basic Information',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -239,14 +250,14 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
         fields.addAll([
           TextFormField(
             controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: '公司名称',
-              hintText: '请输入公司全称',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: _l10n?.seller_auth_application_company_name ?? 'Company Name',
+              hintText: _l10n?.seller_auth_application_company_name_hint ?? 'Enter company name',
+              border: const OutlineInputBorder(),
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return '请输入公司名称';
+                return _l10n?.seller_auth_application_company_name_required ?? 'Company name is required';
               }
               return null;
             },
@@ -254,17 +265,17 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
           const SizedBox(height: 16),
           TextFormField(
             controller: _identifierController,
-            decoration: const InputDecoration(
-              labelText: '统一社会信用代码',
-              hintText: '请输入18位统一社会信用代码',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: _l10n?.seller_auth_application_credit_code ?? 'Unified Social Credit Code',
+              hintText: _l10n?.seller_auth_application_credit_code_hint ?? 'Enter 18-digit credit code',
+              border: const OutlineInputBorder(),
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return '请输入统一社会信用代码';
+                return _l10n?.seller_auth_application_credit_code_required ?? 'Credit code is required';
               }
               if (value.length != 18) {
-                return '统一社会信用代码应为18位';
+                return _l10n?.seller_auth_application_credit_code_invalid ?? 'Credit code must be 18 digits';
               }
               return null;
             },
@@ -272,10 +283,10 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
           const SizedBox(height: 16),
           TextFormField(
             controller: _descriptionController,
-            decoration: const InputDecoration(
-              labelText: '企业简介',
-              hintText: '请简要描述公司业务和情况',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: _l10n?.seller_auth_application_company_intro ?? 'Company Introduction',
+              hintText: _l10n?.seller_auth_application_company_intro_hint ?? 'Brief introduction of your company',
+              border: const OutlineInputBorder(),
             ),
             maxLines: 3,
           ),
@@ -286,14 +297,14 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
         fields.addAll([
           TextFormField(
             controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: '姓名',
-              hintText: '请输入您的真实姓名',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: _l10n?.seller_auth_application_real_name ?? 'Real Name',
+              hintText: _l10n?.seller_auth_application_real_name_hint ?? 'Enter your real name',
+              border: const OutlineInputBorder(),
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return '请输入姓名';
+                return _l10n?.seller_auth_application_real_name_required ?? 'Real name is required';
               }
               return null;
             },
@@ -301,17 +312,17 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
           const SizedBox(height: 16),
           TextFormField(
             controller: _identifierController,
-            decoration: const InputDecoration(
-              labelText: '身份证号码',
-              hintText: '请输入18位身份证号码',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: _l10n?.seller_auth_application_id_number ?? 'ID Number',
+              hintText: _l10n?.seller_auth_application_id_number_hint ?? 'Enter 18-digit ID number',
+              border: const OutlineInputBorder(),
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return '请输入身份证号码';
+                return _l10n?.seller_auth_application_id_number_required ?? 'ID number is required';
               }
               if (value.length != 18) {
-                return '身份证号码应为18位';
+                return _l10n?.seller_auth_application_id_number_invalid ?? 'ID number must be 18 digits';
               }
               return null;
             },
@@ -323,14 +334,14 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
         fields.addAll([
           TextFormField(
             controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: '学校名称',
-              hintText: '请输入学校全称',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: _l10n?.seller_auth_application_school_name ?? 'School Name',
+              hintText: _l10n?.seller_auth_application_school_name_hint ?? 'Enter your school name',
+              border: const OutlineInputBorder(),
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return '请输入学校名称';
+                return _l10n?.seller_auth_application_school_name_required ?? 'School name is required';
               }
               return null;
             },
@@ -338,14 +349,14 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
           const SizedBox(height: 16),
           TextFormField(
             controller: _identifierController,
-            decoration: const InputDecoration(
-              labelText: '学历/学位',
-              hintText: '如：本科、硕士等',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: _l10n?.seller_auth_application_degree ?? 'Degree',
+              hintText: _l10n?.seller_auth_application_degree_hint ?? 'e.g., Bachelor, Master, PhD',
+              border: const OutlineInputBorder(),
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return '请输入学历/学位';
+                return _l10n?.seller_auth_application_degree_required ?? 'Degree is required';
               }
               return null;
             },
@@ -353,10 +364,10 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
           const SizedBox(height: 16),
           TextFormField(
             controller: _descriptionController,
-            decoration: const InputDecoration(
-              labelText: '专业',
-              hintText: '请输入专业名称',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: _l10n?.seller_auth_application_major ?? 'Major',
+              hintText: _l10n?.seller_auth_application_major_hint ?? 'Enter your major',
+              border: const OutlineInputBorder(),
             ),
           ),
         ]);
@@ -366,14 +377,14 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
         fields.addAll([
           TextFormField(
             controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: '职业/职位',
-              hintText: '请输入您的职业或职位',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: _l10n?.seller_auth_application_profession ?? 'Profession',
+              hintText: _l10n?.seller_auth_application_profession_hint ?? 'Enter your profession',
+              border: const OutlineInputBorder(),
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return '请输入职业/职位';
+                return _l10n?.seller_auth_application_profession_required ?? 'Profession is required';
               }
               return null;
             },
@@ -381,19 +392,19 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
           const SizedBox(height: 16),
           TextFormField(
             controller: _identifierController,
-            decoration: const InputDecoration(
-              labelText: '证书编号',
-              hintText: '请输入职业资格证书编号',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: _l10n?.seller_auth_application_cert_number ?? 'Certificate Number',
+              hintText: _l10n?.seller_auth_application_cert_number_hint ?? 'Enter certificate number',
+              border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 16),
           TextFormField(
             controller: _descriptionController,
-            decoration: const InputDecoration(
-              labelText: '工作经验',
-              hintText: '请简要描述您的工作经验',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: _l10n?.seller_auth_application_work_experience ?? 'Work Experience',
+              hintText: _l10n?.seller_auth_application_work_experience_hint ?? 'Describe your work experience',
+              border: const OutlineInputBorder(),
             ),
             maxLines: 3,
           ),
@@ -404,14 +415,14 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
         fields.addAll([
           TextFormField(
             controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: '认证名称',
-              hintText: '请输入认证名称',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: _l10n?.seller_auth_application_auth_name ?? 'Authentication Name',
+              hintText: _l10n?.seller_auth_application_auth_name_hint ?? 'Enter authentication name',
+              border: const OutlineInputBorder(),
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return '请输入认证名称';
+                return _l10n?.seller_auth_application_auth_name_required ?? 'Authentication name is required';
               }
               return null;
             },
@@ -419,19 +430,19 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
           const SizedBox(height: 16),
           TextFormField(
             controller: _identifierController,
-            decoration: const InputDecoration(
-              labelText: '认证标识',
-              hintText: '请输入认证标识或编号',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: _l10n?.seller_auth_application_auth_identifier ?? 'Identifier',
+              hintText: _l10n?.seller_auth_application_auth_identifier_hint ?? 'Enter identifier',
+              border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 16),
           TextFormField(
             controller: _descriptionController,
-            decoration: const InputDecoration(
-              labelText: '认证描述',
-              hintText: '请描述认证内容',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: _l10n?.seller_auth_application_auth_description ?? 'Description',
+              hintText: _l10n?.seller_auth_application_auth_description_hint ?? 'Enter description',
+              border: const OutlineInputBorder(),
             ),
             maxLines: 3,
           ),
@@ -452,7 +463,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
             _buildUploadButton(),
             const SizedBox(width: 16),
             if (_selectedFiles.isNotEmpty) ...[
-              Text('已选择 ${_selectedFiles.length} 个文件', style: const TextStyle(color: Colors.green)),
+              Text(_l10n?.seller_auth_application_selected_files?.call(_selectedFiles.length) ?? '${_selectedFiles.length} files selected', style: const TextStyle(color: Colors.green)),
             ],
           ],
         ),
@@ -466,7 +477,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
         if (_selectedFiles.isNotEmpty) ...[
           const SizedBox(height: 16),
           Text(
-            '已选择的图片：',
+            _l10n?.seller_auth_application_selected_images ?? 'Selected Images',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
@@ -499,18 +510,18 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
                         height: double.infinity,
                         errorBuilder: (_, __, ___) => Container(
                           color: Colors.grey[200],
-                          child: const Column(
+                          child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.broken_image,
                                 color: Colors.grey,
                                 size: 32,
                               ),
-                              SizedBox(height: 4),
+                              const SizedBox(height: 4),
                               Text(
-                                '加载失败',
-                                style: TextStyle(
+                                _l10n?.seller_auth_application_load_failed ?? 'Load Failed',
+                                style: const TextStyle(
                                   fontSize: 10,
                                   color: Colors.grey,
                                 ),
@@ -562,12 +573,12 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey[400]!),
         ),
-        child: const Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add_photo_alternate, size: 36, color: Colors.grey),
-            SizedBox(height: 8),
-            Text('上传文件', style: TextStyle(color: Colors.grey)),
+            const Icon(Icons.add_photo_alternate, size: 36, color: Colors.grey),
+            const SizedBox(height: 8),
+            Text(_l10n?.seller_auth_application_upload_file ?? 'Upload File', style: const TextStyle(color: Colors.grey)),
           ],
         ),
       ),
@@ -589,19 +600,19 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
             text: TextSpan(
               style: const TextStyle(color: Colors.black87),
               children: [
-                const TextSpan(text: '我已阅读并同意'),
+                TextSpan(text: _l10n?.seller_auth_application_agreement_read ?? 'I have read and agree to '),
                 WidgetSpan(
                   child: GestureDetector(
                     onTap: _showAgreement,
                     child: Text(
-                      '《认证服务协议》',
+                      _l10n?.seller_auth_application_agreement_link ?? 'Service Agreement',
                       style: TextStyle(
                         color: Theme.of(context).primaryColor,
                       ),
                     ),
                   ),
                 ),
-                const TextSpan(text: '，保证所提供的信息真实有效'),
+                TextSpan(text: _l10n?.seller_auth_application_agreement_guarantee ?? ' and guarantee information authenticity'),
               ],
             ),
           ),
@@ -615,23 +626,20 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('认证服务协议'),
-        content: const SingleChildScrollView(
+        title: Text(_l10n?.seller_auth_application_agreement_title ?? 'Service Agreement'),
+        content: SingleChildScrollView(
           child: Text(
-            '本协议是您与DSKK平台之间关于认证服务的法律协议。请您仔细阅读以下条款，确保完全理解本协议中的所有权利和义务。'
-            '\n\n一、服务内容\nDSKK平台提供认证服务，旨在验证您提供的身份、资质等信息的真实性，提高您在平台上的可信度。'
-            '\n\n二、用户义务\n1. 您应当提供真实、准确、完整的认证信息和材料。\n2. 您应当确保提供的认证材料不侵犯任何第三方的合法权益。'
-            '\n\n三、平台权利与义务\n1. 平台有权对您提供的认证信息和材料进行审核。\n2. 平台将在合理的时间内完成审核，并告知您审核结果。'
+            _l10n?.seller_auth_application_agreement_content ?? 'Agreement content...'
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('关闭'),
+            child: Text(_l10n?.seller_auth_application_agreement_close ?? 'Close'),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('同意'),
+            child: Text(_l10n?.seller_auth_application_agreement_agree ?? 'Agree'),
           ),
         ],
       ),
@@ -654,8 +662,8 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('提交成功'),
-        content: const Text('您的认证申请已提交，我们将在1-3个工作日内完成审核，请耐心等待。'),
+        title: Text(_l10n?.seller_auth_application_submit_success ?? 'Submitted Successfully'),
+        content: Text(_l10n?.seller_auth_application_submit_success_desc ?? 'Your application has been submitted and will be reviewed within 1-3 business days.'),
         actions: [
           FilledButton(
             onPressed: () {
@@ -665,7 +673,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
               // 修复：返回认证管理页面时刷新状态
               // 可以通过结果回调来通知刷新
             },
-            child: const Text('确定'),
+            child: Text(_l10n?.seller_auth_application_ok ?? 'OK'),
           ),
         ],
       ),
@@ -693,7 +701,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
         });
       }
     } catch (e) {
-      _showErrorSnackBar('选择文件失败: $e');
+      _showErrorSnackBar(_l10n?.seller_auth_application_select_file_failed?.call(e.toString()) ?? 'Failed to select file: $e');
     }
   }
   
@@ -753,17 +761,21 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
   
   /// 获取上传提示文字
   String _getUploadHint(AuthenticationType type) {
+    final l10n = AppLocalizations.of(context);
     switch (type) {
       case AuthenticationType.idCard:
-        return '请上传清晰的身份证正反面照片，确保信息清晰可见，不得遮挡、涂改';
+        return l10n?.seller_auth_application_id_upload_hint ?? 'Please upload ID card photos';
       case AuthenticationType.education:
-        return '请上传学历证书、学位证书等证明材料，需包含完整信息';
+        return l10n?.seller_auth_application_education_upload_hint ?? 'Please upload education certificates';
       case AuthenticationType.profession:
-        return '请上传职业资格证书、专业技能证书等证明材料';
+        return l10n?.seller_auth_application_profession_upload_hint ?? 'Please upload professional certificates';
       case AuthenticationType.company:
-        return '请上传营业执照、组织机构代码证等企业资质证明材料';
+        return l10n?.seller_auth_application_company_upload_hint ?? 'Please upload business license';
       default:
-        return '请上传相关证明材料，确保图片清晰、信息完整';
+        return l10n?.seller_auth_application_default_upload_hint ?? 'Please upload related materials';
     }
   }
+  
+  /// 安全获取本地化文本
+  AppLocalizations? get _l10n => AppLocalizations.of(context);
 } 
