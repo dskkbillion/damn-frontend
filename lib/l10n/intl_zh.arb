@@ -480,6 +480,21 @@
       }
     },
     "product_reviews_just_now": "刚刚",
+    "product_reviews_seller_reply": "卖家回复",
+    "product_reviews_total_count": "共{count}条评价",
+    "@product_reviews_total_count": {
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "100"
+        }
+      }
+    },
+    "product_reviews_filter_all": "全部",
+    "product_reviews_filter_with_images": "有图",
+    "product_reviews_filter_good": "好评",
+    "product_reviews_filter_medium": "中评",
+    "product_reviews_filter_bad": "差评",
     
     "seller_profile_default_title": "卖家主页",
     "seller_profile_seller": "卖家",
@@ -658,5 +673,127 @@
         }
       }
     },
-    "seller_statistics_retry": "重试"
+    "seller_statistics_retry": "重试",
+    
+    "seller_auth_management_title": "认证管理",
+    "seller_auth_management_certified_items": "已认证项目",
+    "seller_auth_management_open_certification": "开放认证",
+    "seller_auth_management_no_items": "暂无认证项目",
+    "seller_auth_management_unknown_status": "未知状态",
+    "seller_auth_management_certified": "已认证",
+    "seller_auth_management_pending": "审核中",
+    "seller_auth_management_rejected": "未通过",
+    "seller_auth_management_not_submitted": "未提交",
+    "seller_auth_management_server_timeout": "服务器响应超时",
+    "seller_auth_management_server_timeout_desc": "服务器处理请求时间过长，请稍后重试",
+    "seller_auth_management_network_error": "网络连接异常",
+    "seller_auth_management_network_error_desc": "无法连接到服务器，请检查网络设置",
+    "seller_auth_management_loading_failed": "加载失败",
+    "seller_auth_management_unknown_error": "发生未知错误，请重试",
+    "seller_auth_management_troubleshooting": "故障排除建议：",
+    "seller_auth_management_check_network": "• 检查网络连接是否稳定",
+    "seller_auth_management_wait_retry": "• 等待几分钟后重新尝试",
+    "seller_auth_management_contact_support": "• 如问题持续存在，请联系客服",
+    "seller_auth_management_check_wifi": "• 检查WiFi或移动数据连接",
+    "seller_auth_management_switch_network": "• 尝试切换网络环境",
+    "seller_auth_management_restart_app": "• 关闭并重新打开应用",
+    "seller_auth_management_check_connection": "• 检查网络连接状态",
+    "seller_auth_management_try_later": "• 稍后重新尝试",
+    "seller_auth_management_contact_tech": "• 如问题持续存在，请联系技术支持",
+    "seller_auth_management_reload": "重新加载",
+    "seller_auth_management_back": "返回",
+    
+    "seller_auth_application_title": "{type}认证",
+    "@seller_auth_application_title": {
+      "placeholders": {
+        "type": {
+          "type": "String"
+        }
+      }
+    },
+    "seller_auth_application_desc": "{type}认证说明",
+    "@seller_auth_application_desc": {
+      "placeholders": {
+        "type": {
+          "type": "String"
+        }
+      }
+    },
+    "seller_auth_application_review_time": "认证审核通常需要1-3个工作日，请耐心等待。",
+    "seller_auth_application_basic_info": "基本信息",
+    "seller_auth_application_company_name": "公司名称",
+    "seller_auth_application_company_name_hint": "请输入公司全称",
+    "seller_auth_application_company_name_required": "请输入公司名称",
+    "seller_auth_application_credit_code": "统一社会信用代码",
+    "seller_auth_application_credit_code_hint": "请输入18位统一社会信用代码",
+    "seller_auth_application_credit_code_required": "请输入统一社会信用代码",
+    "seller_auth_application_credit_code_invalid": "统一社会信用代码应为18位",
+    "seller_auth_application_company_intro": "企业简介",
+    "seller_auth_application_company_intro_hint": "请简要描述公司业务和情况",
+    "seller_auth_application_real_name": "姓名",
+    "seller_auth_application_real_name_hint": "请输入您的真实姓名",
+    "seller_auth_application_real_name_required": "请输入姓名",
+    "seller_auth_application_id_number": "身份证号码",
+    "seller_auth_application_id_number_hint": "请输入18位身份证号码",
+    "seller_auth_application_id_number_required": "请输入身份证号码",
+    "seller_auth_application_id_number_invalid": "身份证号码应为18位",
+    "seller_auth_application_school_name": "学校名称",
+    "seller_auth_application_school_name_hint": "请输入学校全称",
+    "seller_auth_application_school_name_required": "请输入学校名称",
+    "seller_auth_application_degree": "学历/学位",
+    "seller_auth_application_degree_hint": "如：本科、硕士等",
+    "seller_auth_application_degree_required": "请输入学历/学位",
+    "seller_auth_application_major": "专业",
+    "seller_auth_application_major_hint": "请输入专业名称",
+    "seller_auth_application_profession": "职业/职位",
+    "seller_auth_application_profession_hint": "请输入您的职业或职位",
+    "seller_auth_application_profession_required": "请输入职业/职位",
+    "seller_auth_application_cert_number": "证书编号",
+    "seller_auth_application_cert_number_hint": "请输入职业资格证书编号",
+    "seller_auth_application_work_experience": "工作经验",
+    "seller_auth_application_work_experience_hint": "请简要描述您的工作经验",
+    "seller_auth_application_auth_name": "认证名称",
+    "seller_auth_application_auth_name_hint": "请输入认证名称",
+    "seller_auth_application_auth_name_required": "请输入认证名称",
+    "seller_auth_application_auth_identifier": "认证标识",
+    "seller_auth_application_auth_identifier_hint": "请输入认证标识或编号",
+    "seller_auth_application_auth_description": "认证描述",
+    "seller_auth_application_auth_description_hint": "请描述认证内容",
+    "seller_auth_application_upload_materials": "上传证明材料",
+    "seller_auth_application_upload_file": "上传文件",
+    "seller_auth_application_selected_files": "已选择 {count} 个文件",
+    "@seller_auth_application_selected_files": {
+      "placeholders": {
+        "count": {
+          "type": "int"
+        }
+      }
+    },
+    "seller_auth_application_selected_images": "已选择的图片：",
+    "seller_auth_application_load_failed": "加载失败",
+    "seller_auth_application_id_upload_hint": "请上传清晰的身份证正反面照片，确保信息清晰可见，不得遮挡、涂改",
+    "seller_auth_application_education_upload_hint": "请上传学历证书、学位证书等证明材料，需包含完整信息",
+    "seller_auth_application_profession_upload_hint": "请上传职业资格证书、专业技能证书等证明材料",
+    "seller_auth_application_company_upload_hint": "请上传营业执照、组织机构代码证等企业资质证明材料",
+    "seller_auth_application_default_upload_hint": "请上传相关证明材料，确保图片清晰、信息完整",
+    "seller_auth_application_agreement_read": "我已阅读并同意",
+    "seller_auth_application_agreement_link": "《认证服务协议》",
+    "seller_auth_application_agreement_guarantee": "，保证所提供的信息真实有效",
+    "seller_auth_application_agreement_title": "认证服务协议",
+    "seller_auth_application_agreement_content": "本协议是您与DSKK平台之间关于认证服务的法律协议。请您仔细阅读以下条款，确保完全理解本协议中的所有权利和义务。\n\n一、服务内容\nDSKK平台提供认证服务，旨在验证您提供的身份、资质等信息的真实性，提高您在平台上的可信度。\n\n二、用户义务\n1. 您应当提供真实、准确、完整的认证信息和材料。\n2. 您应当确保提供的认证材料不侵犯任何第三方的合法权益。\n\n三、平台权利与义务\n1. 平台有权对您提供的认证信息和材料进行审核。\n2. 平台将在合理的时间内完成审核，并告知您审核结果。",
+    "seller_auth_application_agreement_close": "关闭",
+    "seller_auth_application_agreement_agree": "同意",
+    "seller_auth_application_submit": "提交认证申请",
+    "seller_auth_application_check_form": "请检查表单填写是否正确",
+    "seller_auth_application_submit_success": "提交成功",
+    "seller_auth_application_submit_success_desc": "您的认证申请已提交，我们将在1-3个工作日内完成审核，请耐心等待。",
+    "seller_auth_application_ok": "确定",
+    "seller_auth_application_select_file_failed": "选择文件失败: {error}",
+    "@seller_auth_application_select_file_failed": {
+      "placeholders": {
+        "error": {
+          "type": "String"
+        }
+      }
+    }
 }

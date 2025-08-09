@@ -11,12 +11,15 @@ class ProductReviewModel extends ProductReview {
     required super.skuName,
     required super.memberId,
     required super.score,
+    super.content,
     super.images,
     required super.status,
     super.auditRemark,
     required super.anonymityFlag,
     required super.createTime,
     required super.buyer,
+    super.sellerReply,
+    super.sellerReplyTime,
   });
 
   factory ProductReviewModel.fromJson(Map<String, dynamic> json) {
@@ -29,6 +32,7 @@ class ProductReviewModel extends ProductReview {
       skuName: json['skuName'] ?? '',
       memberId: json['memberId'],
       score: json['score'],
+      content: json['content'] ?? json['evaluateContent'],  // 兼容不同的字段名
       images: json['images'] != null
           ? List<String>.from(json['images'])
           : null,
@@ -37,6 +41,8 @@ class ProductReviewModel extends ProductReview {
       anonymityFlag: json['anonymityFlag'] ?? false,
       createTime: json['createTime'] ?? '',
       buyer: ReviewBuyerModel.fromJson(json['buyer'] ?? {}),
+      sellerReply: json['sellerReply'] ?? json['replyContent'],  // 卖家回复
+      sellerReplyTime: json['sellerReplyTime'] ?? json['replyTime'],  // 卖家回复时间
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
+import '../../config/region_config.dart';
 import '../models/payment_models.dart';
 import '../services/payment_service_factory.dart';
 import '../services/i_payment_service.dart';
@@ -30,15 +31,15 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
 
   Future<void> _loadPaymentInfo() async {
     try {
-      // 加载支付宝信息
-      final alipayInfo = await _paymentFactory.getPaymentMethodInfo('alipay');
-      _paymentMethodInfos['alipay'] = alipayInfo;
-      _serviceAvailability['alipay'] = alipayInfo['available'] ?? false;
-
-      // 加载微信支付信息
-      final wechatInfo = await _paymentFactory.getPaymentMethodInfo('wechat');
-      _paymentMethodInfos['wechat'] = wechatInfo;
-      _serviceAvailability['wechat'] = wechatInfo['available'] ?? false;
+      // 根据区域配置动态加载支付方式信息
+      final supportedMethods = RegionConfig.supportedPaymentMethods;
+      
+      for (final method in supportedMethods) {
+        final methodCode = method.code;
+        final info = await _paymentFactory.getPaymentMethodInfo(methodCode);
+        _paymentMethodInfos[methodCode] = info;
+        _serviceAvailability[methodCode] = info['available'] ?? false;
+      }
 
       setState(() {
         _infoLoaded = true;
@@ -67,30 +68,56 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
   }
 
   Widget _buildContent() {
+    final supportedMethods = RegionConfig.supportedPaymentMethods;
+    
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // 支付宝状态卡片
-          _buildPaymentMethodCard(
-            icon: Icons.payment,
-            title: '支付宝支付',
-            method: 'alipay',
-            color: Colors.blue,
-          ),
+          // 动态生成支付方式状态卡片
+          ...supportedMethods.map((method) {
+            IconData icon;
+            Color color;
+            String title;
+            
+            switch (method) {
+              case PaymentMethod.alipay:
+                icon = Icons.payment;
+                color = Colors.blue;
+                title = '支付宝支付';
+                break;
+              case PaymentMethod.wechat:
+                icon = Icons.wechat;
+                color = Colors.green;
+                title = '微信支付';
+                break;
+              case PaymentMethod.stripe:
+                icon = Icons.credit_card;
+                color = Colors.purple;
+                title = '信用卡支付';
+                break;
+              case PaymentMethod.wallet:
+                icon = Icons.account_balance_wallet;
+                color = Colors.orange;
+                title = '余额支付';
+                break;
+            }
+            
+            return Column(
+              children: [
+                _buildPaymentMethodCard(
+                  icon: icon,
+                  title: title,
+                  method: method.code,
+                  color: color,
+                ),
+                const SizedBox(height: 16),
+              ],
+            );
+          }),
           
-          const SizedBox(height: 16),
-          
-          // 微信支付状态卡片
-          _buildPaymentMethodCard(
-            icon: Icons.wechat,
-            title: '微信支付',
-            method: 'wechat',
-            color: Colors.green,
-          ),
-          
-          const SizedBox(height: 24),
+          const SizedBox(height: 8),
           
           // 测试按钮区域
           const Text(
@@ -99,29 +126,51 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
           ),
           const SizedBox(height: 12),
           
-          ElevatedButton.icon(
-            onPressed: _isLoading ? null : () => _testPayment('alipay'),
-            icon: const Icon(Icons.payment),
-            label: Text(_isLoading ? '处理中...' : '测试支付宝支付'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-          ),
-          
-          const SizedBox(height: 8),
-          
-          ElevatedButton.icon(
-            onPressed: _isLoading ? null : () => _testPayment('wechat'),
-            icon: const Icon(Icons.wechat),
-            label: Text(_isLoading ? '处理中...' : '测试微信支付'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-          ),
+          // 动态生成测试按钮
+          ...supportedMethods.map((method) {
+            IconData icon;
+            Color color;
+            String label;
+            
+            switch (method) {
+              case PaymentMethod.alipay:
+                icon = Icons.payment;
+                color = Colors.blue;
+                label = '测试支付宝支付';
+                break;
+              case PaymentMethod.wechat:
+                icon = Icons.wechat;
+                color = Colors.green;
+                label = '测试微信支付';
+                break;
+              case PaymentMethod.stripe:
+                icon = Icons.credit_card;
+                color = Colors.purple;
+                label = '测试信用卡支付';
+                break;
+              case PaymentMethod.wallet:
+                icon = Icons.account_balance_wallet;
+                color = Colors.orange;
+                label = '测试余额支付';
+                break;
+            }
+            
+            return Column(
+              children: [
+                ElevatedButton.icon(
+                  onPressed: _isLoading ? null : () => _testPayment(method.code),
+                  icon: Icon(icon),
+                  label: Text(_isLoading ? '处理中...' : label),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: color,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+            );
+          }),
           
           const SizedBox(height: 24),
           
@@ -274,8 +323,11 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
         _updateResult('⚠️ 服务不可用，可能在Mock模式下仍可测试\n');
       }
 
-      // 创建测试支付请求
-      final paymentMethod = method == 'alipay' ? PaymentMethod.alipay : PaymentMethod.wechat;
+      // 创建测试支付请求 - 动态获取支付方式
+      final paymentMethod = PaymentMethod.values.firstWhere(
+        (pm) => pm.code == method,
+        orElse: () => PaymentMethod.wallet,
+      );
       final request = PaymentRequest(
         orderId: 'test_${DateTime.now().millisecondsSinceEpoch}',
         amount: '0.01',

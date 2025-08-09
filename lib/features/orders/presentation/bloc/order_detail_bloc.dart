@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 // Removed INavigationService import as it might not be needed for direct navigation
 // import 'package:dskk_flutter_refactor/core/navigation/services/i_navigation_service.dart';
@@ -391,13 +392,18 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         final payAmount = order.priceSummary.payPrice;
         final productName = order.items.isNotEmpty ? order.items.first.productName : '商品订单';
         
-        // 调用支付服务创建支付
+        // 调用支付服务创建支付 - 使用区域配置的默认支付方式
+        final supportedMethods = RegionConfig.supportedPaymentMethods;
+        final defaultPaymentMethod = supportedMethods.isNotEmpty 
+            ? supportedMethods.first 
+            : PaymentMethod.wallet;
+            
         final paymentRequest = PaymentRequest(
           orderId: event.orderId.toString(),
           amount: payAmount.toStringAsFixed(2), // 使用实际订单金额
           subject: productName,
           description: '订单号: ${order.orderSn}',
-          method: PaymentMethod.alipay,
+          method: defaultPaymentMethod,
           scene: PaymentScene.order,
         );
         

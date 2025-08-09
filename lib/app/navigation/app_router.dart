@@ -110,6 +110,7 @@ import 'package:dskk_flutter_refactor/features/orders/presentation/pages/test_or
 
 // Import ProductDetailPage and cubit
 import '../../features/home/presentation/pages/product_detail_page.dart';
+import '../../features/home/presentation/pages/product_reviews_page.dart';
 import '../../features/home/presentation/cubit/product_detail_cubit.dart';
 
 // Import seller statistics related classes
@@ -590,6 +591,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                          ),
                        );
                      },
+                     routes: [
+                       // 产品评论子路由
+                       GoRoute(
+                         path: 'reviews',
+                         name: 'productReviews',
+                         pageBuilder: (context, state) {
+                           final productId = state.pathParameters['productId'] ?? '';
+                           final productIdInt = int.tryParse(productId) ?? 0;
+                           return MaterialPage(
+                             key: ValueKey(state.matchedLocation),
+                             child: ProductReviewsPage(productId: productIdInt),
+                           );
+                         },
+                       ),
+                     ],
                    ),
                    
                    // 搜索路由

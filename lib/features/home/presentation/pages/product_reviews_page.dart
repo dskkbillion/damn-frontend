@@ -26,7 +26,7 @@ class ProductReviewsPage extends StatelessWidget {
       create: (_) => GetIt.I<ProductReviewsCubit>()..getProductReviews(productId),
       child: Scaffold(
         appBar: AppBar(
-          title: Text(S.of(context).product_reviews_title),
+          title: const Text('评论'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
             onPressed: () => context.pop(),
@@ -41,13 +41,13 @@ class ProductReviewsPage extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(S.of(context).product_reviews_loading_failed(state.message)),
+                    Text('加载失败: ${state.message}'),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
                         context.read<ProductReviewsCubit>().getProductReviews(productId);
                       },
-                      child: Text(S.of(context).product_reviews_retry),
+                      child: const Text('重试'),
                     ),
                   ],
                 ),
@@ -55,7 +55,7 @@ class ProductReviewsPage extends StatelessWidget {
             } else if (state is ProductReviewsLoaded) {
               return _buildReviewsList(context, state);
             }
-            return Center(child: Text(S.of(context).product_reviews_no_reviews));
+            return const Center(child: Text('暂无评论'));
           },
         ),
       ),
@@ -64,7 +64,7 @@ class ProductReviewsPage extends StatelessWidget {
 
   Widget _buildReviewsList(BuildContext context, ProductReviewsLoaded state) {
     if (state.reviews.isEmpty) {
-      return Center(child: Text(S.of(context).product_reviews_no_reviews));
+      return const Center(child: Text('暂无评论'));
     }
     
     return ListView.separated(
@@ -138,13 +138,12 @@ class ProductReviewsPage extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-        // 这里根据实际API返回数据提供评论内容
-        // 通常评论会有一个content字段，但API示例中没有
-        // 假设有个默认值
+        // 显示评论内容
         Text(
-          S.of(context).product_reviews_sample_content,
+          review.content ?? '不错，很有耐心',
           style: const TextStyle(
             fontSize: 14,
+            height: 1.5,
           ),
         ),
         
@@ -153,6 +152,59 @@ class ProductReviewsPage extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
             child: _buildReviewImages(review.images!),
+          ),
+        
+        // 卖家回复
+        if (review.sellerReply != null && review.sellerReply!.isNotEmpty)
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        '卖家回复',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    if (review.sellerReplyTime != null) ...[
+                      const SizedBox(width: 8),
+                      Text(
+                        _formatDateTime(context, review.sellerReplyTime!),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  review.sellerReply!,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
           ),
       ],
     );
@@ -221,17 +273,17 @@ class ProductReviewsPage extends StatelessWidget {
       final difference = now.difference(dateTime);
       
       if (difference.inDays > 365) {
-        return S.of(context).product_reviews_years_ago((difference.inDays / 365).floor());
+        return '${(difference.inDays / 365).floor()}年前';
       } else if (difference.inDays > 30) {
-        return S.of(context).product_reviews_months_ago((difference.inDays / 30).floor());
+        return '${(difference.inDays / 30).floor()}月前';
       } else if (difference.inDays > 0) {
-        return S.of(context).product_reviews_days_ago(difference.inDays);
+        return '${difference.inDays}天前';
       } else if (difference.inHours > 0) {
-        return S.of(context).product_reviews_hours_ago(difference.inHours);
+        return '${difference.inHours}小时前';
       } else if (difference.inMinutes > 0) {
-        return S.of(context).product_reviews_minutes_ago(difference.inMinutes);
+        return '${difference.inMinutes}分钟前';
       } else {
-        return S.of(context).product_reviews_just_now;
+        return '刚刚';
       }
     } catch (e) {
       return dateTimeStr;

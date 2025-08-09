@@ -10,12 +10,15 @@ class ProductReview extends Equatable {
   final String skuName;
   final int memberId;
   final int score;
+  final String? content;  // 评论内容
   final List<String>? images;
   final String status;
   final String? auditRemark;
   final bool anonymityFlag;
   final String createTime;
   final ReviewBuyer buyer;
+  final String? sellerReply;  // 卖家回复
+  final String? sellerReplyTime;  // 卖家回复时间
 
   const ProductReview({
     required this.id,
@@ -26,12 +29,15 @@ class ProductReview extends Equatable {
     required this.skuName,
     required this.memberId,
     required this.score,
+    this.content,
     this.images,
     required this.status,
     this.auditRemark,
     required this.anonymityFlag,
     required this.createTime,
     required this.buyer,
+    this.sellerReply,
+    this.sellerReplyTime,
   });
 
   @override
@@ -44,12 +50,15 @@ class ProductReview extends Equatable {
     skuName,
     memberId,
     score,
+    content,
     images,
     status,
     auditRemark,
     anonymityFlag,
     createTime,
     buyer,
+    sellerReply,
+    sellerReplyTime,
   ];
 }
 

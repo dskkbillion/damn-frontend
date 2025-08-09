@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
+import '../../config/region_config.dart';
 import '../services/payment_service_factory.dart';
 import '../models/payment_models.dart';
 import '../services/payment_navigation_service.dart';
@@ -14,13 +15,25 @@ class PaymentDemoPage extends StatefulWidget {
 }
 
 class _PaymentDemoPageState extends State<PaymentDemoPage> {
-  PaymentMethod _selectedMethod = PaymentMethod.alipay;
+  late PaymentMethod _selectedMethod;
+  late List<PaymentMethod> _availablePaymentMethods;
   bool _isProcessing = false;
   
   final _amountController = TextEditingController(text: '0.01');
   final _subjectController = TextEditingController(text: '测试商品');
   final _orderIdController = TextEditingController(text: 'TEST${DateTime.now().millisecondsSinceEpoch}');
 
+  @override
+  void initState() {
+    super.initState();
+    // 根据区域配置获取可用的支付方式
+    _availablePaymentMethods = RegionConfig.supportedPaymentMethods;
+    // 设置默认选中的支付方式
+    _selectedMethod = _availablePaymentMethods.isNotEmpty 
+        ? _availablePaymentMethods.first 
+        : PaymentMethod.wallet;
+  }
+  
   @override
   void dispose() {
     _amountController.dispose();
@@ -228,52 +241,22 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
             const SizedBox(height: 24),
             
             // 支付方式选择
-            const Text(
-              '选择支付方式',
-              style: TextStyle(
+            Text(
+              RegionConfig.currentRegion == RegionType.domestic ? '选择支付方式' : 'Select Payment Method',
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 16),
             
-            // 支付宝选项
-            _buildPaymentOption(
-              PaymentMethod.alipay,
-              '支付宝',
-              Icons.payment,
-              Colors.blue,
-            ),
-            
-            const SizedBox(height: 12),
-            
-            // 微信支付选项
-            _buildPaymentOption(
-              PaymentMethod.wechat,
-              '微信支付',
-              Icons.wechat,
-              Colors.green,
-            ),
-            
-            const SizedBox(height: 12),
-            
-            // 余额支付选项
-            _buildPaymentOption(
-              PaymentMethod.wallet,
-              '余额支付',
-              Icons.account_balance_wallet,
-              Colors.orange,
-            ),
-            
-            const SizedBox(height: 12),
-            
-            // 信用卡支付选项（Stripe）
-            _buildPaymentOption(
-              PaymentMethod.stripe,
-              '信用卡支付',
-              Icons.credit_card,
-              Colors.purple,
-            ),
+            // 动态生成支付方式选项
+            ..._availablePaymentMethods.map((method) => Column(
+              children: [
+                _buildPaymentMethodOption(method),
+                const SizedBox(height: 12),
+              ],
+            )),
             
             const SizedBox(height: 32),
             
@@ -344,6 +327,37 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
         ),
       ),
     );
+  }
+  
+  Widget _buildPaymentMethodOption(PaymentMethod method) {
+    IconData iconData;
+    Color iconColor;
+    String name;
+    
+    switch (method) {
+      case PaymentMethod.alipay:
+        iconData = Icons.payment;
+        iconColor = Colors.blue;
+        name = RegionConfig.currentRegion == RegionType.domestic ? '支付宝' : 'Alipay';
+        break;
+      case PaymentMethod.wechat:
+        iconData = Icons.wechat;
+        iconColor = Colors.green;
+        name = RegionConfig.currentRegion == RegionType.domestic ? '微信支付' : 'WeChat Pay';
+        break;
+      case PaymentMethod.stripe:
+        iconData = Icons.credit_card;
+        iconColor = Colors.purple;
+        name = RegionConfig.currentRegion == RegionType.domestic ? '信用卡支付' : 'Credit Card';
+        break;
+      case PaymentMethod.wallet:
+        iconData = Icons.account_balance_wallet;
+        iconColor = Colors.orange;
+        name = RegionConfig.currentRegion == RegionType.domestic ? '余额支付' : 'Wallet';
+        break;
+    }
+    
+    return _buildPaymentOption(method, name, iconData, iconColor);
   }
   
   Widget _buildPaymentOption(

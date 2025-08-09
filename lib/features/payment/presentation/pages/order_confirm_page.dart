@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart'; // For launchUrl
 
+import '../../../../core/config/region_config.dart';
+import '../../../../core/payment/models/payment_models.dart' as payment_models;
 import '../../../../core/widgets/custom_loading_dialog.dart';
 import '../bloc/payment_bloc.dart';
 import '../bloc/payment_event.dart';
@@ -35,14 +37,10 @@ class OrderConfirmPage extends StatefulWidget {
 }
 
 class _OrderConfirmPageState extends State<OrderConfirmPage> {
-  String _selectedPaymentMethod = 'alipay'; // 默认选择支付宝
+  late payment_models.PaymentMethod _selectedPaymentMethod;
+  late List<payment_models.PaymentMethod> _availablePaymentMethods;
   bool _isProcessing = false; // 防重复提交标志
   bool _isLoadingDialogShowing = false; // 跟踪加载对话框状态
-  
-  // 微信支付是否可用（上线前设置为false）
-  static const bool _isWechatPaymentAvailable = false;
-  // Stripe支付是否可用
-  static const bool _isStripePaymentAvailable = true;
   
   // 计算美元金额（假设汇率为7.2）
   double get _usdAmount => (widget.price * widget.quantity) / 7.2;
@@ -68,12 +66,14 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
     print('[OrderConfirmPage] price: ${widget.price}');
     print('[OrderConfirmPage] productName: ${widget.productName}');
     
-    context.read<PaymentBloc>().add(ResetPaymentEvent());
+    // 根据区域配置获取可用的支付方式
+    _availablePaymentMethods = RegionConfig.supportedPaymentMethods;
+    // 设置默认选中的支付方式
+    _selectedPaymentMethod = _availablePaymentMethods.isNotEmpty 
+        ? _availablePaymentMethods.first 
+        : payment_models.PaymentMethod.wallet;
     
-    // 如果微信支付不可用且当前选择的是微信支付，自动切换到支付宝
-    if (!_isWechatPaymentAvailable && _selectedPaymentMethod == 'wechat') {
-      _selectedPaymentMethod = 'alipay';
-    }
+    context.read<PaymentBloc>().add(ResetPaymentEvent());
   }
 
   @override
@@ -140,27 +140,30 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                   children: [
                     const Text('支付链接已准备就绪'),
                     const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.orange.withOpacity(0.3)),
-                      ),
-                      child: Row(
-                        children: const [
-                          Icon(Icons.info_outline, size: 16, color: Colors.orange),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              '注意：信用卡支付将以美元结算，具体汇率以银行为准',
-                              style: TextStyle(fontSize: 12, color: Colors.orange),
+                    // 只有国服版本才显示汇率提示
+                    if (RegionConfig.currentRegion == RegionType.domestic)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          children: const [
+                            Icon(Icons.info_outline, size: 16, color: Colors.orange),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                '注意：信用卡支付将以美元结算，具体汇率以银行为准',
+                                style: TextStyle(fontSize: 12, color: Colors.orange),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
+                    if (RegionConfig.currentRegion == RegionType.domestic)
+                      const SizedBox(height: 12),
                     const Text('如果浏览器没有自动打开，请选择以下操作：', style: TextStyle(fontSize: 14, color: Colors.grey)),
                     const SizedBox(height: 16),
                     // 显示支付URL（截断显示）
@@ -362,49 +365,22 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
               const SizedBox(height: 32),
               
               // 支付方式
-              const Text(
-                '支付方式',
-                style: TextStyle(
+              Text(
+                RegionConfig.currentRegion == RegionType.domestic ? '支付方式' : 'Payment Method',
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 16),
               
-              // 支付宝选项
-              _buildPaymentOption(
-                'alipay',
-                '支付宝',
-                'assets/images/alipay_logo.png',
-                Icons.payment,
-                Colors.blue,
-              ),
-              
-              const SizedBox(height: 12),
-              
-              // 微信支付选项
-              _buildPaymentOption(
-                'wechat',
-                '微信支付',
-                null, // 没有微信logo图片，使用图标
-                Icons.wechat,
-                Colors.green,
-                enabled: _isWechatPaymentAvailable,
-                subtitle: _isWechatPaymentAvailable ? null : '🚧 施工中，敬请期待',
-              ),
-              
-              const SizedBox(height: 12),
-              
-              // 信用卡支付选项（Stripe）
-              _buildPaymentOption(
-                'stripe',
-                '信用卡支付',
-                null, // 没有Stripe logo图片，使用图标
-                Icons.credit_card,
-                Colors.purple,
-                enabled: _isStripePaymentAvailable,
-                subtitle: _isStripePaymentAvailable ? '支持Visa、MasterCard等（美元结算）' : '🚧 施工中，敬请期待',
-              ),
+              // 动态生成支付方式选项
+              ..._availablePaymentMethods.map((method) => Column(
+                children: [
+                  _buildPaymentMethodOption(method),
+                  const SizedBox(height: 12),
+                ],
+              )),
               
               const SizedBox(height: 32),
               
@@ -417,11 +393,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _isProcessing 
                         ? Colors.grey 
-                        : (_selectedPaymentMethod == 'wechat' 
-                            ? Colors.green 
-                            : _selectedPaymentMethod == 'stripe'
-                                ? Colors.purple
-                                : Colors.blue),
+                        : _getButtonColor(),
                     foregroundColor: Colors.white,
                   ),
                   child: _isProcessing
@@ -447,9 +419,9 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                           ],
                         )
                       : Text(
-                          _selectedPaymentMethod == 'stripe' 
-                            ? '确认支付 ￥${(widget.price * widget.quantity).toStringAsFixed(2)} (≈\$${_usdAmount.toStringAsFixed(2)})'
-                            : '确认支付 ￥${(widget.price * widget.quantity).toStringAsFixed(2)}',
+                          _selectedPaymentMethod == payment_models.PaymentMethod.stripe 
+                            ? '${RegionConfig.currentRegion == RegionType.domestic ? "确认支付" : "Pay Now"} ${RegionConfig.formatPrice(widget.price * widget.quantity)} (≈\$${_usdAmount.toStringAsFixed(2)})'
+                            : '${RegionConfig.currentRegion == RegionType.domestic ? "确认支付" : "Pay Now"} ${RegionConfig.formatPrice(widget.price * widget.quantity)}',
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -464,51 +436,94 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
     );
   }
 
-  /// 构建支付方式选项
+  /// 构建支付方式选项（基于PaymentMethod枚举）
+  Widget _buildPaymentMethodOption(payment_models.PaymentMethod method) {
+    IconData iconData;
+    Color iconColor;
+    String? logoAsset;
+    String subtitle;
+    
+    switch (method) {
+      case payment_models.PaymentMethod.alipay:
+        iconData = Icons.payment;
+        iconColor = Colors.blue;
+        logoAsset = 'assets/images/alipay_logo.png';
+        subtitle = RegionConfig.currentRegion == RegionType.domestic ? '安全快捷支付' : 'Fast and secure payment';
+        break;
+      case payment_models.PaymentMethod.wechat:
+        iconData = Icons.wechat;
+        iconColor = Colors.green;
+        logoAsset = null;
+        subtitle = RegionConfig.currentRegion == RegionType.domestic ? '微信安全支付' : 'WeChat Pay';
+        break;
+      case payment_models.PaymentMethod.stripe:
+        iconData = Icons.credit_card;
+        iconColor = Colors.purple;
+        logoAsset = null;
+        subtitle = RegionConfig.currentRegion == RegionType.domestic 
+            ? '支持Visa、MasterCard等（美元结算）' 
+            : 'Visa, MasterCard, etc.';
+        break;
+      case payment_models.PaymentMethod.wallet:
+        iconData = Icons.account_balance_wallet;
+        iconColor = Colors.orange;
+        logoAsset = null;
+        subtitle = RegionConfig.currentRegion == RegionType.domestic ? '余额支付' : 'Wallet Balance';
+        break;
+    }
+    
+    final isSelected = _selectedPaymentMethod == method;
+    return _buildPaymentOption(
+      method,
+      method.displayName,
+      logoAsset,
+      iconData,
+      iconColor,
+      subtitle: subtitle,
+    );
+  }
+  
+  /// 构建支付方式选项UI
   Widget _buildPaymentOption(
-    String method,
+    payment_models.PaymentMethod method,
     String name,
     String? logoAsset,
     IconData fallbackIcon,
     Color iconColor,
-    {bool enabled = true, String? subtitle}
+    {String? subtitle}
   ) {
     final isSelected = _selectedPaymentMethod == method;
-    final effectiveIconColor = enabled ? iconColor : Colors.grey;
-    final effectiveTextColor = enabled 
-        ? (isSelected ? Theme.of(context).primaryColor : null)
-        : Colors.grey;
+    final effectiveIconColor = iconColor;
+    final effectiveTextColor = isSelected ? Theme.of(context).primaryColor : null;
     
-    return Opacity(
-      opacity: enabled ? 1.0 : 0.6,
-      child: GestureDetector(
-        onTap: enabled ? () {
-          setState(() {
-            _selectedPaymentMethod = method;
-          });
-        } : null,
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: enabled && isSelected 
-                  ? Theme.of(context).primaryColor 
-                  : Colors.grey[300]!,
-              width: isSelected ? 2 : 1,
-            ),
-            borderRadius: BorderRadius.circular(8),
-            color: enabled && isSelected 
-                ? Theme.of(context).primaryColor.withOpacity(0.05) 
-                : null,
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedPaymentMethod = method;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: isSelected 
+                ? Theme.of(context).primaryColor 
+                : Colors.grey[300]!,
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(8),
+          color: isSelected 
+              ? Theme.of(context).primaryColor.withOpacity(0.05) 
+              : null,
           ),
           child: Row(
             children: [
               // 选择指示器
               Icon(
-                enabled && isSelected 
+                isSelected 
                     ? Icons.radio_button_checked 
                     : Icons.radio_button_unchecked,
-                color: enabled && isSelected 
+                color: isSelected 
                     ? Theme.of(context).primaryColor 
                     : Colors.grey,
               ),
@@ -571,8 +586,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                         subtitle,
                         style: TextStyle(
                           fontSize: 12,
-                          color: enabled ? Colors.orange : Colors.grey,
-                          fontWeight: enabled ? FontWeight.bold : FontWeight.normal,
+                          color: Colors.grey[600],
                         ),
                       ),
                   ],
@@ -581,8 +595,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 
   /// 显示加载对话框
@@ -621,8 +634,21 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
         price: widget.price,
         productName: widget.productName,
         imageUrl: widget.imageUrl,
-        paymentMethod: _selectedPaymentMethod, // 传递选择的支付方式
+        paymentMethod: _selectedPaymentMethod.code, // 传递选择的支付方式代码
       ),
     );
+  }
+  
+  Color _getButtonColor() {
+    switch (_selectedPaymentMethod) {
+      case payment_models.PaymentMethod.alipay:
+        return Colors.blue;
+      case payment_models.PaymentMethod.wechat:
+        return Colors.green;
+      case payment_models.PaymentMethod.stripe:
+        return Colors.purple;
+      case payment_models.PaymentMethod.wallet:
+        return Colors.orange;
+    }
   }
 } 
