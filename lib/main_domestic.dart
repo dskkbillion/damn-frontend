@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:dskk_flutter_refactor/core/analytics/observers/analytics_bloc_observer.dart';
 import 'package:dskk_flutter_refactor/core/analytics/di/analytics_injection.dart';
 import 'package:dskk_flutter_refactor/core/utils/config_validator.dart';
@@ -55,6 +56,13 @@ Future<void> main() async {
 
   // 初始化SharedPreferences
   final prefs = await SharedPreferences.getInstance();
+  
+  // Initialize Flutter Downloader
+  await FlutterDownloader.initialize(
+    debug: false,
+    ignoreSsl: true,
+  );
+  print('[Domestic Production] Flutter Downloader initialized.');
 
   // 初始化依赖注入，使用国服API地址
   await configureDependencies(backendBaseUrl: backendBaseUrl);

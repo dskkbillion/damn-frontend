@@ -6,6 +6,7 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/notific
 import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
 import 'package:intl/intl.dart';
 import 'package:get_it/get_it.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -79,7 +80,7 @@ class NotificationListPage extends StatelessWidget {
         )..add(LoadNotificationList()), // 加载初始数据
         child: Scaffold(
           appBar: AppBar(
-            title: const Text('通知中心'),
+            title: Text(AppLocalizations.of(context)?.notification_center_title ?? 'Notification Center'),
             centerTitle: true,
           ),
           body: const NotificationListContent(),
@@ -89,11 +90,11 @@ class NotificationListPage extends StatelessWidget {
       print('Error creating NotificationListBloc: $e');
       return Scaffold(
         appBar: AppBar(
-          title: const Text('通知中心'),
+          title: Text(AppLocalizations.of(context)?.notification_center_title ?? 'Notification Center'),
           centerTitle: true,
         ),
         body: Center(
-          child: Text('加载通知中心失败: $e'),
+          child: Text(AppLocalizations.of(context)?.notification_load_failed(e.toString()) ?? 'Failed to load notification center: $e'),
         ),
       );
     }
@@ -163,12 +164,12 @@ class _NotificationListContentState extends State<NotificationListContent> with 
           labelColor: Theme.of(context).primaryColor,
           unselectedLabelColor: Colors.grey,
           indicatorColor: Theme.of(context).primaryColor,
-          tabs: const [
-            Tab(text: '全部'),
-            Tab(text: '订单'),
-            Tab(text: '系统'),
-            Tab(text: '售后'),
-            Tab(text: '消息'),
+          tabs: [
+            Tab(text: AppLocalizations.of(context)?.notification_tab_all ?? 'All'),
+            Tab(text: AppLocalizations.of(context)?.notification_tab_order ?? 'Orders'),
+            Tab(text: AppLocalizations.of(context)?.notification_tab_system ?? 'System'),
+            Tab(text: AppLocalizations.of(context)?.notification_tab_refund ?? 'After-sales'),
+            Tab(text: AppLocalizations.of(context)?.notification_tab_message ?? 'Messages'),
           ],
         ),
         Expanded(
@@ -201,7 +202,7 @@ class _NotificationListContentState extends State<NotificationListContent> with 
                             ),
                           );
                         },
-                        child: const Text('重试'),
+                        child: Text(AppLocalizations.of(context)?.notification_retry ?? 'Retry'),
                       ),
                     ],
                   ),
@@ -216,7 +217,8 @@ class _NotificationListContentState extends State<NotificationListContent> with 
                 return _buildNotificationList(context, state);
               }
               
-              return const Center(child: Text('加载失败'));
+              final l10n = AppLocalizations.of(context);
+              return Center(child: Text(l10n?.order_delivery_load_failed ?? 'Load failed'));
             },
           ),
         ),
@@ -244,34 +246,35 @@ class _NotificationListContentState extends State<NotificationListContent> with 
   
   /// 构建空状态
   Widget _buildEmptyState(NotificationType? type) {
+    final l10n = AppLocalizations.of(context);
     String message;
     if (type == null) {
-      message = '暂无任何通知';
+      message = l10n?.notification_empty_all ?? 'No notifications';
     } else {
       switch (type) {
         case NotificationType.order:
-          message = '暂无订单通知';
+          message = l10n?.notification_empty_order ?? 'No order notifications';
           break;
         case NotificationType.system:
-          message = '暂无系统通知';
+          message = l10n?.notification_empty_system ?? 'No system notifications';
           break;
         case NotificationType.refund:
-          message = '暂无售后通知';
+          message = l10n?.notification_empty_refund ?? 'No after-sales notifications';
           break;
         case NotificationType.message:
-          message = '暂无消息通知';
+          message = l10n?.notification_empty_message ?? 'No message notifications';
           break;
         case NotificationType.review:
-          message = '暂无评价通知';
+          message = l10n?.notification_empty_review ?? 'No review notifications';
           break;
         case NotificationType.authentication:
-          message = '暂无认证通知';
+          message = l10n?.notification_empty_authentication ?? 'No authentication notifications';
           break;
         case NotificationType.other:
-          message = '暂无其他通知';
+          message = l10n?.notification_empty_other ?? 'No other notifications';
           break;
         default:
-          message = '暂无通知';
+          message = l10n?.notification_empty_generic ?? 'No notifications';
       }
     }
     
@@ -289,7 +292,7 @@ class _NotificationListContentState extends State<NotificationListContent> with 
                 LoadNotificationList(type: type, refresh: true),
               );
             },
-            child: const Text('刷新'),
+            child: Text(AppLocalizations.of(context)?.notification_refresh ?? 'Refresh'),
           ),
         ],
       ),
@@ -343,12 +346,13 @@ class _NotificationListContentState extends State<NotificationListContent> with 
     }
     
     // 处理标题和内容，确保它们不是JSON格式字符串
+    final l10n = AppLocalizations.of(context);
     String displayTitle = notification.title;
     String displayContent = notification.content;
     
     // 如果标题或内容仍包含JSON格式，尝试提取
     if (displayTitle.contains('{title:') || displayTitle.contains('content:')) {
-      displayTitle = '通知详情';
+      displayTitle = l10n?.notification_detail_title ?? 'Notification Details';
     }
     
     showDialog(
@@ -375,13 +379,13 @@ class _NotificationListContentState extends State<NotificationListContent> with 
                 // 根据通知类型跳转到相应页面
                 _navigateToRelatedPage(context, notification);
               },
-              child: const Text('查看详情'),
+              child: Text(AppLocalizations.of(context)?.notification_detail_view ?? 'View Details'),
             ),
           TextButton(
             onPressed: () {
               Navigator.of(dialogContext).pop();
             },
-            child: const Text('关闭'),
+            child: Text(AppLocalizations.of(context)?.notification_detail_close ?? 'Close'),
           ),
         ],
       ),
@@ -456,7 +460,7 @@ class _NotificationItem extends StatelessWidget {
                       Expanded(
                         child: Text(
                           notification.title.startsWith('{') 
-                            ? '通知'
+                            ? AppLocalizations.of(context)?.notification_default_title ?? 'Notification'
                             : notification.title,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
@@ -478,7 +482,7 @@ class _NotificationItem extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     notification.content.startsWith('{') 
-                      ? '点击查看详情'
+                      ? AppLocalizations.of(context)?.notification_click_to_view ?? 'Click to view details'
                       : notification.content,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -556,21 +560,23 @@ class _NotificationItem extends StatelessWidget {
 
   /// 格式化日期时间
   String _formatDateTime(DateTime dateTime) {
+    final l10n = AppLocalizations.of(context);
     final now = DateTime.now();
     final difference = now.difference(dateTime);
     
     if (difference.inDays > 365) {
       return DateFormat('yyyy-MM-dd').format(dateTime);
     } else if (difference.inDays > 30) {
-      return '${difference.inDays ~/ 30}个月前';
+      final months = difference.inDays ~/ 30;
+      return l10n?.notification_time_months_ago(months) ?? '$months months ago';
     } else if (difference.inDays > 0) {
-      return '${difference.inDays}天前';
+      return l10n?.notification_time_days_ago(difference.inDays) ?? '${difference.inDays} days ago';
     } else if (difference.inHours > 0) {
-      return '${difference.inHours}小时前';
+      return l10n?.notification_time_hours_ago(difference.inHours) ?? '${difference.inHours} hours ago';
     } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}分钟前';
+      return l10n?.notification_time_minutes_ago(difference.inMinutes) ?? '${difference.inMinutes} minutes ago';
     } else {
-      return '刚刚';
+      return l10n?.notification_time_just_now ?? 'Just now';
     }
   }
 } 

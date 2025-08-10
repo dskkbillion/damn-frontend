@@ -493,9 +493,9 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
           } else {
             // 草稿状态显示提示信息
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
+              SnackBar(
                 content: Text(AppLocalizations.of(context)?.product_management_draft_preview_hint ?? 'Draft products need to be published before preview'),
-                duration: Duration(seconds: 2),
+                duration: const Duration(seconds: 2),
               ),
             );
           }
@@ -617,10 +617,10 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
   
   Widget _buildLoadMoreIndicator(bool hasMore, bool isLoading) {
     if (!hasMore) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 16.0),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16.0),
         child: Center(
-          child: Text(AppLocalizations.of(context)?.product_management_no_more_products ?? 'No more products', style: TextStyle(color: Colors.grey)),
+          child: Text(AppLocalizations.of(context)?.product_management_no_more_products ?? 'No more products', style: const TextStyle(color: Colors.grey)),
         ),
       );
     }
@@ -677,7 +677,11 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(AppLocalizations.of(context)?.product_management_confirm_off_shelf_message?.replaceAll('{name}', productName) ?? 'Are you sure you want to take the product "$productName" off shelf?'),
+            Text(
+              AppLocalizations.of(context)?.product_management_confirm_off_shelf_message != null
+                  ? AppLocalizations.of(context)!.product_management_confirm_off_shelf_message(productName)
+                  : 'Are you sure you want to take the product "$productName" off shelf?'
+            ),
             const SizedBox(height: 8),
             Text(
               AppLocalizations.of(context)?.product_management_confirm_off_shelf_desc ?? 'After off shelf:',

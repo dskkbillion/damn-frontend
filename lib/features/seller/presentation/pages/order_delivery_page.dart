@@ -5,6 +5,7 @@ import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/order_delivery/order_delivery_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/file_selection_widget.dart';
 import 'package:get_it/get_it.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// 订单交付页面
 class OrderDeliveryPage extends StatelessWidget {
@@ -28,11 +29,20 @@ class OrderDeliveryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => GetIt.instance<OrderDeliveryBloc>()..add(InitOrderDelivery(orderId: orderId)),
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(orderSn != null ? '订单交付: $orderSn' : '订单交付'),
-        ),
-        body: const _OrderDeliveryForm(),
+      child: Builder(
+        builder: (context) {
+          final l10n = AppLocalizations.of(context);
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                orderSn != null 
+                  ? l10n?.order_delivery_title_with_sn(orderSn!) ?? 'Order Delivery: $orderSn'
+                  : l10n?.order_delivery_title ?? 'Order Delivery'
+              ),
+            ),
+            body: const _OrderDeliveryForm(),
+          );
+        },
       ),
     );
   }
@@ -64,8 +74,9 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
             SnackBar(content: Text(state.message)),
           );
         } else if (state is OrderDeliverySuccess) {
+          final l10n = AppLocalizations.of(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('交付内容提交成功')),
+            SnackBar(content: Text(l10n?.order_delivery_submit_success ?? 'Delivery content submitted successfully')),
           );
           Navigator.of(context).pop(true); // 返回true表示提交成功
         }
@@ -86,13 +97,14 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
               children: [
                 LoadingIndicator(),
                 SizedBox(height: 16),
-                Text('正在提交交付内容...'),
+                Text(AppLocalizations.of(context)?.order_delivery_submitting ?? 'Submitting delivery content...'),
               ],
             ),
           );
         }
         
-        return const Center(child: Text('加载失败，请重试'));
+        final l10n = AppLocalizations.of(context);
+        return Center(child: Text(l10n?.order_delivery_load_failed ?? 'Load failed, please try again'));
       },
     );
   }
@@ -118,7 +130,7 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '订单交付说明',
+                    AppLocalizations.of(context)?.order_delivery_instruction_title ?? 'Delivery Instructions',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -126,7 +138,7 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    '请提交您针对此订单的交付内容。您可以提供详细说明以及附加相关文件，确保买家能够清晰了解您提供的服务或产品。',
+                    AppLocalizations.of(context)?.order_delivery_instruction_content ?? 'Please submit your delivery content for this order. You can provide detailed instructions and attach relevant files to ensure the buyer clearly understands the services or products you provide.',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.black87,
@@ -138,9 +150,9 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
           ),
           
           // 交付内容输入
-          const Text(
-            '交付内容描述:',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context)?.order_delivery_content_label ?? 'Delivery Content Description:',
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
@@ -149,7 +161,7 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
           TextField(
             controller: _contentController,
             decoration: const InputDecoration(
-              hintText: '请描述您的交付内容...',
+              hintText: AppLocalizations.of(context)?.order_delivery_content_hint ?? 'Please describe your delivery content...',
               border: OutlineInputBorder(),
             ),
             maxLines: 5,
@@ -161,9 +173,9 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
           const SizedBox(height: 24),
           
           // 文件上传
-          const Text(
-            '附件文件:',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context)?.order_delivery_attachments_label ?? 'Attachment Files:',
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
@@ -186,8 +198,9 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
             onPressed: () {
               // 验证表单
               if (_contentController.text.trim().isEmpty) {
+                final l10n = AppLocalizations.of(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('请输入交付内容描述')),
+                  SnackBar(content: Text(l10n?.order_delivery_content_required ?? 'Please enter delivery content description')),
                 );
                 return;
               }
@@ -200,9 +213,9 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
               backgroundColor: Colors.green,
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            child: const Text(
-              '提交交付',
-              style: TextStyle(fontSize: 16),
+            child: Text(
+              AppLocalizations.of(context)?.order_delivery_submit_button ?? 'Submit Delivery',
+              style: const TextStyle(fontSize: 16),
             ),
           ),
         ],

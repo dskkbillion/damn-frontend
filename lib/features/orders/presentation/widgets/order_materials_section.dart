@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../domain/entities/order.dart';
 import '../../domain/entities/order_status.dart';
 import '../../domain/entities/order_materials.dart';
 import '../../domain/entities/order_delivery.dart';
 import '../bloc/order_detail_bloc.dart';
+import 'delivery_file_viewer.dart';
 
 /// 订单材料交付组件
 class OrderMaterialsSection extends StatelessWidget {
@@ -17,6 +19,8 @@ class OrderMaterialsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return BlocBuilder<OrderDetailBloc, OrderDetailState>(
       builder: (context, state) {
         // 获取材料和交付数据
@@ -64,7 +68,7 @@ class OrderMaterialsSection extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '材料信息',
+                      l10n.materialsInfo,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -80,7 +84,7 @@ class OrderMaterialsSection extends StatelessWidget {
                   children: [
                     // 买家提交的材料
                     Text(
-                      '买家提交的材料',
+                      l10n.buyerSubmittedMaterials,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -94,7 +98,7 @@ class OrderMaterialsSection extends StatelessWidget {
                         order.state == OrderStatus.orderCompleted) ...[
                       const SizedBox(height: 16),
                       Text(
-                        '卖家交付内容',
+                        l10n.sellerDeliveryContent,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -114,6 +118,8 @@ class OrderMaterialsSection extends StatelessWidget {
 
   /// 构建买家材料内容
   Widget _buildBuyerMaterialsContent(BuildContext context, List<OrderMaterials>? materials) {
+    final l10n = AppLocalizations.of(context)!;
+    
     if (materials == null || materials.isEmpty) {
       return Container(
         width: double.infinity,
@@ -123,9 +129,9 @@ class OrderMaterialsSection extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey[200]!),
         ),
-        child: const Text(
-          '暂无买家提交的材料',
-          style: TextStyle(color: Colors.grey),
+        child: Text(
+          l10n.noBuyerMaterials,
+          style: const TextStyle(color: Colors.grey),
         ),
       );
     }
@@ -154,18 +160,17 @@ class OrderMaterialsSection extends StatelessWidget {
               )),
               const SizedBox(height: 8),
             ],
-            // 显示附件
+            // 显示附件文件（可预览和下载）
             if (material.files.isNotEmpty) ...[
-              const Text(
-                '附件:',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+              Text(
+                l10n.attachments,
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
-              const SizedBox(height: 4),
-              Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: material.files.map((fileUrl) => _buildFileChip(_extractFileName(fileUrl))).toList(),
-              ),
+              const SizedBox(height: 8),
+              ...material.files.map((fileUrl) => DeliveryFileViewer(
+                fileUrl: fileUrl,
+                fileName: _extractFileName(fileUrl),
+              )),
             ],
           ],
         ),
@@ -175,6 +180,8 @@ class OrderMaterialsSection extends StatelessWidget {
 
   /// 构建卖家交付内容
   Widget _buildSellerDeliveriesContent(BuildContext context, List<OrderDelivery>? deliveries) {
+    final l10n = AppLocalizations.of(context)!;
+    
     if (deliveries == null || deliveries.isEmpty) {
       return Container(
         width: double.infinity,
@@ -184,9 +191,9 @@ class OrderMaterialsSection extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey[200]!),
         ),
-        child: const Text(
-          '卖家暂未交付内容',
-          style: TextStyle(color: Colors.grey),
+        child: Text(
+          l10n.noSellerDelivery,
+          style: const TextStyle(color: Colors.grey),
         ),
       );
     }
@@ -204,22 +211,40 @@ class OrderMaterialsSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '交付说明: ${delivery.content}',
-              style: Theme.of(context).textTheme.bodyMedium,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${l10n.deliveryDescription}: ',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[700],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    delivery.content,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+              ],
             ),
             if (delivery.files.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                l10n.deliveryFiles,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[700],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
               const SizedBox(height: 8),
-              const Text(
-                '交付文件:',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-              const SizedBox(height: 4),
-              Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: delivery.files.map((fileUrl) => _buildFileChip(_extractFileName(fileUrl))).toList(),
-              ),
+              ...delivery.files.map((fileUrl) => DeliveryFileViewer(
+                fileUrl: fileUrl,
+                fileName: _extractFileName(fileUrl),
+              )),
             ],
           ],
         ),
@@ -227,44 +252,6 @@ class OrderMaterialsSection extends StatelessWidget {
     );
   }
 
-  /// 构建文件标签
-  Widget _buildFileChip(String fileName) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            _getFileIcon(fileName),
-            size: 14,
-            color: Colors.grey[600],
-          ),
-          const SizedBox(width: 4),
-          Text(
-            fileName,
-            style: const TextStyle(fontSize: 12),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 根据文件扩展名获取图标
-  IconData _getFileIcon(String fileName) {
-    final extension = fileName.contains('.') ? fileName.split('.').last.toLowerCase() : '';
-    switch (extension) {
-      case 'pdf': return Icons.picture_as_pdf;
-      case 'doc': case 'docx': return Icons.description;
-      case 'jpg': case 'jpeg': case 'png': case 'gif': return Icons.image;
-      case 'ai': case 'psd': return Icons.design_services;
-      default: return Icons.insert_drive_file;
-    }
-  }
   
   /// 从URL中提取文件名
   String _extractFileName(String fileUrl) {

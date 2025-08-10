@@ -685,7 +685,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
     // 验证商品图片
     if (_bloc.state.selectedImagePaths.isEmpty && (_bloc.state.product?.images.isEmpty ?? true)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(AppLocalizations.of(context)?.product_edit_at_least_one_image ?? 'Please upload at least one product image'),
           backgroundColor: Colors.red,
         ),
@@ -749,7 +749,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
             maxLength: ValidationConstants.maxAttributeNameLength,
             decoration: InputDecoration(
               hintText: AppLocalizations.of(context)?.product_edit_attribute_name_hint ?? 'Please enter attribute name',
-              helperText: AppLocalizations.of(context)?.product_edit_max_characters?.replaceAll('{max}', ValidationConstants.maxAttributeNameLength.toString()) ?? 'Max ${ValidationConstants.maxAttributeNameLength} characters',
+              helperText: AppLocalizations.of(context)?.product_edit_max_characters != null 
+                  ? AppLocalizations.of(context)!.product_edit_max_characters(ValidationConstants.maxAttributeNameLength)
+                  : 'Max ${ValidationConstants.maxAttributeNameLength} characters',
               errorText: errorText,
               border: const OutlineInputBorder(),
               counterText: '${nameController.text.length}/${ValidationConstants.maxAttributeNameLength}',
@@ -1189,13 +1191,13 @@ class _ProductEditPageState extends State<ProductEditPage> {
       child: Column(
         children: [
           // 标题
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 12),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 AppLocalizations.of(context)?.product_edit_service_tiers ?? 'Service Tier Settings',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -1813,9 +1815,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 AppLocalizations.of(context)?.product_edit_success_cases ?? 'Success Cases',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -2514,7 +2516,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
             ),
             const SizedBox(width: 8),
             Text(
-              AppLocalizations.of(context)?.product_edit_uploading_progress?.replaceAll('{uploaded}', state.uploadedCount.toString()).replaceAll('{total}', state.totalUploadCount.toString()) ?? 'Uploading ${state.uploadedCount}/${state.totalUploadCount}',
+              AppLocalizations.of(context)?.product_edit_uploading_progress != null
+                  ? AppLocalizations.of(context)!.product_edit_uploading_progress(state.uploadedCount, state.totalUploadCount)
+                  : 'Uploading ${state.uploadedCount}/${state.totalUploadCount}',
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.blue[700],
@@ -3433,7 +3437,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 maxLength: ValidationConstants.maxAttributeNameLength,
                 decoration: InputDecoration(
                   hintText: AppLocalizations.of(context)?.product_edit_attribute_name_hint ?? 'Please enter attribute name',
-                  helperText: AppLocalizations.of(context)?.product_edit_max_characters?.replaceAll('{max}', ValidationConstants.maxAttributeNameLength.toString()) ?? 'Max ${ValidationConstants.maxAttributeNameLength} characters',
+                  helperText: AppLocalizations.of(context)?.product_edit_max_characters != null 
+                  ? AppLocalizations.of(context)!.product_edit_max_characters(ValidationConstants.maxAttributeNameLength)
+                  : 'Max ${ValidationConstants.maxAttributeNameLength} characters',
                   errorText: errorText,
                   border: const OutlineInputBorder(),
                   counterText: '${nameController.text.length}/${ValidationConstants.maxAttributeNameLength}',
@@ -3615,6 +3621,37 @@ class _ProductEditPageState extends State<ProductEditPage> {
       }
     }
     
+    // 转换qaList和buyerInfoItems为productMaterials
+    final List<ProductMaterial> materials = [];
+    
+    // 转换qaList为PROBLEM类型的materials
+    int materialId = 1;
+    for (final qa in _qaList) {
+      materials.add(ProductMaterial(
+        id: materialId++,
+        question: qa.question,
+        answer: qa.answer,
+        type: 'PROBLEM',
+      ));
+    }
+    
+    // 转换buyerInfoItems为ATTACHMENT或TEXT类型的materials
+    int buyerInfoMaterialId = 1000; // 从1000开始，避免与QA的ID冲突
+    for (final item in _buyerInfoItems) {
+      String materialType = 'TEXT';
+      // 根据类型判断是TEXT还是ATTACHMENT
+      if (item.type == BuyerInfoType.file || item.type == BuyerInfoType.image) {
+        materialType = 'ATTACHMENT';
+      }
+      
+      materials.add(ProductMaterial(
+        id: buyerInfoMaterialId++,
+        question: item.label,
+        answer: item.description,
+        type: materialType,
+      ));
+    }
+    
     return ExtendedProductFormData(
       productId: widget.productId != null ? int.tryParse(widget.productId!) : null,
       name: _nameController.text,
@@ -3622,7 +3659,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
       price: variants.isNotEmpty ? variants.first.sellingPrice : 0.0,
       categoryId: state.formData?.categoryId,
       variants: variants,
-      productMaterials: [],
+      productMaterials: materials, // 使用转换后的materials
       detailContent: '',
       qaList: _qaList.map((qa) => {
         'question': qa.question,

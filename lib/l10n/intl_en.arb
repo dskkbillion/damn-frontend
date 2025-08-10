@@ -899,5 +899,201 @@
           "type": "int"
         }
       }
-    }
+    },
+    
+    "after_sales_review_title": "After-sales Review",
+    "after_sales_detail_title": "After-sales Details",
+    "after_sales_refresh": "Refresh",
+    "after_sales_no_pending": "No pending after-sales requests",
+    "after_sales_load_failed": "Load failed, please try again",
+    "after_sales_not_found": "After-sales request not found",
+    "after_sales_order_number": "Order Number",
+    "after_sales_apply_type": "Request Type",
+    "after_sales_apply_time": "Request Time",
+    "after_sales_refund_amount": "Refund Amount",
+    "after_sales_refund_type": "Refund Type",
+    "after_sales_apply_reason": "Request Reason",
+    "after_sales_image_evidence": "Image Evidence",
+    "after_sales_image_view": "Image View",
+    "after_sales_image_load_failed": "Image load failed",
+    "after_sales_reject": "Reject",
+    "after_sales_agree": "Approve",
+    "after_sales_reject_application": "Reject Request",
+    "after_sales_agree_application": "Approve Request",
+    "after_sales_confirm": "Confirm",
+    "after_sales_cancel": "Cancel",
+    "after_sales_confirm_title": "Confirm",
+    "after_sales_confirm_message": "Are you sure you want to approve this after-sales request?",
+    "after_sales_reject_reason": "Rejection Reason",
+    "after_sales_reject_reason_hint": "Please enter rejection reason",
+    "after_sales_reject_reason_required": "Please enter rejection reason",
+    
+    "after_sales_type_refund_only": "Refund Only",
+    "after_sales_type_refund_return": "Return & Refund",
+    "after_sales_type_unknown": "Unknown Type",
+    
+    "after_sales_status_wait_audit": "Pending Review",
+    "after_sales_status_refused": "Rejected",
+    "after_sales_status_audit_pass": "Approved",
+    "after_sales_status_buyer_shipped": "Buyer Shipped",
+    "after_sales_status_seller_received": "Seller Received",
+    "after_sales_status_finished": "Completed",
+    "after_sales_status_canceled": "Canceled",
+    "after_sales_status_unknown": "Unknown Status",
+    
+    "time_management_title": "Time Management",
+    "time_management_current_status": "Current Status",
+    "time_management_online": "Online",
+    "time_management_offline": "Offline",
+    "time_management_online_status_description": "Online Status Description",
+    "time_management_offline_status_description": "Offline Status Description",
+    "time_management_online_description": "You are currently online. Buyers can send you messages and you will receive notifications for new messages. Please ensure timely responses to buyer messages as maintaining a good response rate helps improve your service quality rating.",
+    "time_management_offline_description": "You are currently offline. Buyers can still send you messages but the system will inform them that you are temporarily unavailable. You will still receive notifications for new messages but may not be able to respond immediately. Staying offline for extended periods may affect your order efficiency.",
+    "time_management_save_settings": "Save Settings",
+    "time_management_settings_saved": "Settings Saved",
+    "time_management_load_failed": "Load Failed",
+    "time_management_retry": "Retry",
+    "time_management_unknown_status": "Unknown Status",
+    
+    "auto_reply_title": "Auto Reply Settings",
+    "auto_reply_enable": "Auto Reply",
+    "auto_reply_content": "Reply Content",
+    "auto_reply_content_hint": "Please enter auto reply content",
+    "auto_reply_content_description": "When customers send messages, the system will automatically reply with this content",
+    "auto_reply_save_settings": "Save Settings",
+    "auto_reply_settings_saved": "Settings Saved",
+    "auto_reply_content_required": "Reply content cannot be empty",
+    "auto_reply_load_failed": "Load failed, please try again",
+    
+    "order_delivery_title": "Order Delivery",
+    "order_delivery_title_with_sn": "Order Delivery: {orderSn}",
+    "@order_delivery_title_with_sn": {
+      "placeholders": {
+        "orderSn": {
+          "type": "String",
+          "example": "SN123456"
+        }
+      }
+    },
+    "order_delivery_submitting": "Submitting delivery content...",
+    "order_delivery_load_failed": "Load failed, please try again",
+    "order_delivery_instruction_title": "Delivery Instructions",
+    "order_delivery_instruction_content": "Please submit your delivery content for this order. You can provide detailed instructions and attach relevant files to ensure the buyer clearly understands the services or products you provide.",
+    "order_delivery_content_label": "Delivery Content Description:",
+    "order_delivery_content_hint": "Please describe your delivery content...",
+    "order_delivery_attachments_label": "Attachment Files:",
+    "order_delivery_submit_button": "Submit Delivery",
+    "order_delivery_content_required": "Please enter delivery content description",
+    "order_delivery_submit_success": "Delivery content submitted successfully",
+    "order_delivery_logistics_company": "Logistics Company",
+    "order_delivery_tracking_number": "Tracking Number",
+    "order_delivery_shipping_address": "Shipping Address",
+    "order_delivery_receiving_address": "Receiving Address",
+    "order_delivery_status_pending": "Pending Shipment",
+    "order_delivery_status_shipped": "Shipped",
+    "order_delivery_status_received": "Received",
+    "order_delivery_status_in_transit": "In Transit",
+    "order_delivery_confirm_shipment": "Confirm Shipment",
+    "order_delivery_view_details": "View Details",
+    "order_delivery_no_pending_orders": "No pending orders",
+    
+    "notification_center_title": "Notification Center",
+    "notification_tab_all": "All",
+    "notification_tab_order": "Orders",
+    "notification_tab_system": "System",
+    "notification_tab_refund": "After-sales",
+    "notification_tab_message": "Messages",
+    "notification_type_order": "Order Notification",
+    "notification_type_system": "System Notification",
+    "notification_type_refund": "After-sales Notification",
+    "notification_type_message": "Message Notification",
+    "notification_type_review": "Review Notification",
+    "notification_type_authentication": "Authentication Notification",
+    "notification_type_other": "Other Notification",
+    "notification_status_unread": "Unread",
+    "notification_status_read": "Read",
+    "notification_mark_all_read": "Mark All as Read",
+    "notification_empty_all": "No notifications",
+    "notification_empty_order": "No order notifications",
+    "notification_empty_system": "No system notifications",
+    "notification_empty_refund": "No after-sales notifications",
+    "notification_empty_message": "No message notifications",
+    "notification_empty_review": "No review notifications",
+    "notification_empty_authentication": "No authentication notifications",
+    "notification_empty_other": "No other notifications",
+    "notification_empty_generic": "No notifications",
+    "notification_refresh": "Refresh",
+    "notification_retry": "Retry",
+    "notification_load_failed": "Failed to load notification center: {error}",
+    "@notification_load_failed": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "Network error"
+        }
+      }
+    },
+    "notification_detail_title": "Notification Details",
+    "notification_detail_view": "View Details",
+    "notification_detail_close": "Close",
+    "notification_click_to_view": "Click to view details",
+    "notification_default_title": "Notification",
+    "notification_time_just_now": "Just now",
+    "notification_time_minutes_ago": "{minutes} minutes ago",
+    "@notification_time_minutes_ago": {
+      "placeholders": {
+        "minutes": {
+          "type": "int",
+          "example": "5"
+        }
+      }
+    },
+    "notification_time_hours_ago": "{hours} hours ago",
+    "@notification_time_hours_ago": {
+      "placeholders": {
+        "hours": {
+          "type": "int",
+          "example": "2"
+        }
+      }
+    },
+    "notification_time_days_ago": "{days} days ago",
+    "@notification_time_days_ago": {
+      "placeholders": {
+        "days": {
+          "type": "int",
+          "example": "3"
+        }
+      }
+    },
+    "notification_time_months_ago": "{months} months ago",
+    "@notification_time_months_ago": {
+      "placeholders": {
+        "months": {
+          "type": "int",
+          "example": "2"
+        }
+      }
+    },
+    
+    "materialsInfo": "Materials Info",
+    "buyerSubmittedMaterials": "Buyer Submitted Materials",
+    "sellerDeliveryContent": "Seller Delivery Content",
+    "noBuyerMaterials": "No buyer submitted materials",
+    "noSellerDelivery": "No delivery from seller yet",
+    "attachments": "Attachments:",
+    "deliveryFiles": "Delivery Files:",
+    "deliveryDescription": "Delivery Description",
+    
+    "tapToPreview": "Tap to preview",
+    "tapToOpen": "Tap to open",
+    "downloadFile": "Download file",
+    "openFile": "Open file",
+    "downloaded": "Downloaded",
+    "downloadCompleted": "Download completed",
+    "downloadFailed": "Download failed",
+    "openFileFailed": "Failed to open file",
+    "storagePermissionRequired": "Storage permission required to download files",
+    "pdfLoadFailed": "Failed to load PDF",
+    "retry": "Retry"
 }

@@ -899,5 +899,201 @@
           "type": "int"
         }
       }
-    }
+    },
+    
+    "after_sales_review_title": "售后审核",
+    "after_sales_detail_title": "售后详情",
+    "after_sales_refresh": "刷新",
+    "after_sales_no_pending": "暂无待审核的售后申请",
+    "after_sales_load_failed": "加载失败，请重试",
+    "after_sales_not_found": "找不到对应的售后申请",
+    "after_sales_order_number": "订单编号",
+    "after_sales_apply_type": "申请类型",
+    "after_sales_apply_time": "申请时间",
+    "after_sales_refund_amount": "退款金额",
+    "after_sales_refund_type": "退款类型",
+    "after_sales_apply_reason": "申请原因",
+    "after_sales_image_evidence": "图片证据",
+    "after_sales_image_view": "图片查看",
+    "after_sales_image_load_failed": "图片加载失败",
+    "after_sales_reject": "拒绝",
+    "after_sales_agree": "同意",
+    "after_sales_reject_application": "拒绝申请",
+    "after_sales_agree_application": "同意申请",
+    "after_sales_confirm": "确认",
+    "after_sales_cancel": "取消",
+    "after_sales_confirm_title": "确认",
+    "after_sales_confirm_message": "确定同意此售后申请吗？",
+    "after_sales_reject_reason": "拒绝原因",
+    "after_sales_reject_reason_hint": "请输入拒绝原因",
+    "after_sales_reject_reason_required": "请输入拒绝原因",
+    
+    "after_sales_type_refund_only": "仅退款",
+    "after_sales_type_refund_return": "退货退款",
+    "after_sales_type_unknown": "未知类型",
+    
+    "after_sales_status_wait_audit": "待审核",
+    "after_sales_status_refused": "已拒绝",
+    "after_sales_status_audit_pass": "审核通过",
+    "after_sales_status_buyer_shipped": "买家已发货",
+    "after_sales_status_seller_received": "卖家已收货",
+    "after_sales_status_finished": "已完成",
+    "after_sales_status_canceled": "已取消",
+    "after_sales_status_unknown": "未知状态",
+    
+    "time_management_title": "时间管理",
+    "time_management_current_status": "当前状态",
+    "time_management_online": "在线",
+    "time_management_offline": "离线",
+    "time_management_online_status_description": "在线状态说明",
+    "time_management_offline_status_description": "离线状态说明",
+    "time_management_online_description": "您当前处于在线状态，买家可以向您发送消息，您将收到新消息的通知。请确保及时回复买家消息，保持良好的响应率有助于提高您的服务质量评分。",
+    "time_management_offline_description": "您当前处于离线状态，买家仍然可以向您发送消息，但系统会告知买家您暂时不在线。您仍然会收到新消息的通知，但可能无法立即回复。长时间保持离线状态可能会影响您的接单效率。",
+    "time_management_save_settings": "保存设置",
+    "time_management_settings_saved": "设置已保存",
+    "time_management_load_failed": "加载失败",
+    "time_management_retry": "重试",
+    "time_management_unknown_status": "未知状态",
+    
+    "auto_reply_title": "自动回复设置",
+    "auto_reply_enable": "自动回复",
+    "auto_reply_content": "回复内容",
+    "auto_reply_content_hint": "请输入自动回复内容",
+    "auto_reply_content_description": "当客户发送消息时，系统会自动回复此内容",
+    "auto_reply_save_settings": "保存设置",
+    "auto_reply_settings_saved": "设置已保存",
+    "auto_reply_content_required": "回复内容不能为空",
+    "auto_reply_load_failed": "加载失败，请重试",
+    
+    "order_delivery_title": "订单交付",
+    "order_delivery_title_with_sn": "订单交付: {orderSn}",
+    "@order_delivery_title_with_sn": {
+      "placeholders": {
+        "orderSn": {
+          "type": "String",
+          "example": "SN123456"
+        }
+      }
+    },
+    "order_delivery_submitting": "正在提交交付内容...",
+    "order_delivery_load_failed": "加载失败，请重试",
+    "order_delivery_instruction_title": "订单交付说明",
+    "order_delivery_instruction_content": "请提交您针对此订单的交付内容。您可以提供详细说明以及附加相关文件，确保买家能够清晰了解您提供的服务或产品。",
+    "order_delivery_content_label": "交付内容描述:",
+    "order_delivery_content_hint": "请描述您的交付内容...",
+    "order_delivery_attachments_label": "附件文件:",
+    "order_delivery_submit_button": "提交交付",
+    "order_delivery_content_required": "请输入交付内容描述",
+    "order_delivery_submit_success": "交付内容提交成功",
+    "order_delivery_logistics_company": "物流公司",
+    "order_delivery_tracking_number": "物流单号",
+    "order_delivery_shipping_address": "发货地址",
+    "order_delivery_receiving_address": "收货地址",
+    "order_delivery_status_pending": "待发货",
+    "order_delivery_status_shipped": "已发货",
+    "order_delivery_status_received": "已收货",
+    "order_delivery_status_in_transit": "配送中",
+    "order_delivery_confirm_shipment": "确认发货",
+    "order_delivery_view_details": "查看详情",
+    "order_delivery_no_pending_orders": "暂无待发货订单",
+    
+    "notification_center_title": "通知中心",
+    "notification_tab_all": "全部",
+    "notification_tab_order": "订单",
+    "notification_tab_system": "系统",
+    "notification_tab_refund": "售后",
+    "notification_tab_message": "消息",
+    "notification_type_order": "订单通知",
+    "notification_type_system": "系统通知",
+    "notification_type_refund": "售后通知",
+    "notification_type_message": "消息通知",
+    "notification_type_review": "评价通知",
+    "notification_type_authentication": "认证通知",
+    "notification_type_other": "其他通知",
+    "notification_status_unread": "未读",
+    "notification_status_read": "已读",
+    "notification_mark_all_read": "全部标记已读",
+    "notification_empty_all": "暂无任何通知",
+    "notification_empty_order": "暂无订单通知",
+    "notification_empty_system": "暂无系统通知",
+    "notification_empty_refund": "暂无售后通知",
+    "notification_empty_message": "暂无消息通知",
+    "notification_empty_review": "暂无评价通知",
+    "notification_empty_authentication": "暂无认证通知",
+    "notification_empty_other": "暂无其他通知",
+    "notification_empty_generic": "暂无通知",
+    "notification_refresh": "刷新",
+    "notification_retry": "重试",
+    "notification_load_failed": "加载通知中心失败: {error}",
+    "@notification_load_failed": {
+      "placeholders": {
+        "error": {
+          "type": "String",
+          "example": "网络错误"
+        }
+      }
+    },
+    "notification_detail_title": "通知详情",
+    "notification_detail_view": "查看详情",
+    "notification_detail_close": "关闭",
+    "notification_click_to_view": "点击查看详情",
+    "notification_default_title": "通知",
+    "notification_time_just_now": "刚刚",
+    "notification_time_minutes_ago": "{minutes}分钟前",
+    "@notification_time_minutes_ago": {
+      "placeholders": {
+        "minutes": {
+          "type": "int",
+          "example": "5"
+        }
+      }
+    },
+    "notification_time_hours_ago": "{hours}小时前",
+    "@notification_time_hours_ago": {
+      "placeholders": {
+        "hours": {
+          "type": "int",
+          "example": "2"
+        }
+      }
+    },
+    "notification_time_days_ago": "{days}天前",
+    "@notification_time_days_ago": {
+      "placeholders": {
+        "days": {
+          "type": "int",
+          "example": "3"
+        }
+      }
+    },
+    "notification_time_months_ago": "{months}个月前",
+    "@notification_time_months_ago": {
+      "placeholders": {
+        "months": {
+          "type": "int",
+          "example": "2"
+        }
+      }
+    },
+    
+    "materialsInfo": "材料信息",
+    "buyerSubmittedMaterials": "买家提交的材料",
+    "sellerDeliveryContent": "卖家交付内容",
+    "noBuyerMaterials": "暂无买家提交的材料",
+    "noSellerDelivery": "卖家暂未交付内容",
+    "attachments": "附件:",
+    "deliveryFiles": "交付文件:",
+    "deliveryDescription": "交付说明",
+    
+    "tapToPreview": "点击预览",
+    "tapToOpen": "点击打开",
+    "downloadFile": "下载文件",
+    "openFile": "打开文件",
+    "downloaded": "已下载",
+    "downloadCompleted": "下载完成",
+    "downloadFailed": "下载失败",
+    "openFileFailed": "打开文件失败",
+    "storagePermissionRequired": "需要存储权限才能下载文件",
+    "pdfLoadFailed": "PDF加载失败",
+    "retry": "重试"
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart'; // Import GetIt
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/time_settings.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/time_management/time_management_bloc.dart';
@@ -26,9 +27,10 @@ class TimeManagementPage extends StatelessWidget {
         return bloc;
       },
       // Wrap the Scaffold with BlocProvider
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('时间管理'),
+      child: Builder(
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            title: Text(AppLocalizations.of(context)?.time_management_title ?? 'Time Management'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
@@ -46,6 +48,7 @@ class TimeManagementPage extends StatelessWidget {
         ),
         // Use the context provided by BlocProvider
         body: const TimeManagementBody(),
+      ),
       ),
     );
   }
@@ -95,13 +98,13 @@ class TimeManagementBody extends StatelessWidget {
              child: Column(
                mainAxisAlignment: MainAxisAlignment.center,
                children: [
-                 const Text('加载失败'),
+                 Text(AppLocalizations.of(context)?.time_management_load_failed ?? 'Load Failed'),
                  const SizedBox(height: 8),
                  Text(state.message, style: const TextStyle(color: Colors.red)),
                  const SizedBox(height: 16),
                  ElevatedButton(
                    onPressed: () => context.read<TimeManagementBloc>().add(LoadTimeSettings()),
-                   child: const Text('重试'),
+                   child: Text(AppLocalizations.of(context)?.time_management_retry ?? 'Retry'),
                  )
                ],
              ),
@@ -109,7 +112,7 @@ class TimeManagementBody extends StatelessWidget {
         }
 
         // Fallback for any other unhandled state
-        return const Center(child: Text('未知状态'));
+        return Center(child: Text(AppLocalizations.of(context)?.time_management_unknown_status ?? 'Unknown Status'));
       },
     );
   }
@@ -128,7 +131,7 @@ class TimeManagementBody extends StatelessWidget {
           const SizedBox(height: 24),
           
           // 状态说明
-          _buildStatusDescription(settings.isOnline),
+          _buildStatusDescription(context, settings.isOnline),
           
           const SizedBox(height: 32),
 
@@ -150,9 +153,9 @@ class TimeManagementBody extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              '当前状态',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)?.time_management_current_status ?? 'Current Status',
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
@@ -160,7 +163,9 @@ class TimeManagementBody extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  settings.isOnline ? '在线' : '离线',
+                  settings.isOnline 
+                    ? (AppLocalizations.of(context)?.time_management_online ?? 'Online')
+                    : (AppLocalizations.of(context)?.time_management_offline ?? 'Offline'),
                   style: TextStyle(
                     color: settings.isOnline ? Colors.green : Colors.grey,
                     fontSize: 14,
@@ -187,8 +192,8 @@ class TimeManagementBody extends StatelessWidget {
   }
 
   /// 构建状态说明部分
-  Widget _buildStatusDescription(bool isOnline) {
-    // This widget doesn't need context for Bloc access
+  Widget _buildStatusDescription(BuildContext context, bool isOnline) {
+    // This widget needs context for localization
     return Card(
       elevation: 1,
       margin: EdgeInsets.zero,
@@ -198,7 +203,9 @@ class TimeManagementBody extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              isOnline ? '在线状态说明' : '离线状态说明',
+              isOnline 
+                ? (AppLocalizations.of(context)?.time_management_online_status_description ?? 'Online Status Description')
+                : (AppLocalizations.of(context)?.time_management_offline_status_description ?? 'Offline Status Description'),
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -207,8 +214,8 @@ class TimeManagementBody extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               isOnline 
-                  ? '您当前处于在线状态，买家可以向您发送消息，您将收到新消息的通知。请确保及时回复买家消息，保持良好的响应率有助于提高您的服务质量评分。'
-                  : '您当前处于离线状态，买家仍然可以向您发送消息，但系统会告知买家您暂时不在线。您仍然会收到新消息的通知，但可能无法立即回复。长时间保持离线状态可能会影响您的接单效率。',
+                  ? (AppLocalizations.of(context)?.time_management_online_description ?? 'You are currently online. Buyers can send you messages and you will receive notifications for new messages. Please ensure timely responses to buyer messages as maintaining a good response rate helps improve your service quality rating.')
+                  : (AppLocalizations.of(context)?.time_management_offline_description ?? 'You are currently offline. Buyers can still send you messages but the system will inform them that you are temporarily unavailable. You will still receive notifications for new messages but may not be able to respond immediately. Staying offline for extended periods may affect your order efficiency.'),
               style: const TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
@@ -229,14 +236,9 @@ class TimeManagementBody extends StatelessWidget {
         // Disable button if isUpdating
         onPressed: isUpdating ? null : () {
           // Dispatch Save event using the context with Bloc access
-          // 只保存在线状态，不需要保存时间段设置
-          final currentSettings = TimeSettingsData(
-            isOnline: (context.read<TimeManagementBloc>().state as TimeManagementLoaded).settings.isOnline,
-          );
-          
           // 显示保存成功提示
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('设置已保存')),
+            SnackBar(content: Text(AppLocalizations.of(context)?.time_management_settings_saved ?? 'Settings Saved')),
           );
         },
         style: ElevatedButton.styleFrom(
@@ -251,7 +253,7 @@ class TimeManagementBody extends StatelessWidget {
                 width: 20,
                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
               )
-            : const Text('保存设置'),
+            : Text(AppLocalizations.of(context)?.time_management_save_settings ?? 'Save Settings'),
       ),
     );
   }

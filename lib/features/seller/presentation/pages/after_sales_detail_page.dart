@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 
@@ -30,48 +31,53 @@ class AfterSalesDetailPage extends StatelessWidget {
     // 由于我们现在没有单独的售后详情获取接口，这里暂时使用列表接口获取所有数据并过滤
     return BlocProvider(
       create: (_) => GetIt.instance<AfterSalesReviewBloc>()..add(LoadAfterSalesList()),
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('售后详情'),
-        ),
-        body: BlocBuilder<AfterSalesReviewBloc, AfterSalesReviewState>(
-          builder: (context, state) {
-            if (state is AfterSalesReviewInitial || state is AfterSalesReviewLoading) {
-              return const Center(child: LoadingIndicator());
-            }
-            
-            if (state is AfterSalesReviewLoaded) {
-              // 从列表中查找对应ID的售后
-              final refund = state.refunds.firstWhere(
-                (r) => r.id == id,
-                orElse: () => OrderRefund(
-                  id: -1,
-                  orderId: 0,
-                  orderSn: '未找到',
-                  refundSn: 'not-found',
-                  refundPrice: 0,
-                  reason: '',
-                  credentials: [],
-                  state: OrderRefundState.unknown,
-                  type: RefundType.unknown,
-                  applyTime: DateTime.now(),
-                ),
-              );
-              
-              // 如果找不到对应ID的售后
-              if (refund.id == -1) {
-                return const Center(
-                  child: Text('找不到对应的售后申请'),
-                );
-              }
-              
-              // 显示详情
-              return _buildRefundDetail(context, refund, state);
-            }
-            
-            return const Center(child: Text('加载失败，请重试'));
-          },
-        ),
+      child: Builder(
+        builder: (context) {
+          final l10n = AppLocalizations.of(context);
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(l10n?.after_sales_detail_title ?? 'After-sales Details'),
+            ),
+            body: BlocBuilder<AfterSalesReviewBloc, AfterSalesReviewState>(
+              builder: (context, state) {
+                if (state is AfterSalesReviewInitial || state is AfterSalesReviewLoading) {
+                  return const Center(child: LoadingIndicator());
+                }
+                
+                if (state is AfterSalesReviewLoaded) {
+                  // 从列表中查找对应ID的售后
+                  final refund = state.refunds.firstWhere(
+                    (r) => r.id == id,
+                    orElse: () => OrderRefund(
+                      id: -1,
+                      orderId: 0,
+                      orderSn: '未找到',
+                      refundSn: 'not-found',
+                      refundPrice: 0,
+                      reason: '',
+                      credentials: [],
+                      state: OrderRefundState.unknown,
+                      type: RefundType.unknown,
+                      applyTime: DateTime.now(),
+                    ),
+                  );
+                  
+                  // 如果找不到对应ID的售后
+                  if (refund.id == -1) {
+                    return Center(
+                      child: Text(l10n?.after_sales_not_found ?? 'After-sales request not found'),
+                    );
+                  }
+                  
+                  // 显示详情
+                  return _buildRefundDetail(context, refund, state);
+                }
+                
+                return Center(child: Text(l10n?.after_sales_load_failed ?? 'Load failed, please try again'));
+              },
+            ),
+          );
+        },
       ),
     );
   }
@@ -102,14 +108,14 @@ class AfterSalesDetailPage extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          '订单编号: ${refund.orderSn}',
+                          '${AppLocalizations.of(context)?.after_sales_order_number ?? "Order Number"}: ${refund.orderSn}',
                           style: textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                       StatusTag(
-                        text: refund.state.displayName,
+                        text: refund.state.displayName(context),
                         type: _getStateType(refund.state),
                       ),
                     ],
@@ -118,13 +124,13 @@ class AfterSalesDetailPage extends StatelessWidget {
                   const Divider(height: 24),
                   
                   // 售后基本信息
-                  _buildInfoItem(context, '申请类型', _getRefundTypeLabel(refund.type)),
+                  _buildInfoItem(context, AppLocalizations.of(context)?.after_sales_apply_type ?? 'Request Type', _getRefundTypeLabel(context, refund.type)),
                   const SizedBox(height: 12),
-                  _buildInfoItem(context, '申请时间', dateFormat.format(refund.applyTime ?? DateTime.now())),
+                  _buildInfoItem(context, AppLocalizations.of(context)?.after_sales_apply_time ?? 'Request Time', dateFormat.format(refund.applyTime ?? DateTime.now())),
                   const SizedBox(height: 12),
-                  _buildInfoItem(context, '退款金额', '¥${refund.formattedRefundPrice.toStringAsFixed(2)}'),
+                  _buildInfoItem(context, AppLocalizations.of(context)?.after_sales_refund_amount ?? 'Refund Amount', '¥${refund.formattedRefundPrice.toStringAsFixed(2)}'),
                   const SizedBox(height: 12),
-                  _buildInfoItem(context, '退款类型', _getRefundTypeLabel(refund.type)),
+                  _buildInfoItem(context, AppLocalizations.of(context)?.after_sales_refund_type ?? 'Refund Type', _getRefundTypeLabel(context, refund.type)),
                 ],
               ),
             ),
@@ -142,7 +148,7 @@ class AfterSalesDetailPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('申请原因', style: textTheme.titleMedium),
+                    Text(AppLocalizations.of(context)?.after_sales_apply_reason ?? 'Request Reason', style: textTheme.titleMedium),
                     const SizedBox(height: 8),
                     Text(
                       refund.reason ?? '',
@@ -165,7 +171,7 @@ class AfterSalesDetailPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('图片证据', style: textTheme.titleMedium),
+                    Text(AppLocalizations.of(context)?.after_sales_image_evidence ?? 'Image Evidence', style: textTheme.titleMedium),
                     const SizedBox(height: 12),
                     GridView.builder(
                       shrinkWrap: true,
@@ -211,7 +217,7 @@ class AfterSalesDetailPage extends StatelessWidget {
                       foregroundColor: colorScheme.error,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    child: const Text('拒绝申请'),
+                    child: Text(AppLocalizations.of(context)?.after_sales_reject_application ?? 'Reject Request'),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -223,7 +229,7 @@ class AfterSalesDetailPage extends StatelessWidget {
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    child: const Text('同意申请'),
+                    child: Text(AppLocalizations.of(context)?.after_sales_agree_application ?? 'Approve Request'),
                   ),
                 ),
               ],
@@ -266,15 +272,16 @@ class AfterSalesDetailPage extends StatelessWidget {
   }
   
   // 获取退款类型标签
-  String _getRefundTypeLabel(RefundType type) {
+  String _getRefundTypeLabel(BuildContext context, RefundType type) {
+    final l10n = AppLocalizations.of(context);
     switch (type) {
       case RefundType.onlyMoney:
-        return '仅退款';
+        return l10n?.after_sales_type_refund_only ?? 'Refund Only';
       case RefundType.moneyAndProduct:
-        return '退货退款';
+        return l10n?.after_sales_type_refund_return ?? 'Return & Refund';
       case RefundType.unknown:
       default:
-        return '未知类型';
+        return l10n?.after_sales_type_unknown ?? 'Unknown Type';
     }
   }
   
@@ -322,19 +329,20 @@ class AfterSalesDetailPage extends StatelessWidget {
   
   // 显示确认对话框
   void _showConfirmDialog(BuildContext context, int refundId) {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('确认'),
-        content: const Text('确定同意此售后申请吗？'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n?.after_sales_confirm_title ?? 'Confirm'),
+        content: Text(l10n?.after_sales_confirm_message ?? 'Are you sure you want to approve this after-sales request?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('取消'),
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n?.after_sales_cancel ?? 'Cancel'),
           ),
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.of(dialogContext).pop();
               context.read<AfterSalesReviewBloc>().add(
                 AuditAfterSalesRequest(
                   refundId: refundId,
@@ -342,7 +350,7 @@ class AfterSalesDetailPage extends StatelessWidget {
                 ),
               );
             },
-            child: const Text('确定'),
+            child: Text(l10n?.after_sales_confirm ?? 'Confirm'),
           ),
         ],
       ),
@@ -353,23 +361,24 @@ class AfterSalesDetailPage extends StatelessWidget {
   void _showRejectDialog(BuildContext context, int refundId) {
     final TextEditingController reasonController = TextEditingController();
     final formKey = GlobalKey<FormState>();
+    final l10n = AppLocalizations.of(context);
     
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('拒绝原因'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n?.after_sales_reject_reason ?? 'Rejection Reason'),
         content: Form(
           key: formKey,
           child: TextFormField(
             controller: reasonController,
-            decoration: const InputDecoration(
-              hintText: '请输入拒绝原因',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              hintText: l10n?.after_sales_reject_reason_hint ?? 'Please enter rejection reason',
+              border: const OutlineInputBorder(),
             ),
             maxLines: 3,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return '请输入拒绝原因';
+                return l10n?.after_sales_reject_reason_required ?? 'Please enter rejection reason';
               }
               return null;
             },
@@ -377,13 +386,13 @@ class AfterSalesDetailPage extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('取消'),
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n?.after_sales_cancel ?? 'Cancel'),
           ),
           TextButton(
             onPressed: () {
               if (formKey.currentState!.validate()) {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
                 context.read<AfterSalesReviewBloc>().add(
                   AuditAfterSalesRequest(
                     refundId: refundId,
@@ -393,7 +402,7 @@ class AfterSalesDetailPage extends StatelessWidget {
                 );
               }
             },
-            child: const Text('确定'),
+            child: Text(l10n?.after_sales_confirm ?? 'Confirm'),
           ),
         ],
       ),
@@ -402,18 +411,19 @@ class AfterSalesDetailPage extends StatelessWidget {
   
   // 显示图片对话框
   void _showImageDialog(BuildContext context, String imageUrl) {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
-      builder: (context) => Dialog(
+      builder: (dialogContext) => Dialog(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             AppBar(
-              title: const Text('图片查看'),
+              title: Text(l10n?.after_sales_image_view ?? 'Image View'),
               centerTitle: true,
               leading: IconButton(
                 icon: const Icon(Icons.close),
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => Navigator.of(dialogContext).pop(),
               ),
               elevation: 0,
             ),
@@ -430,10 +440,10 @@ class AfterSalesDetailPage extends StatelessWidget {
                     color: Colors.grey[300],
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.broken_image, size: 60),
-                        SizedBox(height: 8),
-                        Text('图片加载失败'),
+                      children: [
+                        const Icon(Icons.broken_image, size: 60),
+                        const SizedBox(height: 8),
+                        Text(l10n?.after_sales_image_load_failed ?? 'Image load failed'),
                       ],
                     ),
                   ),
