@@ -17,7 +17,7 @@ class AfterSalesDetailPage extends StatelessWidget {
   static const routeName = '/seller/after-sales/:id';
 
   /// 售后ID
-  final int id;
+  final String id;
 
   /// 构造函数
   const AfterSalesDetailPage({
@@ -46,8 +46,9 @@ class AfterSalesDetailPage extends StatelessWidget {
                 
                 if (state is AfterSalesReviewLoaded) {
                   // 从列表中查找对应ID的售后
+                  final idInt = int.tryParse(id) ?? -1;
                   final refund = state.refunds.firstWhere(
-                    (r) => r.id == id,
+                    (r) => r.id == idInt,
                     orElse: () => OrderRefund(
                       id: -1,
                       orderId: 0,

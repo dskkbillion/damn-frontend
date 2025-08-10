@@ -1,9 +1,9 @@
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -28,18 +28,21 @@ class DeliveryFileViewer extends StatefulWidget {
 }
 
 class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
-  // String? _taskId;  // TODO: Use for actual download tracking
-  int _downloadProgress = 0;
+  double _downloadProgress = 0;
   bool _isDownloading = false;
   String? _localPath;
+  CancelToken? _cancelToken;
 
   @override
   void initState() {
     super.initState();
     _checkLocalFile();
-    
-    // 监听下载进度
-    FlutterDownloader.registerCallback(_downloadCallback);
+  }
+
+  @override
+  void dispose() {
+    _cancelToken?.cancel();
+    super.dispose();
   }
 
   // 检查文件是否已经下载
@@ -53,12 +56,6 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
         _localPath = filePath;
       });
     }
-  }
-
-  // 下载回调
-  static void _downloadCallback(String id, int status, int progress) {
-    // 这是一个静态方法，无法直接更新UI
-    // 需要通过其他方式通知UI更新
   }
 
   // 获取文件类型
@@ -75,21 +72,28 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
         return 'pdf';
       case 'doc':
       case 'docx':
-        return 'document';
+        return 'word';
       case 'xls':
       case 'xlsx':
-        return 'spreadsheet';
+        return 'excel';
       case 'ppt':
       case 'pptx':
-        return 'presentation';
-      case 'txt':
-        return 'text';
+        return 'powerpoint';
       case 'zip':
       case 'rar':
       case '7z':
         return 'archive';
+      case 'mp4':
+      case 'avi':
+      case 'mov':
+      case 'wmv':
+        return 'video';
+      case 'mp3':
+      case 'wav':
+      case 'flac':
+        return 'audio';
       default:
-        return 'other';
+        return 'document';
     }
   }
 
@@ -100,55 +104,60 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
         return Icons.image;
       case 'pdf':
         return Icons.picture_as_pdf;
-      case 'document':
+      case 'word':
         return Icons.description;
-      case 'spreadsheet':
+      case 'excel':
         return Icons.table_chart;
-      case 'presentation':
+      case 'powerpoint':
         return Icons.slideshow;
-      case 'text':
-        return Icons.text_snippet;
       case 'archive':
         return Icons.folder_zip;
+      case 'video':
+        return Icons.video_file;
+      case 'audio':
+        return Icons.audio_file;
       default:
         return Icons.insert_drive_file;
     }
   }
 
-  // 获取文件颜色
+  // 获取文件图标颜色
   Color _getFileColor() {
     switch (_getFileType()) {
       case 'image':
-        return Colors.blue;
+        return Colors.green;
       case 'pdf':
         return Colors.red;
-      case 'document':
-        return Colors.blue[700]!;
-      case 'spreadsheet':
-        return Colors.green;
-      case 'presentation':
+      case 'word':
+        return Colors.blue;
+      case 'excel':
+        return Colors.green.shade700;
+      case 'powerpoint':
         return Colors.orange;
-      case 'text':
-        return Colors.grey;
       case 'archive':
         return Colors.purple;
+      case 'video':
+        return Colors.indigo;
+      case 'audio':
+        return Colors.cyan;
       default:
-        return Colors.grey[600]!;
+        return Colors.grey;
     }
   }
 
   // 下载文件
   Future<void> _downloadFile() async {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     
     // 请求存储权限
-    final status = await Permission.storage.request();
-    if (!status.isGranted) {
-      Fluttertoast.showToast(
-        msg: l10n.storagePermissionRequired,
-        toastLength: Toast.LENGTH_SHORT,
-      );
-      return;
+    if (Platform.isAndroid) {
+      final status = await Permission.storage.request();
+      if (!status.isGranted) {
+        Fluttertoast.showToast(
+          msg: l10n?.storagePermissionDenied ?? 'Storage permission denied',
+        );
+        return;
+      }
     }
 
     setState(() {
@@ -157,67 +166,65 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
     });
 
     try {
-      // 获取下载目录
       final dir = await getApplicationDocumentsDirectory();
       final downloadDir = Directory('${dir.path}/downloads');
       if (!await downloadDir.exists()) {
         await downloadDir.create(recursive: true);
       }
-
-      // 开始下载
-      // _taskId = 
-      await FlutterDownloader.enqueue(
-        url: widget.fileUrl,
-        savedDir: downloadDir.path,
-        fileName: widget.fileName,
-        showNotification: true,
-        openFileFromNotification: true,
-        saveInPublicStorage: true,
+      
+      final filePath = '${downloadDir.path}/${widget.fileName}';
+      
+      _cancelToken = CancelToken();
+      
+      await Dio().download(
+        widget.fileUrl,
+        filePath,
+        cancelToken: _cancelToken,
+        onReceiveProgress: (received, total) {
+          if (total != -1) {
+            setState(() {
+              _downloadProgress = (received / total);
+            });
+          }
+        },
       );
-
-      // 模拟下载进度（实际应该通过FlutterDownloader回调获取）
-      for (int i = 0; i <= 100; i += 10) {
-        await Future.delayed(const Duration(milliseconds: 200));
-        if (mounted) {
-          setState(() {
-            _downloadProgress = i;
-          });
-        }
-      }
 
       setState(() {
+        _localPath = filePath;
         _isDownloading = false;
-        _localPath = '${downloadDir.path}/${widget.fileName}';
       });
 
-      Fluttertoast.showToast(
-        msg: l10n.downloadCompleted,
-        toastLength: Toast.LENGTH_SHORT,
-      );
-
       widget.onDownloadComplete?.call();
+      
+      Fluttertoast.showToast(
+        msg: l10n?.downloadCompleted ?? 'Download completed',
+      );
     } catch (e) {
       setState(() {
         _isDownloading = false;
+        _downloadProgress = 0;
       });
       
+      if (e is DioException && e.type == DioExceptionType.cancel) {
+        // Download was cancelled
+        return;
+      }
+      
       Fluttertoast.showToast(
-        msg: '${l10n.downloadFailed}: $e',
-        toastLength: Toast.LENGTH_LONG,
+        msg: l10n?.downloadFailed ?? 'Download failed',
       );
     }
   }
 
   // 打开文件
   Future<void> _openFile() async {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     
     if (_localPath != null) {
       final result = await OpenFile.open(_localPath!);
       if (result.type != ResultType.done) {
         Fluttertoast.showToast(
-          msg: '${l10n.openFileFailed}: ${result.message}',
-          toastLength: Toast.LENGTH_SHORT,
+          msg: l10n?.openFileFailed ?? 'Failed to open file',
         );
       }
     } else {
@@ -229,69 +236,80 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
     }
   }
 
-  // 预览文件
-  void _previewFile() {
-    final fileType = _getFileType();
-    
-    if (fileType == 'image') {
-      // 图片预览
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => ImagePreviewPage(
-            imageUrl: widget.fileUrl,
-            fileName: widget.fileName,
-          ),
+  // 预览图片
+  void _previewImage() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ImagePreviewPage(
+          imageUrl: widget.fileUrl,
+          fileName: widget.fileName,
         ),
-      );
-    } else if (fileType == 'pdf') {
-      // PDF预览
+      ),
+    );
+  }
+
+  // 预览PDF
+  void _previewPdf() {
+    if (_localPath != null) {
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => PdfPreviewPage(
-            pdfUrl: widget.fileUrl,
+            pdfPath: _localPath!,
             fileName: widget.fileName,
-            localPath: _localPath,
           ),
         ),
       );
     } else {
-      // 其他文件类型，直接打开
-      _openFile();
+      // 先下载再预览
+      _downloadFile().then((_) {
+        if (_localPath != null) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => PdfPreviewPage(
+                pdfPath: _localPath!,
+                fileName: widget.fileName,
+              ),
+            ),
+          );
+        }
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final fileType = _getFileType();
-    final canPreview = fileType == 'image' || fileType == 'pdf';
-
+    
     return Card(
-      elevation: 2,
-      margin: const EdgeInsets.symmetric(vertical: 4),
       child: InkWell(
-        onTap: canPreview ? _previewFile : _openFile,
-        borderRadius: BorderRadius.circular(8),
+        onTap: () {
+          if (fileType == 'image') {
+            _previewImage();
+          } else if (fileType == 'pdf') {
+            _previewPdf();
+          } else {
+            _openFile();
+          }
+        },
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(12.0),
           child: Row(
             children: [
               // 文件图标
               Container(
-                width: 48,
-                height: 48,
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: _getFileColor().withValues(alpha: 0.1),
+                  color: _getFileColor().withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   _getFileIcon(),
                   color: _getFileColor(),
-                  size: 24,
+                  size: 32,
                 ),
               ),
               const SizedBox(width: 12),
-              
               // 文件信息
               Expanded(
                 child: Column(
@@ -299,100 +317,82 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
                   children: [
                     Text(
                       widget.fileName,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      style: const TextStyle(
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        if (canPreview) ...[
-                          Icon(
-                            Icons.visibility,
-                            size: 14,
-                            color: Theme.of(context).primaryColor,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            l10n.tapToPreview,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                          ),
-                        ] else ...[
-                          Icon(
-                            Icons.touch_app,
-                            size: 14,
-                            color: Theme.of(context).hintColor,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            l10n.tapToOpen,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(context).hintColor,
-                            ),
-                          ),
-                        ],
-                        if (_localPath != null) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              l10n.downloaded,
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: Colors.green,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
+                    Text(
+                      fileType == 'image' 
+                        ? (l10n?.tapToPreview ?? 'Tap to preview')
+                        : fileType == 'pdf'
+                          ? (l10n?.tapToPreview ?? 'Tap to preview')
+                          : (l10n?.tapToOpen ?? 'Tap to open'),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
                     ),
+                    if (_isDownloading) ...[
+                      const SizedBox(height: 8),
+                      LinearProgressIndicator(
+                        value: _downloadProgress,
+                        backgroundColor: Colors.grey[300],
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Theme.of(context).primaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${(_downloadProgress * 100).toStringAsFixed(0)}%',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
-              
-              // 下载按钮
-              if (_isDownloading)
-                SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      CircularProgressIndicator(
-                        value: _downloadProgress / 100,
-                        strokeWidth: 2,
-                      ),
-                      Text(
-                        '$_downloadProgress%',
-                        style: const TextStyle(fontSize: 10),
-                      ),
-                    ],
+              // 下载按钮或已下载标记
+              if (_localPath != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    l10n?.downloaded ?? 'Downloaded',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.green,
+                    ),
                   ),
                 )
-              else if (_localPath == null)
+              else if (!_isDownloading)
                 IconButton(
                   icon: const Icon(Icons.download),
                   onPressed: _downloadFile,
-                  tooltip: l10n.downloadFile,
+                  tooltip: l10n?.downloadFile ?? 'Download file',
                 )
               else
                 IconButton(
-                  icon: const Icon(Icons.folder_open),
-                  onPressed: _openFile,
-                  tooltip: l10n.openFile,
+                  icon: const Icon(Icons.cancel),
+                  onPressed: () {
+                    _cancelToken?.cancel();
+                    setState(() {
+                      _isDownloading = false;
+                      _downloadProgress = 0;
+                    });
+                  },
+                  tooltip: l10n?.cancelDownload ?? 'Cancel download',
                 ),
             ],
           ),
@@ -419,28 +419,19 @@ class ImagePreviewPage extends StatelessWidget {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: Text(
-          fileName,
-          style: const TextStyle(color: Colors.white),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(fileName),
       ),
-      body: PhotoView(
-        imageProvider: CachedNetworkImageProvider(imageUrl),
-        minScale: PhotoViewComputedScale.contained,
-        maxScale: PhotoViewComputedScale.covered * 3,
-        loadingBuilder: (context, event) => Center(
-          child: CircularProgressIndicator(
-            value: event == null 
-              ? null 
-              : event.cumulativeBytesLoaded / (event.expectedTotalBytes ?? 1),
-          ),
-        ),
-        errorBuilder: (context, error, stackTrace) => const Center(
-          child: Icon(
-            Icons.error_outline,
-            color: Colors.white,
-            size: 48,
+      body: Center(
+        child: PhotoView(
+          imageProvider: CachedNetworkImageProvider(imageUrl),
+          minScale: PhotoViewComputedScale.contained,
+          maxScale: PhotoViewComputedScale.covered * 2,
+          loadingBuilder: (context, event) => Center(
+            child: CircularProgressIndicator(
+              value: event == null
+                  ? null
+                  : event.cumulativeBytesLoaded / (event.expectedTotalBytes ?? 1),
+            ),
           ),
         ),
       ),
@@ -450,15 +441,13 @@ class ImagePreviewPage extends StatelessWidget {
 
 /// PDF预览页面
 class PdfPreviewPage extends StatefulWidget {
-  final String pdfUrl;
+  final String pdfPath;
   final String fileName;
-  final String? localPath;
 
   const PdfPreviewPage({
     super.key,
-    required this.pdfUrl,
+    required this.pdfPath,
     required this.fileName,
-    this.localPath,
   });
 
   @override
@@ -466,154 +455,62 @@ class PdfPreviewPage extends StatefulWidget {
 }
 
 class _PdfPreviewPageState extends State<PdfPreviewPage> {
-  String? _localPath;
-  bool _isLoading = true;
   int _totalPages = 0;
-  int _currentPage = 1;
-  // PDFViewController? _pdfViewController;  // TODO: Use for PDF navigation
-
-  @override
-  void initState() {
-    super.initState();
-    _loadPdf();
-  }
-
-  Future<void> _loadPdf() async {
-    if (widget.localPath != null) {
-      setState(() {
-        _localPath = widget.localPath;
-        _isLoading = false;
-      });
-    } else {
-      // 下载PDF文件
-      await _downloadPdf();
-    }
-  }
-
-  Future<void> _downloadPdf() async {
-    try {
-      final dir = await getApplicationDocumentsDirectory();
-      final downloadDir = Directory('${dir.path}/downloads');
-      if (!await downloadDir.exists()) {
-        await downloadDir.create(recursive: true);
-      }
-
-      final filePath = '${downloadDir.path}/${widget.fileName}';
-      
-      // 这里应该使用Dio或其他方式下载文件
-      // 暂时使用FlutterDownloader
-      await FlutterDownloader.enqueue(
-        url: widget.pdfUrl,
-        savedDir: downloadDir.path,
-        fileName: widget.fileName,
-        showNotification: false,
-        openFileFromNotification: false,
-      );
-
-      // 等待下载完成（简化处理）
-      await Future.delayed(const Duration(seconds: 3));
-
-      setState(() {
-        _localPath = filePath;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('PDF加载失败: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
+  int _currentPage = 0;
+  bool _isReady = false;
+  PDFViewController? _controller;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
+    final l10n = AppLocalizations.of(context);
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.fileName),
         actions: [
-          if (_totalPages > 0)
+          if (_isReady)
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  '$_currentPage / $_totalPages',
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  '${_currentPage + 1} / $_totalPages',
+                  style: const TextStyle(fontSize: 16),
                 ),
               ),
             ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _localPath == null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.error_outline,
-                        size: 48,
-                        color: Colors.red,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(l10n.pdfLoadFailed),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadPdf,
-                        child: Text(l10n.retry),
-                      ),
-                    ],
-                  ),
-                )
-              : PDFView(
-                  filePath: _localPath!,
-                  enableSwipe: true,
-                  swipeHorizontal: false,
-                  autoSpacing: false,
-                  pageFling: true,
-                  pageSnap: true,
-                  fitPolicy: FitPolicy.BOTH,
-                  onRender: (pages) {
-                    setState(() {
-                      _totalPages = pages ?? 0;
-                    });
-                  },
-                  onError: (error) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('PDF显示错误: $error'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  },
-                  onPageError: (page, error) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('第$page页加载错误: $error'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  },
-                  onViewCreated: (PDFViewController pdfViewController) {
-                    // _pdfViewController = pdfViewController;  // TODO: Use for PDF navigation
-                  },
-                  onPageChanged: (int? page, int? total) {
-                    setState(() {
-                      _currentPage = (page ?? 0) + 1;
-                      _totalPages = total ?? 0;
-                    });
-                  },
-                ),
+      body: PDFView(
+        filePath: widget.pdfPath,
+        enableSwipe: true,
+        swipeHorizontal: false,
+        autoSpacing: true,
+        pageFling: true,
+        onRender: (pages) {
+          setState(() {
+            _totalPages = pages!;
+            _isReady = true;
+          });
+        },
+        onError: (error) {
+          Fluttertoast.showToast(
+            msg: l10n?.pdfLoadFailed ?? 'Failed to load PDF',
+          );
+        },
+        onPageError: (page, error) {
+          Fluttertoast.showToast(
+            msg: '${l10n?.pageLoadFailed ?? "Failed to load page"} ${page! + 1}',
+          );
+        },
+        onViewCreated: (PDFViewController controller) {
+          _controller = controller;
+        },
+        onPageChanged: (int? page, int? total) {
+          setState(() {
+            _currentPage = page ?? 0;
+          });
+        },
+      ),
     );
   }
 }

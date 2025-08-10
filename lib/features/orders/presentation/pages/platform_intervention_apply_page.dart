@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:get_it/get_it.dart';
+import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:file_picker/file_picker.dart';
 
-import '../../domain/entities/order.dart';
-import '../../domain/repositories/i_order_repository.dart';
-
-/// 平台介入申请页面
+/// Platform Intervention Application Page
+/// Allows users to apply for platform intervention when they have disputes with sellers
 class PlatformInterventionApplyPage extends StatefulWidget {
-  final int orderId;
-  final String orderSn;
+  final String orderId;
+  final String? orderSn;
 
   const PlatformInterventionApplyPage({
-    super.key,
+    Key? key,
     required this.orderId,
-    required this.orderSn,
-  });
+    this.orderSn,
+  }) : super(key: key);
 
   @override
   State<PlatformInterventionApplyPage> createState() => _PlatformInterventionApplyPageState();
@@ -23,13 +23,11 @@ class PlatformInterventionApplyPage extends StatefulWidget {
 
 class _PlatformInterventionApplyPageState extends State<PlatformInterventionApplyPage> {
   final _formKey = GlobalKey<FormState>();
-  final _reasonController = TextEditingController();
-  final _remarksController = TextEditingController();
-  
+  final _descriptionController = TextEditingController();
+  String _selectedReasonType = 'communication';
+  final List<String> _evidenceFiles = [];
   bool _isSubmitting = false;
-  String _selectedReasonType = 'communication'; // 默认选择沟通问题
-  
-  // 预设的申请理由类型
+
   final Map<String, String> _reasonTypes = {
     'communication': '沟通问题',
     'quality': '质量争议',
@@ -41,116 +39,190 @@ class _PlatformInterventionApplyPageState extends State<PlatformInterventionAppl
 
   @override
   void dispose() {
-    _reasonController.dispose();
-    _remarksController.dispose();
+    _descriptionController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickFiles() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        allowMultiple: true,
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'],
+      );
+
+      if (result != null) {
+        setState(() {
+          _evidenceFiles.addAll(result.paths.where((path) => path != null).cast<String>());
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('选择文件失败: $e')),
+      );
+    }
+  }
+
+  void _removeFile(int index) {
+    setState(() {
+      _evidenceFiles.removeAt(index);
+    });
+  }
+
+  Future<void> _submitApplication() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      // Submit through BLoC
+      context.read<OrderDetailBloc>().add(
+        PlatformInterventionRequested(
+          orderId: int.parse(widget.orderId),
+          reasonValue: _selectedReasonType,
+          reasonLabel: _reasonTypes[_selectedReasonType]!,
+          description: _descriptionController.text.trim(),
+        ),
+      );
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('平台介入申请已提交，我们将在24小时内处理'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Navigate back to order detail
+      if (context.mounted) {
+        context.pop();
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('提交失败: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text('申请平台介入 - #${widget.orderSn}'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
+        title: const Text('申请平台介入'),
+        backgroundColor: theme.colorScheme.surface,
+        elevation: 0,
       ),
-      body: GestureDetector(
-        onTap: () {
-          // 点击空白区域收起键盘
-          FocusScope.of(context).unfocus();
-        },
+      body: Form(
+        key: _formKey,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-          key: _formKey,
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 说明卡片
-              Card(
-                color: Colors.blue[50],
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.info_outline, color: Colors.blue[700]),
-                          const SizedBox(width: 8),
-                          Text(
-                            '平台介入说明',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: Colors.blue[700],
-                              fontWeight: FontWeight.bold,
-                            ),
+              // Info Card
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue[200]!),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.info_outline, color: Colors.blue[700], size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          '关于平台介入',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue[700],
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '• 平台介入适用于买卖双方无法协商解决的争议\n'
-                        '• 申请后，平台客服会在24小时内联系您\n'
-                        '• 每个订单最多可申请2次平台介入\n'
-                        '• 请详细描述问题，有助于快速处理',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.blue[600],
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      '当您与卖家无法达成一致时，可以申请平台介入处理。平台客服会在24小时内介入并公正处理争议。',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 24),
 
-              // 问题类型选择
+              // Order Info
+              if (widget.orderSn != null) ...[
+                Text(
+                  '订单编号: ${widget.orderSn}',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.textTheme.bodySmall?.color,
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // Reason Type Selection
               Text(
                 '问题类型 *',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey[300]!),
-                  borderRadius: BorderRadius.circular(8),
+              DropdownButtonFormField<String>(
+                value: _selectedReasonType,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 ),
-                child: Column(
-                  children: _reasonTypes.entries.map((entry) {
-                    return RadioListTile<String>(
-                      title: Text(entry.value),
-                      value: entry.key,
-                      groupValue: _selectedReasonType,
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedReasonType = value!;
-                        });
-                      },
-                    );
-                  }).toList(),
-                ),
+                items: _reasonTypes.entries.map((entry) {
+                  return DropdownMenuItem(
+                    value: entry.key,
+                    child: Text(entry.value),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedReasonType = value!;
+                  });
+                },
               ),
               const SizedBox(height: 24),
 
-              // 问题描述
+              // Description
               Text(
                 '问题描述 *',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 8),
               TextFormField(
-                controller: _reasonController,
-                maxLines: 4,
+                controller: _descriptionController,
+                maxLines: 5,
                 maxLength: 500,
                 decoration: const InputDecoration(
-                  hintText: '请详细描述遇到的问题，包括具体情况、时间等信息',
+                  hintText: '请详细描述您遇到的问题，包括与卖家的沟通情况、争议点等...',
                   border: OutlineInputBorder(),
-                  alignLabelWithHint: true,
+                  contentPadding: EdgeInsets.all(12),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -164,61 +236,80 @@ class _PlatformInterventionApplyPageState extends State<PlatformInterventionAppl
               ),
               const SizedBox(height: 24),
 
-              // 补充说明
+              // Evidence Upload
               Text(
-                '补充说明',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                '上传证据（可选）',
+                style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 8),
-              TextFormField(
-                controller: _remarksController,
-                maxLines: 3,
-                maxLength: 300,
-                decoration: const InputDecoration(
-                  hintText: '可补充其他相关信息（可选）',
-                  border: OutlineInputBorder(),
-                  alignLabelWithHint: true,
+              Text(
+                '请上传相关截图、聊天记录等证据材料',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.textTheme.bodySmall?.color,
                 ),
               ),
-              const SizedBox(height: 32),
-
-              // 提交按钮
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: _isSubmitting ? null : _handleSubmit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Colors.white,
+              const SizedBox(height: 12),
+              
+              // File List
+              if (_evidenceFiles.isNotEmpty) ...[
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[300]!),
                   ),
-                  child: _isSubmitting
-                      ? const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                  child: Column(
+                    children: _evidenceFiles.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final path = entry.value;
+                      final fileName = path.split('/').last;
+                      
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 4),
+                        child: Row(
                           children: [
-                            SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            const Icon(Icons.attach_file, size: 16),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                fileName,
+                                style: const TextStyle(fontSize: 14),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            SizedBox(width: 8),
-                            Text('提交中...'),
+                            IconButton(
+                              icon: const Icon(Icons.close, size: 16),
+                              onPressed: () => _removeFile(index),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 24,
+                                minHeight: 24,
+                              ),
+                            ),
                           ],
-                        )
-                                              : Text(
-                            '提交申请',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+              
+              // Upload Button
+              OutlinedButton.icon(
+                onPressed: _pickFiles,
+                icon: const Icon(Icons.upload_file),
+                label: const Text('选择文件'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
 
-              // 温馨提示
+              // Warning
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -229,88 +320,73 @@ class _PlatformInterventionApplyPageState extends State<PlatformInterventionAppl
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.warning_amber, color: Colors.orange[700], size: 20),
+                    Icon(Icons.warning_amber_outlined, 
+                      color: Colors.orange[700], 
+                      size: 20
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        '提示：申请提交后无法撤销，请确保已尝试与对方协商解决。',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.orange[700],
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '重要提示',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orange[700],
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '• 申请提交后无法撤销\n• 每个订单最多可申请2次平台介入\n• 请确保提供真实、完整的信息',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.orange[700],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(height: 32),
+
+              // Submit Button
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: _isSubmitting ? null : _submitApplication,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text(
+                          '提交申请',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                ),
+              ),
+              const SizedBox(height: 16),
             ],
           ),
         ),
       ),
-      ),
     );
   }
-
-  /// 处理申请提交
-  Future<void> _handleSubmit() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    setState(() {
-      _isSubmitting = true;
-    });
-
-    try {
-      final repository = GetIt.instance<IOrderRepository>();
-      
-      // 构造申请参数
-      final params = AddOrderDemandParams(
-        orderId: widget.orderId,
-        type: 'platform', // 平台介入类型
-        reasonValue: _selectedReasonType,
-        reasonLabel: _reasonTypes[_selectedReasonType]!,
-        remarks: '${_reasonController.text.trim()}\n\n补充说明：${_remarksController.text.trim()}',
-      );
-
-      // 调用API
-      final result = await repository.addOrderDemand(params);
-      
-      result.fold(
-        (failure) {
-          // 显示错误信息
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('申请失败：${failure.toString()}'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        },
-        (_) {
-          // 申请成功
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('申请已提交，平台客服会在24小时内联系您'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          
-          // 返回上一页，并传递刷新信号
-          context.pop(true);
-        },
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('申请失败：$e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-      }
-    }
-  }
-} 
+}

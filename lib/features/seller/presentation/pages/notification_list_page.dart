@@ -493,7 +493,7 @@ class _NotificationItem extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    _formatDateTime(notification.createdAt),
+                    _formatDateTime(context, notification.createdAt),
                     style: const TextStyle(
                       color: Colors.grey,
                       fontSize: 12,
@@ -559,7 +559,7 @@ class _NotificationItem extends StatelessWidget {
   }
 
   /// 格式化日期时间
-  String _formatDateTime(DateTime dateTime) {
+  String _formatDateTime(BuildContext context, DateTime dateTime) {
     final l10n = AppLocalizations.of(context);
     final now = DateTime.now();
     final difference = now.difference(dateTime);

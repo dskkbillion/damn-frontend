@@ -101,7 +101,7 @@ class NotificationNavigationService {
   /// 跳转到售后详情
   static void _navigateToAfterSales(BuildContext context, String afterSalesId) {
     try {
-      context.push('/after-sales/detail/$afterSalesId');
+      context.push('/afterSalesDetail/$afterSalesId');
     } catch (e) {
       debugPrint('Failed to navigate to after-sales: $e');
       _showNavigationError(context, '无法打开售后详情');
@@ -111,7 +111,7 @@ class NotificationNavigationService {
   /// 跳转到聊天室
   static void _navigateToChatRoom(BuildContext context, String chatId) {
     try {
-      context.push('/chat/room/$chatId');
+      context.push('/chat/$chatId');
     } catch (e) {
       debugPrint('Failed to navigate to chat room: $e');
       _showNavigationError(context, '无法打开聊天页面');

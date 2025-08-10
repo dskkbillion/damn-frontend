@@ -91,12 +91,12 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
         }
         
         if (state is OrderDeliverySubmitting) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                LoadingIndicator(),
-                SizedBox(height: 16),
+                const LoadingIndicator(),
+                const SizedBox(height: 16),
                 Text(AppLocalizations.of(context)?.order_delivery_submitting ?? 'Submitting delivery content...'),
               ],
             ),
@@ -122,24 +122,24 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // 表单说明
-          const Card(
-            margin: EdgeInsets.only(bottom: 16),
+          Card(
+            margin: const EdgeInsets.only(bottom: 16),
             child: Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     AppLocalizations.of(context)?.order_delivery_instruction_title ?? 'Delivery Instructions',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     AppLocalizations.of(context)?.order_delivery_instruction_content ?? 'Please submit your delivery content for this order. You can provide detailed instructions and attach relevant files to ensure the buyer clearly understands the services or products you provide.',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
                       color: Colors.black87,
                     ),
@@ -160,9 +160,9 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
           const SizedBox(height: 8),
           TextField(
             controller: _contentController,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: AppLocalizations.of(context)?.order_delivery_content_hint ?? 'Please describe your delivery content...',
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
             ),
             maxLines: 5,
             onChanged: (value) {

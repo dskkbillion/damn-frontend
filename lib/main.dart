@@ -5,7 +5,7 @@ import 'package:package_info_plus/package_info_plus.dart'; // Import PackageInfo
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import FlutterSecureStorage (from HEAD)
 import 'package:shared_preferences/shared_preferences.dart'; // 导入SharedPreferences
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import BLoC
-import 'package:flutter_downloader/flutter_downloader.dart'; // Import Flutter Downloader
+ // Import Flutter Downloader
 import 'package:dskk_flutter_refactor/core/analytics/observers/analytics_bloc_observer.dart'; // Import Analytics Observer
 import 'package:dskk_flutter_refactor/core/analytics/di/analytics_injection.dart'; // 导入分析模块初始化
 // 导入配置验证工具
@@ -67,12 +67,6 @@ Future<void> main() async { // Make main async
   // 初始化SharedPreferences
   final prefs = await SharedPreferences.getInstance();
   
-  // Initialize Flutter Downloader
-  await FlutterDownloader.initialize(
-    debug: true, // optional: set false to disable printing logs to console
-    ignoreSsl: true, // optional: set to false to enable working with http links (NOT RECOMMENDED)
-  );
-  print('[main] Flutter Downloader initialized.');
 
   // Initialize dependencies, passing the Base URL
   await configureDependencies(backendBaseUrl: backendBaseUrl);

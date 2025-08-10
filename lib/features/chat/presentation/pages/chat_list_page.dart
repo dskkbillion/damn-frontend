@@ -143,7 +143,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
           
           if (isSellerMode) {
             // 卖家模式 - 导航到卖家通知页面
-            context.go('/seller/notifications');
+            context.push('/seller/notifications');
           } else {
             // 买家模式 - 使用Navigator.push保留底部导航栏
             // 创建NotificationListPage所需的依赖

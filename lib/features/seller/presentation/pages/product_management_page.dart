@@ -10,8 +10,6 @@ import '../bloc/product_management/product_management_state.dart';
 import '../routes/seller_routes.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/loading_state.dart';
-import '../widgets/product_card.dart';
-import '../widgets/status_tag.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -23,7 +21,8 @@ class ProductManagementPage extends StatefulWidget {
   State<ProductManagementPage> createState() => _ProductManagementPageState();
 }
 
-class _ProductManagementPageState extends State<ProductManagementPage> with SingleTickerProviderStateMixin {
+class _ProductManagementPageState extends State<ProductManagementPage> 
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late TabController _tabController;
   final ScrollController _onSaleScrollController = ScrollController();
   final ScrollController _draftScrollController = ScrollController();
@@ -40,7 +39,24 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
     _draftScrollController.addListener(() => _onScrollEnd(_draftScrollController, 1));
     _offShelfScrollController.addListener(() => _onScrollEnd(_offShelfScrollController, 2));
     
+    // 添加生命周期观察者
+    WidgetsBinding.instance.addObserver(this);
+    
     context.read<ProductManagementBloc>().add(const LoadProductList());
+  }
+  
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // 当应用从后台回到前台时刷新数据
+    if (state == AppLifecycleState.resumed) {
+      print('[ProductManagementPage] App resumed, refreshing current tab');
+      final currentStatus = _getStatusByTabIndex(_tabController.index);
+      context.read<ProductManagementBloc>().add(LoadProductList(
+        status: currentStatus,
+        forceRefresh: true,
+      ));
+    }
   }
   
   void _handleTabChange() {
@@ -96,6 +112,8 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
   
   @override
   void dispose() {
+    // 移除生命周期观察者
+    WidgetsBinding.instance.removeObserver(this);
     _tabController.dispose();
     _onSaleScrollController.dispose();
     _draftScrollController.dispose();
@@ -189,12 +207,15 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
                     forceRefresh: true,
                   ));
                 } else {
-                  // 如果是编辑商品，刷新当前Tab
-                  final currentStatus = _getStatusByTabIndex(_tabController.index);
-                  context.read<ProductManagementBloc>().add(LoadProductList(
-                    status: currentStatus,
+                  // 如果是编辑商品，需要刷新所有相关的Tab
+                  // 因为商品状态可能已经改变（比如从草稿发布到在售）
+                  // 刷新所有Tab以确保数据一致性
+                  context.read<ProductManagementBloc>().add(const LoadProductList(
                     forceRefresh: true,
                   ));
+                  
+                  // 如果当前在草稿Tab，可能需要切换到在售Tab（如果商品已发布）
+                  // 这里保持在当前Tab，让用户自己决定是否切换
                 }
               }
             }
@@ -319,6 +340,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
           },
           child: ListView.builder(
             controller: scrollController,
+            physics: const AlwaysScrollableScrollPhysics(), // 确保列表始终可滚动
             padding: const EdgeInsets.all(12.0),
             itemCount: products.length + 1,
             itemBuilder: (context, index) {
@@ -425,7 +447,16 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
             AppLocalizations.of(context)?.product_management_action_publish ?? 'Publish',
             Icons.publish,
             isProcessing,
-            () => _updateProductStatus(product.id, ProductStatus.reviewing),
+            () {
+              // 发布商品（提交审核）
+              _updateProductStatus(product.id, ProductStatus.reviewing);
+              // 发布后自动切换到在售Tab查看结果
+              Future.delayed(const Duration(milliseconds: 500), () {
+                if (mounted) {
+                  _tabController.animateTo(0); // 切换到在售Tab
+                }
+              });
+            },
           ),
         );
         actions.add(
@@ -788,41 +819,6 @@ class _ProductManagementPageState extends State<ProductManagementPage> with Sing
     }
   }
   
-  Color _getStatusColor(ProductStatus status) {
-    switch (status) {
-      case ProductStatus.normal:
-        return Colors.green;
-      case ProductStatus.draft:
-        return Colors.orange;
-      case ProductStatus.disabled:
-        return Colors.grey;
-      case ProductStatus.unknown:
-        return Colors.amber; // 琥珀色表示未知状态
-      case ProductStatus.reviewing:
-        return Colors.blue;
-      case ProductStatus.rejected:
-      case ProductStatus.soldOut:
-        return Colors.red;
-    }
-  }
-  
-  /// 根据商品状态获取标签类型
-  StatusTagType _getStatusType(ProductStatus status) {
-    switch (status) {
-      case ProductStatus.normal:
-        return StatusTagType.success;
-      case ProductStatus.draft:
-        return StatusTagType.info;
-      case ProductStatus.disabled:
-      case ProductStatus.rejected:
-      case ProductStatus.soldOut:
-        return StatusTagType.defaultTag;
-      case ProductStatus.reviewing:
-        return StatusTagType.warning;
-      case ProductStatus.unknown:
-        return StatusTagType.warning; // 未知状态用警告色
-    }
-  }
 
   /// 构建商品图片
   Widget _buildProductImage(SellerManagedProduct product) {

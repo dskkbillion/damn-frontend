@@ -102,7 +102,7 @@ class OrderDetailActionButtons extends StatelessWidget {
           );
         }));
         buttons.add(_buildButton(context, '平台介入', () {
-          dialogs.showPlatformInterventionDialog(context);
+          _navigateToPlatformIntervention(context);
         }));
         break;
 
@@ -111,7 +111,7 @@ class OrderDetailActionButtons extends StatelessWidget {
           dialogs.showDeliveryDialog(context);
         }));
         buttons.add(_buildButton(context, '平台介入', () {
-          dialogs.showPlatformInterventionDialog(context);
+          _navigateToPlatformIntervention(context);
         }));
         buttons.add(_buildButton(context, '申请售后', () {
           _navigateToAfterSales(context);
@@ -239,38 +239,97 @@ class OrderDetailActionButtons extends StatelessWidget {
   }
 
   void _navigateToAfterSales(BuildContext context) {
-    if (order.items.isNotEmpty) {
-      final firstItem = order.items.first;
-      final firstItemId = firstItem.id;
-      Future.delayed(const Duration(milliseconds: 50), () {
-        if (context.mounted) {
-          context.push('/selectAfterSalesType/$firstItemId', extra: firstItem);
-          print('Navigate to select after sales type for item ID: $firstItemId');
-        }
-      });
-    } else {
+    try {
+      if (order.items.isNotEmpty) {
+        final firstItem = order.items.first;
+        final firstItemId = firstItem.id;
+        Future.delayed(const Duration(milliseconds: 50), () {
+          if (context.mounted) {
+            try {
+              context.push('/selectAfterSalesType/$firstItemId', extra: firstItem);
+              print('Navigate to select after sales type for item ID: $firstItemId');
+            } catch (e) {
+              print('Error navigating to after sales: $e');
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('导航失败: $e')),
+                );
+              }
+            }
+          }
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('错误：无法为没有商品的订单申请售后')),
+        );
+        print('Error: Cannot apply after sales for order ${order.id} with no items.');
+      }
+    } catch (e) {
+      print('Error in _navigateToAfterSales: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('错误：无法为没有商品的订单申请售后')),
+        SnackBar(content: Text('操作失败: $e')),
       );
-      print('Error: Cannot apply after sales for order ${order.id} with no items.');
     }
   }
 
   void _navigateToEvaluation(BuildContext context) {
-    if (order.items.isNotEmpty) {
-      final firstItem = order.items.first;
-      final firstItemId = firstItem.id;
+    try {
+      if (order.items.isNotEmpty) {
+        final firstItem = order.items.first;
+        final firstItemId = firstItem.id;
+        Future.delayed(const Duration(milliseconds: 50), () {
+          if (context.mounted) {
+            try {
+              context.push('/evaluation/$firstItemId', extra: firstItem);
+              print('Navigate to evaluation for item ID: $firstItemId');
+            } catch (e) {
+              print('Error navigating to evaluation: $e');
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('导航失败: $e')),
+                );
+              }
+            }
+          }
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('错误：无法为没有商品的订单进行评价')),
+        );
+        print('Error: Cannot evaluate order ${order.id} with no items.');
+      }
+    } catch (e) {
+      print('Error in _navigateToEvaluation: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('操作失败: $e')),
+      );
+    }
+  }
+
+  void _navigateToPlatformIntervention(BuildContext context) {
+    try {
       Future.delayed(const Duration(milliseconds: 50), () {
         if (context.mounted) {
-          context.push('/evaluation/$firstItemId', extra: firstItem);
-          print('Navigate to evaluation for item ID: $firstItemId');
+          try {
+            context.push('/platform-intervention/${order.id}', extra: {
+              'orderSn': order.orderSn,
+            });
+            print('Navigate to platform intervention for order ID: ${order.id}');
+          } catch (e) {
+            print('Error navigating to platform intervention: $e');
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('导航失败: $e')),
+              );
+            }
+          }
         }
       });
-    } else {
+    } catch (e) {
+      print('Error in _navigateToPlatformIntervention: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('错误：无法为没有商品的订单进行评价')),
+        SnackBar(content: Text('操作失败: $e')),
       );
-      print('Error: Cannot evaluate order ${order.id} with no items.');
     }
   }
 }

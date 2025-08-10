@@ -23,6 +23,7 @@ import 'package:dskk_flutter_refactor/app/widgets/dev_menu_page.dart';
 
 // Import feature routes (Merged imports)
 import 'package:dskk_flutter_refactor/features/orders/presentation/routes/order_routes.dart';
+import 'package:dskk_flutter_refactor/features/orders/presentation/pages/platform_intervention_apply_page.dart';
 import 'package:dskk_flutter_refactor/features/after_sales/presentation/routes/after_sales_routes.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/routes/ai_docs_routes.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/routes/auth_routes.dart'; 
@@ -68,6 +69,7 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/pages/auth_st
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_authentication_info.dart'; // Auth Info Entity
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/time_management_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/auto_reply_page.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/pages/after_sales_detail_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/order_delivery_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/seller_statistics_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_statistics/seller_statistics_bloc.dart';
@@ -686,6 +688,41 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ...FavoritesRoutes.routes, 
       ...sellerNonShellRoutes, 
       ...PaymentRoutes.routes, // 添加支付模块路由
+
+      // Platform Intervention Route
+      GoRoute(
+        path: '/platform-intervention/:orderId',
+        name: 'platformIntervention',
+        pageBuilder: (context, state) {
+          final orderId = state.pathParameters['orderId'] ?? '';
+          final extra = state.extra as Map<String, dynamic>?;
+          final orderSn = extra?['orderSn'];
+          
+          return state.buildSmartPage(
+            PlatformInterventionApplyPage(
+              orderId: orderId,
+              orderSn: orderSn,
+            ),
+            name: 'platformIntervention',
+            source: 'app_navigation_orders',
+          );
+        },
+      ),
+
+      // Seller After-Sales Detail Route - with String ID fix
+      GoRoute(
+        path: '/seller/after-sales/:id',
+        name: 'sellerAfterSalesDetail',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id'] ?? '0';
+          
+          return state.buildSmartPage(
+            AfterSalesDetailPage(id: id),
+            name: 'sellerAfterSalesDetail',
+            source: 'app_navigation_seller',
+          );
+        },
+      ),
 
       // Mock预览路由 - 用于测试各种订单状态
       GoRoute(

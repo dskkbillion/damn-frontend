@@ -92,7 +92,15 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                             _buildMenuSection(S.of(context).seller_profile_time_management, Icons.access_time_outlined, ''),
                             const SizedBox(height: 10),
                             _buildSectionTitle(S.of(context).seller_profile_settings),
-                            _buildMenuSection(S.of(context).seller_profile_notifications, Icons.notifications_none_outlined, ''),
+                            _buildMenuSection(
+                              S.of(context).seller_profile_notifications, 
+                              Icons.notifications_none_outlined, 
+                              '',
+                              onTap: () {
+                                // 导航到通知列表页面
+                                context.push('/seller/notifications');
+                              },
+                            ),
                             const SizedBox(height: 10),
                             _buildSectionTitle(S.of(context).seller_profile_about_us),
                             _buildMenuSection(S.of(context).seller_profile_mission, Icons.emoji_objects_outlined, ''),
@@ -360,7 +368,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
     );
   }
 
-  Widget _buildMenuSection(String title, IconData icon, String badge) {
+  Widget _buildMenuSection(String title, IconData icon, String badge, {VoidCallback? onTap}) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 15),
       decoration: BoxDecoration(
@@ -399,7 +407,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
             ),
           ],
         ),
-        onTap: () {
+        onTap: onTap ?? () {
           _showNotImplemented(title);
         },
       ),
