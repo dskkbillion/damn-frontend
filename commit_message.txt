@@ -1,0 +1,18 @@
+fix: 修复通知点击跳转问题 - 使用appModeProvider替代URL路径判断
+
+问题：
+- 通知点击后跳转到主页而不是相关页面（订单详情、聊天等）
+- 原因是通过URL路径判断用户角色不可靠
+
+解决方案：
+- 将NotificationListPage改为ConsumerWidget
+- 使用全局appModeProvider判断用户模式（买家/卖家）
+- 确保无论从哪个路径访问都能正确跳转
+
+影响范围：
+- lib/features/seller/presentation/pages/notification_list_page.dart
+
+测试要点：
+- 买家点击通知跳转到买家相关页面
+- 卖家点击通知跳转到卖家相关页面
+- 从不同入口访问通知列表都能正确工作

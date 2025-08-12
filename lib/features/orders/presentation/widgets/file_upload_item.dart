@@ -64,6 +64,7 @@ class FileUploadItemWidget extends StatefulWidget {
   final VoidCallback onRemove;
   final Function(String url) onUploadSuccess;
   final int maxFileSize; // 最大文件大小（字节）
+  final VoidCallback? onRetry; // 重试回调
 
   const FileUploadItemWidget({
     Key? key,
@@ -71,6 +72,7 @@ class FileUploadItemWidget extends StatefulWidget {
     required this.onRemove,
     required this.onUploadSuccess,
     this.maxFileSize = 10 * 1024 * 1024, // 默认10MB
+    this.onRetry,
   }) : super(key: key);
 
   @override
@@ -80,6 +82,8 @@ class FileUploadItemWidget extends StatefulWidget {
 class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
   late FileUploadItem _item;
   final _fileUploadService = GetIt.instance<IFileUploadService>();
+  int _retryCount = 0;
+  static const int _maxRetryCount = 3;
 
   @override
   void initState() {
@@ -106,6 +110,12 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
     });
 
     try {
+      // 如果是重试，添加指数退避延迟
+      if (_retryCount > 0) {
+        final delay = Duration(seconds: _retryCount * 2);
+        await Future.delayed(delay);
+      }
+      
       final result = await _fileUploadService.uploadFileWithProgress(
         _item.localPath,
         (progress) {
@@ -302,7 +312,21 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
           ),
           
           // 操作按钮
-          if (_item.status != FileUploadStatus.uploading)
+          if (_item.status == FileUploadStatus.failed && _retryCount < _maxRetryCount)
+            IconButton(
+              icon: const Icon(Icons.refresh, size: 20),
+              onPressed: () {
+                _retryCount++;
+                if (widget.onRetry != null) {
+                  widget.onRetry!();
+                } else {
+                  _startUpload();
+                }
+              },
+              color: Theme.of(context).primaryColor,
+              tooltip: '重试上传',
+            )
+          else if (_item.status != FileUploadStatus.uploading)
             IconButton(
               icon: const Icon(Icons.close, size: 20),
               onPressed: widget.onRemove,

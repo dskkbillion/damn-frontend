@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_notification.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/notification_list/notification_list_bloc.dart';
@@ -21,17 +22,19 @@ import 'package:dskk_flutter_refactor/features/seller/data/repositories/seller_r
 import 'package:dskk_flutter_refactor/features/seller/data/datasources/seller_remote_data_source_impl.dart';
 import 'package:dskk_flutter_refactor/features/seller/data/datasources/seller_local_data_source_impl.dart';
 import 'package:dskk_flutter_refactor/core/services/notification_navigation_service.dart';
+import 'package:dskk_flutter_refactor/app/app_mode.dart';
 
-/// 通知列表页面
-class NotificationListPage extends StatelessWidget {
-  /// 路由名称
-  static const routeName = '/seller/notifications';
-
+/// 通知列表页面 - 共享于买家和卖家模式
+/// 
+/// 此页面根据当前路由自动判断用户模式：
+/// - 路由以 '/seller' 开头时为卖家模式
+/// - 其他情况为买家模式
+class NotificationListPage extends ConsumerWidget {
   /// 构造函数
   const NotificationListPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     try {
       // 获取主应用的GetIt实例
       final getIt = GetIt.I;
@@ -400,13 +403,12 @@ class _NotificationListContentState extends State<NotificationListContent> with 
     print('  title: ${notification.title}');
     
     // 使用统一的通知导航服务处理跳转
-    // 注意：这里假设从NotificationListPage访问的都是当前用户角色的通知
-    // 可以根据页面路由来判断是买家还是卖家
-    final currentPath = ModalRoute.of(context)?.settings.name ?? '';
-    final isSeller = currentPath.contains('seller');
+    // 通过当前路由判断用户模式，支持买家和卖家共用此页面
+    final currentRoute = GoRouterState.of(context).matchedLocation;
+    final isSeller = currentRoute.startsWith('/seller');
     
-    print('  currentPath: $currentPath');
-    print('  isSeller: $isSeller');
+    print('  currentRoute: $currentRoute');
+    print('  isSeller: $isSeller (determined by route)');
     
     final typeString = notification.type.toString().split('.').last;
     print('  typeString for navigation: $typeString');

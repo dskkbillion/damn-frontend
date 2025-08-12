@@ -31,6 +31,8 @@ class _OrderRequirementSubmissionFormState
   bool _isLoadingDraft = true; // Flag to indicate draft loading
   static const int _maxFileSize = 10 * 1024 * 1024; // 10MB
   static const int _maxFileCount = 9; // 最多9个文件
+  int _retryCount = 0; // 重试计数器
+  static const int _maxRetryCount = 3; // 最大重试次数
 
   // Helper to generate SharedPreferences key for the draft
   String _getDraftKey(String orderId) => 'order_draft_$orderId';
@@ -64,8 +66,37 @@ class _OrderRequirementSubmissionFormState
         // Update controllers
         _requirementController1.text = req1;
         _requirementController2.text = req2;
-        // TODO: 恢复文件列表（需要保存更多信息）
-         print('Draft loaded successfully for order ${widget.order.id}');
+        
+        // 恢复文件列表
+        if (draftData['fileItems'] != null) {
+          final fileItemsList = (draftData['fileItems'] as List<dynamic>? ?? []);
+          final restoredItems = <FileUploadItem>[];
+          
+          for (final itemData in fileItemsList) {
+            if (itemData is Map<String, dynamic>) {
+              restoredItems.add(FileUploadItem(
+                id: itemData['id'] ?? '',
+                localPath: itemData['localPath'] ?? '',
+                fileName: itemData['fileName'] ?? '',
+                fileSize: itemData['fileSize'] ?? 0,
+                status: FileUploadStatus.values[itemData['statusIndex'] ?? 0],
+                progress: (itemData['progress'] ?? 0.0).toDouble(),
+                uploadedUrl: itemData['uploadedUrl'],
+                errorMessage: itemData['errorMessage'],
+              ));
+            }
+          }
+          
+          setState(() {
+            _fileUploadItems = restoredItems;
+            _uploadedUrls = attachments;
+          });
+        } else {
+          // 兼容旧版本的草稿
+          _uploadedUrls = attachments;
+        }
+        
+        print('Draft loaded successfully for order ${widget.order.id}');
       } else {
          print('No draft found for order ${widget.order.id}');
       }
@@ -93,10 +124,23 @@ class _OrderRequirementSubmissionFormState
       final prefs = await SharedPreferences.getInstance();
       final draftKey = _getDraftKey(widget.order.id.toString());
 
+      // 保存文件项的详细信息
+      final fileItemsData = _fileUploadItems.map((item) => {
+        'id': item.id,
+        'localPath': item.localPath,
+        'fileName': item.fileName,
+        'fileSize': item.fileSize,
+        'statusIndex': item.status.index,
+        'progress': item.progress,
+        'uploadedUrl': item.uploadedUrl,
+        'errorMessage': item.errorMessage,
+      }).toList();
+      
       final draftData = {
         'requirement1': _requirementController1.text,
         'requirement2': _requirementController2.text,
         'uploadedUrls': _uploadedUrls,
+        'fileItems': fileItemsData,
       };
 
       final String draftJson = jsonEncode(draftData);
@@ -270,7 +314,7 @@ class _OrderRequirementSubmissionFormState
                     selector: (state) => state is OrderDetailLoaded && state.isSubmittingRequirements,
                     builder: (context, isSubmitting) {
                        return ElevatedButton(
-                          onPressed: isSubmitting ? null : () {
+                          onPressed: isSubmitting ? null : () async {
                             // 检查是否所有文件都已上传完成
                             final hasUploadingFiles = _fileUploadItems.any(
                               (item) => item.status == FileUploadStatus.uploading
@@ -284,15 +328,49 @@ class _OrderRequirementSubmissionFormState
                             }
                             
                             // 检查是否有上传失败的文件
-                            final hasFailedFiles = _fileUploadItems.any(
+                            final failedFiles = _fileUploadItems.where(
                               (item) => item.status == FileUploadStatus.failed
-                            );
+                            ).toList();
                             
-                            if (hasFailedFiles) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('请移除上传失败的文件或重试')),
+                            if (failedFiles.isNotEmpty) {
+                              // 显示重试选项
+                              final shouldRetry = await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text('文件上传失败'),
+                                  content: Text('有${failedFiles.length}个文件上传失败，是否重试？'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context, false),
+                                      child: const Text('移除失败文件'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context, true),
+                                      child: const Text('重试上传'),
+                                    ),
+                                  ],
+                                ),
                               );
-                              return;
+                              
+                              if (shouldRetry == true) {
+                                // 重试上传失败的文件
+                                for (final item in failedFiles) {
+                                  final index = _fileUploadItems.indexOf(item);
+                                  if (index != -1) {
+                                    _retryUpload(index);
+                                  }
+                                }
+                                return;
+                              } else if (shouldRetry == false) {
+                                // 移除失败的文件
+                                setState(() {
+                                  _fileUploadItems.removeWhere(
+                                    (item) => item.status == FileUploadStatus.failed
+                                  );
+                                });
+                              } else {
+                                return; // 用户取消对话框
+                              }
                             }
                             
                             // --- Construct feature data --- 
@@ -326,6 +404,9 @@ class _OrderRequirementSubmissionFormState
                                 ),
                               );
                             print('Confirm Submission Tapped');
+                            
+                            // 成功提交后清除草稿
+                            _clearDraft();
                           },
                           child: isSubmitting
                              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
@@ -542,6 +623,44 @@ class _OrderRequirementSubmissionFormState
       setState(() {
         _uploadedUrls.add(url);
       });
+      // 保存草稿
+      _saveDraft();
+    }
+  }
+  
+  // 重试上传文件
+  Future<void> _retryUpload(int index) async {
+    if (index < 0 || index >= _fileUploadItems.length) return;
+    
+    final item = _fileUploadItems[index];
+    if (item.status != FileUploadStatus.failed) return;
+    
+    _retryCount++;
+    if (_retryCount > _maxRetryCount) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('已达到最大重试次数（$_maxRetryCount次）')),
+      );
+      return;
+    }
+    
+    // 重置状态并重新创建上传组件
+    setState(() {
+      _fileUploadItems[index] = FileUploadItem(
+        id: item.id,
+        localPath: item.localPath,
+        fileName: item.fileName,
+        fileSize: item.fileSize,
+        status: FileUploadStatus.waiting,
+      );
+    });
+    
+    // 指数退避延迟
+    final delay = Duration(seconds: _retryCount * 2);
+    await Future.delayed(delay);
+    
+    // 触发重新渲染以重新开始上传
+    if (mounted) {
+      setState(() {});
     }
   }
 

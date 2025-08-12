@@ -3,34 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // 添加Riverpod导入
 import 'package:get_it/get_it.dart'; // Import GetIt
 import 'package:go_router/go_router.dart'; // 添加导入
-import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:dskk_flutter_refactor/core/network/network_info.dart';
-import 'package:dskk_flutter_refactor/core/network/mock_network_info.dart' as mock;
 import 'dart:async'; // 添加Completer和StreamSubscription导入
 import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/app/app_mode.dart'; // 导入应用模式
 
-// 引入通知相关的类
-import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/notification_list/notification_list_bloc.dart';
-import 'package:dskk_flutter_refactor/features/seller/presentation/pages/notification_list_page.dart';
-import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_notification_list_usecase.dart';
-import 'package:dskk_flutter_refactor/features/seller/domain/usecases/mark_notification_as_read_usecase.dart';
-import 'package:dskk_flutter_refactor/features/seller/domain/usecases/mark_all_notifications_as_read_usecase.dart';
-import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_unread_notification_count_usecase.dart';
-import 'package:dskk_flutter_refactor/features/seller/data/repositories/seller_repository_impl.dart';
-import 'package:dskk_flutter_refactor/features/seller/data/datasources/seller_remote_data_source_impl.dart';
-import 'package:dskk_flutter_refactor/features/seller/data/datasources/seller_local_data_source_impl.dart';
-// 导入NotificationListContent，它是NotificationListPage的一部分
-import 'package:dskk_flutter_refactor/features/seller/presentation/pages/notification_list_page.dart' 
-    show NotificationListContent;
-
 import '../bloc/chat_list/chat_list_bloc.dart';
 import '../widgets/chat_list_item.dart';
 import '../widgets/grouped_chat_list.dart'; // 导入分组组件
-import '../bloc/chat_messages/chat_messages_bloc.dart'; // Import ChatMessagesBloc
-import 'chat_room_page.dart'; // Import ChatRoomPage
 // Import domain entities needed for fake ChatRoom
 import '../../domain/entities/chat_room.dart';
 import '../../domain/entities/participant.dart';
@@ -145,42 +125,11 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             // 卖家模式 - 导航到卖家通知页面
             context.push('/seller/notifications');
           } else {
-            // 买家模式 - 使用Navigator.push保留底部导航栏
-            // 创建NotificationListPage所需的依赖
-            final getIt = GetIt.I;
-            final dio = getIt<Dio>();
-            final secureStorage = getIt<FlutterSecureStorage>();
-            final sharedPreferences = getIt<SharedPreferences>();
-            
-            // 创建网络信息服务
-            NetworkInfo networkInfo;
-            try {
-              networkInfo = getIt<NetworkInfo>();
-            } catch (e) {
-              print('NetworkInfo not found in GetIt, using mock');
-              networkInfo = mock.MockNetworkInfo();
-            }
-            
-            // 创建数据源
-            final remoteDataSource = SellerRemoteDataSourceImpl(dio);
-            final localDataSource = SellerLocalDataSourceImpl(sharedPreferences);
-            
-            // 创建仓库
-            final sellerRepository = SellerRepositoryImpl(
-              remoteDataSource,
-              localDataSource,
-              networkInfo,
-            );
-            
-            // 创建用例
-            final getSellerNotificationListUseCase = GetSellerNotificationListUseCase(sellerRepository);
-            final markNotificationAsReadUseCase = MarkNotificationAsReadUseCase(sellerRepository);
-            final markAllNotificationsAsReadUseCase = MarkAllNotificationsAsReadUseCase(sellerRepository);
-            final getUnreadNotificationCountUseCase = GetUnreadNotificationCountUseCase(sellerRepository);
-            
-            // 使用NavigationHelper.pushModalPage而不是context.go，这样可以保留底部导航栏
-            // 使用 GoRouter 导航到通知页面
-            context.push('/seller/notifications');
+            // 买家模式 - 导航到买家通知页面
+            // 重要：必须使用 /notifications 而不是 /seller/notifications
+            // 否则会被路由器的模式检查重定向回买家主页
+            print('[ChatListPage] Navigating to buyer notifications: /notifications');
+            context.push('/notifications');
           }
         },
       ),

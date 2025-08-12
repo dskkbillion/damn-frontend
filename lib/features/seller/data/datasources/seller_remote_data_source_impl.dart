@@ -621,7 +621,7 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
   @override
   Future<bool> markNotificationAsRead(String notificationId) async {
     try {
-      final response = await _dio.post('/api/member/notification/read', data: {
+      final response = await _dio.get('/api/member/notification/read', queryParameters: {
         'id': notificationId,
       });
       

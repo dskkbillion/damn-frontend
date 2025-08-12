@@ -214,3 +214,4 @@ The project is actively being refactored from React Native. Check git status and
 ## Development Best Practices
 
 - 在每个flutter文件修改后，运行analyze进行检查
+- 在修改的时候，需要同步修改国内版和国际版的入口

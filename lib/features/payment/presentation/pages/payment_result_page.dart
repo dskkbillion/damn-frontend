@@ -19,7 +19,17 @@ class PaymentResultPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(success ? '支付成功' : '支付失败'),
-        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            // 使用 pop 返回或回到订单列表
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              context.go('/profile/orders');
+            }
+          },
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -107,11 +117,11 @@ class PaymentResultPage extends StatelessWidget {
                     if (success) ...[
                       ElevatedButton(
                         onPressed: () {
-                          // 跳转到订单详情页面
+                          // 使用 push 跳转到订单详情页面，保持导航栈
                           if (orderId != null) {
-                            context.go('/orderDetail/$orderId');
+                            context.push('/orderDetail/$orderId');
                           } else {
-                            context.go('/profile/orders');
+                            context.push('/profile/orders');
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -120,14 +130,14 @@ class PaymentResultPage extends StatelessWidget {
                             vertical: 12,
                           ),
                         ),
-                        child: const Text('查看订单'),
+                        child: const Text('查看订单详情'),
                       ),
                       const SizedBox(width: 16),
                     ],
                     ElevatedButton(
                       onPressed: () {
-                        // 返回首页
-                        context.go('/home');
+                        // 返回订单列表
+                        context.go('/profile/orders');
                       },
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
@@ -137,7 +147,7 @@ class PaymentResultPage extends StatelessWidget {
                         backgroundColor: success ? Colors.grey[200] : null,
                         foregroundColor: success ? Colors.black87 : null,
                       ),
-                      child: const Text('返回首页'),
+                      child: const Text('返回订单列表'),
                     ),
                   ],
                 ),

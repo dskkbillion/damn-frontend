@@ -58,7 +58,7 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_h
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/seller_home_page.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/seller/bloc/seller_order_list_bloc.dart'; // Seller Order List Bloc
 import 'package:dskk_flutter_refactor/features/orders/presentation/seller/pages/seller_order_list_page.dart'; // Seller Order List Page
-import 'package:dskk_flutter_refactor/features/seller/presentation/pages/notification_list_page.dart';
+import 'package:dskk_flutter_refactor/features/common/presentation/pages/notification_list_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/product_edit_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/product_preview_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/product_management_page.dart'; // 导入商品管理页面

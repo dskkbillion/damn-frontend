@@ -1,6 +1,5 @@
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_item.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart'; // Import go_router for navigation
 
 /// Widget to display a single order item within the OrderDetailPage.
 class OrderDetailItemTile extends StatelessWidget {
@@ -31,7 +30,7 @@ class OrderDetailItemTile extends StatelessWidget {
                 return Container(
                   width: 70, height: 70,
                   color: Colors.grey[200],
-                  child: Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
+                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
                 );
               },
               errorBuilder: (context, error, stackTrace) => Container(
@@ -75,6 +74,44 @@ class OrderDetailItemTile extends StatelessWidget {
                     ),
                   ],
                 ),
+                // 显示交付天数和可修改次数
+                if (item.deliveryDay != null || item.editNum != null) ...[
+                  const SizedBox(height: 8.0),
+                  Row(
+                    children: [
+                      if (item.deliveryDay != null) ...[
+                        Icon(
+                          Icons.schedule, 
+                          size: 14, 
+                          color: colorScheme.secondary
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '交付天数: ${item.deliveryDay}天',
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.secondary
+                          ),
+                        ),
+                      ],
+                      if (item.deliveryDay != null && item.editNum != null)
+                        const SizedBox(width: 16),
+                      if (item.editNum != null) ...[
+                        Icon(
+                          Icons.edit, 
+                          size: 14, 
+                          color: colorScheme.secondary
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '可修改次数: ${item.editNum}次',
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.secondary
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
               ],
             ),
           ),

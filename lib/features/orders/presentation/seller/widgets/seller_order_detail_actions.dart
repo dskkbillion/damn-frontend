@@ -8,6 +8,8 @@ import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/repositories/i_order_repository.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/repositories/i_chat_repository.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_room.dart';
 import '../bloc/seller_order_detail_bloc.dart'; // Import Detail Bloc
 
 // 移除邀请评价状态类
@@ -273,9 +275,30 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
       case OrderStatus.awaitingDelivery:
          buttons.add(OutlinedButton(
            onPressed: () {
-             // 跳转到聊天列表页面
-             // TODO: 后续实现直接跳转到与买家关于该商品的聊天室
-             context.push('/chat');
+             // 简化实现：直接跳转到卖家聊天列表
+             // TODO: 未来实现获取或创建与买家关于该商品的专属聊天室
+             // 需要的信息：
+             // 1. 买家ID (需要从订单或商品中获取)
+             // 2. 商品ID (从订单items中的第一个商品获取)
+             // 3. 调用API查找或创建聊天室
+             
+             // 获取商品ID（假设订单至少有一个商品）
+             final productId = widget.order.items.isNotEmpty 
+                 ? widget.order.items.first.productId 
+                 : null;
+             
+             if (productId != null) {
+               // 显示提示信息，帮助用户识别应该选择哪个聊天
+               ScaffoldMessenger.of(context).showSnackBar(
+                 SnackBar(
+                   content: Text('请选择关于商品"${widget.order.items.first.productName}"的聊天'),
+                   duration: const Duration(seconds: 3),
+                 ),
+               );
+             }
+             
+             // 跳转到卖家聊天列表
+             context.push('/seller/chat');
            }, 
            style: outlineStyle, 
            child: const Text('联系买家')

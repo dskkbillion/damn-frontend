@@ -280,36 +280,65 @@ class _ProductDetailContentState extends State<ProductDetailContent>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  widget.product.description,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
-                  maxLines: _isDescriptionExpanded ? null : 2,
-                  overflow: _isDescriptionExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Spacer(),
-                    Text(
-                      _isDescriptionExpanded 
-                        ? S.of(context).product_detail_collapse 
-                        : S.of(context).product_detail_more,
+                // 使用LayoutBuilder来判断文字是否被截断
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final textSpan = TextSpan(
+                      text: widget.product.description,
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.blue[600],
+                        color: Colors.grey[600],
                       ),
-                    ),
-                    Icon(
-                      _isDescriptionExpanded 
-                        ? Icons.keyboard_arrow_up 
-                        : Icons.keyboard_arrow_down,
-                      color: Colors.blue[600],
-                      size: 16,
-                    ),
-                  ],
+                    );
+                    final textPainter = TextPainter(
+                      text: textSpan,
+                      maxLines: 2,
+                      textDirection: TextDirection.ltr,
+                    )..layout(maxWidth: constraints.maxWidth);
+                    
+                    final isTextOverflow = textPainter.didExceedMaxLines;
+                    
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.product.description,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                          maxLines: _isDescriptionExpanded ? null : 2,
+                          overflow: _isDescriptionExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                        ),
+                        // 只有当文字被截断或者已展开时才显示更多/收起按钮
+                        if (isTextOverflow || _isDescriptionExpanded)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Text(
+                                  _isDescriptionExpanded 
+                                    ? S.of(context).product_detail_collapse 
+                                    : S.of(context).product_detail_more,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.blue[600],
+                                  ),
+                                ),
+                                Icon(
+                                  _isDescriptionExpanded 
+                                    ? Icons.keyboard_arrow_up 
+                                    : Icons.keyboard_arrow_down,
+                                  color: Colors.blue[600],
+                                  size: 16,
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    );
+                  },
                 ),
               ],
             ),
@@ -504,67 +533,75 @@ class _ProductDetailContentState extends State<ProductDetailContent>
         ?.where((m) => m.type == 'ATTACHMENT' || m.type == 'TEXT')
         .toList() ?? [];
     
-    return ExpansionTile(
-      title: const Text(
-        '买家需要提供',
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
+    return Container(
+      margin: const EdgeInsets.only(top: 8.0),
+      color: Colors.white,
+      child: ExpansionTile(
+        title: const Text(
+          '买家需要提供',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-      ),
-      trailing: const Icon(Icons.keyboard_arrow_down),
-      children: requirementMaterials.isEmpty
-          ? [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  '卖家暂未设置需要买家提供的信息',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ]
-          : requirementMaterials.map((material) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(
-              _getIconForMaterialType(material.type),
-              size: 20,
-              color: const Color(0xFFBF7D2A),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    material.question,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 15,
-                    ),
-                  ),
-                  if (material.answer != null && material.answer!.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4.0),
-                      child: Text(
-                        material.answer!,
-                        style: TextStyle(
-                          color: Colors.grey[700],
-                          fontSize: 14,
-                        ),
+        trailing: const Icon(Icons.keyboard_arrow_down),
+        children: requirementMaterials.isEmpty
+            ? [
+                Container(
+                  padding: const EdgeInsets.all(16.0),
+                  width: double.infinity,
+                  child: Center(
+                    child: Text(
+                      '卖家暂未设置需要买家提供的信息',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 14,
                       ),
                     ),
-                ],
+                  ),
+                ),
+              ]
+            : requirementMaterials.map((material) => Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          width: double.infinity,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                _getIconForMaterialType(material.type),
+                size: 20,
+                color: const Color(0xFFBF7D2A),
               ),
-            ),
-          ],
-        ),
-      )).toList(),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      material.question,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 15,
+                      ),
+                    ),
+                    if (material.answer != null && material.answer!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Text(
+                          material.answer!,
+                          style: TextStyle(
+                            color: Colors.grey[700],
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        )).toList(),
+      ),
     );
   }
 
@@ -587,54 +624,93 @@ class _ProductDetailContentState extends State<ProductDetailContent>
         ?.where((m) => m.type == 'PROBLEM')
         .toList() ?? [];
     
-    return ExpansionTile(
-      initiallyExpanded: true, // 默认展开
-      title: Text(
-        S.of(context).product_detail_faq,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
+    return Container(
+      margin: const EdgeInsets.only(top: 8.0),
+      color: Colors.white,
+      child: ExpansionTile(
+        initiallyExpanded: true, // 默认展开
+        title: Text(
+          S.of(context).product_detail_faq,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
+        trailing: const Icon(Icons.keyboard_arrow_down),
+        children: faqMaterials.isEmpty
+            ? [
+                Container(
+                  padding: const EdgeInsets.all(16.0),
+                  width: double.infinity,
+                  child: Center(
+                    child: Text(
+                      '暂无常见问题',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              ]
+            : faqMaterials.map((material) => Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          width: double.infinity,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Q: ',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: Color(0xFFBF7D2A),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      material.question,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (material.answer != null && material.answer!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0, left: 24.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'A: ',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          material.answer!,
+                          style: TextStyle(
+                            color: Colors.grey[700],
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        )).toList(),
       ),
-      trailing: const Icon(Icons.keyboard_arrow_down),
-      children: faqMaterials.isEmpty
-          ? [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  '暂无常见问题',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ]
-          : faqMaterials.map((material) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              material.question,
-              style: const TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 15,
-              ),
-            ),
-            if (material.answer != null && material.answer!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 4.0),
-                child: Text(
-                  material.answer!,
-                  style: TextStyle(
-                    color: Colors.grey[700],
-                  ),
-                ),
-              ),
-          ],
-        ),
-      )).toList(),
     );
   }
 

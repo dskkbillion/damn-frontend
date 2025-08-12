@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 // 导入页面和 Bloc
-import 'package:dskk_flutter_refactor/features/seller/presentation/pages/notification_list_page.dart';
+import 'package:dskk_flutter_refactor/features/common/presentation/pages/notification_list_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/notification_list/notification_list_bloc.dart';
 
 // 导入统一主题
