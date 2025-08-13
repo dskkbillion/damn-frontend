@@ -10,7 +10,7 @@ void main() {
   });
 
   group('Payment Methods by Region', () {
-    test('Domestic region should have Alipay, WeChat, and Wallet', () {
+    test('Domestic region should have Alipay and WeChat only', () {
       // Set to domestic region
       RegionConfig.setRegion(RegionType.domestic);
       
@@ -18,10 +18,9 @@ void main() {
       final methods = RegionConfig.supportedPaymentMethods;
       
       // Verify the correct payment methods are available
-      expect(methods.length, 3);
+      expect(methods.length, 2);
       expect(methods.contains(PaymentMethod.alipay), true);
       expect(methods.contains(PaymentMethod.wechat), true);
-      expect(methods.contains(PaymentMethod.wallet), true);
       expect(methods.contains(PaymentMethod.stripe), false);
       
       // Verify the currency
@@ -31,11 +30,10 @@ void main() {
       // Verify individual payment method support
       expect(RegionConfig.isPaymentMethodSupported(PaymentMethod.alipay), true);
       expect(RegionConfig.isPaymentMethodSupported(PaymentMethod.wechat), true);
-      expect(RegionConfig.isPaymentMethodSupported(PaymentMethod.wallet), true);
       expect(RegionConfig.isPaymentMethodSupported(PaymentMethod.stripe), false);
     });
     
-    test('International region should have Stripe and Wallet only', () {
+    test('International region should have Stripe only', () {
       // Set to international region
       RegionConfig.setRegion(RegionType.international);
       
@@ -43,9 +41,8 @@ void main() {
       final methods = RegionConfig.supportedPaymentMethods;
       
       // Verify the correct payment methods are available
-      expect(methods.length, 2);
+      expect(methods.length, 1);
       expect(methods.contains(PaymentMethod.stripe), true);
-      expect(methods.contains(PaymentMethod.wallet), true);
       expect(methods.contains(PaymentMethod.alipay), false);
       expect(methods.contains(PaymentMethod.wechat), false);
       
@@ -55,7 +52,6 @@ void main() {
       
       // Verify individual payment method support
       expect(RegionConfig.isPaymentMethodSupported(PaymentMethod.stripe), true);
-      expect(RegionConfig.isPaymentMethodSupported(PaymentMethod.wallet), true);
       expect(RegionConfig.isPaymentMethodSupported(PaymentMethod.alipay), false);
       expect(RegionConfig.isPaymentMethodSupported(PaymentMethod.wechat), false);
     });

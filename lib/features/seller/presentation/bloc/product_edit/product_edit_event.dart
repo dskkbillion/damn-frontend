@@ -259,7 +259,15 @@ class ResetProductForm extends ProductEditEvent {
 
 /// 保存草稿
 class SaveProductDraft extends ProductEditEvent {
-  const SaveProductDraft();
+  /// 是否为自动保存（true为自动保存，false为手动保存）
+  final bool isAutoSave;
+  
+  const SaveProductDraft({
+    this.isAutoSave = false,
+  });
+  
+  @override
+  List<Object?> get props => [isAutoSave];
 }
 
 /// 检查是否有未保存的变更

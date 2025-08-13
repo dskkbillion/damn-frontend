@@ -4,7 +4,6 @@ import 'package:equatable/equatable.dart';
 enum PaymentMethod {
   alipay('alipay', '支付宝'),
   wechat('weapp', '微信支付'),  // 后端期望 'weapp' 代表微信APP支付
-  wallet('balance', '余额支付'), // 后端期望 'balance' 代表余额支付
   stripe('stripe', '信用卡支付'); // 后端期望 'stripe' 代表Stripe支付
 
   const PaymentMethod(this.code, this.displayName);
@@ -15,8 +14,7 @@ enum PaymentMethod {
 /// 支付场景枚举
 enum PaymentScene {
   order('order', '订单支付'),
-  vip('vip', '会员充值'),
-  wallet('wallet', '余额充值');
+  vip('vip', '会员充值');
 
   const PaymentScene(this.code, this.displayName);
   final String code;

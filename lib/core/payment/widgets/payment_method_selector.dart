@@ -38,7 +38,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     // 设置默认选中的支付方式
     _selectedMethod = _availablePaymentMethods.isNotEmpty 
         ? _availablePaymentMethods.first 
-        : models.PaymentMethod.wallet;
+        : models.PaymentMethod.alipay;
   }
 
   Future<void> _handlePayment() async {
@@ -127,12 +127,6 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
         iconColor = Colors.purple;
         bgColor = Colors.purple.shade50;
         subtitle = 'Credit/Debit Card';
-        break;
-      case models.PaymentMethod.wallet:
-        iconData = Icons.account_balance_wallet;
-        iconColor = Colors.orange;
-        bgColor = Colors.orange.shade50;
-        subtitle = RegionConfig.currentRegion == RegionType.domestic ? '余额支付' : 'Wallet Balance';
         break;
     }
     
@@ -264,8 +258,6 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
         return Colors.green;
       case models.PaymentMethod.stripe:
         return Colors.purple;
-      case models.PaymentMethod.wallet:
-        return Colors.orange;
     }
   }
 }

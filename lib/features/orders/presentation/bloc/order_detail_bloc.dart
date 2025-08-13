@@ -396,7 +396,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         final supportedMethods = RegionConfig.supportedPaymentMethods;
         final defaultPaymentMethod = supportedMethods.isNotEmpty 
             ? supportedMethods.first 
-            : PaymentMethod.wallet;
+            : PaymentMethod.alipay;
             
         final paymentRequest = PaymentRequest(
           orderId: event.orderId.toString(),

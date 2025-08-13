@@ -321,15 +321,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
           return const LoadingState();
         }
         
-        if (products == null || products.isEmpty) {
-          return EmptyState.noProducts(
-            text: _getEmptyStateText(status),
-            onAddPressed: () {
-              context.read<ProductManagementBloc>().add(const NavigateToProductCreate());
-            },
-          );
-        }
-        
+        // Always wrap content in RefreshIndicator to enable pull-to-refresh
         return RefreshIndicator(
           onRefresh: () async {
             context.read<ProductManagementBloc>().add(LoadProductList(
@@ -338,33 +330,49 @@ class _ProductManagementPageState extends State<ProductManagementPage>
             ));
             return Future.delayed(const Duration(milliseconds: 300));
           },
-          child: ListView.builder(
-            controller: scrollController,
-            physics: const AlwaysScrollableScrollPhysics(), // 确保列表始终可滚动
-            padding: const EdgeInsets.all(12.0),
-            itemCount: products.length + 1,
-            itemBuilder: (context, index) {
-              if (index == products.length) {
-                bool hasMore = false;
-                switch (tabIndex) {
-                  case 0:
-                    hasMore = state.hasMoreOnSaleProducts;
-                    break;
-                  case 1:
-                    hasMore = state.hasMoreDraftProducts;
-                    break;
-                  case 2:
-                    hasMore = state.hasMoreOffShelfProducts;
-                    break;
-                }
-                
-                return _buildLoadMoreIndicator(hasMore, state.isLoading);
-              }
-              
-              final product = products[index];
-              return _buildProductItem(context, product, state);
-            },
-          ),
+          child: (products == null || products.isEmpty) 
+            ? ListView(
+                controller: scrollController,
+                physics: const AlwaysScrollableScrollPhysics(), // Ensure scrollability for empty state
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.6, // Center the empty state vertically
+                    child: EmptyState.noProducts(
+                      text: _getEmptyStateText(status),
+                      onAddPressed: () {
+                        context.read<ProductManagementBloc>().add(const NavigateToProductCreate());
+                      },
+                    ),
+                  ),
+                ],
+              )
+            : ListView.builder(
+                controller: scrollController,
+                physics: const AlwaysScrollableScrollPhysics(), // 确保列表始终可滚动
+                padding: const EdgeInsets.all(12.0),
+                itemCount: products.length + 1,
+                itemBuilder: (context, index) {
+                  if (index == products.length) {
+                    bool hasMore = false;
+                    switch (tabIndex) {
+                      case 0:
+                        hasMore = state.hasMoreOnSaleProducts;
+                        break;
+                      case 1:
+                        hasMore = state.hasMoreDraftProducts;
+                        break;
+                      case 2:
+                        hasMore = state.hasMoreOffShelfProducts;
+                        break;
+                    }
+                    
+                    return _buildLoadMoreIndicator(hasMore, state.isLoading);
+                  }
+                  
+                  final product = products[index];
+                  return _buildProductItem(context, product, state);
+                },
+              ),
         );
       },
     );

@@ -188,8 +188,6 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     switch (method.toLowerCase()) {
       case 'wechat':
         return payment_models.PaymentMethod.wechat;
-      case 'wallet':
-        return payment_models.PaymentMethod.wallet;
       case 'stripe':
         return payment_models.PaymentMethod.stripe;
       case 'alipay':

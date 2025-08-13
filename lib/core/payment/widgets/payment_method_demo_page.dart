@@ -97,11 +97,6 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
                 color = Colors.purple;
                 title = '信用卡支付';
                 break;
-              case PaymentMethod.wallet:
-                icon = Icons.account_balance_wallet;
-                color = Colors.orange;
-                title = '余额支付';
-                break;
             }
             
             return Column(
@@ -147,11 +142,6 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
                 icon = Icons.credit_card;
                 color = Colors.purple;
                 label = '测试信用卡支付';
-                break;
-              case PaymentMethod.wallet:
-                icon = Icons.account_balance_wallet;
-                color = Colors.orange;
-                label = '测试余额支付';
                 break;
             }
             
@@ -326,7 +316,7 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
       // 创建测试支付请求 - 动态获取支付方式
       final paymentMethod = PaymentMethod.values.firstWhere(
         (pm) => pm.code == method,
-        orElse: () => PaymentMethod.wallet,
+        orElse: () => PaymentMethod.alipay,
       );
       final request = PaymentRequest(
         orderId: 'test_${DateTime.now().millisecondsSinceEpoch}',

@@ -1070,11 +1070,22 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
       result.fold(
         (failure) => emit(state.copyWithError(failure.message)),
         (success) {
-          // 合并状态更新，避免多次emit
-          emit(state.copyWithDraftSaveSuccess().copyWith(
-            selectedImagePaths: [],
-            selectedDetailImagePaths: [],
-          ));
+          // 只有手动保存才设置isDraftSaveSuccess，避免自动保存触发页面退出
+          if (!event.isAutoSave) {
+            // 手动保存：设置成功标志，触发页面返回
+            emit(state.copyWithDraftSaveSuccess().copyWith(
+              selectedImagePaths: [],
+              selectedDetailImagePaths: [],
+            ));
+          } else {
+            // 自动保存：只更新状态，不设置成功标志
+            emit(state.copyWith(
+              isSavingDraft: false,
+              hasUnsavedChanges: false,
+              selectedImagePaths: [],
+              selectedDetailImagePaths: [],
+            ));
+          }
           // 更新初始数据为当前数据，这样再次编辑时不会误判为有变更
           add(SetInitialFormData(initialData: state.formData));
         },
@@ -1342,7 +1353,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     _autoSaveTimer = Timer(const Duration(seconds: 2), () {
       // 检查是否有需要保存的变更
       if (state.hasUnsavedChanges && !state.isSavingDraft) {
-        add(const SaveProductDraft());
+        add(const SaveProductDraft(isAutoSave: true));
       }
     });
   }

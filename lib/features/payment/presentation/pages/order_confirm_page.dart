@@ -71,7 +71,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
     // 设置默认选中的支付方式
     _selectedPaymentMethod = _availablePaymentMethods.isNotEmpty 
         ? _availablePaymentMethods.first 
-        : payment_models.PaymentMethod.wallet;
+        : payment_models.PaymentMethod.alipay;
     
     context.read<PaymentBloc>().add(ResetPaymentEvent());
   }
@@ -464,12 +464,6 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
             ? '支持Visa、MasterCard等（美元结算）' 
             : 'Visa, MasterCard, etc.';
         break;
-      case payment_models.PaymentMethod.wallet:
-        iconData = Icons.account_balance_wallet;
-        iconColor = Colors.orange;
-        logoAsset = null;
-        subtitle = RegionConfig.currentRegion == RegionType.domestic ? '余额支付' : 'Wallet Balance';
-        break;
     }
     
     final isSelected = _selectedPaymentMethod == method;
@@ -647,8 +641,6 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
         return Colors.green;
       case payment_models.PaymentMethod.stripe:
         return Colors.purple;
-      case payment_models.PaymentMethod.wallet:
-        return Colors.orange;
     }
   }
 } 

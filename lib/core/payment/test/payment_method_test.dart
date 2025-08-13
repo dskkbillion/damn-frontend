@@ -9,14 +9,14 @@ void main() {
       // 验证支付方式代码与后端期望一致
       expect(PaymentMethod.alipay.code, 'alipay');
       expect(PaymentMethod.wechat.code, 'weapp');  // 后端期望微信APP支付为 'weapp'
-      expect(PaymentMethod.wallet.code, 'balance'); // 后端期望余额支付为 'balance'
+      expect(PaymentMethod.stripe.code, 'stripe'); // 后端期望Stripe支付为 'stripe'
     });
 
     test('should have correct display names', () {
       // 验证显示名称
       expect(PaymentMethod.alipay.displayName, '支付宝');
       expect(PaymentMethod.wechat.displayName, '微信支付');
-      expect(PaymentMethod.wallet.displayName, '余额支付');
+      expect(PaymentMethod.stripe.displayName, '信用卡支付');
     });
 
     test('should create valid payment request', () {

@@ -52,13 +52,11 @@ class RegionConfig {
         return [
           PaymentMethod.alipay,
           PaymentMethod.wechat,
-          PaymentMethod.wallet,
-        ];  // 国服：支付宝、微信、余额
+        ];  // 国服：支付宝、微信
       case RegionType.international:
         return [
           PaymentMethod.stripe,
-          PaymentMethod.wallet,
-        ];  // 国际服：Stripe信用卡、余额
+        ];  // 国际服：Stripe信用卡
     }
   }
   

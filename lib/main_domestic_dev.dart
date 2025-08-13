@@ -23,6 +23,8 @@ import 'package:dskk_flutter_refactor/features/chat/di/chat_di.dart';
 import 'package:dskk_flutter_refactor/features/profile/di/profile_di.dart';
 import 'package:dskk_flutter_refactor/features/seller/di/seller_di.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+import 'package:dskk_flutter_refactor/features/home/presentation/navigation/home_navigation_di.dart';
+import 'package:dskk_flutter_refactor/app/navigation/app_router.dart';
 
 /// 国服开发版本入口
 /// 国内开发版本入口 - 从环境变量读取服务器地址
@@ -106,7 +108,25 @@ Future<void> main() async {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
-      child: const MyApp(),
+      child: Builder(
+        builder: (context) {
+          return Consumer(
+            builder: (context, ref, child) {
+              // 获取GoRouter实例并注册导航服务
+              final router = ref.read(goRouterProvider);
+              
+              // 注册真实的导航服务
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                print('[Domestic Dev] Registering navigation service...');
+                HomeNavigationDI.registerRealNavigationService(getIt, router);
+                print('[Domestic Dev] Navigation service registered successfully.');
+              });
+              
+              return const MyApp();
+            },
+          );
+        },
+      ),
     ),
   );
 }
