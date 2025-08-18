@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dskk_flutter_refactor/generated/l10n.dart';
+import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 
 import '../../domain/entities/chat_room.dart';
 import '../../domain/entities/participant.dart';
@@ -521,7 +522,7 @@ class ProductChatItem extends StatelessWidget {
         children: [
           if (chatRoom.productPrice != null)
             Text(
-              '¥${chatRoom.productPrice!.toStringAsFixed(2)}',
+              PriceFormatter.format(chatRoom.productPrice!),
               style: TextStyle(
                 color: Colors.red[600],
                 fontWeight: FontWeight.bold,
@@ -740,7 +741,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                         // 商品价格
                         if (widget.group.productPrice != null)
                           Text(
-                            '¥${widget.group.productPrice!.toStringAsFixed(2)}',
+                            PriceFormatter.format(widget.group.productPrice!),
                             style: TextStyle(
                               color: Colors.red[600],
                               fontWeight: FontWeight.bold,

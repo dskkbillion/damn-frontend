@@ -1,4 +1,5 @@
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_item.dart';
+import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 import 'package:flutter/material.dart';
 
 /// Widget to display a single order item within the OrderDetailPage.
@@ -65,7 +66,7 @@ class OrderDetailItemTile extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '¥${item.price.toStringAsFixed(2)}',
+                      PriceFormatter.format(item.price),
                       style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     Text(
