@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:intl/date_symbol_data_local.dart'; // Import for initializing locale data
 import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 
 import '../../domain/entities/chat_message.dart';
 import '../../domain/entities/chat_room.dart';
@@ -182,7 +183,7 @@ class _ChatListItemState extends State<ChatListItem> {
                   if (widget.chatRoom.productPrice != null) ...[
                     const SizedBox(width: 4),
                     Text(
-                      '¥${widget.chatRoom.productPrice!.toStringAsFixed(2)}',
+                      PriceFormatter.format(widget.chatRoom.productPrice!),
                       style: TextStyle(
                         fontSize: 11,
                         color: Colors.red[600],

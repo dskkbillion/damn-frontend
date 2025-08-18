@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/utils/price_formatter.dart';
 import '../../domain/entities/order.dart';
 
 /// 订单价格详情组件
@@ -62,11 +63,11 @@ class OrderPriceDetailsSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildPriceRow(context, '商品总价', '¥${order.priceSummary.totalPrice.toStringAsFixed(2)}'),
+                _buildPriceRow(context, '商品总价', PriceFormatter.format(order.priceSummary.totalPrice)),
                 if (order.priceSummary.deliveryPrice > 0)
-                  _buildPriceRow(context, '运费', '¥${order.priceSummary.deliveryPrice.toStringAsFixed(2)}'),
+                  _buildPriceRow(context, '运费', PriceFormatter.format(order.priceSummary.deliveryPrice)),
                 if (order.priceSummary.discountPrice > 0)
-                  _buildPriceRow(context, '优惠金额', '-¥${order.priceSummary.discountPrice.toStringAsFixed(2)}'),
+                  _buildPriceRow(context, '优惠金额', '-${PriceFormatter.format(order.priceSummary.discountPrice)}'),
                 const Divider(height: 24, thickness: 1),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -78,7 +79,7 @@ class OrderPriceDetailsSection extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '¥${order.priceSummary.payPrice.toStringAsFixed(2)}',
+                      PriceFormatter.format(order.priceSummary.payPrice),
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         color: Theme.of(context).primaryColor,
                         fontWeight: FontWeight.bold,

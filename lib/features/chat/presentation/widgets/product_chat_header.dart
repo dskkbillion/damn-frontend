@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 import '../../domain/entities/chat_room.dart';
 
 /// 商品聊天头部组件
@@ -108,7 +109,7 @@ class ProductChatHeader extends StatelessWidget {
                       // 商品价格
                       if (chatRoom.productPrice != null)
                         Text(
-                          '¥${chatRoom.productPrice!.toStringAsFixed(2)}',
+                          PriceFormatter.format(chatRoom.productPrice!),
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,

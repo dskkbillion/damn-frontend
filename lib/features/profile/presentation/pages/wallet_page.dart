@@ -347,7 +347,7 @@ class _WalletPageState extends State<WalletPage> {
                   ),
                 ),
                 Text(
-                  '¥${summary.balance.toStringAsFixed(2)}',
+                  '${RegionConfig.currencySymbol}${summary.balance.toStringAsFixed(2)}',
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -533,7 +533,7 @@ class _WalletPageState extends State<WalletPage> {
               const Divider(),
               _buildDetailRow('交易ID', transaction.id),
               _buildDetailRow('类型', transaction.type == 'income' ? '收入' : '支出'),
-              _buildDetailRow('金额', '¥${transaction.amount.abs().toStringAsFixed(2)}'),
+              _buildDetailRow('金额', '${RegionConfig.currencySymbol}${transaction.amount.abs().toStringAsFixed(2)}'),
               _buildDetailRow('说明', transaction.description),
               _buildDetailRow('日期', _dateFormat.format(transaction.date)),
               _buildDetailRow('状态', _getStatusText(transaction.status)),

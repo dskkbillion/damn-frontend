@@ -4,6 +4,7 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_man
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/status_tag.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 
 /// 商品卡片组件
 /// 
@@ -95,7 +96,7 @@ class ProductCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                                                  '¥${product.price.toStringAsFixed(2)}',
+                        PriceFormatter.format(product.price),
                         style: TextStyle(
                           fontSize: 18,
                           color: AppColors.primary,

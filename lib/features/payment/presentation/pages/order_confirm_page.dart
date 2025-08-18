@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart'; // For launchUrl
 
 import '../../../../core/config/region_config.dart';
+import '../../../../core/utils/price_formatter.dart';
 import '../../../../core/payment/models/payment_models.dart' as payment_models;
 import '../../../../core/widgets/custom_loading_dialog.dart';
 import '../bloc/payment_bloc.dart';
@@ -280,7 +281,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              '￥${widget.price.toStringAsFixed(2)}',
+                              PriceFormatter.format(widget.price),
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -327,7 +328,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('商品金额'),
-                        Text('￥${widget.price.toStringAsFixed(2)}'),
+                        Text(PriceFormatter.format(widget.price)),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -350,7 +351,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                           ),
                         ),
                         Text(
-                          '￥${(widget.price * widget.quantity).toStringAsFixed(2)}',
+                          PriceFormatter.format(widget.price * widget.quantity),
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,

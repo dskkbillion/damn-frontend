@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dskk_flutter_refactor/app/app_mode.dart';
 import 'package:dskk_flutter_refactor/core/services/mode_transition_service.dart';
+import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 
 // 导入国际化
 import '../../../../generated/l10n.dart';
@@ -377,9 +378,9 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildIncomeItem(S.of(context).seller_home_total_income, '¥${dashboardData.income.total.toStringAsFixed(2)}'),
-                _buildIncomeItem(S.of(context).seller_home_today_income, '¥${dashboardData.income.today.toStringAsFixed(2)}'),
-                _buildIncomeItem(S.of(context).seller_home_pending_settlement, '¥${dashboardData.income.pending.toStringAsFixed(2)}'),
+                _buildIncomeItem(S.of(context).seller_home_total_income, PriceFormatter.format(dashboardData.income.total)),
+                _buildIncomeItem(S.of(context).seller_home_today_income, PriceFormatter.format(dashboardData.income.today)),
+                _buildIncomeItem(S.of(context).seller_home_pending_settlement, PriceFormatter.format(dashboardData.income.pending)),
               ],
             ),
           ],
@@ -566,7 +567,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Tooltip(
-                                      message: '¥${(item.amount ?? 0.0).toStringAsFixed(2)}',
+                                      message: PriceFormatter.format(item.amount ?? 0.0),
                                       child: Container(
                                         margin: const EdgeInsets.symmetric(horizontal: 4.0),
                                         width: double.infinity,
