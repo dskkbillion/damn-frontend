@@ -16,6 +16,8 @@ class PriceFormatter {
           return '$symbol$formatted';  // ¥100.00
         case RegionType.international:
           return '$symbol$formatted';  // $100.00
+        case RegionType.unified:
+          return '$symbol$formatted';  // $100.00
       }
     }
     
