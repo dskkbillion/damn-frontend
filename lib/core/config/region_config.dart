@@ -5,7 +5,8 @@ import 'package:dskk_flutter_refactor/core/payment/models/payment_models.dart';
 /// 区域类型
 enum RegionType {
   domestic('domestic', '国服'),
-  international('international', '国际服');
+  international('international', '国际服'),
+  unified('unified', '统一服');  // New unified mode
 
   const RegionType(this.code, this.displayName);
   final String code;
@@ -32,6 +33,8 @@ class RegionConfig {
         return Currency.cny;  // 人民币
       case RegionType.international:
         return Currency.usd;  // 美元
+      case RegionType.unified:
+        return Currency.usd;  // 统一使用美元
     }
   }
   
@@ -42,6 +45,8 @@ class RegionConfig {
         return [Currency.cny];  // 国服只支持人民币
       case RegionType.international:
         return [Currency.usd];  // 国际服只支持美元
+      case RegionType.unified:
+        return [Currency.usd];  // 统一服使用美元作为通用货币
     }
   }
   
@@ -57,6 +62,12 @@ class RegionConfig {
         return [
           PaymentMethod.stripe,
         ];  // 国际服：Stripe信用卡
+      case RegionType.unified:
+        return [
+          PaymentMethod.alipay,
+          PaymentMethod.wechat,
+          PaymentMethod.stripe,
+        ];  // 统一服：支持所有支付方式
     }
   }
   
@@ -84,6 +95,8 @@ class RegionConfig {
         return '$symbol$formatted';  // ¥100.00
       case RegionType.international:
         return '$symbol$formatted';  // $100.00
+      case RegionType.unified:
+        return '$symbol$formatted';  // $100.00
     }
   }
   
@@ -105,6 +118,21 @@ class RegionConfig {
           'showICPLicense': false,
           'enableGoogleLogin': true,
           'enableAppleLogin': true,
+        };
+      case RegionType.unified:
+        return {
+          // All payment methods enabled
+          'enableAlipay': true,
+          'enableWechatPay': true,
+          'enableStripe': true,
+          // All login methods enabled
+          'enableWechatLogin': true,
+          'enableGoogleLogin': true,
+          'enableAppleLogin': true,
+          // Social features
+          'enableWechatShare': true,
+          // Legal/Compliance
+          'showICPLicense': false,  // Not needed for unified/international
         };
     }
   }
@@ -134,6 +162,13 @@ class RegionConfig {
           throw Exception('BACKEND_BASE_URL environment variable is not set. Please configure it in your .env file.');
         }
         return backendUrl;
+      case RegionType.unified:
+        // Unified mode uses primary backend URL
+        final url = dotenv.env['BACKEND_BASE_URL'];
+        if (url == null || url.isEmpty) {
+          throw Exception('BACKEND_BASE_URL environment variable is not set. Please configure it in your .env file.');
+        }
+        return url;
     }
   }
   
@@ -157,6 +192,13 @@ class RegionConfig {
           throw Exception('MODEL_BASE_URL environment variable is not set. Please configure it in your .env file.');
         }
         return modelUrl;
+      case RegionType.unified:
+        // Unified mode uses primary model URL
+        final url = dotenv.env['MODEL_BASE_URL'];
+        if (url == null || url.isEmpty) {
+          throw Exception('MODEL_BASE_URL environment variable is not set. Please configure it in your .env file.');
+        }
+        return url;
     }
   }
 }
