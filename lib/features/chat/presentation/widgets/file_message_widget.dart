@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
+import '../pages/file_preview_page.dart';
 
 /// 文件消息显示组件
 class FileMessageWidget extends StatelessWidget {
@@ -136,7 +137,21 @@ class FileMessageWidget extends StatelessWidget {
     final fileExtension = fileInfo['extension'] ?? '';
     
     return GestureDetector(
-      onTap: onTap,
+      onTap: onTap ?? () {
+        // 如果没有提供自定义的 onTap，则默认打开文件预览
+        final fileUrl = fileInfo['url'];
+        if (fileUrl != null && fileUrl.isNotEmpty) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => FilePreviewPage(
+                fileUrl: fileUrl,
+                fileName: fileName,
+                fileExtension: fileExtension,
+              ),
+            ),
+          );
+        }
+      },
       child: Container(
         constraints: const BoxConstraints(maxWidth: 250),
         padding: const EdgeInsets.all(12),

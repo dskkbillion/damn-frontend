@@ -17,6 +17,7 @@ import '../../domain/entities/participant.dart'; // Import Participant
 import 'allocate_message_bubble.dart'; // 导入新创建的allocate消息气泡组件
 import '../utils/markdown_style_helper.dart'; // 导入Markdown样式助手
 import 'file_message_widget.dart'; // 导入文件消息组件
+import '../pages/file_preview_page.dart'; // 导入文件预览页面
 
 // 撤回状态检查结果
 class RevokeCheckResult {
@@ -176,14 +177,23 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
   // 处理文件消息点击
   void _handleFileMessageTap(BuildContext context, ChatMessage message) {
-    // TODO: 实现文件下载或预览功能
-    // 可以使用 url_launcher 打开文件 URL
-    // 或者使用 open_file 包打开本地文件
     try {
       final fileInfo = _parseFileInfo(message.context);
       final url = fileInfo['url'] ?? message.context;
+      final fileName = fileInfo['name'] ?? 'file';
+      final fileExtension = fileInfo['extension'] ?? '';
+      
       if (url != null && url.isNotEmpty) {
-        launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+        // 导航到文件预览页面
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => FilePreviewPage(
+              fileUrl: url,
+              fileName: fileName,
+              fileExtension: fileExtension,
+            ),
+          ),
+        );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

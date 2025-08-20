@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:dartz/dartz.dart' hide Order;
+import 'package:dskk_flutter_refactor/core/config/app_config.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_item.dart';
@@ -424,8 +425,8 @@ class MockOrderRepository implements IOrderRepository {
     final Random random = Random();
     final String mockOrderId = 'ORDER-${DateTime.now().millisecondsSinceEpoch}-${random.nextInt(10000)}';
     
-    // 生成模拟支付信息
-    final String mockOrderInfo = 'app_id=2021000000000000&biz_content={"timeout_express":"30m","product_code":"QUICK_MSECURITY_PAY","total_amount":"${price * quantity}","subject":"商品付款","body":"商品ID: $productId, 规格ID: $variantId","out_trade_no":"$mockOrderId"}&charset=utf-8&format=JSON&method=alipay.trade.app.pay&sign=MOCK_SIGN&timestamp=${DateTime.now().toIso8601String()}&version=1.0';
+    // 生成模拟支付信息 - 使用配置化的支付应用ID
+    final String mockOrderInfo = 'app_id=${AppConfig.alipayAppId}&biz_content={"timeout_express":"30m","product_code":"QUICK_MSECURITY_PAY","total_amount":"${price * quantity}","subject":"商品付款","body":"商品ID: $productId, 规格ID: $variantId","out_trade_no":"$mockOrderId"}&charset=utf-8&format=JSON&method=alipay.trade.app.pay&sign=MOCK_SIGN&timestamp=${DateTime.now().toIso8601String()}&version=1.0';
     
     // 返回模拟创建结果
     return Right(OrderCreationResult(
