@@ -18,7 +18,7 @@ part 'app_database.g.dart'; // Drift will generate this file
 )
 class AppDatabase extends _$AppDatabase {
   // Define the database version (important for migrations)
-  static const int dbVersion = 2;
+  static const int dbVersion = 3;  // Increased version to fix constraint issue
 
   AppDatabase() : super(_openConnection());
 
@@ -37,6 +37,12 @@ class AppDatabase extends _$AppDatabase {
           await m.createTable(chatMessages);
           await m.createTable(chatRooms);
           await m.createTable(messageQueue);
+        }
+        if (from < 3) {
+          // Fix constraint issue in version 3 - recreate tables with correct constraint
+          // Drop and recreate chat_messages table with fixed constraint
+          await customStatement('DROP TABLE IF EXISTS chat_messages');
+          await m.createTable(chatMessages);
         }
       },
     );

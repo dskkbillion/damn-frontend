@@ -72,4 +72,39 @@ class ChatMessage extends Equatable {
       status: status ?? this.status,
     );
   }
+  
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'chatId': chatId,
+      'senderId': senderId,
+      'memberId': memberId,
+      'doctorId': doctorId,
+      'context': context,
+      'type': type,
+      'createTime': createTime.toIso8601String(),
+      'withdrawFlag': withdrawFlag,
+      'readFlg': readFlg,
+      'status': status.toString().split('.').last,
+    };
+  }
+  
+  factory ChatMessage.fromJson(Map<String, dynamic> json) {
+    return ChatMessage(
+      id: json['id'] as int,
+      chatId: json['chatId'] as int,
+      senderId: json['senderId'] as int,
+      memberId: json['memberId'] as int?,
+      doctorId: json['doctorId'] as int?,
+      context: json['context'] as String,
+      type: json['type'] as String,
+      createTime: DateTime.parse(json['createTime'] as String),
+      withdrawFlag: json['withdrawFlag'] as bool,
+      readFlg: json['readFlg'] as bool?,
+      status: MessageStatus.values.firstWhere(
+        (e) => e.toString().split('.').last == json['status'],
+        orElse: () => MessageStatus.sent,
+      ),
+    );
+  }
 } 

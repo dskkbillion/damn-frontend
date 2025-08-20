@@ -28,10 +28,17 @@ class MessageListCubit extends Cubit<MessageListState> {
         super(const MessageListState.initial());
   
   int? _currentChatId;
+  int? _currentUserParticipantId; // 添加当前用户的participant ID
   final List<ChatMessage> _allMessages = [];
   bool _hasMore = true;
   int _currentPage = 1;
   static const int _pageSize = 50;
+  
+  /// Set current user participant ID
+  void setCurrentUserParticipantId(int participantId) {
+    _currentUserParticipantId = participantId;
+    print('[MessageListCubit] Set current user participant ID: $_currentUserParticipantId');
+  }
   
   /// Load initial messages for a chat
   Future<void> loadMessages(int chatId) async {
@@ -46,7 +53,7 @@ class MessageListCubit extends Cubit<MessageListState> {
     final result = await _getMessageList(
       GetMessageListParams(
         chatId: chatId,
-        page: _currentPage,
+        pageNum: _currentPage,
         pageSize: _pageSize,
       ),
     );
@@ -54,6 +61,7 @@ class MessageListCubit extends Cubit<MessageListState> {
     result.fold(
       (failure) => emit(MessageListState.error(failure.toString())),
       (messages) {
+        // 消息已经是降序排列（新到旧），直接添加
         _allMessages.addAll(messages);
         _hasMore = messages.length >= _pageSize;
         emit(MessageListState.loaded(
@@ -77,7 +85,7 @@ class MessageListCubit extends Cubit<MessageListState> {
     final result = await _getMessageList(
       GetMessageListParams(
         chatId: _currentChatId!,
-        page: _currentPage,
+        pageNum: _currentPage,
         pageSize: _pageSize,
       ),
     );
@@ -110,29 +118,32 @@ class MessageListCubit extends Cubit<MessageListState> {
     if (currentState is! _Loaded) return;
     
     // Create optimistic message
+    // 使用本地时间，因为这是用于显示的
+    // 当服务器返回真实消息时，会用服务器时间替换
     final optimisticMessage = ChatMessage(
       id: -DateTime.now().millisecondsSinceEpoch, // Temporary negative ID
       chatId: _currentChatId!,
-      senderId: 0, // Will be set by backend
+      senderId: _currentUserParticipantId ?? 0, // 使用设置的当前用户participant ID
       context: text,
       type: 'text',
-      createTime: DateTime.now(),
+      createTime: DateTime.now(), // 本地时间，用于即时显示
       withdrawFlag: false,
       status: MessageStatus.sending,
     );
     
     // Add optimistic message to list
     _allMessages.insert(0, optimisticMessage);
-    emit(currentState.copyWith(
-      messages: List.from(_allMessages),
+    
+    // Force emit new state with unique list to ensure UI rebuild
+    emit(MessageListState.loaded(
+      messages: List.from(_allMessages), // Create new list instance
+      hasMore: _hasMore,
     ));
     
     // Send message to backend
     final result = await _sendMessage(
       SendMessageParams(
-        chatId: _currentChatId!,
-        content: text,
-        type: 'text',
+        message: optimisticMessage,
       ),
     );
     
@@ -162,6 +173,22 @@ class MessageListCubit extends Cubit<MessageListState> {
     );
   }
   
+  /// Add a new message to the list (used when message is sent successfully)
+  void addNewMessage(ChatMessage message) {
+    final currentState = state;
+    if (currentState is! _Loaded) return;
+    
+    // Check if message already exists (avoid duplicates)
+    if (_allMessages.any((m) => m.id == message.id)) return;
+    
+    // Add message to the beginning (newest first)
+    _allMessages.insert(0, message);
+    emit(MessageListState.loaded(
+      messages: List.from(_allMessages),
+      hasMore: _hasMore,
+    ));
+  }
+  
   /// Send a file message
   Future<void> sendFileMessage({
     required String filePath,
@@ -179,13 +206,15 @@ class MessageListCubit extends Cubit<MessageListState> {
         : filePath;
     
     // Create optimistic message
+    // 使用本地时间，因为这是用于显示的
+    // 当服务器返回真实消息时，会用服务器时间替换
     final optimisticMessage = ChatMessage(
       id: -DateTime.now().millisecondsSinceEpoch,
       chatId: _currentChatId!,
       senderId: 0,
       context: content,
       type: fileType,
-      createTime: DateTime.now(),
+      createTime: DateTime.now(), // 本地时间，用于即时显示
       withdrawFlag: false,
       status: MessageStatus.sending,
     );
@@ -199,9 +228,7 @@ class MessageListCubit extends Cubit<MessageListState> {
     // Send to backend
     final result = await _sendMessage(
       SendMessageParams(
-        chatId: _currentChatId!,
-        content: content,
-        type: fileType,
+        message: optimisticMessage,
       ),
     );
     
@@ -231,12 +258,17 @@ class MessageListCubit extends Cubit<MessageListState> {
     );
   }
   
+  /// Withdraw a message (alias for revokeMessage)
+  Future<void> withdrawMessage(int messageId) async {
+    return revokeMessage(messageId);
+  }
+  
   /// Revoke a message
   Future<void> revokeMessage(int messageId) async {
     final currentState = state;
     if (currentState is! _Loaded) return;
     
-    final result = await _revokeMessage(messageId);
+    final result = await _revokeMessage(RevokeMessageParams(messageId: messageId));
     
     result.fold(
       (failure) {
@@ -267,7 +299,12 @@ class MessageListCubit extends Cubit<MessageListState> {
     final currentState = state;
     if (currentState is! _Loaded) return;
     
-    final result = await _deleteChatMessage(messageId);
+    if (_currentChatId == null) return;
+    
+    final result = await _deleteChatMessage(DeleteChatMessageParams(
+      messageIds: [messageId],
+      chatId: _currentChatId!,
+    ));
     
     result.fold(
       (failure) {

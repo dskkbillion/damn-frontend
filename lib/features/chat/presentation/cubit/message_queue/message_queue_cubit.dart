@@ -5,6 +5,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:dskk_flutter_refactor/core/database/app_database.dart';
 import 'package:dskk_flutter_refactor/features/chat/data/data_sources/local/chat_local_data_source.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/send_message.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
 
 part 'message_queue_state.dart';
 part 'message_queue_cubit.freezed.dart';
@@ -95,9 +96,15 @@ class MessageQueueCubit extends Cubit<MessageQueueState> {
     // Try to send the message
     final result = await _sendMessage(
       SendMessageParams(
-        chatId: item.chatId,
-        content: item.content,
-        type: item.messageType,
+        message: ChatMessage(
+          id: 0, // Will be assigned by server
+          chatId: item.chatId,
+          senderId: 0, // Will be set from auth context
+          context: item.content,
+          type: item.messageType,
+          createTime: item.createdAt,
+          withdrawFlag: false,
+        ),
       ),
     );
     
@@ -135,6 +142,21 @@ class MessageQueueCubit extends Cubit<MessageQueueState> {
     _processTimer?.cancel();
     _processTimer = null;
     emit(const MessageQueueState.idle());
+  }
+  
+  /// Add a message to the queue
+  Future<void> addMessage(ChatMessage message) async {
+    // Add message to local queue using the 3-parameter method
+    await _localDataSource.addToQueue(
+      message.chatId,
+      message.context,
+      message.type,
+    );
+    
+    // Start processing if not already running
+    if (!_isProcessing) {
+      _startProcessing();
+    }
   }
   
   /// Retry all failed messages

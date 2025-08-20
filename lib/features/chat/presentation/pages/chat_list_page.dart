@@ -223,7 +223,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   // 提取导航逻辑到单独方法
   void _navigateToChat(BuildContext context, ChatRoom chatRoom) {
     // Navigate to ChatRoomPage using GoRouter
-    context.push('/chat/${chatRoom.id}');
+    // 使用新的重构版本
+    context.push('/chat/refactored/${chatRoom.id}');
   }
   
   // 新的筛选方法：根据应用模式筛选聊天室，同时排除系统管理员聊天室

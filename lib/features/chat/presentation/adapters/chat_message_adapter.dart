@@ -25,6 +25,7 @@ class ChatMessageAdapter {
           metadata: {
             'withdrawFlag': message.withdrawFlag,
             'readFlg': message.readFlg,
+            'status': _getStatusString(message.status),
           },
         );
         
@@ -36,7 +37,7 @@ class ChatMessageAdapter {
         try {
           // Try to parse as JSON first (might contain metadata)
           imageData = jsonDecode(message.context);
-          imageUrl = imageData['url'] ?? message.context;
+          imageUrl = imageData?['url'] ?? message.context;
         } catch (_) {
           // If not JSON, use context as URL directly
         }
@@ -53,6 +54,7 @@ class ChatMessageAdapter {
             'withdrawFlag': message.withdrawFlag,
             'readFlg': message.readFlg,
             'originalData': imageData,
+            'status': _getStatusString(message.status),
           },
         );
         
@@ -63,7 +65,7 @@ class ChatMessageAdapter {
         
         try {
           audioData = jsonDecode(message.context);
-          audioUrl = audioData['url'] ?? message.context;
+          audioUrl = audioData?['url'] ?? message.context;
         } catch (_) {
           // If not JSON, use context as URL directly
         }
@@ -81,6 +83,7 @@ class ChatMessageAdapter {
             'withdrawFlag': message.withdrawFlag,
             'readFlg': message.readFlg,
             'originalData': audioData,
+            'status': _getStatusString(message.status),
           },
         );
         
@@ -91,7 +94,7 @@ class ChatMessageAdapter {
         
         try {
           fileData = jsonDecode(message.context);
-          fileUrl = fileData['url'] ?? message.context;
+          fileUrl = fileData?['url'] ?? message.context;
         } catch (_) {
           // If not JSON, use context as URL directly
         }
@@ -108,6 +111,7 @@ class ChatMessageAdapter {
             'withdrawFlag': message.withdrawFlag,
             'readFlg': message.readFlg,
             'originalData': fileData,
+            'status': _getStatusString(message.status),
           },
         );
         
@@ -131,6 +135,7 @@ class ChatMessageAdapter {
             'readFlg': message.readFlg,
             'allocateData': allocateData,
             'originalContext': message.context,
+            'status': _getStatusString(message.status),
           },
           status: _toUiStatus(message.status),
         );
@@ -147,6 +152,7 @@ class ChatMessageAdapter {
             'type': 'revoke',
             'withdrawFlag': true,
             'readFlg': message.readFlg,
+            'status': _getStatusString(message.status),
           },
         );
         
@@ -162,6 +168,7 @@ class ChatMessageAdapter {
             'type': message.type,
             'withdrawFlag': message.withdrawFlag,
             'readFlg': message.readFlg,
+            'status': _getStatusString(message.status),
           },
         );
     }
@@ -288,6 +295,20 @@ class ChatMessageAdapter {
         return MessageStatus.read;
       default:
         return MessageStatus.sent;
+    }
+  }
+  
+  /// Get status string for metadata
+  static String _getStatusString(MessageStatus status) {
+    switch (status) {
+      case MessageStatus.sending:
+        return 'sending';
+      case MessageStatus.sent:
+        return 'sent';
+      case MessageStatus.failed:
+        return 'failed';
+      case MessageStatus.read:
+        return 'read';
     }
   }
   

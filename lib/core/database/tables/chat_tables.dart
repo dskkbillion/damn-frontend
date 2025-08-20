@@ -3,6 +3,8 @@ import 'package:drift/drift.dart';
 /// Table for storing chat messages locally
 @DataClassName('ChatMessageCache')
 class ChatMessages extends Table {
+  @override
+  String get tableName => 'chat_messages';
   // Message ID from the server
   IntColumn get id => integer()();
   
@@ -47,13 +49,15 @@ class ChatMessages extends Table {
   
   @override
   List<String> get customConstraints => [
-    'UNIQUE(id, chatId)'
+    'UNIQUE(id, chat_id)'  // Fixed: use snake_case for SQL column name
   ];
 }
 
 /// Table for storing chat rooms locally
-@DataClassName('ChatRoomCache')
+@DataClassName('ChatRoomCache')  
 class ChatRooms extends Table {
+  @override
+  String get tableName => 'chat_rooms';
   // Chat room ID from server
   IntColumn get id => integer()();
   
@@ -85,6 +89,8 @@ class ChatRooms extends Table {
 /// Table for offline message queue
 @DataClassName('MessageQueueItem')
 class MessageQueue extends Table {
+  @override
+  String get tableName => 'message_queue';
   // Local ID for queue management
   IntColumn get id => integer().autoIncrement()();
   
