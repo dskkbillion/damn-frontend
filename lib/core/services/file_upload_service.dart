@@ -15,9 +15,12 @@ class FileUploadResult {
   });
 
   factory FileUploadResult.fromJson(Map<String, dynamic> json) {
+    // 处理不同的响应格式
+    // 有些接口返回 url 和 fileName
+    // 有些接口可能返回其他字段名
     return FileUploadResult(
-      url: json['url'] as String,
-      fileName: json['fileName'] as String,
+      url: json['url'] as String? ?? json['fileUrl'] as String? ?? '',
+      fileName: json['fileName'] as String? ?? json['name'] as String? ?? 'file',
     );
   }
 }

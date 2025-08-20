@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
@@ -110,6 +112,54 @@ class MessageListCubit extends Cubit<MessageListState> {
     );
   }
   
+  /// Send a document message (PDF, DOC, etc.)
+  Future<void> sendDocumentMessage({
+    required String url,
+    required String fileName,
+    required int fileSize,
+    required String fileExtension,
+  }) async {
+    if (_currentChatId == null) return;
+    
+    // 构建文件消息的 context（JSON格式字符串）
+    final fileContext = {
+      'url': url,
+      'name': fileName,
+      'size': fileSize,
+      'extension': fileExtension,
+    };
+    
+    // 转换为 JSON 字符串
+    final jsonString = jsonEncode(fileContext);
+    
+    // 调用通用的文件发送方法，直接传递 JSON 字符串
+    await sendFileMessage(
+      filePath: jsonString,  // 直接使用 JSON 字符串
+      fileType: 'file',
+      metadata: null,  // 不需要额外的 metadata
+    );
+  }
+  
+  /// Send an image message with URL
+  Future<void> sendImageMessage({
+    required String url,
+    String? fileName,
+  }) async {
+    if (_currentChatId == null) return;
+    
+    // 构建图片消息的 context
+    final imageContext = {
+      'url': url,
+      'name': fileName ?? 'image.jpg',
+    };
+    
+    await sendFileMessage(
+      filePath: url,
+      fileType: 'image',
+      metadata: imageContext,
+    );
+  }
+
   /// Send a new message
   Future<void> sendTextMessage(String text) async {
     if (_currentChatId == null) return;
@@ -201,8 +251,9 @@ class MessageListCubit extends Cubit<MessageListState> {
     if (currentState is! _Loaded) return;
     
     // Create content based on file type
+    // 如果有 metadata，转换为 JSON 字符串；否则直接使用 filePath
     final content = metadata != null 
-        ? Uri.encodeFull(metadata.toString())
+        ? jsonEncode(metadata)
         : filePath;
     
     // Create optimistic message

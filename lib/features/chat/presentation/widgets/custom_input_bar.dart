@@ -7,10 +7,54 @@ import 'package:image_picker/image_picker.dart';
 import 'package:record/record.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:get_it/get_it.dart';
 import 'package:dskk_flutter_refactor/generated/l10n.dart';
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
+import 'package:dskk_flutter_refactor/core/services/file_upload_service.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/cubit/message_queue/message_queue_cubit.dart';
+import 'package:dskk_flutter_refactor/features/chat/presentation/cubit/message_list/message_list_cubit.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
+
+/// 文件上传进度对话框
+class _UploadProgressDialog extends StatelessWidget {
+  final String fileName;
+  final double? progress;
+
+  const _UploadProgressDialog({
+    required this.fileName,
+    this.progress,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('上传文件'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            fileName,
+            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 16),
+          LinearProgressIndicator(
+            value: progress,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            progress != null 
+              ? '${(progress! * 100).toStringAsFixed(1)}%'
+              : '准备上传...',
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 /// Custom input bar for chat interface
 /// Provides text input, voice recording, image picking, and file attachment
@@ -205,7 +249,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
         }
       }
     } catch (e) {
-      print("Error cancelling recording: $e");
+      // Error cancelling recording: $e
     } finally {
       if (mounted) {
         _resetRecordingState();
@@ -268,6 +312,113 @@ class _CustomInputBarState extends State<CustomInputBar> {
     }
   }
 
+  Future<void> _pickFile() async {
+    final s = S.of(context);
+    
+    try {
+      // 使用 FilePicker 选择文件
+      final result = await FilePicker.platform.pickFiles(
+        allowMultiple: false,
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip', 'rar'],
+        withData: false, // 不直接加载到内存，使用路径
+        withReadStream: false,
+      );
+      
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+        
+        // 检查文件大小（限制10MB）
+        if (file.size != null && file.size! > 10 * 1024 * 1024) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('文件大小不能超过10MB')),
+          );
+          return;
+        }
+        
+        if (file.path != null) {
+          // 创建一个 GlobalKey 来跟踪对话框
+          final NavigatorState? navigator = Navigator.maybeOf(context);
+          if (navigator == null) return;
+          
+          // 显示上传进度对话框
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (dialogContext) => PopScope(
+              canPop: false, // 防止意外关闭
+              child: _UploadProgressDialog(
+                fileName: file.name,
+              ),
+            ),
+          );
+          
+          try {
+            // 获取文件上传服务
+            final fileUploadService = GetIt.instance<IFileUploadService>();
+            
+            // 上传文件
+            final uploadResult = await fileUploadService.uploadFileWithProgress(
+              file.path!,
+              (progress) {
+                // 更新进度（如果需要的话）
+                // progress: ${(progress * 100).toStringAsFixed(1)}%
+              },
+            );
+            
+            // 关闭进度对话框 - 确保只关闭对话框
+            if (mounted) {
+              navigator.pop(); // 使用保存的 navigator 引用
+            }
+            
+            uploadResult.fold(
+              (failure) {
+                // 上传失败
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('文件上传失败: ${failure.message}')),
+                  );
+                }
+              },
+              (success) {
+                // 上传成功，发送文件消息
+                
+                if (mounted) {
+                  // 通过 MessageListCubit 发送文件消息
+                  context.read<MessageListCubit>().sendDocumentMessage(
+                    url: success.url,
+                    fileName: file.name,
+                    fileSize: file.size ?? 0,
+                    fileExtension: file.extension ?? '',
+                  );
+                  
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('文件发送成功')),
+                  );
+                }
+              },
+            );
+          } catch (e) {
+            // 确保关闭对话框
+            if (mounted) {
+              navigator.pop(); // 使用保存的 navigator 引用
+            }
+            
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('上传出错: $e')),
+              );
+            }
+          }
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('选择文件失败: $e')),
+      );
+    }
+  }
+
   void _showAttachmentOptions() {
     showModalBottomSheet(
       context: context,
@@ -296,15 +447,14 @@ class _CustomInputBarState extends State<CustomInputBar> {
                 _pickImage(ImageSource.gallery);
               },
             ),
-            if (widget.onAttachmentPressed != null)
-              ListTile(
-                leading: const Icon(Icons.attach_file, color: Colors.orange),
-                title: const Text('文件'),
-                onTap: () {
-                  Navigator.pop(context);
-                  widget.onAttachmentPressed!();
-                },
-              ),
+            ListTile(
+              leading: const Icon(Icons.attach_file, color: Colors.orange),
+              title: const Text('文件'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickFile();
+              },
+            ),
           ],
         ),
       ),
@@ -315,6 +465,13 @@ class _CustomInputBarState extends State<CustomInputBar> {
     final minutes = seconds ~/ 60;
     final remainingSeconds = seconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
+
+  // 格式化文件大小
+  String _formatFileSize(int bytes) {
+    if (bytes < 1024) return '${bytes}B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)}KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
   }
 
   @override
