@@ -282,27 +282,83 @@ class _CustomInputBarState extends State<CustomInputBar> {
       }
 
       if (result != null && result.isSuccess) {
-        // Send image message through message queue
-        final imageMessage = ChatMessage(
-          id: 0,
-          chatId: widget.chatId,
-          senderId: 0, // Will be set by cubit
-          context: result.finalFile.path,
-          type: 'image',
-          createTime: DateTime.now(),
-          withdrawFlag: false,
-          status: MessageStatus.sending,
+        // 显示上传进度对话框
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (dialogContext) => PopScope(
+            canPop: false,
+            child: _UploadProgressDialog(
+              fileName: '图片上传中...',
+            ),
+          ),
         );
         
-        context.read<MessageQueueCubit>().addMessage(imageMessage);
-        
-        if (result.compressionRatio != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('图片已压缩 ${result.compressionRatio!.toStringAsFixed(1)}%'),
-              duration: const Duration(seconds: 2),
-            ),
+        try {
+          // 获取文件上传服务
+          final fileUploadService = GetIt.instance<IFileUploadService>();
+          
+          // 上传图片文件
+          final uploadResult = await fileUploadService.uploadFileWithProgress(
+            result.finalFile.path,
+            (progress) {
+              // 进度回调
+            },
           );
+          
+          // 关闭进度对话框
+          if (mounted) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+          
+          uploadResult.fold(
+            (failure) {
+              // 上传失败
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('图片上传失败: ${failure.message}')),
+                );
+              }
+            },
+            (success) {
+              // 上传成功，发送图片消息
+              if (mounted) {
+                // 通过 MessageListCubit 发送图片消息
+                context.read<MessageListCubit>().sendImageMessage(
+                  url: success.url,
+                  fileName: result!.finalFile.path.split('/').last,
+                );
+                
+                // 显示压缩信息（如果有）
+                if (result!.compressionRatio != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('图片已压缩 ${result.compressionRatio!.toStringAsFixed(1)}% 并发送'),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('图片发送成功'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                }
+              }
+            },
+          );
+        } catch (e) {
+          // 确保关闭对话框
+          if (mounted) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('图片上传出错: $e')),
+            );
+          }
         }
       }
     } catch (e) {
