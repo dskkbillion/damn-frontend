@@ -337,11 +337,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
         }
         
         if (file.path != null) {
-          // 创建一个 GlobalKey 来跟踪对话框
-          final NavigatorState? navigator = Navigator.maybeOf(context);
-          if (navigator == null) return;
-          
-          // 显示上传进度对话框
+          // 显示上传进度对话框，保存返回的 Future 以便后续关闭
           showDialog(
             context: context,
             barrierDismissible: false,
@@ -366,9 +362,10 @@ class _CustomInputBarState extends State<CustomInputBar> {
               },
             );
             
-            // 关闭进度对话框 - 确保只关闭对话框
+            // 关闭进度对话框 - 使用正确的方式关闭对话框
             if (mounted) {
-              navigator.pop(); // 使用保存的 navigator 引用
+              // 只pop一次，并且确保是对话框而不是整个页面
+              Navigator.of(context, rootNavigator: true).pop();
             }
             
             uploadResult.fold(
@@ -393,7 +390,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
                   );
                   
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('文件发送成功')),
+                    const SnackBar(content: Text('文件发送成功')),
                   );
                 }
               },
@@ -401,7 +398,8 @@ class _CustomInputBarState extends State<CustomInputBar> {
           } catch (e) {
             // 确保关闭对话框
             if (mounted) {
-              navigator.pop(); // 使用保存的 navigator 引用
+              // 使用rootNavigator确保关闭的是对话框
+              Navigator.of(context, rootNavigator: true).pop();
             }
             
             if (mounted) {
