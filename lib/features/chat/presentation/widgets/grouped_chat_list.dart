@@ -1,3 +1,5 @@
+import 'dart:convert'; // For JSON parsing
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -5,6 +7,7 @@ import 'package:dskk_flutter_refactor/generated/l10n.dart';
 import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 
 import '../../domain/entities/chat_room.dart';
+import '../../domain/entities/chat_message.dart'; // For ChatMessage type
 import '../../domain/entities/participant.dart';
 import '../bloc/chat_list/chat_list_bloc.dart';
 import 'chat_list_item.dart';
@@ -476,6 +479,38 @@ class ProductChatItem extends StatelessWidget {
     required this.onTap,
   }) : super(key: key);
   
+  String _getMessagePreview(ChatMessage? message) {
+    if (message == null) return '';
+    
+    switch (message.type) {
+      case 'text':
+        const maxLength = 30;
+        return message.context.length > maxLength 
+            ? '${message.context.substring(0, maxLength)}...' 
+            : message.context;
+      case 'image':
+        return '[图片]';
+      case 'audio':
+        return '[语音]';
+      case 'file':
+        try {
+          if (message.context.startsWith('{')) {
+            final Map<String, dynamic> fileInfo = jsonDecode(message.context);
+            final fileName = fileInfo['name'] ?? '文件';
+            return '[文件] $fileName';
+          }
+        } catch (e) {
+          // 解析失败
+        }
+        return '[文件]';
+      default:
+        const maxLength = 30;
+        return message.context.length > maxLength 
+            ? '${message.context.substring(0, maxLength)}...' 
+            : message.context;
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
@@ -530,7 +565,7 @@ class ProductChatItem extends StatelessWidget {
             ),
           if (chatRoom.lastMessage != null)
             Text(
-              chatRoom.lastMessage!.context,
+              _getMessagePreview(chatRoom.lastMessage),
               style: TextStyle(color: Colors.grey[600], fontSize: 12),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -939,6 +974,38 @@ class BuyerChatItem extends StatelessWidget {
     required this.currentUserId,
     required this.onTap,
   }) : super(key: key);
+  
+  String _getMessagePreview(ChatMessage? message) {
+    if (message == null) return '';
+    
+    switch (message.type) {
+      case 'text':
+        const maxLength = 30;
+        return message.context.length > maxLength 
+            ? '${message.context.substring(0, maxLength)}...' 
+            : message.context;
+      case 'image':
+        return '[图片]';
+      case 'audio':
+        return '[语音]';
+      case 'file':
+        try {
+          if (message.context.startsWith('{')) {
+            final Map<String, dynamic> fileInfo = jsonDecode(message.context);
+            final fileName = fileInfo['name'] ?? '文件';
+            return '[文件] $fileName';
+          }
+        } catch (e) {
+          // 解析失败
+        }
+        return '[文件]';
+      default:
+        const maxLength = 30;
+        return message.context.length > maxLength 
+            ? '${message.context.substring(0, maxLength)}...' 
+            : message.context;
+    }
+  }
   
   @override
   Widget build(BuildContext context) {
