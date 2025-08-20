@@ -143,9 +143,6 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     
     // 获取当前应用模式
     final currentAppMode = ref.watch(appModeProvider);
-    
-    // 保持currentUserId用于界面显示
-    const int currentUserId = 10307; // 用于界面显示的用户ID
 
     return Scaffold(
       backgroundColor: const Color(0xFFEDEDED),
@@ -174,7 +171,9 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             return const Center(child: Text('用户referId未找到'));
           }
           
-          print('[ChatListPage] Using referId: $referId for data matching, currentUserId: $currentUserId for UI, appMode: $currentAppMode');
+          // 使用 referId 作为 currentUserId，不再硬编码
+          final currentUserId = referId;
+          print('[ChatListPage] Using referId: $referId as currentUserId for both data and UI, appMode: $currentAppMode');
           
           return BlocListener<ChatListBloc, ChatListState>(
             listener: (context, state) {
