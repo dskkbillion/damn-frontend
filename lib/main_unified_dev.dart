@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,6 +24,8 @@ import 'package:dskk_flutter_refactor/features/chat/di/chat_di.dart';
 import 'package:dskk_flutter_refactor/features/profile/di/profile_di.dart';
 import 'package:dskk_flutter_refactor/features/seller/di/seller_di.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+import 'package:dskk_flutter_refactor/features/home/presentation/navigation/home_navigation_di.dart';
+import 'package:dskk_flutter_refactor/app/navigation/app_router.dart';
 
 /// 统一入口【开发版】 - 支持所有支付方式和登录方式，使用美元作为统一货币
 /// 包含测试账号自动登录功能
@@ -41,6 +44,9 @@ Future<void> main() async {
   print('========================================');
   print('DSKK Flutter Unified Entry - Development');
   print('========================================');
+  
+  // Configure global image cache limits
+  _configureImageCache();
 
   // 先加载.env文件
   try {
@@ -123,7 +129,25 @@ Future<void> main() async {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
-      child: const MyApp(),
+      child: Builder(
+        builder: (context) {
+          return Consumer(
+            builder: (context, ref, child) {
+              // 获取GoRouter实例并注册导航服务
+              final router = ref.read(goRouterProvider);
+              
+              // 注册真实的导航服务
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                print('[Unified Dev] Registering navigation service...');
+                HomeNavigationDI.registerRealNavigationService(getIt, router);
+                print('[Unified Dev] Navigation service registered successfully.');
+              });
+              
+              return const MyApp();
+            },
+          );
+        },
+      ),
     ),
   );
 }
@@ -133,8 +157,11 @@ Future<void> _injectTestCredentials() async {
   print('[Development] Injecting test credentials...');
   
   // 测试账号信息（硬编码）
-  const userToken = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMzgxOTE5ODgxMCIsImNyZWF0ZWQiOjE3MzQ0MjAzMjk0MzAsImV4cCI6MTczNzAxMjMyOX0.P9WBtjeM2VJQHKw0fRHEcTaFdJdCelQKT-9lfBu17lrz3VzJ78VVT-dmnwXnfXy3W4CRn3PJSF1RlP7EzW-GJA";
+  // 使用与main_domestic_dev.dart相同的token格式
+  const userToken = "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjllYWQ5YWJjLWMxZmEtNGM3ZC04ODllLWJjM2EzNjg4MDQxNSJ9.GgGSkCr4YG_Hf-stG8NuYFRZeebOO24vkhYQ_i8EVZzvIj9VO3VB7PdnpV6VlM7-TBJydQSdKy1mUI9jwsaKRw";
   const userId = "13819198810";
+  const commonUserId = "10319";
+  const referId = "10319";
   const userName = "ccc";
   const phoneNumber = "13819198810";
   const hasSecondaryPassword = "true";
@@ -165,8 +192,12 @@ Future<void> _injectTestCredentials() async {
   await prefs.setString('USER_STATUS', userStatus);
   await prefs.setString('USER_GENDER', gender);
   
-  // 保存到secure storage
-  await storage.write(key: 'USER_TOKEN_KEY', value: userToken);
+  // 保存到secure storage - 使用AuthRepository期望的键名
+  await storage.write(key: 'auth_token', value: userToken);
+  await storage.write(key: 'user_id', value: userId);
+  await storage.write(key: 'common_user_id', value: commonUserId);
+  await storage.write(key: 'referId', value: referId);
+  await storage.write(key: 'refer_id', value: referId); // 聊天模块使用
 
   print('[Development] Test credentials injected successfully');
   print('  User ID: $userId');
@@ -191,4 +222,20 @@ void _triggerPreloadingAfterDelay() {
       print('[Preloader] Failed to preload data: $e');
     }
   });
+}
+
+/// 配置全局图片缓存限制
+void _configureImageCache() {
+  final PaintingBinding binding = PaintingBinding.instance;
+  
+  // 设置图片缓存的最大数量（默认是1000）
+  binding.imageCache.maximumSize = 100; // 限制缓存图片数量为100张
+  
+  // 设置图片缓存的最大内存大小（以字节为单位）
+  // 50MB = 50 * 1024 * 1024 bytes
+  binding.imageCache.maximumSizeBytes = 50 * 1024 * 1024; // 限制为50MB
+  
+  print('[Image Cache] Configured:');
+  print('  Max images: ${binding.imageCache.maximumSize}');
+  print('  Max memory: ${binding.imageCache.maximumSizeBytes ~/ (1024 * 1024)}MB');
 }

@@ -27,8 +27,21 @@ class AppConfig {
     }
   } 
 
-  // TODO: Add other configuration constants as needed
-  // static const String apiBaseUrl = '...';
+  /// Get Alipay App ID from environment
+  static String get alipayAppId {
+    final appId = dotenv.env['ALIPAY_APP_ID'];
+    if (appId == null || appId.isEmpty) {
+      // Return default mock app ID for development/testing
+      return '2021000000000000';
+    }
+    return appId;
+  }
+
+  /// Get WeChat App ID from environment
+  static String get wechatAppId {
+    final appId = dotenv.env['WECHAT_APP_ID'];
+    return appId ?? '';
+  }
   
   /// 是否使用模拟数据
   static bool useMockData = false;

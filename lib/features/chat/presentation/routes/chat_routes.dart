@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart'; // Assuming GetIt for DI
 // Import Chat module pages and Blocs
 import 'package:dskk_flutter_refactor/features/chat/presentation/pages/chat_list_page.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/pages/chat_room_page.dart';
+import 'package:dskk_flutter_refactor/features/chat/presentation/pages/chat_room_page_refactored.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_list/chat_list_bloc.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_messages/chat_messages_bloc.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_chat_room_list.dart'; // For ChatListBloc event
@@ -81,6 +82,65 @@ class ChatRoutes {
                 webSocketDataSource: sl<IChatWebSocketDataSource>(),
               )..add(LoadChatMessages(chatId)),
               child: ChatRoomPage(chatId: chatId), // Pass chatId to the page widget
+            );
+          },
+        ),
+        // New refactored chat room route
+        GoRoute(
+          path: 'refactored/:chatId', // Relative path, becomes /chat/refactored/:chatId
+          name: 'chatRoomRefactored', // Optional name for navigation
+          builder: (context, state) {
+            // Extract chatId from the path parameters
+            final chatIdString = state.pathParameters['chatId'];
+            final chatId = int.tryParse(chatIdString ?? '');
+
+            // Validate chatId
+            if (chatId == null || chatId == 0) {
+              print("Error: Invalid or missing chatId: $chatIdString");
+              return Scaffold(
+                appBar: AppBar(title: const Text("Error")),
+                body: Center(child: Text("Invalid Chat ID '$chatIdString'. Please go back.")),
+              );
+            }
+
+            // Return the refactored chat room page
+            // The page will handle its own Cubit initialization
+            return ChatRoomPageRefactored(
+              chatId: chatId,
+              onMessagesLoaded: () {
+                // This callback can be used to update unread count in parent
+                print('[ChatRoutes] Messages loaded for chat $chatId');
+              },
+              onMessageRevoked: (chatId, newLastMessage) {
+                // This callback can be used to update last message in chat list
+                print('[ChatRoutes] Message revoked in chat $chatId');
+              },
+              onMessageSent: () {
+                // 刷新聊天列表
+                print('[ChatRoutes] Message sent in chat $chatId, attempting to refresh chat list...');
+                
+                // 方法1：尝试从 context 获取 ChatListBloc
+                try {
+                  final chatListBloc = context.read<ChatListBloc>();
+                  print('[ChatRoutes] Found ChatListBloc from context, refreshing...');
+                  chatListBloc.add(RefreshChatList());
+                } catch (e) {
+                  print('[ChatRoutes] ChatListBloc not found in context: $e');
+                  
+                  // 方法2：尝试从 GetIt 获取
+                  try {
+                    if (sl.isRegistered<ChatListBloc>()) {
+                      final chatListBloc = sl<ChatListBloc>();
+                      print('[ChatRoutes] Found ChatListBloc from GetIt, refreshing...');
+                      chatListBloc.add(RefreshChatList());
+                    } else {
+                      print('[ChatRoutes] ChatListBloc not registered in GetIt');
+                    }
+                  } catch (e2) {
+                    print('[ChatRoutes] Failed to get ChatListBloc from GetIt: $e2');
+                  }
+                }
+              },
             );
           },
         ),

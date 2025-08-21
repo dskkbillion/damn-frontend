@@ -92,4 +92,57 @@ class ChatRoom extends Equatable {
     print("Warning: Could not determine opponent in getOpponent. currentUserReferId: $currentUserReferId, p1.referId: ${participant1.referId}, p2.referId: ${participant2.referId}");
     return participant1; // Fallback, might be wrong
   }
+  
+  // Helper getter for participants list
+  List<Participant> get participants => [participant1, participant2];
+  
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'participant1': _participantToJson(participant1),
+      'participant2': _participantToJson(participant2),
+      'unreadCount': unreadCount,
+      'lastMessage': lastMessage?.toJson(),
+      'productId': productId,
+      'productName': productName,
+      'productImage': productImage,
+      'productPrice': productPrice,
+    };
+  }
+  
+  factory ChatRoom.fromJson(Map<String, dynamic> json) {
+    return ChatRoom(
+      id: json['id'] as int,
+      participant1: _participantFromJson(json['participant1']),
+      participant2: _participantFromJson(json['participant2']),
+      unreadCount: json['unreadCount'] as int,
+      lastMessage: json['lastMessage'] != null 
+          ? ChatMessage.fromJson(json['lastMessage'] as Map<String, dynamic>)
+          : null,
+      productId: json['productId'] as String?,
+      productName: json['productName'] as String?,
+      productImage: json['productImage'] as String?,
+      productPrice: (json['productPrice'] as num?)?.toDouble(),
+    );
+  }
+  
+  static Map<String, dynamic> _participantToJson(Participant participant) {
+    return {
+      'id': participant.id,
+      'nickName': participant.nickName,
+      'avatar': participant.avatar,
+      'type': participant.type,
+      'referId': participant.referId,
+    };
+  }
+  
+  static Participant _participantFromJson(Map<String, dynamic> json) {
+    return Participant(
+      id: json['id'] as int,
+      nickName: json['nickName'] as String?,
+      avatar: json['avatar'] as String?,
+      type: json['type'] as String?,
+      referId: json['referId'] as int?,
+    );
+  }
 } 

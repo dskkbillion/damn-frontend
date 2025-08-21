@@ -37,6 +37,24 @@ import '../domain/usecases/create_chat_room.dart';
 import '../presentation/bloc/chat_list/chat_list_bloc.dart';
 import '../presentation/bloc/chat_messages/chat_messages_bloc.dart';
 
+// Cubits
+import '../presentation/cubit/chat/chat_cubit.dart';
+import '../presentation/cubit/message_list/message_list_cubit.dart';
+import '../presentation/cubit/websocket/websocket_cubit.dart';
+import '../presentation/cubit/message_queue/message_queue_cubit.dart';
+
+// Local data source
+import '../data/data_sources/local/chat_local_data_source.dart';
+
+// Adapters
+import '../presentation/adapters/chat_message_adapter.dart';
+
+// SharedPreferences
+import 'package:shared_preferences/shared_preferences.dart';
+
+// Database
+import 'package:dskk_flutter_refactor/core/database/app_database.dart';
+
 /// 为聊天模块提供的临时用户信息仓库实现
 /// 从SecureStorage中读取真实的用户信息，而不是使用模拟数据
 class ChatUserRepositoryImpl implements IUserRepository {
@@ -201,6 +219,17 @@ class ChatDI {
   static Future<void> init(GetIt getIt) async {
     print('[ChatDI] Initializing Chat module dependencies');
 
+    // Get SharedPreferences instance
+    final prefs = await SharedPreferences.getInstance();
+
+    // Local data source
+    if (!getIt.isRegistered<IChatLocalDataSource>()) {
+      getIt.registerLazySingleton<IChatLocalDataSource>(
+        () => ChatLocalDataSourceImpl(getIt<AppDatabase>()),
+      );
+      print('[ChatDI] Registered IChatLocalDataSource');
+    }
+
     // 数据源
     if (!getIt.isRegistered<IChatRemoteDataSource>()) {
       getIt.registerLazySingleton<IChatRemoteDataSource>(
@@ -294,12 +323,13 @@ class ChatDI {
     }
 
     // Bloc
+    // 使用 LazySingleton 让 ChatListBloc 成为单例，这样所有地方共享同一个实例
     if (!getIt.isRegistered<ChatListBloc>()) {
-      getIt.registerFactory<ChatListBloc>(() => ChatListBloc(
+      getIt.registerLazySingleton<ChatListBloc>(() => ChatListBloc(
             getChatRoomList: getIt<GetChatRoomList>(),
             createChatRoom: getIt<CreateChatRoom>(),
           ));
-      print('[ChatDI] Registered ChatListBloc');
+      print('[ChatDI] Registered ChatListBloc as singleton');
     } else {
       print('[ChatDI] ChatListBloc already registered, skipping');
     }
@@ -321,6 +351,54 @@ class ChatDI {
       print('[ChatDI] Registered ChatMessagesBloc factory with parameters');
     } else {
       print('[ChatDI] ChatMessagesBloc factory already registered, skipping');
+    }
+
+    // Register new Cubits for refactored architecture
+    
+    // ChatCubit
+    if (!getIt.isRegistered<ChatCubit>()) {
+      getIt.registerFactory<ChatCubit>(
+        () => ChatCubit(
+          getChatRoomDetails: getIt<GetChatRoomDetails>(),
+          createChatRoom: getIt<CreateChatRoom>(),
+          webSocketDataSource: getIt<IChatWebSocketDataSource>(),
+        ),
+      );
+      print('[ChatDI] Registered ChatCubit');
+    }
+    
+    // MessageListCubit
+    if (!getIt.isRegistered<MessageListCubit>()) {
+      getIt.registerFactory<MessageListCubit>(
+        () => MessageListCubit(
+          getMessageList: getIt<GetMessageList>(),
+          sendMessage: getIt<SendMessage>(),
+          revokeMessage: getIt<RevokeMessage>(),
+          deleteChatMessage: getIt<DeleteChatMessage>(),
+        ),
+      );
+      print('[ChatDI] Registered MessageListCubit');
+    }
+    
+    // WebSocketCubit
+    if (!getIt.isRegistered<WebSocketCubit>()) {
+      getIt.registerLazySingleton<WebSocketCubit>(
+        () => WebSocketCubit(
+          webSocketDataSource: getIt<IChatWebSocketDataSource>(),
+        ),
+      );
+      print('[ChatDI] Registered WebSocketCubit');
+    }
+    
+    // MessageQueueCubit
+    if (!getIt.isRegistered<MessageQueueCubit>()) {
+      getIt.registerFactory<MessageQueueCubit>(
+        () => MessageQueueCubit(
+          localDataSource: getIt<IChatLocalDataSource>(),
+          sendMessage: getIt<SendMessage>(),
+        ),
+      );
+      print('[ChatDI] Registered MessageQueueCubit');
     }
 
     print('[ChatDI] Chat module dependencies initialized');

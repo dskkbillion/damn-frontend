@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert'; // 用于 JSON 解析
 import 'dart:io'; // 添加这个import来支持File类型
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Import for Clipboard
@@ -15,6 +16,8 @@ import '../bloc/chat_messages/chat_messages_bloc.dart'; // Import ChatMessagesBl
 import '../../domain/entities/participant.dart'; // Import Participant
 import 'allocate_message_bubble.dart'; // 导入新创建的allocate消息气泡组件
 import '../utils/markdown_style_helper.dart'; // 导入Markdown样式助手
+import 'file_message_widget.dart'; // 导入文件消息组件
+import '../pages/file_preview_page.dart'; // 导入文件预览页面
 
 // 撤回状态检查结果
 class RevokeCheckResult {
@@ -52,6 +55,46 @@ class ChatMessageBubble extends StatefulWidget {
 
   @override
   State<ChatMessageBubble> createState() => _ChatMessageBubbleState();
+}
+
+// 简单的图片预览页面
+class _ImagePreviewPage extends StatelessWidget {
+  final String imageUrl;
+  
+  const _ImagePreviewPage({required this.imageUrl});
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: Center(
+        child: InteractiveViewer(
+          minScale: 0.5,
+          maxScale: 4.0,
+          child: CachedNetworkImage(
+            imageUrl: imageUrl,
+            placeholder: (context, url) => const CircularProgressIndicator(),
+            errorWidget: (context, url, error) => const Icon(
+              Icons.error,
+              color: Colors.white,
+              size: 50,
+            ),
+            // 预览图片不限制内存缓存大小，以获得最佳质量
+            memCacheWidth: null,
+            memCacheHeight: null,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _ChatMessageBubbleState extends State<ChatMessageBubble> {
@@ -133,6 +176,90 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       _audioPlayer.dispose();
     }
     super.dispose();
+  }
+
+  // 处理文件消息点击
+  void _handleFileMessageTap(BuildContext context, ChatMessage message) {
+    try {
+      final fileInfo = _parseFileInfo(message.context);
+      final url = fileInfo['url'] ?? message.context;
+      final fileName = fileInfo['name'] ?? 'file';
+      final fileExtension = fileInfo['extension'] ?? '';
+      
+      if (url != null && url.isNotEmpty) {
+        // 导航到文件预览页面
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => FilePreviewPage(
+              fileUrl: url,
+              fileName: fileName,
+              fileExtension: fileExtension,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('无法打开文件: $e')),
+      );
+    }
+  }
+  
+  // 处理图片消息点击
+  void _handleImageMessageTap(BuildContext context, ChatMessage message) {
+    // TODO: 实现图片预览功能
+    // 可以导航到一个全屏图片查看页面
+    // 使用 photo_view 包可以实现缩放功能
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => _ImagePreviewPage(
+          imageUrl: _parseImageUrl(message.context),
+        ),
+      ),
+    );
+  }
+  
+  // 解析文件信息
+  Map<String, dynamic> _parseFileInfo(String context) {
+    try {
+      String contextStr = context.trim();
+      
+      // 如果是 URL 编码的内容，先解码
+      if (contextStr.contains('%7B') || contextStr.contains('%7b') || contextStr.contains('%22')) {
+        contextStr = Uri.decodeFull(contextStr);
+      }
+      
+      // 处理可能的格式：{url: xxx, name: xxx, ...} （没有引号的格式）
+      if (contextStr.startsWith('{') && !contextStr.contains('"url"')) {
+        // 转换为标准 JSON 格式
+        contextStr = contextStr
+            .replaceAll(RegExp(r'(\w+):'), '"\\1":')  // 给键加引号
+            .replaceAll(RegExp(r':\s*([^,}]+)'), ': "\\1"');  // 给值加引号（除了数字）
+        
+        // 处理数字值（不需要引号）
+        contextStr = contextStr
+            .replaceAll(RegExp(r':\s*"(\d+)"'), ': \\1');  // 移除数字的引号
+      }
+      
+      // 如果是标准 JSON 字符串，解析它
+      if (contextStr.startsWith('{')) {
+        return Map<String, dynamic>.from(jsonDecode(contextStr) as Map);
+      }
+      
+      return {'url': contextStr};
+    } catch (e) {
+      return {'url': context};
+    }
+  }
+  
+  // 解析图片URL
+  String _parseImageUrl(String context) {
+    try {
+      final info = _parseFileInfo(context);
+      return info['url'] ?? context;
+    } catch (e) {
+      return context;
+    }
   }
 
   void _playPauseAudio() async {
@@ -234,7 +361,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           child: CircleAvatar(
             radius: 18,
             backgroundImage: (widget.opponent?.avatar != null && widget.opponent!.avatar!.isNotEmpty)
-                ? CachedNetworkImageProvider(widget.opponent!.avatar!)
+                ? CachedNetworkImageProvider(
+                    widget.opponent!.avatar!,
+                    maxWidth: 72,  // 36 * 2 for retina display
+                    maxHeight: 72,
+                  )
                 : null,
             backgroundColor: Colors.grey[300],
             child: (widget.opponent?.avatar == null || widget.opponent!.avatar!.isEmpty)
@@ -256,8 +387,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       );
     }
 
-    // 对于图片消息，包含时间显示
-    if (widget.message.type == 'image') {
+    // 对于图片和文件消息，使用特殊的布局（不需要气泡背景）
+    if (widget.message.type == 'image' || widget.message.type == 'file') {
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 8.0),
         child: Row(
@@ -271,7 +402,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                     ? CrossAxisAlignment.end 
                     : CrossAxisAlignment.start,
                 children: [
-                  _buildImageContent(context, widget.message.context ?? ''),
+                  // 使用 _buildMessageContent 来渲染内容
+                  _buildMessageContent(context, textColor, isCurrentUser, widget.message.context ?? ''),
                   _buildMessageTime(),
                 ],
               ),
@@ -348,6 +480,26 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
          // 确保内容自适应并限制在消息气泡内
          shrinkWrap: true,
          ),
+       );
+     } else if (widget.message.type == 'file') {
+       // 文件消息使用专门的组件
+       return FileMessageWidget(
+         message: widget.message,
+         isMe: isCurrentUser,
+         onTap: () {
+           // 处理文件点击（下载或预览）
+           _handleFileMessageTap(context, widget.message);
+         },
+       );
+     } else if (widget.message.type == 'image') {
+       // 图片消息使用专门的组件
+       return ImageMessageWidget(
+         message: widget.message,
+         isMe: isCurrentUser,
+         onTap: () {
+           // 处理图片点击（预览）
+           _handleImageMessageTap(context, widget.message);
+         },
        );
      } else if (widget.message.type == 'audio') {
        // Pass textColor and isCurrentUser to audio content
@@ -502,12 +654,14 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                },
                 fit: BoxFit.cover,
                // 增加重试次数
-               maxHeightDiskCache: 300,
+               maxHeightDiskCache: 400,
                fadeOutDuration: const Duration(milliseconds: 300),
                fadeInDuration: const Duration(milliseconds: 300),
                // 修改缓存配置，可选
                cacheKey: "chat_image_${widget.message.id}",
-               memCacheWidth: 300,
+               // 限制内存中图片的尺寸，减少内存占用
+               memCacheWidth: 400,
+               memCacheHeight: 400,
              ),
            ),
          ),

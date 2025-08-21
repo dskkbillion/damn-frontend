@@ -7,22 +7,79 @@ import 'package:path/path.dart' as p;
 
 // Import table definitions
 import 'tables/orders_table.dart';
+import 'tables/chat_tables.dart';
 // import 'daos/order_dao.dart'; // Remove DAO import
 
 part 'app_database.g.dart'; // Drift will generate this file
 
 @DriftDatabase(
-  tables: [Orders],
+  tables: [Orders, ChatMessages, ChatRooms, MessageQueue],
   // daos: [OrderDao], // Remove DAO from annotation
 )
 class AppDatabase extends _$AppDatabase {
   // Define the database version (important for migrations)
-  static const int dbVersion = 1;
+  static const int dbVersion = 4;  // Increased version to add performance indexes
 
   AppDatabase() : super(_openConnection());
 
   @override
   int get schemaVersion => dbVersion;
+  
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onCreate: (Migrator m) async {
+        await m.createAll();
+      },
+      onUpgrade: (Migrator m, int from, int to) async {
+        if (from < 2) {
+          // Add chat tables in version 2
+          await m.createTable(chatMessages);
+          await m.createTable(chatRooms);
+          await m.createTable(messageQueue);
+        }
+        if (from < 3) {
+          // Fix constraint issue in version 3 - recreate tables with correct constraint
+          // Drop and recreate chat_messages table with fixed constraint
+          await customStatement('DROP TABLE IF EXISTS chat_messages');
+          await m.createTable(chatMessages);
+        }
+        if (from < 4) {
+          // Add performance indexes in version 4
+          print('[Database Migration] Adding performance indexes...');
+          
+          // Chat messages indexes
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_chat_messages_chat_time ON chat_messages(chat_id, create_time DESC)'
+          );
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_chat_messages_status ON chat_messages(status)'
+          );
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_chat_messages_withdraw ON chat_messages(withdraw_flag)'
+          );
+          
+          // Chat rooms indexes
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_chat_rooms_last_activity ON chat_rooms(last_activity_time DESC)'
+          );
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_chat_rooms_unread ON chat_rooms(unread_count)'
+          );
+          
+          // Message queue indexes
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_message_queue_status ON message_queue(status)'
+          );
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_message_queue_pending ON message_queue(status, created_at) WHERE status = "pending"'
+          );
+          
+          print('[Database Migration] Performance indexes added successfully');
+        }
+      },
+    );
+  }
 
   // --- Add methods directly from OrderDao --- 
 
@@ -75,6 +132,173 @@ class AppDatabase extends _$AppDatabase {
 
   // Delete all orders
   Future<int> deleteAllOrders() => delete(orders).go();
+  
+  // --- Chat-related methods ---
+  
+  // Chat Messages
+  Future<List<ChatMessageCache>> getChatMessages(int chatId, {int limit = 50, int offset = 0}) {
+    final stopwatch = Stopwatch()..start();
+    return (select(chatMessages)
+          ..where((tbl) => tbl.chatId.equals(chatId))
+          ..orderBy([(tbl) => OrderingTerm(expression: tbl.createTime, mode: OrderingMode.desc)])
+          ..limit(limit, offset: offset))
+        .get()
+        .then((result) {
+          stopwatch.stop();
+          print('[Database] getChatMessages for chatId=$chatId took ${stopwatch.elapsedMilliseconds}ms (${result.length} messages)');
+          return result;
+        });
+  }
+  
+  Stream<List<ChatMessageCache>> watchChatMessages(int chatId) {
+    return (select(chatMessages)
+          ..where((tbl) => tbl.chatId.equals(chatId))
+          ..orderBy([(tbl) => OrderingTerm(expression: tbl.createTime, mode: OrderingMode.asc)]))
+        .watch();
+  }
+  
+  Future<int> insertChatMessage(ChatMessageCache message) {
+    return into(chatMessages).insert(message, mode: InsertMode.insertOrReplace);
+  }
+  
+  Future<void> insertChatMessages(List<ChatMessageCache> messages) async {
+    if (messages.isEmpty) return;
+    
+    final stopwatch = Stopwatch()..start();
+    await batch((batch) {
+      batch.insertAll(chatMessages, messages, mode: InsertMode.insertOrReplace);
+    });
+    stopwatch.stop();
+    print('[Database] Batch inserted ${messages.length} messages in ${stopwatch.elapsedMilliseconds}ms');
+  }
+  
+  Future<int> updateMessageStatus(int messageId, String status) {
+    return (update(chatMessages)
+          ..where((tbl) => tbl.id.equals(messageId)))
+        .write(ChatMessagesCompanion(status: Value(status)));
+  }
+  
+  Future<int> markMessageAsWithdrawn(int messageId) {
+    return (update(chatMessages)
+          ..where((tbl) => tbl.id.equals(messageId)))
+        .write(const ChatMessagesCompanion(withdrawFlag: Value(true)));
+  }
+  
+  // Batch update messages as read
+  Future<void> markMessagesAsRead(int chatId, List<int> messageIds) async {
+    if (messageIds.isEmpty) return;
+    
+    final stopwatch = Stopwatch()..start();
+    await batch((batch) {
+      for (final messageId in messageIds) {
+        batch.update(
+          chatMessages,
+          const ChatMessagesCompanion(
+            readFlag: Value(true),
+            status: Value('read'),
+          ),
+          where: (tbl) => tbl.id.equals(messageId) & tbl.chatId.equals(chatId),
+        );
+      }
+    });
+    stopwatch.stop();
+    print('[Database] Batch marked ${messageIds.length} messages as read in ${stopwatch.elapsedMilliseconds}ms');
+  }
+  
+  // Chat Rooms
+  Future<List<ChatRoomCache>> getChatRooms() {
+    final stopwatch = Stopwatch()..start();
+    return (select(chatRooms)
+          ..orderBy([(tbl) => OrderingTerm(expression: tbl.lastActivityTime, mode: OrderingMode.desc)]))
+        .get()
+        .then((result) {
+          stopwatch.stop();
+          print('[Database] getChatRooms took ${stopwatch.elapsedMilliseconds}ms (${result.length} rooms)');
+          return result;
+        });
+  }
+  
+  Stream<List<ChatRoomCache>> watchChatRooms() {
+    return (select(chatRooms)
+          ..orderBy([(tbl) => OrderingTerm(expression: tbl.lastActivityTime, mode: OrderingMode.desc)]))
+        .watch();
+  }
+  
+  Future<ChatRoomCache?> getChatRoom(int chatId) {
+    return (select(chatRooms)..where((tbl) => tbl.id.equals(chatId))).getSingleOrNull();
+  }
+  
+  Future<int> insertChatRoom(ChatRoomCache room) {
+    return into(chatRooms).insert(room, mode: InsertMode.insertOrReplace);
+  }
+  
+  Future<void> insertChatRooms(List<ChatRoomCache> rooms) async {
+    await batch((batch) {
+      batch.insertAll(chatRooms, rooms, mode: InsertMode.insertOrReplace);
+    });
+  }
+  
+  Future<int> updateChatRoomUnreadCount(int chatId, int unreadCount) {
+    return (update(chatRooms)
+          ..where((tbl) => tbl.id.equals(chatId)))
+        .write(ChatRoomsCompanion(
+          unreadCount: Value(unreadCount),
+          updatedAt: Value(DateTime.now()),
+        ));
+  }
+  
+  // Message Queue
+  Future<List<MessageQueueItem>> getPendingMessages() {
+    return (select(messageQueue)
+          ..where((tbl) => tbl.status.equals('pending'))
+          ..orderBy([(tbl) => OrderingTerm(expression: tbl.createdAt, mode: OrderingMode.asc)]))
+        .get();
+  }
+  
+  Stream<List<MessageQueueItem>> watchPendingMessages() {
+    return (select(messageQueue)
+          ..where((tbl) => tbl.status.equals('pending'))
+          ..orderBy([(tbl) => OrderingTerm(expression: tbl.createdAt, mode: OrderingMode.asc)]))
+        .watch();
+  }
+  
+  Future<int> addToMessageQueue(MessageQueueCompanion item) {
+    return into(messageQueue).insert(item);
+  }
+  
+  Future<int> updateQueueItemStatus(int itemId, String status, {String? errorMessage}) {
+    return (update(messageQueue)
+          ..where((tbl) => tbl.id.equals(itemId)))
+        .write(MessageQueueCompanion(
+          status: Value(status),
+          lastRetryAt: Value(DateTime.now()),
+          errorMessage: errorMessage != null ? Value(errorMessage) : const Value.absent(),
+        ));
+  }
+  
+  Future<int> incrementQueueItemRetry(int itemId) async {
+    final item = await (select(messageQueue)..where((tbl) => tbl.id.equals(itemId))).getSingleOrNull();
+    if (item != null) {
+      final newRetryCount = item.retryCount + 1;
+      final status = newRetryCount >= item.maxRetries ? 'failed' : 'pending';
+      return (update(messageQueue)
+            ..where((tbl) => tbl.id.equals(itemId)))
+          .write(MessageQueueCompanion(
+            retryCount: Value(newRetryCount),
+            status: Value(status),
+            lastRetryAt: Value(DateTime.now()),
+          ));
+    }
+    return 0;
+  }
+  
+  Future<int> deleteQueueItem(int itemId) {
+    return (delete(messageQueue)..where((tbl) => tbl.id.equals(itemId))).go();
+  }
+  
+  Future<int> clearFailedQueueItems() {
+    return (delete(messageQueue)..where((tbl) => tbl.status.equals('failed'))).go();
+  }
 }
 
 // Function to open the database connection

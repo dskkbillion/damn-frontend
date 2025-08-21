@@ -21,7 +21,7 @@ class SendMessageImpl implements SendMessage {
   Future<Either<Failure, ChatMessage>> call(SendMessageParams params) async {
     ChatMessage messageToSend = params.message;
 
-    // If it's an image or audio message, upload the file first
+    // If it's an image or audio message with a file, upload the file first
     if ((messageToSend.type == 'image' || messageToSend.type == 'audio') && params.file != null) {
       final uploadResult = await fileRepository.uploadFile(params.file!);
 
@@ -37,8 +37,13 @@ class SendMessageImpl implements SendMessage {
       }
        // Important: Create a *new* instance with the updated context
       messageToSend = messageToSend.copyWith(context: fileUrl);
-    } else if ((messageToSend.type == 'image' || messageToSend.type == 'audio') && params.file == null) {
-       return Left(GeneralFailure(message: '发送消息失败，参数无效'));
+    } else if ((messageToSend.type == 'image' || messageToSend.type == 'audio' || messageToSend.type == 'file') && params.file == null) {
+      // 如果是文件类型（包括图片、音频、文档）且没有提供文件，检查 context 是否已包含 URL 或 JSON
+      // 如果 context 已经包含 URL 或 JSON（说明文件已经上传），则继续发送
+      if (messageToSend.context == null || messageToSend.context!.isEmpty) {
+        return Left(GeneralFailure(message: '发送消息失败，参数无效'));
+      }
+      // 如果 context 有内容（URL 或 JSON），继续发送
     }
 
     // Send the message (text or file URL as context)

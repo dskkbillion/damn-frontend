@@ -47,14 +47,34 @@ class ChatMessageDto with _$ChatMessageDto {
      DateTime parsedCreateTime;
      try {
         if (createTime != null && createTime!.isNotEmpty) {
-          // 处理API返回的时间格式："2025-05-14 09:49:46"
-          // 将空格替换为T，使其符合ISO 8601格式
+          // 处理API返回的时间格式："2025-08-21 02:14:02"
+          // 服务器返回的是北京时间（UTC+8），需要转换为本地时间
           String isoTimeString = createTime!;
           if (createTime!.contains(' ') && !createTime!.contains('T')) {
             isoTimeString = createTime!.replaceFirst(' ', 'T');
           }
-          parsedCreateTime = DateTime.parse(isoTimeString);
-          print("[ChatMessageDto] Successfully parsed createTime: $createTime -> $parsedCreateTime");
+          
+          // 服务器时间是北京时间（UTC+8）
+          // 1. 先解析为DateTime（会被当作本地时区）
+          final serverTime = DateTime.parse(isoTimeString);
+          
+          // 2. 创建一个UTC时间（假设服务器时间是UTC+8）
+          // 北京时间减去8小时得到UTC时间
+          final utcTime = serverTime.subtract(const Duration(hours: 8));
+          
+          // 3. 转换为本地时间
+          parsedCreateTime = DateTime.utc(
+            utcTime.year,
+            utcTime.month,
+            utcTime.day,
+            utcTime.hour,
+            utcTime.minute,
+            utcTime.second,
+            utcTime.millisecond,
+            utcTime.microsecond,
+          ).toLocal();
+          
+          print("[ChatMessageDto] Server time (Beijing): $createTime -> Local time: $parsedCreateTime");
         } else {
           print("[ChatMessageDto] createTime is null or empty, using current time");
           parsedCreateTime = DateTime.now();

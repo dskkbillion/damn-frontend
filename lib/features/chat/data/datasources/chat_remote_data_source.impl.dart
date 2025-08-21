@@ -191,7 +191,8 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
         print("[API Response] First message time: ${firstMsg.createTime}, last message time: ${lastMsg.createTime}");
       }
       
-      // 确保按时间升序（从旧到新）排序
+      // 确保按时间降序（从新到旧）排序
+      // 这样 index 0 是最新的消息，配合 ListView 的 reverse: true
       messageDtos.sort((a, b) {
         // 安全地解析时间字符串
         DateTime? timeA;
@@ -227,7 +228,7 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
         final DateTime finalTimeA = timeA ?? DateTime.fromMillisecondsSinceEpoch(0);
         final DateTime finalTimeB = timeB ?? DateTime.fromMillisecondsSinceEpoch(0);
         
-        return finalTimeA.compareTo(finalTimeB); // 升序排列 (旧->新)
+        return finalTimeB.compareTo(finalTimeA); // 降序排列 (新->旧)
       });
       
       return messageDtos;

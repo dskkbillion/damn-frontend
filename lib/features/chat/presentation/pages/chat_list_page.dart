@@ -11,6 +11,7 @@ import 'package:dskk_flutter_refactor/app/app_mode.dart'; // 导入应用模式
 import '../bloc/chat_list/chat_list_bloc.dart';
 import '../widgets/chat_list_item.dart';
 import '../widgets/grouped_chat_list.dart'; // 导入分组组件
+import '../services/chat_preload_service.dart'; // 导入预加载服务
 // Import domain entities needed for fake ChatRoom
 import '../../domain/entities/chat_room.dart';
 import '../../domain/entities/participant.dart';
@@ -32,11 +33,23 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   // 添加Future存储变量，避免在每次build时创建新的Future
   late Future<int?> _referIdFuture;
   
+  // 添加预加载服务
+  late final ChatPreloadService _preloadService;
+  
   @override
   void initState() {
     super.initState();
     // 在initState中初始化Future，只执行一次
     _referIdFuture = _getReferIdFromStorage();
+    // 初始化预加载服务
+    _preloadService = ChatPreloadService();
+  }
+  
+  @override
+  void dispose() {
+    // 清理预加载服务
+    _preloadService.dispose();
+    super.dispose();
   }
   
   // 添加获取referId的方法
@@ -143,9 +156,6 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     
     // 获取当前应用模式
     final currentAppMode = ref.watch(appModeProvider);
-    
-    // 保持currentUserId用于界面显示
-    const int currentUserId = 10307; // 用于界面显示的用户ID
 
     return Scaffold(
       backgroundColor: const Color(0xFFEDEDED),
@@ -174,7 +184,9 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             return const Center(child: Text('用户referId未找到'));
           }
           
-          print('[ChatListPage] Using referId: $referId for data matching, currentUserId: $currentUserId for UI, appMode: $currentAppMode');
+          // 使用 referId 作为 currentUserId，不再硬编码
+          final currentUserId = referId;
+          print('[ChatListPage] Using referId: $referId as currentUserId for both data and UI, appMode: $currentAppMode');
           
           return BlocListener<ChatListBloc, ChatListState>(
             listener: (context, state) {
@@ -207,6 +219,15 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                   // 使用referId和应用模式进行数据匹配
                   final filteredRooms = _filterChatRoomsByAppMode(state.chatRooms, currentAppMode, referId);
                   
+                  // 触发头像预加载（异步执行，不阻塞UI）
+                  if (filteredRooms.isNotEmpty && context.mounted) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (context.mounted) {
+                        _preloadService.preloadChatRoomAvatars(context, filteredRooms);
+                      }
+                    });
+                  }
+                  
                   return _buildChatListView(context, filteredRooms, currentAppMode, currentUserId);
                 } else {
                   // 真正的加载状态
@@ -223,7 +244,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   // 提取导航逻辑到单独方法
   void _navigateToChat(BuildContext context, ChatRoom chatRoom) {
     // Navigate to ChatRoomPage using GoRouter
-    context.push('/chat/${chatRoom.id}');
+    // 使用新的重构版本
+    context.push('/chat/refactored/${chatRoom.id}');
   }
   
   // 新的筛选方法：根据应用模式筛选聊天室，同时排除系统管理员聊天室

@@ -29,4 +29,14 @@ class ParticipantDto with _$ParticipantDto {
       referId: referId,
     );
   }
+  
+  factory ParticipantDto.fromEntity(Participant entity) {
+    return ParticipantDto(
+      id: entity.id,
+      nickName: entity.nickName,
+      avatar: entity.avatar,
+      type: entity.type,
+      referId: entity.referId,
+    );
+  }
 } 
