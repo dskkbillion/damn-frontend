@@ -87,6 +87,9 @@ class _ImagePreviewPage extends StatelessWidget {
               color: Colors.white,
               size: 50,
             ),
+            // 预览图片不限制内存缓存大小，以获得最佳质量
+            memCacheWidth: null,
+            memCacheHeight: null,
           ),
         ),
       ),
@@ -358,7 +361,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           child: CircleAvatar(
             radius: 18,
             backgroundImage: (widget.opponent?.avatar != null && widget.opponent!.avatar!.isNotEmpty)
-                ? CachedNetworkImageProvider(widget.opponent!.avatar!)
+                ? CachedNetworkImageProvider(
+                    widget.opponent!.avatar!,
+                    maxWidth: 72,  // 36 * 2 for retina display
+                    maxHeight: 72,
+                  )
                 : null,
             backgroundColor: Colors.grey[300],
             child: (widget.opponent?.avatar == null || widget.opponent!.avatar!.isEmpty)
@@ -647,12 +654,14 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                },
                 fit: BoxFit.cover,
                // 增加重试次数
-               maxHeightDiskCache: 300,
+               maxHeightDiskCache: 400,
                fadeOutDuration: const Duration(milliseconds: 300),
                fadeInDuration: const Duration(milliseconds: 300),
                // 修改缓存配置，可选
                cacheKey: "chat_image_${widget.message.id}",
-               memCacheWidth: 300,
+               // 限制内存中图片的尺寸，减少内存占用
+               memCacheWidth: 400,
+               memCacheHeight: 400,
              ),
            ),
          ),

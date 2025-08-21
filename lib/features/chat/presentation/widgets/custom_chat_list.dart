@@ -125,7 +125,9 @@ class _CustomChatListState extends State<CustomChatList> {
       controller: _scrollController,
       reverse: true, // Newest messages at bottom
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-      cacheExtent: 200,
+      cacheExtent: 1000, // Increased cache extent for better scrolling performance
+      addAutomaticKeepAlives: false, // Reduce memory usage
+      addRepaintBoundaries: true, // Optimize repainting
       itemCount: widget.messages.length + (widget.isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
         // Loading indicator at top (when reverse mode)
@@ -155,28 +157,32 @@ class _CustomChatListState extends State<CustomChatList> {
         final bool isFirstInList = index == 0;
         
         if (currentMessage.createTime == null) {
-          return ChatMessageBubble(
-            key: ValueKey(currentMessage.id),
-            message: currentMessage,
-            currentUserParticipantId: widget.currentUserParticipantId,
-            opponent: widget.opponent,
-          );
-        }
-        
-        final bool showTimestamp = _shouldShowTimestampSeparator(currentMessage, previousMessage);
-        
-        return Column(
-          children: [
-            if (showTimestamp)
-              _buildTimestampSeparator(currentMessage.createTime!, isFirstInList),
-            
-            ChatMessageBubble(
+          return RepaintBoundary(
+            child: ChatMessageBubble(
               key: ValueKey(currentMessage.id),
               message: currentMessage,
               currentUserParticipantId: widget.currentUserParticipantId,
               opponent: widget.opponent,
             ),
-          ],
+          );
+        }
+        
+        final bool showTimestamp = _shouldShowTimestampSeparator(currentMessage, previousMessage);
+        
+        return RepaintBoundary(
+          child: Column(
+            children: [
+              if (showTimestamp)
+                _buildTimestampSeparator(currentMessage.createTime!, isFirstInList),
+              
+              ChatMessageBubble(
+                key: ValueKey(currentMessage.id),
+                message: currentMessage,
+                currentUserParticipantId: widget.currentUserParticipantId,
+                opponent: widget.opponent,
+              ),
+            ],
+          ),
         );
       },
     );

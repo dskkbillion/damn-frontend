@@ -49,7 +49,13 @@ class ChatMessages extends Table {
   
   @override
   List<String> get customConstraints => [
-    'UNIQUE(id, chat_id)'  // Fixed: use snake_case for SQL column name
+    'UNIQUE(id, chat_id)',  // Fixed: use snake_case for SQL column name
+    // Add composite index for efficient message queries
+    'CREATE INDEX IF NOT EXISTS idx_chat_messages_chat_time ON chat_messages(chat_id, create_time DESC)',
+    // Add index for message status queries
+    'CREATE INDEX IF NOT EXISTS idx_chat_messages_status ON chat_messages(status)',
+    // Add index for withdrawn messages
+    'CREATE INDEX IF NOT EXISTS idx_chat_messages_withdraw ON chat_messages(withdraw_flag)'
   ];
 }
 
@@ -84,6 +90,14 @@ class ChatRooms extends Table {
   
   @override
   Set<Column> get primaryKey => {id};
+  
+  @override
+  List<String> get customConstraints => [
+    // Add index for efficient room list queries
+    'CREATE INDEX IF NOT EXISTS idx_chat_rooms_last_activity ON chat_rooms(last_activity_time DESC)',
+    // Add index for unread count queries
+    'CREATE INDEX IF NOT EXISTS idx_chat_rooms_unread ON chat_rooms(unread_count)'
+  ];
 }
 
 /// Table for offline message queue
@@ -120,4 +134,12 @@ class MessageQueue extends Table {
   
   // Error message if failed
   TextColumn get errorMessage => text().nullable()();
+  
+  @override
+  List<String> get customConstraints => [
+    // Add index for pending message queries
+    'CREATE INDEX IF NOT EXISTS idx_message_queue_status ON message_queue(status)',
+    // Add composite index for efficient queue processing
+    'CREATE INDEX IF NOT EXISTS idx_message_queue_pending ON message_queue(status, created_at) WHERE status = "pending"'
+  ];
 }

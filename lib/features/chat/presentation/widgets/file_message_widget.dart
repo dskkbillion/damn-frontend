@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
 import '../pages/file_preview_page.dart';
 
@@ -285,44 +286,38 @@ class ImageMessageWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           child: Stack(
             children: [
-              // 图片
-              Image.network(
-                imageUrl,
+              // 图片 - 使用CachedNetworkImage并限制内存缓存大小
+              CachedNetworkImage(
+                imageUrl: imageUrl,
                 fit: BoxFit.cover,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    width: 250,
-                    height: 200,
-                    color: Colors.grey[200],
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes!
-                            : null,
+                // 限制内存中图片的尺寸，减少内存占用
+                memCacheWidth: 500,
+                memCacheHeight: 600,
+                maxHeightDiskCache: 600,
+                placeholder: (context, url) => Container(
+                  width: 250,
+                  height: 200,
+                  color: Colors.grey[200],
+                  child: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  width: 250,
+                  height: 200,
+                  color: Colors.grey[200],
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.broken_image, color: Colors.grey[400], size: 48),
+                      const SizedBox(height: 8),
+                      Text(
+                        '图片加载失败',
+                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
                       ),
-                    ),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: 250,
-                    height: 200,
-                    color: Colors.grey[200],
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.broken_image, color: Colors.grey[400], size: 48),
-                        const SizedBox(height: 8),
-                        Text(
-                          '图片加载失败',
-                          style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+                    ],
+                  ),
+                ),
               ),
               // 发送状态指示器（如果消息正在发送）
               if (message.status == MessageStatus.sending)

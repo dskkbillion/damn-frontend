@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart'; // Import dotenv
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import ProviderScope (from auth-module)
 import 'package:package_info_plus/package_info_plus.dart'; // Import PackageInfo (from HEAD)
@@ -27,6 +28,9 @@ import 'package:dskk_flutter_refactor/app/app_mode.dart';
 Future<void> main() async { // Make main async
   // Ensure Flutter binding is initialized (required for async operations before runApp)
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Configure global image cache limits
+  _configureImageCache();
 
   // Load environment variables from .env file
   try {
@@ -132,4 +136,20 @@ void _triggerPreloadingAfterDelay() {
       // 预加载失败不影响应用正常运行
     }
   });
+}
+
+/// 配置全局图片缓存限制
+void _configureImageCache() {
+  final PaintingBinding binding = PaintingBinding.instance;
+  
+  // 设置图片缓存的最大数量（默认是1000）
+  binding.imageCache.maximumSize = 100; // 限制缓存图片数量为100张
+  
+  // 设置图片缓存的最大内存大小（以字节为单位）
+  // 50MB = 50 * 1024 * 1024 bytes
+  binding.imageCache.maximumSizeBytes = 50 * 1024 * 1024; // 限制为50MB
+  
+  print('[Image Cache] Configured:');
+  print('  Max images: ${binding.imageCache.maximumSize}');
+  print('  Max memory: ${binding.imageCache.maximumSizeBytes ~/ (1024 * 1024)}MB');
 }

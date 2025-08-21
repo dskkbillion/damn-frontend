@@ -1,12 +1,16 @@
 import 'dart:convert';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:get_it/get_it.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_message_list.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/send_message.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/revoke_message.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/delete_chat_message.dart';
+import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_list/chat_list_bloc.dart';
+import 'package:dskk_flutter_refactor/features/chat/presentation/services/chat_preload_service.dart';
 
 part 'message_list_state.dart';
 part 'message_list_cubit.freezed.dart';
@@ -17,16 +21,19 @@ class MessageListCubit extends Cubit<MessageListState> {
   final SendMessage _sendMessage;
   final RevokeMessage _revokeMessage;
   final DeleteChatMessage _deleteChatMessage;
+  final ChatPreloadService? _preloadService; // 可选的预加载服务
   
   MessageListCubit({
     required GetMessageList getMessageList,
     required SendMessage sendMessage,
     required RevokeMessage revokeMessage,
     required DeleteChatMessage deleteChatMessage,
+    ChatPreloadService? preloadService,
   })  : _getMessageList = getMessageList,
         _sendMessage = sendMessage,
         _revokeMessage = revokeMessage,
         _deleteChatMessage = deleteChatMessage,
+        _preloadService = preloadService,
         super(const MessageListState.initial());
   
   int? _currentChatId;
@@ -35,11 +42,28 @@ class MessageListCubit extends Cubit<MessageListState> {
   bool _hasMore = true;
   int _currentPage = 1;
   static const int _pageSize = 50;
+  BuildContext? _context; // 保存context用于预加载
   
   /// Set current user participant ID
   void setCurrentUserParticipantId(int participantId) {
     _currentUserParticipantId = participantId;
-    print('[MessageListCubit] Set current user participant ID: $_currentUserParticipantId');
+  }
+  
+  /// Set context for preloading
+  void setContext(BuildContext context) {
+    _context = context;
+  }
+  
+  /// Trigger image preloading for current messages
+  void _triggerImagePreload(List<ChatMessage> messages) {
+    if (_preloadService != null && _context != null && _context!.mounted) {
+      // 延迟执行预加载，避免阻塞UI
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_context!.mounted) {
+          _preloadService.preloadMessageImages(_context!, messages);
+        }
+      });
+    }
   }
   
   /// Load initial messages for a chat
@@ -70,6 +94,9 @@ class MessageListCubit extends Cubit<MessageListState> {
           messages: List.from(_allMessages),
           hasMore: _hasMore,
         ));
+        
+        // 触发图片预加载
+        _triggerImagePreload(messages);
       },
     );
   }
@@ -108,6 +135,9 @@ class MessageListCubit extends Cubit<MessageListState> {
           hasMore: _hasMore,
           isLoadingMore: false,
         ));
+        
+        // 触发图片预加载
+        _triggerImagePreload(messages);
       },
     );
   }
@@ -147,16 +177,20 @@ class MessageListCubit extends Cubit<MessageListState> {
   }) async {
     if (_currentChatId == null) return;
     
-    // 构建图片消息的 context
+    // 构建图片消息的 context（JSON格式字符串）
     final imageContext = {
       'url': url,
       'name': fileName ?? 'image.jpg',
     };
     
+    // 转换为 JSON 字符串
+    final jsonString = jsonEncode(imageContext);
+    
+    // 调用通用的文件发送方法，传递 JSON 字符串
     await sendFileMessage(
-      filePath: url,
+      filePath: jsonString,  // 传递 JSON 字符串而不是 URL
       fileType: 'image',
-      metadata: imageContext,
+      metadata: null,  // 不需要额外的 metadata
     );
   }
 
@@ -219,6 +253,9 @@ class MessageListCubit extends Cubit<MessageListState> {
           messages: List.from(_allMessages),
           hasMore: _hasMore,
         ));
+        
+        // 通知 ChatListBloc 更新最后一条消息
+        _updateChatListLastMessage(sentMessage);
       },
     );
   }
@@ -262,7 +299,7 @@ class MessageListCubit extends Cubit<MessageListState> {
     final optimisticMessage = ChatMessage(
       id: -DateTime.now().millisecondsSinceEpoch,
       chatId: _currentChatId!,
-      senderId: 0,
+      senderId: _currentUserParticipantId ?? 0, // 使用设置的当前用户participant ID
       context: content,
       type: fileType,
       createTime: DateTime.now(), // 本地时间，用于即时显示
@@ -305,6 +342,9 @@ class MessageListCubit extends Cubit<MessageListState> {
           messages: List.from(_allMessages),
           hasMore: _hasMore,
         ));
+        
+        // 通知 ChatListBloc 更新最后一条消息
+        _updateChatListLastMessage(sentMessage);
       },
     );
   }
@@ -414,5 +454,21 @@ class MessageListCubit extends Cubit<MessageListState> {
     _currentPage = 1;
     _hasMore = true;
     emit(const MessageListState.initial());
+  }
+  
+  /// 通知 ChatListBloc 更新最后一条消息
+  void _updateChatListLastMessage(ChatMessage message) {
+    try {
+      final chatListBloc = GetIt.instance<ChatListBloc>();
+      if (_currentChatId != null) {
+        chatListBloc.add(UpdateChatRoomLastMessage(
+          chatId: _currentChatId!,
+          lastMessage: message,
+        ));
+      }
+    } catch (e) {
+      // 如果获取 ChatListBloc 失败，忽略错误
+      // 这可能发生在某些测试场景或独立预览场景中
+    }
   }
 }
