@@ -111,8 +111,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           // );
         },
         (chatId) {
-          // 导航到聊天页面
-          GoRouter.of(context).push('/chat/$chatId');
+          // 导航到聊天页面（使用新版支持文件上传的聊天室）
+          GoRouter.of(context).push('/chat/refactored/$chatId');
         },
       );
     } catch (e) {

@@ -139,13 +139,44 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
               if (_localPath != null) {
                 // 保存到下载目录
                 try {
-                  final downloadsDir = await getExternalStorageDirectory();
-                  if (downloadsDir != null) {
-                    final savePath = '${downloadsDir.path}/${widget.fileName}';
+                  Directory? targetDir;
+                  String saveLocation = '';
+                  
+                  if (Platform.isAndroid) {
+                    // Android: 使用下载目录
+                    targetDir = await getExternalStorageDirectory();
+                    if (targetDir != null) {
+                      // 创建 Download 子目录
+                      final downloadPath = '${targetDir.path}/Download';
+                      targetDir = Directory(downloadPath);
+                      if (!await targetDir.exists()) {
+                        await targetDir.create(recursive: true);
+                      }
+                      saveLocation = '下载';
+                    }
+                  } else if (Platform.isIOS) {
+                    // iOS: 使用应用文档目录
+                    targetDir = await getApplicationDocumentsDirectory();
+                    saveLocation = '文件';
+                  } else {
+                    // 其他平台：使用临时目录
+                    targetDir = await getTemporaryDirectory();
+                    saveLocation = '临时文件夹';
+                  }
+                  
+                  if (targetDir != null) {
+                    final savePath = '${targetDir.path}/${widget.fileName}';
                     await File(_localPath!).copy(savePath);
+                    
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('文件已保存到: $savePath')),
+                        SnackBar(
+                          content: Text('文件已保存到$saveLocation'),
+                          action: Platform.isAndroid ? SnackBarAction(
+                            label: '打开',
+                            onPressed: () => OpenFile.open(savePath),
+                          ) : null,
+                        ),
                       );
                     }
                   }

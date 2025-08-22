@@ -9,6 +9,7 @@ import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/chat_me
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/message_input_bar.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/product_chat_header.dart'; // 导入商品头部组件
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart'; // For MessageStatus
+import '../utils/debounce_throttle.dart'; // 导入防抖节流工具
 
 class ChatRoomPage extends StatefulWidget {
   final int chatId;
@@ -41,10 +42,19 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   final int _pageSize = 20;
   bool _isLoadingMore = false;
   bool _hasMoreMessages = true;
+  
+  // 添加滚动优化器
+  late final ScrollOptimizer _scrollOptimizer;
 
   @override
   void initState() {
     super.initState();
+    // 初始化滚动优化器
+    _scrollOptimizer = ScrollOptimizer(
+      loadDebounceDelay: const Duration(milliseconds: 500), // 防抖延迟500ms
+      uiThrottleInterval: const Duration(milliseconds: 100), // UI更新节流100ms
+    );
+    
     // 监听滚动事件
     _scrollController.addListener(_onScroll);
     
@@ -71,24 +81,32 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       final isScrollingDown = scrollDelta > 0; // 在reverse模式下，向下滚动offset增加
       final isScrollingUp = scrollDelta < 0;
       
-      // 检查是否需要加载更多历史消息（在reverse模式下，滚动到顶部时加载更多）
+      // 使用防抖处理加载更多消息
       if (currentScroll >= maxScroll * 0.8 && !_isLoadingMore && _hasMoreMessages) {
-        _loadMoreMessages();
+        _scrollOptimizer.debounceLoadMore(() {
+          if (mounted && !_isLoadingMore && _hasMoreMessages) {
+            _loadMoreMessages();
+          }
+        });
       }
       
-      // 更新商品头部显示状态
+      // 使用节流处理UI更新
       if (scrollDelta.abs() > 5.0) { // 避免微小滚动触发
-        setState(() {
-          if (isScrollingDown && currentScroll > _scrollThreshold) {
-            // 向下滚动且超过阈值时隐藏商品头部
-            _showProductHeader = false;
-          } else if (isScrollingUp || currentScroll <= _scrollThreshold) {
-            // 向上滚动或接近顶部时显示商品头部
-            _showProductHeader = true;
+        _scrollOptimizer.throttleUIUpdate(() {
+          if (mounted) {
+            setState(() {
+              if (isScrollingDown && currentScroll > _scrollThreshold) {
+                // 向下滚动且超过阈值时隐藏商品头部
+                _showProductHeader = false;
+              } else if (isScrollingUp || currentScroll <= _scrollThreshold) {
+                // 向上滚动或接近顶部时显示商品头部
+                _showProductHeader = true;
+              }
+              
+              // 更新滚动到底部按钮状态
+              _showScrollToBottomButton = currentScroll > 300;
+            });
           }
-          
-          // 更新滚动到底部按钮状态
-          _showScrollToBottomButton = currentScroll > 300;
         });
       }
       
@@ -121,6 +139,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   @override
   void dispose() {
+    _scrollOptimizer.dispose(); // 释放滚动优化器资源
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
@@ -275,8 +294,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               // 导航到商品详情页
                               if (chatRoom.productId != null) {
                                 print('导航到商品详情页: ${chatRoom.productName}, ID: ${chatRoom.productId}');
-                                // Navigate to product detail using GoRouter
-                                context.push('/product/${chatRoom.productId}');
+                                // Navigate to product detail using GoRouter with correct path
+                                context.go('/product/${chatRoom.productId}');
                               } else {
                                 print('商品ID为空，无法导航到商品详情页');
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -289,8 +308,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               if (chatRoom.productId != null) {
                                 print('点击操作按钮: ${chatRoom.productName}');
                                 // 也可以导航到商品详情页，或者实现其他操作
-                                // Navigate to product detail using GoRouter
-                                context.push('/product/${chatRoom.productId}');
+                                // Navigate to product detail using GoRouter with correct path
+                                context.go('/product/${chatRoom.productId}');
                               }
                             },
                           );
