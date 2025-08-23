@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 /// 文件预览页面
 class FilePreviewPage extends StatefulWidget {
@@ -13,11 +14,11 @@ class FilePreviewPage extends StatefulWidget {
   final String fileExtension;
 
   const FilePreviewPage({
-    Key? key,
+    super.key,
     required this.fileUrl,
     required this.fileName,
     required this.fileExtension,
-  }) : super(key: key);
+  });
 
   @override
   State<FilePreviewPage> createState() => _FilePreviewPageState();
@@ -32,7 +33,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
   // PDF相关
   int _totalPages = 0;
   int _currentPage = 0;
-  PDFViewController? _pdfController;
+  // PDFViewController? _pdfController; // 暂时未使用
 
   @override
   void initState() {
@@ -104,6 +105,152 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
     }
   }
   
+  /// 下载文件到设备存储
+  Future<void> _downloadFile() async {
+    if (_localPath == null) return;
+    
+    try {
+      // Android需要检查存储权限
+      if (Platform.isAndroid) {
+        final status = await Permission.storage.status;
+        if (!status.isGranted) {
+          final result = await Permission.storage.request();
+          if (!result.isGranted) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('需要存储权限才能保存文件'),
+                  duration: Duration(seconds: 3),
+                ),
+              );
+            }
+            return;
+          }
+        }
+      }
+      
+      Directory? targetDir;
+      String saveLocation = '';
+      String fullPath = '';
+      
+      if (Platform.isAndroid) {
+        // Android: 获取公共下载目录
+        final downloadsDir = Directory('/storage/emulated/0/Download');
+        if (await downloadsDir.exists()) {
+          targetDir = downloadsDir;
+          saveLocation = '下载文件夹';
+        } else {
+          // 备用方案：使用外部存储目录
+          final externalDir = await getExternalStorageDirectory();
+          if (externalDir != null) {
+            final downloadPath = '${externalDir.path}/Download';
+            targetDir = Directory(downloadPath);
+            if (!await targetDir.exists()) {
+              await targetDir.create(recursive: true);
+            }
+            saveLocation = '应用下载目录';
+          }
+        }
+      } else if (Platform.isIOS) {
+        // iOS: 使用应用文档目录
+        targetDir = await getApplicationDocumentsDirectory();
+        saveLocation = '文件应用';
+      } else {
+        // 其他平台：使用下载目录
+        targetDir = await getDownloadsDirectory();
+        saveLocation = '下载文件夹';
+      }
+      
+      if (targetDir != null) {
+        // 处理文件名冲突
+        String fileName = widget.fileName;
+        final nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
+        final extension = fileName.substring(fileName.lastIndexOf('.'));
+        
+        String savePath = '${targetDir.path}/$fileName';
+        int counter = 1;
+        
+        // 如果文件已存在，添加数字后缀
+        while (await File(savePath).exists()) {
+          fileName = '$nameWithoutExt($counter)$extension';
+          savePath = '${targetDir.path}/$fileName';
+          counter++;
+        }
+        
+        await File(_localPath!).copy(savePath);
+        fullPath = savePath;
+        
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('下载成功'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('文件已保存到$saveLocation'),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: SelectableText(
+                      fullPath,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    Platform.isAndroid 
+                      ? '您可以在手机的"文件管理器"应用中找到此文件'
+                      : Platform.isIOS
+                        ? '您可以在"文件"应用中找到此文件'
+                        : '文件已保存到系统下载目录',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('确定'),
+                ),
+                if (Platform.isAndroid || Platform.isIOS)
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      OpenFile.open(savePath);
+                    },
+                    child: const Text('打开文件'),
+                  ),
+              ],
+            ),
+          );
+        }
+      } else {
+        throw '无法获取下载目录';
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('保存失败: $e'),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,60 +282,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
             ),
           IconButton(
             icon: const Icon(Icons.download, color: Colors.white),
-            onPressed: () async {
-              if (_localPath != null) {
-                // 保存到下载目录
-                try {
-                  Directory? targetDir;
-                  String saveLocation = '';
-                  
-                  if (Platform.isAndroid) {
-                    // Android: 使用下载目录
-                    targetDir = await getExternalStorageDirectory();
-                    if (targetDir != null) {
-                      // 创建 Download 子目录
-                      final downloadPath = '${targetDir.path}/Download';
-                      targetDir = Directory(downloadPath);
-                      if (!await targetDir.exists()) {
-                        await targetDir.create(recursive: true);
-                      }
-                      saveLocation = '下载';
-                    }
-                  } else if (Platform.isIOS) {
-                    // iOS: 使用应用文档目录
-                    targetDir = await getApplicationDocumentsDirectory();
-                    saveLocation = '文件';
-                  } else {
-                    // 其他平台：使用临时目录
-                    targetDir = await getTemporaryDirectory();
-                    saveLocation = '临时文件夹';
-                  }
-                  
-                  if (targetDir != null) {
-                    final savePath = '${targetDir.path}/${widget.fileName}';
-                    await File(_localPath!).copy(savePath);
-                    
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('文件已保存到$saveLocation'),
-                          action: Platform.isAndroid ? SnackBarAction(
-                            label: '打开',
-                            onPressed: () => OpenFile.open(savePath),
-                          ) : null,
-                        ),
-                      );
-                    }
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('保存失败: $e')),
-                    );
-                  }
-                }
-              }
-            },
+            onPressed: () => _downloadFile(),
             tooltip: '保存文件',
           ),
         ],
@@ -308,10 +402,11 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
         });
       },
       onPageError: (page, error) {
-        print('Page $page: $error');
+        // 页面错误日志
+        debugPrint('Page $page: $error');
       },
       onViewCreated: (PDFViewController controller) {
-        _pdfController = controller;
+        // _pdfController = controller; // 保留以备后续使用
       },
       onPageChanged: (page, total) {
         setState(() {
