@@ -75,12 +75,15 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     print('[ProductManagementBloc] Determined status: $status');
     
     // 根据状态确定加载哪种类型的商品列表
+    // 注意：forceRefresh时loadMore应该是false，因为是重新加载第一页
+    final bool isLoadMore = event.loadMore && !event.forceRefresh;
+    
     if (status == ProductStatus.draft) {
       print('[ProductManagementBloc] Loading draft list...');
-      await _loadDraftList(emit, event.loadMore);
+      await _loadDraftList(emit, isLoadMore);
     } else {
       print('[ProductManagementBloc] Loading products by status: $status');
-      await _loadProductsByStatus(status, emit, event.loadMore);
+      await _loadProductsByStatus(status, emit, isLoadMore);
     }
   }
   
@@ -111,8 +114,10 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     Emitter<ProductManagementState> emit,
     bool isLoadMore,
   ) async {
-    // 确定当前页码
-    final int currentPage = _getCurrentPageByStatus(status);
+    // 确定当前页码 - 如果是加载更多，使用当前页码；否则使用1
+    final int currentPage = isLoadMore ? _getCurrentPageByStatus(status) : 1;
+    
+    print('[ProductManagementBloc] _loadProductsByStatus: status=$status, isLoadMore=$isLoadMore, currentPage=$currentPage');
     
     // 根据状态决定API参数
     String? apiState;
@@ -142,8 +147,13 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
         final products = paginatedList.items;
         final hasMore = paginatedList.items.length >= _pageSize;
         
-        // 更新当前页码
-        _updateCurrentPageByStatus(status, currentPage + 1);
+        // 只有在成功加载且有数据时才更新页码
+        if (products.isNotEmpty && isLoadMore) {
+          _updateCurrentPageByStatus(status, currentPage + 1);
+        } else if (!isLoadMore) {
+          // 如果是刷新（非加载更多），重置页码为2（因为刚加载了第1页）
+          _updateCurrentPageByStatus(status, products.isNotEmpty ? 2 : 1);
+        }
 
         print('[ProductManagementBloc] Success. Status: $status, Fetched Products: ${products.length}, HasMore: $hasMore, IsLoadMore: $isLoadMore');
         if (products.isNotEmpty) {
@@ -156,6 +166,7 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
               onSaleProducts: products,
               hasMoreOnSaleProducts: hasMore,
               appendToExisting: isLoadMore,
+              needRefreshOnSale: false,  // Clear the refresh flag after loading
             ));
             break;
           case ProductStatus.disabled:
@@ -188,10 +199,13 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
   
   /// 加载草稿列表
   Future<void> _loadDraftList(Emitter<ProductManagementState> emit, bool isLoadMore) async {
-    print('[ProductManagementBloc] _loadDraftList called, page: $_draftCurrentPage, isLoadMore: $isLoadMore');
+    // 确定当前页码 - 如果是加载更多，使用当前页码；否则使用1
+    final int currentPage = isLoadMore ? _draftCurrentPage : 1;
+    
+    print('[ProductManagementBloc] _loadDraftList called, page: $currentPage, isLoadMore: $isLoadMore');
     
     final params = GetSellerDraftListParams(
-      pageNum: _draftCurrentPage,
+      pageNum: currentPage,
       pageSize: _pageSize,
     );
     
@@ -204,8 +218,13 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
         final products = paginatedList.items;
         final hasMore = products.length >= _pageSize;
         
-        // 更新当前页码
-        _draftCurrentPage++;
+        // 只有在成功加载且有数据时才更新页码
+        if (products.isNotEmpty && isLoadMore) {
+          _draftCurrentPage = currentPage + 1;
+        } else if (!isLoadMore) {
+          // 如果是刷新（非加载更多），重置页码为2（因为刚加载了第1页）
+          _draftCurrentPage = products.isNotEmpty ? 2 : 1;
+        }
         
         emit(state.copyWithProducts(
           draftProducts: products,
@@ -255,15 +274,16 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
   ) async {
     print('[ProductManagementBloc] _onChangeProductTab called, tabIndex: ${event.tabIndex}');
     
-    // 更新标签页索引
-    emit(state.copyWithTabIndex(event.tabIndex));
-
     // 判断是否需要加载数据
     bool needLoad = false;
+    bool shouldClearRefreshFlag = false;
+    
     switch (event.tabIndex) {
       case 0: // 在售
-        needLoad = state.onSaleProducts == null;
-        print('[ProductManagementBloc] Tab 0 (在售): onSaleProducts null? ${state.onSaleProducts == null}, needLoad: $needLoad');
+        // 如果在售列表为空，或者有强制刷新标记，则需要加载
+        needLoad = state.onSaleProducts == null || state.needRefreshOnSale;
+        shouldClearRefreshFlag = state.needRefreshOnSale;
+        print('[ProductManagementBloc] Tab 0 (在售): onSaleProducts null? ${state.onSaleProducts == null}, needRefreshOnSale: ${state.needRefreshOnSale}, needLoad: $needLoad');
         break;
       case 1: // 草稿
         needLoad = state.draftProducts == null;
@@ -275,11 +295,16 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
         break;
     }
 
+    // 更新标签页索引，同时清除刷新标记（如果需要）
+    emit(state.copyWithTabIndex(event.tabIndex).copyWith(
+      needRefreshOnSale: shouldClearRefreshFlag ? false : state.needRefreshOnSale,
+    ));
+
     // 如果需要加载，触发加载事件
     if (needLoad) {
       final status = _getStatusByTabIndex(event.tabIndex);
       print('[ProductManagementBloc] Need to load, triggering LoadProductList with status: $status');
-      add(LoadProductList(status: status));
+      add(LoadProductList(status: status, forceRefresh: true));
     } else {
       print('[ProductManagementBloc] No need to load data for tab ${event.tabIndex}');
     }
@@ -336,6 +361,18 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
           // 例如：从"在售"下架到"已下架"，需要刷新"在售"和"已下架"两个列表
           
           print('🔄 [ProductManagementBloc] 需要刷新的状态列表: $needRefreshStatuses');
+          
+          // 如果商品从草稿发布到审核中，设置需要刷新在售列表的标志
+          // 因为审核通过后会自动变成在售状态
+          bool shouldSetRefreshFlag = false;
+          if (event.targetStatus == ProductStatus.reviewing) {
+            shouldSetRefreshFlag = true;
+          }
+          
+          // 如果需要设置刷新标志，先设置
+          if (shouldSetRefreshFlag) {
+            emit(state.copyWith(needRefreshOnSale: true));
+          }
           
           // 刷新当前标签页
           add(LoadProductList(
@@ -507,82 +544,30 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
   void _refreshStatusListInBackground(ProductStatus status) {
     print('[ProductManagementBloc] 后台刷新 $status 状态的商品列表');
     
-    // 根据状态确定要刷新的列表
+    // 简单地触发加载事件，让正常的事件处理流程来处理
+    // 这样避免了在回调中使用emit的问题
+    if (state.tabIndex != _getTabIndexByStatus(status)) {
+      // 只有当不在当前标签页时才在后台刷新
+      add(LoadProductList(
+        status: status,
+        forceRefresh: true,
+      ));
+    }
+  }
+  
+  /// 根据商品状态获取对应的Tab索引
+  int _getTabIndexByStatus(ProductStatus status) {
     switch (status) {
       case ProductStatus.normal:
-        if (state.onSaleProducts != null) {
-          _getSellerProductListUseCase(
-            const GetSellerProductListParams(
-              state: 'normal',
-              pageNum: 1,
-              pageSize: 10,
-            ),
-          ).then((result) {
-            result.fold(
-              (failure) => print('[ProductManagementBloc] 后台刷新在售商品失败: ${failure.message}'),
-              (paginatedList) {
-                if (state.tabIndex != 0 && isClosed == false) { // 只有当不在当前标签页时才静默更新，且BLoC未关闭
-                  emit(state.copyWith(
-                    onSaleProducts: paginatedList.items,
-                    hasMoreOnSaleProducts: paginatedList.items.length >= 10,
-                  ));
-                }
-              },
-            );
-          });
-        }
-        break;
-        
+      case ProductStatus.reviewing:
+      case ProductStatus.rejected:
+        return 0; // 在售Tab
       case ProductStatus.draft:
-        if (state.draftProducts != null) {
-          _getSellerProductListUseCase(
-            const GetSellerProductListParams(
-              state: 'draft',
-              pageNum: 1,
-              pageSize: 10,
-            ),
-          ).then((result) {
-            result.fold(
-              (failure) => print('[ProductManagementBloc] 后台刷新草稿商品失败: ${failure.message}'),
-              (paginatedList) {
-                if (state.tabIndex != 1 && isClosed == false) { // 只有当不在当前标签页时才静默更新，且BLoC未关闭
-                  emit(state.copyWith(
-                    draftProducts: paginatedList.items,
-                    hasMoreDraftProducts: paginatedList.items.length >= 10,
-                  ));
-                }
-              },
-            );
-          });
-        }
-        break;
-        
+        return 1; // 草稿Tab
       case ProductStatus.disabled:
-        if (state.offShelfProducts != null) {
-          _getSellerProductListUseCase(
-            const GetSellerProductListParams(
-              state: 'disabled',
-              pageNum: 1,
-              pageSize: 10,
-            ),
-          ).then((result) {
-            result.fold(
-              (failure) => print('[ProductManagementBloc] 后台刷新已下架商品失败: ${failure.message}'),
-              (paginatedList) {
-                if (state.tabIndex != 2 && isClosed == false) { // 只有当不在当前标签页时才静默更新，且BLoC未关闭
-                  emit(state.copyWith(
-                    offShelfProducts: paginatedList.items,
-                    hasMoreOffShelfProducts: paginatedList.items.length >= 10,
-                  ));
-                }
-              },
-            );
-          });
-        }
-        break;
-        
+        return 2; // 已下架Tab
       default:
-        break;
+        return 0;
     }
   }
 } 

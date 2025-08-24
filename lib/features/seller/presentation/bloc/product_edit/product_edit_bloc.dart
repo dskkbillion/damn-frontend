@@ -769,7 +769,11 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     }
     
     // 检查是否有选择图片
-    if (state.selectedImagePaths.isEmpty && state.uploadedImageUrls.isEmpty && (state.product?.images.isEmpty ?? true)) {
+    bool hasImages = state.selectedImagePaths.isNotEmpty || 
+                     state.uploadedImageUrls.isNotEmpty || 
+                     (state.product?.images.isNotEmpty ?? false);
+    
+    if (!hasImages) {
       emit(state.copyWithError('请至少上传一张商品图片'));
       return;
     }
@@ -856,6 +860,9 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
           winImages: winImageUrls.isNotEmpty ? winImageUrls.join(',') : null, // 添加成功案例图片
           detailImages: state.uploadedDetailImageUrls.isNotEmpty ? state.uploadedDetailImageUrls.join(',') : null,
           detailContent: state.formData.detailContent.isNotEmpty ? state.formData.detailContent : null,
+          productType: 'product', // 明确设置为正式商品，不是草稿
+          state: 'normal', // 设置为上架状态
+          statusAudit: 'SUCCESS', // 设置为审核通过，直接发布
         );
         
         // 创建商品

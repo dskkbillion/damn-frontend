@@ -28,6 +28,9 @@ class _ProductManagementPageState extends State<ProductManagementPage>
   final ScrollController _draftScrollController = ScrollController();
   final ScrollController _offShelfScrollController = ScrollController();
   
+  // Track if we're currently changing tabs to prevent scroll events
+  bool _isChangingTab = false;
+  
   @override
   void initState() {
     super.initState();
@@ -61,12 +64,28 @@ class _ProductManagementPageState extends State<ProductManagementPage>
   
   void _handleTabChange() {
     if (_tabController.indexIsChanging) {
+      // Set flag to prevent scroll events during tab change
+      _isChangingTab = true;
       context.read<ProductManagementBloc>().add(ChangeProductTab(tabIndex: _tabController.index));
+      // Reset flag after a short delay to allow the tab change to complete
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          _isChangingTab = false;
+        }
+      });
     }
   }
   
   void _onScrollEnd(ScrollController controller, int tabIndex) {
-    if (controller.position.pixels >= controller.position.maxScrollExtent - 200) {
+    // Don't trigger scroll events if we're changing tabs
+    if (_isChangingTab) {
+      return;
+    }
+    
+    // Only trigger if we're close to the bottom and have scrolled down
+    if (controller.hasClients && 
+        controller.position.pixels > 0 && // Make sure we've actually scrolled
+        controller.position.pixels >= controller.position.maxScrollExtent - 200) {
       final state = context.read<ProductManagementBloc>().state;
       
       if (state.tabIndex != tabIndex) {
@@ -86,6 +105,8 @@ class _ProductManagementPageState extends State<ProductManagementPage>
           break;
       }
       
+      print('[ProductManagementPage] _onScrollEnd: tabIndex=$tabIndex, hasMore=$hasMore, isLoading=${state.isLoading}');
+      
       if (hasMore && !state.isLoading) {
         ProductStatus status;
         switch (tabIndex) {
@@ -102,6 +123,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
             status = ProductStatus.normal;
         }
         
+        print('[ProductManagementPage] Triggering load more for status: $status');
         context.read<ProductManagementBloc>().add(LoadProductList(
           status: status,
           loadMore: true,
@@ -202,20 +224,33 @@ class _ProductManagementPageState extends State<ProductManagementPage>
                 // 如果是创建商品，切换到在售Tab并刷新
                 if (isCreateMode) {
                   _tabController.animateTo(0); // 切换到在售Tab
+                  // 先刷新草稿列表（移除已发布的商品）
+                  context.read<ProductManagementBloc>().add(const LoadProductList(
+                    status: ProductStatus.draft,
+                    forceRefresh: true,
+                  ));
+                  // 然后刷新在售列表（添加新发布的商品）
                   context.read<ProductManagementBloc>().add(const LoadProductList(
                     status: ProductStatus.normal,
                     forceRefresh: true,
                   ));
                 } else {
-                  // 如果是编辑商品，需要刷新所有相关的Tab
-                  // 因为商品状态可能已经改变（比如从草稿发布到在售）
-                  // 刷新所有Tab以确保数据一致性
+                  // 如果是编辑商品（从草稿发布到在售）
+                  // 刷新草稿列表（移除已发布的商品）
                   context.read<ProductManagementBloc>().add(const LoadProductList(
+                    status: ProductStatus.draft,
+                    forceRefresh: true,
+                  ));
+                  // 刷新在售列表（添加新发布的商品）
+                  context.read<ProductManagementBloc>().add(const LoadProductList(
+                    status: ProductStatus.normal,
                     forceRefresh: true,
                   ));
                   
-                  // 如果当前在草稿Tab，可能需要切换到在售Tab（如果商品已发布）
-                  // 这里保持在当前Tab，让用户自己决定是否切换
+                  // 如果当前在草稿Tab，切换到在售Tab查看发布的商品
+                  if (_tabController.index == 1) {
+                    _tabController.animateTo(0);
+                  }
                 }
               }
             }

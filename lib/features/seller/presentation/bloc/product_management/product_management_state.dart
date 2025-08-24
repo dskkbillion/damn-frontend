@@ -39,6 +39,9 @@ class ProductManagementState extends Equatable {
   /// 导航信号：目标路由路径 (用于触发页面导航)
   final String? navigationPath;
   
+  /// 是否需要刷新在售商品列表
+  final bool needRefreshOnSale;
+  
   /// 构造函数
   const ProductManagementState({
     this.isLoading = false,
@@ -53,6 +56,7 @@ class ProductManagementState extends Equatable {
     this.hasMoreOffShelfProducts = true,
     this.processingProductIds = const [],
     this.navigationPath,
+    this.needRefreshOnSale = false,
   });
   
   @override
@@ -69,6 +73,7 @@ class ProductManagementState extends Equatable {
     hasMoreOffShelfProducts,
     processingProductIds,
     navigationPath,
+    needRefreshOnSale,
   ];
   
   /// 初始状态
@@ -93,6 +98,7 @@ class ProductManagementState extends Equatable {
       hasMoreOffShelfProducts: hasMoreOffShelfProducts,
       processingProductIds: processingProductIds,
       navigationPath: navigationPath,
+      needRefreshOnSale: needRefreshOnSale,
     );
   }
   
@@ -111,7 +117,19 @@ class ProductManagementState extends Equatable {
       hasMoreOffShelfProducts: hasMoreOffShelfProducts,
       processingProductIds: processingProductIds,
       navigationPath: navigationPath,
+      needRefreshOnSale: needRefreshOnSale,
     );
+  }
+  
+  /// 合并商品列表，避免重复
+  static List<SellerManagedProduct> _mergeProductLists(
+    List<SellerManagedProduct> existing,
+    List<SellerManagedProduct> newItems,
+  ) {
+    // 使用Set来去重，基于商品ID
+    final existingIds = existing.map((p) => p.id).toSet();
+    final uniqueNewItems = newItems.where((p) => !existingIds.contains(p.id)).toList();
+    return [...existing, ...uniqueNewItems];
   }
   
   /// 更新列表数据
@@ -123,6 +141,7 @@ class ProductManagementState extends Equatable {
     bool? hasMoreDraftProducts,
     bool? hasMoreOffShelfProducts,
     bool appendToExisting = false,
+    bool? needRefreshOnSale,
   }) {
     return ProductManagementState(
       isLoading: false,
@@ -131,17 +150,17 @@ class ProductManagementState extends Equatable {
       tabIndex: tabIndex,
       onSaleProducts: onSaleProducts != null
           ? (appendToExisting && this.onSaleProducts != null)
-              ? [...this.onSaleProducts!, ...onSaleProducts]
+              ? _mergeProductLists(this.onSaleProducts!, onSaleProducts)
               : onSaleProducts
           : this.onSaleProducts,
       draftProducts: draftProducts != null
           ? (appendToExisting && this.draftProducts != null)
-              ? [...this.draftProducts!, ...draftProducts]
+              ? _mergeProductLists(this.draftProducts!, draftProducts)
               : draftProducts
           : this.draftProducts,
       offShelfProducts: offShelfProducts != null
           ? (appendToExisting && this.offShelfProducts != null)
-              ? [...this.offShelfProducts!, ...offShelfProducts]
+              ? _mergeProductLists(this.offShelfProducts!, offShelfProducts)
               : offShelfProducts
           : this.offShelfProducts,
       hasMoreOnSaleProducts: hasMoreOnSaleProducts ?? this.hasMoreOnSaleProducts,
@@ -149,6 +168,7 @@ class ProductManagementState extends Equatable {
       hasMoreOffShelfProducts: hasMoreOffShelfProducts ?? this.hasMoreOffShelfProducts,
       processingProductIds: processingProductIds,
       navigationPath: navigationPath,
+      needRefreshOnSale: needRefreshOnSale ?? false,
     );
   }
   
@@ -167,6 +187,7 @@ class ProductManagementState extends Equatable {
       hasMoreOffShelfProducts: hasMoreOffShelfProducts,
       processingProductIds: processingProductIds,
       navigationPath: navigationPath,
+      needRefreshOnSale: needRefreshOnSale,
     );
   }
   
@@ -189,6 +210,7 @@ class ProductManagementState extends Equatable {
       hasMoreOffShelfProducts: hasMoreOffShelfProducts,
       processingProductIds: [...processingProductIds, productId],
       navigationPath: navigationPath,
+      needRefreshOnSale: needRefreshOnSale,
     );
   }
   
@@ -211,6 +233,7 @@ class ProductManagementState extends Equatable {
       hasMoreOffShelfProducts: hasMoreOffShelfProducts,
       processingProductIds: processingProductIds.where((id) => id != productId).toList(),
       navigationPath: navigationPath,
+      needRefreshOnSale: needRefreshOnSale,
     );
   }
   
@@ -228,6 +251,7 @@ class ProductManagementState extends Equatable {
     bool? hasMoreOffShelfProducts,
     List<int>? processingProductIds,
     String? navigationPath,
+    bool? needRefreshOnSale,
     bool clearNavigationPath = false,
   }) {
     return ProductManagementState(
@@ -243,6 +267,7 @@ class ProductManagementState extends Equatable {
       hasMoreOffShelfProducts: hasMoreOffShelfProducts ?? this.hasMoreOffShelfProducts,
       processingProductIds: processingProductIds ?? this.processingProductIds,
       navigationPath: clearNavigationPath ? null : navigationPath ?? this.navigationPath,
+      needRefreshOnSale: needRefreshOnSale ?? this.needRefreshOnSale,
     );
   }
 } 

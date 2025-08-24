@@ -274,6 +274,12 @@ class ProductCreationData extends Equatable {
   
   /// 商品类型（product: 正式商品, draft: 草稿）
   final String productType;
+  
+  /// 商品状态（normal: 上架, disabled: 下架）
+  final String? state;
+  
+  /// 审核状态（SUCCESS: 审核通过, WAIT: 待审核, FAIL: 审核不通过）
+  final String? statusAudit;
 
   const ProductCreationData({
     required this.name,
@@ -287,6 +293,8 @@ class ProductCreationData extends Equatable {
     this.detailImages,
     this.detailContent,
     this.productType = 'product', // 默认为正式商品
+    this.state,
+    this.statusAudit,
   });
 
   @override
@@ -302,6 +310,8 @@ class ProductCreationData extends Equatable {
     detailImages,
     detailContent,
     productType,
+    state,
+    statusAudit,
   ];
   
   /// 转换为API参数格式
@@ -312,6 +322,16 @@ class ProductCreationData extends Equatable {
       'images': images.split(','),  // 将逗号分隔的字符串转为数组
       'productType': productType, // 添加商品类型
     };
+    
+    // 添加状态字段
+    if (state != null) {
+      data['state'] = state;
+    }
+    
+    // 添加审核状态字段
+    if (statusAudit != null) {
+      data['statusAudit'] = statusAudit;
+    }
     
     // 添加价格字段
     data['sellingPrice'] = price;

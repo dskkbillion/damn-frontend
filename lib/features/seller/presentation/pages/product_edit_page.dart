@@ -683,7 +683,11 @@ class _ProductEditPageState extends State<ProductEditPage> {
     }
     
     // 验证商品图片
-    if (_bloc.state.selectedImagePaths.isEmpty && (_bloc.state.product?.images.isEmpty ?? true)) {
+    bool hasImages = _bloc.state.selectedImagePaths.isNotEmpty || 
+                     _bloc.state.uploadedImageUrls.isNotEmpty ||
+                     (_bloc.state.product?.images.isNotEmpty ?? false);
+    
+    if (!hasImages) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)?.product_edit_at_least_one_image ?? 'Please upload at least one product image'),
@@ -725,10 +729,10 @@ class _ProductEditPageState extends State<ProductEditPage> {
     _bloc.add(UpdateFormField(fieldName: 'variants', value: variants));
     
     // 设置基础价格为基础档的价格
-      _bloc.add(UpdateFormField(
-        fieldName: 'price', 
+    _bloc.add(UpdateFormField(
+      fieldName: 'price', 
       value: _serviceTiers.basic.price
-      ));
+    ));
     
     // 提交表单
     _bloc.add(const SubmitProductForm());
@@ -1035,7 +1039,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(state.isCreateMode 
-                      ? '服务发布成功！正在审核中，请在"在售"列表中查看' 
+                      ? '服务发布成功！请在"在售"列表中查看' 
                       : '服务更新成功'),
                     backgroundColor: Colors.green,
                     duration: const Duration(seconds: 2), // 缩短显示时间
