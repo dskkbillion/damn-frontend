@@ -43,8 +43,11 @@ import '../presentation/cubit/message_list/message_list_cubit.dart';
 import '../presentation/cubit/websocket/websocket_cubit.dart';
 import '../presentation/cubit/message_queue/message_queue_cubit.dart';
 
-// Local data source
-import '../data/data_sources/local/chat_local_data_source.dart';
+// Local data sources - Note: We have two different interfaces with the same name
+import '../data/datasources/i_chat_local_data_source.dart' as shared_prefs;
+import '../data/datasources/chat_local_data_source_impl.dart';
+import '../data/data_sources/local/chat_local_data_source.dart' as database;
+import '../presentation/services/chat_preload_service.dart';
 
 // Adapters
 import '../presentation/adapters/chat_message_adapter.dart';
@@ -222,12 +225,20 @@ class ChatDI {
     // Get SharedPreferences instance
     final prefs = await SharedPreferences.getInstance();
 
-    // Local data source
-    if (!getIt.isRegistered<IChatLocalDataSource>()) {
-      getIt.registerLazySingleton<IChatLocalDataSource>(
-        () => ChatLocalDataSourceImpl(getIt<AppDatabase>()),
+    // SharedPreferences-based local data source (for payment prompt status)
+    if (!getIt.isRegistered<shared_prefs.IChatLocalDataSource>()) {
+      getIt.registerLazySingleton<shared_prefs.IChatLocalDataSource>(
+        () => ChatLocalDataSourceImpl(prefs: prefs),
       );
-      print('[ChatDI] Registered IChatLocalDataSource');
+      print('[ChatDI] Registered SharedPreferences-based IChatLocalDataSource');
+    }
+    
+    // Database-based local data source (for message queue)
+    if (!getIt.isRegistered<database.IChatLocalDataSource>()) {
+      getIt.registerLazySingleton<database.IChatLocalDataSource>(
+        () => database.ChatLocalDataSourceImpl(getIt<AppDatabase>()),
+      );
+      print('[ChatDI] Registered Database-based IChatLocalDataSource');
     }
 
     // 数据源
@@ -367,7 +378,15 @@ class ChatDI {
       print('[ChatDI] Registered ChatCubit');
     }
     
-    // MessageListCubit
+    // Register ChatPreloadService if not already registered
+    if (!getIt.isRegistered<ChatPreloadService>()) {
+      getIt.registerLazySingleton<ChatPreloadService>(
+        () => ChatPreloadService(),
+      );
+      print('[ChatDI] Registered ChatPreloadService');
+    }
+    
+    // MessageListCubit with new dependencies
     if (!getIt.isRegistered<MessageListCubit>()) {
       getIt.registerFactory<MessageListCubit>(
         () => MessageListCubit(
@@ -375,9 +394,12 @@ class ChatDI {
           sendMessage: getIt<SendMessage>(),
           revokeMessage: getIt<RevokeMessage>(),
           deleteChatMessage: getIt<DeleteChatMessage>(),
+          preloadService: getIt<ChatPreloadService>(),
+          localDataSource: getIt<shared_prefs.IChatLocalDataSource>(),
+          getChatRoomDetails: getIt<GetChatRoomDetails>(),
         ),
       );
-      print('[ChatDI] Registered MessageListCubit');
+      print('[ChatDI] Registered MessageListCubit with enhanced dependencies');
     }
     
     // WebSocketCubit
@@ -394,7 +416,7 @@ class ChatDI {
     if (!getIt.isRegistered<MessageQueueCubit>()) {
       getIt.registerFactory<MessageQueueCubit>(
         () => MessageQueueCubit(
-          localDataSource: getIt<IChatLocalDataSource>(),
+          localDataSource: getIt<database.IChatLocalDataSource>(),
           sendMessage: getIt<SendMessage>(),
         ),
       );

@@ -11,9 +11,6 @@ import 'package:dskk_flutter_refactor/features/chat/domain/usecases/revoke_messa
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/delete_chat_message.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_list/chat_list_bloc.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/services/chat_preload_service.dart';
-import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_chat_local_data_source.dart';
-import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_room.dart';
-import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_chat_room_details.dart';
 
 part 'message_list_state.dart';
 part 'message_list_cubit.freezed.dart';
@@ -25,8 +22,6 @@ class MessageListCubit extends Cubit<MessageListState> {
   final RevokeMessage _revokeMessage;
   final DeleteChatMessage _deleteChatMessage;
   final ChatPreloadService? _preloadService; // 可选的预加载服务
-  final IChatLocalDataSource? _localDataSource; // 本地数据源
-  final GetChatRoomDetails? _getChatRoomDetails; // 获取聊天室详情
   
   MessageListCubit({
     required GetMessageList getMessageList,
@@ -34,15 +29,11 @@ class MessageListCubit extends Cubit<MessageListState> {
     required RevokeMessage revokeMessage,
     required DeleteChatMessage deleteChatMessage,
     ChatPreloadService? preloadService,
-    IChatLocalDataSource? localDataSource,
-    GetChatRoomDetails? getChatRoomDetails,
   })  : _getMessageList = getMessageList,
         _sendMessage = sendMessage,
         _revokeMessage = revokeMessage,
         _deleteChatMessage = deleteChatMessage,
         _preloadService = preloadService,
-        _localDataSource = localDataSource,
-        _getChatRoomDetails = getChatRoomDetails,
         super(const MessageListState.initial());
   
   int? _currentChatId;
@@ -53,25 +44,9 @@ class MessageListCubit extends Cubit<MessageListState> {
   static const int _pageSize = 50;
   BuildContext? _context; // 保存context用于预加载
   
-  // 轻咨询付费提示相关
-  bool _isSeller = false; // 当前用户是否是卖家
-  bool _isLightConsultation = false; // 是否是轻咨询模式
-  int _roundCount = 0; // 对话轮次计数
-  bool _paymentPromptSent = false; // 内存中的发送标记
-  ChatRoom? _currentChatRoom; // 当前聊天室信息
-  
   /// Set current user participant ID
   void setCurrentUserParticipantId(int participantId) {
     _currentUserParticipantId = participantId;
-  }
-  
-  /// Set seller status and consultation mode
-  void setSellerAndConsultationMode({
-    required bool isSeller,
-    required bool isLightConsultation,
-  }) {
-    _isSeller = isSeller;
-    _isLightConsultation = isLightConsultation;
   }
   
   /// Set context for preloading
@@ -100,8 +75,6 @@ class MessageListCubit extends Cubit<MessageListState> {
     _allMessages.clear();
     _currentPage = 1;
     _hasMore = true;
-    _roundCount = 0;
-    _paymentPromptSent = false;
     
     final result = await _getMessageList(
       GetMessageListParams(
@@ -113,14 +86,10 @@ class MessageListCubit extends Cubit<MessageListState> {
     
     result.fold(
       (failure) => emit(MessageListState.error(failure.toString())),
-      (messages) async {
+      (messages) {
         // 消息已经是降序排列（新到旧），直接添加
         _allMessages.addAll(messages);
         _hasMore = messages.length >= _pageSize;
-        
-        // 计算对话轮次并检查付费提示状态
-        await _initializePaymentPromptStatus(messages);
-        
         emit(MessageListState.loaded(
           messages: List.from(_allMessages),
           hasMore: _hasMore,
@@ -222,6 +191,72 @@ class MessageListCubit extends Cubit<MessageListState> {
       filePath: jsonString,  // 传递 JSON 字符串而不是 URL
       fileType: 'image',
       metadata: null,  // 不需要额外的 metadata
+    );
+  }
+
+  /// Send a new message
+  Future<void> sendTextMessage(String text) async {
+    if (_currentChatId == null) return;
+    
+    final currentState = state;
+    if (currentState is! _Loaded) return;
+    
+    // Create optimistic message
+    // 使用本地时间，因为这是用于显示的
+    // 当服务器返回真实消息时，会用服务器时间替换
+    final optimisticMessage = ChatMessage(
+      id: -DateTime.now().millisecondsSinceEpoch, // Temporary negative ID
+      chatId: _currentChatId!,
+      senderId: _currentUserParticipantId ?? 0, // 使用设置的当前用户participant ID
+      context: text,
+      type: 'text',
+      createTime: DateTime.now(), // 本地时间，用于即时显示
+      withdrawFlag: false,
+      status: MessageStatus.sending,
+    );
+    
+    // Add optimistic message to list
+    _allMessages.insert(0, optimisticMessage);
+    
+    // Force emit new state with unique list to ensure UI rebuild
+    emit(MessageListState.loaded(
+      messages: List.from(_allMessages), // Create new list instance
+      hasMore: _hasMore,
+    ));
+    
+    // Send message to backend
+    final result = await _sendMessage(
+      SendMessageParams(
+        message: optimisticMessage,
+      ),
+    );
+    
+    result.fold(
+      (failure) {
+        // Remove failed message and show error
+        _allMessages.removeWhere((m) => m.id == optimisticMessage.id);
+        emit(MessageListState.loaded(
+          messages: List.from(_allMessages),
+          hasMore: _hasMore,
+          sendError: failure.toString(),
+        ));
+      },
+      (sentMessage) {
+        // Replace optimistic message with real one
+        final index = _allMessages.indexWhere((m) => m.id == optimisticMessage.id);
+        if (index != -1) {
+          _allMessages[index] = sentMessage;
+        } else {
+          _allMessages.insert(0, sentMessage);
+        }
+        emit(MessageListState.loaded(
+          messages: List.from(_allMessages),
+          hasMore: _hasMore,
+        ));
+        
+        // 通知 ChatListBloc 更新最后一条消息
+        _updateChatListLastMessage(sentMessage);
+      },
     );
   }
   
@@ -379,6 +414,23 @@ class MessageListCubit extends Cubit<MessageListState> {
     );
   }
   
+  /// Add a received message (from WebSocket)
+  void addReceivedMessage(ChatMessage message) {
+    if (message.chatId != _currentChatId) return;
+    
+    final currentState = state;
+    if (currentState is! _Loaded) return;
+    
+    // Check if message already exists
+    if (_allMessages.any((m) => m.id == message.id)) return;
+    
+    _allMessages.insert(0, message);
+    emit(MessageListState.loaded(
+      messages: List.from(_allMessages),
+      hasMore: _hasMore,
+    ));
+  }
+  
   /// Update message status
   void updateMessageStatus(int messageId, MessageStatus status) {
     final index = _allMessages.indexWhere((m) => m.id == messageId);
@@ -418,292 +470,5 @@ class MessageListCubit extends Cubit<MessageListState> {
       // 如果获取 ChatListBloc 失败，忽略错误
       // 这可能发生在某些测试场景或独立预览场景中
     }
-  }
-  
-  /// 初始化付费提示状态
-  Future<void> _initializePaymentPromptStatus(List<ChatMessage> messages) async {
-    if (!_isLightConsultation || _currentChatId == null) return;
-    
-    // 1. 检查本地存储状态
-    if (_localDataSource != null) {
-      _paymentPromptSent = await _localDataSource!.getPaymentPromptStatus(_currentChatId!);
-    }
-    
-    // 2. 检查消息列表中是否已有付费提示
-    if (!_paymentPromptSent) {
-      _paymentPromptSent = _checkPaymentPromptInMessages(messages);
-    }
-    
-    // 3. 计算对话轮次
-    _calculateRoundCount(messages);
-    
-    // 4. 获取聊天室详情以备后用
-    if (_getChatRoomDetails != null && _currentChatRoom == null) {
-      final roomResult = await _getChatRoomDetails!(
-        GetChatRoomDetailsParams(chatId: _currentChatId!),
-      );
-      roomResult.fold(
-        (failure) => print('[MessageListCubit] Failed to get chat room detail: $failure'),
-        (room) => _currentChatRoom = room,
-      );
-    }
-  }
-  
-  /// 检查消息列表中是否已有付费提示
-  bool _checkPaymentPromptInMessages(List<ChatMessage> messages) {
-    return messages.any((msg) {
-      if (msg.type == 'payment_prompt') return true;
-      
-      // 尝试解析JSON内容检查是否为付费提示
-      try {
-        if (msg.context.contains('"type":"payment_prompt"')) {
-          return true;
-        }
-        final content = jsonDecode(msg.context);
-        return content['type'] == 'payment_prompt';
-      } catch (_) {
-        return false;
-      }
-    });
-  }
-  
-  /// 计算对话轮次
-  void _calculateRoundCount(List<ChatMessage> messages) {
-    if (messages.isEmpty || _currentUserParticipantId == null) {
-      _roundCount = 0;
-      return;
-    }
-    
-    // 按时间排序（旧到新）
-    final sortedMessages = List<ChatMessage>.from(messages)
-      ..sort((a, b) => a.createTime.compareTo(b.createTime));
-    
-    int buyerMessageCount = 0;
-    int sellerMessageCount = 0;
-    
-    for (final msg in sortedMessages) {
-      // 跳过系统消息和付费提示
-      if (msg.type == 'payment_prompt' || msg.type == 'system') continue;
-      
-      if (msg.senderId == _currentUserParticipantId) {
-        if (_isSeller) {
-          sellerMessageCount++;
-        } else {
-          buyerMessageCount++;
-        }
-      } else {
-        if (_isSeller) {
-          buyerMessageCount++;
-        } else {
-          sellerMessageCount++;
-        }
-      }
-    }
-    
-    // 一轮对话 = min(买家消息数, 卖家消息数)
-    _roundCount = buyerMessageCount < sellerMessageCount ? buyerMessageCount : sellerMessageCount;
-  }
-  
-  /// 检查并发送付费提示
-  Future<void> _checkAndSendPaymentPrompt() async {
-    // 仅在轻咨询模式、卖家端、达到5轮、未发送的情况下发送
-    if (!_isLightConsultation || !_isSeller || _roundCount < 5 || _paymentPromptSent) {
-      return;
-    }
-    
-    if (_currentChatId == null || _currentUserParticipantId == null) return;
-    
-    // 再次检查防重
-    if (_localDataSource != null) {
-      final alreadySent = await _localDataSource!.getPaymentPromptStatus(_currentChatId!);
-      if (alreadySent) {
-        _paymentPromptSent = true;
-        return;
-      }
-    }
-    
-    // 获取商品信息
-    List<Map<String, dynamic>>? variants;
-    String? productId;
-    
-    if (_currentChatRoom != null && _currentChatRoom!.productId != null) {
-      productId = _currentChatRoom!.productId.toString();
-      
-      // TODO: 这里需要调用商品服务获取商品的三档价格
-      // 暂时使用模拟数据
-      variants = [
-        {'id': 1, 'price': 30, 'name': '基础咨询'},
-        {'id': 2, 'price': 50, 'name': '标准咨询'},
-        {'id': 3, 'price': 100, 'name': '深度咨询'},
-      ];
-    }
-    
-    // 构建付费提示消息
-    final paymentPromptContent = jsonEncode({
-      'type': 'payment_prompt',
-      'source': 'system',
-      'text': '系统提示',
-      'content': '根据平台规则，您已完成5轮免费咨询。继续咨询请选择服务套餐：',
-      'productId': productId,
-      'variants': variants,
-      'timestamp': DateTime.now().toIso8601String(),
-    });
-    
-    // 创建付费提示消息
-    final paymentPromptMessage = ChatMessage(
-      id: -DateTime.now().millisecondsSinceEpoch,
-      chatId: _currentChatId!,
-      senderId: _currentUserParticipantId!,
-      context: paymentPromptContent,
-      type: 'payment_prompt',
-      createTime: DateTime.now(),
-      withdrawFlag: false,
-      status: MessageStatus.sending,
-    );
-    
-    // 添加到消息列表
-    _allMessages.insert(0, paymentPromptMessage);
-    emit(MessageListState.loaded(
-      messages: List.from(_allMessages),
-      hasMore: _hasMore,
-    ));
-    
-    // 发送到服务器
-    final result = await _sendMessage(
-      SendMessageParams(message: paymentPromptMessage),
-    );
-    
-    result.fold(
-      (failure) {
-        // 发送失败，移除消息
-        _allMessages.removeWhere((m) => m.id == paymentPromptMessage.id);
-        emit(MessageListState.loaded(
-          messages: List.from(_allMessages),
-          hasMore: _hasMore,
-          sendError: '发送付费提示失败: $failure',
-        ));
-      },
-      (sentMessage) async {
-        // 发送成功，更新消息和状态
-        final index = _allMessages.indexWhere((m) => m.id == paymentPromptMessage.id);
-        if (index != -1) {
-          _allMessages[index] = sentMessage;
-        } else {
-          _allMessages.insert(0, sentMessage);
-        }
-        
-        // 标记为已发送
-        _paymentPromptSent = true;
-        if (_localDataSource != null) {
-          await _localDataSource!.savePaymentPromptStatus(_currentChatId!, true);
-        }
-        
-        emit(MessageListState.loaded(
-          messages: List.from(_allMessages),
-          hasMore: _hasMore,
-        ));
-      },
-    );
-  }
-  
-  /// Send a new message (extended with payment prompt check)
-  Future<void> sendTextMessage(String text) async {
-    if (_currentChatId == null) return;
-    
-    final currentState = state;
-    if (currentState is! _Loaded) return;
-    
-    // 创建乐观消息（保持原有逻辑）
-    final optimisticMessage = ChatMessage(
-      id: -DateTime.now().millisecondsSinceEpoch,
-      chatId: _currentChatId!,
-      senderId: _currentUserParticipantId ?? 0,
-      context: text,
-      type: 'text',
-      createTime: DateTime.now(),
-      withdrawFlag: false,
-      status: MessageStatus.sending,
-    );
-    
-    // 添加乐观消息
-    _allMessages.insert(0, optimisticMessage);
-    
-    // 更新轮次计数（如果是卖家发送）
-    if (_isSeller) {
-      // 重新计算轮次
-      _calculateRoundCount(_allMessages);
-    }
-    
-    emit(MessageListState.loaded(
-      messages: List.from(_allMessages),
-      hasMore: _hasMore,
-    ));
-    
-    // 发送到后端
-    final result = await _sendMessage(
-      SendMessageParams(message: optimisticMessage),
-    );
-    
-    result.fold(
-      (failure) {
-        // 移除失败的消息
-        _allMessages.removeWhere((m) => m.id == optimisticMessage.id);
-        emit(MessageListState.loaded(
-          messages: List.from(_allMessages),
-          hasMore: _hasMore,
-          sendError: failure.toString(),
-        ));
-      },
-      (sentMessage) async {
-        // 替换乐观消息
-        final index = _allMessages.indexWhere((m) => m.id == optimisticMessage.id);
-        if (index != -1) {
-          _allMessages[index] = sentMessage;
-        } else {
-          _allMessages.insert(0, sentMessage);
-        }
-        
-        emit(MessageListState.loaded(
-          messages: List.from(_allMessages),
-          hasMore: _hasMore,
-        ));
-        
-        // 通知更新最后一条消息
-        _updateChatListLastMessage(sentMessage);
-        
-        // 卖家端检查是否需要发送付费提示
-        if (_isSeller && _isLightConsultation) {
-          await _checkAndSendPaymentPrompt();
-        }
-      },
-    );
-  }
-  
-  /// Add a received message (extended with round count)
-  void addReceivedMessage(ChatMessage message) {
-    if (message.chatId != _currentChatId) return;
-    
-    final currentState = state;
-    if (currentState is! _Loaded) return;
-    
-    // 检查消息是否已存在
-    if (_allMessages.any((m) => m.id == message.id)) return;
-    
-    _allMessages.insert(0, message);
-    
-    // 如果是买家消息且当前是卖家，更新轮次
-    if (!_isSeller && message.senderId != _currentUserParticipantId) {
-      _calculateRoundCount(_allMessages);
-      
-      // 检查是否需要发送付费提示
-      if (_isLightConsultation) {
-        _checkAndSendPaymentPrompt();
-      }
-    }
-    
-    emit(MessageListState.loaded(
-      messages: List.from(_allMessages),
-      hasMore: _hasMore,
-    ));
   }
 }

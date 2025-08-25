@@ -210,7 +210,8 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
             onPressed: () {
               // Check if messages were loaded
               bool chatWasViewed = _messageListCubit.state.maybeWhen(
-                loaded: (messages, hasMore, isLoadingMore, loadMoreError, sendError, actionError) => true,
+                loaded: (messages, hasMore, isLoadingMore, loadMoreError, sendError, actionError,
+                        substantiveMessageCount, isPaid, hasShownPaymentDialog, userRole, productId) => true,
                 orElse: () => false,
               );
               Navigator.pop(context, chatWasViewed);
@@ -279,7 +280,8 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                     listener: (context, state) {
                       // Handle message events
                       state.maybeWhen(
-                        loaded: (messages, hasMore, isLoadingMore, loadMoreError, sendError, actionError) {
+                        loaded: (messages, hasMore, isLoadingMore, loadMoreError, sendError, actionError,
+                                substantiveMessageCount, isPaid, hasShownPaymentDialog, userRole, productId) {
                           // Scroll to bottom on new message
                           if (messages.isNotEmpty) {
                             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -324,7 +326,8 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                           return messageState.when(
                             initial: () => const Center(child: CircularProgressIndicator()),
                             loading: () => const Center(child: CircularProgressIndicator()),
-                            loaded: (messages, hasMore, isLoadingMore, loadMoreError, sendError, actionError) {
+                            loaded: (messages, hasMore, isLoadingMore, loadMoreError, sendError, actionError,
+                                    substantiveMessageCount, isPaid, hasShownPaymentDialog, userRole, productId) {
                               return CustomChatList(
                                 messages: messages,
                                 currentUserParticipantId: _currentUserParticipantId,

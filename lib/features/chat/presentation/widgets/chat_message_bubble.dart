@@ -18,6 +18,7 @@ import 'allocate_message_bubble.dart'; // 导入新创建的allocate消息气泡
 import '../utils/markdown_style_helper.dart'; // 导入Markdown样式助手
 import 'file_message_widget.dart'; // 导入文件消息组件
 import '../pages/file_preview_page.dart'; // 导入文件预览页面
+import 'payment_prompt_bubble.dart'; // 导入付费提示气泡组件
 
 // 撤回状态检查结果
 class RevokeCheckResult {
@@ -385,6 +386,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         sellerName: _getSellerName(),
         isCurrentUserMessage: isCurrentUser,
       );
+    }
+    
+    // 对于付费提示消息，使用专门的组件
+    if (widget.message.type == 'payment_prompt' || _isPaymentPromptMessage()) {
+      return _buildPaymentPromptBubble(isCurrentUser);
     }
 
     // 对于图片和文件消息，使用特殊的布局（不需要气泡背景）
@@ -916,5 +922,48 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     
     // 如果无法获取对方名称，返回默认值
     return s.chat_buyer;
+  }
+  
+  // 检查是否为付费提示消息
+  bool _isPaymentPromptMessage() {
+    try {
+      // 尝试解析JSON内容
+      if (widget.message.context.contains('"type":"payment_prompt"')) {
+        return true;
+      }
+      final content = jsonDecode(widget.message.context);
+      return content['type'] == 'payment_prompt';
+    } catch (_) {
+      return false;
+    }
+  }
+  
+  // 构建付费提示气泡
+  Widget _buildPaymentPromptBubble(bool isSeller) {
+    try {
+      // 解析JSON内容
+      final Map<String, dynamic> promptData = jsonDecode(widget.message.context);
+      
+      final String content = promptData['content'] ?? '根据平台规则，您已完成5轮免费咨询。继续咨询请选择服务套餐：';
+      final String? productId = promptData['productId']?.toString();
+      final List<Map<String, dynamic>>? variants = promptData['variants'] != null
+          ? List<Map<String, dynamic>>.from(promptData['variants'])
+          : null;
+      
+      return PaymentPromptBubble(
+        isSeller: isSeller,
+        productId: productId,
+        variants: variants,
+        content: content,
+      );
+    } catch (e) {
+      // 如果解析失败，返回默认的付费提示
+      return PaymentPromptBubble(
+        isSeller: isSeller,
+        productId: null,
+        variants: null,
+        content: '根据平台规则，您已完成5轮免费咨询。继续咨询请选择服务套餐：',
+      );
+    }
   }
 } 

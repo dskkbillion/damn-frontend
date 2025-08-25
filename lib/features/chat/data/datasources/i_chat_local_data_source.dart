@@ -29,4 +29,10 @@ abstract class IChatLocalDataSource {
   
   /// Mark messages as read
   Future<void> markMessagesAsRead(int chatId, List<int> messageIds);
+  
+  /// Save payment prompt status to prevent duplicate sending
+  Future<void> savePaymentPromptStatus(int chatId, bool sent);
+  
+  /// Get payment prompt status
+  Future<bool> getPaymentPromptStatus(int chatId);
 }

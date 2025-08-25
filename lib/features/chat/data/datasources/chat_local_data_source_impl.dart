@@ -11,6 +11,7 @@ class ChatLocalDataSourceImpl implements IChatLocalDataSource {
   static const String _messagesPrefix = 'chat_messages_';
   static const String _chatRoomPrefix = 'chat_room_';
   static const String _lastMessageIdPrefix = 'last_message_id_';
+  static const String _paymentPromptPrefix = 'payment_prompt_sent_';
   
   ChatLocalDataSourceImpl({
     required SharedPreferences prefs,
@@ -157,6 +158,25 @@ class ChatLocalDataSourceImpl implements IChatLocalDataSource {
       }
     } catch (e) {
       print('[ChatLocalDataSource] Error marking messages as read: $e');
+    }
+  }
+  
+  @override
+  Future<void> savePaymentPromptStatus(int chatId, bool sent) async {
+    try {
+      await _prefs.setBool('$_paymentPromptPrefix$chatId', sent);
+    } catch (e) {
+      print('[ChatLocalDataSource] Error saving payment prompt status: $e');
+    }
+  }
+  
+  @override
+  Future<bool> getPaymentPromptStatus(int chatId) async {
+    try {
+      return _prefs.getBool('$_paymentPromptPrefix$chatId') ?? false;
+    } catch (e) {
+      print('[ChatLocalDataSource] Error getting payment prompt status: $e');
+      return false;
     }
   }
 }

@@ -26,7 +26,12 @@ mixin _$MessageListState {
             bool isLoadingMore,
             String? loadMoreError,
             String? sendError,
-            String? actionError)
+            String? actionError,
+            int substantiveMessageCount,
+            bool isPaid,
+            bool hasShownPaymentDialog,
+            String? userRole,
+            String? productId)
         loaded,
     required TResult Function(String message) error,
   }) =>
@@ -41,7 +46,12 @@ mixin _$MessageListState {
             bool isLoadingMore,
             String? loadMoreError,
             String? sendError,
-            String? actionError)?
+            String? actionError,
+            int substantiveMessageCount,
+            bool isPaid,
+            bool hasShownPaymentDialog,
+            String? userRole,
+            String? productId)?
         loaded,
     TResult? Function(String message)? error,
   }) =>
@@ -56,7 +66,12 @@ mixin _$MessageListState {
             bool isLoadingMore,
             String? loadMoreError,
             String? sendError,
-            String? actionError)?
+            String? actionError,
+            int substantiveMessageCount,
+            bool isPaid,
+            bool hasShownPaymentDialog,
+            String? userRole,
+            String? productId)?
         loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
@@ -159,7 +174,12 @@ class _$InitialImpl implements _Initial {
             bool isLoadingMore,
             String? loadMoreError,
             String? sendError,
-            String? actionError)
+            String? actionError,
+            int substantiveMessageCount,
+            bool isPaid,
+            bool hasShownPaymentDialog,
+            String? userRole,
+            String? productId)
         loaded,
     required TResult Function(String message) error,
   }) {
@@ -177,7 +197,12 @@ class _$InitialImpl implements _Initial {
             bool isLoadingMore,
             String? loadMoreError,
             String? sendError,
-            String? actionError)?
+            String? actionError,
+            int substantiveMessageCount,
+            bool isPaid,
+            bool hasShownPaymentDialog,
+            String? userRole,
+            String? productId)?
         loaded,
     TResult? Function(String message)? error,
   }) {
@@ -195,7 +220,12 @@ class _$InitialImpl implements _Initial {
             bool isLoadingMore,
             String? loadMoreError,
             String? sendError,
-            String? actionError)?
+            String? actionError,
+            int substantiveMessageCount,
+            bool isPaid,
+            bool hasShownPaymentDialog,
+            String? userRole,
+            String? productId)?
         loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
@@ -297,7 +327,12 @@ class _$LoadingImpl implements _Loading {
             bool isLoadingMore,
             String? loadMoreError,
             String? sendError,
-            String? actionError)
+            String? actionError,
+            int substantiveMessageCount,
+            bool isPaid,
+            bool hasShownPaymentDialog,
+            String? userRole,
+            String? productId)
         loaded,
     required TResult Function(String message) error,
   }) {
@@ -315,7 +350,12 @@ class _$LoadingImpl implements _Loading {
             bool isLoadingMore,
             String? loadMoreError,
             String? sendError,
-            String? actionError)?
+            String? actionError,
+            int substantiveMessageCount,
+            bool isPaid,
+            bool hasShownPaymentDialog,
+            String? userRole,
+            String? productId)?
         loaded,
     TResult? Function(String message)? error,
   }) {
@@ -333,7 +373,12 @@ class _$LoadingImpl implements _Loading {
             bool isLoadingMore,
             String? loadMoreError,
             String? sendError,
-            String? actionError)?
+            String? actionError,
+            int substantiveMessageCount,
+            bool isPaid,
+            bool hasShownPaymentDialog,
+            String? userRole,
+            String? productId)?
         loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
@@ -398,7 +443,12 @@ abstract class _$$LoadedImplCopyWith<$Res> {
       bool isLoadingMore,
       String? loadMoreError,
       String? sendError,
-      String? actionError});
+      String? actionError,
+      int substantiveMessageCount,
+      bool isPaid,
+      bool hasShownPaymentDialog,
+      String? userRole,
+      String? productId});
 }
 
 /// @nodoc
@@ -420,6 +470,11 @@ class __$$LoadedImplCopyWithImpl<$Res>
     Object? loadMoreError = freezed,
     Object? sendError = freezed,
     Object? actionError = freezed,
+    Object? substantiveMessageCount = null,
+    Object? isPaid = null,
+    Object? hasShownPaymentDialog = null,
+    Object? userRole = freezed,
+    Object? productId = freezed,
   }) {
     return _then(_$LoadedImpl(
       messages: null == messages
@@ -446,6 +501,26 @@ class __$$LoadedImplCopyWithImpl<$Res>
           ? _value.actionError
           : actionError // ignore: cast_nullable_to_non_nullable
               as String?,
+      substantiveMessageCount: null == substantiveMessageCount
+          ? _value.substantiveMessageCount
+          : substantiveMessageCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      isPaid: null == isPaid
+          ? _value.isPaid
+          : isPaid // ignore: cast_nullable_to_non_nullable
+              as bool,
+      hasShownPaymentDialog: null == hasShownPaymentDialog
+          ? _value.hasShownPaymentDialog
+          : hasShownPaymentDialog // ignore: cast_nullable_to_non_nullable
+              as bool,
+      userRole: freezed == userRole
+          ? _value.userRole
+          : userRole // ignore: cast_nullable_to_non_nullable
+              as String?,
+      productId: freezed == productId
+          ? _value.productId
+          : productId // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -459,7 +534,12 @@ class _$LoadedImpl implements _Loaded {
       this.isLoadingMore = false,
       this.loadMoreError,
       this.sendError,
-      this.actionError})
+      this.actionError,
+      this.substantiveMessageCount = 0,
+      this.isPaid = false,
+      this.hasShownPaymentDialog = false,
+      this.userRole,
+      this.productId})
       : _messages = messages;
 
   final List<ChatMessage> _messages;
@@ -481,10 +561,28 @@ class _$LoadedImpl implements _Loaded {
   final String? sendError;
   @override
   final String? actionError;
+// 轻咨询模式相关字段
+  @override
+  @JsonKey()
+  final int substantiveMessageCount;
+// 实质性消息计数
+  @override
+  @JsonKey()
+  final bool isPaid;
+// 是否已付费
+  @override
+  @JsonKey()
+  final bool hasShownPaymentDialog;
+// 是否已显示过付费弹窗
+  @override
+  final String? userRole;
+// 用户角色 (MEMBER/DOCTOR)
+  @override
+  final String? productId;
 
   @override
   String toString() {
-    return 'MessageListState.loaded(messages: $messages, hasMore: $hasMore, isLoadingMore: $isLoadingMore, loadMoreError: $loadMoreError, sendError: $sendError, actionError: $actionError)';
+    return 'MessageListState.loaded(messages: $messages, hasMore: $hasMore, isLoadingMore: $isLoadingMore, loadMoreError: $loadMoreError, sendError: $sendError, actionError: $actionError, substantiveMessageCount: $substantiveMessageCount, isPaid: $isPaid, hasShownPaymentDialog: $hasShownPaymentDialog, userRole: $userRole, productId: $productId)';
   }
 
   @override
@@ -501,7 +599,17 @@ class _$LoadedImpl implements _Loaded {
             (identical(other.sendError, sendError) ||
                 other.sendError == sendError) &&
             (identical(other.actionError, actionError) ||
-                other.actionError == actionError));
+                other.actionError == actionError) &&
+            (identical(
+                    other.substantiveMessageCount, substantiveMessageCount) ||
+                other.substantiveMessageCount == substantiveMessageCount) &&
+            (identical(other.isPaid, isPaid) || other.isPaid == isPaid) &&
+            (identical(other.hasShownPaymentDialog, hasShownPaymentDialog) ||
+                other.hasShownPaymentDialog == hasShownPaymentDialog) &&
+            (identical(other.userRole, userRole) ||
+                other.userRole == userRole) &&
+            (identical(other.productId, productId) ||
+                other.productId == productId));
   }
 
   @override
@@ -512,7 +620,12 @@ class _$LoadedImpl implements _Loaded {
       isLoadingMore,
       loadMoreError,
       sendError,
-      actionError);
+      actionError,
+      substantiveMessageCount,
+      isPaid,
+      hasShownPaymentDialog,
+      userRole,
+      productId);
 
   /// Create a copy of MessageListState
   /// with the given fields replaced by the non-null parameter values.
@@ -533,12 +646,27 @@ class _$LoadedImpl implements _Loaded {
             bool isLoadingMore,
             String? loadMoreError,
             String? sendError,
-            String? actionError)
+            String? actionError,
+            int substantiveMessageCount,
+            bool isPaid,
+            bool hasShownPaymentDialog,
+            String? userRole,
+            String? productId)
         loaded,
     required TResult Function(String message) error,
   }) {
-    return loaded(messages, hasMore, isLoadingMore, loadMoreError, sendError,
-        actionError);
+    return loaded(
+        messages,
+        hasMore,
+        isLoadingMore,
+        loadMoreError,
+        sendError,
+        actionError,
+        substantiveMessageCount,
+        isPaid,
+        hasShownPaymentDialog,
+        userRole,
+        productId);
   }
 
   @override
@@ -552,12 +680,27 @@ class _$LoadedImpl implements _Loaded {
             bool isLoadingMore,
             String? loadMoreError,
             String? sendError,
-            String? actionError)?
+            String? actionError,
+            int substantiveMessageCount,
+            bool isPaid,
+            bool hasShownPaymentDialog,
+            String? userRole,
+            String? productId)?
         loaded,
     TResult? Function(String message)? error,
   }) {
-    return loaded?.call(messages, hasMore, isLoadingMore, loadMoreError,
-        sendError, actionError);
+    return loaded?.call(
+        messages,
+        hasMore,
+        isLoadingMore,
+        loadMoreError,
+        sendError,
+        actionError,
+        substantiveMessageCount,
+        isPaid,
+        hasShownPaymentDialog,
+        userRole,
+        productId);
   }
 
   @override
@@ -571,14 +714,29 @@ class _$LoadedImpl implements _Loaded {
             bool isLoadingMore,
             String? loadMoreError,
             String? sendError,
-            String? actionError)?
+            String? actionError,
+            int substantiveMessageCount,
+            bool isPaid,
+            bool hasShownPaymentDialog,
+            String? userRole,
+            String? productId)?
         loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
     if (loaded != null) {
-      return loaded(messages, hasMore, isLoadingMore, loadMoreError, sendError,
-          actionError);
+      return loaded(
+          messages,
+          hasMore,
+          isLoadingMore,
+          loadMoreError,
+          sendError,
+          actionError,
+          substantiveMessageCount,
+          isPaid,
+          hasShownPaymentDialog,
+          userRole,
+          productId);
     }
     return orElse();
   }
@@ -628,14 +786,24 @@ abstract class _Loaded implements MessageListState {
       final bool isLoadingMore,
       final String? loadMoreError,
       final String? sendError,
-      final String? actionError}) = _$LoadedImpl;
+      final String? actionError,
+      final int substantiveMessageCount,
+      final bool isPaid,
+      final bool hasShownPaymentDialog,
+      final String? userRole,
+      final String? productId}) = _$LoadedImpl;
 
   List<ChatMessage> get messages;
   bool get hasMore;
   bool get isLoadingMore;
   String? get loadMoreError;
   String? get sendError;
-  String? get actionError;
+  String? get actionError; // 轻咨询模式相关字段
+  int get substantiveMessageCount; // 实质性消息计数
+  bool get isPaid; // 是否已付费
+  bool get hasShownPaymentDialog; // 是否已显示过付费弹窗
+  String? get userRole; // 用户角色 (MEMBER/DOCTOR)
+  String? get productId;
 
   /// Create a copy of MessageListState
   /// with the given fields replaced by the non-null parameter values.
@@ -720,7 +888,12 @@ class _$ErrorImpl implements _Error {
             bool isLoadingMore,
             String? loadMoreError,
             String? sendError,
-            String? actionError)
+            String? actionError,
+            int substantiveMessageCount,
+            bool isPaid,
+            bool hasShownPaymentDialog,
+            String? userRole,
+            String? productId)
         loaded,
     required TResult Function(String message) error,
   }) {
@@ -738,7 +911,12 @@ class _$ErrorImpl implements _Error {
             bool isLoadingMore,
             String? loadMoreError,
             String? sendError,
-            String? actionError)?
+            String? actionError,
+            int substantiveMessageCount,
+            bool isPaid,
+            bool hasShownPaymentDialog,
+            String? userRole,
+            String? productId)?
         loaded,
     TResult? Function(String message)? error,
   }) {
@@ -756,7 +934,12 @@ class _$ErrorImpl implements _Error {
             bool isLoadingMore,
             String? loadMoreError,
             String? sendError,
-            String? actionError)?
+            String? actionError,
+            int substantiveMessageCount,
+            bool isPaid,
+            bool hasShownPaymentDialog,
+            String? userRole,
+            String? productId)?
         loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
