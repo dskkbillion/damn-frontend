@@ -38,7 +38,11 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
   void initState() {
     super.initState();
     _bloc = GetIt.I<ProductEditBloc>();
-    _getCurrentUserInfo();
+    
+    // 延迟获取用户信息，避免在initState中访问context
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _getCurrentUserInfo();
+    });
     
     if (widget.productId != null) {
       final productIdInt = int.tryParse(widget.productId!) ?? 0;
@@ -46,19 +50,22 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
         _bloc.add(InitializeProductEdit(productId: productIdInt));
       }
     } else if (widget.formData != null) {
-      // 如果是从编辑页面传入的数据，直接转换
+      // 如果是从编辑页面传入的数据，先设置默认用户名，稍后会被更新
+      _currentUserName = 'Current Seller';
       _productDetail = _convertFormDataToProductDetail(widget.formData!);
     }
   }
 
   /// 获取当前用户信息
   void _getCurrentUserInfo() async {
-    // Set default value first
-    if (mounted) {
-      setState(() {
-        _currentUserName = AppLocalizations.of(context)?.product_preview_current_seller ?? 'Current Seller';
-      });
-    }
+    // 安全检查：确保widget已挂载且context可用
+    if (!mounted) return;
+    
+    // Set default localized value first
+    setState(() {
+      _currentUserName = AppLocalizations.of(context)?.product_preview_current_seller ?? 'Current Seller';
+    });
+    
     try {
       // 首先获取登录用户
       final getLoggedInUser = GetIt.I<GetLoggedInUserUseCase>();
@@ -81,7 +88,9 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
               (userInfo) {
                 if (mounted) {
                   setState(() {
-                    _currentUserName = userInfo.nickName ?? (AppLocalizations.of(context)?.product_preview_seller_user ?? 'Seller User');
+                    final localizations = AppLocalizations.of(context);
+                    _currentUserName = userInfo.nickName ?? 
+                        (localizations?.product_preview_seller_user ?? 'Seller User');
                   });
                   print('[PreviewPage] Got user name: $_currentUserName');
                 }
