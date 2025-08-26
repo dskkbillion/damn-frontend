@@ -39,6 +39,9 @@ class MyApp extends ConsumerWidget { // Changed to ConsumerWidget
 
         // Use the centralized light theme
         theme: AppTheme.lightTheme,
+        
+        // 隐藏调试模式下的DEBUG标志
+        debugShowCheckedModeBanner: false,
 
         // 添加国际化配置
         localizationsDelegates: const [
