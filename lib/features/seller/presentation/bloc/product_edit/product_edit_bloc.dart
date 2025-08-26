@@ -902,6 +902,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
           winImages: winImageUrls.isNotEmpty ? winImageUrls.join(',') : null, // 添加成功案例图片
           detailImages: state.uploadedDetailImageUrls.isNotEmpty ? state.uploadedDetailImageUrls.join(',') : null,
           detailContent: state.formData.detailContent.isNotEmpty ? state.formData.detailContent : null,
+          state: 'normal', // 确保更新后的商品也是正常上架状态
         );
         
         // 更新商品

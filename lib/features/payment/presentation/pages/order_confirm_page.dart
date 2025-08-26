@@ -43,9 +43,6 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
   bool _isProcessing = false; // 防重复提交标志
   bool _isLoadingDialogShowing = false; // 跟踪加载对话框状态
   
-  // 计算美元金额（假设汇率为7.2）
-  double get _usdAmount => (widget.price * widget.quantity) / 7.2;
-  
   @override
   void dispose() {
     print('[OrderConfirmPage] dispose() called');
@@ -420,9 +417,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                           ],
                         )
                       : Text(
-                          _selectedPaymentMethod == payment_models.PaymentMethod.stripe 
-                            ? '${RegionConfig.currentRegion == RegionType.domestic ? "确认支付" : "Pay Now"} ${RegionConfig.formatPrice(widget.price * widget.quantity)} (≈\$${_usdAmount.toStringAsFixed(2)})'
-                            : '${RegionConfig.currentRegion == RegionType.domestic ? "确认支付" : "Pay Now"} ${RegionConfig.formatPrice(widget.price * widget.quantity)}',
+                          '${RegionConfig.currentRegion == RegionType.domestic ? "确认支付" : "Pay Now"} ${RegionConfig.formatPrice(widget.price * widget.quantity)}',
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,

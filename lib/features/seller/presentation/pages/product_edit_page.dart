@@ -948,44 +948,44 @@ class _ProductEditPageState extends State<ProductEditPage> {
                       const SizedBox(width: 8),
                     ],
                     
-                    // 保存草稿按钮
-                    TextButton.icon(
-                      onPressed: state.isSavingDraft ? null : () {
-                        // 同步本地数据到BLoC
-                        _syncLocalDataToBLoC();
-                        
-                        // 构建并同步服务档位数据
-                        List<ProductOptionValue> variants = _serviceTiers.toProductOptionValues();
-                        _bloc.add(UpdateFormField(fieldName: 'variants', value: variants));
-                        
-                        // 设置基础价格为基础档的价格
-                        _bloc.add(UpdateFormField(
-                          fieldName: 'price', 
-                          value: _serviceTiers.basic.price
-                        ));
-                        
-                        // 添加调试日志
-                        print('[ProductEditPage] Saving draft with price: ${_serviceTiers.basic.price}');
-                        print('[ProductEditPage] Variants count: ${variants.length}');
-                        for (var i = 0; i < variants.length; i++) {
-                          print('[ProductEditPage] Variant $i: ${variants[i].name} - price: ${variants[i].sellingPrice}');
-                        }
-                        
-                        // 保存草稿
-                        _bloc.add(const SaveProductDraft());
-                      },
-                      icon: state.isSavingDraft
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.save_alt),
-                      label: Text(state.hasUnsavedChanges ? '草稿*' : '草稿'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: state.hasUnsavedChanges ? Colors.orange : Colors.grey,
-                      ),
-                    ),
+                    // 保存草稿按钮 - 暂时注释掉，直接发布商品
+                    // TextButton.icon(
+                    //   onPressed: state.isSavingDraft ? null : () {
+                    //     // 同步本地数据到BLoC
+                    //     _syncLocalDataToBLoC();
+                    //     
+                    //     // 构建并同步服务档位数据
+                    //     List<ProductOptionValue> variants = _serviceTiers.toProductOptionValues();
+                    //     _bloc.add(UpdateFormField(fieldName: 'variants', value: variants));
+                    //     
+                    //     // 设置基础价格为基础档的价格
+                    //     _bloc.add(UpdateFormField(
+                    //       fieldName: 'price', 
+                    //       value: _serviceTiers.basic.price
+                    //     ));
+                    //     
+                    //     // 添加调试日志
+                    //     print('[ProductEditPage] Saving draft with price: ${_serviceTiers.basic.price}');
+                    //     print('[ProductEditPage] Variants count: ${variants.length}');
+                    //     for (var i = 0; i < variants.length; i++) {
+                    //       print('[ProductEditPage] Variant $i: ${variants[i].name} - price: ${variants[i].sellingPrice}');
+                    //     }
+                    //     
+                    //     // 保存草稿
+                    //     _bloc.add(const SaveProductDraft());
+                    //   },
+                    //   icon: state.isSavingDraft
+                    //       ? const SizedBox(
+                    //           width: 16,
+                    //           height: 16,
+                    //           child: CircularProgressIndicator(strokeWidth: 2),
+                    //         )
+                    //       : const Icon(Icons.save_alt),
+                    //   label: Text(state.hasUnsavedChanges ? '草稿*' : '草稿'),
+                    //   style: TextButton.styleFrom(
+                    //     foregroundColor: state.hasUnsavedChanges ? Colors.orange : Colors.grey,
+                    //   ),
+                    // ),
                   ],
                 );
               },

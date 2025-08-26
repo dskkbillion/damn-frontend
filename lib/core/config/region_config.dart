@@ -64,10 +64,8 @@ class RegionConfig {
         ];  // 国际服：Stripe信用卡
       case RegionType.unified:
         return [
-          PaymentMethod.alipay,
-          PaymentMethod.wechat,
           PaymentMethod.stripe,
-        ];  // 统一服：支持所有支付方式
+        ];  // 统一服：仅支持信用卡支付
     }
   }
   
@@ -121,9 +119,9 @@ class RegionConfig {
         };
       case RegionType.unified:
         return {
-          // All payment methods enabled
-          'enableAlipay': true,
-          'enableWechatPay': true,
+          // Only credit card payment enabled
+          'enableAlipay': false,
+          'enableWechatPay': false,
           'enableStripe': true,
           // All login methods enabled
           'enableWechatLogin': true,
