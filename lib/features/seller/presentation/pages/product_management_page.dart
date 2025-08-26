@@ -11,7 +11,7 @@ import '../routes/seller_routes.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/loading_state.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 商品管理页面
 class ProductManagementPage extends StatefulWidget {

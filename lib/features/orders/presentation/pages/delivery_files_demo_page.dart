@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import '../widgets/delivery_file_viewer.dart';
 
 /// 交付文件预览和下载功能演示页面

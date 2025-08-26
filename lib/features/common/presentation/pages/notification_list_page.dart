@@ -7,7 +7,7 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/notific
 import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
 import 'package:intl/intl.dart';
 import 'package:get_it/get_it.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';

@@ -22,7 +22,7 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/product_ed
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/service_tier_models.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 // 输入验证常量
 class ValidationConstants {

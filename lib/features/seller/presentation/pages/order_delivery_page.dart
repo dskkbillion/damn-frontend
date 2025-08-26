@@ -5,7 +5,7 @@ import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/order_delivery/order_delivery_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/file_selection_widget.dart';
 import 'package:get_it/get_it.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 订单交付页面
 class OrderDeliveryPage extends StatelessWidget {
