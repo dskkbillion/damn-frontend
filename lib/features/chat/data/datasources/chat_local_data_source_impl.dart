@@ -12,6 +12,7 @@ class ChatLocalDataSourceImpl implements IChatLocalDataSource {
   static const String _chatRoomPrefix = 'chat_room_';
   static const String _lastMessageIdPrefix = 'last_message_id_';
   static const String _paymentPromptPrefix = 'payment_prompt_sent_';
+  static const String _paymentPromptCountPrefix = 'payment_prompt_count_';
   
   ChatLocalDataSourceImpl({
     required SharedPreferences prefs,
@@ -177,6 +178,44 @@ class ChatLocalDataSourceImpl implements IChatLocalDataSource {
     } catch (e) {
       print('[ChatLocalDataSource] Error getting payment prompt status: $e');
       return false;
+    }
+  }
+  
+  @override
+  Future<int> getPaymentPromptCount(int chatId) async {
+    try {
+      // Try to get count first
+      final count = _prefs.getInt('$_paymentPromptCountPrefix$chatId');
+      if (count != null) {
+        return count;
+      }
+      
+      // Fallback: migrate from old bool value
+      final oldStatus = await getPaymentPromptStatus(chatId);
+      if (oldStatus) {
+        // If old status was true (sent), set count to 1
+        await savePaymentPromptCount(chatId, 1);
+        return 1;
+      }
+      
+      return 0;
+    } catch (e) {
+      print('[ChatLocalDataSource] Error getting payment prompt count: $e');
+      return 0;
+    }
+  }
+  
+  @override
+  Future<void> savePaymentPromptCount(int chatId, int count) async {
+    try {
+      await _prefs.setInt('$_paymentPromptCountPrefix$chatId', count);
+      
+      // Also update old status for backward compatibility
+      if (count > 0) {
+        await savePaymentPromptStatus(chatId, true);
+      }
+    } catch (e) {
+      print('[ChatLocalDataSource] Error saving payment prompt count: $e');
     }
   }
 }

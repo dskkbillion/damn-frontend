@@ -35,4 +35,10 @@ abstract class IChatLocalDataSource {
   
   /// Get payment prompt status
   Future<bool> getPaymentPromptStatus(int chatId);
+  
+  /// Get payment prompt count for progressive triggering (5-10-20 rounds)
+  Future<int> getPaymentPromptCount(int chatId);
+  
+  /// Save payment prompt count
+  Future<void> savePaymentPromptCount(int chatId, int count);
 }
