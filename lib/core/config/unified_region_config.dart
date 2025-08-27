@@ -101,8 +101,6 @@ class UnifiedRegionConfig {
   
   /// Get all available payment methods
   static List<PaymentMethod> get supportedPaymentMethods => [
-    PaymentMethod.alipay,
-    PaymentMethod.wechat,
     PaymentMethod.stripe,
   ];
   
@@ -126,8 +124,8 @@ class UnifiedRegionConfig {
   /// Get all features enabled (unified version has everything)
   static Map<String, bool> get features => {
     // Payment features
-    'enableWechatPay': true,
-    'enableAlipay': true,
+    'enableWechatPay': false,
+    'enableAlipay': false,
     'enableStripe': true,
     
     // Login features
