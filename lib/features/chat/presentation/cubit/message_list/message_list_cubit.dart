@@ -505,17 +505,19 @@ class MessageListCubit extends Cubit<MessageListState> {
     // 获取显示次数
     final count = await _localDataSource?.getPaymentPromptCount(_currentChatId!) ?? 0;
     
-    // 已显示3次，不再提醒
-    if (count >= 3) return;
+    // 已显示4次，不再提醒（1-5-10-20共4次）
+    if (count >= 4) return;
     
-    // 判断是否触发
+    // 判断是否触发（1-5-10-20轮次）
     bool shouldShow = false;
-    if (count == 0 && _roundCount >= 5) {
-      shouldShow = true; // 第一次：5轮
-    } else if (count == 1 && _roundCount >= 10) {
-      shouldShow = true; // 第二次：10轮  
-    } else if (count == 2 && _roundCount >= 20) {
-      shouldShow = true; // 第三次：20轮
+    if (count == 0 && _roundCount >= 1) {
+      shouldShow = true; // 第一次：1轮（便于测试）
+    } else if (count == 1 && _roundCount >= 5) {
+      shouldShow = true; // 第二次：5轮
+    } else if (count == 2 && _roundCount >= 10) {
+      shouldShow = true; // 第三次：10轮  
+    } else if (count == 3 && _roundCount >= 20) {
+      shouldShow = true; // 第四次：20轮
     }
     
     if (!shouldShow) return;
