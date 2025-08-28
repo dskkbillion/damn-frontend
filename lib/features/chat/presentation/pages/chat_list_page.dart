@@ -357,79 +357,12 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
           children: [
             _buildNotificationItem(context, currentUserId),
             const Divider(height: 1, color: Color(0xFFEDEDED)),
-            _buildTestChatItem(context, currentUserId),
-            const Divider(height: 8, thickness: 8, color: Color(0xFFEDEDED)),
           ],
         ),
       ),
     );
   }
   
-  // 构建测试聊天入口
-  Widget _buildTestChatItem(BuildContext context, int currentUserId) {
-    // 创建测试参与者
-    final testParticipant = Participant(
-      id: -999, // 特殊ID
-      referId: -999,
-      nickName: '付费提示测试',
-      type: 'TEST',
-      avatar: null,
-    );
-    
-    // 创建当前用户参与者
-    final currentUserParticipant = Participant(
-      id: -1,
-      referId: currentUserId,
-      nickName: 'Me',
-      type: 'MEMBER',
-    );
-    
-    // 创建假的测试聊天室
-    final fakeTestChatRoom = ChatRoom(
-      id: -999, // Mock聊天室特殊ID
-      participant1: currentUserParticipant,
-      participant2: testParticipant,
-      unreadCount: 0,
-      lastMessage: ChatMessage(
-        id: -1,
-        chatId: -999,
-        senderId: -999,
-        context: '测试5-10-20轮次付费提示功能',
-        type: 'text',
-        createTime: DateTime.now(),
-        withdrawFlag: false,
-      ),
-    );
-    
-    return Material(
-      color: Colors.purple.shade50,
-      child: ListTile(
-        leading: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: Colors.purple,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: const Icon(
-            Icons.bug_report,
-            color: Colors.white,
-            size: 24,
-          ),
-        ),
-        title: const Text(
-          '付费提示测试',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: const Text('测试5-10-20轮次付费提示功能'),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: () {
-          // 导航到测试页面
-          context.push('/chat/mock-test');
-        },
-      ),
-    );
-  }
 
   // 只显示系统条目（用于错误或空状态）
   Widget _buildSystemItemsOnly(BuildContext context, int currentUserId, String message) {
