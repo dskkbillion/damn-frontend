@@ -111,7 +111,8 @@ class NotificationNavigationService {
   /// 跳转到聊天室
   static void _navigateToChatRoom(BuildContext context, String chatId) {
     try {
-      context.push('/chat/$chatId');
+      // 使用重构后的聊天室路由，与chat_list_page.dart中的路由保持一致
+      context.push('/chat/refactored/$chatId');
     } catch (e) {
       debugPrint('Failed to navigate to chat room: $e');
       _showNavigationError(context, '无法打开聊天页面');
