@@ -7,7 +7,6 @@ import 'package:get_it/get_it.dart'; // Assuming GetIt for DI
 import 'package:dskk_flutter_refactor/features/chat/presentation/pages/chat_list_page.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/pages/chat_room_page.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/pages/chat_room_page_refactored.dart';
-import 'package:dskk_flutter_refactor/features/chat/presentation/pages/mock_chat_test_page.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_list/chat_list_bloc.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_messages/chat_messages_bloc.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_chat_room_list.dart'; // For ChatListBloc event
@@ -143,15 +142,6 @@ class ChatRoutes {
                 }
               },
             );
-          },
-        ),
-        // Mock test page route for payment prompt testing
-        GoRoute(
-          path: 'mock-test', // Relative path, becomes /chat/mock-test
-          name: 'chatMockTest', // Optional name for navigation
-          builder: (context, state) {
-            // Return the mock test page directly
-            return const MockChatTestPage();
           },
         ),
         // Add other chat-related nested routes here if needed
