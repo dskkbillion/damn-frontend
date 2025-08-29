@@ -293,8 +293,9 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       // 使用ProductCreationData的toJson()方法获取API需要的格式
       final data = productData.toJson();
       
-      // 打印请求数据，便于调试
-      print('Creating product with data: $data');
+      // 添加调试日志，确认productType的值
+      print('[createProduct] 准备创建商品，productType=${data['productType']}, state=${data['state']}, statusAudit=${data['statusAudit']}');
+      print('[createProduct] 完整请求数据: $data');
       
       // 特别调试winImages字段
       if (data['winImages'] != null && data['winImages'] is List) {

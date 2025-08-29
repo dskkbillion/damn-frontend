@@ -865,6 +865,8 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
           statusAudit: 'WAIT', // 正式商品需要进入待审核状态
         );
         
+        print('[SubmitProductForm] 创建商品 - productType=${productData.productType}, state=${productData.state}, statusAudit=${productData.statusAudit}');
+        
         // 创建商品
         final result = await _sellerRepository.createProduct(productData);
         
