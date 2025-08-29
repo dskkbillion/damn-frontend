@@ -841,7 +841,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final List<String> buyerPaths = [
           HomeRoutes.homePath, 
           '/ai_chat', 
-          '/chat', 
+          '/chat', // 买家聊天列表，但不包括具体聊天室
           '/profile', 
           '/dev_menu',
           '/notifications', // 添加买家通知路径
@@ -865,7 +865,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       // 特殊情况：卖家主页路径（公共路径，不应受模式限制）
       final String sellerPublicProfilePathPrefix = '/seller-profile/'; // 更新路径前缀
       
-      bool isBuyerShellLocation = buyerPaths.any((p) => location.startsWith(p));
+      // 特殊处理：聊天室路由不属于任何模式限制，任何模式都可以访问
+      bool isChatRoomLocation = location.startsWith('/chat/') && location.split('/').length > 2;
+      
+      bool isBuyerShellLocation = buyerPaths.any((p) => location.startsWith(p)) && !isChatRoomLocation;
       // 排除卖家主页路径（检查是否匹配 /seller-profile/{id} 模式）
       bool isSellerShellLocation = sellerPaths.any((p) => location.startsWith(p)) && 
           !location.startsWith(sellerPublicProfilePathPrefix); // 简化检查逻辑
