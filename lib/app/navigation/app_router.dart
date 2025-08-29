@@ -290,7 +290,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       path: '/seller/chat', // 使用聊天路径
       pageBuilder: (context, state) => state.buildSmartPage(
         BlocProvider(
-        create: (_) => GetIt.I<ChatListBloc>()..add(LoadChatRoomList()), // 使用ChatListBloc
+        create: (_) {
+          // 创建新的ChatListBloc实例，而不是使用单例
+          final getIt = GetIt.I;
+          return ChatListBloc(
+            getChatRoomList: getIt(),
+            markChatAsRead: getIt(),
+            deleteChat: getIt(),
+            userRepository: getIt(),
+          )..add(LoadChatRoomList());
+        },
         child: const ChatListPage(), // 使用ChatListPage
         ),
         name: 'sellerChat',
