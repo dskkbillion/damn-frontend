@@ -417,6 +417,33 @@ class MessageListCubit extends Cubit<MessageListState> {
     }
   }
   
+  /// Add received message from WebSocket
+  void addReceivedMessage(ChatMessage message) {
+    // 检查消息是否属于当前聊天室
+    if (_currentChatId != null && message.chatId == _currentChatId) {
+      // 检查消息是否已存在（防止重复）
+      final exists = _allMessages.any((m) => m.id == message.id);
+      if (!exists) {
+        // 添加到消息列表开头（最新消息）
+        _allMessages.insert(0, message);
+        
+        // 更新UI
+        _emitLoadedState();
+        
+        // 更新聊天列表的最后一条消息
+        _updateChatListLastMessage(message);
+        
+        // 如果是轻咨询，检查是否需要显示付费提示
+        if (_isLightConsultation) {
+          // 重新计算轮次
+          _calculateRoundCount(_allMessages);
+          // 检查付费提示
+          Future.microtask(() => _checkAndInsertLocalPaymentPrompt());
+        }
+      }
+    }
+  }
+  
   /// Clear messages
   void clearMessages() {
     _allMessages.clear();

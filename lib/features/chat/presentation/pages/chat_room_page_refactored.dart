@@ -276,8 +276,29 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
             Expanded(
               child: Stack(
                 children: [
-                  BlocConsumer<MessageListCubit, MessageListState>(
+                  // WebSocket message listener - listens for new messages from ChatCubit
+                  BlocListener<chat_cubit.ChatCubit, chat_cubit.ChatState>(
                     listener: (context, state) {
+                      state.maybeWhen(
+                        ready: (chatRoom, lastReceivedMessage, hasNewMessage) {
+                          // When a new message is received via WebSocket
+                          if (hasNewMessage && lastReceivedMessage != null) {
+                            // Add the message to the message list
+                            _messageListCubit.addReceivedMessage(lastReceivedMessage);
+                            
+                            // Scroll to bottom for new messages
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (_scrollController.hasClients) {
+                                _scrollToBottom();
+                              }
+                            });
+                          }
+                        },
+                        orElse: () {},
+                      );
+                    },
+                    child: BlocConsumer<MessageListCubit, MessageListState>(
+                      listener: (context, state) {
                       // Handle message events
                       state.maybeWhen(
                         loaded: (messages, hasMore, isLoadingMore, loadMoreError, sendError, actionError,
@@ -345,6 +366,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                       );
                     },
                   ),
+                  ),  // Close the BlocListener
                   
                   // Scroll to bottom FAB
                   if (_showScrollToBottomButton)
