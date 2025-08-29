@@ -277,6 +277,9 @@ class ProductCreationData extends Equatable {
   
   /// 商品状态（normal: 上架, disabled: 下架）
   final String? state;
+  
+  /// 审核状态（WAIT: 待审核, SUCCESS: 审核通过, FAIL: 审核失败）
+  final String? statusAudit;
 
   const ProductCreationData({
     required this.name,
@@ -291,6 +294,7 @@ class ProductCreationData extends Equatable {
     this.detailContent,
     this.productType = 'product', // 默认为正式商品
     this.state,
+    this.statusAudit,
   });
 
   @override
@@ -307,6 +311,7 @@ class ProductCreationData extends Equatable {
     detailContent,
     productType,
     state,
+    statusAudit,
   ];
   
   /// 转换为API参数格式
@@ -321,8 +326,10 @@ class ProductCreationData extends Equatable {
     // 添加状态字段 - 默认为normal（上架）
     data['state'] = state ?? 'normal';
     
-    // 审核状态由后端管理，前端不设置
-    // 后端会根据业务逻辑自动设置审核状态
+    // 对于正式商品，需要设置审核状态为待审核
+    if (productType == 'product') {
+      data['statusAudit'] = statusAudit ?? 'WAIT';
+    }
     
     // 添加价格字段
     data['sellingPrice'] = price;
