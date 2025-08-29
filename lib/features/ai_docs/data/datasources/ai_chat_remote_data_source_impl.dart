@@ -678,7 +678,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       print('[DataSource] Related services response: ${jsonEncode(data)}');
       
       if (data != null && data['items'] is List) {
-        return (data['items'] as List).map((serviceJson) {
+        return (data['items'] as List).map<RelatedServiceModel>((serviceJson) {
            print('[DataSource] Item JSON: ${jsonEncode(serviceJson)}');
            try {
              return RelatedServiceModel(
@@ -686,6 +686,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
                title: serviceJson['name'] as String? ?? 'Unknown service',
                imageUrl: serviceJson['mainImage'] as String? ?? '',
                price: (serviceJson['price'] as num?)?.toDouble() ?? 0.0,
+               tenantId: serviceJson['tenantId'] as int? ?? 0,
              );
            } catch (e, stacktrace) {
               print('[DataSource] Error parsing item JSON: $e');

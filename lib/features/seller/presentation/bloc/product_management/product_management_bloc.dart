@@ -11,7 +11,7 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/routes/seller
 import 'package:injectable/injectable.dart';
 
 /// 每页加载商品数量
-const int _pageSize = 10;
+const int _pageSize = 50; // 增加每页数量，确保新创建的商品能显示
 
 /// 商品管理 BLoC
 @injectable
@@ -123,8 +123,8 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     String? apiState;
     switch (status) {
       case ProductStatus.normal:
-        // 获取所有正式商品（包括各种审核状态），不传state参数
-        apiState = null;
+        // 获取在售商品，传递state='normal'参数
+        apiState = 'normal';
         break;
       case ProductStatus.disabled:
         apiState = 'DISABLED';
@@ -138,6 +138,8 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
       pageSize: _pageSize,
       state: apiState,
     );
+    
+    print('[ProductManagementBloc] API params: pageNum=$currentPage, pageSize=$_pageSize, state=$apiState');
     
     final result = await _getSellerProductListUseCase(params);
     

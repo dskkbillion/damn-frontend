@@ -21,7 +21,6 @@ RelatedServiceModel _$RelatedServiceModelFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$RelatedServiceModel {
 // Updated fields and types based on actual API response.
-// Added @JsonKey annotations for mapping.
   int get id => throw _privateConstructorUsedError; // Changed to int
   @JsonKey(name: 'mainImage')
   String get imageUrl => throw _privateConstructorUsedError;
@@ -32,6 +31,8 @@ mixin _$RelatedServiceModel {
   double get price => throw _privateConstructorUsedError; // Changed to double
   @JsonKey(name: 'allocation_status_recorded')
   bool get allocationStatusRecorded => throw _privateConstructorUsedError;
+  @JsonKey(name: 'tenantId')
+  int get tenantId => throw _privateConstructorUsedError;
 
   /// Serializes this RelatedServiceModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -55,7 +56,8 @@ abstract class $RelatedServiceModelCopyWith<$Res> {
       @JsonKey(name: 'name') String title,
       @JsonKey(name: 'sellingPrice') double price,
       @JsonKey(name: 'allocation_status_recorded')
-      bool allocationStatusRecorded});
+      bool allocationStatusRecorded,
+      @JsonKey(name: 'tenantId') int tenantId});
 }
 
 /// @nodoc
@@ -78,6 +80,7 @@ class _$RelatedServiceModelCopyWithImpl<$Res, $Val extends RelatedServiceModel>
     Object? title = null,
     Object? price = null,
     Object? allocationStatusRecorded = null,
+    Object? tenantId = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -100,6 +103,10 @@ class _$RelatedServiceModelCopyWithImpl<$Res, $Val extends RelatedServiceModel>
           ? _value.allocationStatusRecorded
           : allocationStatusRecorded // ignore: cast_nullable_to_non_nullable
               as bool,
+      tenantId: null == tenantId
+          ? _value.tenantId
+          : tenantId // ignore: cast_nullable_to_non_nullable
+              as int,
     ) as $Val);
   }
 }
@@ -118,7 +125,8 @@ abstract class _$$RelatedServiceModelImplCopyWith<$Res>
       @JsonKey(name: 'name') String title,
       @JsonKey(name: 'sellingPrice') double price,
       @JsonKey(name: 'allocation_status_recorded')
-      bool allocationStatusRecorded});
+      bool allocationStatusRecorded,
+      @JsonKey(name: 'tenantId') int tenantId});
 }
 
 /// @nodoc
@@ -139,6 +147,7 @@ class __$$RelatedServiceModelImplCopyWithImpl<$Res>
     Object? title = null,
     Object? price = null,
     Object? allocationStatusRecorded = null,
+    Object? tenantId = null,
   }) {
     return _then(_$RelatedServiceModelImpl(
       id: null == id
@@ -161,12 +170,17 @@ class __$$RelatedServiceModelImplCopyWithImpl<$Res>
           ? _value.allocationStatusRecorded
           : allocationStatusRecorded // ignore: cast_nullable_to_non_nullable
               as bool,
+      tenantId: null == tenantId
+          ? _value.tenantId
+          : tenantId // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.none)
 class _$RelatedServiceModelImpl extends _RelatedServiceModel {
   const _$RelatedServiceModelImpl(
       {required this.id,
@@ -174,14 +188,14 @@ class _$RelatedServiceModelImpl extends _RelatedServiceModel {
       @JsonKey(name: 'name') required this.title,
       @JsonKey(name: 'sellingPrice') required this.price,
       @JsonKey(name: 'allocation_status_recorded')
-      this.allocationStatusRecorded = false})
+      this.allocationStatusRecorded = false,
+      @JsonKey(name: 'tenantId') required this.tenantId})
       : super._();
 
   factory _$RelatedServiceModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$RelatedServiceModelImplFromJson(json);
 
 // Updated fields and types based on actual API response.
-// Added @JsonKey annotations for mapping.
   @override
   final int id;
 // Changed to int
@@ -199,10 +213,13 @@ class _$RelatedServiceModelImpl extends _RelatedServiceModel {
   @override
   @JsonKey(name: 'allocation_status_recorded')
   final bool allocationStatusRecorded;
+  @override
+  @JsonKey(name: 'tenantId')
+  final int tenantId;
 
   @override
   String toString() {
-    return 'RelatedServiceModel(id: $id, imageUrl: $imageUrl, title: $title, price: $price, allocationStatusRecorded: $allocationStatusRecorded)';
+    return 'RelatedServiceModel(id: $id, imageUrl: $imageUrl, title: $title, price: $price, allocationStatusRecorded: $allocationStatusRecorded, tenantId: $tenantId)';
   }
 
   @override
@@ -217,13 +234,15 @@ class _$RelatedServiceModelImpl extends _RelatedServiceModel {
             (identical(other.price, price) || other.price == price) &&
             (identical(
                     other.allocationStatusRecorded, allocationStatusRecorded) ||
-                other.allocationStatusRecorded == allocationStatusRecorded));
+                other.allocationStatusRecorded == allocationStatusRecorded) &&
+            (identical(other.tenantId, tenantId) ||
+                other.tenantId == tenantId));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, id, imageUrl, title, price, allocationStatusRecorded);
+  int get hashCode => Object.hash(runtimeType, id, imageUrl, title, price,
+      allocationStatusRecorded, tenantId);
 
   /// Create a copy of RelatedServiceModel
   /// with the given fields replaced by the non-null parameter values.
@@ -244,19 +263,20 @@ class _$RelatedServiceModelImpl extends _RelatedServiceModel {
 
 abstract class _RelatedServiceModel extends RelatedServiceModel {
   const factory _RelatedServiceModel(
-      {required final int id,
-      @JsonKey(name: 'mainImage') required final String imageUrl,
-      @JsonKey(name: 'name') required final String title,
-      @JsonKey(name: 'sellingPrice') required final double price,
-      @JsonKey(name: 'allocation_status_recorded')
-      final bool allocationStatusRecorded}) = _$RelatedServiceModelImpl;
+          {required final int id,
+          @JsonKey(name: 'mainImage') required final String imageUrl,
+          @JsonKey(name: 'name') required final String title,
+          @JsonKey(name: 'sellingPrice') required final double price,
+          @JsonKey(name: 'allocation_status_recorded')
+          final bool allocationStatusRecorded,
+          @JsonKey(name: 'tenantId') required final int tenantId}) =
+      _$RelatedServiceModelImpl;
   const _RelatedServiceModel._() : super._();
 
   factory _RelatedServiceModel.fromJson(Map<String, dynamic> json) =
       _$RelatedServiceModelImpl.fromJson;
 
 // Updated fields and types based on actual API response.
-// Added @JsonKey annotations for mapping.
   @override
   int get id; // Changed to int
   @override
@@ -271,6 +291,9 @@ abstract class _RelatedServiceModel extends RelatedServiceModel {
   @override
   @JsonKey(name: 'allocation_status_recorded')
   bool get allocationStatusRecorded;
+  @override
+  @JsonKey(name: 'tenantId')
+  int get tenantId;
 
   /// Create a copy of RelatedServiceModel
   /// with the given fields replaced by the non-null parameter values.

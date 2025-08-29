@@ -15,6 +15,7 @@ _$RelatedServiceModelImpl _$$RelatedServiceModelImplFromJson(
       price: (json['sellingPrice'] as num).toDouble(),
       allocationStatusRecorded:
           json['allocation_status_recorded'] as bool? ?? false,
+      tenantId: (json['tenantId'] as num).toInt(),
     );
 
 Map<String, dynamic> _$$RelatedServiceModelImplToJson(
@@ -25,4 +26,5 @@ Map<String, dynamic> _$$RelatedServiceModelImplToJson(
       'name': instance.title,
       'sellingPrice': instance.price,
       'allocation_status_recorded': instance.allocationStatusRecorded,
+      'tenantId': instance.tenantId,
     };

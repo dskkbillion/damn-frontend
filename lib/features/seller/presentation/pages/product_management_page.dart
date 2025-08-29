@@ -223,7 +223,12 @@ class _ProductManagementPageState extends State<ProductManagementPage>
               await context.push('/seller/products/$productId/edit?preview=true');
             } else {
               // Navigate to product edit page using GoRouter
-              final needRefresh = await context.push<bool>('/seller/products/$productId/edit');
+              // 创建模式使用特殊路径
+              final String routePath = isCreateMode 
+                  ? '/seller/products/create' 
+                  : '/seller/products/$productId/edit';
+              print('[ProductManagementPage] Navigating to: $routePath');
+              final needRefresh = await context.push<bool>(routePath);
               
               // 如果返回值为true，说明需要刷新列表
               if (needRefresh == true) {

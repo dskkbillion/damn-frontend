@@ -89,16 +89,26 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
 
   @override
   Future<PaginatedListDto<dynamic>> getSellerProductList({
-    required int pageNum, // 参数保留，但不在请求中使用
-    required int pageSize, // 参数保留，但不在请求中使用
+    required int pageNum,
+    required int pageSize,
     String? state,
   }) async {
     try {
-      // 保持移除 pageNum 和 pageSize 参数，因为目标接口不支持分页
-      final requestData = <String, dynamic>{};
+      print('[getSellerProductList] Called with state: $state, pageNum: $pageNum, pageSize: $pageSize');
+      
+      // 后端支持分页，需要发送 pageNum 和 pageSize 参数
+      final requestData = <String, dynamic>{
+        'pageNum': pageNum,
+        'pageSize': pageSize,
+        // 添加排序参数，让新创建的商品排在前面
+        'orderBy': 'create_time desc',
+      };
       if (state != null) {
         requestData['state'] = state; // 保持原状态值，不转换大小写
       }
+      
+      print('[getSellerProductList] Request data before sending: $requestData');
+      print('[getSellerProductList] Request data isEmpty: ${requestData.isEmpty}');
 
       // 修改 API 端点为 /api/shop/product/myList
       final response = await _dio.post('/api/shop/product/myList', 
@@ -106,6 +116,20 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       );
       
       _checkResponse(response);
+      
+      print('[getSellerProductList] Response received, parsing data...');
+      final responseData = response.data;
+      print('[getSellerProductList] Response total: ${responseData['total']}, records count: ${responseData['records']?.length ?? 0}');
+      
+      // 打印前几个商品的详细信息
+      if (responseData['records'] != null && responseData['records'].isNotEmpty) {
+        final records = responseData['records'] as List;
+        print('[getSellerProductList] First 3 products:');
+        for (int i = 0; i < 3 && i < records.length; i++) {
+          final product = records[i];
+          print('  Product ${i+1}: ID=${product['id']}, Name=${product['name']}, State=${product['state']}, StatusAudit=${product['statusAudit']}');
+        }
+      }
       
       return PaginatedListDto.fromJson(
         response.data,

@@ -375,7 +375,7 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                           };
                           context.read<AiChatBloc>().add(TriggerOptimizedAllocation(
                              item: itemData,
-                               merchantId: 1, // 固定商家ID
+                               merchantId: service.tenantId, // 使用服务的实际商家ID
                                serviceId: service.id, // 添加服务ID用于状态追踪
                           ));
                             // 移除Navigator.pop，让底部弹窗保持打开状态，用户可以看到按钮状态变化

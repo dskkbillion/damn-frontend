@@ -17,16 +17,17 @@ class RelatedServiceModel with _$RelatedServiceModel {
   const RelatedServiceModel._(); // Private constructor for implementing methods
 
   /// Factory constructor for creating a [RelatedServiceModel].
+  @JsonSerializable(fieldRename: FieldRename.none)
   const factory RelatedServiceModel({
     // Updated fields and types based on actual API response.
-    // Added @JsonKey annotations for mapping.
     required int id, // Changed to int
     @JsonKey(name: 'mainImage') required String imageUrl, 
     @JsonKey(name: 'name') required String title,
     // rating field removed
     @JsonKey(name: 'sellingPrice') required double price, // Changed to double
-    @JsonKey(name: 'allocation_status_recorded') @Default(false) bool allocationStatusRecorded,
-    // Add other fields from API if needed (e.g., originalPrice, tenantId, etc.)
+    @Default(false) @JsonKey(name: 'allocation_status_recorded') bool allocationStatusRecorded,
+    @JsonKey(name: 'tenantId') required int tenantId, // 商家/卖家ID
+    // Add other fields from API if needed (e.g., originalPrice, etc.)
     // Consider adding them as optional if not used by the domain.
   }) = _RelatedServiceModel;
 
@@ -43,6 +44,7 @@ class RelatedServiceModel with _$RelatedServiceModel {
       title: title,
       price: price,
       allocationStatusRecorded: allocationStatusRecorded,
+      tenantId: tenantId,
       // rating is removed
     );
   }
