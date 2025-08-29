@@ -12,8 +12,9 @@ import '../widgets/order_action_buttons.dart';
 import '../widgets/order_payment_status_warning.dart';
 import '../widgets/order_items_section.dart';
 import '../widgets/order_info_section.dart';
-import '../widgets/order_materials_section.dart';
+// import '../widgets/order_materials_section.dart'; // 轻咨询模式：隐藏材料上传
 import '../widgets/order_price_details_section.dart';
+import 'package:dskk_flutter_refactor/features/orders/presentation/utils/order_status_mapper.dart';
 
 /// 订单详情页面
 class OrderDetailPage extends StatefulWidget {
@@ -275,9 +276,11 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 OrderInfoSection(order: order),
                 const SizedBox(height: 16),
                 
-                // 材料信息
-                OrderMaterialsSection(order: order),
-                const SizedBox(height: 16),
+                // 轻咨询模式：隐藏材料上传部分
+                // if (!OrderStatusMapper.isLightConsultationOrder(order)) ...[
+                //   OrderMaterialsSection(order: order),
+                //   const SizedBox(height: 16),
+                // ],
                 
                 // 价格详情
                 OrderPriceDetailsSection(order: order),

@@ -7,6 +7,7 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_stat
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_action_dialogs.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_action_button_builder.dart';
+import 'package:dskk_flutter_refactor/features/orders/presentation/utils/order_status_mapper.dart';
 
 /// 根据订单状态显示【订单详情页】可用操作按钮的 Widget
 class OrderDetailActionButtons extends StatelessWidget {
@@ -22,8 +23,16 @@ class OrderDetailActionButtons extends StatelessWidget {
     final dialogs = OrderActionDialogs(order: order);
     final buttons = <Widget>[];
     Widget? primaryButton;
+    
+    // 判断是否为轻咨询订单
+    final isLightConsultation = OrderStatusMapper.isLightConsultationOrder(order);
 
-    // 使用 order_status.dart 中定义的实际枚举值
+    // 轻咨询模式：使用简化的按钮
+    if (isLightConsultation) {
+      return _buildSimplifiedButtons(context);
+    }
+
+    // 原有复杂模式的按钮逻辑
     switch (order.state) {
       case OrderStatus.awaitingPayment: // 待付款
         buttons.add(_buildButton(context, '取消订单', () {
@@ -331,5 +340,135 @@ class OrderDetailActionButtons extends StatelessWidget {
         SnackBar(content: Text('操作失败: $e')),
       );
     }
+  }
+  
+  /// 轻咨询模式：构建简化的操作按钮
+  Widget _buildSimplifiedButtons(BuildContext context) {
+    final dialogs = OrderActionDialogs(order: order);
+    final buttons = <Widget>[];
+    Widget? primaryButton;
+    
+    switch (order.state) {
+      case OrderStatus.awaitingPayment:
+        // 待付款：支付、取消
+        buttons.add(_buildButton(context, '取消', () {
+          dialogs.showConfirmationDialog(
+            context: context,
+            title: '取消订单',
+            content: '您确定要取消这个订单吗？',
+            onConfirm: () {
+              context.read<OrderDetailBloc>().add(
+                OrderActionRequested(
+                  action: OrderAction.cancel, 
+                  orderId: order.id.toString()
+                )
+              );
+            },
+          );
+        }));
+        primaryButton = BlocBuilder<OrderDetailBloc, OrderDetailState>(
+          builder: (context, state) {
+            final isLoading = state is OrderDetailPaymentLoading;
+            return _buildButton(
+              context,
+              isLoading ? '处理中...' : '支付',
+              isLoading ? null : () {
+                context.read<OrderDetailBloc>().add(GoToPayment(orderId: order.id));
+              },
+              isPrimary: true,
+              isLoading: isLoading,
+            );
+          },
+        );
+        break;
+        
+      // 待交付状态组（多个状态映射）
+      case OrderStatus.awaitingSubmission:
+      case OrderStatus.buyAwaitingSubmission:
+      case OrderStatus.awaitingStart:
+      case OrderStatus.awaitingDelivery:
+      case OrderStatus.awaitingConfirmation:
+        // 咨询进行中：联系顾问
+        primaryButton = _buildButton(context, '联系顾问', () {
+          context.push('/chat');
+        }, isPrimary: true);
+        break;
+        
+      case OrderStatus.awaitingEvaluation:
+        // 待评价：评价
+        primaryButton = _buildButton(context, '评价', () {
+          _navigateToEvaluation(context);
+        }, isPrimary: true);
+        break;
+        
+      case OrderStatus.orderCompleted:
+        // 已完成：再次咨询
+        primaryButton = _buildButton(context, '再次咨询', () {
+          context.go('/home');
+        }, isPrimary: true);
+        break;
+        
+      case OrderStatus.applyingForMediation:
+      case OrderStatus.afterSale:
+      case OrderStatus.AfterSaleRejection:
+        // 平台介入：联系客服
+        primaryButton = _buildButton(context, '联系客服', () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('正在连接客服...')),
+          );
+        }, isPrimary: true);
+        break;
+        
+      case OrderStatus.canceled:
+        // 已取消：删除订单
+        primaryButton = _buildButton(context, '删除订单', () {
+          dialogs.showConfirmationDialog(
+            context: context,
+            title: '删除订单',
+            content: '您确定要删除这个订单吗？',
+            onConfirm: () {
+              context.read<OrderDetailBloc>().add(
+                OrderActionRequested(
+                  action: OrderAction.delete,
+                  orderId: order.id.toString(),
+                ),
+              );
+            },
+          );
+        }, isPrimary: true);
+        break;
+        
+      default:
+        break;
+    }
+    
+    // 构建底部操作栏
+    if (buttons.isEmpty && primaryButton == null) {
+      return const SizedBox.shrink();
+    }
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          ...buttons.map((button) => Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: button,
+          )),
+          if (primaryButton != null) Expanded(child: primaryButton),
+        ],
+      ),
+    );
   }
 }
