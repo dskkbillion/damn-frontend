@@ -37,8 +37,11 @@ class ChatRoutes {
       path: '/chat', // Path for the chat list page
       name: 'chatList', // Optional name for navigation
       builder: (context, state) => BlocProvider(
-        // Ensure ChatListBloc and its dependencies (use cases) are registered in your DI (GetIt/sl)
-        create: (_) => sl<ChatListBloc>()..add(LoadChatRoomList()), // Create Bloc and load initial data
+        // Create a new instance instead of using singleton to avoid "Cannot add new events after calling close" error
+        create: (_) => ChatListBloc(
+          getChatRoomList: sl(),
+          createChatRoom: sl(),
+        )..add(LoadChatRoomList()), // Create Bloc and load initial data
         child: const ChatListPage(),
       ),
       // Define nested routes starting from /chat
