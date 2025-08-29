@@ -101,7 +101,9 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
         'pageNum': pageNum,
         'pageSize': pageSize,
         // 添加排序参数，让新创建的商品排在前面
-        'orderBy': 'create_time desc',
+        // 后端PageDomain需要orderByColumn和isAsc字段
+        'orderByColumn': 'createTime',  // 使用驼峰命名，后端会转换为snake_case
+        'isAsc': 'descending',  // descending表示降序（最新的在前），后端会转换为desc
       };
       if (state != null) {
         requestData['state'] = state; // 保持原状态值，不转换大小写

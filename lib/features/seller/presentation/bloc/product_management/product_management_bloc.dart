@@ -11,7 +11,7 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/routes/seller
 import 'package:injectable/injectable.dart';
 
 /// 每页加载商品数量
-const int _pageSize = 50; // 增加每页数量，确保新创建的商品能显示
+const int _pageSize = 20; // 每页显示20个商品
 
 /// 商品管理 BLoC
 @injectable

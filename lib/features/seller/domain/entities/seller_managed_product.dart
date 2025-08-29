@@ -326,9 +326,9 @@ class ProductCreationData extends Equatable {
     // 添加状态字段 - 默认为normal（上架）
     data['state'] = state ?? 'normal';
     
-    // 对于正式商品，需要设置审核状态为待审核
+    // 对于正式商品，设置审核状态（轻咨询模式下直接审核通过）
     if (productType == 'product') {
-      data['statusAudit'] = statusAudit ?? 'WAIT';
+      data['statusAudit'] = statusAudit ?? 'SUCCESS';  // 默认直接审核通过
     }
     
     // 添加价格字段
