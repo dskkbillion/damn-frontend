@@ -352,14 +352,12 @@ class SellerManagedProductDto {
     if (productType != null && productType!.toLowerCase() == 'draft') {
       // 如果productType为draft，则强制设为草稿状态
       productStatus = ProductStatus.draft;
-    } else if (statusAudit == 'WAIT' || statusAudit == 'REVIEWING') {
-      // 如果审核状态为等待审核，则设为审核中状态
-      productStatus = ProductStatus.reviewing;
     } else if (statusAudit == 'FAIL' || statusAudit == 'REJECTED') {
       // 如果审核失败，则设为审核拒绝状态
       productStatus = ProductStatus.rejected;
     } else {
-      // 否则使用state字段
+      // 轻咨询模式下，忽略审核状态，直接使用state字段
+      // 即使statusAudit为WAIT，只要state为normal，商品就是上架状态
       productStatus = ProductStatus.fromValue(state ?? 'UNKNOWN');
     }
 
