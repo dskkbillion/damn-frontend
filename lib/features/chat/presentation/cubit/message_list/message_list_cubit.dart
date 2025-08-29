@@ -670,30 +670,4 @@ class MessageListCubit extends Cubit<MessageListState> {
       },
     );
   }
-  
-  /// Add a received message (extended with round count)
-  void addReceivedMessage(ChatMessage message) async {
-    if (message.chatId != _currentChatId) return;
-    
-    final currentState = state;
-    if (currentState is! _Loaded) return;
-    
-    // 检查消息是否已存在
-    if (_allMessages.any((m) => m.id == message.id)) return;
-    
-    _allMessages.insert(0, message);
-    
-    // 更新轮次
-    _calculateRoundCount(_allMessages);
-    
-    emit(MessageListState.loaded(
-      messages: List.from(_allMessages),
-      hasMore: _hasMore,
-    ));
-    
-    // 检查是否需要插入本地付费提示（买卖双方都检查）
-    if (_isLightConsultation) {
-      await _checkAndInsertLocalPaymentPrompt();
-    }
-  }
 }
