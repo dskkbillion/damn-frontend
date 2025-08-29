@@ -224,7 +224,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                 loading: () => Text(s.chat_loading),
                 ready: (chatRoom, lastReceivedMessage, hasNewMessage) => Text(
                   chatRoom.participants
-                      .firstWhere((p) => p.referId != _currentUserParticipantId, 
+                      .firstWhere((p) => p.id != _currentUserParticipantId, 
                           orElse: () => chatRoom.participants.first)
                       .nickName ?? s.chat_unknown_user,
                 ),
