@@ -328,6 +328,7 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
   @override
   Future<ChatMessageDto> sendMessage(ChatMessage message) async {
     print("[API Call] Sending message: ${message.context}");
+    // 后端会根据token自动识别发送者身份，不需要前端传递memberId或doctorId
     final requestBody = {
       'chatId': message.chatId,
       'context': message.context,
