@@ -108,24 +108,39 @@ class OrderStatusMapper {
   static bool isLightConsultationOrder(dynamic order) {
     // 根据订单的产品类型或服务等级判断
     // 可以根据实际的订单数据结构调整判断逻辑
-    if (order == null) return false;
+    if (order == null) return true; // 默认为轻咨询模式
     
-    // 检查订单项中是否有轻咨询类型的商品
-    if (order.items != null) {
-      return order.items.any((item) =>
-          item.productType == 'LIGHT_CONSULTATION' ||
-          item.productType == 'light_consultation' ||
-          item.serviceTier == 'Lite' ||
-          item.serviceTier == 'lite');
+    // 检查订单的feature字段（后端可能在这里标记）
+    try {
+      if (order.feature != null) {
+        // 如果feature中包含轻咨询标记
+        if (order.feature is Map) {
+          return order.feature['consultationType'] == 'light' ||
+                 order.feature['orderType'] == 'LIGHT_CONSULTATION';
+        }
+        if (order.feature is String && order.feature.contains('light')) {
+          return true;
+        }
+      }
+    } catch (e) {
+      // 忽略访问错误
     }
     
-    // 检查订单本身的类型标记
-    if (order.orderType != null) {
-      return order.orderType == 'LIGHT_CONSULTATION' ||
-             order.orderType == 'light_consultation';
+    // 检查订单备注中是否包含轻咨询关键词
+    try {
+      if (order.remark != null && order.remark is String) {
+        final remarkLower = order.remark.toLowerCase();
+        if (remarkLower.contains('轻咨询') || 
+            remarkLower.contains('light consultation') ||
+            remarkLower.contains('咨询')) {
+          return true;
+        }
+      }
+    } catch (e) {
+      // 忽略访问错误
     }
     
-    // 默认为轻咨询模式（根据需求调整）
+    // 默认为轻咨询模式（当前阶段全部使用轻咨询模式）
     return true;
   }
 
