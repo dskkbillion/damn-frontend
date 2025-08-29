@@ -1,5 +1,6 @@
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
+import 'package:dskk_flutter_refactor/features/orders/presentation/utils/order_status_mapper.dart';
 import 'package:flutter/material.dart';
 
 /// Widget displaying the order status timeline and description card.
@@ -19,12 +20,20 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+    
+    // 判断是否为轻咨询订单
+    final isLightConsultation = OrderStatusMapper.isLightConsultationOrder(widget.order);
 
-    final List<String> steps = [
-      '已拍下', '已提交', '已接单', '已交付', '已收货', '待评价'
-    ];
-    int currentStepIndex = _getCurrentStepIndex(widget.order.state);
-    bool showTimeline = widget.order.state != OrderStatus.canceled;
+    // 轻咨询模式：简化的时间线步骤
+    final List<String> steps = isLightConsultation 
+        ? ['下单', '付款', '交付', '评价', '完成']  // 5个简化步骤
+        : ['已拍下', '已提交', '已接单', '已交付', '已收货', '待评价'];  // 原有6个步骤
+        
+    int currentStepIndex = isLightConsultation 
+        ? _getSimplifiedStepIndex(widget.order.state)
+        : _getCurrentStepIndex(widget.order.state);
+    bool showTimeline = widget.order.state != OrderStatus.canceled && 
+                       widget.order.state != OrderStatus.applyingForMediation;
 
     return Container(
       width: double.infinity,
@@ -159,8 +168,15 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
     
-    String statusTitle = _getStatusTitle(status);
-    String? statusSubtitle = _getStatusSubtitle(status);
+    // 判断是否为轻咨询订单
+    final isLightConsultation = OrderStatusMapper.isLightConsultationOrder(widget.order);
+    
+    String statusTitle = isLightConsultation 
+        ? _getSimplifiedStatusTitle(status)
+        : _getStatusTitle(status);
+    String? statusSubtitle = isLightConsultation
+        ? _getSimplifiedStatusSubtitle(status)
+        : _getStatusSubtitle(status);
     IconData statusIcon = _getStatusIcon(status);
     Color statusColor = _getStatusColor(status, colorScheme);
     
@@ -279,6 +295,40 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
     }
   }
 
+  // 轻咨询模式：获取简化的步骤索引
+  int _getSimplifiedStepIndex(OrderStatus status) {
+    const int totalSteps = 5; // 简化为5个步骤
+    switch (status) {
+      case OrderStatus.awaitingPayment:
+        return 0; // 下单
+      
+      // 这些状态都映射到"交付"步骤
+      case OrderStatus.awaitingSubmission:
+      case OrderStatus.buyAwaitingSubmission:
+      case OrderStatus.awaitingStart:
+      case OrderStatus.awaitingDelivery:
+      case OrderStatus.awaitingConfirmation:
+        return 2; // 交付中
+        
+      case OrderStatus.awaitingEvaluation:
+        return 3; // 评价
+        
+      case OrderStatus.orderCompleted:
+        return 4; // 完成
+        
+      // 平台介入、售后、取消等特殊状态
+      case OrderStatus.applyingForMediation:
+      case OrderStatus.afterSale:
+      case OrderStatus.AfterSaleRejection:
+      case OrderStatus.sellerSupplementaryMaterials:
+      case OrderStatus.applyForRefuse:
+      case OrderStatus.canceled:
+      case OrderStatus.unknown:
+      default:
+        return totalSteps; // 视为结束状态
+    }
+  }
+
   // Determine the index of the current step based on OrderStatus
   int _getCurrentStepIndex(OrderStatus status) {
     const int totalSteps = 6; // Define total steps here
@@ -307,6 +357,78 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
       case OrderStatus.unknown:
       default:
         return totalSteps; // Treat as completed for visual purpose if shown
+    }
+  }
+
+  // 轻咨询模式：获取简化的状态标题
+  String _getSimplifiedStatusTitle(OrderStatus status) {
+    switch (status) {
+      case OrderStatus.awaitingPayment: 
+        return '等待付款';
+      
+      // 这些状态都映射到"待交付"
+      case OrderStatus.awaitingSubmission:
+      case OrderStatus.buyAwaitingSubmission:
+      case OrderStatus.awaitingStart:
+      case OrderStatus.awaitingDelivery:
+      case OrderStatus.awaitingConfirmation:
+        return '咨询进行中';
+        
+      case OrderStatus.awaitingEvaluation: 
+        return '等待评价';
+        
+      case OrderStatus.orderCompleted: 
+        return '咨询完成';
+        
+      case OrderStatus.canceled: 
+        return '已取消';
+        
+      // 平台介入相关状态
+      case OrderStatus.applyingForMediation:
+      case OrderStatus.afterSale:
+      case OrderStatus.AfterSaleRejection:
+      case OrderStatus.sellerSupplementaryMaterials:
+      case OrderStatus.applyForRefuse:
+        return '平台处理中';
+        
+      default: 
+        return '状态更新中';
+    }
+  }
+  
+  // 轻咨询模式：获取简化的状态副标题
+  String? _getSimplifiedStatusSubtitle(OrderStatus status) {
+    switch (status) {
+      case OrderStatus.awaitingPayment: 
+        return '请尽快完成支付以开始咨询';
+        
+      // 这些状态都映射到"待交付"
+      case OrderStatus.awaitingSubmission:
+      case OrderStatus.buyAwaitingSubmission:
+      case OrderStatus.awaitingStart:
+      case OrderStatus.awaitingDelivery:
+      case OrderStatus.awaitingConfirmation:
+        return '顾问正在为您提供服务';
+        
+      case OrderStatus.awaitingEvaluation: 
+        return '您的评价对顾问很重要';
+        
+      case OrderStatus.orderCompleted: 
+        return '感谢您的信任与支持';
+        
+      case OrderStatus.canceled:
+        return '订单已关闭';
+        
+      // 平台介入相关状态
+      case OrderStatus.applyingForMediation:
+      case OrderStatus.afterSale:
+      case OrderStatus.AfterSaleRejection:
+      case OrderStatus.sellerSupplementaryMaterials:
+      case OrderStatus.applyForRefuse:
+        return '平台正在协调处理';
+        
+      default: 
+        return null;
     }
   }
 
