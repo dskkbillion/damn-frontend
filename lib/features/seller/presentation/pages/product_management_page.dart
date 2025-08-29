@@ -35,12 +35,19 @@ class _ProductManagementPageState extends State<ProductManagementPage>
   void initState() {
     super.initState();
     
-    _tabController = TabController(length: 3, vsync: this);
+    // 轻咨询模式：移除草稿tab，只有2个tab（在售和下架）
+    _tabController = TabController(length: 2, vsync: this);
+    // 原3个tab代码（包含草稿）
+    // _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_handleTabChange);
     
     _onSaleScrollController.addListener(() => _onScrollEnd(_onSaleScrollController, 0));
-    _draftScrollController.addListener(() => _onScrollEnd(_draftScrollController, 1));
-    _offShelfScrollController.addListener(() => _onScrollEnd(_offShelfScrollController, 2));
+    // 轻咨询模式：草稿tab已移除，下架变成index 1
+    _offShelfScrollController.addListener(() => _onScrollEnd(_offShelfScrollController, 1));
+    // 原草稿tab监听器（已注释）
+    // _draftScrollController.addListener(() => _onScrollEnd(_draftScrollController, 1));
+    // 原下架tab监听器（index was 2）
+    // _offShelfScrollController.addListener(() => _onScrollEnd(_offShelfScrollController, 2));
     
     // 添加生命周期观察者
     WidgetsBinding.instance.addObserver(this);
@@ -156,7 +163,8 @@ class _ProductManagementPageState extends State<ProductManagementPage>
           controller: _tabController,
           tabs: [
             Tab(text: AppLocalizations.of(context)?.product_management_tab_on_sale ?? 'On Sale'),
-            Tab(text: AppLocalizations.of(context)?.product_management_tab_draft ?? 'Drafts'),
+            // 轻咨询模式：移除草稿Tab
+            // Tab(text: AppLocalizations.of(context)?.product_management_tab_draft ?? 'Drafts'),
             Tab(text: AppLocalizations.of(context)?.product_management_tab_off_shelf ?? 'Off Shelf'),
           ],
           indicatorColor: Theme.of(context).primaryColor,
@@ -285,16 +293,17 @@ class _ProductManagementPageState extends State<ProductManagementPage>
                 _onSaleScrollController,
               ),
               
-              _buildProductList(
-                context,
-                1,
-                ProductStatus.draft,
-                _draftScrollController,
-              ),
+              // 轻咨询模式：移除草稿商品列表
+              // _buildProductList(
+              //   context,
+              //   1,
+              //   ProductStatus.draft,
+              //   _draftScrollController,
+              // ),
               
               _buildProductList(
                 context,
-                2,
+                1,  // index从2改为1
                 ProductStatus.disabled,
                 _offShelfScrollController,
               ),
@@ -321,9 +330,13 @@ class _ProductManagementPageState extends State<ProductManagementPage>
       case 0:
         return ProductStatus.normal;
       case 1:
-        return ProductStatus.draft;
-      case 2:
+        // 轻咨询模式：index 1 现在是下架
         return ProductStatus.disabled;
+      // 原草稿status（已移除）
+      // case 1:
+      //   return ProductStatus.draft;
+      // case 2:
+      //   return ProductStatus.disabled;
       default:
         return ProductStatus.normal;
     }

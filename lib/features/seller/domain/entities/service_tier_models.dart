@@ -6,9 +6,9 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_man
 
 /// 服务档位枚举
 enum ServiceTier {
-  basic('Basic Tier', '基础档'),
-  standard('Standard Tier', '标准档'),
-  premium('Premium Tier', '豪华档');
+  basic('Lite', 'Lite'),      // 轻量咨询
+  standard('Pro', 'Pro'),      // 专业咨询
+  premium('Deep', 'Deep');     // 深度咨询
   
   const ServiceTier(this.apiName, this.displayName);
   final String apiName;
@@ -219,8 +219,8 @@ class ServiceTierConfig {
   ServiceTierConfig({
     required this.tier,
     this.price = 0,
-    this.deliveryDay = 3,
-    this.editNum = 1,
+    this.deliveryDay = 1,  // 轻咨询模式：默认1天（即时服务）
+    this.editNum = 1,      // 轻咨询模式：默认1次（一次性服务）
     Map<String, String>? attributeValues,
   }) : attributeValues = attributeValues ?? {} {
     priceController = TextEditingController(text: price > 0 ? price.toString() : '');

@@ -465,13 +465,21 @@ class _ProductEditPageState extends State<ProductEditPage> {
           value: _serviceTiers.basic.price
         ));
         
-        // 保存草稿
-        _bloc.add(const SaveProductDraft());
+        // 轻咨询模式：直接发布商品，不保存草稿
+        _bloc.add(const SubmitProductForm());
         
-        // 等待保存完成
+        // 原草稿功能代码（暂时保留，后续可能会用）
+        // _bloc.add(const SaveProductDraft());
+        
+        // 等待提交完成
         await _bloc.stream
-            .firstWhere((state) => !state.isSavingDraft)
+            .firstWhere((state) => !state.isSubmitting)
             .timeout(const Duration(seconds: 10));
+        
+        // 原草稿等待代码
+        // await _bloc.stream
+        //     .firstWhere((state) => !state.isSavingDraft)
+        //     .timeout(const Duration(seconds: 10));
         
         if (mounted) {
           Navigator.of(context).pop();
@@ -487,13 +495,16 @@ class _ProductEditPageState extends State<ProductEditPage> {
     }
   }
 
-  /// 显示保存草稿对话框
+  /// 显示保存对话框
   Future<bool?> _showSaveDraftDialog() async {
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('检测到未保存的更改'),
-        content: const Text('您有未保存的内容，是否要保存为草稿？'),
+        // 轻咨询模式：直接发布
+        content: const Text('您有未保存的内容，是否要保存并发布？'),
+        // 原草稿提示文案
+        // content: const Text('您有未保存的内容，是否要保存为草稿？'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(null),
@@ -509,7 +520,10 @@ class _ProductEditPageState extends State<ProductEditPage> {
               backgroundColor: const Color(0xFFBF7D2A),
               foregroundColor: Colors.white,
             ),
-            child: Text(AppLocalizations.of(context)?.product_edit_save_draft ?? 'Save Draft'),
+            // 轻咨询模式：直接发布
+            child: const Text('保存并发布'),
+            // 原草稿按钮文案
+            // child: Text(AppLocalizations.of(context)?.product_edit_save_draft ?? 'Save Draft'),
           ),
         ],
       ),
@@ -1014,24 +1028,26 @@ class _ProductEditPageState extends State<ProductEditPage> {
                     backgroundColor: Colors.red,
                   ),
                 );
-              } else if (state.isDraftSaveSuccess && !_isReturning) {
-                // 先检查是否已经mounted，避免在dispose后执行
-                if (!mounted) return;
-                
-                // 设置标志，防止重复返回
-                _isReturning = true;
-                
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('草稿保存成功'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-                // 通知父页面刷新草稿列表
-                widget.onDraftSaved?.call();
-                // 立即返回，不再延迟
-                // 返回true表示需要刷新列表
-                Navigator.of(context).pop(true);
+              // 原草稿保存成功处理（暂时注释，后续可能会用）
+              // else if (state.isDraftSaveSuccess && !_isReturning) {
+              //   // 先检查是否已经mounted，避免在dispose后执行
+              //   if (!mounted) return;
+              //   
+              //   // 设置标志，防止重复返回
+              //   _isReturning = true;
+              //   
+              //   ScaffoldMessenger.of(context).showSnackBar(
+              //     const SnackBar(
+              //       content: Text('草稿保存成功'),
+              //       backgroundColor: Colors.green,
+              //     ),
+              //   );
+              //   // 通知父页面刷新草稿列表
+              //   widget.onDraftSaved?.call();
+              //   // 立即返回，不再延迟
+              //   // 返回true表示需要刷新列表
+              //   Navigator.of(context).pop(true);
+              // }
               } else if (state.isSubmitSuccess) {
                 // 先检查是否已经mounted，避免在dispose后执行
                 if (!mounted) return;
@@ -2971,41 +2987,15 @@ class _ProductEditPageState extends State<ProductEditPage> {
     // 构建所有属性的列表（包括系统属性和自定义属性）
     final List<Widget> attributeItems = [];
     
-    // 添加系统属性：交付期
-    attributeItems.add(_buildFloatingLabelAttribute(
-      labelText: '交付期',
-      value: tierConfig.deliveryDay.toString(),
-      suffix: '天',
-      isSystem: true,
-      keyboardType: TextInputType.number,
-      onChanged: (value) {
-        final parsedValue = int.tryParse(value);
-        if (parsedValue != null && parsedValue > 0) {
-          setState(() {
-            tierConfig.updateDeliveryDay(parsedValue);
-          });
-          _onFormFieldChanged();
-        }
-      },
-    ));
-    
-    // 添加系统属性：次数
-    attributeItems.add(_buildFloatingLabelAttribute(
-      labelText: '次数',
-      value: tierConfig.editNum.toString(),
-      suffix: '次',
-      isSystem: true,
-      keyboardType: TextInputType.number,
-      onChanged: (value) {
-        final parsedValue = int.tryParse(value);
-        if (parsedValue != null && parsedValue > 0) {
-          setState(() {
-            tierConfig.updateEditNum(parsedValue);
-          });
-          _onFormFieldChanged();
-        }
-      },
-    ));
+    // 轻咨询模式下，隐藏交付期和次数字段，使用默认值
+    // deliveryDay 默认为 1（即时）
+    // editNum 默认为 1（一次性服务）
+    if (tierConfig.deliveryDay != 1) {
+      tierConfig.updateDeliveryDay(1);
+    }
+    if (tierConfig.editNum != 1) {
+      tierConfig.updateEditNum(1);
+    }
     
     // 添加自定义属性
     final customAttributes = _serviceTiers.getAttributesForTier(_selectedTier);
