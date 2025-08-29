@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/seller/bloc/seller_order_list_bloc.dart';
+import 'package:dskk_flutter_refactor/features/orders/presentation/utils/order_status_mapper.dart';
 
 /// Displays action buttons specifically for the seller view on an order item card.
 class SellerOrderItemCardActionButtons extends StatelessWidget {
@@ -59,8 +60,97 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
       foregroundColor: Theme.of(context).colorScheme.onPrimary,
     );
 
-    // Determine buttons based on state
-    switch (order.state) {
+    // 判断是否为轻咨询订单
+    final isLightConsultation = OrderStatusMapper.isLightConsultationOrder(order);
+    
+    if (isLightConsultation) {
+      // 轻咨询模式：简化按钮
+      switch (order.state) {
+        case OrderStatus.awaitingPayment:
+          // 待付款状态，卖家一般不需要操作
+          buttons.add(OutlinedButton(
+            onPressed: () {
+              context.push('/chat');
+            }, 
+            style: outlineStyle, 
+            child: const Text('联系买家')
+          ));
+          break;
+          
+        // 待交付状态组（多个状态映射）
+        case OrderStatus.awaitingSubmission:
+        case OrderStatus.buyAwaitingSubmission:
+        case OrderStatus.awaitingStart:
+        case OrderStatus.awaitingDelivery:
+        case OrderStatus.awaitingConfirmation:
+          buttons.add(ElevatedButton(
+            onPressed: () {
+              // 导航到订单详情页进行交付操作
+              context.push('/seller/orders/${order.id}');
+            }, 
+            style: filledStyle, 
+            child: const Text('交付')
+          ));
+          buttons.add(OutlinedButton(
+            onPressed: () {
+              context.push('/chat');
+            }, 
+            style: outlineStyle, 
+            child: const Text('联系买家')
+          ));
+          break;
+          
+        case OrderStatus.awaitingEvaluation:
+          // 等待评价，可以提醒
+          buttons.add(OutlinedButton(
+            onPressed: () {
+              print('[SellerButtons] Invite evaluation ${order.id}');
+            }, 
+            style: outlineStyle, 
+            child: const Text('邀请评价')
+          ));
+          break;
+          
+        case OrderStatus.orderCompleted:
+        case OrderStatus.canceled:
+          // 已完成或已取消，查看详情
+          buttons.add(OutlinedButton(
+            onPressed: () {
+              context.push('/seller/orders/${order.id}');
+            }, 
+            style: outlineStyle, 
+            child: const Text('查看')
+          ));
+          break;
+          
+        case OrderStatus.applyingForMediation:
+        case OrderStatus.afterSale:
+        case OrderStatus.AfterSaleRejection:
+        case OrderStatus.sellerSupplementaryMaterials:
+        case OrderStatus.applyForRefuse:
+          // 平台介入
+          buttons.add(OutlinedButton(
+            onPressed: () {
+              context.push('/seller/orders/${order.id}');
+            }, 
+            style: outlineStyle, 
+            child: const Text('查看')
+          ));
+          break;
+          
+        default:
+          buttons.add(OutlinedButton(
+            onPressed: () {
+              context.push('/seller/orders/${order.id}');
+            }, 
+            style: outlineStyle, 
+            child: const Text('查看')
+          ));
+          break;
+      }
+    } else {
+      // 原有复杂模式
+      switch (order.state) {
       case OrderStatus.awaitingStart:
         // Seller needs to confirm or reject (potentially)
         buttons.add(OutlinedButton(
@@ -225,6 +315,7 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
         // Default or other states might just show details or specific actions
         buttons.add(OutlinedButton(onPressed: () { print('[SellerButtons] View details ${order.id}'); /* TODO: Navigate */ }, style: outlineStyle, child: const Text('查看详情')));
         break;
+      }
     }
 
     return buttons;

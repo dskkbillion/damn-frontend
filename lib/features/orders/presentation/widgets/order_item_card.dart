@@ -249,6 +249,7 @@ class OrderItemCard extends StatelessWidget {
                   EnhancedOrderStatusWidget(
                     status: order.state,
                     countdownEndTime: _getCountdownEndTime(order),
+                    order: order, // 传入order对象用于判断是否为轻咨询
                   ),
                 ],
               ),

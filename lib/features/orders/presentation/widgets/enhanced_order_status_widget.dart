@@ -8,12 +8,14 @@ class EnhancedOrderStatusWidget extends StatefulWidget {
   final OrderStatus status;
   final DateTime? countdownEndTime;
   final VoidCallback? onCountdownEnd;
+  final dynamic order; // 可选，用于判断是否为轻咨询订单
   
   const EnhancedOrderStatusWidget({
     super.key,
     required this.status,
     this.countdownEndTime,
     this.onCountdownEnd,
+    this.order,
   });
   
   @override
@@ -92,8 +94,11 @@ class _EnhancedOrderStatusWidgetState extends State<EnhancedOrderStatusWidget> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // 保持现有状态标签样式
-        OrderStatusWidget(status: widget.status),
+        // 保持现有状态标签样式，传入order对象
+        OrderStatusWidget(
+          status: widget.status,
+          order: widget.order,
+        ),
         
         // 新增：倒计时显示（仅特定状态）
         if (widget.countdownEndTime != null && 

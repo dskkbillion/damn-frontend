@@ -1,0 +1,245 @@
+import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
+
+/// 订单状态映射器 - 用于轻咨询模式的状态简化
+/// 
+/// 将14个详细状态映射到6个简化状态：
+/// - 待付款 (awaitingPayment)
+/// - 待交付 (awaitingDelivery) 
+/// - 评价 (awaitingEvaluation)
+/// - 完成 (orderCompleted)
+/// - 平台介入 (applyingForMediation)
+/// - 已取消 (canceled)
+class OrderStatusMapper {
+  /// 获取简化后的状态文本
+  static String getSimplifiedStatusText(
+    OrderStatus status, {
+    bool isLightConsultation = true,
+    bool isSellerView = false,
+  }) {
+    // 如果不是轻咨询模式，返回原始状态文本
+    if (!isLightConsultation) {
+      return _getOriginalStatusText(status, isSellerView);
+    }
+
+    // 轻咨询模式：14个状态映射到6个显示状态
+    switch (status) {
+      case OrderStatus.awaitingPayment:
+        return '待付款';
+
+      // 这些状态都映射到"待交付"
+      case OrderStatus.awaitingSubmission:
+      case OrderStatus.buyAwaitingSubmission:
+      case OrderStatus.awaitingStart:
+      case OrderStatus.awaitingDelivery:
+      case OrderStatus.awaitingConfirmation:
+        return isSellerView ? '待交付' : '待交付';
+
+      case OrderStatus.awaitingEvaluation:
+        return '评价';
+
+      case OrderStatus.orderCompleted:
+        return '完成';
+
+      // 售后相关状态都映射到"平台介入"
+      case OrderStatus.applyingForMediation:
+      case OrderStatus.afterSale:
+      case OrderStatus.AfterSaleRejection:
+      case OrderStatus.sellerSupplementaryMaterials:
+      case OrderStatus.applyForRefuse:
+        return '平台介入';
+
+      case OrderStatus.canceled:
+        return '已取消';
+
+      case OrderStatus.unknown:
+      default:
+        return '未知状态';
+    }
+  }
+
+  /// 获取简化后的状态颜色
+  static Color getSimplifiedStatusColor(
+    OrderStatus status,
+    BuildContext context, {
+    bool isLightConsultation = true,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    if (!isLightConsultation) {
+      return _getOriginalStatusColor(status, context);
+    }
+
+    // 轻咨询模式的简化颜色方案
+    switch (status) {
+      case OrderStatus.awaitingPayment:
+        return colorScheme.error; // 红色 - 待付款
+
+      case OrderStatus.awaitingSubmission:
+      case OrderStatus.buyAwaitingSubmission:
+      case OrderStatus.awaitingStart:
+      case OrderStatus.awaitingDelivery:
+      case OrderStatus.awaitingConfirmation:
+        return Colors.orange; // 橙色 - 进行中
+
+      case OrderStatus.awaitingEvaluation:
+        return Colors.green; // 绿色 - 待评价
+
+      case OrderStatus.orderCompleted:
+        return colorScheme.secondary; // 次要色 - 已完成
+
+      case OrderStatus.applyingForMediation:
+      case OrderStatus.afterSale:
+      case OrderStatus.AfterSaleRejection:
+      case OrderStatus.sellerSupplementaryMaterials:
+      case OrderStatus.applyForRefuse:
+        return Colors.blueGrey; // 蓝灰色 - 平台介入
+
+      case OrderStatus.canceled:
+        return Colors.grey; // 灰色 - 已取消
+
+      case OrderStatus.unknown:
+      default:
+        return Colors.grey;
+    }
+  }
+
+  /// 判断订单是否为轻咨询类型
+  static bool isLightConsultationOrder(dynamic order) {
+    // 根据订单的产品类型或服务等级判断
+    // 可以根据实际的订单数据结构调整判断逻辑
+    if (order == null) return false;
+    
+    // 检查订单项中是否有轻咨询类型的商品
+    if (order.items != null) {
+      return order.items.any((item) =>
+          item.productType == 'LIGHT_CONSULTATION' ||
+          item.productType == 'light_consultation' ||
+          item.serviceTier == 'Lite' ||
+          item.serviceTier == 'lite');
+    }
+    
+    // 检查订单本身的类型标记
+    if (order.orderType != null) {
+      return order.orderType == 'LIGHT_CONSULTATION' ||
+             order.orderType == 'light_consultation';
+    }
+    
+    // 默认为轻咨询模式（根据需求调整）
+    return true;
+  }
+
+  /// 获取原始状态文本（非轻咨询模式）
+  static String _getOriginalStatusText(OrderStatus status, bool isSellerView) {
+    switch (status) {
+      case OrderStatus.awaitingPayment:
+        return '待付款';
+      case OrderStatus.awaitingSubmission:
+        return '待提交';
+      case OrderStatus.buyAwaitingSubmission:
+        return '待重传';
+      case OrderStatus.awaitingStart:
+        return isSellerView ? '待接单' : '待接单';
+      case OrderStatus.awaitingDelivery:
+        return isSellerView ? '待交付' : '待发货';
+      case OrderStatus.awaitingConfirmation:
+        return isSellerView ? '待确认' : '待收货';
+      case OrderStatus.sellerSupplementaryMaterials:
+        return '补充材料';
+      case OrderStatus.applyForRefuse:
+        return '申请拒绝';
+      case OrderStatus.awaitingEvaluation:
+        return '待评价';
+      case OrderStatus.orderCompleted:
+        return '已完成';
+      case OrderStatus.canceled:
+        return '已取消';
+      case OrderStatus.afterSale:
+        return '售后中';
+      case OrderStatus.AfterSaleRejection:
+        return '售后拒绝';
+      case OrderStatus.applyingForMediation:
+        return '平台介入';
+      case OrderStatus.unknown:
+      default:
+        return '未知状态';
+    }
+  }
+
+  /// 获取原始状态颜色（非轻咨询模式）
+  static Color _getOriginalStatusColor(OrderStatus status, BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    switch (status) {
+      case OrderStatus.awaitingPayment:
+        return colorScheme.error;
+      case OrderStatus.awaitingSubmission:
+      case OrderStatus.buyAwaitingSubmission:
+        return Colors.orange;
+      case OrderStatus.awaitingStart:
+        return Colors.blue;
+      case OrderStatus.awaitingDelivery:
+        return Colors.orange;
+      case OrderStatus.awaitingConfirmation:
+        return colorScheme.primary;
+      case OrderStatus.awaitingEvaluation:
+        return Colors.green;
+      case OrderStatus.orderCompleted:
+        return colorScheme.secondary;
+      case OrderStatus.canceled:
+        return Colors.grey;
+      case OrderStatus.afterSale:
+      case OrderStatus.AfterSaleRejection:
+      case OrderStatus.applyingForMediation:
+        return Colors.blueGrey;
+      case OrderStatus.sellerSupplementaryMaterials:
+      case OrderStatus.applyForRefuse:
+      case OrderStatus.unknown:
+      default:
+        return Colors.grey;
+    }
+  }
+
+  /// 获取简化后的操作按钮
+  static List<String> getSimplifiedActions(
+    OrderStatus status, {
+    bool isSellerView = false,
+  }) {
+    switch (status) {
+      case OrderStatus.awaitingPayment:
+        return isSellerView ? [] : ['支付', '取消'];
+
+      case OrderStatus.awaitingSubmission:
+      case OrderStatus.buyAwaitingSubmission:
+      case OrderStatus.awaitingStart:
+      case OrderStatus.awaitingDelivery:
+      case OrderStatus.awaitingConfirmation:
+        // 待交付状态
+        if (isSellerView) {
+          return ['交付', '联系买家'];
+        } else {
+          return ['查看', '联系卖家'];
+        }
+
+      case OrderStatus.awaitingEvaluation:
+        return isSellerView ? [] : ['评价'];
+
+      case OrderStatus.orderCompleted:
+        return ['查看'];
+
+      case OrderStatus.applyingForMediation:
+      case OrderStatus.afterSale:
+      case OrderStatus.AfterSaleRejection:
+      case OrderStatus.sellerSupplementaryMaterials:
+      case OrderStatus.applyForRefuse:
+        return ['查看', '联系客服'];
+
+      case OrderStatus.canceled:
+        return ['删除'];
+
+      case OrderStatus.unknown:
+      default:
+        return [];
+    }
+  }
+}

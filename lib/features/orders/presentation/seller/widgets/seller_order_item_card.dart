@@ -134,7 +134,11 @@ class SellerOrderItemCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  OrderStatusWidget(status: order.state), // 显示订单状态
+                  OrderStatusWidget(
+                    status: order.state,
+                    isSellerView: true, // 标记为卖家视角
+                    order: order, // 传入order对象用于判断是否为轻咨询
+                  ), // 显示订单状态
                 ],
               ),
               const SizedBox(height: 12.0),

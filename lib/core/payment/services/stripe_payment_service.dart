@@ -130,6 +130,7 @@ class StripePaymentService implements IPaymentService {
       'businessId': int.tryParse(request.orderId) ?? 0,
       'scene': request.scene.code,
       'payway': request.method.code, // 'stripe'
+      'currency': 'usd', // 强制使用美元
     };
 
     print('[StripePaymentService] 发送支付请求: $requestData');
