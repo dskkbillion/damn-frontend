@@ -862,7 +862,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
           detailContent: state.formData.detailContent.isNotEmpty ? state.formData.detailContent : null,
           productType: 'product', // 明确设置为正式商品，不是草稿
           state: 'normal', // 设置为上架状态（后端ProductState.NORMAL）
-          statusAudit: 'SUCCESS', // 设置为审核通过，直接发布
+          // statusAudit 由后端管理，前端不应设置
         );
         
         // 创建商品

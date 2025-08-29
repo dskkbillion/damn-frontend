@@ -246,11 +246,12 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
     int participantId, {
     int? productId, // 新增可选的商品ID参数
   }) async {
-    print("[API Call] Creating room with participantId: $participantId, productId: $productId");
+    print("[API Call] Creating room with participantId(referId): $participantId, productId: $productId");
+    print("[API Call] Note: participantId is the referId of the target user (doctor/seller)");
     try {
       // 准备请求数据 - 根据participantId判断用户类型
       final Map<String, dynamic> requestData = {
-        'doctorId': participantId.toString(), // Send participantId as string
+        'doctorId': participantId.toString(), // Send participantId(referId) as string
       };
       
       // 根据participantId判断用户类型

@@ -260,10 +260,21 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                 } else if (state.status == ChatListStatus.failure) {
                   return _buildSystemItemsOnly(context, currentUserId, s.chat_error_loading(state.errorMessage ?? s.chat_unknown_message));
                 } else if (state.status == ChatListStatus.success || state.chatRooms.isNotEmpty) {
+                  // 调试：打印当前用户信息
+                  print('[ChatListPage] Current user referId: $referId, AppMode: $currentAppMode, MixedMode: $_isMixedMode');
+                  print('[ChatListPage] Total chat rooms from API: ${state.chatRooms.length}');
+                  
+                  // 打印每个聊天室的参与者信息
+                  for (final room in state.chatRooms) {
+                    print('[ChatListPage] Room ${room.id}: participant1(id=${room.participant1.id}, referId=${room.participant1.referId}, type=${room.participant1.type}), participant2(id=${room.participant2.id}, referId=${room.participant2.referId}, type=${room.participant2.type})');
+                  }
+                  
                   // 根据混合模式决定是否筛选
                   final filteredRooms = _isMixedMode 
                       ? _filterChatRoomsForMixedMode(state.chatRooms, referId) // 混合模式：显示所有聊天
                       : _filterChatRoomsByAppMode(state.chatRooms, currentAppMode, referId); // 分类模式：根据身份筛选
+                  
+                  print('[ChatListPage] Filtered rooms count: ${filteredRooms.length}');
                   
                   // 触发头像预加载（异步执行，不阻塞UI）
                   if (filteredRooms.isNotEmpty && context.mounted) {
@@ -328,12 +339,16 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   List<ChatRoom> _filterChatRoomsByAppMode(List<ChatRoom> chatRooms, AppMode appMode, int referId) {
     final filteredRooms = <ChatRoom>[];
     
-    print("[ChatListPage] Starting filter with referId: $referId, appMode: $appMode, total rooms: ${chatRooms.length}");
+    print("[ChatListPage] ===== Filter Debug Info =====");
+    print("[ChatListPage] Current user referId: $referId");
+    print("[ChatListPage] Current app mode: $appMode");
+    print("[ChatListPage] Total rooms before filter: ${chatRooms.length}");
+    print("[ChatListPage] =============================");
     
     for (final room in chatRooms) {
       print("[ChatListPage] Checking room ${room.id}:");
-      print("  - participant1: type=${room.participant1.type}, referId=${room.participant1.referId}, name=${room.participant1.nickName}");
-      print("  - participant2: type=${room.participant2.type}, referId=${room.participant2.referId}, name=${room.participant2.nickName}");
+      print("  - participant1: type=${room.participant1.type}, referId=${room.participant1.referId}, id=${room.participant1.id}, name=${room.participant1.nickName}");
+      print("  - participant2: type=${room.participant2.type}, referId=${room.participant2.referId}, id=${room.participant2.id}, name=${room.participant2.nickName}");
       
       // 检查是否是系统管理员聊天室
       bool isAdminChat = false;
