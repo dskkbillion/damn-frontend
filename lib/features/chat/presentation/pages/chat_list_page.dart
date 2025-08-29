@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart'; // 添加Riverpod导入
 import 'package:get_it/get_it.dart'; // Import GetIt
 import 'package:go_router/go_router.dart'; // 添加导入
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // 添加SharedPreferences导入
 import 'dart:async'; // 添加Completer和StreamSubscription导入
 import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/app/app_mode.dart'; // 导入应用模式
@@ -36,6 +37,9 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   // 添加预加载服务
   late final ChatPreloadService _preloadService;
   
+  // 添加混合模式状态
+  bool _isMixedMode = false; // 默认不混合，根据买家/卖家模式分开显示
+  
   @override
   void initState() {
     super.initState();
@@ -43,6 +47,30 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     _referIdFuture = _getReferIdFromStorage();
     // 初始化预加载服务
     _preloadService = ChatPreloadService();
+    // 从本地存储读取混合模式设置
+    _loadMixedModeSetting();
+  }
+  
+  // 加载混合模式设置
+  Future<void> _loadMixedModeSetting() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      setState(() {
+        _isMixedMode = prefs.getBool('chat_mixed_mode') ?? false;
+      });
+    } catch (e) {
+      print('[ChatListPage] Error loading mixed mode setting: $e');
+    }
+  }
+  
+  // 保存混合模式设置
+  Future<void> _saveMixedModeSetting(bool value) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('chat_mixed_mode', value);
+    } catch (e) {
+      print('[ChatListPage] Error saving mixed mode setting: $e');
+    }
   }
   
   @override
@@ -165,6 +193,22 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         foregroundColor: Colors.black, 
         elevation: 0.5, 
         shadowColor: Colors.grey[300],
+        actions: [
+          // 添加混合模式切换按钮
+          IconButton(
+            icon: Icon(
+              _isMixedMode ? Icons.folder_open : Icons.folder,
+              color: _isMixedMode ? Theme.of(context).primaryColor : Colors.grey,
+            ),
+            tooltip: _isMixedMode ? '显示全部聊天' : '按身份分类',
+            onPressed: () {
+              setState(() {
+                _isMixedMode = !_isMixedMode;
+              });
+              _saveMixedModeSetting(_isMixedMode);
+            },
+          ),
+        ],
       ),
       // 使用FutureBuilder获取referId
       body: FutureBuilder<int?>(
@@ -216,8 +260,10 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                 } else if (state.status == ChatListStatus.failure) {
                   return _buildSystemItemsOnly(context, currentUserId, s.chat_error_loading(state.errorMessage ?? s.chat_unknown_message));
                 } else if (state.status == ChatListStatus.success || state.chatRooms.isNotEmpty) {
-                  // 使用referId和应用模式进行数据匹配
-                  final filteredRooms = _filterChatRoomsByAppMode(state.chatRooms, currentAppMode, referId);
+                  // 根据混合模式决定是否筛选
+                  final filteredRooms = _isMixedMode 
+                      ? _filterChatRoomsForMixedMode(state.chatRooms, referId) // 混合模式：显示所有聊天
+                      : _filterChatRoomsByAppMode(state.chatRooms, currentAppMode, referId); // 分类模式：根据身份筛选
                   
                   // 触发头像预加载（异步执行，不阻塞UI）
                   if (filteredRooms.isNotEmpty && context.mounted) {
@@ -246,6 +292,36 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     // Navigate to ChatRoomPage using GoRouter
     // 使用新的重构版本
     context.push('/chat/refactored/${chatRoom.id}');
+  }
+  
+  // 混合模式筛选：显示所有当前用户参与的聊天，不区分身份
+  List<ChatRoom> _filterChatRoomsForMixedMode(List<ChatRoom> chatRooms, int referId) {
+    final filteredRooms = <ChatRoom>[];
+    
+    print("[ChatListPage] Mixed mode filter with referId: $referId, total rooms: ${chatRooms.length}");
+    
+    for (final room in chatRooms) {
+      // 检查是否是系统管理员聊天室
+      bool isAdminChat = false;
+      if ((room.participant1.type == 'ADMIN' && room.participant1.referId == 0) ||
+          (room.participant2.type == 'ADMIN' && room.participant2.referId == 0)) {
+        isAdminChat = true;
+      }
+      
+      // 排除系统管理员聊天室
+      if (isAdminChat) {
+        continue;
+      }
+      
+      // 检查当前用户是否是参与者（不管什么身份）
+      if (room.participant1.referId == referId || room.participant2.referId == referId) {
+        filteredRooms.add(room);
+        print("[ChatListPage] Mixed mode: Including room ${room.id}");
+      }
+    }
+    
+    print("[ChatListPage] Mixed mode: filtered ${filteredRooms.length} rooms");
+    return filteredRooms;
   }
   
   // 新的筛选方法：根据应用模式筛选聊天室，同时排除系统管理员聊天室
