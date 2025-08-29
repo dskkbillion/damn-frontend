@@ -272,27 +272,50 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         continue;
       }
       
-      // 检查当前用户是否是这个聊天室的参与者（不管是participant1还是participant2）
-      bool isParticipant = false;
+      // 检查当前用户是否是这个聊天室的参与者，并根据模式筛选
+      bool shouldInclude = false;
+      String? userRole;
       
       if (room.participant1.referId == referId) {
-        isParticipant = true;
-        _currentUserType = room.participant1.type; // 记录当前用户类型
-        print("[ChatListPage] ✅ Found chat room: ${room.id}, current user is ${room.participant1.type}, opponent: ${room.participant2.nickName}");
+        userRole = room.participant1.type;
+        _currentUserType = userRole; // 记录当前用户类型
+        
+        // 根据应用模式筛选：
+        // - 买家模式：只显示用户作为MEMBER（买家）的聊天
+        // - 卖家模式：只显示用户作为DOCTOR（卖家）的聊天
+        if (appMode == AppMode.buyer && userRole == 'MEMBER') {
+          shouldInclude = true;
+          print("[ChatListPage] ✅ Buyer mode: Including room ${room.id} where user is MEMBER, chatting with ${room.participant2.nickName}");
+        } else if (appMode == AppMode.seller && userRole == 'DOCTOR') {
+          shouldInclude = true;
+          print("[ChatListPage] ✅ Seller mode: Including room ${room.id} where user is DOCTOR, chatting with ${room.participant2.nickName}");
+        } else {
+          print("[ChatListPage] ❌ Mode mismatch: room ${room.id}, user role: $userRole, app mode: $appMode");
+        }
       } else if (room.participant2.referId == referId) {
-        isParticipant = true;
-        _currentUserType = room.participant2.type; // 记录当前用户类型
-        print("[ChatListPage] ✅ Found chat room: ${room.id}, current user is ${room.participant2.type}, opponent: ${room.participant1.nickName}");
+        userRole = room.participant2.type;
+        _currentUserType = userRole; // 记录当前用户类型
+        
+        // 根据应用模式筛选
+        if (appMode == AppMode.buyer && userRole == 'MEMBER') {
+          shouldInclude = true;
+          print("[ChatListPage] ✅ Buyer mode: Including room ${room.id} where user is MEMBER, chatting with ${room.participant1.nickName}");
+        } else if (appMode == AppMode.seller && userRole == 'DOCTOR') {
+          shouldInclude = true;
+          print("[ChatListPage] ✅ Seller mode: Including room ${room.id} where user is DOCTOR, chatting with ${room.participant1.nickName}");
+        } else {
+          print("[ChatListPage] ❌ Mode mismatch: room ${room.id}, user role: $userRole, app mode: $appMode");
+        }
       } else {
-        print("[ChatListPage] ❌ No match for referId $referId in room ${room.id}");
+        print("[ChatListPage] ❌ User not participant: referId $referId not in room ${room.id}");
       }
       
-      if (isParticipant) {
+      if (shouldInclude) {
         filteredRooms.add(room);
       }
     }
     
-    print("[ChatListPage] App mode: $appMode, User type detected: $_currentUserType, filtered ${filteredRooms.length} rooms (admin chats excluded)");
+    print("[ChatListPage] App mode: $appMode, filtered ${filteredRooms.length} rooms (mode-specific and admin excluded)");
     return filteredRooms;
   }
 
