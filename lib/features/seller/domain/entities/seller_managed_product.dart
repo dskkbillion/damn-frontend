@@ -323,13 +323,13 @@ class ProductCreationData extends Equatable {
       'productType': productType, // 添加商品类型
     };
     
-    // 添加状态字段
-    if (state != null) {
-      data['state'] = state;
-    }
+    // 添加状态字段 - 默认为normal（上架）
+    data['state'] = state ?? 'normal';
     
-    // 添加审核状态字段
-    if (statusAudit != null) {
+    // 添加审核状态字段 - 草稿默认SUCCESS，正式商品不设置（让后端决定）
+    if (productType == 'draft') {
+      data['statusAudit'] = statusAudit ?? 'SUCCESS';
+    } else if (statusAudit != null) {
       data['statusAudit'] = statusAudit;
     }
     
