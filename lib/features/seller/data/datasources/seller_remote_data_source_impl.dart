@@ -180,10 +180,7 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       String apiState;
       switch (state.toLowerCase()) {
         case 'normal':
-          apiState = 'on_sale'; // 映射normal到on_sale
-          break;
-        case 'on_sale':
-          apiState = 'on_sale'; // 直接使用on_sale
+          apiState = 'normal'; // 保持normal不变（后端ProductState.NORMAL）
           break;
         case 'disabled':
           apiState = 'disabled';
@@ -192,7 +189,7 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
           apiState = 'force_disabled';
           break;
         case 'reviewing':
-          apiState = 'on_sale'; // 草稿发布时，将状态设置为on_sale
+          apiState = 'normal'; // 审核中的商品发布时，将状态设置为normal（上架）
           break;
         default:
           apiState = state.toLowerCase();
@@ -1045,7 +1042,7 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       'name': updateJson['name'] ?? existingData['name'] ?? '',
       'description': updateJson['description'] ?? existingData['description'] ?? '',
       'categoryId': updateJson['categoryId'] ?? existingData['categoryId'],
-      'state': updateJson['state'] ?? existingData['state'] ?? 'on_sale',
+      'state': updateJson['state'] ?? existingData['state'] ?? 'normal',
       
       // 图片处理
       'images': updateJson['images'] ?? existingData['images'] ?? [],

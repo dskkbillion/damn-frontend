@@ -861,7 +861,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
           detailImages: state.uploadedDetailImageUrls.isNotEmpty ? state.uploadedDetailImageUrls.join(',') : null,
           detailContent: state.formData.detailContent.isNotEmpty ? state.formData.detailContent : null,
           productType: 'product', // 明确设置为正式商品，不是草稿
-          state: 'on_sale', // 设置为上架状态（使用后端期望的on_sale）
+          state: 'normal', // 设置为上架状态（后端ProductState.NORMAL）
           statusAudit: 'SUCCESS', // 设置为审核通过，直接发布
         );
         
@@ -902,7 +902,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
           winImages: winImageUrls.isNotEmpty ? winImageUrls.join(',') : null, // 添加成功案例图片
           detailImages: state.uploadedDetailImageUrls.isNotEmpty ? state.uploadedDetailImageUrls.join(',') : null,
           detailContent: state.formData.detailContent.isNotEmpty ? state.formData.detailContent : null,
-          state: 'on_sale', // 确保更新后的商品也是上架状态（使用后端期望的on_sale）
+          state: 'normal', // 确保更新后的商品也是上架状态（后端ProductState.NORMAL）
         );
         
         // 更新商品
