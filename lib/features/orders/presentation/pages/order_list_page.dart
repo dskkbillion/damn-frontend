@@ -26,17 +26,15 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
   final _searchController = TextEditingController();
   bool _showSearchBar = false;
 
-  // Define the statuses corresponding to each tab index
+  // 轻咨询模式：简化的Tab状态列表
   // IMPORTANT: Ensure this list order matches the TabBar tabs order
   final List<OrderStatus?> _tabStatuses = [
     null, // Index 0: 全部 (All)
     OrderStatus.awaitingPayment, // Index 1: 待付款
-    OrderStatus.awaitingSubmission, // Index 2: 待提交
-    OrderStatus.awaitingStart, // Index 3: 待接单
-    OrderStatus.awaitingDelivery, // Index 4: 待交付
-    OrderStatus.awaitingConfirmation, // Index 5: 待收货
-    OrderStatus.awaitingEvaluation, // Index 6: 待评价
-    OrderStatus.afterSale, // Index 7: 售后中 (NEW)
+    OrderStatus.awaitingConfirmation, // Index 2: 待交付 (映射到awaitingConfirmation)
+    OrderStatus.awaitingEvaluation, // Index 3: 评价
+    OrderStatus.orderCompleted, // Index 4: 完成
+    OrderStatus.applyingForMediation, // Index 5: 平台介入
   ];
 
   // Helper to find index for a given status string
@@ -344,18 +342,16 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
       statusCounts = state.statusCounts;
     }
     
-    // Tab标签名称
-    final tabLabels = ['全部', '待付款', '待提交', '待接单', '待交付', '待收货', '待评价', '售后中'];
+    // 轻咨询模式的Tab标签名称
+    final tabLabels = ['全部', '待付款', '待交付', '评价', '完成', '平台介入'];
     
     return List.generate(_tabStatuses.length, (index) {
       final status = _tabStatuses[index];
       final label = tabLabels[index];
       final count = statusCounts?[status] ?? 0;
       
-      // 判断是否需要高亮显示（待付款、待提交、待交付）
-      final shouldHighlight = status == OrderStatus.awaitingPayment ||
-                            status == OrderStatus.awaitingSubmission ||
-                            status == OrderStatus.awaitingDelivery;
+      // 轻咨询模式：只对待付款高亮显示
+      final shouldHighlight = status == OrderStatus.awaitingPayment;
       
       if (count > 0 && status != null) { // 不显示"全部"的数量
         return Tab(

@@ -22,26 +22,22 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
   late TabController _tabController;
   final ScrollController _scrollController = ScrollController();
 
-  // Define Seller Tabs - 单一状态映射，清晰明确
+  // 轻咨询模式 - 卖家视角简化Tab
   final List<Tab> _tabs = const [
     Tab(text: '全部'),        // 所有订单
-    Tab(text: '待接单'),      // 等待卖家确认接单
-    Tab(text: '待发货'),      // 等待卖家发货/交付
-    Tab(text: '待确认收货'),  // 等待买家确认收货
-    Tab(text: '待评价'),      // 等待买家评价
-    Tab(text: '已完成'),      // 订单已完成
-    Tab(text: '售后中'),      // 售后处理中
-    Tab(text: '已取消'),      // 已取消订单
+    Tab(text: '待交付'),      // 待交付（映射到awaitingConfirmation）
+    Tab(text: '待评价'),      // 待评价
+    Tab(text: '完成'),        // 已完成
+    Tab(text: '平台介入'),    // 平台介入
+    Tab(text: '已取消'),      // 已取消
   ];
 
   final List<OrderStatus> _tabStatuses = [
     OrderStatus.unknown,              // 全部
-    OrderStatus.awaitingStart,        // 待接单
-    OrderStatus.awaitingDelivery,     // 待发货
-    OrderStatus.awaitingConfirmation, // 待确认收货
+    OrderStatus.awaitingConfirmation, // 待交付（使用awaitingConfirmation）
     OrderStatus.awaitingEvaluation,   // 待评价
-    OrderStatus.orderCompleted,       // 已完成
-    OrderStatus.afterSale,            // 售后中
+    OrderStatus.orderCompleted,       // 完成
+    OrderStatus.applyingForMediation, // 平台介入
     OrderStatus.canceled,             // 已取消
   ];
 
