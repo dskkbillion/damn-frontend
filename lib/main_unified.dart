@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,6 +23,8 @@ import 'package:dskk_flutter_refactor/features/chat/di/chat_di.dart';
 import 'package:dskk_flutter_refactor/features/profile/di/profile_di.dart';
 import 'package:dskk_flutter_refactor/features/seller/di/seller_di.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+import 'package:dskk_flutter_refactor/features/home/presentation/navigation/home_navigation_di.dart';
+import 'package:dskk_flutter_refactor/app/navigation/app_router.dart';
 
 /// 统一入口【生产版】 - 支持所有支付方式和登录方式，使用美元作为统一货币
 /// 
@@ -39,6 +42,9 @@ Future<void> main() async {
   print('========================================');
   print('DSKK Flutter Unified Entry - Production');
   print('========================================');
+  
+  // Configure global image cache limits
+  _configureImageCache();
 
   // 先加载.env文件
   try {
@@ -118,7 +124,25 @@ Future<void> main() async {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
-      child: const MyApp(),
+      child: Builder(
+        builder: (context) {
+          return Consumer(
+            builder: (context, ref, child) {
+              // 获取GoRouter实例并注册导航服务
+              final router = ref.read(goRouterProvider);
+              
+              // 注册真实的导航服务
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                print('[Unified Production] Registering navigation service...');
+                HomeNavigationDI.registerRealNavigationService(getIt, router);
+                print('[Unified Production] Navigation service registered successfully.');
+              });
+              
+              return const MyApp();
+            },
+          );
+        },
+      ),
     ),
   );
 }
@@ -141,4 +165,20 @@ void _triggerPreloadingAfterDelay() {
       print('[Preloader] Failed to preload data: $e');
     }
   });
+}
+
+/// 配置全局图片缓存限制
+void _configureImageCache() {
+  final PaintingBinding binding = PaintingBinding.instance;
+  
+  // 设置图片缓存的最大数量（默认是1000）
+  binding.imageCache.maximumSize = 100; // 限制缓存图片数量为100张
+  
+  // 设置图片缓存的最大内存大小（以字节为单位）
+  // 50MB = 50 * 1024 * 1024 bytes
+  binding.imageCache.maximumSizeBytes = 50 * 1024 * 1024; // 限制为50MB
+  
+  print('[Image Cache] Configured:');
+  print('  Max images: ${binding.imageCache.maximumSize}');
+  print('  Max memory: ${binding.imageCache.maximumSizeBytes ~/ (1024 * 1024)}MB');
 }

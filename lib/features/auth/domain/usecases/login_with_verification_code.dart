@@ -10,7 +10,8 @@ import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_credent
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart'; // 确认路径
 
-/// 处理使用手机和验证码登录的流程。
+/// 处理使用手机号/邮箱和验证码登录的流程。
+/// 支持手机号和邮箱两种登录方式。
 @lazySingleton // Register UseCase as LazySingleton
 @injectable // Mark class for injectable generator
 class LoginWithVerificationCodeUseCase
@@ -21,9 +22,9 @@ class LoginWithVerificationCodeUseCase
 
   @override
   Future<Either<Failure, AuthenticatedUser>> call(VerificationCodeCredentials credentials) async {
-    // TODO: 可以在这里添加额外的业务逻辑，例如参数校验
+    // 验证参数（支持手机号和邮箱）
     if (credentials.phone.isEmpty || credentials.code.isEmpty) {
-      return Left(ValidationFailure(message: 'Phone and code cannot be empty'));
+      return Left(ValidationFailure(message: 'Account and code cannot be empty'));
     }
     if (credentials.code.length < 4) { // 假设验证码至少4位
         return Left(ValidationFailure(message: 'Invalid verification code format'));

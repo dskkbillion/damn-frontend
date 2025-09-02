@@ -16,16 +16,29 @@ class SendVerificationCodeUseCase implements UseCase<void, SendVerificationCodeP
 
   @override
   Future<Either<Failure, void>> call(SendVerificationCodeParams params) async {
-    // 可以在这里添加手机号格式校验
-    if (params.phone.isEmpty || params.phone.length < 11) { // Example validation
+    // 验证输入格式（支持手机号和邮箱）
+    if (params.phone.isEmpty) {
+      return Left(ValidationFailure(message: 'Account cannot be empty'));
+    }
+    
+    // 检查是否是邮箱格式
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    final isEmail = emailRegex.hasMatch(params.phone);
+    
+    // 如果不是邮箱，则验证手机号格式
+    if (!isEmail && params.phone.length < 11) {
       return Left(ValidationFailure(message: 'Invalid phone number format'));
     }
+    
+    // 后端的 mobile 参数同时支持手机号和邮箱
     return await repository.sendVerificationCode(phone: params.phone);
   }
 }
 
 // UseCase 的参数对象
 class SendVerificationCodeParams extends Equatable {
+  /// 手机号或邮箱地址
+  /// 后端的 mobile 参数同时支持手机号和邮箱
   final String phone;
 
   const SendVerificationCodeParams({required this.phone});

@@ -6,7 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../app/di/injection_container.dart'; // Adjust path if needed
 
 // Import the page and bloc for this route
-import '../pages/sms_login_page.dart';
+import '../pages/unified_login_page.dart';
 import '../bloc/sms_login/sms_login_cubit.dart';
 
 /// Defines routes specifically for the Auth feature module.
@@ -26,11 +26,11 @@ class AuthRoutes {
     GoRoute(
       path: loginPath, // Use the constant
       name: 'login',   // Optional route name
-      // Wrap SmsLoginPage with BlocProvider for SmsLoginCubit
+      // Wrap UnifiedLoginPage with BlocProvider for SmsLoginCubit
       builder: (context, state) => BlocProvider(
         // Use GetIt (imported from injection_container) to create the Cubit instance
         create: (_) => getIt<SmsLoginCubit>(),
-        child: const SmsLoginPage(), 
+        child: const UnifiedLoginPage(), 
       ),
       // TODO: Add sub-routes if needed for the login flow
     ),

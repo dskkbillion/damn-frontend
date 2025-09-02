@@ -6,8 +6,11 @@ abstract class AuthCredentials extends Equatable {
 }
 
 /// 使用验证码登录的凭证。
+/// phone 参数支持手机号或邮箱地址。
 class VerificationCodeCredentials extends AuthCredentials {
+  /// 手机号或邮箱地址
   final String phone;
+  /// 验证码
   final String code;
 
   const VerificationCodeCredentials({required this.phone, required this.code});
