@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_cubit.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_state.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/phone_input_field.dart';
@@ -8,18 +7,7 @@ import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verific
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_button.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/country_code.dart';
 
-// TODO: Android配置
-// 1. 需要在 android/app/ 目录下添加 google-services.json 文件
-// 2. 在 android/build.gradle 中添加 classpath 'com.google.gms:google-services:4.3.15'
-// 3. 在 android/app/build.gradle 中添加 apply plugin: 'com.google.gms.google-services'
-// 4. 配置 OAuth 2.0 客户端 ID
-
-// TODO: iOS配置
-// 1. 需要在 ios/Runner/ 目录下添加 GoogleService-Info.plist 文件
-// 2. 在 Info.plist 中添加 URL Schemes 配置
-// 3. 配置 OAuth 2.0 客户端 ID
-
-enum LoginMode { phone, email, google }
+enum LoginMode { phone, email }
 
 class UnifiedLoginPage extends StatefulWidget {
   const UnifiedLoginPage({super.key});
@@ -36,12 +24,6 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
   late CountryCode _selectedCountry;
   LoginMode _loginMode = LoginMode.phone;
   
-  // Google Sign In 实例
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: ['email'],
-    // TODO: 在实际使用时，需要配置 serverClientId (Web OAuth 2.0 客户端 ID)
-    // serverClientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
-  );
 
   @override
   void didChangeDependencies() {
@@ -59,42 +41,6 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
     super.dispose();
   }
 
-  // 处理Google登录
-  Future<void> _handleGoogleSignIn() async {
-    try {
-      // 显示加载状态
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('正在获取Google账号信息...')),
-      );
-
-      // 调用Google登录
-      final GoogleSignInAccount? account = await _googleSignIn.signIn();
-      
-      if (!mounted) return;
-      
-      if (account != null && account.email.isNotEmpty) {
-        // 获取到邮箱后，自动填充并切换到邮箱模式
-        setState(() {
-          _emailController.text = account.email;
-          _loginMode = LoginMode.email;
-        });
-        
-        // 自动发送验证码
-        context.read<SmsLoginCubit>().sendCode(account.email);
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('已获取邮箱: ${account.email}，请输入验证码')),
-        );
-      }
-    } catch (error) {
-      debugPrint('Google Sign In Error: $error');
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Google登录失败: $error')),
-      );
-    }
-  }
 
   // 验证邮箱格式
   bool _isValidEmail(String email) {
@@ -222,18 +168,6 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                                 label: '邮箱',
                               ),
                             ),
-                            Container(
-                              width: 1,
-                              height: 40,
-                              color: primaryColor.withOpacity(0.3),
-                            ),
-                            Expanded(
-                              child: _buildModeButton(
-                                mode: LoginMode.google,
-                                icon: Icons.g_mobiledata,
-                                label: 'Google',
-                              ),
-                            ),
                           ],
                         ),
                       ),
@@ -270,60 +204,12 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                             return null;
                           },
                         ),
-                      ] else if (_loginMode == LoginMode.google) ...[
-                        // Google登录提示
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: primaryColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: primaryColor.withOpacity(0.3)),
-                          ),
-                          child: Column(
-                            children: [
-                              const Icon(
-                                Icons.info_outline,
-                                color: Color(0xFFB66D0E),
-                                size: 32,
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                'Google快捷登录说明',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                '点击下方按钮，通过Google账号获取邮箱地址，\n然后使用邮箱验证码完成登录。',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 14),
-                              ),
-                              const SizedBox(height: 16),
-                              ElevatedButton.icon(
-                                onPressed: isLoading ? null : _handleGoogleSignIn,
-                                icon: const Icon(Icons.g_mobiledata),
-                                label: const Text('使用Google账号'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: buttonBackgroundColor,
-                                  foregroundColor: Colors.white,
-                                  minimumSize: const Size(double.infinity, 48),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                       ],
 
-                      // 验证码输入区域（手机和邮箱模式显示）
-                      if (_loginMode != LoginMode.google) ...[
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
+                      // 验证码输入区域
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
                             Expanded(
                               child: VerificationCodeInputField(controller: _codeController),
                             ),
@@ -335,17 +221,25 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                               onSendCode: (account) async {
                                 if (_loginMode == LoginMode.email) {
                                   // 邮箱模式验证
-                                  if (!_isValidEmail(_emailController.text)) {
+                                  if (!_isValidEmail(account)) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(content: Text('请输入有效的邮箱地址')),
                                     );
                                     return;
                                   }
-                                  context.read<SmsLoginCubit>().sendCode(_emailController.text);
+                                  debugPrint('Sending code to email: $account');
+                                  context.read<SmsLoginCubit>().sendCode(account);
                                 } else {
-                                  // 手机模式
+                                  // 手机模式验证
+                                  final bool isValidPhone = RegExp(r'^1[3-9]\d{9}$').hasMatch(account);
+                                  if (!isValidPhone) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('请输入有效的11位手机号')),
+                                    );
+                                    return;
+                                  }
                                   final fullPhone = '${_selectedCountry.dialCode}$account';
-                                  debugPrint('Requesting code for $fullPhone');
+                                  debugPrint('Sending code to phone: $fullPhone');
                                   context.read<SmsLoginCubit>().sendCode(fullPhone);
                                 }
                               },
@@ -354,12 +248,12 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                                   : CodeButtonState.idle,
                               isSending: state is SmsLoginCodeSending,
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
 
-                        // 登录按钮
-                        ElevatedButton(
+                      // 登录按钮
+                      ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: buttonBackgroundColor,
                             foregroundColor: Colors.white,
@@ -393,8 +287,7 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                                   ),
                                 )
                               : const Text('登录'),
-                        ),
-                      ],
+                      ),
 
                       const SizedBox(height: 24),
 
