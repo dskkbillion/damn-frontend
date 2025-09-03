@@ -253,12 +253,12 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                             actionText: '查看详情',
                             onProductTap: () {
                               if (chatRoom.productId != null) {
-                                context.push('/product/${chatRoom.productId}');
+                                context.push('/home/product/${chatRoom.productId}');
                               }
                             },
                             onActionTap: () {
                               if (chatRoom.productId != null) {
-                                context.push('/product/${chatRoom.productId}');
+                                context.push('/home/product/${chatRoom.productId}');
                               }
                             },
                           );

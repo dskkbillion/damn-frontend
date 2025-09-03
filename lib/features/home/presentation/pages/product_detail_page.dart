@@ -722,7 +722,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                   // 跳转到评论详情页 - 使用标准Go Router导航
                   final productId = int.tryParse(widget.productId) ?? 0;
                   if (productId > 0) {
-                    context.go('/product/$productId/reviews');
+                    context.go('/home/product/$productId/reviews');
                   }
                 },
                 child: Row(
