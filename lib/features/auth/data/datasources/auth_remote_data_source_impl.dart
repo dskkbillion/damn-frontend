@@ -97,7 +97,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<void> sendVerificationCode({
     required String phone,
   }) async {
-    const String endpoint = '/api/common/send-code/register';
+    // 使用登录验证码接口，因为我们的登录注册是合一的
+    const String endpoint = '/api/common/send-code/login';
     final Map<String, dynamic> data = {
       'mobile': phone,
       // 移除所有额外参数，只保留手机号
