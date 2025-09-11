@@ -67,7 +67,27 @@ class ChatRepositoryImpl implements IChatRepository {
            try {
              final messageDtos = await remoteDataSource.getMessages(chatId, pageNum: pageNum, pageSize: pageSize);
              final messages = messageDtos.map((dto) {
-               final senderId = dto.memberId ?? dto.doctorId ?? 0;
+               // 根据消息中的memberId和doctorId判断senderId
+               // 如果只有memberId有值，说明是买家发送的
+               // 如果只有doctorId有值，说明是卖家发送的
+               // 如果两者都有值，可能需要其他逻辑判断
+               int senderId;
+               if (dto.memberId != null && dto.doctorId == null) {
+                 senderId = dto.memberId!;
+                 print("[Repository] 消息${dto.id}: 只有memberId(${dto.memberId})，判断为买家发送");
+               } else if (dto.doctorId != null && dto.memberId == null) {
+                 senderId = dto.doctorId!;
+                 print("[Repository] 消息${dto.id}: 只有doctorId(${dto.doctorId})，判断为卖家发送");
+               } else if (dto.memberId != null && dto.doctorId != null) {
+                 // 两者都有值，需要根据其他逻辑判断
+                 // 暂时使用优先memberId的逻辑，但这可能不正确
+                 senderId = dto.memberId!;
+                 print("[Repository] 消息${dto.id}: memberId(${dto.memberId})和doctorId(${dto.doctorId})都有值，暂时使用memberId作为senderId");
+               } else {
+                 senderId = 0;
+                 print("[Repository] 消息${dto.id}: memberId和doctorId都为空，设置senderId为0");
+               }
+               
                return dto.toEntity(currentUserId: user.id, senderId: senderId);
              }).toList();
              return Right(messages);
@@ -117,12 +137,25 @@ class ChatRepositoryImpl implements IChatRepository {
            try {
              final sentMessageDto = await remoteDataSource.sendMessage(message);
              
-             // FIX: Determine sender participant ID before calling toEntity
-             final int senderParticipantId = sentMessageDto.memberId ?? sentMessageDto.doctorId ?? 0;
+             // 根据消息中的memberId和doctorId判断senderId
+             int senderParticipantId;
+             if (sentMessageDto.memberId != null && sentMessageDto.doctorId == null) {
+               senderParticipantId = sentMessageDto.memberId!;
+               print("[Repository] 发送的消息: 只有memberId(${sentMessageDto.memberId})，判断为买家发送");
+             } else if (sentMessageDto.doctorId != null && sentMessageDto.memberId == null) {
+               senderParticipantId = sentMessageDto.doctorId!;
+               print("[Repository] 发送的消息: 只有doctorId(${sentMessageDto.doctorId})，判断为卖家发送");
+             } else if (sentMessageDto.memberId != null && sentMessageDto.doctorId != null) {
+               // 两者都有值，需要根据其他逻辑判断
+               senderParticipantId = sentMessageDto.memberId!;
+               print("[Repository] 发送的消息: memberId(${sentMessageDto.memberId})和doctorId(${sentMessageDto.doctorId})都有值，暂时使用memberId作为senderId");
+             } else {
+               senderParticipantId = 0;
+               print("[Repository] 发送的消息: memberId和doctorId都为空，设置senderId为0");
+             }
              
              final sentMessageEntity = sentMessageDto.toEntity(
                 currentUserId: user.id, // Pass commonUserId
-                // FIX: Pass the determined sender participant ID
                 senderId: senderParticipantId 
               );
              return Right(sentMessageEntity);

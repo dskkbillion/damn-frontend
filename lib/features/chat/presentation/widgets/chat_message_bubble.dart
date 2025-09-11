@@ -345,7 +345,18 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
   @override
   Widget build(BuildContext context) {
+    // 添加调试日志
+    print('[ChatMessageBubble] 消息ID: ${widget.message.id}');
+    print('[ChatMessageBubble] senderId: ${widget.message.senderId}');
+    print('[ChatMessageBubble] memberId: ${widget.message.memberId}');
+    print('[ChatMessageBubble] doctorId: ${widget.message.doctorId}');
+    print('[ChatMessageBubble] currentUserParticipantId: ${widget.currentUserParticipantId}');
+    print('[ChatMessageBubble] opponent.id: ${widget.opponent?.id}');
+    print('[ChatMessageBubble] opponent.referId: ${widget.opponent?.referId}');
+    
     final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
+    print('[ChatMessageBubble] isCurrentUser: $isCurrentUser (senderId=${widget.message.senderId} == currentUserParticipantId=${widget.currentUserParticipantId})');
+    
     // 由于撤回的消息已在BLoC层过滤，这里不再需要检查撤回状态
     final alignment = isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start;
     // Updated bubble colors based on frontend.md alignment
@@ -355,29 +366,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     // Consistent text color for both bubble types
     final textColor = Colors.black87;
 
-    // Avatar Widget (only for opponent)
-    final avatarWidget = !isCurrentUser && widget.opponent != null
-      ? Padding(
-          padding: const EdgeInsets.only(right: 8.0),
-          child: CircleAvatar(
-            radius: 18,
-            backgroundImage: (widget.opponent?.avatar != null && widget.opponent!.avatar!.isNotEmpty)
-                ? CachedNetworkImageProvider(
-                    widget.opponent!.avatar!,
-                    maxWidth: 72,  // 36 * 2 for retina display
-                    maxHeight: 72,
-                  )
-                : null,
-            backgroundColor: Colors.grey[300],
-            child: (widget.opponent?.avatar == null || widget.opponent!.avatar!.isEmpty)
-                ? Text(
-                    widget.opponent?.nickName?.isNotEmpty == true ? widget.opponent!.nickName![0] : '?',
-                    style: const TextStyle(fontSize: 14, color: Colors.white),
-                  )
-                : null,
-          ),
-        )
-      : const SizedBox(width: 44);
+    // 头像已移除，聊天室不显示头像
 
     // 对于allocate类型的消息，使用专门的组件
     if (widget.message.type == 'allocate') {
@@ -401,7 +390,6 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           mainAxisAlignment: alignment,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            if (!isCurrentUser) avatarWidget,
             Flexible(
               child: Column(
                 crossAxisAlignment: isCurrentUser 
@@ -445,7 +433,6 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         mainAxisAlignment: alignment,
         crossAxisAlignment: CrossAxisAlignment.end, // 改为end对齐
         children: [
-          if (!isCurrentUser) avatarWidget,
           Flexible(
             child: Column(
               crossAxisAlignment: isCurrentUser 

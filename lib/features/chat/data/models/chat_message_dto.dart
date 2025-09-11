@@ -85,7 +85,8 @@ class ChatMessageDto with _$ChatMessageDto {
      }
 
     // 添加调试信息
-    print("[ChatMessageDto] 转换消息 - ID: $id, withdrawFlag: $withdrawFlag, type: $type, context: '$context'");
+    print("[ChatMessageDto] 转换消息 - ID: $id, memberId: $memberId, doctorId: $doctorId, senderId传入值: $senderId");
+    print("[ChatMessageDto] withdrawFlag: $withdrawFlag, type: $type, context: '$context'");
     
     return ChatMessage(
       id: id,

@@ -97,16 +97,16 @@ class ProductVariant extends Equatable {
   final int id;
   final String name;
   final double sellingPrice;
-  final int deliveryDay;
-  final int editNum;
+  final int? deliveryDay;
+  final int? editNum;
   final List<Map<String, dynamic>>? features;
 
   const ProductVariant({
     required this.id,
     required this.name,
     required this.sellingPrice,
-    required this.deliveryDay,
-    required this.editNum,
+    this.deliveryDay,
+    this.editNum,
     this.features,
   });
 

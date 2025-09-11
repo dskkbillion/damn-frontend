@@ -42,10 +42,10 @@ class ProductOptionValue extends Equatable {
   final int stock;
   
   /// 交付天数
-  final int deliveryDay;
+  final int? deliveryDay;
   
   /// 修改次数
-  final int editNum;
+  final int? editNum;
   
   /// 特性列表 [{key: "学校数量", val: "3", type: "input"}, ...]
   final List<Map<String, String>> feature;
@@ -58,8 +58,8 @@ class ProductOptionValue extends Equatable {
     this.price = 0,
     this.sellingPrice = 0,
     this.stock = 0,
-    this.deliveryDay = 3,
-    this.editNum = 1,
+    this.deliveryDay,
+    this.editNum,
     this.feature = const [],
   });
 
@@ -362,12 +362,20 @@ class ProductCreationData extends Equatable {
     
     // 确保variants字段始终存在，即使为空数组
     if (variants != null && variants!.isNotEmpty) {
-      data['variants'] = variants!.map((v) => {
-        'name': v.name.isNotEmpty ? v.name : v.optionName,
-        'sellingPrice': v.sellingPrice > 0 ? v.sellingPrice : v.price,
-        'deliveryDay': v.deliveryDay,
-        'editNum': v.editNum,
-        'feature': v.feature,
+      data['variants'] = variants!.map((v) {
+        final variantData = <String, dynamic>{
+          'name': v.name.isNotEmpty ? v.name : v.optionName,
+          'sellingPrice': v.sellingPrice > 0 ? v.sellingPrice : v.price,
+          'feature': v.feature,
+        };
+        // 只在有值且大于1时传递交付信息
+        if (v.deliveryDay != null && v.deliveryDay! > 1) {
+          variantData['deliveryDay'] = v.deliveryDay;
+        }
+        if (v.editNum != null && v.editNum! > 1) {
+          variantData['editNum'] = v.editNum;
+        }
+        return variantData;
       }).toList();
     } else {
       // 提供空数组作为默认值，确保后端能正确处理
@@ -537,12 +545,20 @@ class ProductUpdateData extends Equatable {
     
     // 修复：确保variants格式正确
     if (variants != null) {
-      data['variants'] = variants!.map((v) => {
-        'name': v.name.isNotEmpty ? v.name : v.optionName,
-        'sellingPrice': v.sellingPrice > 0 ? v.sellingPrice : v.price,
-        'deliveryDay': v.deliveryDay,
-        'editNum': v.editNum,
-        'feature': v.feature,
+      data['variants'] = variants!.map((v) {
+        final variantData = <String, dynamic>{
+          'name': v.name.isNotEmpty ? v.name : v.optionName,
+          'sellingPrice': v.sellingPrice > 0 ? v.sellingPrice : v.price,
+          'feature': v.feature,
+        };
+        // 只在有值且大于1时传递交付信息
+        if (v.deliveryDay != null && v.deliveryDay! > 1) {
+          variantData['deliveryDay'] = v.deliveryDay;
+        }
+        if (v.editNum != null && v.editNum! > 1) {
+          variantData['editNum'] = v.editNum;
+        }
+        return variantData;
       }).toList();
     } else {
       data['variants'] = <Map<String, dynamic>>[];

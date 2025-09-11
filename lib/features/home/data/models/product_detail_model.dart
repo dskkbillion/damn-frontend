@@ -318,16 +318,16 @@ class ProductVariantModel extends Equatable {
   final int id;
   final String name;
   final double sellingPrice;
-  final int deliveryDay;
-  final int editNum;
+  final int? deliveryDay;
+  final int? editNum;
   final List<Map<String, dynamic>>? features;
 
   const ProductVariantModel({
     required this.id,
     required this.name,
     required this.sellingPrice,
-    required this.deliveryDay,
-    required this.editNum,
+    this.deliveryDay,
+    this.editNum,
     this.features,
   });
 
@@ -346,8 +346,8 @@ class ProductVariantModel extends Equatable {
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
       sellingPrice: (json['sellingPrice'] ?? 0.0).toDouble(),
-      deliveryDay: json['deliveryDay'] ?? 3,
-      editNum: json['editNum'] ?? 1,
+      deliveryDay: json['deliveryDay'],
+      editNum: json['editNum'],
       features: featuresList,
     );
   }

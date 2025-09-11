@@ -224,8 +224,9 @@ class ServiceTierConfig {
     Map<String, String>? attributeValues,
   }) : attributeValues = attributeValues ?? {} {
     priceController = TextEditingController(text: price > 0 ? price.toString() : '');
-    deliveryController = TextEditingController(text: deliveryDay.toString());
-    editNumController = TextEditingController(text: editNum.toString());
+    // 不设置默认值的文本，让用户看到空白输入框
+    deliveryController = TextEditingController(text: deliveryDay > 1 ? deliveryDay.toString() : '');
+    editNumController = TextEditingController(text: editNum > 1 ? editNum.toString() : '');
   }
 
   // 从ProductOptionValue创建ServiceTierConfig
@@ -258,8 +259,8 @@ class ServiceTierConfig {
     return ServiceTierConfig(
       tier: tier,
       price: value.sellingPrice > 0 ? value.sellingPrice : value.price,
-      deliveryDay: value.deliveryDay,
-      editNum: value.editNum,
+      deliveryDay: value.deliveryDay ?? 1,  // 如果为null，使用默认值1
+      editNum: value.editNum ?? 1,  // 如果为null，使用默认值1
       attributeValues: attributeValues,
     );
   }
@@ -281,8 +282,8 @@ class ServiceTierConfig {
       name: tier.apiName,
       optionName: tier.apiName,
       sellingPrice: price,
-      deliveryDay: deliveryDay,
-      editNum: editNum,
+      deliveryDay: deliveryDay > 1 ? deliveryDay : null,  // 只有大于1时才传值
+      editNum: editNum > 1 ? editNum : null,  // 只有大于1时才传值
       feature: features,
     );
   }
