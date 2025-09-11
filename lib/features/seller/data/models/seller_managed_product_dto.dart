@@ -261,10 +261,18 @@ class SellerManagedProductDto {
     }
     
     // 添加价格字段调试日志
-    final double? parsedPrice = _parsePrice(json['sellingPrice'] ?? json['originalPrice']);
+    double? parsedPrice = _parsePrice(json['sellingPrice'] ?? json['originalPrice'] ?? json['price']);
     print('[SellerManagedProductDto] Product ${json['id']} price mapping:');
     print('  - sellingPrice from API: ${json['sellingPrice']}');
     print('  - originalPrice from API: ${json['originalPrice']}');
+    print('  - price from API: ${json['price']}');
+    
+    // 如果没有主价格，但有variants，使用第一个variant的价格
+    if ((parsedPrice == null || parsedPrice == 0) && json['variants'] != null && (json['variants'] as List).isNotEmpty) {
+      final firstVariant = (json['variants'] as List).first;
+      parsedPrice = _parsePrice(firstVariant['sellingPrice'] ?? firstVariant['price']);
+      print('  - Using first variant price: $parsedPrice');
+    }
     print('  - Final parsed price: $parsedPrice');
     
     return SellerManagedProductDto(

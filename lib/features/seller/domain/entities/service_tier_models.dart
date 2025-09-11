@@ -232,18 +232,17 @@ class ServiceTierConfig {
   // 从ProductOptionValue创建ServiceTierConfig
   factory ServiceTierConfig.fromProductOptionValue(ProductOptionValue value) {
     ServiceTier tier;
-    switch (value.name) {
-      case 'Basic Tier':
-        tier = ServiceTier.basic;
-        break;
-      case 'Standard Tier':
-        tier = ServiceTier.standard;
-        break;
-      case 'Premium Tier':
-        tier = ServiceTier.premium;
-        break;
-      default:
-        tier = ServiceTier.basic;
+    // 更灵活的名称匹配
+    final nameLower = value.name.toLowerCase();
+    if (nameLower.contains('basic') || nameLower.contains('lite')) {
+      tier = ServiceTier.basic;
+    } else if (nameLower.contains('standard') || nameLower.contains('pro')) {
+      tier = ServiceTier.standard;
+    } else if (nameLower.contains('premium') || nameLower.contains('deep')) {
+      tier = ServiceTier.premium;
+    } else {
+      // 默认为basic
+      tier = ServiceTier.basic;
     }
     
     // 从feature中提取属性值
@@ -382,29 +381,41 @@ class ProductServiceTiers {
     ServiceTierConfig? premium;
     List<ProductAttributeTemplate> attributeTemplates = [];
     
-    for (var variant in variants) {
-      switch (variant.name) {
-        case 'Basic Tier':
+    print('[ProductServiceTiers.fromProductOptionValues] Creating from ${variants.length} variants');
+    
+    // 按照顺序或名称映射到三个档位
+    for (int i = 0; i < variants.length; i++) {
+      final variant = variants[i];
+      print('  - Variant $i: name="${variant.name}", price=${variant.price}, sellingPrice=${variant.sellingPrice}');
+      
+      // 先尝试按名称匹配
+      if (variant.name == 'Basic Tier' || variant.name == 'Lite' || variant.name.toLowerCase().contains('basic') || variant.name.toLowerCase().contains('lite')) {
+        basic = ServiceTierConfig.fromProductOptionValue(variant);
+        // 使用第一个档位的特性创建属性模板（只创建一次）
+        if (attributeTemplates.isEmpty && variant.feature.isNotEmpty) {
+          attributeTemplates = variant.feature.map((f) {
+            return ProductAttributeTemplate(
+              name: f['key'] ?? '',
+              type: ProductAttributeType.values.firstWhere(
+                (e) => e.value == (f['type'] ?? 'input'),
+                orElse: () => ProductAttributeType.input,
+              ),
+            );
+          }).toList();
+        }
+      } else if (variant.name == 'Standard Tier' || variant.name == 'Pro' || variant.name.toLowerCase().contains('standard') || variant.name.toLowerCase().contains('pro')) {
+        standard = ServiceTierConfig.fromProductOptionValue(variant);
+      } else if (variant.name == 'Premium Tier' || variant.name == 'Deep' || variant.name.toLowerCase().contains('premium') || variant.name.toLowerCase().contains('deep')) {
+        premium = ServiceTierConfig.fromProductOptionValue(variant);
+      } else {
+        // 如果名称不匹配，按顺序分配
+        if (i == 0 && basic == null) {
           basic = ServiceTierConfig.fromProductOptionValue(variant);
-          // 使用第一个档位的特性创建属性模板（只创建一次）
-          if (attributeTemplates.isEmpty && variant.feature.isNotEmpty) {
-            attributeTemplates = variant.feature.map((f) {
-              return ProductAttributeTemplate(
-                name: f['key'] ?? '',
-                type: ProductAttributeType.values.firstWhere(
-                  (e) => e.value == (f['type'] ?? 'input'),
-                  orElse: () => ProductAttributeType.input,
-                ),
-              );
-            }).toList();
-          }
-          break;
-        case 'Standard Tier':
+        } else if (i == 1 && standard == null) {
           standard = ServiceTierConfig.fromProductOptionValue(variant);
-          break;
-        case 'Premium Tier':
+        } else if (i == 2 && premium == null) {
           premium = ServiceTierConfig.fromProductOptionValue(variant);
-          break;
+        }
       }
     }
     
