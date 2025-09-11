@@ -72,42 +72,54 @@ class ChatRepositoryImpl implements IChatRepository {
              final room = roomDto.toEntity(currentUserId: user.id);
              
              final messages = messageDtos.map((dto) {
-               // 根据React Native的逻辑：判断当前用户的referId是否等于member.referId
-               // 如果相等，说明当前用户是买家（member），消息是买家发送的
-               // 如果不相等，说明当前用户是卖家（doctor），消息是卖家发送的
-               
-               // 重要：后端的member字段对应participant1，doctor字段对应participant2
-               // memberId和doctorId是参与者的内部ID，不是referId
+               // 简单直接的判断逻辑：
+               // 1. 判断当前用户是member还是doctor（通过比较referId）
+               // 2. 如果当前用户是member，那么senderId就是memberId
+               // 3. 如果当前用户是doctor，那么senderId就是doctorId
                
                int senderId;
                
-               // 判断发送者的逻辑：
-               // 1. 如果memberId有值而doctorId为空，说明是买家（participant1）发送的
-               // 2. 如果doctorId有值而memberId为空，说明是卖家（participant2）发送的
-               // 3. 如果两者都有值（这种情况不应该出现），需要额外判断
+               // 获取member和doctor的referId（外部ID）
+               final memberReferId = roomDto.member.referId;
+               final doctorReferId = roomDto.doctor.referId;
                
-               if (dto.memberId != null && dto.doctorId == null) {
-                 // 买家发送的消息，使用participant1的内部ID作为senderId
-                 senderId = room.participant1.id;
-                 print("[Repository] 消息${dto.id}: memberId=${dto.memberId}, 买家(participant1)发送, senderId=${senderId}");
+               // 获取member和doctor的内部ID
+               final memberInternalId = roomDto.member.id;
+               final doctorInternalId = roomDto.doctor.id;
+               
+               print("[Repository] 消息${dto.id} 判断逻辑:");
+               print("[Repository]   消息数据 - memberId: ${dto.memberId}, doctorId: ${dto.doctorId}");
+               print("[Repository]   member: id=${memberInternalId}, referId=${memberReferId}");
+               print("[Repository]   doctor: id=${doctorInternalId}, referId=${doctorReferId}");
+               print("[Repository]   当前用户: id=${user.id}");
+               
+               // 判断发送者：如果当前用户的referId等于memberReferId，说明当前用户是买家
+               // 否则当前用户是卖家
+               final isCurrentUserMember = (user.id == memberReferId);
+               final isCurrentUserDoctor = (user.id == doctorReferId);
+               
+               print("[Repository]   当前用户是member? $isCurrentUserMember");
+               print("[Repository]   当前用户是doctor? $isCurrentUserDoctor");
+               
+               // 判断发送者的逻辑
+               if (dto.memberId != null && dto.doctorId != null) {
+                 // 两者都有值时，根据当前用户身份判断发送者
+                 // 这种情况下，消息是买家发送的（因为recipientId指向doctor）
+                 // TODO: 如果有recipientId字段，应该用它来判断
+                 senderId = memberInternalId;  // 暂时假设是买家发送
+                 print("[Repository]   判定：买家发送的消息，senderId=${senderId}");
+               } else if (dto.memberId != null && dto.doctorId == null) {
+                 // 只有memberId，明确是买家发送的
+                 senderId = memberInternalId;
+                 print("[Repository]   判定：只有memberId，买家发送，senderId=${senderId}");
                } else if (dto.doctorId != null && dto.memberId == null) {
-                 // 卖家发送的消息，使用participant2的内部ID作为senderId
-                 senderId = room.participant2.id;
-                 print("[Repository] 消息${dto.id}: doctorId=${dto.doctorId}, 卖家(participant2)发送, senderId=${senderId}");
-               } else if (dto.memberId != null && dto.doctorId != null) {
-                 // 两者都有值的情况（理论上不应该出现）
-                 // 根据当前用户类型判断：如果当前用户是买家，那么有memberId的消息是当前用户发送的
-                 if (user.type == 'MEMBER') {
-                   senderId = room.participant1.id; // 买家是participant1
-                   print("[Repository] 消息${dto.id}: 两者都有值，当前用户是买家，使用participant1.id作为senderId=${senderId}");
-                 } else {
-                   senderId = room.participant2.id; // 卖家是participant2
-                   print("[Repository] 消息${dto.id}: 两者都有值，当前用户是卖家，使用participant2.id作为senderId=${senderId}");
-                 }
+                 // 只有doctorId，明确是卖家发送的
+                 senderId = doctorInternalId;
+                 print("[Repository]   判定：只有doctorId，卖家发送，senderId=${senderId}");
                } else {
                  // 两者都为空（不应该出现）
                  senderId = 0;
-                 print("[Repository] 警告：消息${dto.id}: memberId和doctorId都为空");
+                 print("[Repository]   警告：memberId和doctorId都为空");
                }
                
                return dto.toEntity(currentUserId: user.id, senderId: senderId);

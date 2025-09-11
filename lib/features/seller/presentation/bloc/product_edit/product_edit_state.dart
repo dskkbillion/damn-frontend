@@ -434,6 +434,20 @@ class ProductFormData extends Equatable {
 
   /// 从产品实体创建表单数据
   factory ProductFormData.fromProduct(SellerManagedProduct product) {
+    // 调试日志：打印Product实体的关键数据
+    print('[ProductFormData.fromProduct] Creating form data from product:');
+    print('  - Product ID: ${product.id}');
+    print('  - Product name: ${product.name}');
+    print('  - Product price: ${product.price}');
+    print('  - Has variants: ${product.variants != null && product.variants!.isNotEmpty}');
+    if (product.variants != null && product.variants!.isNotEmpty) {
+      print('  - Variants count: ${product.variants!.length}');
+      for (int i = 0; i < product.variants!.length && i < 3; i++) {
+        final v = product.variants![i];
+        print('    - Variant ${i + 1}: ${v.name} - price: ${v.price}, sellingPrice: ${v.sellingPrice}');
+      }
+    }
+    
     // 将productMaterials转换回qaList和buyerInfoItems
     final List<Map<String, String>> qaList = [];
     final List<Map<String, dynamic>> buyerInfoItems = [];
@@ -487,10 +501,20 @@ class ProductFormData extends Equatable {
     
     print('[ProductFormData.fromProduct] Final counts: qaList=${qaList.length}, buyerInfoItems=${buyerInfoItems.length}');
     
+    // 价格获取逻辑：如果主价格为0且有variants，使用第一个variant的价格
+    double finalPrice = product.price;
+    if (finalPrice == 0 && product.variants != null && product.variants!.isNotEmpty) {
+      // 尝试使用第一个variant的价格
+      final firstVariant = product.variants!.first;
+      finalPrice = firstVariant.sellingPrice > 0 ? firstVariant.sellingPrice : firstVariant.price;
+      print('[ProductFormData.fromProduct] Main price is 0, using first variant price: $finalPrice');
+    }
+    print('[ProductFormData.fromProduct] Final price: $finalPrice');
+    
     return ProductFormData(
       name: product.name,
       description: product.description,
-      price: product.price,
+      price: finalPrice,
       categoryId: product.category?.id,
       variants: product.variants ?? [],
       productMaterials: product.productMaterials ?? [],
