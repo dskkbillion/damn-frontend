@@ -72,9 +72,23 @@ class ChatUserRepositoryImpl implements IUserRepository {
       final userId = await _secureStorage.read(key: 'user_id');
       final commonUserId = await _secureStorage.read(key: 'common_user_id') ?? '1';
       
+      // 读取用户类型（从AppMode或者存储中获取）
+      final appMode = await _secureStorage.read(key: 'app_mode');
+      String userType = 'MEMBER'; // 默认值
+      
+      // 根据appMode判断用户类型
+      // 如果是seller模式，用户类型应该是DOCTOR
+      // 如果是buyer模式，用户类型应该是MEMBER
+      if (appMode == 'seller') {
+        userType = 'DOCTOR';
+      } else if (appMode == 'buyer') {
+        userType = 'MEMBER';
+      }
+      
       // 调试：检查auth_token是否存在
       final authToken = await _secureStorage.read(key: 'auth_token');
       print('[ChatUserRepository] userId: $userId, commonUserId: $commonUserId');
+      print('[ChatUserRepository] appMode: $appMode, userType: $userType');
       print('[ChatUserRepository] authToken存在: ${authToken != null}');
       
       if (userId == null) {
@@ -87,10 +101,10 @@ class ChatUserRepositoryImpl implements IUserRepository {
         id: int.tryParse(commonUserId) ?? 0, // 修改：使用commonUserId
         commonUserId: commonUserId,
         nickName: '用户${userId.substring(userId.length - 4)}',
-        type: 'MEMBER',
+        type: userType, // 使用动态获取的用户类型
       );
       
-      print('[ChatUserRepository] 创建用户: id=${user.id}, commonUserId=${user.commonUserId}'); // 添加日志确认
+      print('[ChatUserRepository] 创建用户: id=${user.id}, commonUserId=${user.commonUserId}, type=${user.type}'); // 添加日志确认
       return Right(user);
     } catch (e) {
       print('[ChatUserRepository] 错误: $e'); // 添加更详细的错误日志
