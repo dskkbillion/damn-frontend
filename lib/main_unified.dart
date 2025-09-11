@@ -15,6 +15,7 @@ import 'package:dskk_flutter_refactor/app/app_mode.dart';
 import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart';
 
 // Import all module DI configurations
+import 'package:dskk_flutter_refactor/features/auth/di/auth_di.dart';
 import 'package:dskk_flutter_refactor/features/home/di/home_di.dart';
 import 'package:dskk_flutter_refactor/features/favorites/di/favorites_di.dart';
 import 'package:dskk_flutter_refactor/features/seller/di/seller_statistics_di.dart';
@@ -87,6 +88,10 @@ Future<void> main() async {
   print('[Unified Production] Core dependencies configured.');
   
   // 初始化各个模块依赖
+  // Auth模块必须先初始化，因为其他模块依赖它
+  await AuthDI.init(getIt);
+  print('[Unified Production] Auth module initialized.');
+
   await initHomeDi();
   print('[Unified Production] Home module initialized.');
   

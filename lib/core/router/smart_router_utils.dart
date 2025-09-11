@@ -14,8 +14,7 @@ class SmartRouterUtils {
 
   /// 生成基础稳定的路由Key
   /// 
-  /// 核心思路：直接使用路径作为key，不添加任何随机性
-  /// 这避免了Go Router内部的key预留机制冲突
+  /// 核心思路：使用路径+时间戳保证唯一性，避免重复key错误
   /// [routePath] 路由路径
   /// [params] 路由参数
   /// [source] 来源信息，用于调试
@@ -24,8 +23,9 @@ class SmartRouterUtils {
     Map<String, String>? params,
     String? source,
   }) {
-    // 直接使用路径+参数作为key，确保稳定性
-    final pathWithParams = '${routePath}_${params?.toString() ?? ''}';
+    // 使用路径+参数+时间戳作为key，确保唯一性
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final pathWithParams = '${routePath}_${params?.toString() ?? ''}_$timestamp';
     final finalKey = pathWithParams
         .replaceAll('/', '_')
         .replaceAll(':', '')
@@ -34,7 +34,7 @@ class SmartRouterUtils {
         .replaceAll(' ', '')
         .replaceAll(',', '_');
     
-    debugPrint('SmartRouter: 生成稳定key: $finalKey (路径: $routePath)');
+    debugPrint('SmartRouter: 生成唯一key: $finalKey (路径: $routePath)');
     
     return finalKey;
   }
@@ -146,7 +146,7 @@ class SmartRouterUtils {
 
 /// 页面构建器扩展 - 基础稳定版本
 extension SmartPageBuilder on GoRouterState {
-  /// 创建页面，使用基础稳定的key策略
+  /// 创建页面，使用唯一key策略避免重复
   MaterialPage<T> buildSmartPage<T extends Object?>(
     Widget child, {
     String? name,
@@ -155,18 +155,21 @@ extension SmartPageBuilder on GoRouterState {
     bool maintainState = true,
     bool fullscreenDialog = false,
   }) {
-    // 直接使用路径+参数作为key，确保绝对稳定
-    // 相同路径+参数总是生成相同的key，避免Go Router内部冲突
-    final pathWithParams = '${matchedLocation}_${pathParameters.toString()}';
+    // 使用路径+参数+时间戳作为key，确保每个页面实例的唯一性
+    final timestamp = DateTime.now().microsecondsSinceEpoch;
+    final pathWithParams = '${matchedLocation}_${pathParameters.toString()}_${uri.queryParameters.toString()}_$timestamp';
     final finalKey = pathWithParams
         .replaceAll('/', '_')
         .replaceAll(':', '')
         .replaceAll('{', '')
         .replaceAll('}', '')
         .replaceAll(' ', '')
-        .replaceAll(',', '_');
+        .replaceAll(',', '_')
+        .replaceAll('?', '_')
+        .replaceAll('=', '_')
+        .replaceAll('&', '_');
     
-    debugPrint('SmartPage: 创建页面 $matchedLocation (稳定key: $finalKey)');
+    debugPrint('SmartPage: 创建页面 $matchedLocation (唯一key: $finalKey)');
     
     return MaterialPage<T>(
       key: ValueKey(finalKey),

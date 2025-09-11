@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/l10n.dart';
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
+import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
 
 import 'package:dskk_flutter_refactor/features/chat/presentation/cubit/chat/chat_cubit.dart' as chat_cubit;
 import 'package:dskk_flutter_refactor/features/chat/presentation/cubit/message_list/message_list_cubit.dart';
@@ -129,8 +130,24 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
     // Load initial messages
     await _messageListCubit.loadMessages(widget.chatId);
     
-    // Connect WebSocket
-    _webSocketCubit.connect();
+    // Connect WebSocket with user credentials
+    try {
+      final storage = getIt<ISecureStorageRepository>();
+      final commonUserId = await storage.getCommonUserId();
+      final token = await storage.getToken();
+      
+      if (commonUserId != null && token != null) {
+        _webSocketCubit.connect(
+          commonUserId: commonUserId.toString(),
+          token: token,
+        );
+        print('[ChatRoom] WebSocket connecting with userId: $commonUserId');
+      } else {
+        print('[ChatRoom] WARNING: Cannot connect WebSocket - missing credentials');
+      }
+    } catch (e) {
+      print('[ChatRoom] ERROR connecting WebSocket: $e');
+    }
     
     // Notify that messages have been loaded
     widget.onMessagesLoaded?.call();

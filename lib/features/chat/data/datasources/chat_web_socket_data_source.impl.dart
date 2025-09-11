@@ -19,11 +19,12 @@ enum ConnectionStatus {
   error,
 }
 
-// @LazySingleton(as: IChatWebSocketDataSource) // Add injectable annotation
+@LazySingleton(as: IChatWebSocketDataSource)
 class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
   WebSocketChannel? _channel;
   StreamSubscription? _channelSubscription;
   Timer? _heartbeatTimer;
+  Timer? _pongTimeoutTimer;
   String? _token; // Store token for authentication
   String? _commonUserId; // Store user ID for connection URL
   int _reconnectAttempts = 0;
@@ -65,17 +66,34 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
       throw Exception('BACKEND_BASE_URL environment variable is not set');
     }
     
-    // Convert HTTP/HTTPS to WS/WSS
-    String wsBaseUrl;
-    if (backendUrl.startsWith('https://')) {
-      wsBaseUrl = backendUrl.replaceFirst('https://', 'wss://');
-    } else if (backendUrl.startsWith('http://')) {
-      wsBaseUrl = backendUrl.replaceFirst('http://', 'ws://');
-    } else {
-      wsBaseUrl = 'ws://$backendUrl';
+    // Parse and clean the URL
+    Uri parsedUrl;
+    try {
+      parsedUrl = Uri.parse(backendUrl);
+    } catch (e) {
+      throw Exception('Invalid BACKEND_BASE_URL format: $backendUrl');
     }
     
-    final url = '$wsBaseUrl/websocket/message/$_commonUserId/member';
+    // Convert HTTP/HTTPS to WS/WSS scheme
+    String wsScheme;
+    if (parsedUrl.scheme == 'https') {
+      wsScheme = 'wss';
+    } else if (parsedUrl.scheme == 'http') {
+      wsScheme = 'ws';
+    } else {
+      wsScheme = 'ws';
+    }
+    
+    // Build WebSocket URL properly
+    // Backend URL already contains /prod-api, so we just append the WebSocket path
+    final wsUri = Uri(
+      scheme: wsScheme,
+      host: parsedUrl.host,
+      port: parsedUrl.hasPort ? parsedUrl.port : null,
+      path: '${parsedUrl.path}/websocket/message/$_commonUserId/member',
+    );
+    
+    final url = wsUri.toString();
     print("[WebSocket] Connecting to: $url");
 
     try {
@@ -142,8 +160,9 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
                } catch (e) {
                    print("[WebSocket] Error parsing message data: $e");
                }
-            } else if (decodedMessage['action'] == 'PONG') {
+            } else if (decodedMessage['action'] == 'PONG' || decodedMessage['type'] == 'pong') {
                print("[WebSocket] Received Pong (Heartbeat ACK)");
+               _cancelPongTimeout(); // Cancel timeout when pong is received
             } else {
               // Handle other message types if necessary
               print("[WebSocket] Received non-CHAT/PONG message action: ${decodedMessage['action']}");
@@ -209,19 +228,37 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
 
   void _startHeartbeat() {
     _heartbeatTimer?.cancel(); // Cancel existing timer
-    _heartbeatTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+    _heartbeatTimer = Timer.periodic(const Duration(seconds: 20), (timer) { // Changed to 20 seconds to match React Native
       if (_channel != null) {
-        final pingMessage = jsonEncode({'type': 'ping'});
-         print("[WebSocket] Sending Ping (Heartbeat)");
-        _channel!.sink.add(pingMessage);
+        final heartbeatMessage = jsonEncode({'type': 'heartbeat'}); // Changed to 'heartbeat' to match React Native
+        print("[WebSocket] Sending Heartbeat");
+        _channel!.sink.add(heartbeatMessage);
+        
+        // Start pong timeout timer (15 seconds)
+        _startPongTimeout();
       }
     });
-     print("[WebSocket] Heartbeat started.");
+    print("[WebSocket] Heartbeat started (20s interval).");
+  }
+  
+  void _startPongTimeout() {
+    _pongTimeoutTimer?.cancel();
+    _pongTimeoutTimer = Timer(const Duration(seconds: 15), () {
+      print("[WebSocket] Pong timeout - no response received within 15 seconds");
+      _connectionStatusController.add(ConnectionStatus.disconnected);
+      _handleReconnect();
+    });
+  }
+  
+  void _cancelPongTimeout() {
+    _pongTimeoutTimer?.cancel();
+    _pongTimeoutTimer = null;
   }
 
   void _handleReconnect() {
      print("[WebSocket] Handling reconnect...");
     _heartbeatTimer?.cancel(); // Stop heartbeat during reconnection attempts
+    _pongTimeoutTimer?.cancel(); // Cancel pong timeout
     _channelSubscription?.cancel();
     _channel?.sink.close();
     _channel = null;
@@ -250,6 +287,7 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
     print("[WebSocket] Disconnecting...");
     _reconnectAttempts = _maxReconnectAttempts; // Prevent auto-reconnect after explicit disconnect
     _heartbeatTimer?.cancel();
+    _pongTimeoutTimer?.cancel();
     _channelSubscription?.cancel();
     await _channel?.sink.close();
     _channel = null;
