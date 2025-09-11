@@ -80,22 +80,30 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     super.dispose();
   }
   
-  // 添加获取referId的方法
+  // 添加获取referId的方法 - 使用common_user_id进行聊天室匹配
   Future<int?> _getReferIdFromStorage() async {
     try {
       final secureStorage = GetIt.instance<FlutterSecureStorage>();
-      final referIdStr = await secureStorage.read(key: 'refer_id');
+      // 获取common_user_id作为聊天室匹配的ID
+      final commonUserIdStr = await secureStorage.read(key: 'common_user_id');
       
-      if (referIdStr != null) {
-        final referId = int.tryParse(referIdStr);
-        print('[ChatListPage] Retrieved refer_id from secure storage: $referId');
-        return referId;
+      if (commonUserIdStr != null) {
+        final commonUserId = int.tryParse(commonUserIdStr);
+        print('[ChatListPage] Retrieved common_user_id from secure storage: $commonUserId');
+        return commonUserId;
       } else {
-        print('[ChatListPage] refer_id not found in secure storage');
+        // 如果没有common_user_id，尝试获取refer_id作为备选
+        final referIdStr = await secureStorage.read(key: 'refer_id');
+        if (referIdStr != null) {
+          final referId = int.tryParse(referIdStr);
+          print('[ChatListPage] Using refer_id as fallback: $referId');
+          return referId;
+        }
+        print('[ChatListPage] Neither common_user_id nor refer_id found in secure storage');
         return null;
       }
     } catch (e) {
-      print('[ChatListPage] Error reading refer_id from secure storage: $e');
+      print('[ChatListPage] Error reading user ID from secure storage: $e');
       return null;
     }
   }
@@ -228,9 +236,9 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             return const Center(child: Text('用户referId未找到'));
           }
           
-          // 使用 referId 作为 currentUserId，不再硬编码
+          // 使用获取到的ID作为currentUserId
           final currentUserId = referId;
-          print('[ChatListPage] Using referId: $referId as currentUserId for both data and UI, appMode: $currentAppMode');
+          print('[ChatListPage] Using userId: $referId as currentUserId for both data and UI, appMode: $currentAppMode');
           
           return BlocListener<ChatListBloc, ChatListState>(
             listener: (context, state) {
@@ -324,8 +332,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         continue;
       }
       
-      // 检查当前用户是否是参与者（不管什么身份）
-      if (room.participant1.referId == referId || room.participant2.referId == referId) {
+      // 检查当前用户是否是参与者（使用id匹配，不管什么身份）
+      if (room.participant1.id == referId || room.participant2.id == referId) {
         filteredRooms.add(room);
         print("[ChatListPage] Mixed mode: Including room ${room.id}");
       }
@@ -336,11 +344,11 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   }
   
   // 新的筛选方法：根据应用模式筛选聊天室，同时排除系统管理员聊天室
-  List<ChatRoom> _filterChatRoomsByAppMode(List<ChatRoom> chatRooms, AppMode appMode, int referId) {
+  List<ChatRoom> _filterChatRoomsByAppMode(List<ChatRoom> chatRooms, AppMode appMode, int userId) {
     final filteredRooms = <ChatRoom>[];
     
     print("[ChatListPage] ===== Filter Debug Info =====");
-    print("[ChatListPage] Current user referId: $referId");
+    print("[ChatListPage] Current user ID: $userId");
     print("[ChatListPage] Current app mode: $appMode");
     print("[ChatListPage] Total rooms before filter: ${chatRooms.length}");
     print("[ChatListPage] =============================");
@@ -363,11 +371,11 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         continue;
       }
       
-      // 检查当前用户是否是这个聊天室的参与者，并根据模式筛选
+      // 检查当前用户是否是这个聊天室的参与者，使用id字段进行匹配
       bool shouldInclude = false;
       String? userRole;
       
-      if (room.participant1.referId == referId) {
+      if (room.participant1.id == userId) {
         userRole = room.participant1.type;
         _currentUserType = userRole; // 记录当前用户类型
         
@@ -383,7 +391,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         } else {
           print("[ChatListPage] ❌ Mode mismatch: room ${room.id}, user role: $userRole, app mode: $appMode");
         }
-      } else if (room.participant2.referId == referId) {
+      } else if (room.participant2.id == userId) {
         userRole = room.participant2.type;
         _currentUserType = userRole; // 记录当前用户类型
         
@@ -398,7 +406,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
           print("[ChatListPage] ❌ Mode mismatch: room ${room.id}, user role: $userRole, app mode: $appMode");
         }
       } else {
-        print("[ChatListPage] ❌ User not participant: referId $referId not in room ${room.id}");
+        print("[ChatListPage] ❌ User not participant: userId $userId not in room ${room.id}");
       }
       
       if (shouldInclude) {
