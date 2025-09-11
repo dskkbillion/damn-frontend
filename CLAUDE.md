@@ -215,3 +215,4 @@ The project is actively being refactored from React Native. Check git status and
 
 - 在每个flutter文件修改后，运行analyze进行检查
 - 在修改的时候，需要同步修改国内版和国际版的入口
+- 请你不要加任何的fallback，让bug直接暴露出来
