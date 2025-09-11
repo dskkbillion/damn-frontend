@@ -72,8 +72,15 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
       final secureStorage = getIt<FlutterSecureStorage>();
       final commonUserIdStr = await secureStorage.read(key: 'common_user_id');
       if (commonUserIdStr != null) {
-        _currentUserId = int.tryParse(commonUserIdStr);
-        print('DEBUG: Got current user ID from storage: $_currentUserId');
+        final userId = int.tryParse(commonUserIdStr);
+        if (userId != null) {
+          setState(() {
+            _currentUserId = userId;
+          });
+          print('DEBUG: Got current user ID from storage: $_currentUserId');
+        } else {
+          print('ERROR: Failed to parse common_user_id: $commonUserIdStr');
+        }
       } else {
         print('WARNING: No common_user_id found in storage');
       }
@@ -246,21 +253,33 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                 initial: () => Text(s.chat_loading),
                 loading: () => Text(s.chat_loading),
                 ready: (chatRoom, lastReceivedMessage, hasNewMessage) {
-                  // 必须使用 _currentUserId 来找对方
+                  // 如果_currentUserId还没加载完成，显示加载中
                   if (_currentUserId == null) {
-                    print('ERROR: _currentUserId is null when trying to display title');
-                    return Text(s.chat_unknown_user);
+                    print('DEBUG: _currentUserId is still loading when trying to display title');
+                    return Text(s.chat_loading);
                   }
                   
-                  // 找到对方参与者，如果找不到就报错
-                  final opponent = chatRoom.participants.firstWhere(
-                    (p) => p.id != _currentUserId,
+                  // 找到当前用户的参与者对象
+                  final currentUserParticipant = chatRoom.participants.firstWhere(
+                    (p) => p.id == _currentUserId,
                     orElse: () {
-                      print('ERROR: Could not find opponent, currentUserId=$_currentUserId');
+                      print('ERROR: Could not find current user participant with id=$_currentUserId');
+                      print('ERROR: Available participants: ${chatRoom.participants.map((p) => 'id=${p.id}, name=${p.nickName}').join(', ')}');
+                      throw Exception('Current user is not in this chat room');
+                    },
+                  );
+                  
+                  // 找到对方参与者 - 使用不同的ID
+                  final opponent = chatRoom.participants.firstWhere(
+                    (p) => p.id != currentUserParticipant.id,
+                    orElse: () {
+                      print('ERROR: Could not find opponent, currentUserParticipantId=${currentUserParticipant.id}');
                       print('ERROR: Participants: ${chatRoom.participants.map((p) => 'id=${p.id}, name=${p.nickName}').join(', ')}');
                       throw Exception('Could not find opponent in chat room');
                     },
                   );
+                  
+                  print('DEBUG: Title display - currentUserId=$_currentUserId, currentParticipantId=${currentUserParticipant.id}, opponentId=${opponent.id}, opponentName=${opponent.nickName}');
                   
                   return Text(opponent.nickName ?? s.chat_unknown_user);
                 },
