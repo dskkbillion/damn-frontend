@@ -395,17 +395,37 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
       print("[Bloc]   doctorId: ${messageDto.doctorId}");
 
       try {
-        // FIX: Determine sender participant ID from DTO
-        final int senderParticipantId = messageDto.memberId ?? messageDto.doctorId ?? 0;
+        // 根据memberId和doctorId判断发送者
+        // memberId有值说明是买家（participant1）发送的
+        // doctorId有值说明是卖家（participant2）发送的
+        int senderParticipantId;
+        
+        if (messageDto.memberId != null && messageDto.doctorId == null) {
+          // 买家发送的消息，使用participant1的内部ID
+          senderParticipantId = _currentRoom!.participant1.id;
+          print("[Bloc] WebSocket消息: memberId=${messageDto.memberId}, 买家(participant1)发送, senderId=${senderParticipantId}");
+        } else if (messageDto.doctorId != null && messageDto.memberId == null) {
+          // 卖家发送的消息，使用participant2的内部ID
+          senderParticipantId = _currentRoom!.participant2.id;
+          print("[Bloc] WebSocket消息: doctorId=${messageDto.doctorId}, 卖家(participant2)发送, senderId=${senderParticipantId}");
+        } else if (messageDto.memberId != null && messageDto.doctorId != null) {
+          // 两者都有值，根据当前用户类型判断
+          if (_currentUser!.type == 'MEMBER') {
+            senderParticipantId = _currentRoom!.participant1.id;
+            print("[Bloc] WebSocket消息: 两者都有值，当前用户是买家，使用participant1.id作为senderId=${senderParticipantId}");
+          } else {
+            senderParticipantId = _currentRoom!.participant2.id;
+            print("[Bloc] WebSocket消息: 两者都有值，当前用户是卖家，使用participant2.id作为senderId=${senderParticipantId}");
+          }
+        } else {
+          print("[Bloc] 错误: 消息DTO既没有memberId也没有doctorId. DTO: ${messageDto.toJson()}");
+          emit(currentState.copyWith(error: () => "Received invalid message data from WebSocket"));
+          return;
+        }
+        
         print("[Bloc] 确定的senderId(内部): $senderParticipantId");
         print("[Bloc] 当前用户participantId(内部): ${currentState.currentUserParticipantId}");
         print("[Bloc] 是当前用户发送的吗? ${senderParticipantId == currentState.currentUserParticipantId}");
-        
-        if (senderParticipantId == 0) {
-           print("[Bloc] 错误: 消息DTO既没有memberId也没有doctorId. DTO: ${messageDto.toJson()}");
-           emit(currentState.copyWith(error: () => "Received invalid message data from WebSocket"));
-           return;
-        }
 
         // Convert DTO to Entity
         final newMessage = messageDto.toEntity(

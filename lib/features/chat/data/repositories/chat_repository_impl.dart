@@ -66,26 +66,48 @@ class ChatRepositoryImpl implements IChatRepository {
          (user) async {
            try {
              final messageDtos = await remoteDataSource.getMessages(chatId, pageNum: pageNum, pageSize: pageSize);
+             
+             // 首先获取聊天室详情以获取参与者信息
+             final roomDto = await remoteDataSource.getRoomDetails(chatId);
+             final room = roomDto.toEntity(currentUserId: user.id);
+             
              final messages = messageDtos.map((dto) {
-               // 根据消息中的memberId和doctorId判断senderId
-               // 如果只有memberId有值，说明是买家发送的
-               // 如果只有doctorId有值，说明是卖家发送的
-               // 如果两者都有值，可能需要其他逻辑判断
+               // 根据React Native的逻辑：判断当前用户的referId是否等于member.referId
+               // 如果相等，说明当前用户是买家（member），消息是买家发送的
+               // 如果不相等，说明当前用户是卖家（doctor），消息是卖家发送的
+               
+               // 重要：后端的member字段对应participant1，doctor字段对应participant2
+               // memberId和doctorId是参与者的内部ID，不是referId
+               
                int senderId;
+               
+               // 判断发送者的逻辑：
+               // 1. 如果memberId有值而doctorId为空，说明是买家（participant1）发送的
+               // 2. 如果doctorId有值而memberId为空，说明是卖家（participant2）发送的
+               // 3. 如果两者都有值（这种情况不应该出现），需要额外判断
+               
                if (dto.memberId != null && dto.doctorId == null) {
-                 senderId = dto.memberId!;
-                 print("[Repository] 消息${dto.id}: 只有memberId(${dto.memberId})，判断为买家发送");
+                 // 买家发送的消息，使用participant1的内部ID作为senderId
+                 senderId = room.participant1.id;
+                 print("[Repository] 消息${dto.id}: memberId=${dto.memberId}, 买家(participant1)发送, senderId=${senderId}");
                } else if (dto.doctorId != null && dto.memberId == null) {
-                 senderId = dto.doctorId!;
-                 print("[Repository] 消息${dto.id}: 只有doctorId(${dto.doctorId})，判断为卖家发送");
+                 // 卖家发送的消息，使用participant2的内部ID作为senderId
+                 senderId = room.participant2.id;
+                 print("[Repository] 消息${dto.id}: doctorId=${dto.doctorId}, 卖家(participant2)发送, senderId=${senderId}");
                } else if (dto.memberId != null && dto.doctorId != null) {
-                 // 两者都有值，需要根据其他逻辑判断
-                 // 暂时使用优先memberId的逻辑，但这可能不正确
-                 senderId = dto.memberId!;
-                 print("[Repository] 消息${dto.id}: memberId(${dto.memberId})和doctorId(${dto.doctorId})都有值，暂时使用memberId作为senderId");
+                 // 两者都有值的情况（理论上不应该出现）
+                 // 根据当前用户类型判断：如果当前用户是买家，那么有memberId的消息是当前用户发送的
+                 if (user.type == 'MEMBER') {
+                   senderId = room.participant1.id; // 买家是participant1
+                   print("[Repository] 消息${dto.id}: 两者都有值，当前用户是买家，使用participant1.id作为senderId=${senderId}");
+                 } else {
+                   senderId = room.participant2.id; // 卖家是participant2
+                   print("[Repository] 消息${dto.id}: 两者都有值，当前用户是卖家，使用participant2.id作为senderId=${senderId}");
+                 }
                } else {
+                 // 两者都为空（不应该出现）
                  senderId = 0;
-                 print("[Repository] 消息${dto.id}: memberId和doctorId都为空，设置senderId为0");
+                 print("[Repository] 警告：消息${dto.id}: memberId和doctorId都为空");
                }
                
                return dto.toEntity(currentUserId: user.id, senderId: senderId);
@@ -137,20 +159,34 @@ class ChatRepositoryImpl implements IChatRepository {
            try {
              final sentMessageDto = await remoteDataSource.sendMessage(message);
              
-             // 根据消息中的memberId和doctorId判断senderId
+             // 获取聊天室详情以确定正确的senderId
+             final roomDto = await remoteDataSource.getRoomDetails(message.chatId);
+             final room = roomDto.toEntity(currentUserId: user.id);
+             
+             // 根据消息中的memberId和doctorId判断senderId（使用participant的内部ID）
              int senderParticipantId;
              if (sentMessageDto.memberId != null && sentMessageDto.doctorId == null) {
-               senderParticipantId = sentMessageDto.memberId!;
-               print("[Repository] 发送的消息: 只有memberId(${sentMessageDto.memberId})，判断为买家发送");
+               senderParticipantId = room.participant1.id; // 买家是participant1
+               print("[Repository] 发送的消息: memberId=${sentMessageDto.memberId}，买家发送，senderId=${senderParticipantId}");
              } else if (sentMessageDto.doctorId != null && sentMessageDto.memberId == null) {
-               senderParticipantId = sentMessageDto.doctorId!;
-               print("[Repository] 发送的消息: 只有doctorId(${sentMessageDto.doctorId})，判断为卖家发送");
+               senderParticipantId = room.participant2.id; // 卖家是participant2
+               print("[Repository] 发送的消息: doctorId=${sentMessageDto.doctorId}，卖家发送，senderId=${senderParticipantId}");
              } else if (sentMessageDto.memberId != null && sentMessageDto.doctorId != null) {
-               // 两者都有值，需要根据其他逻辑判断
-               senderParticipantId = sentMessageDto.memberId!;
-               print("[Repository] 发送的消息: memberId(${sentMessageDto.memberId})和doctorId(${sentMessageDto.doctorId})都有值，暂时使用memberId作为senderId");
+               // 两者都有值，根据当前用户类型判断
+               if (user.type == 'MEMBER') {
+                 senderParticipantId = room.participant1.id; // 买家是participant1
+                 print("[Repository] 发送的消息: 两者都有值，当前用户是买家，使用participant1.id作为senderId=${senderParticipantId}");
+               } else {
+                 senderParticipantId = room.participant2.id; // 卖家是participant2
+                 print("[Repository] 发送的消息: 两者都有值，当前用户是卖家，使用participant2.id作为senderId=${senderParticipantId}");
+               }
              } else {
-               senderParticipantId = 0;
+               // 理论上不应该出现两者都为空的情况，使用当前用户对应的participant ID
+               if (user.type == 'MEMBER') {
+                 senderParticipantId = room.participant1.id;
+               } else {
+                 senderParticipantId = room.participant2.id;
+               }
                print("[Repository] 发送的消息: memberId和doctorId都为空，设置senderId为0");
              }
              
