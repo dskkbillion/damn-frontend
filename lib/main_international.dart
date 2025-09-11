@@ -11,6 +11,7 @@ import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 import 'package:dskk_flutter_refactor/core/config/locale_provider.dart';
 import 'package:dskk_flutter_refactor/core/services/profile_preloader_service.dart';
 import 'package:dskk_flutter_refactor/app/app_mode.dart';
+import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart';
 
 // Import all module DI configurations
 import 'package:dskk_flutter_refactor/features/home/di/home_di.dart';
@@ -38,6 +39,9 @@ Future<void> main() async {
   
   // 配置国际服设置
   RegionConfig.setRegion(RegionType.international);
+  
+  // 生产环境不显示开发Tab
+  AppRouterConfig.setShowDevTab(false);
   
   // 使用环境变量配置的API地址
   // 优先使用国际服URL，如果没有配置则使用默认的BACKEND_BASE_URL

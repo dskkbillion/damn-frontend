@@ -12,6 +12,7 @@ import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 import 'package:dskk_flutter_refactor/core/config/locale_provider.dart';
 import 'package:dskk_flutter_refactor/core/services/profile_preloader_service.dart';
 import 'package:dskk_flutter_refactor/app/app_mode.dart';
+import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart';
 
 // Import all module DI configurations
 import 'package:dskk_flutter_refactor/features/home/di/home_di.dart';
@@ -31,6 +32,9 @@ Future<void> main() async {
 
   // 配置国服设置
   RegionConfig.setRegion(RegionType.domestic);
+  
+  // 生产环境不显示开发Tab
+  AppRouterConfig.setShowDevTab(false);
   // 从环境变量获取后端URL
   await dotenv.load(fileName: ".env");
   final backendBaseUrl = dotenv.env['BACKEND_BASE_URL'];

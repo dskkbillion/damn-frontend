@@ -623,7 +623,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                      name: 'search',
                      pageBuilder: (context, state) => state.buildSmartPage(
                        const SearchPage(),
-                       name: 'search',
+                       name: 'home_search',
                        source: 'buyer_shell_home',
                      ),
                    ),
@@ -636,7 +636,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                        final keyword = state.uri.queryParameters['keyword'] ?? '';
                        return state.buildSmartPage(
                          SearchResultsPage(keyword: keyword),
-                         name: 'searchResults',
+                         name: 'home_search_results',
                          source: 'buyer_shell_home',
                        );
                      },
