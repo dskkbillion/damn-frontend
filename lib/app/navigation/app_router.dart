@@ -875,7 +875,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       // 特殊处理：聊天室路由不属于任何模式限制，任何模式都可以访问
       bool isChatRoomLocation = location.startsWith('/chat/') && location.split('/').length > 2;
       
-      bool isBuyerShellLocation = buyerPaths.any((p) => location.startsWith(p)) && !isChatRoomLocation;
+      // 商品详情页路由也允许任何模式访问
+      bool isProductDetailLocation = location.startsWith('/home/product/');
+      
+      bool isBuyerShellLocation = buyerPaths.any((p) => location.startsWith(p)) && !isChatRoomLocation && !isProductDetailLocation;
       // 排除卖家主页路径（检查是否匹配 /seller-profile/{id} 模式）
       bool isSellerShellLocation = sellerPaths.any((p) => location.startsWith(p)) && 
           !location.startsWith(sellerPublicProfilePathPrefix); // 简化检查逻辑

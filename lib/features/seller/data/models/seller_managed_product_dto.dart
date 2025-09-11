@@ -260,10 +260,17 @@ class SellerManagedProductDto {
       print('[SellerManagedProductDto] Draft product ${json['id']} has no valid images');
     }
     
+    // 添加价格字段调试日志
+    final double? parsedPrice = _parsePrice(json['sellingPrice'] ?? json['originalPrice']);
+    print('[SellerManagedProductDto] Product ${json['id']} price mapping:');
+    print('  - sellingPrice from API: ${json['sellingPrice']}');
+    print('  - originalPrice from API: ${json['originalPrice']}');
+    print('  - Final parsed price: $parsedPrice');
+    
     return SellerManagedProductDto(
       id: json['id'],
       name: json['name'],
-      price: _parsePrice(json['sellingPrice'] ?? json['price']),
+      price: parsedPrice,
       images: imagesString,
       description: json['description'],
       state: json['state'],
@@ -316,13 +323,19 @@ class SellerManagedProductDto {
         final variantMap = v as Map<String, dynamic>;
         
         // 直接从API数据映射到ProductOptionValue
+        // 添加变体价格调试日志
+        final variantSellingPrice = _parsePrice(variantMap['sellingPrice']);
+        print('[SellerManagedProductDto] Variant ${variantMap['id']} (${variantMap['name']}) price mapping:');
+        print('  - sellingPrice from API: ${variantMap['sellingPrice']}');
+        print('  - Parsed sellingPrice: $variantSellingPrice');
+        
         return ProductOptionValue(
           id: variantMap['id'] ?? 0,
           name: variantMap['name'] ?? '',
           optionName: variantMap['name'] ?? '', // 兼容性
           optionValue: variantMap['name'] ?? '', // 兼容性
-          price: _parsePrice(variantMap['sellingPrice']) ?? 0.0,
-          sellingPrice: _parsePrice(variantMap['sellingPrice']) ?? 0.0,
+          price: variantSellingPrice ?? 0.0,  // 使用sellingPrice作为price
+          sellingPrice: variantSellingPrice ?? 0.0,
           stock: 999, // API没有库存字段，使用默认值
           deliveryDay: variantMap['deliveryDay'],  // Keep null if not provided
           editNum: variantMap['editNum'],  // Keep null if not provided

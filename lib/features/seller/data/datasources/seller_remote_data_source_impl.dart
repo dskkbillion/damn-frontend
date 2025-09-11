@@ -186,14 +186,32 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
   @override
   Future<dynamic> getProductDetail(int productId) async {
     try {
+      print('[SellerRemoteDataSource] Getting product detail for ID: $productId');
       final response = await _dio.get('/api/shop/product/get', queryParameters: {
         'id': productId,
       });
       
       _checkResponse(response);
       
-      return response.data['data'];
+      final productData = response.data['data'];
+      
+      // 调试日志：打印API返回的价格字段
+      print('[SellerRemoteDataSource] Product $productId API response:');
+      print('  - sellingPrice: ${productData['sellingPrice']}');
+      print('  - originalPrice: ${productData['originalPrice']}');
+      print('  - Has variants: ${productData['variants'] != null && (productData['variants'] as List).isNotEmpty}');
+      
+      if (productData['variants'] != null && productData['variants'] is List) {
+        final variants = productData['variants'] as List;
+        print('  - Variants count: ${variants.length}');
+        for (var i = 0; i < variants.length && i < 3; i++) {
+          print('    - Variant ${i + 1}: ${variants[i]['name']} - sellingPrice: ${variants[i]['sellingPrice']}');
+        }
+      }
+      
+      return productData;
     } catch (e) {
+      print('[SellerRemoteDataSource] Error getting product detail: $e');
       _handleError(e);
       rethrow;
     }

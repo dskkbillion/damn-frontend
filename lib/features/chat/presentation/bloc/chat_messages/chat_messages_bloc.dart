@@ -95,6 +95,8 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
 
       if (userEither == null) return;
       final currentReferId = userEither.id; // This is the referId (e.g., 10307)
+      print("[ChatMessagesBloc] =====ID映射调试开始=====");
+      print("[ChatMessagesBloc] 当前用户referId (外部ID): $currentReferId");
 
       // 2. Fetch initial messages and room details concurrently
       final results = await Future.wait([
@@ -126,13 +128,24 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
            // Determine current user's INTERNAL participant ID and the opponent
            final p1 = roomDetails.participant1;
            final p2 = roomDetails.participant2;
+           
+           print("[ChatMessagesBloc] 聊天室参与者信息:");
+           print("[ChatMessagesBloc]   participant1: id=${p1.id} (内部ID), referId=${p1.referId} (外部ID), nickName=${p1.nickName}");
+           print("[ChatMessagesBloc]   participant2: id=${p2.id} (内部ID), referId=${p2.referId} (外部ID), nickName=${p2.nickName}");
 
+           print("[ChatMessagesBloc] 开始匹配当前用户...");
            if (p1.referId == currentReferId) {
                currentUserParticipantId = p1.id;
                opponentParticipant = p2;
+               print("[ChatMessagesBloc] 匹配成功: 当前用户是participant1");
+               print("[ChatMessagesBloc]   当前用户内部ID: $currentUserParticipantId");
+               print("[ChatMessagesBloc]   对手用户: ${p2.nickName} (内部ID=${p2.id}, 外部ID=${p2.referId})");
            } else if (p2.referId == currentReferId) {
                currentUserParticipantId = p2.id;
                opponentParticipant = p1;
+               print("[ChatMessagesBloc] 匹配成功: 当前用户是participant2");
+               print("[ChatMessagesBloc]   当前用户内部ID: $currentUserParticipantId");
+               print("[ChatMessagesBloc]   对手用户: ${p1.nickName} (内部ID=${p1.id}, 外部ID=${p1.referId})");
            } else {
                print("[ChatMessagesBloc] Error: Current user (referId: $currentReferId) not found in room participants!");
                emit(ChatMessagesError('Error: You are not a participant in this chat.'));
@@ -145,7 +158,10 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
            }
 
            _opponent = opponentParticipant; // Store opponent
-           print("[ChatMessagesBloc] Room details processed. Opponent: ${_opponent?.nickName} (ID: ${_opponent?.id}, ReferID: ${_opponent?.referId}), CurrentUserParticipantId: $currentUserParticipantId");
+           print("[ChatMessagesBloc] =====ID映射完成=====");
+           print("[ChatMessagesBloc] 最终结果:");
+           print("[ChatMessagesBloc]   当前用户内部参与者ID: $currentUserParticipantId");
+           print("[ChatMessagesBloc]   对手: ${_opponent?.nickName} (内部ID=${_opponent?.id}, 外部ID=${_opponent?.referId})");
            return true; // Indicate success
         },
       );
@@ -161,6 +177,19 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
         (messages) async {
           // 过滤掉撤回的消息
           final filteredMessages = messages.where((msg) => !msg.withdrawFlag && msg.type != 'revoke').toList();
+          
+          print("[ChatMessagesBloc] =====消息列表调试=====");
+          print("[ChatMessagesBloc] 收到${filteredMessages.length}条消息");
+          for (int i = 0; i < filteredMessages.length && i < 3; i++) {
+            final msg = filteredMessages[i];
+            print("[ChatMessagesBloc] 消息${i + 1}:");
+            print("[ChatMessagesBloc]   messageId: ${msg.id}");
+            print("[ChatMessagesBloc]   senderId(内部): ${msg.senderId}");
+            print("[ChatMessagesBloc]   memberId: ${msg.memberId}");
+            print("[ChatMessagesBloc]   doctorId: ${msg.doctorId}");
+            print("[ChatMessagesBloc]   content: ${msg.context?.substring(0, msg.context!.length > 20 ? 20 : msg.context!.length)}...");
+            print("[ChatMessagesBloc]   是否应该在右侧(senderId=$currentUserParticipantId): ${msg.senderId == currentUserParticipantId}");
+          }
           
           // Emit loaded state with all necessary info
           emit(ChatMessagesLoaded(
@@ -276,6 +305,13 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     }
 
     // 1. Create optimistic message
+    print("[ChatMessagesBloc] =====发送消息调试=====");
+    print("[ChatMessagesBloc] 当前用户类型: ${_currentUser!.type}");
+    print("[ChatMessagesBloc] 当前用户referId(外部): ${_currentUser!.id}");
+    print("[ChatMessagesBloc] 当前用户participantId(内部): ${loadedState.currentUserParticipantId}");
+    print("[ChatMessagesBloc] 对手 participantId(内部): ${loadedState.opponent.id}");
+    print("[ChatMessagesBloc] 对手 referId(外部): ${loadedState.opponent.referId}");
+    
     final optimisticMessage = ChatMessage(
       id: Random().nextInt(1000000) + 1000000,
       chatId: chatId,
@@ -288,6 +324,13 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
       withdrawFlag: false,
       status: MessageStatus.sending,
     );
+    
+    print("[ChatMessagesBloc] 创建的消息:");
+    print("[ChatMessagesBloc]   senderId: ${optimisticMessage.senderId}");
+    print("[ChatMessagesBloc]   memberId: ${optimisticMessage.memberId}");
+    print("[ChatMessagesBloc]   doctorId: ${optimisticMessage.doctorId}");
+    print("[ChatMessagesBloc]   内容: ${optimisticMessage.context?.substring(0, optimisticMessage.context!.length > 30 ? 30 : optimisticMessage.context!.length)}...");
+    print("[ChatMessagesBloc] ========================");
 
     // 2. Emit state with optimistic message ADDED TO THE END
     emit(loadedState.copyWith(
@@ -344,13 +387,22 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
       final currentState = state as ChatMessagesLoaded;
       final ChatMessageDto messageDto = event.messageDto;
 
-      print("[Bloc] Received message via WebSocket: ${messageDto.id}");
+      print("[Bloc] =====WebSocket消息接收调试=====");
+      print("[Bloc] 接收到WebSocket消息ID: ${messageDto.id}");
+      print("[Bloc] 消息内容: ${messageDto.context?.substring(0, messageDto.context!.length > 30 ? 30 : messageDto.context!.length)}...");
+      print("[Bloc] DTO中的ID信息:");
+      print("[Bloc]   memberId: ${messageDto.memberId}");
+      print("[Bloc]   doctorId: ${messageDto.doctorId}");
 
       try {
         // FIX: Determine sender participant ID from DTO
         final int senderParticipantId = messageDto.memberId ?? messageDto.doctorId ?? 0;
+        print("[Bloc] 确定的senderId(内部): $senderParticipantId");
+        print("[Bloc] 当前用户participantId(内部): ${currentState.currentUserParticipantId}");
+        print("[Bloc] 是当前用户发送的吗? ${senderParticipantId == currentState.currentUserParticipantId}");
+        
         if (senderParticipantId == 0) {
-           print("[Bloc] Error: Received message DTO has neither memberId nor doctorId. DTO: ${messageDto.toJson()}");
+           print("[Bloc] 错误: 消息DTO既没有memberId也没有doctorId. DTO: ${messageDto.toJson()}");
            emit(currentState.copyWith(error: () => "Received invalid message data from WebSocket"));
            return;
         }

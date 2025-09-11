@@ -345,17 +345,27 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
   @override
   Widget build(BuildContext context) {
-    // 添加调试日志
+    // 详细的ID映射调试日志
+    print('[ChatMessageBubble] =====消息气泡渲染调试=====');
     print('[ChatMessageBubble] 消息ID: ${widget.message.id}');
-    print('[ChatMessageBubble] senderId: ${widget.message.senderId}');
-    print('[ChatMessageBubble] memberId: ${widget.message.memberId}');
-    print('[ChatMessageBubble] doctorId: ${widget.message.doctorId}');
-    print('[ChatMessageBubble] currentUserParticipantId: ${widget.currentUserParticipantId}');
-    print('[ChatMessageBubble] opponent.id: ${widget.opponent?.id}');
-    print('[ChatMessageBubble] opponent.referId: ${widget.opponent?.referId}');
+    print('[ChatMessageBubble] 消息内容: ${widget.message.context?.substring(0, widget.message.context!.length > 30 ? 30 : widget.message.context!.length)}...');
+    print('[ChatMessageBubble] 发送者ID信息:');
+    print('[ChatMessageBubble]   senderId(内部): ${widget.message.senderId}');
+    print('[ChatMessageBubble]   memberId: ${widget.message.memberId}');
+    print('[ChatMessageBubble]   doctorId: ${widget.message.doctorId}');
+    print('[ChatMessageBubble] 当前用户信息:');
+    print('[ChatMessageBubble]   currentUserParticipantId(内部): ${widget.currentUserParticipantId}');
+    print('[ChatMessageBubble] 对手信息:');
+    print('[ChatMessageBubble]   opponent.id(内部): ${widget.opponent?.id}');
+    print('[ChatMessageBubble]   opponent.referId(外部): ${widget.opponent?.referId}');
+    print('[ChatMessageBubble]   opponent.nickName: ${widget.opponent?.nickName}');
     
     final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
-    print('[ChatMessageBubble] isCurrentUser: $isCurrentUser (senderId=${widget.message.senderId} == currentUserParticipantId=${widget.currentUserParticipantId})');
+    print('[ChatMessageBubble] 判断结果:');
+    print('[ChatMessageBubble]   senderId(${widget.message.senderId}) == currentUserParticipantId(${widget.currentUserParticipantId})?');
+    print('[ChatMessageBubble]   isCurrentUser = $isCurrentUser');
+    print('[ChatMessageBubble]   消息将显示在: ${isCurrentUser ? "右侧(当前用户)" : "左侧(对手)"}');
+    print('[ChatMessageBubble] ========================');
     
     // 由于撤回的消息已在BLoC层过滤，这里不再需要检查撤回状态
     final alignment = isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start;

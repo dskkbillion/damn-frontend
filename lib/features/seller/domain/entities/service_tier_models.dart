@@ -256,9 +256,17 @@ class ServiceTierConfig {
       }
     }
     
+    // 调试日志：打印价格选择逻辑
+    final selectedPrice = value.sellingPrice > 0 ? value.sellingPrice : value.price;
+    print('[ServiceTierConfig] Creating tier config from variant:');
+    print('  - Variant name: ${value.name}');
+    print('  - sellingPrice: ${value.sellingPrice}');
+    print('  - price: ${value.price}');
+    print('  - Selected price: $selectedPrice');
+    
     return ServiceTierConfig(
       tier: tier,
-      price: value.sellingPrice > 0 ? value.sellingPrice : value.price,
+      price: selectedPrice,
       deliveryDay: value.deliveryDay ?? 1,  // 如果为null，使用默认值1
       editNum: value.editNum ?? 1,  // 如果为null，使用默认值1
       attributeValues: attributeValues,
