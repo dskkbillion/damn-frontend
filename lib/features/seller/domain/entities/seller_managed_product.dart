@@ -368,13 +368,8 @@ class ProductCreationData extends Equatable {
           'sellingPrice': v.sellingPrice > 0 ? v.sellingPrice : v.price,
           'feature': v.feature,
         };
-        // 只在有值且大于1时传递交付信息
-        if (v.deliveryDay != null && v.deliveryDay! > 1) {
-          variantData['deliveryDay'] = v.deliveryDay;
-        }
-        if (v.editNum != null && v.editNum! > 1) {
-          variantData['editNum'] = v.editNum;
-        }
+        // 完全不传递deliveryDay和editNum字段
+        // 让后端根据自己的逻辑处理（设为null或使用默认值）
         return variantData;
       }).toList();
     } else {
@@ -551,13 +546,8 @@ class ProductUpdateData extends Equatable {
           'sellingPrice': v.sellingPrice > 0 ? v.sellingPrice : v.price,
           'feature': v.feature,
         };
-        // 只在有值且大于1时传递交付信息
-        if (v.deliveryDay != null && v.deliveryDay! > 1) {
-          variantData['deliveryDay'] = v.deliveryDay;
-        }
-        if (v.editNum != null && v.editNum! > 1) {
-          variantData['editNum'] = v.editNum;
-        }
+        // 完全不传递deliveryDay和editNum字段
+        // 让后端根据自己的逻辑处理（设为null或使用默认值）
         return variantData;
       }).toList();
     } else {

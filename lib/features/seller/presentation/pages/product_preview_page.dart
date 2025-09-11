@@ -145,8 +145,8 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
         id: tier.id,
         name: tier.name,
         sellingPrice: tier.sellingPrice,
-        editNum: tier.editNum,
-        deliveryDay: tier.deliveryDay,
+        editNum: tier.editNum,  // These are nullable, will be null if not set
+        deliveryDay: tier.deliveryDay,  // These are nullable, will be null if not set
         features: tier.feature.map<Map<String, dynamic>>((f) => {
           'key': f['key'] ?? '',
           'value': f['val'] ?? f['value'] ?? '',
@@ -318,8 +318,8 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
         id: variant.id,
         name: variant.name.isNotEmpty ? variant.name : variant.optionValue,
         sellingPrice: variant.sellingPrice > 0 ? variant.sellingPrice : variant.price,
-        editNum: variant.editNum,
-        deliveryDay: variant.deliveryDay,
+        editNum: variant.editNum,  // These are nullable, will be null if not set
+        deliveryDay: variant.deliveryDay,  // These are nullable, will be null if not set
         features: variant.feature.map<Map<String, dynamic>>((f) => {
           'key': f['key'] ?? '',
           'value': f['val'] ?? f['value'] ?? '',

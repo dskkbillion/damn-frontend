@@ -324,8 +324,8 @@ class SellerManagedProductDto {
           price: _parsePrice(variantMap['sellingPrice']) ?? 0.0,
           sellingPrice: _parsePrice(variantMap['sellingPrice']) ?? 0.0,
           stock: 999, // API没有库存字段，使用默认值
-          deliveryDay: variantMap['deliveryDay'] ?? 3,
-          editNum: variantMap['editNum'] ?? 1,
+          deliveryDay: variantMap['deliveryDay'],  // Keep null if not provided
+          editNum: variantMap['editNum'],  // Keep null if not provided
           feature: (variantMap['feature'] as List?)?.map((f) => {
             'key': f['key'] ?? '',
             'val': f['value'] ?? f['val'] ?? '',
