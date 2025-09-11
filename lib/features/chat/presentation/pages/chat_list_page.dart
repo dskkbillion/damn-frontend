@@ -552,9 +552,9 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     final Map<int, List<ChatRoom>> grouped = {};
     
     for (final chatRoom in chatRooms) {
-      // 在买家模式下，对方（participant2）应该是卖家
-      // 因为在ChatRoomDto.toEntity中已经确保了participant1是当前用户，participant2是对方
-      final seller = chatRoom.participant2;
+      // 判断哪个参与者是当前用户，哪个是对方（卖家）
+      final isCurrentUserParticipant1 = chatRoom.participant1.id == currentUserId;
+      final seller = isCurrentUserParticipant1 ? chatRoom.participant2 : chatRoom.participant1;
       final sellerId = seller.referId ?? 0;
       
       grouped.putIfAbsent(sellerId, () => []).add(chatRoom);
@@ -564,7 +564,10 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     return grouped.entries.map((entry) {
       final sellerId = entry.key;
       final rooms = entry.value;
-      final seller = rooms.first.participant2; // 卖家信息
+      // 对每个房间都要判断哪个是卖家
+      final firstRoom = rooms.first;
+      final isCurrentUserParticipant1 = firstRoom.participant1.id == currentUserId;
+      final seller = isCurrentUserParticipant1 ? firstRoom.participant2 : firstRoom.participant1;
       
       print("[ChatListPage] Created seller group: ${seller.nickName} with ${rooms.length} chat rooms");
       

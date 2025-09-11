@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/l10n.dart';
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
@@ -46,6 +47,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
   int _currentUserParticipantId = 0;
   Participant? _opponent;
   double _lastScrollOffset = 0;
+  int? _currentUserId; // 存储当前用户ID
   
   @override
   void initState() {
@@ -65,16 +67,35 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
   }
   
   Future<void> _initializeChat() async {
+    // 获取当前用户ID (common_user_id)
+    try {
+      final secureStorage = getIt<FlutterSecureStorage>();
+      final commonUserIdStr = await secureStorage.read(key: 'common_user_id');
+      if (commonUserIdStr != null) {
+        _currentUserId = int.tryParse(commonUserIdStr);
+        print('DEBUG: Got current user ID from storage: $_currentUserId');
+      } else {
+        print('WARNING: No common_user_id found in storage');
+      }
+    } catch (e) {
+      print('ERROR: Failed to get current user ID: $e');
+    }
+    
     // Enter the chat room
     await _chatCubit.enterChatRoom(widget.chatId);
     
     // Get chat room info and set current user participant ID
     _chatCubit.state.maybeWhen(
       ready: (chatRoom, lastReceivedMessage, hasNewMessage) {
-        // Find current user participant
+        // 使用获取的currentUserId来确定当前用户是哪个参与者
         final currentUserParticipant = chatRoom.participants.firstWhere(
-          (p) => p.type == 'member', // Current user is always 'member' type
-          orElse: () => chatRoom.participants.first,
+          (p) => p.id == _currentUserId,
+          orElse: () {
+            // 如果找不到，直接报错
+            print('ERROR: Could not find participant with id=$_currentUserId in room ${chatRoom.id}');
+            print('ERROR: Available participants: ${chatRoom.participants.map((p) => 'id=${p.id}, type=${p.type}').join(', ')}');
+            throw Exception('Current user is not a participant in this chat room');
+          },
         );
         
         final opponent = chatRoom.participants.firstWhere(
@@ -92,6 +113,8 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
         _messageListCubit.setCurrentUserParticipantId(currentUserParticipant.id);
         
         print('DEBUG: Set currentUserParticipantId to $_currentUserParticipantId at initialization');
+        print('DEBUG: Current user participant: id=${currentUserParticipant.id}, type=${currentUserParticipant.type}');
+        print('DEBUG: Opponent participant: id=${opponent.id}, type=${opponent.type}');
       },
       orElse: () {},
     );
@@ -222,12 +245,25 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
               return state.when(
                 initial: () => Text(s.chat_loading),
                 loading: () => Text(s.chat_loading),
-                ready: (chatRoom, lastReceivedMessage, hasNewMessage) => Text(
-                  chatRoom.participants
-                      .firstWhere((p) => p.id != _currentUserParticipantId, 
-                          orElse: () => chatRoom.participants.first)
-                      .nickName ?? s.chat_unknown_user,
-                ),
+                ready: (chatRoom, lastReceivedMessage, hasNewMessage) {
+                  // 必须使用 _currentUserId 来找对方
+                  if (_currentUserId == null) {
+                    print('ERROR: _currentUserId is null when trying to display title');
+                    return Text(s.chat_unknown_user);
+                  }
+                  
+                  // 找到对方参与者，如果找不到就报错
+                  final opponent = chatRoom.participants.firstWhere(
+                    (p) => p.id != _currentUserId,
+                    orElse: () {
+                      print('ERROR: Could not find opponent, currentUserId=$_currentUserId');
+                      print('ERROR: Participants: ${chatRoom.participants.map((p) => 'id=${p.id}, name=${p.nickName}').join(', ')}');
+                      throw Exception('Could not find opponent in chat room');
+                    },
+                  );
+                  
+                  return Text(opponent.nickName ?? s.chat_unknown_user);
+                },
                 error: (message) => Text(s.chat_unknown_user),
               );
             },
@@ -328,10 +364,19 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                             return const Center(child: CircularProgressIndicator());
                           }
                           
-                          // Find current user participant
+                          // Find current user participant using the stored user ID
+                          if (_currentUserId == null) {
+                            print('ERROR: _currentUserId is null in build method');
+                            return Center(child: Text('Error: User ID not loaded'));
+                          }
+                          
                           final currentUserParticipant = chatRoom.participants.firstWhere(
-                            (p) => p.type == 'member', // Adjust based on your user type
-                            orElse: () => chatRoom.participants.first,
+                            (p) => p.id == _currentUserId,
+                            orElse: () {
+                              print('ERROR: Could not find participant with id=$_currentUserId in room ${chatRoom.id}');
+                              print('ERROR: Available participants: ${chatRoom.participants.map((p) => 'id=${p.id}, type=${p.type}').join(', ')}');
+                              throw Exception('Current user is not a participant in this chat room');
+                            },
                           );
                           
                           final opponent = chatRoom.participants.firstWhere(
