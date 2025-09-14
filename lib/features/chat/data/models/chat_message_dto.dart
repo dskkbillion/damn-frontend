@@ -8,7 +8,7 @@ part 'chat_message_dto.g.dart';
 @freezed
 class ChatMessageDto with _$ChatMessageDto {
   const factory ChatMessageDto({
-    required int id,
+    int? id, // Make id optional for WebSocket messages
     required int chatId,
     int? doctorId,
     int? memberId,
@@ -29,16 +29,16 @@ class ChatMessageDto with _$ChatMessageDto {
   // Factory constructor to convert from Entity (useful for sending messages if needed)
   factory ChatMessageDto.fromEntity(ChatMessage entity) {
     return ChatMessageDto(
-      id: entity.id > 0 ? entity.id : 0, // Use 0 or similar for new messages
+      id: entity.id > 0 ? entity.id : null, // Use null for new messages
       chatId: entity.chatId,
       context: entity.context,
       type: entity.type,
-      memberId: entity.memberId, 
+      memberId: entity.memberId,
       doctorId: entity.doctorId,
       // Fields not typically sent or derived by backend:
       // createTime: entity.createTime.toIso8601String(), // If needed
       withdrawFlag: entity.withdrawFlag,
-      // readFlg: entity.readFlg, 
+      // readFlg: entity.readFlg,
     );
   }
 
@@ -89,7 +89,7 @@ class ChatMessageDto with _$ChatMessageDto {
     print("[ChatMessageDto] withdrawFlag: $withdrawFlag, type: $type, context: '$context'");
     
     return ChatMessage(
-      id: id,
+      id: id ?? DateTime.now().millisecondsSinceEpoch, // Generate temporary ID if null
       chatId: chatId,
       senderId: senderId,
       memberId: memberId,

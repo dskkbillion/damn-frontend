@@ -8,7 +8,7 @@ part of 'chat_message_dto.dart';
 
 _$ChatMessageDtoImpl _$$ChatMessageDtoImplFromJson(Map<String, dynamic> json) =>
     _$ChatMessageDtoImpl(
-      id: (json['id'] as num).toInt(),
+      id: (json['id'] as num?)?.toInt(),
       chatId: (json['chatId'] as num).toInt(),
       doctorId: (json['doctorId'] as num?)?.toInt(),
       memberId: (json['memberId'] as num?)?.toInt(),

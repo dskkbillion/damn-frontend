@@ -142,7 +142,9 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
         try {
           final decodedMessage = jsonDecode(message);
           if (decodedMessage is Map<String, dynamic>) {
-            if (decodedMessage['action'] == 'CHAT' && decodedMessage['data'] != null) {
+            // Handle both numeric action 3 (new message) and string 'CHAT'
+            final action = decodedMessage['action'];
+            if ((action == 'CHAT' || action == 3) && decodedMessage['data'] != null) {
               // Assuming 'data' contains the ChatMessageDto structure
                try {
                  final messageData = decodedMessage['data'];
@@ -165,7 +167,7 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
                _cancelPongTimeout(); // Cancel timeout when pong is received
             } else {
               // Handle other message types if necessary
-              print("[WebSocket] Received non-CHAT/PONG message action: ${decodedMessage['action']}");
+              print("[WebSocket] Received unhandled message action: ${decodedMessage['action']}");
             }
           } else {
              print("[WebSocket] Received non-map message: $message");

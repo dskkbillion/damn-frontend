@@ -20,7 +20,8 @@ ChatMessageDto _$ChatMessageDtoFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$ChatMessageDto {
-  int get id => throw _privateConstructorUsedError;
+  int? get id =>
+      throw _privateConstructorUsedError; // Make id optional for WebSocket messages
   int get chatId => throw _privateConstructorUsedError;
   int? get doctorId => throw _privateConstructorUsedError;
   int? get memberId => throw _privateConstructorUsedError;
@@ -48,7 +49,7 @@ abstract class $ChatMessageDtoCopyWith<$Res> {
       _$ChatMessageDtoCopyWithImpl<$Res, ChatMessageDto>;
   @useResult
   $Res call(
-      {int id,
+      {int? id,
       int chatId,
       int? doctorId,
       int? memberId,
@@ -74,7 +75,7 @@ class _$ChatMessageDtoCopyWithImpl<$Res, $Val extends ChatMessageDto>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
+    Object? id = freezed,
     Object? chatId = null,
     Object? doctorId = freezed,
     Object? memberId = freezed,
@@ -85,10 +86,10 @@ class _$ChatMessageDtoCopyWithImpl<$Res, $Val extends ChatMessageDto>
     Object? readFlg = freezed,
   }) {
     return _then(_value.copyWith(
-      id: null == id
+      id: freezed == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
       chatId: null == chatId
           ? _value.chatId
           : chatId // ignore: cast_nullable_to_non_nullable
@@ -134,7 +135,7 @@ abstract class _$$ChatMessageDtoImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {int id,
+      {int? id,
       int chatId,
       int? doctorId,
       int? memberId,
@@ -158,7 +159,7 @@ class __$$ChatMessageDtoImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
+    Object? id = freezed,
     Object? chatId = null,
     Object? doctorId = freezed,
     Object? memberId = freezed,
@@ -169,10 +170,10 @@ class __$$ChatMessageDtoImplCopyWithImpl<$Res>
     Object? readFlg = freezed,
   }) {
     return _then(_$ChatMessageDtoImpl(
-      id: null == id
+      id: freezed == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
       chatId: null == chatId
           ? _value.chatId
           : chatId // ignore: cast_nullable_to_non_nullable
@@ -213,7 +214,7 @@ class __$$ChatMessageDtoImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$ChatMessageDtoImpl extends _ChatMessageDto {
   const _$ChatMessageDtoImpl(
-      {required this.id,
+      {this.id,
       required this.chatId,
       this.doctorId,
       this.memberId,
@@ -228,7 +229,8 @@ class _$ChatMessageDtoImpl extends _ChatMessageDto {
       _$$ChatMessageDtoImplFromJson(json);
 
   @override
-  final int id;
+  final int? id;
+// Make id optional for WebSocket messages
   @override
   final int chatId;
   @override
@@ -297,7 +299,7 @@ class _$ChatMessageDtoImpl extends _ChatMessageDto {
 
 abstract class _ChatMessageDto extends ChatMessageDto {
   const factory _ChatMessageDto(
-      {required final int id,
+      {final int? id,
       required final int chatId,
       final int? doctorId,
       final int? memberId,
@@ -312,7 +314,7 @@ abstract class _ChatMessageDto extends ChatMessageDto {
       _$ChatMessageDtoImpl.fromJson;
 
   @override
-  int get id;
+  int? get id; // Make id optional for WebSocket messages
   @override
   int get chatId;
   @override
