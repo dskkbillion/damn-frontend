@@ -87,10 +87,6 @@ Future<void> main() async {
   await configureDependencies(backendBaseUrl: backendBaseUrl);
   print('[Unified Production] Core dependencies configured.');
   
-  // 初始化各个模块依赖
-  // Auth模块必须先初始化，因为其他模块依赖它
-  await AuthDI.init(getIt);
-  print('[Unified Production] Auth module initialized.');
 
   await initHomeDi();
   print('[Unified Production] Home module initialized.');

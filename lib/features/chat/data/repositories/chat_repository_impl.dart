@@ -73,7 +73,7 @@ class ChatRepositoryImpl implements IChatRepository {
              
              final messages = messageDtos.map((dto) {
                // 根据后端分析：
-               // ChatMessage中：memberId = 发送者ID，doctorId = 接收者ID
+               // ChatMessage中：memberId = 发送者的外部ID，doctorId = 接收者的外部ID
                // 所以判断逻辑很简单：memberId == 当前用户ID 就是我发的
                
                print("[Repository] 消息${dto.id} 判断逻辑:");
