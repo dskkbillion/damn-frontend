@@ -8,17 +8,17 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart'; // For @immutable
 import 'package:intl/intl.dart'; // If using date formatting inside bloc
 
-// --- Use package imports --- 
+// --- Use package imports ---
 // Domain Entities (Required by State/Event parts & Bloc logic)
-import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart'; 
-import 'package:dskk_flutter_refactor/features/chat/domain/entities/participant.dart'; 
+import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/entities/participant.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_room.dart'; // Needed for GetChatRoomDetails return type
 // Domain UseCases (Required by Bloc logic)
-import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_message_list.dart'; 
-import 'package:dskk_flutter_refactor/features/chat/domain/usecases/send_message.dart'; 
-import 'package:dskk_flutter_refactor/features/chat/domain/usecases/revoke_message.dart'; 
+import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_message_list.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/usecases/send_message.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/usecases/revoke_message.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/delete_chat_message.dart'; // Import DeleteChatMessage
-import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_chat_room_details.dart'; 
+import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_chat_room_details.dart';
 // Auth Feature Dependencies (Required by Bloc logic)
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/user.dart'; // Corrected import
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_repository.dart'; // Corrected import
@@ -27,8 +27,9 @@ import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_chat_web_
 import 'package:dskk_flutter_refactor/features/chat/data/datasources/chat_web_socket_data_source.impl.dart'; // For ConnectionStatus enum
 import 'package:dskk_flutter_refactor/features/chat/data/models/chat_message_dto.dart'; // For ChatMessageDto used in event
 // Core Dependencies (Required by Bloc logic/Error handling)
-import 'package:dskk_flutter_refactor/core/error/failures.dart'; 
+import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart';
+import 'package:dskk_flutter_refactor/core/events/event_bus.dart'; // For EventBus
 // ---------------------------
 
 part 'chat_messages_event.dart';
@@ -392,6 +393,15 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
           error: () => null,
           hasMessageSent: true, // 设置发送成功标志
         ));
+
+        // 触发聊天列表更新事件
+        EventBus().fireChatListUpdateEvent(ChatListUpdateEvent(
+          chatId: chatId.toString(),
+          lastMessage: sentMessage.context ?? '',
+          lastMessageTime: sentMessage.createTime,
+          // 发送消息不改变未读数，因为是自己发的
+        ));
+        print("[ChatMessagesBloc] Triggered chat list update for sent message");
       },
     );
   }
@@ -466,6 +476,17 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
              // Trigger callback to update chat list locally
              if (onNewMessageReceived != null) {
                onNewMessageReceived!(newMessage);
+             }
+
+             // 如果不是自己发送的消息，触发聊天列表更新事件
+             if (senderParticipantId != currentState.currentUserParticipantId) {
+               EventBus().fireChatListUpdateEvent(ChatListUpdateEvent(
+                 chatId: chatId.toString(),
+                 lastMessage: newMessage.context ?? '',
+                 lastMessageTime: newMessage.createTime,
+                 unreadCountDelta: 1, // 收到别人的新消息，未读数+1
+               ));
+               print("[Bloc] Triggered chat list update for received message from other user");
              }
         } else {
              print("[Bloc] Message ${newMessage.id} from WebSocket already exists, ignoring.");

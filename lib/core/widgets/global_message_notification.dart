@@ -34,10 +34,27 @@ class _GlobalMessageNotificationState extends State<GlobalMessageNotification> {
   
   /// 显示通知
   void _showNotification(ChatMessageEvent event) {
+    // 检查当前是否在聊天室内
+    final router = GoRouter.of(context);
+    final currentRoute = router.routerDelegate.currentConfiguration;
+
+    // 从当前路由中获取路径参数
+    String? currentChatId;
+    if (currentRoute.uri.pathSegments.length >= 2 &&
+        currentRoute.uri.pathSegments[0] == 'chat') {
+      currentChatId = currentRoute.uri.pathSegments[1];
+    }
+
+    // 如果当前正在该聊天室内，不显示通知
+    if (currentChatId == event.chatId) {
+      print('[GlobalMessageNotification] Skipping notification for current chat room: $currentChatId');
+      return;
+    }
+
     // 移除之前显示的通知
     _overlayEntry?.remove();
     _overlayEntry = null;
-    
+
     // 创建新的通知
     _overlayEntry = OverlayEntry(
       builder: (context) => Positioned(

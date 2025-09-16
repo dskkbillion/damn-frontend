@@ -211,9 +211,20 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
           senderId: senderId,
           chatId: chatId,
         );
-        
+
         EventBus().fireChatMessageEvent(chatEvent);
         print("[WebSocket] 已触发全局消息通知: $senderName - $content");
+
+        // 同时触发聊天列表更新事件
+        final chatListUpdateEvent = ChatListUpdateEvent(
+          chatId: chatId,
+          lastMessage: content,
+          lastMessageTime: messageDto.timestamp,
+          unreadCountDelta: 1, // 收到新消息，未读数+1
+        );
+
+        EventBus().fireChatListUpdateEvent(chatListUpdateEvent);
+        print("[WebSocket] 已触发聊天列表更新事件: chatId=$chatId");
       }
     } catch (e) {
       print("[WebSocket] 触发全局消息通知失败: $e");

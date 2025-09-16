@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/l10n.dart';
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
+import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
 
 import 'package:dskk_flutter_refactor/features/chat/presentation/cubit/chat/chat_cubit.dart' as chat_cubit;
 import 'package:dskk_flutter_refactor/features/chat/presentation/cubit/message_list/message_list_cubit.dart';
@@ -91,6 +92,13 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
 
     // Enter the chat room
     await _chatCubit.enterChatRoom(widget.chatId);
+
+    // 进入聊天室时，重置该聊天室的未读数
+    EventBus().fireChatListUpdateEvent(ChatListUpdateEvent(
+      chatId: widget.chatId.toString(),
+      resetUnread: true,
+    ));
+    print('[ChatRoomPage] Reset unread count for chat ${widget.chatId}');
 
     // Get chat room info and set current user participant ID
     // 修改为await确保在设置ID之后再继续
