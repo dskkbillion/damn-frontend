@@ -171,8 +171,9 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       if (avatar != null) requestData['avatar'] = avatar;
       if (onlineFlag != null) requestData['onlineFlag'] = onlineFlag;
       
-      // 使用后端的 /api/member/modify 接口
-      final response = await dio.post('/api/member/modify', data: requestData);
+      // 使用 /api/member/edit 接口，因为它会同时更新 CommonUser 表
+      // modify 接口只更新 Member 表，导致聊天列表无法获取最新的昵称和头像
+      final response = await dio.post('/api/member/edit', data: requestData);
 
       if (response.statusCode == 200) {
         final responseData = response.data;

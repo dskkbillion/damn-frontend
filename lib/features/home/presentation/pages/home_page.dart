@@ -4,14 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
 import '../../domain/entities/banner.dart' as home_banner;
-import '../../domain/entities/home_category.dart';
 import '../../domain/entities/home_feed_item.dart';
-import '../../domain/usecases/get_home_feed_usecase.dart';
 import '../bloc/home_bloc.dart';
 import '../bloc/home_event.dart';
 import '../bloc/home_state.dart';
 import '../widgets/banner_carousel.dart';
-import '../widgets/category_list.dart';
 import '../widgets/product_card.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
@@ -41,51 +38,18 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   final ScrollController _scrollController = ScrollController();
-  
+
   @override
   void initState() {
     super.initState();
     // 加载首页数据
     context.read<HomeBloc>().add(const LoadHomeData());
-    
-    // 添加滚动监听
-    _scrollController.addListener(_onScroll);
   }
-  
+
   @override
   void dispose() {
-    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
-  }
-  
-  void _onScroll() {
-    final state = context.read<HomeBloc>().state;
-    if (state is HomeLoaded || state is HomeLoadingMore) {
-      if (_isBottom && !_isLoadingMore(state) && _hasMore(state)) {
-        final currentPage = state is HomeLoaded ? state.currentPage : 1;
-        context.read<HomeBloc>().add(LoadMoreFeed(
-          page: currentPage + 1,
-          limit: HomeBloc.defaultLimit,
-        ));
-      }
-    }
-  }
-  
-  bool get _isBottom {
-    if (!_scrollController.hasClients) return false;
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    final currentScroll = _scrollController.offset;
-    // 当滚动到距离底部 200 像素时触发加载更多
-    return currentScroll >= (maxScroll - 200);
-  }
-  
-  bool _isLoadingMore(HomeState state) {
-    return state is HomeLoadingMore;
-  }
-  
-  bool _hasMore(HomeState state) {
-    return state is HomeLoaded ? state.hasMore : true;
   }
 
   @override
@@ -105,12 +69,9 @@ class _HomeViewState extends State<HomeView> {
             return const Center(
               child: CircularProgressIndicator(),
             );
-          } else if (state is HomeLoaded || state is HomeRefreshing || state is HomeLoadingMore) {
+          } else if (state is HomeLoaded || state is HomeRefreshing) {
             final banners = _getBanners(state);
-            final categories = _getCategories(state);
             final feedItems = _getFeedItems(state);
-            final isLoadingMore = state is HomeLoadingMore;
-            final hasMore = state is HomeLoaded ? state.hasMore : true;
 
             return RefreshIndicator(
               onRefresh: () async {
@@ -227,31 +188,67 @@ class _HomeViewState extends State<HomeView> {
                         },
                       ),
                     ),
-                  
-                  // 加载更多指示器
-                  if (isLoadingMore)
-                    const SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      ),
-                    ),
-                  
-                  // 到底了提示
-                  if (!hasMore)
+
+                  // 底部刷新按钮
+                  if (feedItems.isNotEmpty)
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.symmetric(vertical: 24.0),
                         child: Center(
-                          child: Text(
-                            s.home_end_of_list,
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 14,
-                            ),
-                          ),
+                          child: state is HomeRefreshing
+                              ? Column(
+                                  children: [
+                                    const CircularProgressIndicator(),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      '正在刷新推荐...',
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Column(
+                                  children: [
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                                      ),
+                                      child: IconButton(
+                                        onPressed: () {
+                                          // 先滚动到顶部
+                                          _scrollController.animateTo(
+                                            0,
+                                            duration: const Duration(milliseconds: 500),
+                                            curve: Curves.easeInOut,
+                                          ).then((_) {
+                                            // 滚动完成后触发刷新
+                                            if (mounted) {
+                                              context.read<HomeBloc>().add(const RefreshHomeData());
+                                            }
+                                          });
+                                        },
+                                        icon: Icon(
+                                          Icons.arrow_upward,
+                                          color: Theme.of(context).primaryColor,
+                                          size: 28,
+                                        ),
+                                        tooltip: '回到顶部并刷新',
+                                        padding: const EdgeInsets.all(12),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      '回到顶部并刷新',
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                         ),
                       ),
                     ),
@@ -292,10 +289,6 @@ class _HomeViewState extends State<HomeView> {
       return state.banners;
     } else if (state is HomeRefreshing) {
       return state.banners;
-    } else if (state is HomeLoadingMore) {
-      return state.banners;
-    } else if (state is HomeLoadMoreError) {
-      return state.banners;
     }
     return [];
   }
@@ -334,29 +327,11 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  /// 获取分类列表
-  List<HomeCategory> _getCategories(HomeState state) {
-    if (state is HomeLoaded) {
-      return state.categories;
-    } else if (state is HomeRefreshing) {
-      return state.categories;
-    } else if (state is HomeLoadingMore) {
-      return state.categories;
-    } else if (state is HomeLoadMoreError) {
-      return state.categories;
-    }
-    return [];
-  }
-
   /// 获取信息流列表
   List<HomeFeedItem> _getFeedItems(HomeState state) {
     if (state is HomeLoaded) {
       return state.feedItems;
     } else if (state is HomeRefreshing) {
-      return state.feedItems;
-    } else if (state is HomeLoadingMore) {
-      return state.feedItems;
-    } else if (state is HomeLoadMoreError) {
       return state.feedItems;
     }
     return [];

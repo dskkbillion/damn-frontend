@@ -116,7 +116,7 @@ class ProductEditPage extends StatefulWidget {
   State<ProductEditPage> createState() => _ProductEditPageState();
 }
 
-class _ProductEditPageState extends State<ProductEditPage> {
+class _ProductEditPageState extends State<ProductEditPage> with TickerProviderStateMixin {
   /// BLoC实例
   late final ProductEditBloc _bloc;
   
@@ -141,6 +141,12 @@ class _ProductEditPageState extends State<ProductEditPage> {
   
   /// 当前选中的服务档位
   ServiceTier _selectedTier = ServiceTier.basic;
+
+  /// 闪烁动画控制器
+  late AnimationController _flashAnimationController;
+
+  /// 闪烁动画
+  late Animation<double> _flashAnimation;
   
   /// 滚动控制器
   final ScrollController _scrollController = ScrollController();
@@ -209,7 +215,21 @@ class _ProductEditPageState extends State<ProductEditPage> {
     
     // 初始化服务档位
     _serviceTiers = ProductServiceTiers();
-    
+
+    // 初始化闪烁动画
+    _flashAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _flashAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _flashAnimationController,
+      curve: Curves.easeInOut,
+    ));
+
     // 解析商品ID
     final productIdInt = widget.productId != null ? int.tryParse(widget.productId!) : null;
     print('[ProductEditPage] Parsed productId as int: $productIdInt');
@@ -260,10 +280,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
   
   /// 更新QA对
   void _updateQAPair(int index, String question, String answer) {
-    setState(() {
-      _qaList[index].question = question;
-      _qaList[index].answer = answer;
-    });
+    // 直接更新数据，不调用setState避免输入法问题
+    _qaList[index].question = question;
+    _qaList[index].answer = answer;
     // 触发变更检测
     _onFormFieldChanged();
   }
@@ -401,7 +420,10 @@ class _ProductEditPageState extends State<ProductEditPage> {
     
     // 释放所有服务档位控制器
     _serviceTiers.dispose();
-    
+
+    // 释放动画控制器
+    _flashAnimationController.dispose();
+
     super.dispose();
   }
 
@@ -630,9 +652,16 @@ class _ProductEditPageState extends State<ProductEditPage> {
 
   /// 选择服务档位
   void _selectServiceTier(ServiceTier tier) {
-    setState(() {
-      _selectedTier = tier;
-    });
+    if (_selectedTier != tier) {
+      setState(() {
+        _selectedTier = tier;
+      });
+
+      // 触发闪烁动画
+      _flashAnimationController.forward().then((_) {
+        _flashAnimationController.reverse();
+      });
+    }
   }
 
 
@@ -1154,11 +1183,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
                     ),
               ),
               onChanged: (value) {
-                    // 输入时清除该字段的错误
+                    // 输入时清除该字段的错误（不使用setState避免输入法问题）
                     if (_formErrors.containsKey('name')) {
-                      setState(() {
-                        _formErrors.remove('name');
-                      });
+                      _formErrors.remove('name');
                     }
                 _bloc.add(UpdateFormField(fieldName: 'name', value: value));
               },
@@ -1188,11 +1215,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
               ),
               maxLines: 3,
               onChanged: (value) {
-                // 输入时清除该字段的错误
+                // 输入时清除该字段的错误（不使用setState避免输入法问题）
                 if (_formErrors.containsKey('description')) {
-                  setState(() {
-                    _formErrors.remove('description');
-                  });
+                  _formErrors.remove('description');
                 }
                 _bloc.add(UpdateFormField(fieldName: 'description', value: value));
               },
@@ -2891,8 +2916,22 @@ class _ProductEditPageState extends State<ProductEditPage> {
   /// 构建档位价格编辑器
   Widget _buildTierPriceEditor() {
     final tierConfig = _serviceTiers.getTierConfig(_selectedTier);
-    
-    return TextField(
+
+    return AnimatedBuilder(
+      animation: _flashAnimation,
+      builder: (context, child) {
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withOpacity(_flashAnimation.value * 0.8),
+                blurRadius: 20 * _flashAnimation.value,
+                spreadRadius: 5 * _flashAnimation.value,
+              ),
+            ],
+          ),
+          child: TextField(
       controller: tierConfig.priceController,
       readOnly: widget.isPreviewMode,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -2977,6 +3016,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
         });
         _onFormFieldChanged();
       },
+          ),
+        );
+      },
     );
   }
 
@@ -3012,9 +3054,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
           attributeId: attr.id,
           keyboardType: TextInputType.text,
           onChanged: (value) {
-            setState(() {
-              _serviceTiers.getTierConfig(_selectedTier).updateAttributeValue(attr.id, value);
-            });
+            // 直接更新数据，不调用setState避免输入法问题
+            _serviceTiers.getTierConfig(_selectedTier).updateAttributeValue(attr.id, value);
             _onFormFieldChanged();
           },
         ));
@@ -3137,13 +3178,26 @@ class _ProductEditPageState extends State<ProductEditPage> {
       ];
     }
     
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        children: [
-          // 主要的输入框
-          Expanded(
-            child: TextField(
+    return AnimatedBuilder(
+      animation: _flashAnimation,
+      builder: (context, child) {
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withOpacity(_flashAnimation.value * 0.6),
+                blurRadius: 15 * _flashAnimation.value,
+                spreadRadius: 3 * _flashAnimation.value,
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // 主要的输入框
+              Expanded(
+                child: TextField(
               controller: controller,
               keyboardType: keyboardType,
               readOnly: widget.isPreviewMode,
@@ -3232,14 +3286,30 @@ class _ProductEditPageState extends State<ProductEditPage> {
           ],
         ],
       ),
+        );
+      },
     );
   }
 
   /// 构建布尔类型属性（单选）
   Widget _buildBooleanAttribute(ProductAttribute attribute) {
     final isTrue = attribute.value == 'true';
-    
-    return Container(
+
+    return AnimatedBuilder(
+      animation: _flashAnimation,
+      builder: (context, child) {
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withOpacity(_flashAnimation.value * 0.6),
+                blurRadius: 15 * _flashAnimation.value,
+                spreadRadius: 3 * _flashAnimation.value,
+              ),
+            ],
+          ),
+          child: Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
@@ -3358,6 +3428,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
           ),
         ],
       ),
+    ),
+        );
+      },
     );
   }
 

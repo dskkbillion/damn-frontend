@@ -142,32 +142,15 @@ class ChatRepositoryImpl implements IChatRepository {
              final roomDto = await remoteDataSource.getRoomDetails(message.chatId);
              final room = roomDto.toEntity(currentUserId: user.id);
              
-             // 根据消息中的memberId和doctorId判断senderId（使用participant的内部ID）
-             int senderParticipantId;
-             if (sentMessageDto.memberId != null && sentMessageDto.doctorId == null) {
-               senderParticipantId = room.participant1.id; // 买家是participant1
-               print("[Repository] 发送的消息: memberId=${sentMessageDto.memberId}，买家发送，senderId=${senderParticipantId}");
-             } else if (sentMessageDto.doctorId != null && sentMessageDto.memberId == null) {
-               senderParticipantId = room.participant2.id; // 卖家是participant2
-               print("[Repository] 发送的消息: doctorId=${sentMessageDto.doctorId}，卖家发送，senderId=${senderParticipantId}");
-             } else if (sentMessageDto.memberId != null && sentMessageDto.doctorId != null) {
-               // 两者都有值，根据当前用户类型判断
-               if (user.type == 'MEMBER') {
-                 senderParticipantId = room.participant1.id; // 买家是participant1
-                 print("[Repository] 发送的消息: 两者都有值，当前用户是买家，使用participant1.id作为senderId=${senderParticipantId}");
-               } else {
-                 senderParticipantId = room.participant2.id; // 卖家是participant2
-                 print("[Repository] 发送的消息: 两者都有值，当前用户是卖家，使用participant2.id作为senderId=${senderParticipantId}");
-               }
-             } else {
-               // 理论上不应该出现两者都为空的情况，使用当前用户对应的participant ID
-               if (user.type == 'MEMBER') {
-                 senderParticipantId = room.participant1.id;
-               } else {
-                 senderParticipantId = room.participant2.id;
-               }
-               print("[Repository] 发送的消息: memberId和doctorId都为空，设置senderId为0");
-             }
+            // 重要修正：在ChatRoomDto.toEntity中，participant1总是当前用户，participant2总是对方
+            // 所以发送消息时，senderId应该总是使用participant1.id（当前用户）
+            int senderParticipantId = room.participant1.id; // participant1总是当前用户
+
+            print("[Repository] 发送的消息: 当前用户发送，senderId=${senderParticipantId}");
+            print("[Repository] 调试信息: participant1.id=${room.participant1.id} (当前用户), participant2.id=${room.participant2.id} (对方)");
+            print("[Repository] 调试信息: user.id=${user.id}, user.type=${user.type}");
+            print("[Repository] 调试信息: memberId=${sentMessageDto.memberId}, doctorId=${sentMessageDto.doctorId}");
+ 
              
              final sentMessageEntity = sentMessageDto.toEntity(
                 currentUserId: user.id, // Pass commonUserId

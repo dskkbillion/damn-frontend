@@ -72,18 +72,41 @@ class ChatRoutes {
                   body: Center(child: Text("Invalid Chat ID '$chatIdString'. Please go back.")));
             }
 
-            // 直接创建ChatMessagesBloc而不是尝试从GetIt获取
+            // 直接创建ChatMessagesBloc并设置新消息回调
             return BlocProvider(
-              create: (_) => ChatMessagesBloc(
-                chatId: chatId,
-                getMessageList: sl<GetMessageList>(),
-                sendMessage: sl<SendMessage>(),
-                revokeMessage: sl<RevokeMessage>(),
-                getChatRoomDetails: sl<GetChatRoomDetails>(),
-                deleteChatMessage: sl<DeleteChatMessage>(),
-                userRepository: sl<IUserRepository>(),
-                webSocketDataSource: sl<IChatWebSocketDataSource>(),
-              )..add(LoadChatMessages(chatId)),
+              create: (_) {
+                final chatMessagesBloc = ChatMessagesBloc(
+                  chatId: chatId,
+                  getMessageList: sl<GetMessageList>(),
+                  sendMessage: sl<SendMessage>(),
+                  revokeMessage: sl<RevokeMessage>(),
+                  getChatRoomDetails: sl<GetChatRoomDetails>(),
+                  deleteChatMessage: sl<DeleteChatMessage>(),
+                  userRepository: sl<IUserRepository>(),
+                  webSocketDataSource: sl<IChatWebSocketDataSource>(),
+                );
+
+                // 设置WebSocket消息回调以更新本地聊天列表
+                chatMessagesBloc.onNewMessageReceived = (newMessage) {
+                  print('[ChatRoutes] New WebSocket message received, updating local chat list');
+                  try {
+                    // 尝试从 GetIt 获取 ChatListBloc
+                    if (sl.isRegistered<ChatListBloc>()) {
+                      final chatListBloc = sl<ChatListBloc>();
+                      chatListBloc.add(UpdateChatRoomLastMessage(
+                        chatId: chatId,
+                        lastMessage: newMessage,
+                      ));
+                      print('[ChatRoutes] Updated chat list with new WebSocket message');
+                    }
+                  } catch (e) {
+                    print('[ChatRoutes] Error updating chat list with WebSocket message: $e');
+                  }
+                };
+
+                chatMessagesBloc.add(LoadChatMessages(chatId));
+                return chatMessagesBloc;
+              },
               child: ChatRoomPage(chatId: chatId), // Pass chatId to the page widget
             );
           },
@@ -119,22 +142,37 @@ class ChatRoutes {
                 print('[ChatRoutes] Message revoked in chat $chatId');
               },
               onMessageSent: () {
-                // 刷新聊天列表
-                print('[ChatRoutes] Message sent in chat $chatId, attempting to refresh chat list...');
-                
-                // 方法1：尝试从 context 获取 ChatListBloc
+                // 使用本地缓存更新代替服务器刷新
+                print('[ChatRoutes] Message sent in chat $chatId, updating local chat list...');
+
+                // 方法1：尝试从 context 获取 ChatListBloc 和 ChatMessagesBloc
                 try {
                   final chatListBloc = context.read<ChatListBloc>();
-                  print('[ChatRoutes] Found ChatListBloc from context, refreshing...');
-                  chatListBloc.add(RefreshChatList());
+                  final chatMessagesBloc = context.read<ChatMessagesBloc>();
+
+                  // 获取最新消息并更新本地聊天列表
+                  if (chatMessagesBloc.state is ChatMessagesLoaded) {
+                    final messagesState = chatMessagesBloc.state as ChatMessagesLoaded;
+                    if (messagesState.messages.isNotEmpty) {
+                      final lastMessage = messagesState.messages.last;
+
+                      // 仅更新本地缓存中的最后一条消息
+                      print('[ChatRoutes] Updating local cache for chat $chatId with last message');
+                      chatListBloc.add(UpdateChatRoomLastMessage(
+                        chatId: chatId,
+                        lastMessage: lastMessage,
+                      ));
+                    }
+                  }
                 } catch (e) {
-                  print('[ChatRoutes] ChatListBloc not found in context: $e');
-                  
-                  // 方法2：尝试从 GetIt 获取
+                  print('[ChatRoutes] Error accessing BLoCs from context: $e');
+
+                  // 方法2：尝试从 GetIt 获取（作为后备方案）
                   try {
                     if (sl.isRegistered<ChatListBloc>()) {
                       final chatListBloc = sl<ChatListBloc>();
-                      print('[ChatRoutes] Found ChatListBloc from GetIt, refreshing...');
+                      print('[ChatRoutes] Found ChatListBloc from GetIt, falling back to server refresh...');
+                      // 仅在无法进行本地更新时才刷新
                       chatListBloc.add(RefreshChatList());
                     } else {
                       print('[ChatRoutes] ChatListBloc not registered in GetIt');

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/widgets.dart';
@@ -264,16 +265,20 @@ class MessageListCubit extends Cubit<MessageListState> {
     Map<String, dynamic>? metadata,
   }) async {
     if (_currentChatId == null) return;
-    
+
     final currentState = state;
     if (currentState is! _Loaded) return;
-    
-    // Create content based on file type
-    // 如果有 metadata，转换为 JSON 字符串；否则直接使用 filePath
-    final content = metadata != null 
-        ? jsonEncode(metadata)
-        : filePath;
-    
+
+    // Import File class
+    final file = File(filePath);
+
+    // For audio and image files, we need to upload first
+    // Leave context empty for files that need upload
+    final needsUpload = fileType == 'audio' || fileType == 'image';
+    final content = needsUpload
+        ? '' // Empty for files that need upload
+        : (metadata != null ? jsonEncode(metadata) : filePath);
+
     // Create optimistic message
     // 使用本地时间，因为这是用于显示的
     // 当服务器返回真实消息时，会用服务器时间替换
@@ -287,20 +292,21 @@ class MessageListCubit extends Cubit<MessageListState> {
       withdrawFlag: false,
       status: MessageStatus.sending,
     );
-    
+
     // Add optimistic message
     _allMessages.insert(0, optimisticMessage);
     emit(currentState.copyWith(
       messages: List.from(_allMessages),
     ));
-    
-    // Send to backend
+
+    // Send to backend with file if needed
     final result = await _sendMessage(
       SendMessageParams(
         message: optimisticMessage,
+        file: needsUpload ? file : null, // Pass file for upload
       ),
     );
-    
+
     result.fold(
       (failure) {
         // Remove failed message
@@ -323,10 +329,10 @@ class MessageListCubit extends Cubit<MessageListState> {
           messages: List.from(_allMessages),
           hasMore: _hasMore,
         ));
-        
+
         // 通知 ChatListBloc 更新最后一条消息
         _updateChatListLastMessage(sentMessage);
-        
+
         // 检查是否需要插入本地付费提示（买卖双方都检查）
         if (_isLightConsultation) {
           // 延迟执行避免阻塞响应

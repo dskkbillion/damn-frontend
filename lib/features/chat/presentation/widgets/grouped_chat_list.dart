@@ -254,13 +254,13 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                         backgroundImage: (widget.group.seller.avatar != null && widget.group.seller.avatar!.isNotEmpty)
                             ? CachedNetworkImageProvider(widget.group.seller.avatar!)
                             : null,
-                        backgroundColor: Colors.grey[200],
+                        backgroundColor: Colors.grey[400],
                         child: (widget.group.seller.avatar == null || widget.group.seller.avatar!.isEmpty)
                             ? Text(
                                 widget.group.seller.nickName?.isNotEmpty == true
                                     ? widget.group.seller.nickName![0].toUpperCase()
                                     : '?',
-                                style: const TextStyle(fontSize: 20, color: Colors.white),
+                                style: const TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.w500),
                               )
                             : null,
                       ),
@@ -800,7 +800,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                                     backgroundImage: (buyer.avatar != null && buyer.avatar!.isNotEmpty)
                                         ? CachedNetworkImageProvider(buyer.avatar!)
                                         : null,
-                                    backgroundColor: Colors.grey[300],
+                                    backgroundColor: Colors.grey[400],
                                     child: (buyer.avatar == null || buyer.avatar!.isEmpty)
                                         ? Text(
                                             buyer.nickName?.isNotEmpty == true
@@ -1018,7 +1018,7 @@ class BuyerChatItem extends StatelessWidget {
         backgroundImage: (buyer.avatar != null && buyer.avatar!.isNotEmpty)
             ? CachedNetworkImageProvider(buyer.avatar!)
             : null,
-        backgroundColor: Colors.grey[200],
+        backgroundColor: Colors.grey[400],
         child: (buyer.avatar == null || buyer.avatar!.isEmpty)
             ? Text(
                 buyer.nickName?.isNotEmpty == true

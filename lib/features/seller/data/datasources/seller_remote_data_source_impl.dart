@@ -438,8 +438,8 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       
       // 使用新的Dio实例和更长的超时设置发送请求
       print('Sending product update request with extended timeout (120s)');
-      // 修复：始终使用update端点，因为edit端点不会保存productMaterials
-      // update端点会正确处理productMaterials的保存
+      // 使用update端点进行完整更新
+      // 注意：后端需要修复审核状态被重置的问题
       final endpoint = '/api/shop/product/update';
       print('Using endpoint: $endpoint for all product updates to ensure productMaterials are saved');
       final response = await productUpdateDio.post(endpoint, data: mergedData, options: options);
@@ -1077,10 +1077,9 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       'id': updateData.id,
       'tenantId': existingData['tenantId'],
       'selectionMode': existingData['selectionMode'] ?? 'CUSTOMIZE',
-      // 修复：对于草稿商品，不要改变审核状态
-      'statusAudit': existingData['productType'] == 'draft' 
-          ? (existingData['statusAudit'] ?? 'SUCCESS')  // 草稿保持原状态
-          : 'WAIT',  // 正式商品更新后需要重新审核
+      // 保持原有的审核状态，避免被重置
+      // 如果已经是SUCCESS状态，保持SUCCESS；如果是其他状态，保持原状态
+      'statusAudit': existingData['statusAudit'] ?? 'SUCCESS',
       'productType': existingData['productType'] ?? 'product',
       
       // 商品基本信息

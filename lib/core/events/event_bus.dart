@@ -27,6 +27,33 @@ class ChatMessageEvent {
   });
 }
 
+/// 聊天列表更新事件类，用于通知聊天列表需要更新
+class ChatListUpdateEvent {
+  /// 聊天室ID
+  final String chatId;
+
+  /// 最新消息内容
+  final String? lastMessage;
+
+  /// 最新消息时间
+  final DateTime? lastMessageTime;
+
+  /// 未读消息数增量（可为负数表示减少）
+  final int? unreadCountDelta;
+
+  /// 是否重置未读数为0
+  final bool resetUnread;
+
+  /// 构造函数
+  ChatListUpdateEvent({
+    required this.chatId,
+    this.lastMessage,
+    this.lastMessageTime,
+    this.unreadCountDelta,
+    this.resetUnread = false,
+  });
+}
+
 /// 事件总线单例类，负责全局消息事件的分发
 class EventBus {
   /// 私有构造函数
@@ -40,17 +67,29 @@ class EventBus {
   
   /// 消息事件的广播控制器
   final _messageStreamController = StreamController<ChatMessageEvent>.broadcast();
-  
+
+  /// 聊天列表更新事件的广播控制器
+  final _chatListUpdateStreamController = StreamController<ChatListUpdateEvent>.broadcast();
+
   /// 消息事件流
   Stream<ChatMessageEvent> get messageStream => _messageStreamController.stream;
-  
+
+  /// 聊天列表更新事件流
+  Stream<ChatListUpdateEvent> get chatListUpdateStream => _chatListUpdateStreamController.stream;
+
   /// 发送一个聊天消息事件
   void fireChatMessageEvent(ChatMessageEvent event) {
     _messageStreamController.add(event);
   }
-  
+
+  /// 发送一个聊天列表更新事件
+  void fireChatListUpdateEvent(ChatListUpdateEvent event) {
+    _chatListUpdateStreamController.add(event);
+  }
+
   /// 关闭事件总线
   void dispose() {
     _messageStreamController.close();
+    _chatListUpdateStreamController.close();
   }
 } 

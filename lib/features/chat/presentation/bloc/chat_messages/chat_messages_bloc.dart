@@ -43,6 +43,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
   final DeleteChatMessage deleteChatMessage;
   final IUserRepository userRepository;
   final IChatWebSocketDataSource webSocketDataSource;
+  Function(ChatMessage)? onNewMessageReceived; // Callback for new messages
 
   User? _currentUser;
   Participant? _opponent;
@@ -134,20 +135,25 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
            print("[ChatMessagesBloc]   participant2: id=${p2.id} (内部ID), referId=${p2.referId} (外部ID), nickName=${p2.nickName}");
 
            print("[ChatMessagesBloc] 开始匹配当前用户...");
-           if (p1.referId == currentReferId) {
+           // 修复：使用participant.id与currentReferId(实际是commonUserId)进行匹配
+          // 因为ChatUserRepositoryImpl返回的User.id实际上是commonUserId(10320)
+          // 而participant的id字段也是10320，referId是10322
+          if (p1.id == currentReferId) {
                currentUserParticipantId = p1.id;
                opponentParticipant = p2;
                print("[ChatMessagesBloc] 匹配成功: 当前用户是participant1");
                print("[ChatMessagesBloc]   当前用户内部ID: $currentUserParticipantId");
                print("[ChatMessagesBloc]   对手用户: ${p2.nickName} (内部ID=${p2.id}, 外部ID=${p2.referId})");
-           } else if (p2.referId == currentReferId) {
+           } else if (p2.id == currentReferId) {
                currentUserParticipantId = p2.id;
                opponentParticipant = p1;
                print("[ChatMessagesBloc] 匹配成功: 当前用户是participant2");
                print("[ChatMessagesBloc]   当前用户内部ID: $currentUserParticipantId");
                print("[ChatMessagesBloc]   对手用户: ${p1.nickName} (内部ID=${p1.id}, 外部ID=${p1.referId})");
            } else {
-               print("[ChatMessagesBloc] Error: Current user (referId: $currentReferId) not found in room participants!");
+               print("[ChatMessagesBloc] Error: Current user (id: $currentReferId) not found in room participants!");
+              print("[ChatMessagesBloc]   p1.id=${p1.id}, p1.referId=${p1.referId}");
+              print("[ChatMessagesBloc]   p2.id=${p2.id}, p2.referId=${p2.referId}");
                emit(ChatMessagesError('Error: You are not a participant in this chat.'));
                return false; // Indicate failure
            }
@@ -306,6 +312,11 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
 
     // 1. Create optimistic message
     print("[ChatMessagesBloc] =====发送消息调试=====");
+    print("[ChatMessagesBloc] 消息类型: ${event.type}");
+    print("[ChatMessagesBloc] 文件是否存在: ${event.file != null}");
+    if (event.file != null) {
+      print("[ChatMessagesBloc] 文件路径: ${event.file!.path}");
+    }
     print("[ChatMessagesBloc] 当前用户类型: ${_currentUser!.type}");
     print("[ChatMessagesBloc] 当前用户referId(外部): ${_currentUser!.id}");
     print("[ChatMessagesBloc] 当前用户participantId(内部): ${loadedState.currentUserParticipantId}");
@@ -318,7 +329,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
       senderId: loadedState.currentUserParticipantId, // Use participant ID for sender
       memberId: _currentUser!.type == 'MEMBER' ? loadedState.currentUserParticipantId : loadedState.opponent.id,
       doctorId: _currentUser!.type == 'DOCTOR' ? loadedState.currentUserParticipantId : loadedState.opponent.id,
-      context: event.type == 'text' ? event.text! : (event.file?.path ?? 'Sending file...'),
+      context: event.type == 'text' ? event.text! : '', // 对于文件类型，context留空，等待上传后填充URL
       type: event.type,
       createTime: DateTime.now(),
       withdrawFlag: false,
@@ -340,8 +351,11 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     ));
 
     // 3. Prepare Use Case parameters
+    print("[ChatMessagesBloc] 准备发送参数:");
+    print("[ChatMessagesBloc]   message.context: ${optimisticMessage.context}");
+    print("[ChatMessagesBloc]   file: ${event.file}");
     final params = SendMessageParams(
-      message: optimisticMessage.copyWith(id: 0), 
+      message: optimisticMessage.copyWith(id: 0),
       file: event.file,
     );
 
@@ -366,6 +380,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
         print("Failed to send message: ${failure.message}");
       },
       (sentMessage) {
+        print("[ChatMessagesBloc] Message sent successfully: ID=${sentMessage.id}, Context=${sentMessage.context}");
         // Replace optimistic message with confirmed message (map logic is fine)
         final updatedMessages = currentState.messages.map((msg) {
           return msg.id == optimisticMessage.id
@@ -377,7 +392,6 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
           error: () => null,
           hasMessageSent: true, // 设置发送成功标志
         ));
-         print("Message sent successfully: ${sentMessage.id}");
       },
     );
   }
@@ -448,6 +462,11 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
               messages: [...currentState.messages, newMessage], // Append new message
             ));
              print("[Bloc] Appended new message ${newMessage.id} from WebSocket");
+
+             // Trigger callback to update chat list locally
+             if (onNewMessageReceived != null) {
+               onNewMessageReceived!(newMessage);
+             }
         } else {
              print("[Bloc] Message ${newMessage.id} from WebSocket already exists, ignoring.");
         }

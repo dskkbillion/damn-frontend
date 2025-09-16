@@ -88,45 +88,48 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
     } catch (e) {
       print('ERROR: Failed to get current user ID: $e');
     }
-    
+
     // Enter the chat room
     await _chatCubit.enterChatRoom(widget.chatId);
-    
+
     // Get chat room info and set current user participant ID
-    _chatCubit.state.maybeWhen(
-      ready: (chatRoom, lastReceivedMessage, hasNewMessage) {
-        // 使用获取的currentUserId来确定当前用户是哪个参与者
-        final currentUserParticipant = chatRoom.participants.firstWhere(
-          (p) => p.id == _currentUserId,
-          orElse: () {
-            // 如果找不到，直接报错
-            print('ERROR: Could not find participant with id=$_currentUserId in room ${chatRoom.id}');
-            print('ERROR: Available participants: ${chatRoom.participants.map((p) => 'id=${p.id}, type=${p.type}').join(', ')}');
-            throw Exception('Current user is not a participant in this chat room');
-          },
-        );
-        
-        final opponent = chatRoom.participants.firstWhere(
-          (p) => p.id != currentUserParticipant.id,
-          orElse: () => chatRoom.participants.last,
-        );
-        
-        // Set these values immediately
-        setState(() {
-          _currentUserParticipantId = currentUserParticipant.id;
-          _opponent = opponent;
-        });
-        
-        // 同时设置到 MessageListCubit
-        _messageListCubit.setCurrentUserParticipantId(currentUserParticipant.id);
-        
-        print('DEBUG: Set currentUserParticipantId to $_currentUserParticipantId at initialization');
-        print('DEBUG: Current user participant: id=${currentUserParticipant.id}, type=${currentUserParticipant.type}');
-        print('DEBUG: Opponent participant: id=${opponent.id}, type=${opponent.type}');
-      },
-      orElse: () {},
-    );
-    
+    // 修改为await确保在设置ID之后再继续
+    await Future.microtask(() {
+      _chatCubit.state.maybeWhen(
+        ready: (chatRoom, lastReceivedMessage, hasNewMessage) {
+          // 使用获取的currentUserId来确定当前用户是哪个参与者
+          final currentUserParticipant = chatRoom.participants.firstWhere(
+            (p) => p.id == _currentUserId,
+            orElse: () {
+              // 如果找不到，直接报错
+              print('ERROR: Could not find participant with id=$_currentUserId in room ${chatRoom.id}');
+              print('ERROR: Available participants: ${chatRoom.participants.map((p) => 'id=${p.id}, type=${p.type}').join(', ')}');
+              throw Exception('Current user is not a participant in this chat room');
+            },
+          );
+
+          final opponent = chatRoom.participants.firstWhere(
+            (p) => p.id != currentUserParticipant.id,
+            orElse: () => chatRoom.participants.last,
+          );
+
+          // Set these values immediately
+          setState(() {
+            _currentUserParticipantId = currentUserParticipant.id;
+            _opponent = opponent;
+          });
+
+          // 同时设置到 MessageListCubit
+          _messageListCubit.setCurrentUserParticipantId(currentUserParticipant.id);
+
+          print('DEBUG: Set currentUserParticipantId to $_currentUserParticipantId at initialization');
+          print('DEBUG: Current user participant: id=${currentUserParticipant.id}, type=${currentUserParticipant.type}');
+          print('DEBUG: Opponent participant: id=${opponent.id}, type=${opponent.type}');
+        },
+        orElse: () {},
+      );
+    });
+
     // Load initial messages
     await _messageListCubit.loadMessages(widget.chatId);
     

@@ -347,10 +347,13 @@ class SellerManagedProductDto {
           stock: 999, // API没有库存字段，使用默认值
           deliveryDay: variantMap['deliveryDay'],  // Keep null if not provided
           editNum: variantMap['editNum'],  // Keep null if not provided
-          feature: (variantMap['feature'] as List?)?.map((f) => {
-            'key': f['key'] ?? '',
-            'val': f['value'] ?? f['val'] ?? '',
-          }).toList().cast<Map<String, String>>() ?? [],
+          feature: (variantMap['feature'] as List?)?.map((f) {
+            return <String, String>{
+              'key': f['key']?.toString() ?? '',
+              'val': f['value']?.toString() ?? f['val']?.toString() ?? '',
+              'type': f['type']?.toString() ?? 'input',
+            };
+          }).toList() ?? [],
         );
       }).toList();
     }

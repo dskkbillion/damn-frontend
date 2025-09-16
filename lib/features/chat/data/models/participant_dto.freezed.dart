@@ -22,6 +22,8 @@ ParticipantDto _$ParticipantDtoFromJson(Map<String, dynamic> json) {
 mixin _$ParticipantDto {
   int get id => throw _privateConstructorUsedError;
   String? get nickName => throw _privateConstructorUsedError;
+  String? get trueName => throw _privateConstructorUsedError;
+  String? get mobile => throw _privateConstructorUsedError;
   String? get avatar => throw _privateConstructorUsedError;
   String? get type =>
       throw _privateConstructorUsedError; // 'MEMBER', 'DOCTOR', 'ADMIN'
@@ -44,7 +46,13 @@ abstract class $ParticipantDtoCopyWith<$Res> {
       _$ParticipantDtoCopyWithImpl<$Res, ParticipantDto>;
   @useResult
   $Res call(
-      {int id, String? nickName, String? avatar, String? type, int? referId});
+      {int id,
+      String? nickName,
+      String? trueName,
+      String? mobile,
+      String? avatar,
+      String? type,
+      int? referId});
 }
 
 /// @nodoc
@@ -64,6 +72,8 @@ class _$ParticipantDtoCopyWithImpl<$Res, $Val extends ParticipantDto>
   $Res call({
     Object? id = null,
     Object? nickName = freezed,
+    Object? trueName = freezed,
+    Object? mobile = freezed,
     Object? avatar = freezed,
     Object? type = freezed,
     Object? referId = freezed,
@@ -76,6 +86,14 @@ class _$ParticipantDtoCopyWithImpl<$Res, $Val extends ParticipantDto>
       nickName: freezed == nickName
           ? _value.nickName
           : nickName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      trueName: freezed == trueName
+          ? _value.trueName
+          : trueName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      mobile: freezed == mobile
+          ? _value.mobile
+          : mobile // ignore: cast_nullable_to_non_nullable
               as String?,
       avatar: freezed == avatar
           ? _value.avatar
@@ -102,7 +120,13 @@ abstract class _$$ParticipantDtoImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {int id, String? nickName, String? avatar, String? type, int? referId});
+      {int id,
+      String? nickName,
+      String? trueName,
+      String? mobile,
+      String? avatar,
+      String? type,
+      int? referId});
 }
 
 /// @nodoc
@@ -120,6 +144,8 @@ class __$$ParticipantDtoImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? nickName = freezed,
+    Object? trueName = freezed,
+    Object? mobile = freezed,
     Object? avatar = freezed,
     Object? type = freezed,
     Object? referId = freezed,
@@ -132,6 +158,14 @@ class __$$ParticipantDtoImplCopyWithImpl<$Res>
       nickName: freezed == nickName
           ? _value.nickName
           : nickName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      trueName: freezed == trueName
+          ? _value.trueName
+          : trueName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      mobile: freezed == mobile
+          ? _value.mobile
+          : mobile // ignore: cast_nullable_to_non_nullable
               as String?,
       avatar: freezed == avatar
           ? _value.avatar
@@ -153,7 +187,13 @@ class __$$ParticipantDtoImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$ParticipantDtoImpl extends _ParticipantDto {
   const _$ParticipantDtoImpl(
-      {required this.id, this.nickName, this.avatar, this.type, this.referId})
+      {required this.id,
+      this.nickName,
+      this.trueName,
+      this.mobile,
+      this.avatar,
+      this.type,
+      this.referId})
       : super._();
 
   factory _$ParticipantDtoImpl.fromJson(Map<String, dynamic> json) =>
@@ -164,6 +204,10 @@ class _$ParticipantDtoImpl extends _ParticipantDto {
   @override
   final String? nickName;
   @override
+  final String? trueName;
+  @override
+  final String? mobile;
+  @override
   final String? avatar;
   @override
   final String? type;
@@ -173,7 +217,7 @@ class _$ParticipantDtoImpl extends _ParticipantDto {
 
   @override
   String toString() {
-    return 'ParticipantDto(id: $id, nickName: $nickName, avatar: $avatar, type: $type, referId: $referId)';
+    return 'ParticipantDto(id: $id, nickName: $nickName, trueName: $trueName, mobile: $mobile, avatar: $avatar, type: $type, referId: $referId)';
   }
 
   @override
@@ -184,6 +228,9 @@ class _$ParticipantDtoImpl extends _ParticipantDto {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.nickName, nickName) ||
                 other.nickName == nickName) &&
+            (identical(other.trueName, trueName) ||
+                other.trueName == trueName) &&
+            (identical(other.mobile, mobile) || other.mobile == mobile) &&
             (identical(other.avatar, avatar) || other.avatar == avatar) &&
             (identical(other.type, type) || other.type == type) &&
             (identical(other.referId, referId) || other.referId == referId));
@@ -191,8 +238,8 @@ class _$ParticipantDtoImpl extends _ParticipantDto {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, nickName, avatar, type, referId);
+  int get hashCode => Object.hash(
+      runtimeType, id, nickName, trueName, mobile, avatar, type, referId);
 
   /// Create a copy of ParticipantDto
   /// with the given fields replaced by the non-null parameter values.
@@ -215,6 +262,8 @@ abstract class _ParticipantDto extends ParticipantDto {
   const factory _ParticipantDto(
       {required final int id,
       final String? nickName,
+      final String? trueName,
+      final String? mobile,
       final String? avatar,
       final String? type,
       final int? referId}) = _$ParticipantDtoImpl;
@@ -227,6 +276,10 @@ abstract class _ParticipantDto extends ParticipantDto {
   int get id;
   @override
   String? get nickName;
+  @override
+  String? get trueName;
+  @override
+  String? get mobile;
   @override
   String? get avatar;
   @override

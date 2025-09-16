@@ -248,8 +248,8 @@ class ServiceTierConfig {
     // 从feature中提取属性值
     Map<String, String> attributeValues = {};
     for (var feature in value.feature) {
-      String? key = feature['key'];
-      String? val = feature['val'];
+      String? key = feature['key']?.toString();
+      String? val = feature['val']?.toString();
       if (key != null && val != null) {
         attributeValues[key] = val;
       }

@@ -101,56 +101,10 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
 
   @override
   Future<List<HomeFeedItemModel>> getHomeFeed(int page, int limit) async {
-    // 如果是第一页，使用推荐系统API
-    if (page == 1) {
-      return getRecommendedProducts(limit);
-    }
-    
-    // 后续页使用原有API（也可以选择继续使用推荐系统API）
-    final url = Uri.parse('$baseUrl/api/shop/product/recommend/detail?code=home&page=$page&limit=$limit');
-    
-    try {
-      final headers = await _getHeaders();
-      print('Feed API请求URL: $url');
-      print('Feed API请求头: $headers');
-      
-      final response = await client.get(
-        url,
-        headers: headers,
-      );
-
-      print('Feed API响应状态码: ${response.statusCode}');
-      print('Feed API响应内容: ${response.body}');
-
-      if (response.statusCode == 200) {
-        // 确保使用UTF-8解码
-        final responseBody = utf8.decode(response.bodyBytes);
-        final jsonData = json.decode(responseBody);
-        if (jsonData['code'] == 200 && jsonData['data'] != null) {
-          final List<dynamic> productsList = jsonData['data']['products'] ?? [];
-          print('产品列表: $productsList');
-          
-          final products = productsList
-              .map((item) => HomeFeedItemModel.fromJson(item))
-              .toList();
-          
-          print('解析后的产品列表: $products');
-          print('产品图片URL: ${products.map((p) => p.images).toList()}');
-          
-          return products;
-        } else {
-          throw ServerException(message: jsonData['msg'] ?? 'Unknown error');
-        }
-      } else {
-        throw ServerException(message: 'Failed to load home feed data');
-      }
-    } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
-      throw ServerException(message: e.toString());
-    }
+    // 只使用推荐系统获取个性化推荐，不支持翻页
+    return getRecommendedProducts(limit);
   }
+
 
   @override
   Future<ProductDetailModel> getProductDetail(String productId) async {
@@ -258,43 +212,49 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
     try {
       final commonUserId = await getCommonUserId();
       final url = Uri.parse('$modelBaseUrl/recsys/conversation/recommend');
-      
+
       final headers = {
         'Content-Type': 'application/json',
         'Authorization': await getToken(),
       };
-      
+
       final body = json.encode({
         'user_id': int.tryParse(commonUserId) ?? 1,
-        'limit': limit
+        'limit': limit,
       });
-      
+
       print('推荐系统API请求URL: $url');
       print('推荐系统API请求体: $body');
-      
+
+      // 添加超时设置，防止长时间等待
       final response = await client.post(
         url,
         headers: headers,
         body: body,
+      ).timeout(
+        const Duration(seconds: 8),
+        onTimeout: () {
+          throw ServerException(message: '推荐系统请求超时');
+        },
       );
-      
+
       print('推荐系统API响应状态码: ${response.statusCode}');
-      
+
       if (response.statusCode == 200) {
         // 确保使用UTF-8解码
         final responseBody = utf8.decode(response.bodyBytes);
         final jsonData = json.decode(responseBody);
         print('推荐系统API响应内容: $jsonData');
-        
+
         if (jsonData['code'] == 200 && jsonData['data'] != null && jsonData['data']['items'] != null) {
           final items = jsonData['data']['items'] as List<dynamic>;
-          
+
           // 如果推荐系统返回空数组，返回空列表而不是抛出异常
           if (items.isEmpty) {
             print('推荐系统返回空数据，这是新用户的正常情况');
             return [];
           }
-          
+
           return items.map((item) => HomeFeedItemModel.fromJson(item)).toList();
         } else {
           print('推荐系统返回异常: ${jsonData['message']}');
@@ -302,12 +262,14 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
           return [];
         }
       } else {
-        throw ServerException(message: 'Failed to get recommended products');
+        print('推荐系统API响应错误: ${response.statusCode}');
+        // 返回空列表，不抛出异常
+        return [];
       }
     } catch (e) {
       print('获取推荐产品出错: $e');
-      if (e is ServerException) rethrow;
-      throw ServerException(message: e.toString());
+      // 出错时返回空列表，让用户可以手动刷新
+      return [];
     }
   }
 

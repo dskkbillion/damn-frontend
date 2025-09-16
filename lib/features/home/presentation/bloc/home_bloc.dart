@@ -25,7 +25,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }) : super(const HomeInitial()) {
     on<LoadHomeData>(_onLoadHomeData);
     on<RefreshHomeData>(_onRefreshHomeData);
-    on<LoadMoreFeed>(_onLoadMoreFeed);
     on<BannerClicked>(_onBannerClicked);
     on<CategoryClicked>(_onCategoryClicked);
     on<ProductCardClicked>(_onProductCardClicked);
@@ -80,49 +79,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }
   }
 
-  /// 处理加载更多信息流数据事件
-  Future<void> _onLoadMoreFeed(
-    LoadMoreFeed event,
-    Emitter<HomeState> emit,
-  ) async {
-    final currentState = state;
-    
-    if (currentState is HomeLoaded && currentState.hasMore) {
-      emit(HomeLoadingMore(
-        banners: currentState.banners,
-        categories: currentState.categories,
-        feedItems: currentState.feedItems,
-        currentPage: currentState.currentPage,
-      ));
-      
-      final result = await getHomeFeed(HomeFeedParams(
-        page: event.page,
-        limit: event.limit,
-      ));
-      
-      result.fold(
-        (failure) => emit(HomeLoadMoreError(
-          banners: currentState.banners,
-          categories: currentState.categories,
-          feedItems: currentState.feedItems,
-          currentPage: currentState.currentPage,
-          message: _mapFailureToMessage(failure),
-        )),
-        (newFeedItems) {
-          final allFeedItems = List<HomeFeedItem>.from(currentState.feedItems)
-            ..addAll(newFeedItems);
-          
-          emit(HomeLoaded(
-            banners: currentState.banners,
-            categories: currentState.categories,
-            feedItems: allFeedItems,
-            currentPage: event.page,
-            hasMore: newFeedItems.length >= event.limit,
-          ));
-        },
-      );
-    }
-  }
 
   /// 处理点击轮播图事件
   void _onBannerClicked(

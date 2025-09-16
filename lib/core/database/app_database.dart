@@ -18,7 +18,7 @@ part 'app_database.g.dart'; // Drift will generate this file
 )
 class AppDatabase extends _$AppDatabase {
   // Define the database version (important for migrations)
-  static const int dbVersion = 4;  // Increased version to add performance indexes
+  static const int dbVersion = 7;  // Fixed onCreate SQL syntax for partial index
 
   AppDatabase() : super(_openConnection());
 
@@ -30,6 +30,29 @@ class AppDatabase extends _$AppDatabase {
     return MigrationStrategy(
       onCreate: (Migrator m) async {
         await m.createAll();
+
+        // Create indexes after tables are created
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_chat_messages_chat_time ON chat_messages(chat_id, create_time DESC)'
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_chat_messages_status ON chat_messages(status)'
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_chat_messages_withdraw ON chat_messages(withdraw_flag)'
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_chat_rooms_last_activity ON chat_rooms(last_activity_time DESC)'
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_chat_rooms_unread ON chat_rooms(unread_count)'
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_message_queue_status ON message_queue(status)'
+        );
+        await customStatement(
+          "CREATE INDEX IF NOT EXISTS idx_message_queue_pending ON message_queue(status, created_at) WHERE status = 'pending'"
+        );
       },
       onUpgrade: (Migrator m, int from, int to) async {
         if (from < 2) {
@@ -47,7 +70,7 @@ class AppDatabase extends _$AppDatabase {
         if (from < 4) {
           // Add performance indexes in version 4
           print('[Database Migration] Adding performance indexes...');
-          
+
           // Chat messages indexes
           await customStatement(
             'CREATE INDEX IF NOT EXISTS idx_chat_messages_chat_time ON chat_messages(chat_id, create_time DESC)'
@@ -58,7 +81,7 @@ class AppDatabase extends _$AppDatabase {
           await customStatement(
             'CREATE INDEX IF NOT EXISTS idx_chat_messages_withdraw ON chat_messages(withdraw_flag)'
           );
-          
+
           // Chat rooms indexes
           await customStatement(
             'CREATE INDEX IF NOT EXISTS idx_chat_rooms_last_activity ON chat_rooms(last_activity_time DESC)'
@@ -66,16 +89,77 @@ class AppDatabase extends _$AppDatabase {
           await customStatement(
             'CREATE INDEX IF NOT EXISTS idx_chat_rooms_unread ON chat_rooms(unread_count)'
           );
-          
+
           // Message queue indexes
           await customStatement(
             'CREATE INDEX IF NOT EXISTS idx_message_queue_status ON message_queue(status)'
           );
           await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_message_queue_pending ON message_queue(status, created_at) WHERE status = "pending"'
+            "CREATE INDEX IF NOT EXISTS idx_message_queue_pending ON message_queue(status, created_at) WHERE status = 'pending'"
           );
-          
+
           print('[Database Migration] Performance indexes added successfully');
+        }
+        if (from < 5) {
+          // Version 5: Fix table constraints - recreate tables without index statements in constraints
+          print('[Database Migration] Fixing table constraints...');
+
+          // Recreate all chat tables with correct constraints
+          await customStatement('DROP TABLE IF EXISTS message_queue');
+          await customStatement('DROP TABLE IF EXISTS chat_messages');
+          await customStatement('DROP TABLE IF EXISTS chat_rooms');
+
+          await m.createTable(chatMessages);
+          await m.createTable(chatRooms);
+          await m.createTable(messageQueue);
+
+          // Recreate indexes after tables are created
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_chat_messages_chat_time ON chat_messages(chat_id, create_time DESC)'
+          );
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_chat_messages_status ON chat_messages(status)'
+          );
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_chat_messages_withdraw ON chat_messages(withdraw_flag)'
+          );
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_chat_rooms_last_activity ON chat_rooms(last_activity_time DESC)'
+          );
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_chat_rooms_unread ON chat_rooms(unread_count)'
+          );
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_message_queue_status ON message_queue(status)'
+          );
+          await customStatement(
+            "CREATE INDEX IF NOT EXISTS idx_message_queue_pending ON message_queue(status, created_at) WHERE status = 'pending'"
+          );
+
+          print('[Database Migration] Table constraints fixed successfully');
+        }
+        if (from < 6) {
+          // Version 6: Fix SQL syntax for partial index - use single quotes for string literals
+          print('[Database Migration] Fixing partial index SQL syntax...');
+
+          // Drop and recreate the problematic index with correct syntax
+          await customStatement('DROP INDEX IF EXISTS idx_message_queue_pending');
+          await customStatement(
+            "CREATE INDEX IF NOT EXISTS idx_message_queue_pending ON message_queue(status, created_at) WHERE status = 'pending'"
+          );
+
+          print('[Database Migration] Partial index SQL syntax fixed successfully');
+        }
+        if (from < 7) {
+          // Version 7: Final fix for partial index syntax - ensure it uses single quotes
+          print('[Database Migration] Final fix for partial index SQL syntax...');
+
+          await customStatement('DROP INDEX IF EXISTS idx_message_queue_pending');
+          await customStatement(
+            "CREATE INDEX IF NOT EXISTS idx_message_queue_pending ON message_queue(status, created_at) WHERE status = 'pending'"
+          );
+
+          print('[Database Migration] Final partial index fix completed');
         }
       },
     );

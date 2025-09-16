@@ -18,23 +18,6 @@ class RefreshHomeData extends HomeEvent {
   const RefreshHomeData();
 }
 
-/// 加载更多信息流数据事件
-class LoadMoreFeed extends HomeEvent {
-  /// 页码，从1开始
-  final int page;
-  
-  /// 每页数量
-  final int limit;
-
-  const LoadMoreFeed({
-    required this.page,
-    required this.limit,
-  });
-
-  @override
-  List<Object> get props => [page, limit];
-}
-
 /// 点击轮播图事件
 class BannerClicked extends HomeEvent {
   /// 轮播图ID
