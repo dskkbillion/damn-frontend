@@ -380,45 +380,76 @@ class ProductServiceTiers {
     ServiceTierConfig? standard;
     ServiceTierConfig? premium;
     List<ProductAttributeTemplate> attributeTemplates = [];
-    
+    Map<String, String> attributeNameToId = {}; // 名称到ID的映射
+
     print('[ProductServiceTiers.fromProductOptionValues] Creating from ${variants.length} variants');
-    
-    // 按照顺序或名称映射到三个档位
+
+    // 第一步：从第一个有效的variant创建属性模板
+    for (var variant in variants) {
+      if (variant.feature.isNotEmpty && attributeTemplates.isEmpty) {
+        int indexCounter = 0; // 用于处理重复属性名称
+        attributeTemplates = variant.feature.map((f) {
+          final template = ProductAttributeTemplate(
+            name: f['key'] ?? '',
+            type: ProductAttributeType.values.firstWhere(
+              (e) => e.value == (f['type'] ?? 'input'),
+              orElse: () => ProductAttributeType.input,
+            ),
+          );
+          // 建立名称到ID的映射，使用索引处理重复名称
+          String mapKey = '${f['key']}_$indexCounter';
+          attributeNameToId[mapKey] = template.id;
+          indexCounter++;
+          return template;
+        }).toList();
+        break;
+      }
+    }
+
+    // 第二步：创建各个档位的配置
     for (int i = 0; i < variants.length; i++) {
       final variant = variants[i];
       print('  - Variant $i: name="${variant.name}", price=${variant.price}, sellingPrice=${variant.sellingPrice}');
-      
-      // 先尝试按名称匹配
-      if (variant.name == 'Basic Tier' || variant.name == 'Lite' || variant.name.toLowerCase().contains('basic') || variant.name.toLowerCase().contains('lite')) {
-        basic = ServiceTierConfig.fromProductOptionValue(variant);
-        // 使用第一个档位的特性创建属性模板（只创建一次）
-        if (attributeTemplates.isEmpty && variant.feature.isNotEmpty) {
-          attributeTemplates = variant.feature.map((f) {
-            return ProductAttributeTemplate(
-              name: f['key'] ?? '',
-              type: ProductAttributeType.values.firstWhere(
-                (e) => e.value == (f['type'] ?? 'input'),
-                orElse: () => ProductAttributeType.input,
-              ),
-            );
-          }).toList();
+
+      // 创建配置
+      var config = ServiceTierConfig.fromProductOptionValue(variant);
+
+      // 修正属性值的键：从名称改为ID
+      Map<String, String> fixedAttributeValues = {};
+      int indexCounter = 0;
+      for (var feature in variant.feature) {
+        String key = feature['key']?.toString() ?? '';
+        String val = feature['val']?.toString() ?? '';
+        // 使用索引构建映射键
+        String mapKey = '${key}_$indexCounter';
+        final id = attributeNameToId[mapKey];
+        if (id != null) {
+          fixedAttributeValues[id] = val;
         }
+        indexCounter++;
+      }
+      config.attributeValues.clear();
+      config.attributeValues.addAll(fixedAttributeValues);
+
+      // 按名称或顺序分配到对应的档位
+      if (variant.name == 'Basic Tier' || variant.name == 'Lite' || variant.name.toLowerCase().contains('basic') || variant.name.toLowerCase().contains('lite')) {
+        basic = config;
       } else if (variant.name == 'Standard Tier' || variant.name == 'Pro' || variant.name.toLowerCase().contains('standard') || variant.name.toLowerCase().contains('pro')) {
-        standard = ServiceTierConfig.fromProductOptionValue(variant);
+        standard = config;
       } else if (variant.name == 'Premium Tier' || variant.name == 'Deep' || variant.name.toLowerCase().contains('premium') || variant.name.toLowerCase().contains('deep')) {
-        premium = ServiceTierConfig.fromProductOptionValue(variant);
+        premium = config;
       } else {
         // 如果名称不匹配，按顺序分配
         if (i == 0 && basic == null) {
-          basic = ServiceTierConfig.fromProductOptionValue(variant);
+          basic = config;
         } else if (i == 1 && standard == null) {
-          standard = ServiceTierConfig.fromProductOptionValue(variant);
+          standard = config;
         } else if (i == 2 && premium == null) {
-          premium = ServiceTierConfig.fromProductOptionValue(variant);
+          premium = config;
         }
       }
     }
-    
+
     return ProductServiceTiers(
       basic: basic,
       standard: standard,
