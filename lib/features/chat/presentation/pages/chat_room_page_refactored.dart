@@ -95,7 +95,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
 
     // 进入聊天室时，重置该聊天室的未读数
     EventBus().fireChatListUpdateEvent(ChatListUpdateEvent(
-      chatId: widget.chatId.toString(),
+      chatId: widget.chatId,
       resetUnread: true,
     ));
     print('[ChatRoomPage] Reset unread count for chat ${widget.chatId}');

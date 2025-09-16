@@ -203,12 +203,13 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
     if (event.lastMessage != null) {
       updatedRoom = updatedRoom.copyWith(
         lastMessage: ChatMessage(
-          id: '', // 临时ID，因为我们只关心显示内容
-          content: event.lastMessage!,
-          senderId: '',
+          id: 0, // 临时ID，因为我们只关心显示内容
+          context: event.lastMessage!,
+          senderId: 0, // 临时senderId
           chatId: event.chatId,
-          timestamp: event.lastMessageTime ?? DateTime.now(),
-          isRead: false,
+          createTime: event.lastMessageTime ?? DateTime.now(),
+          withdrawFlag: false,
+          type: 'text', // 默认文本类型
         ),
       );
     }

@@ -217,9 +217,11 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
 
         // 同时触发聊天列表更新事件
         final chatListUpdateEvent = ChatListUpdateEvent(
-          chatId: chatId,
+          chatId: messageDto.chatId,
           lastMessage: content,
-          lastMessageTime: messageDto.timestamp,
+          lastMessageTime: messageDto.createTime != null
+              ? DateTime.tryParse(messageDto.createTime!)
+              : DateTime.now(),
           unreadCountDelta: 1, // 收到新消息，未读数+1
         );
 

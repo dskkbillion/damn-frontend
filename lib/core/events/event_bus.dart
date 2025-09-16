@@ -30,7 +30,7 @@ class ChatMessageEvent {
 /// 聊天列表更新事件类，用于通知聊天列表需要更新
 class ChatListUpdateEvent {
   /// 聊天室ID
-  final String chatId;
+  final int chatId;
 
   /// 最新消息内容
   final String? lastMessage;

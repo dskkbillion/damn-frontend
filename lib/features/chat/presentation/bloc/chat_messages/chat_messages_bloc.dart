@@ -396,7 +396,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
 
         // 触发聊天列表更新事件
         EventBus().fireChatListUpdateEvent(ChatListUpdateEvent(
-          chatId: chatId.toString(),
+          chatId: chatId,
           lastMessage: sentMessage.context ?? '',
           lastMessageTime: sentMessage.createTime,
           // 发送消息不改变未读数，因为是自己发的
@@ -481,7 +481,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
              // 如果不是自己发送的消息，触发聊天列表更新事件
              if (senderParticipantId != currentState.currentUserParticipantId) {
                EventBus().fireChatListUpdateEvent(ChatListUpdateEvent(
-                 chatId: chatId.toString(),
+                 chatId: chatId,
                  lastMessage: newMessage.context ?? '',
                  lastMessageTime: newMessage.createTime,
                  unreadCountDelta: 1, // 收到别人的新消息，未读数+1
