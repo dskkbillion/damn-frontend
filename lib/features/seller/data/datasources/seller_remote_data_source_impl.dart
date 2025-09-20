@@ -1077,9 +1077,11 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       'id': updateData.id,
       'tenantId': existingData['tenantId'],
       'selectionMode': existingData['selectionMode'] ?? 'CUSTOMIZE',
-      // 保持原有的审核状态，避免被重置
-      // 如果已经是SUCCESS状态，保持SUCCESS；如果是其他状态，保持原状态
-      'statusAudit': existingData['statusAudit'] ?? 'SUCCESS',
+      // 审核状态处理策略：
+      // 1. 如果updateJson中显式提供了statusAudit，使用提供的值
+      // 2. 否则保持原有的审核状态，避免被后端重置
+      // 3. 如果原状态也不存在，默认为SUCCESS
+      'statusAudit': updateJson['statusAudit'] ?? existingData['statusAudit'] ?? 'SUCCESS',
       'productType': existingData['productType'] ?? 'product',
       
       // 商品基本信息

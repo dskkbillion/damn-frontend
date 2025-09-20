@@ -905,6 +905,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
           detailImages: state.uploadedDetailImageUrls.isNotEmpty ? state.uploadedDetailImageUrls.join(',') : null,
           detailContent: state.formData.detailContent.isNotEmpty ? state.formData.detailContent : null,
           state: 'normal', // 确保更新后的商品也是上架状态（后端ProductState.NORMAL）
+          statusAudit: 'SUCCESS', // 明确传递审核状态为SUCCESS，避免后端重置为WAIT
         );
         
         // 更新商品

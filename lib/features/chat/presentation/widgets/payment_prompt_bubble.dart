@@ -121,8 +121,16 @@ class PaymentPromptBubble extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 if (productId != null) {
-                  context.push(
-                    '/product/$productId/purchase?variantId=${variant['id']}',
+                  // 直接跳转到订单确认页（购买页面）
+                  context.pushNamed(
+                    'productPaymentConfirm',
+                    pathParameters: {'id': productId},
+                    extra: {
+                      'variantId': variant['id'],
+                      'quantity': 1,
+                      'price': variant['price'],
+                      'productName': variant['name'] ?? '咨询服务',
+                    },
                   );
                 }
               },

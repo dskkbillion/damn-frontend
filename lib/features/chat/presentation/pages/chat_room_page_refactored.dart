@@ -131,8 +131,10 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
           _messageListCubit.setCurrentUserParticipantId(currentUserParticipant.id);
 
           // 设置轻咨询模式 - 默认全部启用轻咨询
-          // 根据 participant.type 判断当前用户是否是卖家
-          final bool isSeller = currentUserParticipant.type == 'DOCTOR';
+          // 判断当前用户是否是卖家
+          // 根据聊天室数据结构：participant1是买家，participant2是卖家
+          // 如果当前用户是participant2，则是卖家
+          final bool isSeller = (currentUserParticipant.id == chatRoom.participant2.id);
           _messageListCubit.setSellerAndConsultationMode(
             isSeller: isSeller,
             isLightConsultation: true, // 默认启用轻咨询模式

@@ -431,6 +431,9 @@ class ProductUpdateData extends Equatable {
   /// 成功案例图片（win images）
   final String? winImages;
 
+  /// 审核状态（WAIT: 待审核, SUCCESS: 审核通过, FAIL: 审核失败）
+  final String? statusAudit;
+
   const ProductUpdateData({
     required this.id,
     this.name,
@@ -444,6 +447,7 @@ class ProductUpdateData extends Equatable {
     this.detailImages,
     this.detailContent,
     this.winImages,
+    this.statusAudit,
   });
 
   @override
@@ -460,6 +464,7 @@ class ProductUpdateData extends Equatable {
     detailImages,
     detailContent,
     winImages,
+    statusAudit,
   ];
   
   /// 创建新实例，可选择性更新部分字段
@@ -476,6 +481,7 @@ class ProductUpdateData extends Equatable {
     String? detailImages,
     String? detailContent,
     String? winImages,
+    String? statusAudit,
   }) {
     return ProductUpdateData(
       id: id ?? this.id,
@@ -490,6 +496,7 @@ class ProductUpdateData extends Equatable {
       detailImages: detailImages ?? this.detailImages,
       detailContent: detailContent ?? this.detailContent,
       winImages: winImages ?? this.winImages,
+      statusAudit: statusAudit ?? this.statusAudit,
     );
   }
   
@@ -564,7 +571,10 @@ class ProductUpdateData extends Equatable {
     } else {
       data['productMaterials'] = <Map<String, dynamic>>[];
     }
-    
+
+    // 添加审核状态
+    if (statusAudit != null) data['statusAudit'] = statusAudit;
+
     return data;
   }
 } 
