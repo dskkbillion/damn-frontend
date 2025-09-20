@@ -124,7 +124,7 @@ class PaymentPromptBubble extends StatelessWidget {
                   // 直接跳转到订单确认页（购买页面）
                   context.pushNamed(
                     'productPaymentConfirm',
-                    pathParameters: {'id': productId},
+                    pathParameters: {'id': productId!},
                     extra: {
                       'variantId': variant['id'],
                       'quantity': 1,

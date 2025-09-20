@@ -500,29 +500,100 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                   orElse: () {},
                 );
               },
-              child: CustomInputBar(
-                chatId: widget.chatId,
-                onSendPressed: (text) {
-                  // Directly call MessageListCubit instead of _handleSendPressed
-                  _messageListCubit.sendTextMessage(text);
-                  widget.onMessageSent?.call();
-                  
-                  // 同时刷新聊天列表
-                  try {
-                    final chatListBloc = getIt<ChatListBloc>();
-                    chatListBloc.add(RefreshChatList());
-                    print('[ChatRoomPageRefactored] Refreshing chat list after sending message');
-                  } catch (e) {
-                    print('[ChatRoomPageRefactored] Failed to refresh chat list: $e');
-                  }
-                  
-                  Future.delayed(const Duration(milliseconds: 100), () {
-                    _scrollToBottom();
-                  });
-                },
-                onAttachmentPressed: () {
-                  // Handle attachment - you can customize this
-                },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 付费提示按钮 - 只在满足条件时显示
+                  BlocBuilder<MessageListCubit, MessageListState>(
+                    builder: (context, state) {
+                      if (_messageListCubit.shouldShowPaymentPromptButton) {
+                        return Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.shade50,
+                            border: Border(
+                              top: BorderSide(color: Colors.grey.shade300),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.info_outline,
+                                color: Colors.amber.shade700,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  '达到免费咨询轮次，可发送付费提示',
+                                  style: TextStyle(
+                                    color: Colors.amber.shade800,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                              TextButton.icon(
+                                onPressed: () async {
+                                  // 发送付费提示消息
+                                  await _messageListCubit.sendPaymentPromptMessage();
+
+                                  // 滚动到底部
+                                  Future.delayed(const Duration(milliseconds: 100), () {
+                                    _scrollToBottom();
+                                  });
+
+                                  // 刷新聊天列表
+                                  try {
+                                    final chatListBloc = getIt<ChatListBloc>();
+                                    chatListBloc.add(RefreshChatList());
+                                  } catch (e) {
+                                    print('[ChatRoomPageRefactored] Failed to refresh chat list: $e');
+                                  }
+                                },
+                                icon: const Icon(Icons.send, size: 18),
+                                label: const Text('发送提示'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor: Colors.amber.shade600,
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                  CustomInputBar(
+                    chatId: widget.chatId,
+                    onSendPressed: (text) {
+                      // Directly call MessageListCubit instead of _handleSendPressed
+                      _messageListCubit.sendTextMessage(text);
+                      widget.onMessageSent?.call();
+
+                      // 同时刷新聊天列表
+                      try {
+                        final chatListBloc = getIt<ChatListBloc>();
+                        chatListBloc.add(RefreshChatList());
+                        print('[ChatRoomPageRefactored] Refreshing chat list after sending message');
+                      } catch (e) {
+                        print('[ChatRoomPageRefactored] Failed to refresh chat list: $e');
+                      }
+
+                      Future.delayed(const Duration(milliseconds: 100), () {
+                        _scrollToBottom();
+                      });
+                    },
+                    onAttachmentPressed: () {
+                      // Handle attachment - you can customize this
+                    },
+                  ),
+                ],
               ),
             ),
           ],

@@ -347,6 +347,7 @@ class StripePaymentService implements IPaymentService {
             'businessId': orderId,
             'scene': 'order',
             'payway': 'stripe',
+            'currency': 'usd', // 添加货币参数，使用美元
           },
         );
         

@@ -58,6 +58,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 // Database
 import 'package:dskk_flutter_refactor/core/database/app_database.dart';
 
+// Import for product details
+import 'package:dskk_flutter_refactor/features/home/domain/repositories/home_repository.dart';
+
 /// 为聊天模块提供的临时用户信息仓库实现
 /// 从SecureStorage中读取真实的用户信息，而不是使用模拟数据
 class ChatUserRepositoryImpl implements IUserRepository {
@@ -407,6 +410,15 @@ class ChatDI {
     
     // MessageListCubit with new dependencies
     if (!getIt.isRegistered<MessageListCubit>()) {
+      // 引入home模块的IHomeRepository（如果已注册）
+      IHomeRepository? homeRepository;
+      if (getIt.isRegistered<IHomeRepository>()) {
+        homeRepository = getIt<IHomeRepository>();
+        print('[ChatDI] IHomeRepository found and will be injected to MessageListCubit');
+      } else {
+        print('[ChatDI] IHomeRepository not found, MessageListCubit will use default variants');
+      }
+
       getIt.registerFactory<MessageListCubit>(
         () => MessageListCubit(
           getMessageList: getIt<GetMessageList>(),
@@ -416,6 +428,7 @@ class ChatDI {
           preloadService: getIt<ChatPreloadService>(),
           localDataSource: getIt<shared_prefs.IChatLocalDataSource>(),
           getChatRoomDetails: getIt<GetChatRoomDetails>(),
+          homeRepository: homeRepository,
         ),
       );
       print('[ChatDI] Registered MessageListCubit with enhanced dependencies');

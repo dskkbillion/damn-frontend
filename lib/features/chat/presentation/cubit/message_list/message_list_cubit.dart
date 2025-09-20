@@ -16,6 +16,8 @@ import 'package:dskk_flutter_refactor/features/chat/presentation/services/chat_p
 import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_chat_local_data_source.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_room.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_chat_room_details.dart';
+import 'package:dskk_flutter_refactor/features/home/domain/repositories/home_repository.dart';
+import 'package:dskk_flutter_refactor/features/home/domain/entities/product_detail.dart';
 
 part 'message_list_state.dart';
 part 'message_list_cubit.freezed.dart';
@@ -40,6 +42,7 @@ class MessageListCubit extends Cubit<MessageListState> {
   final ChatPreloadService? _preloadService; // 可选的预加载服务
   final IChatLocalDataSource? _localDataSource; // 本地数据源
   final GetChatRoomDetails? _getChatRoomDetails; // 获取聊天室详情
+  final IHomeRepository? _homeRepository; // 商品仓库
   
   MessageListCubit({
     required GetMessageList getMessageList,
@@ -49,6 +52,7 @@ class MessageListCubit extends Cubit<MessageListState> {
     ChatPreloadService? preloadService,
     IChatLocalDataSource? localDataSource,
     GetChatRoomDetails? getChatRoomDetails,
+    IHomeRepository? homeRepository,
   })  : _getMessageList = getMessageList,
         _sendMessage = sendMessage,
         _revokeMessage = revokeMessage,
@@ -56,6 +60,7 @@ class MessageListCubit extends Cubit<MessageListState> {
         _preloadService = preloadService,
         _localDataSource = localDataSource,
         _getChatRoomDetails = getChatRoomDetails,
+        _homeRepository = homeRepository,
         super(const MessageListState.initial());
   
   int? _currentChatId;
@@ -71,6 +76,7 @@ class MessageListCubit extends Cubit<MessageListState> {
   bool _isLightConsultation = false; // 是否是轻咨询模式
   int _roundCount = 0; // 对话轮次计数
   ChatRoom? _currentChatRoom; // 当前聊天室信息
+  ProductDetail? _productDetail; // 商品详情（包含档位信息）
   
   /// Set current user participant ID
   void setCurrentUserParticipantId(int participantId) {
@@ -478,18 +484,36 @@ class MessageListCubit extends Cubit<MessageListState> {
   /// 初始化付费提示状态
   Future<void> _initializePaymentPromptStatus(List<ChatMessage> messages) async {
     if (!_isLightConsultation || _currentChatId == null) return;
-    
+
     // 1. 计算对话轮次
     _calculateRoundCount(messages);
-    
+
     // 2. 获取聊天室详情以备后用
     if (_getChatRoomDetails != null && _currentChatRoom == null) {
       final roomResult = await _getChatRoomDetails(
         GetChatRoomDetailsParams(chatId: _currentChatId!),
       );
-      roomResult.fold(
-        (failure) => print('[MessageListCubit] Failed to get chat room detail: $failure'),
-        (room) => _currentChatRoom = room,
+      await roomResult.fold(
+        (failure) async => print('[MessageListCubit] Failed to get chat room detail: $failure'),
+        (room) async {
+          _currentChatRoom = room;
+
+          // 3. 如果有商品ID，获取商品详情（包含档位信息）
+          if (room.productId != null && _homeRepository != null) {
+            try {
+              final productResult = await _homeRepository.getProductDetail(room.productId!);
+              productResult.fold(
+                (failure) => print('[MessageListCubit] Failed to get product detail: $failure'),
+                (product) {
+                  _productDetail = product;
+                  print('[MessageListCubit] Got product detail with ${product.variants?.length ?? 0} variants');
+                },
+              );
+            } catch (e) {
+              print('[MessageListCubit] Error getting product detail: $e');
+            }
+          }
+        },
       );
     }
   }
@@ -534,11 +558,86 @@ class MessageListCubit extends Cubit<MessageListState> {
     print('[RoundCount] Result - buyerMessages: $buyerMessageCount, sellerMessages: $sellerMessageCount, rounds: $_roundCount');
   }
   
-  /// 检查并插入本地付费提示（纯前端实现，不调用后端）
-  Future<void> _checkAndInsertLocalPaymentPrompt() async {
-    print('[PaymentPrompt] Checking - isLightConsultation: $_isLightConsultation, chatId: $_currentChatId, roundCount: $_roundCount, isSeller: $_isSeller');
+  /// 判断是否应该显示发送付费提示按钮（给卖家）
+  bool get shouldShowPaymentPromptButton {
+    if (!_isLightConsultation || !_isSeller || _currentChatId == null) {
+      return false;
+    }
 
-    if (!_isLightConsultation || _currentChatId == null) return;
+    // 获取最后发送的付费提示消息轮次
+    int lastPromptRound = 0;
+    for (final message in _allMessages) {
+      if (message.type == 'payment_prompt') {
+        // 尝试从消息内容中获取轮次信息
+        try {
+          final content = jsonDecode(message.context);
+          lastPromptRound = content['roundCount'] ?? 0;
+          break;
+        } catch (_) {
+          // 忽略解析错误
+        }
+      }
+    }
+
+    // 判断是否达到新的提示轮次
+    if (_roundCount >= 20 && lastPromptRound < 20) return true;
+    if (_roundCount >= 10 && lastPromptRound < 10) return true;
+    if (_roundCount >= 5 && lastPromptRound < 5) return true;
+    if (_roundCount >= 1 && lastPromptRound < 1) return true;
+
+    return false;
+  }
+
+  /// 获取当前对话轮次
+  int get currentRoundCount => _roundCount;
+
+  /// 卖家发送付费提示消息
+  Future<void> sendPaymentPromptMessage() async {
+    if (_currentChatId == null || !_isSeller) return;
+
+    print('[PaymentPrompt] Seller sending payment prompt at round $_roundCount');
+
+    // 获取真实的商品档位信息
+    List<Map<String, dynamic>> variants;
+    if (_productDetail != null && _productDetail!.variants != null && _productDetail!.variants!.isNotEmpty) {
+      // 使用真实的商品档位
+      variants = _productDetail!.variants!.map((v) => {
+        'id': v.id,
+        'price': v.sellingPrice,
+        'name': v.name,
+      }).toList();
+      print('[PaymentPrompt] Using real product variants: ${variants.length} items');
+    } else {
+      // 如果获取失败，使用默认档位
+      variants = [
+        {'id': 1, 'price': 30, 'name': '基础咨询'},
+        {'id': 2, 'price': 50, 'name': '标准咨询'},
+        {'id': 3, 'price': 100, 'name': '深度咨询'},
+      ];
+      print('[PaymentPrompt] Using default variants as fallback');
+    }
+
+    // 创建付费提示消息内容
+    final random = Random();
+    final promptText = _paymentPromptMessages[random.nextInt(_paymentPromptMessages.length)];
+
+    final promptContent = jsonEncode({
+      'type': 'payment_prompt',
+      'source': 'seller',
+      'content': promptText,
+      'productId': _currentChatRoom?.productId?.toString(),
+      'roundCount': _roundCount,
+      'variants': variants,
+    });
+
+    // 作为特殊类型消息发送
+    await sendTextMessage(promptContent, messageType: 'payment_prompt');
+  }
+
+  /// 检查并插入本地付费提示（买家端自动显示，已废弃）
+  Future<void> _checkAndInsertLocalPaymentPrompt() async {
+    // 这个方法已废弃，改为卖家主动发送
+    return;
 
     // 获取显示次数
     final count = await _localDataSource?.getPaymentPromptCount(_currentChatId!) ?? 0;
@@ -610,19 +709,19 @@ class MessageListCubit extends Cubit<MessageListState> {
   }
   
   /// Send a new message (extended with payment prompt check)
-  Future<void> sendTextMessage(String text) async {
+  Future<void> sendTextMessage(String text, {String messageType = 'text'}) async {
     if (_currentChatId == null) return;
-    
+
     final currentState = state;
     if (currentState is! _Loaded) return;
-    
+
     // 创建乐观消息（保持原有逻辑）
     final optimisticMessage = ChatMessage(
       id: -DateTime.now().millisecondsSinceEpoch,
       chatId: _currentChatId!,
       senderId: _currentUserParticipantId ?? 0,
       context: text,
-      type: 'text',
+      type: messageType,  // 使用传入的消息类型
       createTime: DateTime.now(),
       withdrawFlag: false,
       status: MessageStatus.sending,
