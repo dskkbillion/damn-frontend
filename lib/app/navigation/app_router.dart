@@ -539,12 +539,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     ),
   );
 
+  // Define Buyer Orders List Route
+  final buyerOrdersRoute = OrderRoutes.routes.firstWhere((r) => r is GoRoute && r.path == '/orders');
+
   // Define Buyer Order Detail Route
-  final buyerOrderDetailRoute = OrderRoutes.routes.firstWhere((r) => r is GoRoute && r.path == '/orderDetail/:orderId'); 
-  
+  final buyerOrderDetailRoute = OrderRoutes.routes.firstWhere((r) => r is GoRoute && r.path == '/orderDetail/:orderId');
+
   // Define Seller Order Detail Route
   final sellerOrderDetailRoute = OrderRoutes.routes.firstWhere((r) => r is GoRoute && r.path == '/seller/orders/:orderId');
-  
+
   // Define Evaluation Route
   final evaluationRoute = OrderRoutes.routes.firstWhere((r) => r is GoRoute && r.path == '/evaluation/:itemId');
   
@@ -687,7 +690,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
       // --- Top-level routes (No Shell) ---
       ...AuthRoutes.routes, // Login etc.
-      buyerOrderDetailRoute, 
+      buyerOrdersRoute, // 添加买家订单列表路由
+      buyerOrderDetailRoute,
       sellerOrderDetailRoute,  // 添加卖家订单详情路由
       evaluationRoute, // 添加评价路由
       buyerNotificationRoute, // 添加买家通知页面路由
