@@ -500,6 +500,8 @@ class MessageListCubit extends Cubit<MessageListState> {
       _roundCount = 0;
       return;
     }
+
+    print('[RoundCount] Starting calculation - isSeller: $_isSeller, currentUserParticipantId: $_currentUserParticipantId');
     
     // 按时间排序（旧到新）
     final sortedMessages = List<ChatMessage>.from(messages)
@@ -529,14 +531,18 @@ class MessageListCubit extends Cubit<MessageListState> {
     
     // 一轮对话 = min(买家消息数, 卖家消息数)
     _roundCount = buyerMessageCount < sellerMessageCount ? buyerMessageCount : sellerMessageCount;
+    print('[RoundCount] Result - buyerMessages: $buyerMessageCount, sellerMessages: $sellerMessageCount, rounds: $_roundCount');
   }
   
   /// 检查并插入本地付费提示（纯前端实现，不调用后端）
   Future<void> _checkAndInsertLocalPaymentPrompt() async {
+    print('[PaymentPrompt] Checking - isLightConsultation: $_isLightConsultation, chatId: $_currentChatId, roundCount: $_roundCount, isSeller: $_isSeller');
+
     if (!_isLightConsultation || _currentChatId == null) return;
-    
+
     // 获取显示次数
     final count = await _localDataSource?.getPaymentPromptCount(_currentChatId!) ?? 0;
+    print('[PaymentPrompt] Current display count: $count');
     
     // 已显示4次，不再提醒（1-5-10-20共4次）
     if (count >= 4) return;

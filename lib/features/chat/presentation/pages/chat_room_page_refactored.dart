@@ -130,9 +130,18 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
           // 同时设置到 MessageListCubit
           _messageListCubit.setCurrentUserParticipantId(currentUserParticipant.id);
 
+          // 设置轻咨询模式 - 默认全部启用轻咨询
+          // 根据 participant.type 判断当前用户是否是卖家
+          final bool isSeller = currentUserParticipant.type == 'DOCTOR';
+          _messageListCubit.setSellerAndConsultationMode(
+            isSeller: isSeller,
+            isLightConsultation: true, // 默认启用轻咨询模式
+          );
+
           print('DEBUG: Set currentUserParticipantId to $_currentUserParticipantId at initialization');
           print('DEBUG: Current user participant: id=${currentUserParticipant.id}, type=${currentUserParticipant.type}');
           print('DEBUG: Opponent participant: id=${opponent.id}, type=${opponent.type}');
+          print('DEBUG: Light consultation mode enabled, isSeller: $isSeller');
         },
         orElse: () {},
       );
