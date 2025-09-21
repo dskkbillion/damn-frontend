@@ -144,25 +144,10 @@ class MessageListCubit extends Cubit<MessageListState> {
         // 计算对话轮次并检查付费提示状态
         await _initializePaymentPromptStatus(messages);
 
-        // 如果有消息，可以更准确地判断是否是卖家
-        if (messages.isNotEmpty && _isLightConsultation && _currentUserParticipantId != null) {
-          // 遍历消息找到有效的 doctorId
-          for (final msg in messages) {
-            if (msg.doctorId != null && msg.doctorId! > 0) {
-              final shouldBeSeller = (_currentUserParticipantId == msg.doctorId);
-              if (shouldBeSeller != _isSeller) {
-                print('[MessageListCubit] Correcting seller status based on message data: $_isSeller -> $shouldBeSeller');
-                print('[MessageListCubit] Message doctorId: ${msg.doctorId}, currentUserParticipantId: $_currentUserParticipantId');
-                _isSeller = shouldBeSeller;
-
-                // 修正后重新计算轮数
-                _calculateRoundCount(_allMessages);
-                print('[MessageListCubit] After correction - isSeller: $_isSeller, roundCount: $_roundCount');
-              }
-              break; // 找到一个有效的就停止
-            }
-          }
-        }
+        // 注意：不要使用消息中的 doctorId/memberId 来纠正角色
+        // 因为消息中的这些字段表示的是该消息的发送方和接收方
+        // 而不是固定的聊天室角色
+        // 应该完全依赖从 ChatRoom 实体传入的 isSeller 判断
 
         emit(MessageListState.loaded(
           messages: List.from(_allMessages),
