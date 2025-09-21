@@ -147,7 +147,25 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
 
   /// 闪烁动画
   late Animation<double> _flashAnimation;
-  
+
+  /// 档位切换动画控制器
+  late AnimationController _tierSwitchAnimationController;
+
+  /// 档位缩放动画
+  late Animation<double> _tierScaleAnimation;
+
+  /// 档位淡入淡出动画
+  late Animation<double> _tierFadeAnimation;
+
+  /// 档位滑动动画
+  late Animation<Offset> _tierSlideAnimation;
+
+  /// 属性列表切换动画控制器
+  late AnimationController _attributeListAnimationController;
+
+  /// 属性列表淡入淡出动画
+  late Animation<double> _attributeFadeAnimation;
+
   /// 滚动控制器
   final ScrollController _scrollController = ScrollController();
   
@@ -230,6 +248,53 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
       curve: Curves.easeInOut,
     ));
 
+    // 初始化档位切换动画控制器
+    _tierSwitchAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+
+    _tierScaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.05,
+    ).animate(CurvedAnimation(
+      parent: _tierSwitchAnimationController,
+      curve: Curves.easeOutBack,
+    ));
+
+    _tierFadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _tierSwitchAnimationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _tierSlideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.02),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _tierSwitchAnimationController,
+      curve: Curves.easeOutCubic,
+    ));
+
+    // 初始化属性列表动画控制器
+    _attributeListAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _attributeFadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _attributeListAnimationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _tierSwitchAnimationController.forward();
+    _attributeListAnimationController.forward();
+
     // 解析商品ID
     final productIdInt = widget.productId != null ? int.tryParse(widget.productId!) : null;
     print('[ProductEditPage] Parsed productId as int: $productIdInt');
@@ -250,8 +315,20 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     _bloc.stream.listen((state) {
       print('[ProductEditPage] State changed - isLoading: ${state.isLoading}, hasProduct: ${state.product != null}, isPreviewMode: ${widget.isPreviewMode}');
       if (!state.isLoading && state.product != null) {
-        print('[ProductEditPage] Syncing data from state - productName: ${state.formData.name}');
-        _syncDataFromState(state.formData);
+        // 只在初始加载或者非用户输入触发的状态变化时同步数据
+        // 避免在用户输入时触发同步导致光标跳转
+        if (_isInitialDataLoad) {
+          print('[ProductEditPage] Initial data load - syncing data from state');
+          _syncDataFromState(state.formData);
+          _isInitialDataLoad = false;
+        } else if (state.formData.name != _nameController.text ||
+                   state.formData.description != _descriptionController.text) {
+          // 只有当BLoC状态与当前控制器值不同时才同步（说明不是由用户输入触发的）
+          // 但要小心处理，避免覆盖用户正在编辑的内容
+          print('[ProductEditPage] External state change detected - syncing carefully');
+          _syncDataFromState(state.formData);
+        }
+
         // 设置初始数据用于变更检测（仅在编辑模式下）
         if (state.initialFormData == null && !widget.isPreviewMode) {
           _bloc.add(SetInitialFormData(initialData: state.formData));
@@ -396,9 +473,13 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     _nameController.dispose();
     _descriptionController.dispose();
     _scrollController.dispose(); // 释放滚动控制器
-    
+
     // 释放防抖计时器
     _debounceTimer?.cancel();
+
+    // 释放动画控制器
+    _tierSwitchAnimationController.dispose();
+    _attributeListAnimationController.dispose();
     
     // 释放所有属性控制器
     for (var controller in _attributeControllers.values) {
@@ -429,7 +510,11 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
 
   /// 表单字段变化时检查变更
   void _onFormFieldChanged() {
-    Future.delayed(const Duration(milliseconds: 300), () {
+    // 取消之前的防抖计时器
+    _debounceTimer?.cancel();
+
+    // 设置新的防抖计时器，延迟500ms执行
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
       if (mounted) {
         // 同步新功能状态到表单数据
         _syncAdditionalFormData();
@@ -557,14 +642,27 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     print('[ProductEditPage] _syncDataFromState called with name: "${formData.name}", description: "${formData.description}", variants count: ${formData.variants.length}');
     print('[ProductEditPage] isPreviewMode: ${widget.isPreviewMode}, productId: ${widget.productId}');
     print('[ProductEditPage] Current controller values - name: "${_nameController.text}", description: "${_descriptionController.text}"');
-    
-    // 更新基本文本字段
+
+    // 更新基本文本字段 - 只在值真正改变时更新，避免光标跳转
     if (mounted) {
-      setState(() {
-        _nameController.text = formData.name;
-        _descriptionController.text = formData.description;
-      });
-      print('[ProductEditPage] Updated text controllers - name: "${_nameController.text}", description: "${_descriptionController.text}"');
+      // 保存当前光标位置
+      final nameSelection = _nameController.selection;
+      final descriptionSelection = _descriptionController.selection;
+
+      // 只在内容真正改变时才更新控制器
+      if (_nameController.text != formData.name) {
+        setState(() {
+          _nameController.text = formData.name;
+        });
+        print('[ProductEditPage] Updated name controller - "${_nameController.text}"');
+      }
+
+      if (_descriptionController.text != formData.description) {
+        setState(() {
+          _descriptionController.text = formData.description;
+        });
+        print('[ProductEditPage] Updated description controller - "${_descriptionController.text}"');
+      }
     }
     
     // 如果有变体数据，更新到本地服务档位（编辑模式和预览模式都需要）
@@ -650,11 +748,56 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     _syncAdditionalFormData();
   }
 
+  /// 获取档位主题色
+  Color _getTierThemeColor() {
+    switch (_selectedTier) {
+      case ServiceTier.basic:
+        return Colors.blue.shade600;
+      case ServiceTier.standard:
+        return Colors.purple.shade600;
+      case ServiceTier.premium:
+        return Colors.amber.shade700;
+    }
+  }
+
+  /// 获取档位图标
+  IconData _getTierIcon() {
+    switch (_selectedTier) {
+      case ServiceTier.basic:
+        return Icons.flash_on;
+      case ServiceTier.standard:
+        return Icons.star;
+      case ServiceTier.premium:
+        return Icons.diamond;
+    }
+  }
+
+  /// 获取档位提示文字
+  String _getTierHintText() {
+    switch (_selectedTier) {
+      case ServiceTier.basic:
+        return '快速响应，即时解答';
+      case ServiceTier.standard:
+        return '深入分析，专业建议';
+      case ServiceTier.premium:
+        return '全方位服务，持续优化';
+    }
+  }
+
   /// 选择服务档位
   void _selectServiceTier(ServiceTier tier) {
     if (_selectedTier != tier) {
-      setState(() {
-        _selectedTier = tier;
+      // 触发档位切换动画
+      _tierSwitchAnimationController.reverse().then((_) {
+        setState(() {
+          _selectedTier = tier;
+        });
+        _tierSwitchAnimationController.forward();
+      });
+
+      // 触发属性列表切换动画
+      _attributeListAnimationController.reverse().then((_) {
+        _attributeListAnimationController.forward();
       });
 
       // 触发闪烁动画
@@ -2870,43 +3013,105 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     final isSelected = _selectedTier == tier;
     final tierConfig = _serviceTiers.getTierConfig(tier);
     final hasPrice = tierConfig.price > 0;
-    
+
+    // 根据档位获取主题色
+    Color getTierColor() {
+      switch (tier) {
+        case ServiceTier.basic:
+          return Colors.blue.shade600;
+        case ServiceTier.standard:
+          return Colors.purple.shade600;
+        case ServiceTier.premium:
+          return Colors.amber.shade700;
+      }
+    }
+
+    // 根据档位获取图标
+    IconData getTierIcon() {
+      switch (tier) {
+        case ServiceTier.basic:
+          return Icons.flash_on;
+        case ServiceTier.standard:
+          return Icons.star;
+        case ServiceTier.premium:
+          return Icons.diamond;
+      }
+    }
+
+    final tierColor = getTierColor();
+
     return Expanded(
-      child: GestureDetector(
-        onTap: () => _selectServiceTier(tier),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: isSelected ? Colors.blue : Colors.grey[300]!,
-              width: isSelected ? 2 : 1,
-            ),
-            borderRadius: BorderRadius.circular(8),
-            color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.white,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                tier.displayName,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? Colors.blue : Colors.grey[700],
-                ),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _selectServiceTier(tier),
+            borderRadius: BorderRadius.circular(12),
+            splashColor: tierColor.withOpacity(0.2),
+            highlightColor: tierColor.withOpacity(0.1),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              padding: EdgeInsets.symmetric(
+                vertical: isSelected ? 12 : 8,
+                horizontal: isSelected ? 16 : 12,
               ),
-              if (hasPrice) ...[
-                const SizedBox(height: 2),
-                Text(
-                  '${RegionConfig.currencySymbol}${tierConfig.price.toStringAsFixed(tierConfig.price % 1 == 0 ? 0 : 2)}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.normal,
-                    color: isSelected ? Colors.blue : Colors.grey[600],
-                  ),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: isSelected ? tierColor : Colors.grey[300]!,
+                  width: isSelected ? 2 : 1,
                 ),
-              ],
-            ],
+                borderRadius: BorderRadius.circular(12),
+                color: isSelected ? tierColor.withOpacity(0.1) : Colors.white,
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: tierColor.withOpacity(0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : [],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AnimatedScale(
+                    scale: isSelected ? 1.1 : 1.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(
+                      getTierIcon(),
+                      color: isSelected ? tierColor : Colors.grey[500],
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 200),
+                    style: TextStyle(
+                      fontSize: isSelected ? 15 : 14,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected ? tierColor : Colors.grey[700],
+                    ),
+                    child: Text(tier.displayName),
+                  ),
+                  if (hasPrice) ...[
+                    const SizedBox(height: 2),
+                    AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 200),
+                      style: TextStyle(
+                        fontSize: isSelected ? 13 : 12,
+                        fontWeight: FontWeight.w500,
+                        color: isSelected ? tierColor : Colors.grey[600],
+                      ),
+                      child: Text(
+                        '${RegionConfig.currencySymbol}${tierConfig.price.toStringAsFixed(tierConfig.price % 1 == 0 ? 0 : 2)}',
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -3025,10 +3230,10 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
   /// 构建档位属性列表
   Widget _buildTierAttributesList() {
     final tierConfig = _serviceTiers.getTierConfig(_selectedTier);
-    
+
     // 构建所有属性的列表（包括系统属性和自定义属性）
     final List<Widget> attributeItems = [];
-    
+
     // 轻咨询模式下，隐藏交付期和次数字段，使用默认值
     // deliveryDay 默认为 1（即时）
     // editNum 默认为 1（一次性服务）
@@ -3038,16 +3243,19 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     if (tierConfig.editNum != 1) {
       tierConfig.updateEditNum(1);
     }
-    
+
     // 添加自定义属性
     final customAttributes = _serviceTiers.getAttributesForTier(_selectedTier);
-    for (final attr in customAttributes) {
+    for (int i = 0; i < customAttributes.length; i++) {
+      final attr = customAttributes[i];
+      Widget attributeWidget;
+
       if (attr.type == ProductAttributeType.boolean) {
         // 单选属性使用特殊的显示方式
-        attributeItems.add(_buildBooleanAttribute(attr));
+        attributeWidget = _buildBooleanAttribute(attr);
       } else {
         // 文本输入属性
-        attributeItems.add(_buildFloatingLabelAttribute(
+        attributeWidget = _buildFloatingLabelAttribute(
           labelText: attr.name,
           value: attr.value,
           isSystem: false,
@@ -3058,14 +3266,80 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
             _serviceTiers.getTierConfig(_selectedTier).updateAttributeValue(attr.id, value);
             _onFormFieldChanged();
           },
-        ));
+        );
       }
+
+      // 为每个属性添加进入动画
+      attributeItems.add(
+        TweenAnimationBuilder<double>(
+          key: ValueKey('attr_${attr.id}_$_selectedTier'),
+          tween: Tween(begin: 0.0, end: 1.0),
+          duration: Duration(milliseconds: 300 + (i * 50)),
+          curve: Curves.easeOutBack,
+          builder: (context, value, child) {
+            return Transform.translate(
+              offset: Offset(0, 10 * (1 - value)),
+              child: Opacity(
+                opacity: value,
+                child: Transform.scale(
+                  scale: 0.95 + (0.05 * value),
+                  child: attributeWidget,
+                ),
+              ),
+            );
+          },
+        ),
+      );
     }
-    
-    return Column(
-      children: [
-        // 属性列表
-        ...attributeItems,
+
+    return FadeTransition(
+      opacity: _attributeFadeAnimation,
+      child: SlideTransition(
+        position: _tierSlideAnimation,
+        child: Column(
+          children: [
+            // 档位特色提示卡片
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 400),
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    _getTierThemeColor().withOpacity(0.05),
+                    _getTierThemeColor().withOpacity(0.02),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: _getTierThemeColor().withOpacity(0.2),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    _getTierIcon(),
+                    size: 16,
+                    color: _getTierThemeColor(),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _getTierHintText(),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: _getTierThemeColor(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // 属性列表
+            ...attributeItems,
         
         // 底部操作按钮
         Container(
@@ -3129,6 +3403,9 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
           ),
         ),
       ],
+    ),
+        ),
+      ),
     );
   }
 
