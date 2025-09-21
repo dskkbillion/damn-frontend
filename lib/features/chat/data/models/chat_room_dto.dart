@@ -107,6 +107,9 @@ class ChatRoomDto with _$ChatRoomDto {
       productName: productVo?.name,
       productImage: productVo?.mainImage,
       productPrice: productVo?.sellingPrice,
+      // 传递原始的角色ID，用于准确判断身份
+      doctorId: doctor.id,  // 卖家的participant ID
+      memberId: member.id,  // 买家的participant ID
     );
   }
 } 

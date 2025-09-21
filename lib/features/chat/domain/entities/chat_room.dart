@@ -16,6 +16,10 @@ class ChatRoom extends Equatable {
   final String? productName;
   final String? productImage;
   final double? productPrice;
+
+  // 原始角色ID - 用于准确判断身份
+  final int? doctorId; // 卖家ID
+  final int? memberId; // 买家ID
   
   // participants list can be a getter if needed: get participants => [participant1, participant2];
   // lastActivityTime can be a getter: get lastActivityTime => lastMessage?.createTime;
@@ -30,6 +34,8 @@ class ChatRoom extends Equatable {
     this.productName,
     this.productImage,
     this.productPrice,
+    this.doctorId,
+    this.memberId,
   });
 
   @override
@@ -43,6 +49,8 @@ class ChatRoom extends Equatable {
         productName,
         productImage,
         productPrice,
+        doctorId,
+        memberId,
       ];
 
   // Derived: Get last activity time
@@ -61,6 +69,8 @@ class ChatRoom extends Equatable {
     String? productName,
     String? productImage,
     double? productPrice,
+    int? doctorId,
+    int? memberId,
   }) {
     return ChatRoom(
       id: id ?? this.id,
@@ -72,6 +82,8 @@ class ChatRoom extends Equatable {
       productName: productName ?? this.productName,
       productImage: productImage ?? this.productImage,
       productPrice: productPrice ?? this.productPrice,
+      doctorId: doctorId ?? this.doctorId,
+      memberId: memberId ?? this.memberId,
     );
   }
 

@@ -82,12 +82,30 @@ class PaymentPromptBubble extends StatelessWidget {
                   _buildPriceButtons(context),
                 ] else if (isSeller) ...[
                   const SizedBox(height: 12),
-                  Text(
-                    '用户需要付费才能继续咨询',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                      fontStyle: FontStyle.italic,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.green[50],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_circle_outline,
+                          size: 16,
+                          color: Colors.green[700],
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '已发送付费提示',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.green[700],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

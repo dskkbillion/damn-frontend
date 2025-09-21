@@ -132,9 +132,42 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
 
           // 设置轻咨询模式 - 默认全部启用轻咨询
           // 判断当前用户是否是卖家
-          // 根据聊天室数据结构：participant1是买家，participant2是卖家
-          // 如果当前用户是participant2，则是卖家
-          final bool isSeller = (currentUserParticipant.id == chatRoom.participant2.id);
+          // 最可靠的方法：直接从 ChatRoomDto 的判断结果获取
+          // 在 ChatRoomDto.toEntity 中已经正确识别了：
+          // - 如果 currentUserId == doctorId，则是卖家(DOCTOR)
+          // - 如果 currentUserId == memberId，则是买家(MEMBER)
+
+          // 我们知道 participant1 总是当前用户，participant2 总是对方
+          // 所以判断逻辑应该基于原始的聊天室数据
+          // 从日志可以看到 "[ChatRoomDto] Current user (by id) is DOCTOR (seller)"
+          // 这个判断是正确的，我们应该复用这个结果
+
+          // 使用 ChatRoom 实体中的 doctorId 字段来判断是否是卖家
+          // API 返回的结构中：doctorId 是卖家的 participant ID，memberId 是买家的 participant ID
+          // 这是固定的业务规则，不会变化
+          bool isSeller = false;
+
+          // 直接使用 ChatRoom 实体的 doctorId 字段进行判断
+          // 如果当前用户的 participant ID 等于 doctorId，则是卖家
+          if (chatRoom.doctorId != null && currentUserParticipant.id == chatRoom.doctorId) {
+            isSeller = true;
+            print('[ChatRoom] Current user is SELLER (doctor) - participantId: ${currentUserParticipant.id} matches doctorId: ${chatRoom.doctorId}');
+          } else if (chatRoom.memberId != null && currentUserParticipant.id == chatRoom.memberId) {
+            isSeller = false;
+            print('[ChatRoom] Current user is BUYER (member) - participantId: ${currentUserParticipant.id} matches memberId: ${chatRoom.memberId}');
+          } else {
+            // 如果无法确定，记录错误信息
+            print('[ChatRoom] WARNING: Cannot determine user role');
+            print('[ChatRoom] currentUserParticipant.id: ${currentUserParticipant.id}');
+            print('[ChatRoom] chatRoom.doctorId: ${chatRoom.doctorId}');
+            print('[ChatRoom] chatRoom.memberId: ${chatRoom.memberId}');
+            // 默认设为买家
+            isSeller = false;
+          }
+
+          print('[ChatRoom] Analyzing role - currentUserParticipantId: $_currentUserParticipantId');
+          print('[ChatRoom] Current user: ${currentUserParticipant.nickName}, opponent: ${opponent.nickName}');
+          print('[ChatRoom] Final determination - isSeller: $isSeller');
           _messageListCubit.setSellerAndConsultationMode(
             isSeller: isSeller,
             isLightConsultation: true, // 默认启用轻咨询模式
@@ -535,20 +568,33 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                               ),
                               TextButton.icon(
                                 onPressed: () async {
-                                  // 发送付费提示消息
-                                  await _messageListCubit.sendPaymentPromptMessage();
-
-                                  // 滚动到底部
-                                  Future.delayed(const Duration(milliseconds: 100), () {
-                                    _scrollToBottom();
-                                  });
-
-                                  // 刷新聊天列表
                                   try {
-                                    final chatListBloc = getIt<ChatListBloc>();
-                                    chatListBloc.add(RefreshChatList());
+                                    // 发送付费提示消息
+                                    await _messageListCubit.sendPaymentPromptMessage();
+
+                                    // 滚动到底部
+                                    Future.delayed(const Duration(milliseconds: 100), () {
+                                      _scrollToBottom();
+                                    });
+
+                                    // 刷新聊天列表
+                                    try {
+                                      final chatListBloc = getIt<ChatListBloc>();
+                                      chatListBloc.add(RefreshChatList());
+                                    } catch (e) {
+                                      print('[ChatRoomPageRefactored] Failed to refresh chat list: $e');
+                                    }
                                   } catch (e) {
-                                    print('[ChatRoomPageRefactored] Failed to refresh chat list: $e');
+                                    // 显示错误提示
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(e.toString().replaceAll('Exception: ', '')),
+                                          backgroundColor: Colors.red,
+                                          duration: const Duration(seconds: 3),
+                                        ),
+                                      );
+                                    }
                                   }
                                 },
                                 icon: const Icon(Icons.send, size: 18),

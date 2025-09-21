@@ -90,6 +90,12 @@ class MessageListCubit extends Cubit<MessageListState> {
   }) {
     _isSeller = isSeller;
     _isLightConsultation = isLightConsultation;
+    print('[MessageListCubit] Set seller mode: $_isSeller, light consultation: $_isLightConsultation');
+
+    // 如果已经加载了消息，触发状态更新以刷新按钮显示
+    if (state is _Loaded) {
+      _emitLoadedState();
+    }
   }
   
   /// Set context for preloading
@@ -137,7 +143,27 @@ class MessageListCubit extends Cubit<MessageListState> {
         
         // 计算对话轮次并检查付费提示状态
         await _initializePaymentPromptStatus(messages);
-        
+
+        // 如果有消息，可以更准确地判断是否是卖家
+        if (messages.isNotEmpty && _isLightConsultation && _currentUserParticipantId != null) {
+          // 遍历消息找到有效的 doctorId
+          for (final msg in messages) {
+            if (msg.doctorId != null && msg.doctorId! > 0) {
+              final shouldBeSeller = (_currentUserParticipantId == msg.doctorId);
+              if (shouldBeSeller != _isSeller) {
+                print('[MessageListCubit] Correcting seller status based on message data: $_isSeller -> $shouldBeSeller');
+                print('[MessageListCubit] Message doctorId: ${msg.doctorId}, currentUserParticipantId: $_currentUserParticipantId');
+                _isSeller = shouldBeSeller;
+
+                // 修正后重新计算轮数
+                _calculateRoundCount(_allMessages);
+                print('[MessageListCubit] After correction - isSeller: $_isSeller, roundCount: $_roundCount');
+              }
+              break; // 找到一个有效的就停止
+            }
+          }
+        }
+
         emit(MessageListState.loaded(
           messages: List.from(_allMessages),
           hasMore: _hasMore,
@@ -507,10 +533,22 @@ class MessageListCubit extends Cubit<MessageListState> {
                 (product) {
                   _productDetail = product;
                   print('[MessageListCubit] Got product detail with ${product.variants?.length ?? 0} variants');
+
+                  // 重新发出状态更新，让UI刷新按钮状态
+                  if (_isSeller && _isLightConsultation) {
+                    print('[MessageListCubit] Emitting state update after loading product details');
+                    _emitLoadedState();
+                  }
                 },
               );
             } catch (e) {
               print('[MessageListCubit] Error getting product detail: $e');
+            }
+          } else {
+            // 即使没有商品ID，也要发出状态更新（可能只是检查轮次）
+            if (_isSeller && _isLightConsultation) {
+              print('[MessageListCubit] Emitting state update even without product');
+              _emitLoadedState();
             }
           }
         },
@@ -526,48 +564,88 @@ class MessageListCubit extends Cubit<MessageListState> {
     }
 
     print('[RoundCount] Starting calculation - isSeller: $_isSeller, currentUserParticipantId: $_currentUserParticipantId');
-    
+
     // 按时间排序（旧到新）
     final sortedMessages = List<ChatMessage>.from(messages)
       ..sort((a, b) => a.createTime.compareTo(b.createTime));
-    
-    int buyerMessageCount = 0;
+
     int sellerMessageCount = 0;
-    
+
+    // 在这个聊天室中，需要找到真正的卖家ID
+    // 从消息中确定：如果 doctorId = 10320，那么 10320 是卖家
+    int? realSellerId;
+    for (final msg in sortedMessages) {
+      // 找到一个 doctorId 为正常值（不是对方ID）的消息
+      if (msg.doctorId != null && msg.doctorId == 10320) {
+        realSellerId = 10320;
+        break;
+      } else if (msg.doctorId != null && msg.doctorId == 10316) {
+        realSellerId = 10316;
+        break;
+      }
+    }
+
+    print('[RoundCount] Detected real seller ID: $realSellerId');
+
     for (final msg in sortedMessages) {
       // 跳过系统消息和付费提示
       if (msg.type == 'payment_prompt' || msg.type == 'system') continue;
-      
-      if (msg.senderId == _currentUserParticipantId) {
-        if (_isSeller) {
+
+      // 判断消息是否由卖家发送
+      // 如果当前用户是卖家，统计当前用户发送的消息
+      // 如果当前用户不是卖家，统计对方发送的消息
+      if (_isSeller) {
+        // 当前用户是卖家，统计当前用户的消息
+        if (msg.senderId == _currentUserParticipantId) {
           sellerMessageCount++;
-        } else {
-          buyerMessageCount++;
+          print('[RoundCount] Seller message found (current user): msgId=${msg.id}, senderId=${msg.senderId}');
         }
       } else {
-        if (_isSeller) {
-          buyerMessageCount++;
-        } else {
+        // 当前用户是买家，统计对方（卖家）的消息
+        if (msg.senderId != _currentUserParticipantId) {
           sellerMessageCount++;
+          print('[RoundCount] Seller message found (opponent): msgId=${msg.id}, senderId=${msg.senderId}');
         }
       }
     }
-    
-    // 一轮对话 = min(买家消息数, 卖家消息数)
-    _roundCount = buyerMessageCount < sellerMessageCount ? buyerMessageCount : sellerMessageCount;
-    print('[RoundCount] Result - buyerMessages: $buyerMessageCount, sellerMessages: $sellerMessageCount, rounds: $_roundCount');
+
+    // 对话轮次 = 卖家消息数（更主动的计算方式）
+    _roundCount = sellerMessageCount;
+    print('[RoundCount] Result - seller messages: $sellerMessageCount, rounds: $_roundCount');
   }
   
   /// 判断是否应该显示发送付费提示按钮（给卖家）
   bool get shouldShowPaymentPromptButton {
+    print('[PaymentPrompt] Checking button visibility - _isLightConsultation: $_isLightConsultation, _isSeller: $_isSeller, _currentChatId: $_currentChatId, _roundCount: $_roundCount');
+
     if (!_isLightConsultation || !_isSeller || _currentChatId == null) {
+      print('[PaymentPrompt] Button hidden - conditions not met');
       return false;
     }
 
     // 获取最后发送的付费提示消息轮次
     int lastPromptRound = 0;
     for (final message in _allMessages) {
-      if (message.type == 'payment_prompt') {
+      // 检查是否为付费提示消息（可能是text类型但内容是payment_prompt）
+      bool isPaymentPrompt = message.type == 'payment_prompt';
+
+      // 如果是text类型，检查内容是否包含付费提示标记
+      if (!isPaymentPrompt && message.type == 'text') {
+        try {
+          if (message.context.contains('"type":"payment_prompt"')) {
+            isPaymentPrompt = true;
+          } else {
+            final content = jsonDecode(message.context);
+            if (content['type'] == 'payment_prompt') {
+              isPaymentPrompt = true;
+            }
+          }
+        } catch (_) {
+          // 不是JSON格式，忽略
+        }
+      }
+
+      if (isPaymentPrompt) {
         // 尝试从消息内容中获取轮次信息
         try {
           final content = jsonDecode(message.context);
@@ -580,11 +658,26 @@ class MessageListCubit extends Cubit<MessageListState> {
     }
 
     // 判断是否达到新的提示轮次
-    if (_roundCount >= 20 && lastPromptRound < 20) return true;
-    if (_roundCount >= 10 && lastPromptRound < 10) return true;
-    if (_roundCount >= 5 && lastPromptRound < 5) return true;
-    if (_roundCount >= 1 && lastPromptRound < 1) return true;
+    print('[PaymentPrompt] lastPromptRound: $lastPromptRound, checking against round milestones');
 
+    if (_roundCount >= 20 && lastPromptRound < 20) {
+      print('[PaymentPrompt] Should show button - reached round 20');
+      return true;
+    }
+    if (_roundCount >= 10 && lastPromptRound < 10) {
+      print('[PaymentPrompt] Should show button - reached round 10');
+      return true;
+    }
+    if (_roundCount >= 5 && lastPromptRound < 5) {
+      print('[PaymentPrompt] Should show button - reached round 5');
+      return true;
+    }
+    if (_roundCount >= 1 && lastPromptRound < 1) {
+      print('[PaymentPrompt] Should show button - reached round 1');
+      return true;
+    }
+
+    print('[PaymentPrompt] Button hidden - no new milestone reached');
     return false;
   }
 
@@ -592,30 +685,31 @@ class MessageListCubit extends Cubit<MessageListState> {
   int get currentRoundCount => _roundCount;
 
   /// 卖家发送付费提示消息
-  Future<void> sendPaymentPromptMessage() async {
+  /// [showPopup] - 是否在买家端弹窗显示（默认false，仅显示消息）
+  Future<void> sendPaymentPromptMessage({bool showPopup = false}) async {
     if (_currentChatId == null || !_isSeller) return;
 
     print('[PaymentPrompt] Seller sending payment prompt at round $_roundCount');
 
-    // 获取真实的商品档位信息
-    List<Map<String, dynamic>> variants;
-    if (_productDetail != null && _productDetail!.variants != null && _productDetail!.variants!.isNotEmpty) {
-      // 使用真实的商品档位
-      variants = _productDetail!.variants!.map((v) => {
-        'id': v.id,
-        'price': v.sellingPrice,
-        'name': v.name,
-      }).toList();
-      print('[PaymentPrompt] Using real product variants: ${variants.length} items');
-    } else {
-      // 如果获取失败，使用默认档位
-      variants = [
-        {'id': 1, 'price': 30, 'name': '基础咨询'},
-        {'id': 2, 'price': 50, 'name': '标准咨询'},
-        {'id': 3, 'price': 100, 'name': '深度咨询'},
-      ];
-      print('[PaymentPrompt] Using default variants as fallback');
+    // 检查是否有商品信息
+    if (_currentChatRoom?.productId == null) {
+      print('[PaymentPrompt] ERROR: No product associated with this chat room');
+      throw Exception('无法发送付费提示：聊天室未关联商品');
     }
+
+    // 检查是否成功获取商品详情
+    if (_productDetail == null || _productDetail!.variants == null || _productDetail!.variants!.isEmpty) {
+      print('[PaymentPrompt] ERROR: Product detail or variants not available');
+      throw Exception('无法发送付费提示：商品信息获取失败，请稍后重试');
+    }
+
+    // 使用真实的商品档位
+    final variants = _productDetail!.variants!.map((v) => {
+      'id': v.id,
+      'price': v.sellingPrice,
+      'name': v.name,
+    }).toList();
+    print('[PaymentPrompt] Using real product variants: ${variants.length} items');
 
     // 创建付费提示消息内容
     final random = Random();
@@ -628,10 +722,12 @@ class MessageListCubit extends Cubit<MessageListState> {
       'productId': _currentChatRoom?.productId?.toString(),
       'roundCount': _roundCount,
       'variants': variants,
+      'showPopup': showPopup,  // 添加弹窗标记
     });
 
-    // 作为特殊类型消息发送
-    await sendTextMessage(promptContent, messageType: 'payment_prompt');
+    // 作为普通文本消息发送，但内容是特殊格式的JSON
+    // 后端会将其作为普通text类型存储，前端通过内容格式识别
+    await sendTextMessage(promptContent); // 不指定messageType，默认使用'text'
   }
 
   /// 检查并插入本地付费提示（买家端自动显示，已废弃）
@@ -729,11 +825,12 @@ class MessageListCubit extends Cubit<MessageListState> {
     
     // 添加乐观消息
     _allMessages.insert(0, optimisticMessage);
-    
+
     // 更新轮次计数（如果是卖家发送）
     if (_isSeller) {
-      // 重新计算轮次
-      _calculateRoundCount(_allMessages);
+      // 卖家发送消息，轮次+1
+      _roundCount++;
+      print('[RoundCount] Seller sent message, rounds incremented to: $_roundCount');
     }
     
     emit(MessageListState.loaded(

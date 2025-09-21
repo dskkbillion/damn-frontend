@@ -38,6 +38,9 @@ import 'package:dskk_flutter_refactor/features/ai_docs/di/ai_docs_di.dart';
 // Import analytics module DI
 import 'package:dskk_flutter_refactor/core/analytics/di/analytics_injection.dart';
 
+// Import home module DI
+import 'package:dskk_flutter_refactor/features/home/di/home_di.dart';
+
 // Import cache module DI
 import 'package:dskk_flutter_refactor/core/cache/di/cache_injection.dart';
 import 'package:dskk_flutter_refactor/core/network/interceptors/cache_interceptor.dart';
@@ -103,6 +106,16 @@ Future<void> configureDependencies({required String backendBaseUrl}) async {
   await registerAuthDependencies();
   print('[DI] Auth dependencies initialization complete.');
   
+  // 初始化Home模块依赖 - 必须在Chat模块之前，因为Chat依赖Home的IHomeRepository
+  try {
+    print('[DI] Starting Home module initialization...');
+    await initHomeDi();
+    print('[DI] Home module dependencies initialization complete.');
+  } catch (e) {
+    print('[DI] Failed to initialize Home module: $e');
+    // 不抛出异常，允许应用继续启动，但记录错误信息
+  }
+
   // 初始化Chat模块依赖
   try {
     print('[DI] Starting Chat module initialization...');
