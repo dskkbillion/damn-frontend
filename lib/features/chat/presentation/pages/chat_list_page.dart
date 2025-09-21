@@ -371,39 +371,39 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         continue;
       }
       
-      // 检查当前用户是否是这个聊天室的参与者，使用id字段进行匹配
+      // 检查当前用户是否是这个聊天室的参与者
       bool shouldInclude = false;
-      String? userRole;
-      
-      if (room.participant1.id == userId) {
-        userRole = room.participant1.type;
-        _currentUserType = userRole; // 记录当前用户类型
-        
-        // 根据应用模式筛选：
-        // - 买家模式：只显示用户作为MEMBER（买家）的聊天
-        // - 卖家模式：只显示用户作为DOCTOR（卖家）的聊天
-        if (appMode == AppMode.buyer && userRole == 'MEMBER') {
-          shouldInclude = true;
-          print("[ChatListPage] ✅ Buyer mode: Including room ${room.id} where user is MEMBER, chatting with ${room.participant2.nickName}");
-        } else if (appMode == AppMode.seller && userRole == 'DOCTOR') {
-          shouldInclude = true;
-          print("[ChatListPage] ✅ Seller mode: Including room ${room.id} where user is DOCTOR, chatting with ${room.participant2.nickName}");
-        } else {
-          print("[ChatListPage] ❌ Mode mismatch: room ${room.id}, user role: $userRole, app mode: $appMode");
-        }
-      } else if (room.participant2.id == userId) {
-        userRole = room.participant2.type;
-        _currentUserType = userRole; // 记录当前用户类型
-        
-        // 根据应用模式筛选
-        if (appMode == AppMode.buyer && userRole == 'MEMBER') {
-          shouldInclude = true;
-          print("[ChatListPage] ✅ Buyer mode: Including room ${room.id} where user is MEMBER, chatting with ${room.participant1.nickName}");
-        } else if (appMode == AppMode.seller && userRole == 'DOCTOR') {
-          shouldInclude = true;
-          print("[ChatListPage] ✅ Seller mode: Including room ${room.id} where user is DOCTOR, chatting with ${room.participant1.nickName}");
-        } else {
-          print("[ChatListPage] ❌ Mode mismatch: room ${room.id}, user role: $userRole, app mode: $appMode");
+
+      // 先判断用户是否是这个聊天室的参与者
+      bool isParticipant = room.participant1.id == userId || room.participant2.id == userId;
+
+      if (isParticipant) {
+        // 使用 ChatRoom 的 doctorId 和 memberId 字段来判断用户身份
+        // doctorId 是卖家的 participant ID
+        // memberId 是买家的 participant ID
+
+        print("[ChatListPage] Room ${room.id}: doctorId=${room.doctorId}, memberId=${room.memberId}");
+
+        if (appMode == AppMode.buyer) {
+          // 买家模式：只显示用户作为买家（memberId）的聊天
+          if (room.memberId == userId) {
+            shouldInclude = true;
+            // 找到对方（卖家）的名字
+            final opponent = room.participant1.id == userId ? room.participant2 : room.participant1;
+            print("[ChatListPage] ✅ Buyer mode: Including room ${room.id} where user is BUYER, chatting with seller ${opponent.nickName}");
+          } else {
+            print("[ChatListPage] ❌ Buyer mode: Excluding room ${room.id} - user is SELLER in this room");
+          }
+        } else if (appMode == AppMode.seller) {
+          // 卖家模式：只显示用户作为卖家（doctorId）的聊天
+          if (room.doctorId == userId) {
+            shouldInclude = true;
+            // 找到对方（买家）的名字
+            final opponent = room.participant1.id == userId ? room.participant2 : room.participant1;
+            print("[ChatListPage] ✅ Seller mode: Including room ${room.id} where user is SELLER, chatting with buyer ${opponent.nickName}");
+          } else {
+            print("[ChatListPage] ❌ Seller mode: Excluding room ${room.id} - user is BUYER in this room");
+          }
         }
       } else {
         print("[ChatListPage] ❌ User not participant: userId $userId not in room ${room.id}");
