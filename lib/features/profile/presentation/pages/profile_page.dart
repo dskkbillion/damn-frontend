@@ -4,6 +4,8 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
 
+import '../../../../core/services/profile_preloader_service.dart';
+import '../../../../app/app_mode.dart';
 import '../bloc/profile_bloc.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/order_status_section.dart';
@@ -34,7 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
         listener: (context, state) {
           if (state is ProfileAuthStatusLoaded && state.isAuthenticated) {
             print('[ProfilePage] Auth confirmed, dispatching data load events.');
-            context.read<ProfileBloc>().add(GetUserProfileEvent());
+            context.read<ProfileBloc>().add(const GetUserProfileEvent());
             // context.read<ProfileBloc>().add(GetWalletSummaryEvent());
           } else if (state is ProfileAuthStatusLoaded && !state.isAuthenticated) {
             // 可以在这里处理未认证的导航，如果需要的话
@@ -44,9 +46,9 @@ class _ProfilePageState extends State<ProfilePage> {
             print('[ProfilePage] User logged out, redirecting to login page.');
             context.go('/auth/login');
           } else if (state is ProfileUpdated) {
-            // 用户信息更新成功，重新获取完整的用户资料以确保UI同步
-            print('[ProfilePage] Profile updated successfully, refreshing user data...');
-            context.read<ProfileBloc>().add(GetUserProfileEvent());
+            // 用户信息更新成功，状态已包含最新数据
+            print('[ProfilePage] Profile updated successfully with latest data');
+            // 不需要重新获取，ProfileUpdated 状态已经包含最新数据
           } else if (state is ProfileAvatarUploadError) {
             // 处理头像上传失败，显示友好的错误提示，便于调试
             final s = S.of(context);
@@ -130,9 +132,24 @@ class _ProfilePageState extends State<ProfilePage> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            // 下拉刷新时重新加载数据
-            context.read<ProfileBloc>().add(GetUserProfileEvent());
+            // 下拉刷新时强制从服务器获取最新数据
+            print('[ProfilePage] User initiated refresh - fetching fresh data from server');
+
+            // 先清除缓存
+            try {
+              final preloaderService = GetIt.instance<ProfilePreloaderService>();
+              await preloaderService.clearCache(AppMode.buyer);
+              await preloaderService.clearCache(AppMode.seller);
+            } catch (e) {
+              print('[ProfilePage] Failed to clear cache on refresh: $e');
+            }
+
+            // 重新加载数据，跳过缓存
+            context.read<ProfileBloc>().add(const GetUserProfileEvent(skipCache: true));
             // context.read<ProfileBloc>().add(GetWalletSummaryEvent());
+
+            // 等待一下让状态更新
+            await Future.delayed(const Duration(milliseconds: 500));
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),

@@ -12,7 +12,14 @@ abstract class ProfileEvent extends Equatable {
 class CheckAuthStatusEvent extends ProfileEvent {}
 
 /// 获取用户资料
-class GetUserProfileEvent extends ProfileEvent {}
+class GetUserProfileEvent extends ProfileEvent {
+  final bool skipCache; // 是否跳过缓存，直接从服务器获取
+
+  const GetUserProfileEvent({this.skipCache = false});
+
+  @override
+  List<Object?> get props => [skipCache];
+}
 
 /// 更新用户资料
 class UpdateUserProfileEvent extends ProfileEvent {

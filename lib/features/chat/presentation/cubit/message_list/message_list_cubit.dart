@@ -5,13 +5,12 @@ import 'dart:math';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:get_it/get_it.dart';
+import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_message_list.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/send_message.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/revoke_message.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/delete_chat_message.dart';
-import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_list/chat_list_bloc.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/services/chat_preload_service.dart';
 import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_chat_local_data_source.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_room.dart';
@@ -208,6 +207,7 @@ class MessageListCubit extends Cubit<MessageListState> {
   }
   
   /// Send a document message (PDF, DOC, etc.)
+  /// The file has already been uploaded and we have the URL
   Future<void> sendDocumentMessage({
     required String url,
     required String fileName,
@@ -215,7 +215,7 @@ class MessageListCubit extends Cubit<MessageListState> {
     required String fileExtension,
   }) async {
     if (_currentChatId == null) return;
-    
+
     // 构建文件消息的 context（JSON格式字符串）
     final fileContext = {
       'url': url,
@@ -223,40 +223,33 @@ class MessageListCubit extends Cubit<MessageListState> {
       'size': fileSize,
       'extension': fileExtension,
     };
-    
+
     // 转换为 JSON 字符串
     final jsonString = jsonEncode(fileContext);
-    
-    // 调用通用的文件发送方法，直接传递 JSON 字符串
-    await sendFileMessage(
-      filePath: jsonString,  // 直接使用 JSON 字符串
-      fileType: 'file',
-      metadata: null,  // 不需要额外的 metadata
-    );
+
+    // 直接发送文本消息，因为文件已经上传了
+    await sendTextMessage(jsonString, messageType: 'file');
   }
   
   /// Send an image message with URL
+  /// The image has already been uploaded and we have the URL
   Future<void> sendImageMessage({
     required String url,
     String? fileName,
   }) async {
     if (_currentChatId == null) return;
-    
+
     // 构建图片消息的 context（JSON格式字符串）
     final imageContext = {
       'url': url,
       'name': fileName ?? 'image.jpg',
     };
-    
+
     // 转换为 JSON 字符串
     final jsonString = jsonEncode(imageContext);
-    
-    // 调用通用的文件发送方法，传递 JSON 字符串
-    await sendFileMessage(
-      filePath: jsonString,  // 传递 JSON 字符串而不是 URL
-      fileType: 'image',
-      metadata: null,  // 不需要额外的 metadata
-    );
+
+    // 直接发送文本消息，因为图片已经上传了
+    await sendTextMessage(jsonString, messageType: 'image');
   }
   
   /// Add a new message to the list (used when message is sent successfully)
@@ -286,13 +279,10 @@ class MessageListCubit extends Cubit<MessageListState> {
     final currentState = state;
     if (currentState is! _Loaded) return;
 
-    // For file type messages (PDF, DOC, etc.), filePath contains JSON string
-    // For audio/image messages, filePath is actual file path
-    // Only create File object if it's a real file path
-    final file = (fileType == 'audio' || fileType == 'image') ? File(filePath) : null;
+    // Create file object for upload
+    final file = File(filePath);
 
     // For audio and image files, we need to upload first
-    // For 'file' type (PDF, DOC), the content is already a JSON string
     final needsUpload = fileType == 'audio' || fileType == 'image';
     final content = needsUpload
         ? '' // Empty for files that need upload
@@ -483,17 +473,14 @@ class MessageListCubit extends Cubit<MessageListState> {
   
   /// 通知 ChatListBloc 更新最后一条消息
   void _updateChatListLastMessage(ChatMessage message) {
-    try {
-      final chatListBloc = GetIt.instance<ChatListBloc>();
-      if (_currentChatId != null) {
-        chatListBloc.add(UpdateChatRoomLastMessage(
-          chatId: _currentChatId!,
-          lastMessage: message,
-        ));
-      }
-    } catch (e) {
-      // 如果获取 ChatListBloc 失败，忽略错误
-      // 这可能发生在某些测试场景或独立预览场景中
+    if (_currentChatId != null) {
+      // 使用EventBus触发聊天列表更新，确保实时更新
+      EventBus().fireChatListUpdateEvent(ChatListUpdateEvent(
+        chatId: _currentChatId!,
+        lastMessage: message.context,
+        lastMessageTime: message.createTime,
+      ));
+      print('[MessageListCubit] Fired ChatListUpdateEvent for chatId: $_currentChatId');
     }
   }
   

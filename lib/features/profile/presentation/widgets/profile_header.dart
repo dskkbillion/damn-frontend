@@ -31,18 +31,20 @@ class ProfileHeader extends ConsumerWidget {
         String? pendingAvatarUrl; // 待显示的新头像URL
         
         if (state is ProfileLoaded) {
-          profile = (state as ProfileLoaded).profile;
+          profile = state.profile;
         } else if (state is ProfileUpdated) {
-          profile = (state as ProfileUpdated).profile;
+          profile = state.profile;
+        } else if (state is ProfileUpdating) {
+          profile = state.profile;
         } else if (state is ProfileAvatarUploadError) {
-          profile = (state as ProfileAvatarUploadError).profile;
+          profile = state.profile;
         } else if (state is ProfileAvatarUploading) {
-          profile = (state as ProfileAvatarUploading).profile;
+          profile = state.profile;
           isUploading = true;
         } else if (state is ProfileAvatarUploaded) {
           // 头像上传成功，使用新头像URL和保存的用户信息
-          profile = (state as ProfileAvatarUploaded).profile;
-          pendingAvatarUrl = (state as ProfileAvatarUploaded).avatarUrl;
+          profile = state.profile;
+          pendingAvatarUrl = state.avatarUrl;
           print('[ProfileHeader] Avatar upload completed, pending URL: $pendingAvatarUrl');
         }
         
@@ -93,10 +95,16 @@ class ProfileHeader extends ConsumerWidget {
   }
 
   Widget _buildAvatar(BuildContext context, UserProfile? profile, ProfileState state, String? pendingAvatarUrl) {
-    // 优先显示待处理的头像URL，否则使用用户资料中的头像URL
-    final imageUrl = pendingAvatarUrl ?? profile?.avatarUrl;
+    // 使用最新的头像URL
+    String? imageUrl = profile?.avatarUrl;
+
+    // 如果是刚上传成功状态，优先使用新URL
+    if (state is ProfileAvatarUploaded && pendingAvatarUrl != null) {
+      imageUrl = pendingAvatarUrl;
+    }
+
     final hasUrl = imageUrl != null && imageUrl.isNotEmpty;
-    final isUploading = state is ProfileAvatarUploading;
+    final isUploading = state is ProfileAvatarUploading || state is ProfileUpdating;
     print('[ProfileHeader] Avatar URL: $imageUrl (pending: $pendingAvatarUrl, profile: ${profile?.avatarUrl}), Has URL: $hasUrl, IsUploading: $isUploading');
 
     // 使用InkWell使头像可点击，点击后跳转到账号与安全页面

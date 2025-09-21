@@ -322,7 +322,10 @@ class _CustomInputBarState extends State<CustomInputBar> {
                   url: success.url,
                   fileName: result!.finalFile.path.split('/').last,
                 );
-                
+
+                // 发送图片后收起键盘
+                FocusScope.of(context).unfocus();
+
                 // 显示压缩信息（如果有）
                 if (result!.compressionRatio != null) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -429,7 +432,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
               },
               (success) {
                 // 上传成功，发送文件消息
-                
+
                 if (mounted) {
                   // 通过 MessageListCubit 发送文件消息
                   context.read<MessageListCubit>().sendDocumentMessage(
@@ -438,7 +441,10 @@ class _CustomInputBarState extends State<CustomInputBar> {
                     fileSize: file.size ?? 0,
                     fileExtension: file.extension ?? '',
                   );
-                  
+
+                  // 发送文件后收起键盘
+                  FocusScope.of(context).unfocus();
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('文件发送成功')),
                   );

@@ -76,32 +76,36 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     GetUserProfileEvent event,
     Emitter<ProfileState> emit,
   ) async {
-    // 优先尝试从缓存获取数据
-    try {
-      final preloaderService = GetIt.instance<ProfilePreloaderService>();
-      final cachedProfile = await preloaderService.getCachedData<UserProfile>(
-        'user_profile', 
-        AppMode.buyer, // 默认买家模式，后续可优化为动态获取当前模式
-      );
-      
-      if (cachedProfile != null) {
-        print('[ProfileBloc] Using cached profile data: ${cachedProfile.nickName}');
-        _currentProfile = cachedProfile;
-        emit(ProfileLoaded(profile: cachedProfile));
-        return;
+    // 如果不跳过缓存，优先尝试从缓存获取数据
+    if (!event.skipCache) {
+      try {
+        final preloaderService = GetIt.instance<ProfilePreloaderService>();
+        final cachedProfile = await preloaderService.getCachedData<UserProfile>(
+          'user_profile',
+          AppMode.buyer, // 默认买家模式，后续可优化为动态获取当前模式
+        );
+
+        if (cachedProfile != null) {
+          print('[ProfileBloc] Using cached profile data: ${cachedProfile.nickName}');
+          _currentProfile = cachedProfile;
+          emit(ProfileLoaded(profile: cachedProfile));
+          return;
+        }
+      } catch (e) {
+        print('[ProfileBloc] Failed to get cached profile: $e');
       }
-    } catch (e) {
-      print('[ProfileBloc] Failed to get cached profile: $e');
+    } else {
+      print('[ProfileBloc] Skipping cache, fetching fresh data from server');
     }
-    
-    // 缓存未命中，执行正常的数据获取流程
+
+    // 缓存未命中或跳过缓存，执行正常的数据获取流程
     emit(const ProfileLoading());
     final result = await getUserProfile(NoParams());
     result.fold(
       (failure) => emit(ProfileError(message: failure.toString())),
       (profile) {
         _currentProfile = profile; // 保存当前用户信息
-        print('[ProfileBloc] Emitting ProfileLoaded with profile: ${profile.nickName}');
+        print('[ProfileBloc] Emitting ProfileLoaded with profile: ${profile.nickName}, avatar: ${profile.avatarUrl}');
         emit(ProfileLoaded(profile: profile));
       },
     );
@@ -150,20 +154,20 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         onlineFlag: event.onlineFlag,
       ),
     );
-    result.fold(
+    await result.fold(
       (failure) {
         print('[ProfileBloc] Failed to update profile: $failure');
         emit(ProfileError(message: failure.toString()));
       },
-      (profile) {
+      (profile) async {
         _currentProfile = profile; // 更新当前用户信息
         print('[ProfileBloc] Profile updated successfully with avatar: ${profile.avatarUrl}');
 
         // 清除缓存，确保下次获取最新数据
         try {
           final preloaderService = GetIt.instance<ProfilePreloaderService>();
-          preloaderService.clearCache('user_profile', AppMode.buyer);
-          preloaderService.clearCache('user_profile', AppMode.seller);
+          await preloaderService.clearCache(AppMode.buyer);
+          await preloaderService.clearCache(AppMode.seller);
         } catch (e) {
           print('[ProfileBloc] Failed to clear cache: $e');
         }

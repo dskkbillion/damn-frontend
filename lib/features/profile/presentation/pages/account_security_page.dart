@@ -73,7 +73,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
               current is ProfileAvatarUploadError,
             listener: (context, state) {
               if (state is ProfileAvatarUploaded) {
-                // 上传成功后，立即更新用户资料并刷新页面
+                // 上传成功后，立即更新用户资料
                 print('[AccountSecurityPage] Avatar uploaded successfully, updating profile with URL: ${state.avatarUrl}');
                 _profileBloc.add(UpdateUserProfileEvent(avatar: state.avatarUrl));
 
@@ -83,7 +83,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('头像上传成功！'),
+                    content: Text('头像上传成功，正在更新资料...'),
                     backgroundColor: Colors.green,
                     duration: Duration(seconds: 2),
                   ),

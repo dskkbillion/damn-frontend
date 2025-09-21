@@ -238,8 +238,9 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
       return bTime.compareTo(aTime);
     });
 
-    // 触发UI更新
-    add(UpdateChatRoomLastMessage(chatId: event.chatId, lastMessage: updatedRoom.lastMessage));
+    // 直接发出新状态，而不是通过add事件（避免异步处理）
+    emit(state.copyWith(chatRooms: updatedChatRooms));
+    print('[ChatListBloc] Chat list updated immediately for chatId: ${event.chatId}');
   }
 
   @override
