@@ -152,7 +152,7 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
                  if (messageData is Map<String, dynamic>) {
                    final chatMessageDto = ChatMessageDto.fromJson(messageData);
                    _messageStreamController.add(chatMessageDto);
-                   print("[WebSocket] Parsed ChatMessageDto: ${chatMessageDto.id}");
+                   print("[WebSocket] Parsed ChatMessageDto: id=${chatMessageDto.id}, type=${chatMessageDto.type}, context=${chatMessageDto.context.length > 100 ? chatMessageDto.context.substring(0, 100) + '...' : chatMessageDto.context}");
                    
                    // 触发全局消息通知事件
                    _triggerChatNotification(chatMessageDto);

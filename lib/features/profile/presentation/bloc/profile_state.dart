@@ -40,7 +40,12 @@ class ProfileLoaded extends ProfileState {
 
 /// 正在更新资料
 class ProfileUpdating extends ProfileState {
-  const ProfileUpdating();
+  final UserProfile? profile; // 保留当前用户信息
+
+  const ProfileUpdating({this.profile});
+
+  @override
+  List<Object?> get props => [profile];
 }
 
 /// 资料更新完成

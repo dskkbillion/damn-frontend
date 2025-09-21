@@ -442,13 +442,16 @@ class MessageListCubit extends Cubit<MessageListState> {
   
   /// Add received message from WebSocket
   void addReceivedMessage(ChatMessage message) {
+    print('[MessageListCubit] addReceivedMessage called: type=${message.type}, id=${message.id}, chatId=${message.chatId}, currentChatId=$_currentChatId');
     // 检查消息是否属于当前聊天室
     if (_currentChatId != null && message.chatId == _currentChatId) {
       // 检查消息是否已存在（防止重复）
       final exists = _allMessages.any((m) => m.id == message.id);
+      print('[MessageListCubit] Message exists: $exists');
       if (!exists) {
         // 添加到消息列表开头（最新消息）
         _allMessages.insert(0, message);
+        print('[MessageListCubit] Message added to list. Total messages: ${_allMessages.length}');
         
         // 更新UI
         _emitLoadedState();

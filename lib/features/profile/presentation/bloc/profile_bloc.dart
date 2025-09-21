@@ -139,7 +139,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     UpdateUserProfileEvent event,
     Emitter<ProfileState> emit,
   ) async {
-    emit(const ProfileUpdating());
+    // 如果当前状态是头像上传成功，保留当前用户资料
+    final previousProfile = _currentProfile;
+
+    emit(ProfileUpdating(profile: previousProfile));
     final result = await updateUserProfile(
       UpdateUserProfileParams(
         nickName: event.nickName,
@@ -148,9 +151,13 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       ),
     );
     result.fold(
-      (failure) => emit(ProfileError(message: failure.toString())),
+      (failure) {
+        print('[ProfileBloc] Failed to update profile: $failure');
+        emit(ProfileError(message: failure.toString()));
+      },
       (profile) {
         _currentProfile = profile; // 更新当前用户信息
+        print('[ProfileBloc] Profile updated successfully with avatar: ${profile.avatarUrl}');
         emit(ProfileUpdated(profile: profile));
       },
     );
@@ -164,7 +171,14 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     final result = await uploadAvatar(UploadAvatarParams(imageFile: event.imageFile));
     result.fold(
       (failure) => emit(ProfileAvatarUploadError(message: failure.toString(), profile: _currentProfile)),
-      (avatarUrl) => emit(ProfileAvatarUploaded(avatarUrl: avatarUrl, profile: _currentProfile)),
+      (avatarUrl) {
+        print('[ProfileBloc] Avatar uploaded successfully, URL: $avatarUrl');
+        // 更新当前用户资料的头像URL
+        if (_currentProfile != null) {
+          _currentProfile = _currentProfile!.copyWith(avatarUrl: avatarUrl);
+        }
+        emit(ProfileAvatarUploaded(avatarUrl: avatarUrl, profile: _currentProfile));
+      },
     );
   }
 

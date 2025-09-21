@@ -73,12 +73,21 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
               current is ProfileAvatarUploadError,
             listener: (context, state) {
               if (state is ProfileAvatarUploaded) {
-                // 上传成功，使用新的头像URL更新用户资料
+                // 上传成功后，立即更新用户资料并刷新页面
+                print('[AccountSecurityPage] Avatar uploaded successfully, updating profile with URL: ${state.avatarUrl}');
                 _profileBloc.add(UpdateUserProfileEvent(avatar: state.avatarUrl));
-                
+
                 setState(() {
                   avatarResult = null; // 清除本地处理结果
                 });
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('头像上传成功！'),
+                    backgroundColor: Colors.green,
+                    duration: Duration(seconds: 2),
+                  ),
+                );
               } else if (state is ProfileAvatarUploadError) {
                 setState(() {
                   avatarResult = null; // 清除本地处理结果
@@ -105,19 +114,23 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
               }
             },
           ),
-          // 添加昵称修改成功的状态监听
+          // 添加个人信息更新成功的状态监听
           BlocListener<ProfileBloc, ProfileState>(
-            listenWhen: (previous, current) => 
-              current is ProfileUpdated && 
-              previous is ProfileUpdating,
+            listenWhen: (previous, current) =>
+              current is ProfileUpdated &&
+              (previous is ProfileUpdating || previous is ProfileAvatarUploaded),
             listener: (context, state) {
               if (state is ProfileUpdated) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('个人信息更新成功！'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
+                print('[AccountSecurityPage] Profile updated successfully');
+                // 不再显示重复的提示，因为头像更新已经有自己的提示
+                if (!(state is ProfileUpdated && context.read<ProfileBloc>().state is ProfileAvatarUploaded)) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('个人信息更新成功！'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                }
               }
             },
           ),
@@ -129,6 +142,8 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             if (state is ProfileLoaded) {
               profile = state.profile;
             } else if (state is ProfileUpdated) {
+              profile = state.profile;
+            } else if (state is ProfileUpdating) {
               profile = state.profile;
             } else if (state is ProfileAvatarUploading) {
               profile = state.profile;

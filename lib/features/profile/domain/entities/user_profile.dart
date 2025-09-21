@@ -26,6 +26,23 @@ class UserProfile extends Equatable {
     this.mobile,
   });
 
+  /// 创建一个带有更新字段的新实例
+  UserProfile copyWith({
+    String? userId,
+    String? nickName,
+    String? avatarUrl,
+    bool? onlineFlag,
+    String? mobile,
+  }) {
+    return UserProfile(
+      userId: userId ?? this.userId,
+      nickName: nickName ?? this.nickName,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      onlineFlag: onlineFlag ?? this.onlineFlag,
+      mobile: mobile ?? this.mobile,
+    );
+  }
+
   @override
   List<Object?> get props => [userId, nickName, avatarUrl, onlineFlag, mobile];
 }

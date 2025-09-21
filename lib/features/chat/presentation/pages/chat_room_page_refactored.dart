@@ -410,6 +410,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                         ready: (chatRoom, lastReceivedMessage, hasNewMessage) {
                           // When a new message is received via WebSocket
                           if (hasNewMessage && lastReceivedMessage != null) {
+                            print('[ChatRoomPage] New message received via WebSocket: type=${lastReceivedMessage.type}, id=${lastReceivedMessage.id}');
                             // Add the message to the message list
                             _messageListCubit.addReceivedMessage(lastReceivedMessage);
                             
