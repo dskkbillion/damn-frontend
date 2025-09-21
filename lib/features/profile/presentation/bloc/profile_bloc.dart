@@ -158,6 +158,16 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       (profile) {
         _currentProfile = profile; // 更新当前用户信息
         print('[ProfileBloc] Profile updated successfully with avatar: ${profile.avatarUrl}');
+
+        // 清除缓存，确保下次获取最新数据
+        try {
+          final preloaderService = GetIt.instance<ProfilePreloaderService>();
+          preloaderService.clearCache('user_profile', AppMode.buyer);
+          preloaderService.clearCache('user_profile', AppMode.seller);
+        } catch (e) {
+          print('[ProfileBloc] Failed to clear cache: $e');
+        }
+
         emit(ProfileUpdated(profile: profile));
       },
     );

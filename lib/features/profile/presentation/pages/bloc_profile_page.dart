@@ -37,15 +37,11 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
             SnackBar(content: Text(state.message)),
           );
         } else if (state is ProfileAvatarUploaded) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('头像上传成功')),
-          );
-          // 更新上传头像后获取最新用户信息
-          context.read<ProfileBloc>().add(GetUserProfileEvent());
+          // 头像上传成功后，会自动触发 UpdateUserProfileEvent
+          // 不需要在这里处理
         } else if (state is ProfileUpdated) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('个人资料更新成功')),
-          );
+          // 个人资料更新成功，状态已包含最新数据
+          // 不需要重新获取
         } else if (state is ProfileAuthStatusLoaded) {
           if (state.isAuthenticated) {
             // 如果已登录，获取用户信息

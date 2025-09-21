@@ -286,11 +286,13 @@ class MessageListCubit extends Cubit<MessageListState> {
     final currentState = state;
     if (currentState is! _Loaded) return;
 
-    // Import File class
-    final file = File(filePath);
+    // For file type messages (PDF, DOC, etc.), filePath contains JSON string
+    // For audio/image messages, filePath is actual file path
+    // Only create File object if it's a real file path
+    final file = (fileType == 'audio' || fileType == 'image') ? File(filePath) : null;
 
     // For audio and image files, we need to upload first
-    // Leave context empty for files that need upload
+    // For 'file' type (PDF, DOC), the content is already a JSON string
     final needsUpload = fileType == 'audio' || fileType == 'image';
     final content = needsUpload
         ? '' // Empty for files that need upload
