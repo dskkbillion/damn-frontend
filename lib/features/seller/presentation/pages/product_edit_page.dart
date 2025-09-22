@@ -3402,8 +3402,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
             ],
           ),
         ),
-      ],
-    ),
+          ],
         ),
       ),
     );
