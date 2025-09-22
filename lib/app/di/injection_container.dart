@@ -9,7 +9,7 @@ import 'package:dskk_flutter_refactor/core/api/api_client.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+// import 'package:pretty_dio_logger/pretty_dio_logger.dart'; // 暂时不使用，避免大量日志输出
 import 'package:dskk_flutter_refactor/core/network/interceptors/app_info_interceptor.dart';
 import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
 import 'package:dskk_flutter_refactor/core/network/header_interceptor.dart';
@@ -259,15 +259,40 @@ Future<void> registerCoreDependencies() async {
     dio.interceptors.add(authInterceptor);   // 添加AuthInterceptor
     dio.interceptors.add(HeaderInterceptor()); // 添加HeaderInterceptor
     
-    // 添加日志拦截器
-    dio.interceptors.add(PrettyDioLogger(
-      requestHeader: true,
-      requestBody: true,
-      responseBody: true,
-      responseHeader: false,
-      error: true,
-      compact: true,
-      maxWidth: 90));
+    // 添加日志拦截器，但限制大响应的日志输出
+    dio.interceptors.add(InterceptorsWrapper(
+      onResponse: (response, handler) {
+        // 对聊天列表等大响应跳过日志记录
+        final path = response.requestOptions.path;
+        if (path.contains('/api/chat/list') ||
+            path.contains('/api/chat/messages')) {
+          // 只记录基本信息，不记录响应体
+          print('[HTTP] ${response.requestOptions.method} ${path} - Status: ${response.statusCode}');
+        } else {
+          // 对其他请求使用PrettyDioLogger
+          // 这里无法直接调用PrettyDioLogger，所以只记录简单日志
+          if (response.statusCode != 200 && response.statusCode != 201) {
+            print('[HTTP] ${response.requestOptions.method} ${path} - Status: ${response.statusCode}');
+            if (response.data != null) {
+              final dataStr = response.data.toString();
+              if (dataStr.length < 1000) {
+                print('[HTTP] Response: $dataStr');
+              }
+            }
+          }
+        }
+        handler.next(response);
+      },
+      onRequest: (request, handler) {
+        print('[HTTP] ${request.method} ${request.path}');
+        handler.next(request);
+      },
+      onError: (error, handler) {
+        print('[HTTP ERROR] ${error.requestOptions.method} ${error.requestOptions.path}');
+        print('[HTTP ERROR] ${error.message}');
+        handler.next(error);
+      },
+    ));
     
     return dio;
   });

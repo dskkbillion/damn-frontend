@@ -77,7 +77,7 @@ class ChatUserRepositoryImpl implements IUserRepository {
       final referId = await _secureStorage.read(key: 'refer_id');
       final commonUserIdFromOldKey = await _secureStorage.read(key: 'common_user_id');
       final commonUserId = referId ?? commonUserIdFromOldKey ?? '1';
-      
+
       print('[ChatUserRepository] referId: $referId, common_user_id: $commonUserIdFromOldKey');
       
       // 读取用户类型（从AppMode或者存储中获取）

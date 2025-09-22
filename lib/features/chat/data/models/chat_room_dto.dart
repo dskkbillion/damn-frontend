@@ -39,7 +39,7 @@ class ChatRoomDto with _$ChatRoomDto {
            timeString = timeString.replaceFirst(' ', 'T');
          }
          lastActivity = DateTime.parse(timeString);
-         print("[ChatRoomDto] Successfully parsed lastActivity: ${chatMessageNewVo!.createTime} -> $lastActivity");
+         // print("[ChatRoomDto] Successfully parsed lastActivity: ${chatMessageNewVo!.createTime} -> $lastActivity");
        } catch (e) {
          print("[ChatRoomDto] Error parsing last activity time: ${chatMessageNewVo!.createTime}, error: $e");
          lastActivity = null; // Fallback
@@ -66,21 +66,21 @@ class ChatRoomDto with _$ChatRoomDto {
       // 当前用户是买家(member)
       currentUserParticipant = memberEntity;
       opponentParticipant = doctorEntity; // 对方是卖家(doctor)
-      print("[ChatRoomDto] Current user (by id) is MEMBER (buyer), opponent is DOCTOR (seller): ${doctorEntity.nickName}");
+      // print("[ChatRoomDto] Current user (by id) is MEMBER (buyer), opponent is DOCTOR (seller): ${doctorEntity.nickName}");
     } else if (doctorEntity.id == currentUserId) {
       // 当前用户是卖家(doctor)
       currentUserParticipant = doctorEntity;
       opponentParticipant = memberEntity; // 对方是买家(member)
-      print("[ChatRoomDto] Current user (by id) is DOCTOR (seller), opponent is MEMBER (buyer): ${memberEntity.nickName}");
+      // print("[ChatRoomDto] Current user (by id) is DOCTOR (seller), opponent is MEMBER (buyer): ${memberEntity.nickName}");
     } else if (memberEntity.referId == currentUserId) {
       // 尝试使用referId进行匹配（外部引用ID）
       currentUserParticipant = memberEntity;
       opponentParticipant = doctorEntity;
-      print("[ChatRoomDto] Current user (by referId) is MEMBER (buyer), opponent is DOCTOR (seller): ${doctorEntity.nickName}");
+      // print("[ChatRoomDto] Current user (by referId) is MEMBER (buyer), opponent is DOCTOR (seller): ${doctorEntity.nickName}");
     } else if (doctorEntity.referId == currentUserId) {
       currentUserParticipant = doctorEntity;
       opponentParticipant = memberEntity;
-      print("[ChatRoomDto] Current user (by referId) is DOCTOR (seller), opponent is MEMBER (buyer): ${memberEntity.nickName}");
+      // print("[ChatRoomDto] Current user (by referId) is DOCTOR (seller), opponent is MEMBER (buyer): ${memberEntity.nickName}");
     } else {
       // 无法确定当前用户身份，这是一个严重错误
       print("[ChatRoomDto] ERROR: Cannot determine current user identity!");

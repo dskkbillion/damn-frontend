@@ -138,7 +138,8 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
     _channelSubscription = _channel?.stream.listen(
       (message) {
         // Handle incoming messages
-        print("[WebSocket] Received raw: $message");
+        // 注释掉原始消息日志，避免日志过量
+        // print("[WebSocket] Received raw: $message");
         try {
           final decodedMessage = jsonDecode(message);
           if (decodedMessage is Map<String, dynamic>) {
@@ -318,7 +319,8 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
   @override
   void sendMessage(String message) {
      if (_channel != null) {
-      print("[WebSocket] Sending message (raw): $message");
+      // 注释掉发送消息日志，避免日志过量
+      // print("[WebSocket] Sending message (raw): $message");
       _channel!.sink.add(message);
     } else {
        print("[WebSocket] Error: Cannot send message, channel is not connected.");

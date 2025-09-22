@@ -91,8 +91,9 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
       // Check if response data is a non-empty string
       if (response.data is String && (response.data as String).isNotEmpty) {
         final String responseBody = response.data as String;
-        print("[API Response Raw String /api/chat/list]: $responseBody");
-        
+        // 注释掉完整响应日志，避免日志过量
+        // print("[API Response Raw String /api/chat/list]: $responseBody");
+
         // Manually decode JSON
         final Map<String, dynamic> decodedData = jsonDecode(responseBody);
 

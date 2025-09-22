@@ -549,16 +549,19 @@ class MessageListCubit extends Cubit<MessageListState> {
     int sellerMessageCount = 0;
 
     // 在这个聊天室中，需要找到真正的卖家ID
-    // 从消息中确定：如果 doctorId = 10320，那么 10320 是卖家
+    // 通过判断当前用户是否是卖家来确定
     int? realSellerId;
-    for (final msg in sortedMessages) {
-      // 找到一个 doctorId 为正常值（不是对方ID）的消息
-      if (msg.doctorId != null && msg.doctorId == 10320) {
-        realSellerId = 10320;
-        break;
-      } else if (msg.doctorId != null && msg.doctorId == 10316) {
-        realSellerId = 10316;
-        break;
+    if (_isSeller) {
+      // 如果当前用户是卖家，那么当前用户的participant ID就是卖家ID
+      realSellerId = _currentUserParticipantId;
+    } else {
+      // 如果当前用户是买家，需要从消息中找到卖家的ID（doctorId）
+      for (final msg in sortedMessages) {
+        if (msg.doctorId != null && msg.doctorId != _currentUserParticipantId) {
+          // doctorId 不是当前用户，那么它就是卖家ID
+          realSellerId = msg.doctorId;
+          break;
+        }
       }
     }
 
