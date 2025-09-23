@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart';
 import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/auto_reply_settings.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/auto_reply/auto_reply_bloc.dart';
@@ -25,7 +25,7 @@ class AutoReplyPage extends StatelessWidget {
       child: Builder(
         builder: (context) => Scaffold(
           appBar: AppBar(
-            title: Text(AppLocalizations.of(context)?.auto_reply_title ?? 'Auto Reply Settings'),
+            title: Text(S.of(context)?.auto_reply_title ?? 'Auto Reply Settings'),
           ),
           body: const AutoReplyBody(),
         ),
@@ -75,7 +75,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
           // 保存成功的提示
           if (_lastLoadedContent != null && _lastLoadedContent != state.settings.content) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(AppLocalizations.of(context)?.auto_reply_settings_saved ?? 'Settings Saved')),
+              SnackBar(content: Text(S.of(context)?.auto_reply_settings_saved ?? 'Settings Saved')),
             );
           }
           
@@ -104,7 +104,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
           return _buildContent(context, settings, isUpdating);
         }
 
-        return Center(child: Text(AppLocalizations.of(context)?.auto_reply_load_failed ?? 'Load failed, please try again'));
+        return Center(child: Text(S.of(context)?.auto_reply_load_failed ?? 'Load failed, please try again'));
       },
     );
   }
@@ -145,7 +145,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              AppLocalizations.of(context)?.auto_reply_enable ?? 'Auto Reply',
+              S.of(context)?.auto_reply_enable ?? 'Auto Reply',
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -177,7 +177,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              AppLocalizations.of(context)?.auto_reply_content ?? 'Reply Content',
+              S.of(context)?.auto_reply_content ?? 'Reply Content',
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -191,7 +191,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
               controller: _contentController,
               enabled: !isUpdating,
               decoration: InputDecoration(
-                hintText: AppLocalizations.of(context)?.auto_reply_content_hint ?? 'Please enter auto reply content',
+                hintText: S.of(context)?.auto_reply_content_hint ?? 'Please enter auto reply content',
                 border: const OutlineInputBorder(),
               ),
               maxLines: 5,
@@ -206,7 +206,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
             const SizedBox(height: 12),
             
             Text(
-              AppLocalizations.of(context)?.auto_reply_content_description ?? 'When customers send messages, the system will automatically reply with this content',
+              S.of(context)?.auto_reply_content_description ?? 'When customers send messages, the system will automatically reply with this content',
               style: const TextStyle(
                 fontSize: 12,
                 color: Colors.grey,
@@ -227,7 +227,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
           final content = _contentController.text.trim();
           if (content.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(AppLocalizations.of(context)?.auto_reply_content_required ?? 'Reply content cannot be empty')),
+              SnackBar(content: Text(S.of(context)?.auto_reply_content_required ?? 'Reply content cannot be empty')),
             );
             return;
           }
@@ -237,7 +237,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
         } else {
           // 如果内容没有变化，显示提示
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)?.auto_reply_settings_saved ?? 'Settings Saved')),
+            SnackBar(content: Text(S.of(context)?.auto_reply_settings_saved ?? 'Settings Saved')),
           );
         }
       },
@@ -247,7 +247,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
         disabledBackgroundColor: Colors.green.withOpacity(0.5),
       ),
       child: Text(
-        AppLocalizations.of(context)?.auto_reply_save_settings ?? 'Save Settings',
+        S.of(context)?.auto_reply_save_settings ?? 'Save Settings',
         style: const TextStyle(
           fontSize: 16,
           color: Colors.white,

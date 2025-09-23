@@ -28,8 +28,8 @@ class ChatListPage extends ConsumerStatefulWidget { // 改为ConsumerStatefulWid
 }
 
 class _ChatListPageState extends ConsumerState<ChatListPage> {
-  // 添加用户身份状态
-  String? _currentUserType; // 'MEMBER' 或 'DOCTOR'
+  // 用户身份状态 - 当前未使用
+  // String? _currentUserType; // 'MEMBER' 或 'DOCTOR'
   
   // 添加Future存储变量，避免在每次build时创建新的Future
   late Future<int?> _referIdFuture;
@@ -38,7 +38,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   late final ChatPreloadService _preloadService;
   
   // 添加混合模式状态
-  bool _isMixedMode = false; // 默认不混合，根据买家/卖家模式分开显示
+  bool _isMixedMode = false; // 默认不混合，根据买家/卖家模式分开显示 - 改为默认开启分类模式
   
   @override
   void initState() {
@@ -56,6 +56,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     try {
       final prefs = await SharedPreferences.getInstance();
       setState(() {
+        // 默认为false，表示分类模式开启（非混合模式）
         _isMixedMode = prefs.getBool('chat_mixed_mode') ?? false;
       });
     } catch (e) {
@@ -202,18 +203,43 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         elevation: 0.5, 
         shadowColor: Colors.grey[300],
         actions: [
-          // 添加混合模式切换按钮
-          IconButton(
+          // 添加混合模式切换按钮 - 使用更明显的过滤图标和文字标签
+          TextButton.icon(
             icon: Icon(
-              _isMixedMode ? Icons.folder_open : Icons.folder,
-              color: _isMixedMode ? Theme.of(context).primaryColor : Colors.grey,
+              _isMixedMode ? Icons.filter_alt_off : Icons.filter_alt,
+              color: _isMixedMode ? Colors.grey : Theme.of(context).primaryColor,
+              size: 20,
             ),
-            tooltip: _isMixedMode ? '显示全部聊天' : '按身份分类',
+            label: Text(
+              _isMixedMode
+                  ? s.chat_filter_all
+                  : (currentAppMode == AppMode.buyer
+                      ? s.chat_filter_buyer
+                      : s.chat_filter_seller),
+              style: TextStyle(
+                color: _isMixedMode ? Colors.grey : Theme.of(context).primaryColor,
+                fontSize: 14,
+              ),
+            ),
             onPressed: () {
               setState(() {
                 _isMixedMode = !_isMixedMode;
               });
               _saveMixedModeSetting(_isMixedMode);
+
+              // 显示提示
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    _isMixedMode
+                        ? s.chat_filter_mode_all
+                        : (currentAppMode == AppMode.buyer
+                            ? s.chat_filter_mode_buyer
+                            : s.chat_filter_mode_seller),
+                  ),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
             },
           ),
         ],

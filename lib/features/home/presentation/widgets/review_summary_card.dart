@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart';
 
 /// 评论统计摘要卡片
 class ReviewSummaryCard extends StatelessWidget {
@@ -50,7 +50,7 @@ class ReviewSummaryCard extends StatelessWidget {
                     _buildRatingStars(averageScore),
                     const SizedBox(height: 8),
                     Text(
-                      AppLocalizations.of(context)!.product_reviews_total_count(totalReviews),
+                      S.of(context)!.product_reviews_total_count(totalReviews),
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],

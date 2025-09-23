@@ -188,6 +188,12 @@
     "chat_switch_to_voice": "Switch to Voice Input",
     "chat_send": "Send",
     "chat_attach": "Send Image/File",
+    "chat_filter_all": "All",
+    "chat_filter_buyer": "My Purchases",
+    "chat_filter_seller": "My Sales",
+    "chat_filter_mode_all": "Showing all chats",
+    "chat_filter_mode_buyer": "Showing my purchase chats only",
+    "chat_filter_mode_seller": "Showing my sales chats only",
     "chat_press_to_talk": "Press to Talk",
     "chat_release_to_send": "Release to Send ({duration}s)",
     "@chat_release_to_send": {

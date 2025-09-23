@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 
@@ -33,7 +33,7 @@ class AfterSalesDetailPage extends StatelessWidget {
       create: (_) => GetIt.instance<AfterSalesReviewBloc>()..add(LoadAfterSalesList()),
       child: Builder(
         builder: (context) {
-          final l10n = AppLocalizations.of(context);
+          final l10n = S.of(context);
           return Scaffold(
             appBar: AppBar(
               title: Text(l10n?.after_sales_detail_title ?? 'After-sales Details'),
@@ -109,7 +109,7 @@ class AfterSalesDetailPage extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          '${AppLocalizations.of(context)?.after_sales_order_number ?? "Order Number"}: ${refund.orderSn}',
+                          '${S.of(context)?.after_sales_order_number ?? "Order Number"}: ${refund.orderSn}',
                           style: textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -125,13 +125,13 @@ class AfterSalesDetailPage extends StatelessWidget {
                   const Divider(height: 24),
                   
                   // 售后基本信息
-                  _buildInfoItem(context, AppLocalizations.of(context)?.after_sales_apply_type ?? 'Request Type', _getRefundTypeLabel(context, refund.type)),
+                  _buildInfoItem(context, S.of(context)?.after_sales_apply_type ?? 'Request Type', _getRefundTypeLabel(context, refund.type)),
                   const SizedBox(height: 12),
-                  _buildInfoItem(context, AppLocalizations.of(context)?.after_sales_apply_time ?? 'Request Time', dateFormat.format(refund.applyTime ?? DateTime.now())),
+                  _buildInfoItem(context, S.of(context)?.after_sales_apply_time ?? 'Request Time', dateFormat.format(refund.applyTime ?? DateTime.now())),
                   const SizedBox(height: 12),
-                  _buildInfoItem(context, AppLocalizations.of(context)?.after_sales_refund_amount ?? 'Refund Amount', '¥${refund.formattedRefundPrice.toStringAsFixed(2)}'),
+                  _buildInfoItem(context, S.of(context)?.after_sales_refund_amount ?? 'Refund Amount', '¥${refund.formattedRefundPrice.toStringAsFixed(2)}'),
                   const SizedBox(height: 12),
-                  _buildInfoItem(context, AppLocalizations.of(context)?.after_sales_refund_type ?? 'Refund Type', _getRefundTypeLabel(context, refund.type)),
+                  _buildInfoItem(context, S.of(context)?.after_sales_refund_type ?? 'Refund Type', _getRefundTypeLabel(context, refund.type)),
                 ],
               ),
             ),
@@ -149,7 +149,7 @@ class AfterSalesDetailPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(AppLocalizations.of(context)?.after_sales_apply_reason ?? 'Request Reason', style: textTheme.titleMedium),
+                    Text(S.of(context)?.after_sales_apply_reason ?? 'Request Reason', style: textTheme.titleMedium),
                     const SizedBox(height: 8),
                     Text(
                       refund.reason ?? '',
@@ -172,7 +172,7 @@ class AfterSalesDetailPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(AppLocalizations.of(context)?.after_sales_image_evidence ?? 'Image Evidence', style: textTheme.titleMedium),
+                    Text(S.of(context)?.after_sales_image_evidence ?? 'Image Evidence', style: textTheme.titleMedium),
                     const SizedBox(height: 12),
                     GridView.builder(
                       shrinkWrap: true,
@@ -218,7 +218,7 @@ class AfterSalesDetailPage extends StatelessWidget {
                       foregroundColor: colorScheme.error,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    child: Text(AppLocalizations.of(context)?.after_sales_reject_application ?? 'Reject Request'),
+                    child: Text(S.of(context)?.after_sales_reject_application ?? 'Reject Request'),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -230,7 +230,7 @@ class AfterSalesDetailPage extends StatelessWidget {
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    child: Text(AppLocalizations.of(context)?.after_sales_agree_application ?? 'Approve Request'),
+                    child: Text(S.of(context)?.after_sales_agree_application ?? 'Approve Request'),
                   ),
                 ),
               ],
@@ -274,7 +274,7 @@ class AfterSalesDetailPage extends StatelessWidget {
   
   // 获取退款类型标签
   String _getRefundTypeLabel(BuildContext context, RefundType type) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     switch (type) {
       case RefundType.onlyMoney:
         return l10n?.after_sales_type_refund_only ?? 'Refund Only';
@@ -330,7 +330,7 @@ class AfterSalesDetailPage extends StatelessWidget {
   
   // 显示确认对话框
   void _showConfirmDialog(BuildContext context, int refundId) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -362,7 +362,7 @@ class AfterSalesDetailPage extends StatelessWidget {
   void _showRejectDialog(BuildContext context, int refundId) {
     final TextEditingController reasonController = TextEditingController();
     final formKey = GlobalKey<FormState>();
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     
     showDialog(
       context: context,
@@ -412,7 +412,7 @@ class AfterSalesDetailPage extends StatelessWidget {
   
   // 显示图片对话框
   void _showImageDialog(BuildContext context, String imageUrl) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     showDialog(
       context: context,
       builder: (dialogContext) => Dialog(

@@ -1,17 +1,17 @@
 // Test to verify localization null safety fix
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart';
 
 void main() {
-  testWidgets('AppLocalizations null safety test', (WidgetTester tester) async {
-    // Test that AppLocalizations.of returns null when not in context
+  testWidgets('S null safety test', (WidgetTester tester) async {
+    // Test that S.of returns null when not in context
     await tester.pumpWidget(
       MaterialApp(
         home: Builder(
           builder: (context) {
             // This should return null without localization delegates
-            final l10n = AppLocalizations.maybeOf(context);
+            final l10n = S.maybeOf(context);
             expect(l10n, isNull);
             
             // Safe access with null-aware operator

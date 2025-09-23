@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart';
 
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_authentication_info.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/auth_management/auth_management_bloc.dart';
@@ -25,7 +25,7 @@ class AuthManagementPage extends StatelessWidget {
       child: Builder(
         builder: (innerContext) => Scaffold(
           appBar: AppBar(
-            title: Text(AppLocalizations.of(innerContext)?.seller_auth_management_title ?? 'Authentication Management'),
+            title: Text(S.of(innerContext)?.seller_auth_management_title ?? 'Authentication Management'),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: () {
@@ -45,7 +45,7 @@ class AuthManagementPage extends StatelessWidget {
                 return _buildErrorState(blocContext, state.message);
               } else if (state is AuthManagementEmpty) {
                 return EmptyState(
-                  text: AppLocalizations.of(innerContext)?.seller_auth_management_no_items ?? 'No authentication items',
+                  text: S.of(innerContext)?.seller_auth_management_no_items ?? 'No authentication items',
                   icon: Icons.verified_user_outlined,
                 );
               } else if (state is AuthManagementLoaded) {
@@ -72,7 +72,7 @@ class AuthManagementPage extends StatelessWidget {
               );
               } else {
                 return Center(
-                  child: Text(AppLocalizations.of(innerContext)?.seller_auth_management_unknown_status ?? 'Unknown status'),
+                  child: Text(S.of(innerContext)?.seller_auth_management_unknown_status ?? 'Unknown status'),
                 );
               }
             },
@@ -93,7 +93,7 @@ class AuthManagementPage extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(bottom: 12.0),
           child: Text(
-            AppLocalizations.of(context)?.seller_auth_management_certified_items ?? 'Certified Items',
+            S.of(context)?.seller_auth_management_certified_items ?? 'Certified Items',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -115,7 +115,7 @@ class AuthManagementPage extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(bottom: 16.0),
           child: Text(
-            AppLocalizations.of(context)?.seller_auth_management_open_certification ?? 'Available Certifications',
+            S.of(context)?.seller_auth_management_open_certification ?? 'Available Certifications',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -217,7 +217,7 @@ class AuthManagementPage extends StatelessWidget {
 
   /// 构建状态标签
   Widget _buildStatusTag(BuildContext context, AuthenticationStatus status) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     Color backgroundColor;
     Color textColor;
     String text;
@@ -295,7 +295,7 @@ class AuthManagementPage extends StatelessWidget {
 
   /// 构建错误状态组件
   Widget _buildErrorState(BuildContext context, String errorMessage) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     // 判断错误类型
     bool isTimeoutError = errorMessage.contains('超时') || 
                          errorMessage.contains('timeout') ||

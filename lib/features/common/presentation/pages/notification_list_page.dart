@@ -7,7 +7,7 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/notific
 import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
 import 'package:intl/intl.dart';
 import 'package:get_it/get_it.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -83,7 +83,7 @@ class NotificationListPage extends ConsumerWidget {
         )..add(LoadNotificationList()), // 加载初始数据
         child: Scaffold(
           appBar: AppBar(
-            title: Text(AppLocalizations.of(context)?.notification_center_title ?? 'Notification Center'),
+            title: Text(S.of(context)?.notification_center_title ?? 'Notification Center'),
             centerTitle: true,
           ),
           body: const NotificationListContent(),
@@ -93,11 +93,11 @@ class NotificationListPage extends ConsumerWidget {
       print('Error creating NotificationListBloc: $e');
       return Scaffold(
         appBar: AppBar(
-          title: Text(AppLocalizations.of(context)?.notification_center_title ?? 'Notification Center'),
+          title: Text(S.of(context)?.notification_center_title ?? 'Notification Center'),
           centerTitle: true,
         ),
         body: Center(
-          child: Text(AppLocalizations.of(context)?.notification_load_failed(e.toString()) ?? 'Failed to load notification center: $e'),
+          child: Text(S.of(context)?.notification_load_failed(e.toString()) ?? 'Failed to load notification center: $e'),
         ),
       );
     }
@@ -168,11 +168,11 @@ class _NotificationListContentState extends State<NotificationListContent> with 
           unselectedLabelColor: Colors.grey,
           indicatorColor: Theme.of(context).primaryColor,
           tabs: [
-            Tab(text: AppLocalizations.of(context)?.notification_tab_all ?? 'All'),
-            Tab(text: AppLocalizations.of(context)?.notification_tab_order ?? 'Orders'),
-            Tab(text: AppLocalizations.of(context)?.notification_tab_system ?? 'System'),
-            Tab(text: AppLocalizations.of(context)?.notification_tab_refund ?? 'After-sales'),
-            Tab(text: AppLocalizations.of(context)?.notification_tab_message ?? 'Messages'),
+            Tab(text: S.of(context)?.notification_tab_all ?? 'All'),
+            Tab(text: S.of(context)?.notification_tab_order ?? 'Orders'),
+            Tab(text: S.of(context)?.notification_tab_system ?? 'System'),
+            Tab(text: S.of(context)?.notification_tab_refund ?? 'After-sales'),
+            Tab(text: S.of(context)?.notification_tab_message ?? 'Messages'),
           ],
         ),
         Expanded(
@@ -205,7 +205,7 @@ class _NotificationListContentState extends State<NotificationListContent> with 
                             ),
                           );
                         },
-                        child: Text(AppLocalizations.of(context)?.notification_retry ?? 'Retry'),
+                        child: Text(S.of(context)?.notification_retry ?? 'Retry'),
                       ),
                     ],
                   ),
@@ -220,7 +220,7 @@ class _NotificationListContentState extends State<NotificationListContent> with 
                 return _buildNotificationList(context, state);
               }
               
-              final l10n = AppLocalizations.of(context);
+              final l10n = S.of(context);
               return Center(child: Text(l10n?.order_delivery_load_failed ?? 'Load failed'));
             },
           ),
@@ -249,7 +249,7 @@ class _NotificationListContentState extends State<NotificationListContent> with 
   
   /// 构建空状态
   Widget _buildEmptyState(NotificationType? type) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     String message;
     if (type == null) {
       message = l10n?.notification_empty_all ?? 'No notifications';
@@ -295,7 +295,7 @@ class _NotificationListContentState extends State<NotificationListContent> with 
                 LoadNotificationList(type: type, refresh: true),
               );
             },
-            child: Text(AppLocalizations.of(context)?.notification_refresh ?? 'Refresh'),
+            child: Text(S.of(context)?.notification_refresh ?? 'Refresh'),
           ),
         ],
       ),
@@ -349,7 +349,7 @@ class _NotificationListContentState extends State<NotificationListContent> with 
     }
     
     // 处理标题和内容，确保它们不是JSON格式字符串
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     String displayTitle = notification.title;
     String displayContent = notification.content;
     
@@ -382,13 +382,13 @@ class _NotificationListContentState extends State<NotificationListContent> with 
                 // 根据通知类型跳转到相应页面
                 _navigateToRelatedPage(context, notification);
               },
-              child: Text(AppLocalizations.of(context)?.notification_detail_view ?? 'View Details'),
+              child: Text(S.of(context)?.notification_detail_view ?? 'View Details'),
             ),
           TextButton(
             onPressed: () {
               Navigator.of(dialogContext).pop();
             },
-            child: Text(AppLocalizations.of(context)?.notification_detail_close ?? 'Close'),
+            child: Text(S.of(context)?.notification_detail_close ?? 'Close'),
           ),
         ],
       ),
@@ -462,7 +462,7 @@ class _NotificationItem extends StatelessWidget {
                       Expanded(
                         child: Text(
                           notification.title.startsWith('{') 
-                            ? AppLocalizations.of(context)?.notification_default_title ?? 'Notification'
+                            ? S.of(context)?.notification_default_title ?? 'Notification'
                             : notification.title,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
@@ -484,7 +484,7 @@ class _NotificationItem extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     notification.content.startsWith('{') 
-                      ? AppLocalizations.of(context)?.notification_click_to_view ?? 'Click to view details'
+                      ? S.of(context)?.notification_click_to_view ?? 'Click to view details'
                       : notification.content,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -562,7 +562,7 @@ class _NotificationItem extends StatelessWidget {
 
   /// 格式化日期时间
   String _formatDateTime(BuildContext context, DateTime dateTime) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     final now = DateTime.now();
     final difference = now.difference(dateTime);
     

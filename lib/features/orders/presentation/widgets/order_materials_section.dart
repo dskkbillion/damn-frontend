@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart';
 import '../../domain/entities/order.dart';
 import '../../domain/entities/order_status.dart';
 import '../../domain/entities/order_materials.dart';
@@ -19,7 +19,7 @@ class OrderMaterialsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     
     return BlocBuilder<OrderDetailBloc, OrderDetailState>(
       builder: (context, state) {
@@ -118,7 +118,7 @@ class OrderMaterialsSection extends StatelessWidget {
 
   /// 构建买家材料内容
   Widget _buildBuyerMaterialsContent(BuildContext context, List<OrderMaterials>? materials) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     
     if (materials == null || materials.isEmpty) {
       return Container(
@@ -180,7 +180,7 @@ class OrderMaterialsSection extends StatelessWidget {
 
   /// 构建卖家交付内容
   Widget _buildSellerDeliveriesContent(BuildContext context, List<OrderDelivery>? deliveries) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     
     if (deliveries == null || deliveries.isEmpty) {
       return Container(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_authentication_info.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/auth_application/auth_application_bloc.dart';
 import 'package:file_picker/file_picker.dart';
@@ -86,7 +86,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
             _fieldErrors.clear();
             _fieldErrors.addAll(state.fieldErrors);
           });
-          final l10n = AppLocalizations.of(context);
+          final l10n = S.of(context);
           _showErrorSnackBar(l10n?.seller_auth_application_check_form ?? 'Please check the form');
         } else if (state is AuthApplicationFailure) {
           _showErrorSnackBar(state.message);
@@ -96,7 +96,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
       },
       child: Builder(
         builder: (innerContext) {
-          final l10n = AppLocalizations.of(innerContext);
+          final l10n = S.of(innerContext);
           return Scaffold(
             appBar: AppBar(
               title: Text(l10n?.seller_auth_application_title?.call(
@@ -131,7 +131,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
                           
                           // 上传证明材料
                           Text(
-                            AppLocalizations.of(innerContext)?.seller_auth_application_upload_materials ?? 'Upload Materials',
+                            S.of(innerContext)?.seller_auth_application_upload_materials ?? 'Upload Materials',
                             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -164,7 +164,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
                               ),
                               child: isSubmitting 
                                 ? const CircularProgressIndicator() 
-                                : Text(AppLocalizations.of(innerContext)?.seller_auth_application_submit ?? 'Submit', style: const TextStyle(fontSize: 16)),
+                                : Text(S.of(innerContext)?.seller_auth_application_submit ?? 'Submit', style: const TextStyle(fontSize: 16)),
                             ),
                           ),
                         ],
@@ -194,7 +194,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            (AppLocalizations.of(context)?.seller_auth_application_desc?.call(
+            (S.of(context)?.seller_auth_application_desc?.call(
               _getAuthenticationTypeName(_authenticationType)
             ) ?? 'Please prepare the following materials'),
             style: const TextStyle(
@@ -212,7 +212,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            AppLocalizations.of(context)?.seller_auth_application_review_time ?? 'Review time: 1-3 business days',
+            S.of(context)?.seller_auth_application_review_time ?? 'Review time: 1-3 business days',
             style: const TextStyle(
               fontSize: 14,
               color: Colors.black54,
@@ -234,7 +234,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
         children: [
           const SizedBox(height: 16),
           Text(
-            AppLocalizations.of(context)?.seller_auth_application_basic_info ?? 'Basic Information',
+            S.of(context)?.seller_auth_application_basic_info ?? 'Basic Information',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -761,7 +761,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
   
   /// 获取上传提示文字
   String _getUploadHint(AuthenticationType type) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     switch (type) {
       case AuthenticationType.idCard:
         return l10n?.seller_auth_application_id_upload_hint ?? 'Please upload ID card photos';
@@ -777,5 +777,5 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
   }
   
   /// 安全获取本地化文本
-  AppLocalizations? get _l10n => AppLocalizations.of(context);
+  S? get _l10n => S.of(context);
 } 

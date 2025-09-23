@@ -7,7 +7,7 @@ import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/phone_i
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_input_field.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_button.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/country_code.dart';
-import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart';
 
 // TODO: 需要根据 design-info/HTML原型/HTML-new/outer/login/login.html 和 RN 代码实现具体 UI
 
@@ -33,9 +33,9 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
     
     // 调试：打印当前语言环境
     print('Current locale: ${locale.languageCode}');
-    print('AppLocalizations available: ${AppLocalizations.of(context) != null}');
-    if (AppLocalizations.of(context) != null) {
-      print('auth_phone_number: ${AppLocalizations.of(context)!.auth_phone_number}');
+    print('S available: ${S.of(context) != null}');
+    if (S.of(context) != null) {
+      print('auth_phone_number: ${S.of(context)!.auth_phone_number}');
     }
   }
 

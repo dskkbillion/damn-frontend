@@ -5,7 +5,7 @@ import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/order_delivery/order_delivery_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/file_selection_widget.dart';
 import 'package:get_it/get_it.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart';
 
 /// 订单交付页面
 class OrderDeliveryPage extends StatelessWidget {
@@ -31,7 +31,7 @@ class OrderDeliveryPage extends StatelessWidget {
       create: (_) => GetIt.instance<OrderDeliveryBloc>()..add(InitOrderDelivery(orderId: orderId)),
       child: Builder(
         builder: (context) {
-          final l10n = AppLocalizations.of(context);
+          final l10n = S.of(context);
           return Scaffold(
             appBar: AppBar(
               title: Text(
@@ -74,7 +74,7 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
             SnackBar(content: Text(state.message)),
           );
         } else if (state is OrderDeliverySuccess) {
-          final l10n = AppLocalizations.of(context);
+          final l10n = S.of(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(l10n?.order_delivery_submit_success ?? 'Delivery content submitted successfully')),
           );
@@ -97,13 +97,13 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
               children: [
                 const LoadingIndicator(),
                 const SizedBox(height: 16),
-                Text(AppLocalizations.of(context)?.order_delivery_submitting ?? 'Submitting delivery content...'),
+                Text(S.of(context)?.order_delivery_submitting ?? 'Submitting delivery content...'),
               ],
             ),
           );
         }
         
-        final l10n = AppLocalizations.of(context);
+        final l10n = S.of(context);
         return Center(child: Text(l10n?.order_delivery_load_failed ?? 'Load failed, please try again'));
       },
     );
@@ -130,7 +130,7 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    AppLocalizations.of(context)?.order_delivery_instruction_title ?? 'Delivery Instructions',
+                    S.of(context)?.order_delivery_instruction_title ?? 'Delivery Instructions',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -138,7 +138,7 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    AppLocalizations.of(context)?.order_delivery_instruction_content ?? 'Please submit your delivery content for this order. You can provide detailed instructions and attach relevant files to ensure the buyer clearly understands the services or products you provide.',
+                    S.of(context)?.order_delivery_instruction_content ?? 'Please submit your delivery content for this order. You can provide detailed instructions and attach relevant files to ensure the buyer clearly understands the services or products you provide.',
                     style: const TextStyle(
                       fontSize: 14,
                       color: Colors.black87,
@@ -151,7 +151,7 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
           
           // 交付内容输入
           Text(
-            AppLocalizations.of(context)?.order_delivery_content_label ?? 'Delivery Content Description:',
+            S.of(context)?.order_delivery_content_label ?? 'Delivery Content Description:',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -161,7 +161,7 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
           TextField(
             controller: _contentController,
             decoration: InputDecoration(
-              hintText: AppLocalizations.of(context)?.order_delivery_content_hint ?? 'Please describe your delivery content...',
+              hintText: S.of(context)?.order_delivery_content_hint ?? 'Please describe your delivery content...',
               border: const OutlineInputBorder(),
             ),
             maxLines: 5,
@@ -174,7 +174,7 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
           
           // 文件上传
           Text(
-            AppLocalizations.of(context)?.order_delivery_attachments_label ?? 'Attachment Files:',
+            S.of(context)?.order_delivery_attachments_label ?? 'Attachment Files:',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -198,7 +198,7 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
             onPressed: () {
               // 验证表单
               if (_contentController.text.trim().isEmpty) {
-                final l10n = AppLocalizations.of(context);
+                final l10n = S.of(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(l10n?.order_delivery_content_required ?? 'Please enter delivery content description')),
                 );
@@ -214,7 +214,7 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
             child: Text(
-              AppLocalizations.of(context)?.order_delivery_submit_button ?? 'Submit Delivery',
+              S.of(context)?.order_delivery_submit_button ?? 'Submit Delivery',
               style: const TextStyle(fontSize: 16),
             ),
           ),

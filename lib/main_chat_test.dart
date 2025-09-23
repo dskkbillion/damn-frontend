@@ -6,7 +6,7 @@ import 'app/di/injection_container.dart';
 import 'core/constants/env_constants.dart';
 import 'core/constants/route_constants.dart';
 import 'core/services/auth_token_service.dart';
-import 'generated/app_localizations.dart';
+import 'generated/l10n.dart';
 import 'app/navigation/app_router.dart';
 
 void main() async {
@@ -39,7 +39,7 @@ class ChatTestApp extends StatelessWidget {
       ),
       locale: const Locale('zh', 'CN'),
       localizationsDelegates: const [
-        AppLocalizations.delegate,
+        S.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

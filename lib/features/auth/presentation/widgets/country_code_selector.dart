@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/country_code.dart';
-import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart';
 
 class CountryCodeSelector extends StatelessWidget {
   final CountryCode selectedCountry;
@@ -56,7 +56,7 @@ class CountryCodeSelector extends StatelessWidget {
   }
 
   void _showCountryPicker(BuildContext context) {
-    final localizations = AppLocalizations.of(context);
+    final localizations = S.of(context);
     final isChineseLocale = Localizations.localeOf(context).languageCode == 'zh';
     
     showModalBottomSheet(

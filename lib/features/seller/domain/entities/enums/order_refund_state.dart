@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/l10n.dart';
 
 /// 售后退款状态枚举
 ///
@@ -52,7 +52,7 @@ enum OrderRefundState {
   
   /// 获取用于显示的状态名称
   String displayName(BuildContext? context) {
-    final l10n = context != null ? AppLocalizations.of(context) : null;
+    final l10n = context != null ? S.of(context) : null;
     switch (this) {
       case OrderRefundState.waitAudit:
         return l10n?.after_sales_status_wait_audit ?? '待审核';
