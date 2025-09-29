@@ -51,7 +51,7 @@ class _ProfilePageState extends State<ProfilePage> {
             // 不需要重新获取，ProfileUpdated 状态已经包含最新数据
           } else if (state is ProfileAvatarUploadError) {
             // 处理头像上传失败，显示友好的错误提示，便于调试
-            final s = S.of(context);
+            final S s = S.of(context);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(s.profile_avatar_upload_failed),
@@ -64,7 +64,7 @@ class _ProfilePageState extends State<ProfilePage> {
         child: BlocBuilder<ProfileBloc, ProfileState>(
           builder: (context, state) {
             // 获取国际化资源
-            final s = S.of(context);
+            final S s = S.of(context);
             
             print('[ProfilePage] BlocBuilder received state: ${state.runtimeType}');
             
@@ -94,7 +94,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildLoginPrompt(BuildContext context) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return Scaffold(
       appBar: AppBar(
@@ -126,7 +126,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildMainContent(BuildContext context, ProfileState state) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return Scaffold(
       body: SafeArea(

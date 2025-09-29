@@ -8,7 +8,7 @@ class OrderStatusSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return Container(
       margin: const EdgeInsets.only(top: 16),
@@ -136,7 +136,7 @@ class OrderStatusSection extends StatelessWidget {
 
   void _navigateToOrders(BuildContext context, String status) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     const String basePath = '/profile/orders';
     final String pathWithQuery = '$basePath?status=$status';
@@ -154,7 +154,7 @@ class OrderStatusSection extends StatelessWidget {
 
   void _navigateToAllOrders(BuildContext context) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     const String basePath = '/profile/orders';
 

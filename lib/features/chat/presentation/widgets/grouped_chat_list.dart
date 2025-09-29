@@ -25,7 +25,7 @@ class GroupedChatList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return BlocBuilder<ChatListBloc, ChatListState>(
       builder: (context, state) {
@@ -220,7 +220,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
   
   @override
   Widget build(BuildContext context) {
-    final s = S.of(context);
+    final S s = S.of(context);
     
     // 计算总未读数
     final totalUnread = widget.group.chatRooms.fold<int>(
@@ -513,7 +513,7 @@ class ProductChatItem extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return ListTile(
       leading: chatRoom.productImage != null

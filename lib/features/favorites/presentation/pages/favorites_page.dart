@@ -139,7 +139,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
     // 读取是否显示开发tab的配置
     final showDevTab = ref.watch(showDevTabProvider);
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     // 根据配置构建导航栏项目
     final List<BottomNavigationBarItem> items = [

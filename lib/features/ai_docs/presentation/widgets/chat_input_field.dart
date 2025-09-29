@@ -52,7 +52,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
 
   @override
   Widget build(BuildContext context) {
-    final s = S.of(context); // 获取国际化资源
+    final S s = S.of(context); // 获取国际化资源
     
     // Use BlocBuilder to access the full state, including pendingImageFiles & imageUploadStates
     return BlocBuilder<AiChatBloc, AiChatState>(
@@ -359,7 +359,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
 
   // Handle voice button logic with actual recording
   void _handleVoiceButtonPress() async {
-    final s = S.of(context); // 获取国际化资源
+    final S s = S.of(context); // 获取国际化资源
     
     if (!_isRecording) {
       // --- Start Recording ---
@@ -494,7 +494,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
 
   // 添加长按操作显示Markdown示例菜单
   void _showMarkdownExampleMenu() {
-    final s = S.of(context);
+    final S s = S.of(context);
     
     showModalBottomSheet(
       context: context,

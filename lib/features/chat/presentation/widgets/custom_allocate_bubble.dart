@@ -40,7 +40,7 @@ class _CustomAllocateBubbleState extends State<CustomAllocateBubble> {
   
   // Generate title text based on sender/receiver
   String get _titleText {
-    final s = S.of(context);
+    final S s = S.of(context);
     final sellerName = widget.allocateData['sellerName'] ?? '卖家';
     
     if (widget.isCurrentUser) {
@@ -54,7 +54,7 @@ class _CustomAllocateBubbleState extends State<CustomAllocateBubble> {
   
   @override
   Widget build(BuildContext context) {
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),

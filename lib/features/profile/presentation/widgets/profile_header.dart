@@ -22,7 +22,7 @@ class ProfileHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return BlocBuilder<ProfileBloc, ProfileState>(
       builder: (context, state) {
@@ -230,7 +230,7 @@ class ProfileHeader extends ConsumerWidget {
 
   void _showEditNicknameDialog(BuildContext context, String? currentNickname) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     final textController = TextEditingController(text: currentNickname);
 

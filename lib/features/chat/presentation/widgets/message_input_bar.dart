@@ -83,7 +83,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
 
   Future<void> _startRecording() async {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     // --- Add Web Check --- 
     if (kIsWeb) {
@@ -187,7 +187,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
 
   Future<void> _stopRecordingAndSend() async {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     _recordingTimer?.cancel();
     try {
@@ -248,7 +248,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
 
   Future<void> _pickImage(ImageSource source) async {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     try {
       // Use ImageUploadHelper for consistent image processing
@@ -531,7 +531,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
     Navigator.of(context).pop();
     
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     // 使用国际化字符串构建Markdown示例
     final String markdownExample = """
@@ -569,7 +569,7 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
 
   void _showAttachmentMenu(BuildContext context) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
      
     showModalBottomSheet(
         context: context,
@@ -617,7 +617,7 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
   // Helper widget builders
   Widget _buildVoiceKeyboardButton() {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return IconButton(
       icon: Icon(_isVoiceMode ? Icons.keyboard_alt_outlined : Icons.mic_none_outlined),
@@ -635,7 +635,7 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
 
   Widget _buildTextField() {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return TextField(
       controller: _controller,
@@ -666,7 +666,7 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
 
   Widget _buildPressToTalkButton() {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     Color buttonColor = _isRecording ? Colors.red : Theme.of(context).primaryColor;
     String buttonText = _isRecording ? s.chat_release_to_send(_recordingDuration) : s.chat_press_to_talk;
@@ -710,7 +710,7 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
 
   Widget _buildAttachmentButton() {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return IconButton(
       icon: const Icon(Icons.add_circle_outline),
@@ -722,7 +722,7 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
 
   Widget _buildSendButton() {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return Visibility(
       visible: _canSend && !_isVoiceMode, // Show only if text entered and not in voice mode

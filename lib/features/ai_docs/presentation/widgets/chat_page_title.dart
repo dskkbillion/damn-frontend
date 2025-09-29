@@ -11,7 +11,7 @@ class ChatPageTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return BlocBuilder<AiChatBloc, AiChatState>(
       buildWhen: (previous, current) => 
@@ -195,7 +195,7 @@ class _TitleEditDialogState extends State<_TitleEditDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return AlertDialog(
       title: Text(s.ai_docs_edit_title),

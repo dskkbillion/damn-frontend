@@ -173,7 +173,7 @@ class ProductCard extends StatelessWidget {
   /// 构建图片组件
   Widget _buildImage(BuildContext context) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     // 检查是否有图片URL
     if (item.images.isNotEmpty) {

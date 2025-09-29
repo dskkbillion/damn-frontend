@@ -18,7 +18,7 @@ class ServiceAllocationButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return BlocBuilder<AiChatBloc, AiChatState>(
       buildWhen: (previous, current) =>

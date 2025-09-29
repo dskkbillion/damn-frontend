@@ -74,7 +74,7 @@ class _UnifiedShellPageState extends ConsumerState<UnifiedShellPage>
   @override
   Widget build(BuildContext context) {
     final mode = ref.watch(appModeProvider);
-    final s = S.of(context);
+    final S s = S.of(context);
     
     // 监听模式切换，切换到对应的分支
     ref.listen<AppMode>(appModeProvider, (previous, next) {
@@ -153,7 +153,7 @@ class _UnifiedShellPageState extends ConsumerState<UnifiedShellPage>
   
   Widget _buildSellerNavigationBar() {
     // 为卖家模式创建自定义的导航栏
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed, 

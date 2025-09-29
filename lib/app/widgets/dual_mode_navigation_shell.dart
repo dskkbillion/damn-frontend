@@ -101,7 +101,7 @@ class _DualModeNavigationShellState extends ConsumerState<DualModeNavigationShel
   Widget _buildSellerBottomNavigationBar(_SellerNavigationShellWrapper wrapper) {
     return Consumer(
       builder: (context, ref, child) {
-        final s = S.of(context);
+        final S s = S.of(context);
         
         return BottomNavigationBar(
           type: BottomNavigationBarType.fixed,

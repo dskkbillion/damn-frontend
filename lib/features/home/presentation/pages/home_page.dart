@@ -19,7 +19,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     // 注意：在预览应用中，HomeBloc 已经在上层通过 BlocProvider 提供
     return HomeView(title: s.home_title);
@@ -55,7 +55,7 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return Scaffold(
       appBar: AppBar(
@@ -296,7 +296,7 @@ class _HomeViewState extends State<HomeView> {
   /// 构建搜索栏
   Widget _buildSearchBar(BuildContext context) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return GestureDetector(
       onTap: () {

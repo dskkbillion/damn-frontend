@@ -72,7 +72,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
   // 构建底部导航栏
   Widget _buildBottomNavigationBar() {
     final showDevTab = ref.watch(showDevTabProvider);
-    final s = S.of(context);
+    final S s = S.of(context);
     
     final List<BottomNavigationBarItem> items = [
       BottomNavigationBarItem(

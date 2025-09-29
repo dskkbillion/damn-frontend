@@ -9,7 +9,7 @@ class LanguageSettingsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentLocale = ref.watch(localeProvider);
-    final s = S.of(context); // 使用S.of(context)获取当前语言的字符串
+    final S s = S.of(context); // 使用S.of(context)获取当前语言的字符串
     
     return Scaffold(
       appBar: AppBar(

@@ -117,7 +117,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
   }
 
   Future<void> _startRecording() async {
-    final s = S.of(context);
+    final S s = S.of(context);
     
     if (kIsWeb) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -205,7 +205,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
   }
 
   Future<void> _stopRecordingAndSend() async {
-    final s = S.of(context);
+    final S s = S.of(context);
 
     _recordingTimer?.cancel();
     try {
@@ -260,7 +260,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
-    final s = S.of(context);
+    final S s = S.of(context);
     
     try {
       ImageProcessResult? result;
@@ -366,7 +366,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
   }
 
   Future<void> _pickFile() async {
-    final s = S.of(context);
+    final S s = S.of(context);
     
     try {
       // 使用 FilePicker 选择文件

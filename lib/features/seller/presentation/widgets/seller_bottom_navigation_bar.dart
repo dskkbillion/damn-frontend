@@ -15,7 +15,7 @@ class SellerBottomNavigationBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed, 

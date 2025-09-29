@@ -38,7 +38,7 @@ class _ChatListItemState extends State<ChatListItem> {
   // Updated timestamp formatting based on frontend.md
   String _formatTimestamp(DateTime? timestamp) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     if (timestamp == null) return '';
     final now = DateTime.now();
@@ -64,7 +64,7 @@ class _ChatListItemState extends State<ChatListItem> {
 
   String _getLastMessagePreview(ChatMessage? message) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     if (message == null) return '';
     
@@ -108,7 +108,7 @@ class _ChatListItemState extends State<ChatListItem> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     // 获取对方信息（可能是买家或卖家）
     final opponent = widget.chatRoom.getOpponent(widget.currentUserId);

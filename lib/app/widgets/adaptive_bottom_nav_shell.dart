@@ -29,7 +29,7 @@ class AdaptiveBottomNavShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentMode = ref.watch(appModeProvider);
     final showDevTab = ref.watch(showDevTabProvider);
-    final s = S.of(context);
+    final S s = S.of(context);
     
     // 根据模式构建不同的底部导航项
     final List<BottomNavigationBarItem> items = currentMode == AppMode.buyer

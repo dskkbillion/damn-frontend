@@ -114,7 +114,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   // 添加通知中心条目构建方法
   Widget _buildNotificationItem(BuildContext context, int currentUserId) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     // 创建通知中心参与者
     final notificationParticipant = Participant(
@@ -189,7 +189,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     // 获取当前应用模式
     final currentAppMode = ref.watch(appModeProvider);
@@ -269,7 +269,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
           return BlocListener<ChatListBloc, ChatListState>(
             listener: (context, state) {
               // 获取国际化资源
-              final s = S.of(context);
+              final S s = S.of(context);
               
               if (state.navigateToChatId != null) {
                 final chatId = state.navigateToChatId!;

@@ -7,7 +7,7 @@ class AssistantMissionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return Scaffold(
       appBar: AppBar(

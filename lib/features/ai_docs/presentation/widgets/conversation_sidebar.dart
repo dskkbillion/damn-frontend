@@ -52,7 +52,7 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
 
   @override
   Widget build(BuildContext context) {
-    final s = S.of(context); // 获取国际化资源
+    final S s = S.of(context); // 获取国际化资源
     
     // Wrap the content in SafeArea to avoid status bar overlap
     return SafeArea(
@@ -115,7 +115,7 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
 
   // Helper method to build the list based on status
   Widget _buildConversationList(BuildContext context, AiChatState state) {
-     final s = S.of(context); // 获取国际化资源
+     final S s = S.of(context); // 获取国际化资源
      
      switch (state.conversationsStatus) {
        case ConversationsStatus.loading:
@@ -162,7 +162,7 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
 
   // Helper method to build the actual ListView with pagination support
   Widget _buildList(BuildContext context, List<AiConversationEntity> conversations, int? selectedId, AiChatState state) {
-    final s = S.of(context); // 获取国际化资源
+    final S s = S.of(context); // 获取国际化资源
     
     return ListView.builder(
        controller: _scrollController,
@@ -222,7 +222,7 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
 
   // Helper method to show delete confirmation dialog
   Future<void> _confirmDelete(BuildContext context, int conversationId) async {
-     final s = S.of(context); // 获取国际化资源
+     final S s = S.of(context); // 获取国际化资源
      
      final bool? confirm = await showDialog<bool>(
         context: context,

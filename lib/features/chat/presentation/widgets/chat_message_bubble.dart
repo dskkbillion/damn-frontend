@@ -462,7 +462,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
   Widget _buildMessageContent(BuildContext context, Color textColor, bool isCurrentUser, String messageContext) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     if (widget.message.type == 'text') {
        // 用GestureDetector包装Markdown组件，确保长按事件能正确触发
@@ -785,7 +785,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
    void _showActionMenu(BuildContext context, Offset tapPosition, bool isCurrentUser) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
     final List<PopupMenuEntry<String>> menuItems = [];
@@ -903,7 +903,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   // 添加一个方法用于获取allocate消息的显示名称
   String _getSellerName() {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
     

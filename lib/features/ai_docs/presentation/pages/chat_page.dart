@@ -100,7 +100,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return Scaffold(
       // Add a drawer for the conversation sidebar
@@ -204,7 +204,7 @@ class _ChatPageState extends State<ChatPage> {
 
   void _sendMessage(String message) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     // 检查消息是否为空
     if (message.trim().isNotEmpty) {
@@ -271,7 +271,7 @@ class RecommendationBottomSheetContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     // 移除不需要的BlocListener，不显示SnackBar提示
     return Container(
@@ -459,7 +459,7 @@ class ServiceGridItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     // 使用BlocBuilder来监听状态变化，确保按钮状态能被正确更新
     return BlocBuilder<AiChatBloc, AiChatState>(

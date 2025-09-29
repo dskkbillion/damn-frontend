@@ -93,7 +93,7 @@ class _ChatMessageListState extends State<ChatMessageList> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return BlocListener<AiChatBloc, AiChatState>(
       listenWhen: (previous, current) => 

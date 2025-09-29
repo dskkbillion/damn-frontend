@@ -31,7 +31,7 @@ class _AllocateMessageBubbleState extends State<AllocateMessageBubble> {
   // 根据当前用户是发送者还是接收者生成不同的标题文本
   String get _titleText {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     if (widget.isCurrentUserMessage) {
       // 当前用户是发送者（买家）
@@ -45,7 +45,7 @@ class _AllocateMessageBubbleState extends State<AllocateMessageBubble> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
