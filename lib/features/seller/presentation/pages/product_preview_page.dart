@@ -147,10 +147,23 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
         sellingPrice: tier.sellingPrice,
         editNum: tier.editNum,  // These are nullable, will be null if not set
         deliveryDay: tier.deliveryDay,  // These are nullable, will be null if not set
-        features: tier.feature.map<Map<String, dynamic>>((f) => {
-          'key': f['key'] ?? '',
-          'value': f['val'] ?? f['value'] ?? '',
-        }).toList(),
+        features: tier.feature
+            .where((f) {
+              final key = f['key']?.toString() ?? '';
+              final value = f['val']?.toString() ?? f['value']?.toString() ?? '';
+              // 过滤null值、空值和交付相关属性
+              return key.isNotEmpty &&
+                     value.isNotEmpty &&
+                     value != 'null' &&
+                     key != '交付次数' &&
+                     key != '交付周期' &&
+                     key != 'deliveryCount' &&
+                     key != 'deliveryPeriod';
+            })
+            .map<Map<String, dynamic>>((f) => {
+              'key': f['key'] ?? '',
+              'value': f['val'] ?? f['value'] ?? '',
+            }).toList(),
       );
     }).toList();
     
@@ -320,10 +333,23 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
         sellingPrice: variant.sellingPrice > 0 ? variant.sellingPrice : variant.price,
         editNum: variant.editNum,  // These are nullable, will be null if not set
         deliveryDay: variant.deliveryDay,  // These are nullable, will be null if not set
-        features: variant.feature.map<Map<String, dynamic>>((f) => {
-          'key': f['key'] ?? '',
-          'value': f['val'] ?? f['value'] ?? '',
-        }).toList(),
+        features: variant.feature
+            .where((f) {
+              final key = f['key']?.toString() ?? '';
+              final value = f['val']?.toString() ?? f['value']?.toString() ?? '';
+              // 过滤null值、空值和交付相关属性
+              return key.isNotEmpty &&
+                     value.isNotEmpty &&
+                     value != 'null' &&
+                     key != '交付次数' &&
+                     key != '交付周期' &&
+                     key != 'deliveryCount' &&
+                     key != 'deliveryPeriod';
+            })
+            .map<Map<String, dynamic>>((f) => {
+              'key': f['key'] ?? '',
+              'value': f['val'] ?? f['value'] ?? '',
+            }).toList(),
       );
     }).toList() ?? [];
     

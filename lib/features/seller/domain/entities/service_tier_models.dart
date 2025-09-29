@@ -245,12 +245,17 @@ class ServiceTierConfig {
       tier = ServiceTier.basic;
     }
     
-    // 从feature中提取属性值
+    // 从feature中提取属性值，过滤null和"null"字符串
     Map<String, String> attributeValues = {};
     for (var feature in value.feature) {
       String? key = feature['key']?.toString();
       String? val = feature['val']?.toString();
-      if (key != null && val != null) {
+
+      // 过滤null、"null"字符串、空字符串和无效值
+      if (key != null && val != null &&
+          val != 'null' && val.trim().isNotEmpty &&
+          key != '交付次数' && key != '交付周期' &&
+          key != 'deliveryCount' && key != 'deliveryPeriod') {
         attributeValues[key] = val;
       }
     }
@@ -414,12 +419,21 @@ class ProductServiceTiers {
       // 创建配置
       var config = ServiceTierConfig.fromProductOptionValue(variant);
 
-      // 修正属性值的键：从名称改为ID
+      // 修正属性值的键：从名称改为ID，过滤null值
       Map<String, String> fixedAttributeValues = {};
       int indexCounter = 0;
       for (var feature in variant.feature) {
         String key = feature['key']?.toString() ?? '';
         String val = feature['val']?.toString() ?? '';
+
+        // 跳过空值、null字符串和交付相关属性
+        if (key.isEmpty || val.isEmpty || val == 'null' ||
+            key == '交付次数' || key == '交付周期' ||
+            key == 'deliveryCount' || key == 'deliveryPeriod') {
+          indexCounter++;
+          continue;
+        }
+
         // 使用索引构建映射键
         String mapKey = '${key}_$indexCounter';
         final id = attributeNameToId[mapKey];
