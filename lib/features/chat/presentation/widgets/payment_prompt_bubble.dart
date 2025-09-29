@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 
 /// Payment prompt bubble widget for light consultation mode
 /// Shows system-style payment reminder after 5 rounds of free consultation
@@ -170,7 +171,7 @@ class PaymentPromptBubble extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    '¥${variant['price']}',
+                    RegionConfig.formatPrice(variant['price'].toDouble()),
                     style: TextStyle(
                       fontSize: isRecommended ? 18 : 16,
                       fontWeight: FontWeight.bold,
