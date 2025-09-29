@@ -12,7 +12,7 @@ import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_i
 import 'package:go_router/go_router.dart';
 import 'product_edit_page.dart'; // 导入ExtendedProductFormData
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/loading_state.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 商品预览页面 - 使用与商品详情页一致的UI
 class ProductPreviewPage extends StatefulWidget {
@@ -63,7 +63,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
     
     // Set default localized value first
     setState(() {
-      _currentUserName = S.of(context)?.product_preview_current_seller ?? 'Current Seller';
+      _currentUserName = AppLocalizations.of(context)!?.product_preview_current_seller ?? 'Current Seller';
     });
     
     try {
@@ -88,7 +88,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
               (userInfo) {
                 if (mounted) {
                   setState(() {
-                    final localizations = S.of(context);
+                    final localizations = AppLocalizations.of(context)!;
                     _currentUserName = userInfo.nickName ?? 
                         (localizations?.product_preview_seller_user ?? 'Seller User');
                   });

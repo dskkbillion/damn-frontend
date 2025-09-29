@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
 class SearchPage extends StatefulWidget {
   const SearchPage({Key? key}) : super(key: key);
@@ -143,7 +143,7 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return Scaffold(
       appBar: AppBar(
@@ -157,7 +157,7 @@ class _SearchPageState extends State<SearchPage> {
           controller: _searchController,
           autofocus: true,
           decoration: InputDecoration(
-            hintText: s.home_search_hint,
+            hintText: appLocalizations.home_search_hint,
             border: InputBorder.none,
           ),
           onSubmitted: _handleSearch,
@@ -167,7 +167,7 @@ class _SearchPageState extends State<SearchPage> {
             onPressed: () {
               _handleSearch(_searchController.text);
             },
-            child: Text(s.search_button),
+            child: Text(appLocalizations.search_button),
           ),
         ],
       ),
@@ -179,7 +179,7 @@ class _SearchPageState extends State<SearchPage> {
             // 热门搜索
             Row(
               children: [
-                Text(s.search_hot_keywords, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(appLocalizations.search_hot_keywords, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 if (_isLoading)
                   Container(
                     margin: const EdgeInsets.only(left: 8),
@@ -205,7 +205,7 @@ class _SearchPageState extends State<SearchPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(s.search_history, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(appLocalizations.search_history, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 IconButton(
                   icon: const Icon(Icons.delete_outline),
                   onPressed: _clearSearchHistory,

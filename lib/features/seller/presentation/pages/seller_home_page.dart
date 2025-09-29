@@ -7,7 +7,7 @@ import 'package:dskk_flutter_refactor/core/services/mode_transition_service.dart
 import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 
 // 导入国际化
-import '../../../../generated/l10n.dart';
+import '../../../../generated/app_localizations.dart';
 
 import '../bloc/seller_home/seller_home_bloc.dart';
 import '../bloc/seller_home/seller_home_event.dart';
@@ -73,7 +73,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
               
               if (state.hasError) {
                 return EmptyState.error(
-                  text: S.of(context).seller_home_loading_failed,
+                  text: AppLocalizations.of(context)!.seller_home_loading_failed,
                   subText: state.errorMessage,
                   onRetryPressed: () {
                     context.read<SellerHomeBloc>().add(const LoadDashboardData(forceRefresh: true));
@@ -83,7 +83,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
               
               if (state.dashboardData == null) {
                 return EmptyState.error(
-                  text: S.of(context).seller_home_no_data,
+                  text: AppLocalizations.of(context)!.seller_home_no_data,
                   onRetryPressed: () {
                     context.read<SellerHomeBloc>().add(const LoadDashboardData(forceRefresh: true));
                   },
@@ -138,7 +138,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
         child: Padding(
           padding: EdgeInsets.all(16.0),
           child: Center(
-            child: Text(S.of(context).seller_home_no_store_info),
+            child: Text(AppLocalizations.of(context)!.seller_home_no_store_info),
           ),
         ),
       );
@@ -222,7 +222,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        profile.onlineFlag! ? S.of(context).seller_home_online : S.of(context).seller_home_offline,
+                                        profile.onlineFlag! ? AppLocalizations.of(context)!.seller_home_online : AppLocalizations.of(context)!.seller_home_offline,
                                         style: const TextStyle(
                                           fontSize: 12,
                                           color: Colors.white,
@@ -256,7 +256,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                                 const Icon(Icons.check_circle_outline, color: Colors.white, size: 16),
                                 const SizedBox(width: 4),
                                 Text(
-                                  S.of(context).seller_home_completion_rate(profile.completionRate!.toStringAsFixed(1)),
+                                  AppLocalizations.of(context)!.seller_home_completion_rate(profile.completionRate!.toStringAsFixed(1)),
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 14,
@@ -303,7 +303,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.switch_account_outlined, size: 18),
-                    label: Text(S.of(context).seller_home_switch_to_buyer),
+                    label: Text(AppLocalizations.of(context)!.seller_home_switch_to_buyer),
                     onPressed: () {
                       // 使用模式切换服务触发翻转动画
                       final modeTransitionService = ref.read(modeTransitionServiceProvider);
@@ -349,7 +349,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  S.of(context).seller_home_income,
+                  AppLocalizations.of(context)!.seller_home_income,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -367,7 +367,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                   ),
                   child: Row(
                     children: [
-                      Text(S.of(context).seller_home_view_details),
+                      Text(AppLocalizations.of(context)!.seller_home_view_details),
                       const Icon(Icons.arrow_forward_ios, size: 12),
                     ],
                   ),
@@ -378,9 +378,9 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildIncomeItem(S.of(context).seller_home_total_income, PriceFormatter.format(dashboardData.income.total)),
-                _buildIncomeItem(S.of(context).seller_home_today_income, PriceFormatter.format(dashboardData.income.today)),
-                _buildIncomeItem(S.of(context).seller_home_pending_settlement, PriceFormatter.format(dashboardData.income.pending)),
+                _buildIncomeItem(AppLocalizations.of(context)!.seller_home_total_income, PriceFormatter.format(dashboardData.income.total)),
+                _buildIncomeItem(AppLocalizations.of(context)!.seller_home_today_income, PriceFormatter.format(dashboardData.income.today)),
+                _buildIncomeItem(AppLocalizations.of(context)!.seller_home_pending_settlement, PriceFormatter.format(dashboardData.income.pending)),
               ],
             ),
           ],
@@ -401,7 +401,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  S.of(context).seller_home_orders,
+                  AppLocalizations.of(context)!.seller_home_orders,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -419,7 +419,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                   ),
                   child: Row(
                     children: [
-                      Text(S.of(context).seller_home_view_all),
+                      Text(AppLocalizations.of(context)!.seller_home_view_all),
                       const Icon(Icons.arrow_forward_ios, size: 12),
                     ],
                   ),
@@ -433,28 +433,28 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                 _buildOrderStatusItem(
                   context,
                   icon: Icons.receipt_long,
-                  label: S.of(context).seller_home_orders_all,
+                  label: AppLocalizations.of(context)!.seller_home_orders_all,
                   count: dashboardData.orders.total.toString(),
                   onTap: () => context.push('/seller/orders'),
                 ),
                 _buildOrderStatusItem(
                   context,
                   icon: Icons.access_time,
-                  label: S.of(context).seller_home_orders_pending,
+                  label: AppLocalizations.of(context)!.seller_home_orders_pending,
                   count: dashboardData.orders.pending.toString(),
                   onTap: () => context.push('/seller/orders?status=awaitingStart'),
                 ),
                 _buildOrderStatusItem(
                   context,
                   icon: Icons.check_circle_outline,
-                  label: S.of(context).seller_home_orders_completed,
+                  label: AppLocalizations.of(context)!.seller_home_orders_completed,
                   count: dashboardData.orders.completed.toString(),
                   onTap: () => context.push('/seller/orders?status=orderCompleted'),
                 ),
                 _buildOrderStatusItem(
                   context,
                   icon: Icons.cancel_outlined,
-                  label: S.of(context).seller_home_orders_canceled,
+                  label: AppLocalizations.of(context)!.seller_home_orders_canceled,
                   count: dashboardData.orders.canceled.toString(),
                   onTap: () => context.push('/seller/orders?status=canceled'),
                 ),
@@ -475,7 +475,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              S.of(context).seller_home_functions,
+              AppLocalizations.of(context)!.seller_home_functions,
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -492,25 +492,25 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                 _buildFunctionItem(
                   context,
                   icon: Icons.account_balance_wallet_outlined,
-                  label: S.of(context).seller_home_wallet,
+                  label: AppLocalizations.of(context)!.seller_home_wallet,
                   onTap: () => context.goNamed('seller_wallet'),
                 ),
                 _buildFunctionItem(
                   context,
                   icon: Icons.verified_user,
-                  label: S.of(context).seller_home_auth_management,
+                  label: AppLocalizations.of(context)!.seller_home_auth_management,
                   onTap: () => context.push(SellerRoutes.authentication),
                 ),
                 _buildFunctionItem(
                   context,
                   icon: Icons.access_time,
-                  label: S.of(context).seller_home_time_management,
+                  label: AppLocalizations.of(context)!.seller_home_time_management,
                   onTap: () => context.push(SellerRoutes.timeManagement),
                 ),
                 _buildFunctionItem(
                   context,
                   icon: Icons.reply_all,
-                  label: S.of(context).seller_home_auto_reply,
+                  label: AppLocalizations.of(context)!.seller_home_auto_reply,
                   onTap: () => context.push(SellerRoutes.autoReply),
                 ),
               ],
@@ -531,7 +531,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
       return Card(
         child: Padding(
           padding: EdgeInsets.all(16.0),
-          child: Center(child: Text(S.of(context).seller_home_no_recent_income)), 
+          child: Center(child: Text(AppLocalizations.of(context)!.seller_home_no_recent_income)), 
         ),
       );
     }
@@ -549,7 +549,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              S.of(context).seller_home_recent_income,
+              AppLocalizations.of(context)!.seller_home_recent_income,
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -592,7 +592,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                           .toList(),
                     )
                   : Center(
-                      child: Text(S.of(context).seller_home_no_income_data),
+                      child: Text(AppLocalizations.of(context)!.seller_home_no_income_data),
                     ),
             ),
           ],

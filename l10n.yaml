@@ -5,3 +5,5 @@ output-class: AppLocalizations
 output-dir: lib/generated
 preferred-supported-locales: [zh, en]
 use-deferred-loading: false
+nullable-getter: false
+synthetic-package: false

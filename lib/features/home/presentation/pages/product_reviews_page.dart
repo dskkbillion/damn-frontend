@@ -5,7 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 
 // 导入国际化
-import '../../../../generated/l10n.dart';
+import '../../../../generated/app_localizations.dart';
 
 import '../../domain/entities/product_review.dart';
 import '../cubit/product_reviews_cubit.dart';

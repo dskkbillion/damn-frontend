@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:intl/intl.dart';
 
 import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
@@ -38,7 +38,7 @@ class _AfterSalesReviewPageState extends State<AfterSalesReviewPage> {
     //   child: Scaffold(
     return Builder(
       builder: (context) {
-        final l10n = S.of(context);
+        final l10n = AppLocalizations.of(context)!;
         return Scaffold(
           appBar: AppBar(
             title: Text(l10n?.after_sales_review_title ?? 'After-sales Review'),
@@ -115,7 +115,7 @@ class _AfterSalesReviewBodyState extends State<_AfterSalesReviewBody> {
         }
         
         if (state is AfterSalesReviewEmpty) {
-          final l10n = S.of(context);
+          final l10n = AppLocalizations.of(context)!;
           return EmptyState(
             icon: Icons.assignment_returned,
             text: l10n?.after_sales_no_pending ?? 'No pending after-sales requests',
@@ -126,7 +126,7 @@ class _AfterSalesReviewBodyState extends State<_AfterSalesReviewBody> {
           return _buildRefundList(context, state);
         }
         
-        final l10n = S.of(context);
+        final l10n = AppLocalizations.of(context)!;
         return Center(child: Text(l10n?.after_sales_load_failed ?? 'Load failed, please try again'));
       },
     );
@@ -198,7 +198,7 @@ class _RefundCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    '${S.of(context)?.after_sales_order_number ?? "Order Number"}: ${refund.orderSn}',
+                    '${AppLocalizations.of(context)!?.after_sales_order_number ?? "Order Number"}: ${refund.orderSn}',
                     style: textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -213,16 +213,16 @@ class _RefundCard extends StatelessWidget {
             const Divider(height: 24),
             
             // 退款信息
-            _buildInfoRow(context, S.of(context)?.after_sales_apply_type ?? 'Request Type', _getRefundTypeLabel(context, refund.type)),
+            _buildInfoRow(context, AppLocalizations.of(context)!?.after_sales_apply_type ?? 'Request Type', _getRefundTypeLabel(context, refund.type)),
             const SizedBox(height: 8),
-            _buildInfoRow(context, S.of(context)?.after_sales_apply_time ?? 'Request Time', dateFormat.format(refund.applyTime ?? DateTime.now())),
+            _buildInfoRow(context, AppLocalizations.of(context)!?.after_sales_apply_time ?? 'Request Time', dateFormat.format(refund.applyTime ?? DateTime.now())),
             const SizedBox(height: 8),
-            _buildInfoRow(context, S.of(context)?.after_sales_refund_amount ?? 'Refund Amount', '¥${refund.formattedRefundPrice.toStringAsFixed(2)}'),
+            _buildInfoRow(context, AppLocalizations.of(context)!?.after_sales_refund_amount ?? 'Refund Amount', '¥${refund.formattedRefundPrice.toStringAsFixed(2)}'),
             
             // 退款原因
             if (refund.reason != null && refund.reason!.isNotEmpty) ...[
               const SizedBox(height: 16),
-              Text('${S.of(context)?.after_sales_apply_reason ?? "Request Reason"}:', style: textTheme.titleSmall),
+              Text('${AppLocalizations.of(context)!?.after_sales_apply_reason ?? "Request Reason"}:', style: textTheme.titleSmall),
               const SizedBox(height: 4),
               Text(refund.reason ?? '无', style: textTheme.bodyMedium),
             ],
@@ -230,7 +230,7 @@ class _RefundCard extends StatelessWidget {
             // 图片证据
             if (refund.credentials.isNotEmpty) ...[
               const SizedBox(height: 16),
-              Text('${S.of(context)?.after_sales_image_evidence ?? "Image Evidence"}:', style: textTheme.titleSmall),
+              Text('${AppLocalizations.of(context)!?.after_sales_image_evidence ?? "Image Evidence"}:', style: textTheme.titleSmall),
               const SizedBox(height: 8),
               SizedBox(
                 height: 80,
@@ -276,7 +276,7 @@ class _RefundCard extends StatelessWidget {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: colorScheme.error,
                     ),
-                    child: Text(S.of(context)?.after_sales_reject ?? 'Reject'),
+                    child: Text(AppLocalizations.of(context)!?.after_sales_reject ?? 'Reject'),
                   ),
                   const SizedBox(width: 16),
                   ElevatedButton(
@@ -285,7 +285,7 @@ class _RefundCard extends StatelessWidget {
                       backgroundColor: colorScheme.primary,
                       foregroundColor: Colors.white,
                     ),
-                    child: Text(S.of(context)?.after_sales_agree ?? 'Approve'),
+                    child: Text(AppLocalizations.of(context)!?.after_sales_agree ?? 'Approve'),
                   ),
                 ],
               )
@@ -330,7 +330,7 @@ class _RefundCard extends StatelessWidget {
   
   // 获取退款类型标签
   String _getRefundTypeLabel(BuildContext context, RefundType type) {
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context)!;
     switch (type) {
       case RefundType.onlyMoney:
         return l10n?.after_sales_type_refund_only ?? 'Refund Only';
@@ -386,7 +386,7 @@ class _RefundCard extends StatelessWidget {
   
   // 显示确认对话框
   void _showConfirmDialog(BuildContext context) {
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -418,7 +418,7 @@ class _RefundCard extends StatelessWidget {
   void _showRejectDialog(BuildContext context) {
     final TextEditingController reasonController = TextEditingController();
     final formKey = GlobalKey<FormState>();
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context)!;
     
     showDialog(
       context: context,
@@ -468,7 +468,7 @@ class _RefundCard extends StatelessWidget {
   
   // 显示图片对话框
   void _showImageDialog(BuildContext context, String imageUrl) {
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (dialogContext) => Dialog(

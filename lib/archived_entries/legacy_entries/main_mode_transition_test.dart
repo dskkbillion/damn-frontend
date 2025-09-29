@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dskk_flutter_refactor/app/app.dart';
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 小帮手的使命页面
 class AssistantMissionPage extends StatelessWidget {
@@ -7,11 +7,11 @@ class AssistantMissionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return Scaffold(
       appBar: AppBar(
-        title: Text(s.profile_assistant_mission),
+        title: Text(appLocalizations.profile_assistant_mission),
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
       ),

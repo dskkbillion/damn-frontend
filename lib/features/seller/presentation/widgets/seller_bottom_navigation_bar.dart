@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/core/utils/haptic_utils.dart'; // 导入震动工具类
 // import 'package:dskk_flutter_refactor/app/app_mode.dart'; // 不再需要 AppMode
 
@@ -15,7 +15,7 @@ class SellerBottomNavigationBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed, 
@@ -23,22 +23,22 @@ class SellerBottomNavigationBar extends ConsumerWidget {
         BottomNavigationBarItem(
           icon: const Icon(Icons.analytics_outlined), 
           activeIcon: const Icon(Icons.analytics), 
-          label: s.nav_seller_analytics
+          label: appLocalizations.nav_seller_analytics
         ),
         BottomNavigationBarItem(
           icon: const Icon(Icons.inventory_2_outlined), 
           activeIcon: const Icon(Icons.inventory_2), 
-          label: s.nav_seller_products
+          label: appLocalizations.nav_seller_products
         ),
         BottomNavigationBarItem(
           icon: const Icon(Icons.chat_bubble_outline), 
           activeIcon: const Icon(Icons.chat_bubble), 
-          label: s.nav_seller_messages
+          label: appLocalizations.nav_seller_messages
         ),
         BottomNavigationBarItem(
           icon: const Icon(Icons.account_circle_outlined), 
           activeIcon: const Icon(Icons.account_circle), 
-          label: s.nav_seller_profile
+          label: appLocalizations.nav_seller_profile
         ),
       ],
       currentIndex: navigationShell.currentIndex, // <--- 直接使用 shell 的 index

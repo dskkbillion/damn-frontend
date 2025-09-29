@@ -8,7 +8,7 @@ import 'package:path/path.dart' as p;
 import 'package:get_it/get_it.dart'; // Import GetIt
 import 'package:collection/collection.dart'; // Import collection package
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 添加FlutterSecureStorage导入
-import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
 // Import Bloc and State/Event files
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/bloc/ai_chat/ai_chat_bloc.dart'; // Use package import
@@ -100,7 +100,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return Scaffold(
       // Add a drawer for the conversation sidebar
@@ -114,7 +114,7 @@ class _ChatPageState extends State<ChatPage> {
          leading: Builder(
            builder: (context) => IconButton(
              icon: const Icon(Icons.menu),
-             tooltip: s.ai_docs_conversation_list, // 使用国际化文本
+             tooltip: appLocalizations.ai_docs_conversation_list, // 使用国际化文本
              onPressed: () => Scaffold.of(context).openDrawer(),
            ),
          ),
@@ -143,7 +143,7 @@ class _ChatPageState extends State<ChatPage> {
                   } else {
                      // Optionally show a message if no conversation is selected
                      ScaffoldMessenger.of(context).showSnackBar(
-                       SnackBar(content: Text(s.ai_docs_select_conversation_first)), // 使用国际化文本
+                       SnackBar(content: Text(appLocalizations.ai_docs_select_conversation_first)), // 使用国际化文本
                      );
                      return; // Don't show bottom sheet if no conversation
                   }
@@ -151,7 +151,7 @@ class _ChatPageState extends State<ChatPage> {
                   _showRecommendationsBottomSheet(context);
                },
                child: Text(
-                  s.ai_docs_match_button, // 使用国际化文本
+                  appLocalizations.ai_docs_match_button, // 使用国际化文本
                   style: const TextStyle(
                      fontWeight: FontWeight.bold, // Make text bold
                      fontSize: 16, // Adjust font size if needed
@@ -204,7 +204,7 @@ class _ChatPageState extends State<ChatPage> {
 
   void _sendMessage(String message) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     // 检查消息是否为空
     if (message.trim().isNotEmpty) {
@@ -215,7 +215,7 @@ class _ChatPageState extends State<ChatPage> {
       // 检查是否已选择对话，如果没有选择，先创建新对话
       if (currentState.selectedConversationId == null) {
         // 先创建新对话，再发送消息
-        print("[ChatPage] ${s.ai_docs_auto_create_text}");
+        print("[ChatPage] ${appLocalizations.ai_docs_auto_create_text}");
         aiChatBloc.add(CreateNewConversationAndSendMessage(message: message.trim()));
       } else {
         // 已有对话，直接发送消息
@@ -229,7 +229,7 @@ class _ChatPageState extends State<ChatPage> {
       // 消息为空，显示提示
       print("Send button pressed, but message text is empty. Not sending.");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(s.ai_docs_please_enter_message)), // 使用国际化文本
+        SnackBar(content: Text(appLocalizations.ai_docs_please_enter_message)), // 使用国际化文本
       );
     }
   }
@@ -271,7 +271,7 @@ class RecommendationBottomSheetContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     // 移除不需要的BlocListener，不显示SnackBar提示
     return Container(
@@ -290,7 +290,7 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-                    s.ai_docs_recommended_services, // 使用国际化文本
+                    appLocalizations.ai_docs_recommended_services, // 使用国际化文本
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -328,7 +328,7 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                           const Icon(Icons.error_outline, color: Colors.red, size: 48),
                           const SizedBox(height: 16),
                           Text(
-                            s.ai_docs_recommendations_error(state.recommendationsErrorMessage ?? ''), // 使用国际化文本
+                            appLocalizations.ai_docs_recommendations_error(state.recommendationsErrorMessage ?? ''), // 使用国际化文本
                             style: const TextStyle(color: Colors.red),
                             textAlign: TextAlign.center,
                           ),
@@ -345,7 +345,7 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                         children: [
                           const Icon(Icons.inbox, color: Colors.grey, size: 48),
                           const SizedBox(height: 16),
-                          Text(s.ai_docs_no_recommendations, style: const TextStyle(color: Colors.grey)), // 使用国际化文本
+                          Text(appLocalizations.ai_docs_no_recommendations, style: const TextStyle(color: Colors.grey)), // 使用国际化文本
                         ],
                       ),
                     );
@@ -459,7 +459,7 @@ class ServiceGridItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     // 使用BlocBuilder来监听状态变化，确保按钮状态能被正确更新
     return BlocBuilder<AiChatBloc, AiChatState>(

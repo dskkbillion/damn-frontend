@@ -6,7 +6,7 @@ import 'package:dskk_flutter_refactor/core/config/theme/app_theme.dart';
 import 'package:dskk_flutter_refactor/core/widgets/global_message_notification.dart'; // 导入全局消息通知组件
 import 'package:dskk_flutter_refactor/core/widgets/mode_flip_transition_overlay.dart'; // 导入翻转动画覆盖层
 import 'package:dskk_flutter_refactor/core/config/locale_provider.dart'; // 导入语言提供者
-import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入生成的国际化类
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入生成的国际化类
 
 // Remove direct import of MainShellPage, navigation is handled by router
 // import 'package:dskk_flutter_refactor/app/widgets/main_shell_page.dart';
@@ -41,8 +41,7 @@ class MyApp extends ConsumerWidget { // Changed to ConsumerWidget
 
         // 添加国际化配置
         localizationsDelegates: const [
-          S.delegate, // 使用S.delegate
-          S.delegate, // 保留旧的S.delegate以兼容
+          AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,

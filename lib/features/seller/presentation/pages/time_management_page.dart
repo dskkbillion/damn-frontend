@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart'; // Import GetIt
 import 'package:go_router/go_router.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/time_settings.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/time_management/time_management_bloc.dart';
@@ -30,7 +30,7 @@ class TimeManagementPage extends StatelessWidget {
       child: Builder(
         builder: (context) => Scaffold(
           appBar: AppBar(
-            title: Text(S.of(context)?.time_management_title ?? 'Time Management'),
+            title: Text(AppLocalizations.of(context)!?.time_management_title ?? 'Time Management'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
@@ -98,13 +98,13 @@ class TimeManagementBody extends StatelessWidget {
              child: Column(
                mainAxisAlignment: MainAxisAlignment.center,
                children: [
-                 Text(S.of(context)?.time_management_load_failed ?? 'Load Failed'),
+                 Text(AppLocalizations.of(context)!?.time_management_load_failed ?? 'Load Failed'),
                  const SizedBox(height: 8),
                  Text(state.message, style: const TextStyle(color: Colors.red)),
                  const SizedBox(height: 16),
                  ElevatedButton(
                    onPressed: () => context.read<TimeManagementBloc>().add(LoadTimeSettings()),
-                   child: Text(S.of(context)?.time_management_retry ?? 'Retry'),
+                   child: Text(AppLocalizations.of(context)!?.time_management_retry ?? 'Retry'),
                  )
                ],
              ),
@@ -112,7 +112,7 @@ class TimeManagementBody extends StatelessWidget {
         }
 
         // Fallback for any other unhandled state
-        return Center(child: Text(S.of(context)?.time_management_unknown_status ?? 'Unknown Status'));
+        return Center(child: Text(AppLocalizations.of(context)!?.time_management_unknown_status ?? 'Unknown Status'));
       },
     );
   }
@@ -154,7 +154,7 @@ class TimeManagementBody extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              S.of(context)?.time_management_current_status ?? 'Current Status',
+              AppLocalizations.of(context)!?.time_management_current_status ?? 'Current Status',
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
@@ -164,8 +164,8 @@ class TimeManagementBody extends StatelessWidget {
               children: [
                 Text(
                   settings.isOnline 
-                    ? (S.of(context)?.time_management_online ?? 'Online')
-                    : (S.of(context)?.time_management_offline ?? 'Offline'),
+                    ? (AppLocalizations.of(context)!?.time_management_online ?? 'Online')
+                    : (AppLocalizations.of(context)!?.time_management_offline ?? 'Offline'),
                   style: TextStyle(
                     color: settings.isOnline ? Colors.green : Colors.grey,
                     fontSize: 14,
@@ -204,8 +204,8 @@ class TimeManagementBody extends StatelessWidget {
           children: [
             Text(
               isOnline 
-                ? (S.of(context)?.time_management_online_status_description ?? 'Online Status Description')
-                : (S.of(context)?.time_management_offline_status_description ?? 'Offline Status Description'),
+                ? (AppLocalizations.of(context)!?.time_management_online_status_description ?? 'Online Status Description')
+                : (AppLocalizations.of(context)!?.time_management_offline_status_description ?? 'Offline Status Description'),
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -214,8 +214,8 @@ class TimeManagementBody extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               isOnline 
-                  ? (S.of(context)?.time_management_online_description ?? 'You are currently online. Buyers can send you messages and you will receive notifications for new messages. Please ensure timely responses to buyer messages as maintaining a good response rate helps improve your service quality rating.')
-                  : (S.of(context)?.time_management_offline_description ?? 'You are currently offline. Buyers can still send you messages but the system will inform them that you are temporarily unavailable. You will still receive notifications for new messages but may not be able to respond immediately. Staying offline for extended periods may affect your order efficiency.'),
+                  ? (AppLocalizations.of(context)!?.time_management_online_description ?? 'You are currently online. Buyers can send you messages and you will receive notifications for new messages. Please ensure timely responses to buyer messages as maintaining a good response rate helps improve your service quality rating.')
+                  : (AppLocalizations.of(context)!?.time_management_offline_description ?? 'You are currently offline. Buyers can still send you messages but the system will inform them that you are temporarily unavailable. You will still receive notifications for new messages but may not be able to respond immediately. Staying offline for extended periods may affect your order efficiency.'),
               style: const TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
@@ -238,7 +238,7 @@ class TimeManagementBody extends StatelessWidget {
           // Dispatch Save event using the context with Bloc access
           // 显示保存成功提示
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(S.of(context)?.time_management_settings_saved ?? 'Settings Saved')),
+            SnackBar(content: Text(AppLocalizations.of(context)!?.time_management_settings_saved ?? 'Settings Saved')),
           );
         },
         style: ElevatedButton.styleFrom(
@@ -253,7 +253,7 @@ class TimeManagementBody extends StatelessWidget {
                 width: 20,
                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
               )
-            : Text(S.of(context)?.time_management_save_settings ?? 'Save Settings'),
+            : Text(AppLocalizations.of(context)!?.time_management_save_settings ?? 'Save Settings'),
       ),
     );
   }

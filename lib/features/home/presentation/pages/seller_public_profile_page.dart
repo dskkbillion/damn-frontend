@@ -8,7 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 // 导入国际化
-import '../../../../generated/l10n.dart';
+import '../../../../generated/app_localizations.dart';
 // 导入配置
 import '../../../../app/navigation/app_router_config.dart';
 // 导入震动工具类
@@ -72,7 +72,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
   // 构建底部导航栏
   Widget _buildBottomNavigationBar() {
     final showDevTab = ref.watch(showDevTabProvider);
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     final List<BottomNavigationBarItem> items = [
       BottomNavigationBarItem(
@@ -88,22 +88,22 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
           height: 24,
           colorFilter: ColorFilter.mode(const Color(0xFFD0903D), BlendMode.srcIn),
         ),
-        label: s.nav_ai_assistant,
+        label: appLocalizations.nav_ai_assistant,
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.home_outlined),
         activeIcon: const Icon(Icons.home),
-        label: s.nav_home,
+        label: appLocalizations.nav_home,
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.chat_bubble_outline),
         activeIcon: const Icon(Icons.chat_bubble),
-        label: s.nav_messages,
+        label: appLocalizations.nav_messages,
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.person_outline),
         activeIcon: const Icon(Icons.person),
-        label: s.nav_profile,
+        label: appLocalizations.nav_profile,
       ),
     ];
     
@@ -111,7 +111,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
       items.add(BottomNavigationBarItem(
         icon: const Icon(Icons.developer_mode_outlined),
         activeIcon: const Icon(Icons.developer_mode),
-        label: s.nav_dev,
+        label: appLocalizations.nav_dev,
       ));
     }
 
@@ -168,14 +168,14 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(S.of(context).product_detail_loading_failed(state.message)),
+                    Text(AppLocalizations.of(context)!.product_detail_loading_failed(state.message)),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
                         context.read<SellerProfileBloc>()
                           ..add(LoadSellerProducts(sellerId: widget.sellerId));
                       },
-                      child: Text(S.of(context).product_detail_retry),
+                      child: Text(AppLocalizations.of(context)!.product_detail_retry),
                     ),
                   ],
                 ),
@@ -183,7 +183,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
             } else if (state is SellerProfileLoaded) {
               return _buildSellerProfile(context, state);
             }
-            return Center(child: Text(S.of(context).product_detail_please_wait));
+            return Center(child: Text(AppLocalizations.of(context)!.product_detail_please_wait));
           },
           ),
         ),
@@ -222,7 +222,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                     ),
                     Expanded(
                       child: Text(
-                        seller?.nickName ?? S.of(context).seller_profile_default_title,
+                        seller?.nickName ?? AppLocalizations.of(context)!.seller_profile_default_title,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
@@ -267,7 +267,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            seller?.nickName ?? S.of(context).seller_profile_seller,
+                            seller?.nickName ?? AppLocalizations.of(context)!.seller_profile_seller,
                             style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
@@ -276,7 +276,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                           const SizedBox(height: 4),
                           // 显示真实的粉丝数量
                           Text(
-                            S.of(context).seller_profile_followers(seller?.fansCount ?? 0),
+                            AppLocalizations.of(context)!.seller_profile_followers(seller?.fansCount ?? 0),
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[600],
@@ -284,7 +284,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            seller?.remarks ?? S.of(context).seller_profile_no_description,
+                            seller?.remarks ?? AppLocalizations.of(context)!.seller_profile_no_description,
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[800],
@@ -313,7 +313,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                           ? Colors.black 
                           : Colors.white,
                     ),
-                    child: Text(seller?.memberAttention == true ? S.of(context).seller_profile_followed : S.of(context).seller_profile_follow),
+                    child: Text(seller?.memberAttention == true ? AppLocalizations.of(context)!.seller_profile_followed : AppLocalizations.of(context)!.seller_profile_follow),
                   ),
                 ),
                 
@@ -323,8 +323,8 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                 TabBar(
                   controller: _tabController,
                   tabs: [
-                    Tab(text: S.of(context).seller_profile_about_merchant),
-                    Tab(text: S.of(context).seller_profile_my_services),
+                    Tab(text: AppLocalizations.of(context)!.seller_profile_about_merchant),
+                    Tab(text: AppLocalizations.of(context)!.seller_profile_my_services),
                   ],
                   labelColor: Colors.amber[800],
                   unselectedLabelColor: Colors.grey,
@@ -356,15 +356,15 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
 
   Widget _buildAboutSeller(SellerInfo? seller) {
     if (seller == null) {
-      return Center(child: Text(S.of(context).seller_profile_no_merchant_info));
+      return Center(child: Text(AppLocalizations.of(context)!.seller_profile_no_merchant_info));
     }
     
     return ListView(
       children: [
-        _buildInfoItem(S.of(context).seller_profile_member_level, S.of(context).seller_profile_level_two, Icons.grade),
-        _buildInfoItem(S.of(context).seller_profile_seller_rating, '5.0', Icons.star),
-        _buildInfoItem(S.of(context).seller_profile_response_time, S.of(context).seller_profile_response_hours, Icons.access_time),
-        _buildInfoItem(S.of(context).seller_profile_certification_status, seller.trueName != null ? S.of(context).seller_profile_certified : S.of(context).seller_profile_not_certified, Icons.verified_user),
+        _buildInfoItem(AppLocalizations.of(context)!.seller_profile_member_level, AppLocalizations.of(context)!.seller_profile_level_two, Icons.grade),
+        _buildInfoItem(AppLocalizations.of(context)!.seller_profile_seller_rating, '5.0', Icons.star),
+        _buildInfoItem(AppLocalizations.of(context)!.seller_profile_response_time, AppLocalizations.of(context)!.seller_profile_response_hours, Icons.access_time),
+        _buildInfoItem(AppLocalizations.of(context)!.seller_profile_certification_status, seller.trueName != null ? AppLocalizations.of(context)!.seller_profile_certified : AppLocalizations.of(context)!.seller_profile_not_certified, Icons.verified_user),
       ],
     );
   }
@@ -411,7 +411,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
   // 新的商品网格布局，使用MasonryGridView
   Widget _buildProductsGrid(List<SellerProduct> products) {
     if (products.isEmpty) {
-      return Center(child: Text(S.of(context).seller_profile_no_products));
+      return Center(child: Text(AppLocalizations.of(context)!.seller_profile_no_products));
     }
     
     return MasonryGridView.count(
@@ -553,7 +553,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  S.of(context).seller_profile_image_load_failed,
+                  AppLocalizations.of(context)!.seller_profile_image_load_failed,
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontWeight: FontWeight.bold,
@@ -582,7 +582,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
               ),
               const SizedBox(height: 8),
               Text(
-                product.name.isNotEmpty ? product.name.substring(0, product.name.length > 10 ? 10 : product.name.length) : S.of(context).seller_profile_no_image,
+                product.name.isNotEmpty ? product.name.substring(0, product.name.length > 10 ? 10 : product.name.length) : AppLocalizations.of(context)!.seller_profile_no_image,
                 style: TextStyle(
                   color: Colors.grey[600],
                   fontWeight: FontWeight.bold,

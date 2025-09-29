@@ -3,7 +3,7 @@ import 'dart:convert'; // For JSON parsing
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 
 import '../../domain/entities/chat_room.dart';
@@ -25,7 +25,7 @@ class GroupedChatList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return BlocBuilder<ChatListBloc, ChatListState>(
       builder: (context, state) {
@@ -220,7 +220,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
   
   @override
   Widget build(BuildContext context) {
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     // 计算总未读数
     final totalUnread = widget.group.chatRooms.fold<int>(
@@ -513,7 +513,7 @@ class ProductChatItem extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return ListTile(
       leading: chatRoom.productImage != null

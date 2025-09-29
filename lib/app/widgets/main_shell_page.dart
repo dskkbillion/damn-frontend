@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart'; // 导入SVG插件
 import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/core/utils/haptic_utils.dart'; // 导入震动工具类
 
 /// 主壳页面，支持可配置的开发tab
@@ -27,7 +27,7 @@ class MainShellPage extends ConsumerWidget {
     // 读取是否显示开发tab的配置
     final showDevTab = ref.watch(showDevTabProvider);
     // 获取国际化资源 - 确保非空
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
 
     // 根据配置构建导航栏项目
     final List<BottomNavigationBarItem> items = [
@@ -44,22 +44,22 @@ class MainShellPage extends ConsumerWidget {
           height: 24,
           colorFilter: ColorFilter.mode(const Color(0xFFD0903D), BlendMode.srcIn),
         ),
-        label: s.nav_ai_assistant,
+        label: appLocalizations.nav_ai_assistant,
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.home_outlined),
         activeIcon: const Icon(Icons.home),
-        label: s.nav_home,
+        label: appLocalizations.nav_home,
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.chat_bubble_outline),
         activeIcon: const Icon(Icons.chat_bubble),
-        label: s.nav_messages,
+        label: appLocalizations.nav_messages,
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.person_outline),
         activeIcon: const Icon(Icons.person),
-        label: s.nav_profile,
+        label: appLocalizations.nav_profile,
       ),
     ];
     
@@ -68,7 +68,7 @@ class MainShellPage extends ConsumerWidget {
       items.add(BottomNavigationBarItem(
         icon: const Icon(Icons.developer_mode_outlined),
         activeIcon: const Icon(Icons.developer_mode),
-        label: s.nav_dev,
+        label: appLocalizations.nav_dev,
       ));
     }
 

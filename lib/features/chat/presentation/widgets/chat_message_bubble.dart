@@ -9,7 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
 import 'package:flutter_markdown/flutter_markdown.dart'; // 导入Markdown渲染包
 import 'package:url_launcher/url_launcher.dart'; // 导入URL处理包
-import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
 import '../../domain/entities/chat_message.dart';
 import '../bloc/chat_messages/chat_messages_bloc.dart'; // Import ChatMessagesBloc
@@ -462,7 +462,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
   Widget _buildMessageContent(BuildContext context, Color textColor, bool isCurrentUser, String messageContext) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     if (widget.message.type == 'text') {
        // 用GestureDetector包装Markdown组件，确保长按事件能正确触发
@@ -513,7 +513,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
        return Text(messageContext, style: TextStyle(color: textColor, fontSize: 15));
      } else {
        // Keep handling for unsupported types
-       return Text('[${S.of(context).chat_unknown_message}: ${widget.message.type}]', style: TextStyle(color: Colors.red));
+       return Text('[${AppLocalizations.of(context)!.chat_unknown_message}: ${widget.message.type}]', style: TextStyle(color: Colors.red));
      }
   }
 
@@ -785,14 +785,14 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
    void _showActionMenu(BuildContext context, Offset tapPosition, bool isCurrentUser) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
     final List<PopupMenuEntry<String>> menuItems = [];
 
     // 文本消息支持复制
     if (widget.message.type == 'text') {
-        menuItems.add(PopupMenuItem<String>(value: 'copy', child: Text(s.chat_copy)));
+        menuItems.add(PopupMenuItem<String>(value: 'copy', child: Text(appLocalizations.chat_copy)));
     }
 
     // 当前用户的消息支持撤回（包括文本和图片）
@@ -804,7 +804,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
             // 可以撤回：显示正常的撤回选项
             menuItems.add(PopupMenuItem<String>(
                 value: 'revoke', 
-                child: Text(s.chat_recall)
+                child: Text(appLocalizations.chat_recall)
             ));
     }
         // 注意：超过2分钟的消息不显示任何撤回选项
@@ -840,7 +840,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
             case 'copy':
                 Clipboard.setData(ClipboardData(text: widget.message.context));
                 ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(s.chat_copied_to_clipboard)),
+                    SnackBar(content: Text(appLocalizations.chat_copied_to_clipboard)),
                 );
                 break;
             case 'revoke':
@@ -903,13 +903,13 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   // 添加一个方法用于获取allocate消息的显示名称
   String _getSellerName() {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
     
     // 如果当前用户是消息发送者（买家），显示"我"
     if (isCurrentUser) {
-      return s.chat_me;
+      return appLocalizations.chat_me;
     }
     
     // 如果当前用户是消息接收者（卖家），显示对方名称（买家）
@@ -918,7 +918,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     }
     
     // 如果无法获取对方名称，返回默认值
-    return s.chat_buyer;
+    return appLocalizations.chat_buyer;
   }
   
   // 检查是否为付费提示消息

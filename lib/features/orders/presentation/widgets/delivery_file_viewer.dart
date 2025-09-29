@@ -8,7 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 交付文件查看器组件
 class DeliveryFileViewer extends StatefulWidget {
@@ -147,7 +147,7 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
 
   // 下载文件
   Future<void> _downloadFile() async {
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context)!;
     
     // 请求存储权限
     if (Platform.isAndroid) {
@@ -218,7 +218,7 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
 
   // 打开文件
   Future<void> _openFile() async {
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context)!;
     
     if (_localPath != null) {
       final result = await OpenFile.open(_localPath!);
@@ -278,7 +278,7 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final fileType = _getFileType();
     
     return Card(
@@ -462,7 +462,7 @@ class _PdfPreviewPageState extends State<PdfPreviewPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context)!;
     
     return Scaffold(
       appBar: AppBar(

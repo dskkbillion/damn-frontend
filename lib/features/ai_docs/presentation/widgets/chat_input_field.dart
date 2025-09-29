@@ -6,7 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart'; // Import the record package
 import 'package:permission_handler/permission_handler.dart'; // Import permission_handler
 import 'package:image_picker/image_picker.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 
 import '../bloc/ai_chat/ai_chat_bloc.dart';
@@ -52,7 +52,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
 
   @override
   Widget build(BuildContext context) {
-    final S s = S.of(context); // 获取国际化资源
+    final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
     
     // Use BlocBuilder to access the full state, including pendingImageFiles & imageUploadStates
     return BlocBuilder<AiChatBloc, AiChatState>(
@@ -129,7 +129,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                         icon: const Icon(Icons.add_photo_alternate_outlined),
                         // Use internal method _pickAndDispatchImage
                         onPressed: isBusy || _isRecording ? null : _pickAndDispatchImage, 
-                        tooltip: s.ai_docs_add_image, // 使用国际化文本
+                        tooltip: appLocalizations.ai_docs_add_image, // 使用国际化文本
                       ),
                       // Attach Voice Button (Stateful)
                       PulsatingMicButton(
@@ -144,7 +144,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                           controller: widget.textController,
                           enabled: !isBusy && !_isRecording, 
                           decoration: InputDecoration(
-                            hintText: _isRecording ? s.ai_docs_recording : s.ai_docs_enter_message, // 使用国际化文本
+                            hintText: _isRecording ? appLocalizations.ai_docs_recording : appLocalizations.ai_docs_enter_message, // 使用国际化文本
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(24.0),
                               borderSide: BorderSide.none,
@@ -171,8 +171,8 @@ class _ChatInputFieldState extends State<ChatInputField> {
                                   )
                                 : const Icon(Icons.stop_circle, color: Colors.red),
                             tooltip: isCancelling 
-                                ? s.ai_docs_cancelling_generation
-                                : s.ai_docs_stop_generation, // 使用国际化文本
+                                ? appLocalizations.ai_docs_cancelling_generation
+                                : appLocalizations.ai_docs_stop_generation, // 使用国际化文本
                             onPressed: isCancelling 
                                 ? null // 取消中时禁用按钮
                                 : () {
@@ -190,7 +190,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                                              if (isAnyImageUploading) {
                                                 // Show feedback and DO NOT send
                                                 ScaffoldMessenger.of(context).showSnackBar(
-                                                   SnackBar(content: Text(s.ai_docs_uploading_images)), // 使用国际化文本
+                                                   SnackBar(content: Text(appLocalizations.ai_docs_uploading_images)), // 使用国际化文本
                                                  );
                                              } else {
                                                 // No uploads in progress, proceed to send
@@ -200,7 +200,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                                          : null,
                             // 添加长按操作显示Markdown示例菜单
                             onLongPress: isBusy ? null : _showMarkdownExampleMenu,
-                            tooltip: s.ai_docs_send_message, // 使用国际化文本
+                            tooltip: appLocalizations.ai_docs_send_message, // 使用国际化文本
                           ),
                     ],
                   ),
@@ -359,7 +359,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
 
   // Handle voice button logic with actual recording
   void _handleVoiceButtonPress() async {
-    final S s = S.of(context); // 获取国际化资源
+    final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
     
     if (!_isRecording) {
       // --- Start Recording ---
@@ -372,7 +372,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
          if (!status.isGranted) {
             if (mounted) {
                ScaffoldMessenger.of(context).showSnackBar(
-                 SnackBar(content: Text(s.ai_docs_mic_permission_denied)), // 使用国际化文本
+                 SnackBar(content: Text(appLocalizations.ai_docs_mic_permission_denied)), // 使用国际化文本
                );
             }
             return; // Stop if permission is not granted
@@ -412,7 +412,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
          print("Error starting recording: $e");
          if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(s.ai_docs_recording_error(e.toString()))), // 使用国际化文本
+              SnackBar(content: Text(appLocalizations.ai_docs_recording_error(e.toString()))), // 使用国际化文本
             );
          }
       }
@@ -448,7 +448,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                    // 检查是否已选择对话，如果没有选择，先创建新对话
                    if (currentState.selectedConversationId == null) {
                      // 先创建新对话，再发送语音消息
-                     print("[ChatInputField] ${s.ai_docs_auto_create_voice}");
+                     print("[ChatInputField] ${appLocalizations.ai_docs_auto_create_voice}");
                      aiChatBloc.add(CreateNewConversationAndSendVoiceMessage(audioFile: recordedFile));
                    } else {
                      // 已有对话，直接发送语音消息
@@ -459,7 +459,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                print("Error: Recorded file not found at path: $path");
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(s.ai_docs_recording_file_not_found)), // 使用国际化文本
+                    SnackBar(content: Text(appLocalizations.ai_docs_recording_file_not_found)), // 使用国际化文本
                   );
                }
              }
@@ -467,7 +467,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
             print("Error: Stopping recording failed, path is null.");
             if (mounted) {
                ScaffoldMessenger.of(context).showSnackBar(
-                 SnackBar(content: Text(s.ai_docs_stop_recording_error)), // 使用国际化文本
+                 SnackBar(content: Text(appLocalizations.ai_docs_stop_recording_error)), // 使用国际化文本
                );
             }
          }
@@ -475,7 +475,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
          print("Error stopping recording: $e");
          if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(s.ai_docs_stop_recording_error_with_reason(e.toString()))), // 使用国际化文本
+              SnackBar(content: Text(appLocalizations.ai_docs_stop_recording_error_with_reason(e.toString()))), // 使用国际化文本
             );
          }
           // Ensure recording state is reset even if stopping fails
@@ -494,7 +494,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
 
   // 添加长按操作显示Markdown示例菜单
   void _showMarkdownExampleMenu() {
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     showModalBottomSheet(
       context: context,

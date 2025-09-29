@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
 import '../bloc/profile_bloc.dart';
 import '../../domain/entities/user_profile.dart';
@@ -22,7 +22,7 @@ class ProfileHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return BlocBuilder<ProfileBloc, ProfileState>(
       builder: (context, state) {
@@ -81,11 +81,11 @@ class ProfileHeader extends ConsumerWidget {
                   children: [
                     _buildAvatar(context, profile, state, pendingAvatarUrl),
                     const SizedBox(width: 16),
-                    _buildNameAndStatus(context, profile, s),
+                    _buildNameAndStatus(context, profile, appLocalizations),
                   ],
                 ),
                 const SizedBox(height: 16),
-                _buildSwitchToSellerButton(context, ref, s),
+                _buildSwitchToSellerButton(context, ref, appLocalizations),
               ],
             ),
           ),
@@ -145,7 +145,7 @@ class ProfileHeader extends ConsumerWidget {
     );
   }
 
-  Widget _buildNameAndStatus(BuildContext context, UserProfile? profile, S s) {
+  Widget _buildNameAndStatus(BuildContext context, UserProfile? profile, AppLocalizations appLocalizations) {
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,7 +153,7 @@ class ProfileHeader extends ConsumerWidget {
           InkWell(
             onTap: () => _showEditNicknameDialog(context, profile?.nickName),
             child: Text(
-              profile?.nickName ?? s.profile_default_name,
+              profile?.nickName ?? appLocalizations.profile_default_name,
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -183,7 +183,7 @@ class ProfileHeader extends ConsumerWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                profile?.onlineFlag == true ? s.profile_online : s.profile_offline,
+                profile?.onlineFlag == true ? appLocalizations.profile_online : appLocalizations.profile_offline,
                 style: TextStyle(
                   fontSize: 13,
                   color: Colors.white.withOpacity(0.9),
@@ -196,12 +196,12 @@ class ProfileHeader extends ConsumerWidget {
     );
   }
 
-  Widget _buildSwitchToSellerButton(BuildContext context, WidgetRef ref, S s) {
+  Widget _buildSwitchToSellerButton(BuildContext context, WidgetRef ref, AppLocalizations appLocalizations) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
         icon: const Icon(Icons.storefront_outlined, size: 18),
-        label: Text(s.profile_switch_to_seller),
+        label: Text(appLocalizations.profile_switch_to_seller),
         onPressed: () {
           // 使用模式切换服务触发翻转动画
           final modeTransitionService = ref.read(modeTransitionServiceProvider);
@@ -230,25 +230,25 @@ class ProfileHeader extends ConsumerWidget {
 
   void _showEditNicknameDialog(BuildContext context, String? currentNickname) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     final textController = TextEditingController(text: currentNickname);
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(s.profile_edit_nickname),
+        title: Text(appLocalizations.profile_edit_nickname),
         content: TextField(
           controller: textController,
           decoration: InputDecoration(
-            hintText: s.profile_nickname_hint,
+            hintText: appLocalizations.profile_nickname_hint,
           ),
           maxLength: 20,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(s.profile_cancel),
+            child: Text(appLocalizations.profile_cancel),
           ),
           TextButton(
             onPressed: () {
@@ -260,7 +260,7 @@ class ProfileHeader extends ConsumerWidget {
               }
               Navigator.pop(context);
             },
-            child: Text(s.profile_save),
+            child: Text(appLocalizations.profile_save),
           ),
         ],
       ),

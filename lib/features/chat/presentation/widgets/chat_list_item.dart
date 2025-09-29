@@ -4,7 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:intl/date_symbol_data_local.dart'; // Import for initializing locale data
-import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 
 import '../../domain/entities/chat_message.dart';
@@ -38,7 +38,7 @@ class _ChatListItemState extends State<ChatListItem> {
   // Updated timestamp formatting based on frontend.md
   String _formatTimestamp(DateTime? timestamp) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     if (timestamp == null) return '';
     final now = DateTime.now();
@@ -51,7 +51,7 @@ class _ChatListItemState extends State<ChatListItem> {
       return DateFormat('HH:mm', 'zh_CN').format(timestamp);
     } else if (difference == 1) {
       // Yesterday
-      return s.chat_yesterday;
+      return appLocalizations.chat_yesterday;
     } else if (difference < 7) {
        // Within a week: Weekday (e.g., 星期一)
        // Ensure zh_CN is initialized for this
@@ -64,7 +64,7 @@ class _ChatListItemState extends State<ChatListItem> {
 
   String _getLastMessagePreview(ChatMessage? message) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     if (message == null) return '';
     
@@ -77,9 +77,9 @@ class _ChatListItemState extends State<ChatListItem> {
             : message.context;
         return contextPreview;
       case 'image':
-        return s.chat_image_message;
+        return appLocalizations.chat_image_message;
       case 'audio':
-        return s.chat_audio_message;
+        return appLocalizations.chat_audio_message;
       case 'file':
         // 解析文件信息以显示文件名
         try {
@@ -101,14 +101,14 @@ class _ChatListItemState extends State<ChatListItem> {
         String contextPreview = message.context.length > maxLength 
             ? '${message.context.substring(0, maxLength)}...' 
             : message.context;
-        return contextPreview.isNotEmpty ? contextPreview : s.chat_unknown_message;
+        return contextPreview.isNotEmpty ? contextPreview : appLocalizations.chat_unknown_message;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     // 获取对方信息（可能是买家或卖家）
     final opponent = widget.chatRoom.getOpponent(widget.currentUserId);
@@ -117,7 +117,7 @@ class _ChatListItemState extends State<ChatListItem> {
     if (opponent == null) {
       return ListTile(
         leading: CircleAvatar(child: Icon(Icons.error)),
-        title: Text(s.chat_invalid_session),
+        title: Text(appLocalizations.chat_invalid_session),
         subtitle: Text('对方信息不存在'),
       );
     }

@@ -5,7 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
 // 导入国际化
-import '../../../../generated/l10n.dart';
+import '../../../../generated/app_localizations.dart';
 import '../../../profile/presentation/bloc/profile_bloc.dart';
 import '../../../profile/domain/entities/user_profile.dart';
 import '../../../../app/app_mode.dart';
@@ -87,13 +87,13 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                         child: Column(
                           children: [
                             _buildOrderSection(),
-                            _buildMenuSection(S.of(context).seller_profile_auth_management, Icons.verified_user, ''),
-                            _buildMenuSection(S.of(context).seller_profile_my_wallet, Icons.account_balance_wallet_outlined, ''),
-                            _buildMenuSection(S.of(context).seller_profile_time_management, Icons.access_time_outlined, ''),
+                            _buildMenuSection(AppLocalizations.of(context)!.seller_profile_auth_management, Icons.verified_user, ''),
+                            _buildMenuSection(AppLocalizations.of(context)!.seller_profile_my_wallet, Icons.account_balance_wallet_outlined, ''),
+                            _buildMenuSection(AppLocalizations.of(context)!.seller_profile_time_management, Icons.access_time_outlined, ''),
                             const SizedBox(height: 10),
-                            _buildSectionTitle(S.of(context).seller_profile_settings),
+                            _buildSectionTitle(AppLocalizations.of(context)!.seller_profile_settings),
                             _buildMenuSection(
-                              S.of(context).seller_profile_notifications, 
+                              AppLocalizations.of(context)!.seller_profile_notifications, 
                               Icons.notifications_none_outlined, 
                               '',
                               onTap: () {
@@ -102,8 +102,8 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                               },
                             ),
                             const SizedBox(height: 10),
-                            _buildSectionTitle(S.of(context).seller_profile_about_us),
-                            _buildMenuSection(S.of(context).seller_profile_mission, Icons.emoji_objects_outlined, ''),
+                            _buildSectionTitle(AppLocalizations.of(context)!.seller_profile_about_us),
+                            _buildMenuSection(AppLocalizations.of(context)!.seller_profile_mission, Icons.emoji_objects_outlined, ''),
                           ],
                         ),
                       ),
@@ -172,7 +172,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      profile?.nickName ?? S.of(context).seller_profile_user_name,  // 用户名
+                      profile?.nickName ?? AppLocalizations.of(context)!.seller_profile_user_name,  // 用户名
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w500,
@@ -190,7 +190,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        S.of(context).seller_profile_seller_mode_online,
+                        AppLocalizations.of(context)!.seller_profile_seller_mode_online,
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.white,
@@ -214,7 +214,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  _sellerModeOn ? S.of(context).seller_profile_seller_mode : S.of(context).seller_profile_buyer_mode,
+                  _sellerModeOn ? AppLocalizations.of(context)!.seller_profile_seller_mode : AppLocalizations.of(context)!.seller_profile_buyer_mode,
                   style: const TextStyle(
                     color: Color(0xFF333333),
                     fontSize: 16,
@@ -270,7 +270,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            S.of(context).seller_profile_my_orders,
+            AppLocalizations.of(context)!.seller_profile_my_orders,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
@@ -281,10 +281,10 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildOrderStatusItem(Icons.attach_money, S.of(context).seller_profile_order_pending, 0),
-              _buildOrderStatusItem(Icons.sync, S.of(context).seller_profile_order_processing, 0),
-              _buildOrderStatusItem(Icons.check_circle_outline, S.of(context).seller_profile_order_delivered, 0),
-              _buildOrderStatusItem(Icons.assignment_return_outlined, S.of(context).seller_profile_order_refund, 0),
+              _buildOrderStatusItem(Icons.attach_money, AppLocalizations.of(context)!.seller_profile_order_pending, 0),
+              _buildOrderStatusItem(Icons.sync, AppLocalizations.of(context)!.seller_profile_order_processing, 0),
+              _buildOrderStatusItem(Icons.check_circle_outline, AppLocalizations.of(context)!.seller_profile_order_delivered, 0),
+              _buildOrderStatusItem(Icons.assignment_return_outlined, AppLocalizations.of(context)!.seller_profile_order_refund, 0),
             ],
           ),
         ],
@@ -416,7 +416,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
 
   void _showNotImplemented(String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(S.of(context).seller_profile_feature_not_implemented(feature))),
+      SnackBar(content: Text(AppLocalizations.of(context)!.seller_profile_feature_not_implemented(feature))),
     );
   }
 }

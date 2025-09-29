@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../app/app_mode.dart';
-import '../../generated/l10n.dart';
+import '../../generated/app_localizations.dart';
 import '../../core/utils/haptic_utils.dart';
 import '../../features/seller/presentation/widgets/seller_bottom_navigation_bar.dart';
 import '../navigation/app_router_config.dart';
@@ -74,7 +74,7 @@ class _UnifiedShellPageState extends ConsumerState<UnifiedShellPage>
   @override
   Widget build(BuildContext context) {
     final mode = ref.watch(appModeProvider);
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     // 监听模式切换，切换到对应的分支
     ref.listen<AppMode>(appModeProvider, (previous, next) {
@@ -90,13 +90,13 @@ class _UnifiedShellPageState extends ConsumerState<UnifiedShellPage>
     
     return Scaffold(
       body: widget.navigationShell,
-      bottomNavigationBar: mode == AppMode.buyer 
-          ? _buildBuyerNavigationBar(context, s)
-          : _buildSellerNavigationBar(),
+      bottomNavigationBar: mode == AppMode.buyer
+          ? _buildBuyerNavigationBar(context, appLocalizations)
+          : _buildSellerNavigationBar(appLocalizations),
     );
   }
   
-  Widget _buildBuyerNavigationBar(BuildContext context, S s) {
+  Widget _buildBuyerNavigationBar(BuildContext context, AppLocalizations appLocalizations) {
     final showDevTab = ref.watch(showDevTabProvider);
     
     final List<BottomNavigationBarItem> items = [
@@ -113,22 +113,22 @@ class _UnifiedShellPageState extends ConsumerState<UnifiedShellPage>
           height: 24,
           colorFilter: ColorFilter.mode(const Color(0xFFD0903D), BlendMode.srcIn),
         ),
-        label: s.nav_ai_assistant,
+        label: appLocalizations.nav_ai_assistant,
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.home_outlined),
         activeIcon: const Icon(Icons.home),
-        label: s.nav_home,
+        label: appLocalizations.nav_home,
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.chat_bubble_outline),
         activeIcon: const Icon(Icons.chat_bubble),
-        label: s.nav_messages,
+        label: appLocalizations.nav_messages,
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.person_outline),
         activeIcon: const Icon(Icons.person),
-        label: s.nav_profile,
+        label: appLocalizations.nav_profile,
       ),
     ];
     
@@ -136,7 +136,7 @@ class _UnifiedShellPageState extends ConsumerState<UnifiedShellPage>
       items.add(BottomNavigationBarItem(
         icon: const Icon(Icons.developer_mode_outlined),
         activeIcon: const Icon(Icons.developer_mode),
-        label: s.nav_dev,
+        label: appLocalizations.nav_dev,
       ));
     }
     
@@ -151,9 +151,8 @@ class _UnifiedShellPageState extends ConsumerState<UnifiedShellPage>
     );
   }
   
-  Widget _buildSellerNavigationBar() {
+  Widget _buildSellerNavigationBar(AppLocalizations appLocalizations) {
     // 为卖家模式创建自定义的导航栏
-    final S s = S.of(context);
     
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed, 
@@ -161,22 +160,22 @@ class _UnifiedShellPageState extends ConsumerState<UnifiedShellPage>
         BottomNavigationBarItem(
           icon: const Icon(Icons.analytics_outlined), 
           activeIcon: const Icon(Icons.analytics), 
-          label: s.nav_seller_analytics
+          label: appLocalizations.nav_seller_analytics
         ),
         BottomNavigationBarItem(
           icon: const Icon(Icons.inventory_2_outlined), 
           activeIcon: const Icon(Icons.inventory_2), 
-          label: s.nav_seller_products
+          label: appLocalizations.nav_seller_products
         ),
         BottomNavigationBarItem(
           icon: const Icon(Icons.chat_bubble_outline), 
           activeIcon: const Icon(Icons.chat_bubble), 
-          label: s.nav_seller_messages
+          label: appLocalizations.nav_seller_messages
         ),
         BottomNavigationBarItem(
           icon: const Icon(Icons.account_circle_outlined), 
           activeIcon: const Icon(Icons.account_circle), 
-          label: s.nav_seller_profile
+          label: appLocalizations.nav_seller_profile
         ),
       ],
       currentIndex: _sellerIndex,

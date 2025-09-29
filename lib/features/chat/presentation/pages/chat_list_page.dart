@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart'; // 添加导入
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // 添加SharedPreferences导入
 import 'dart:async'; // 添加Completer和StreamSubscription导入
-import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/app/app_mode.dart'; // 导入应用模式
 
 import '../bloc/chat_list/chat_list_bloc.dart';
@@ -114,13 +114,13 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   // 添加通知中心条目构建方法
   Widget _buildNotificationItem(BuildContext context, int currentUserId) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     // 创建通知中心参与者
     final notificationParticipant = Participant(
       id: 2, // 使用不同于系统管理员的ID
       referId: 2, // 使用不同于系统管理员的referId
-      nickName: s.chat_notification_center,
+      nickName: appLocalizations.chat_notification_center,
       type: 'NOTIFICATION',
       avatar: null, // 可以添加特定图标
     );
@@ -144,7 +144,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         id: -1,
         chatId: -2,
         senderId: 2,
-        context: s.chat_notification_description,
+        context: appLocalizations.chat_notification_description,
         type: 'text',
         createTime: DateTime.now(),
         withdrawFlag: false,
@@ -189,7 +189,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     // 获取当前应用模式
     final currentAppMode = ref.watch(appModeProvider);
@@ -197,7 +197,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFEDEDED),
       appBar: AppBar(
-        title: Text(s.chat_list_title),
+        title: Text(appLocalizations.chat_list_title),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black, 
         elevation: 0.5, 
@@ -212,10 +212,10 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             ),
             label: Text(
               _isMixedMode
-                  ? s.chat_filter_all
+                  ? appLocalizations.chat_filter_all
                   : (currentAppMode == AppMode.buyer
-                      ? s.chat_filter_buyer
-                      : s.chat_filter_seller),
+                      ? appLocalizations.chat_filter_buyer
+                      : appLocalizations.chat_filter_seller),
               style: TextStyle(
                 color: _isMixedMode ? Colors.grey : Theme.of(context).primaryColor,
                 fontSize: 14,
@@ -232,10 +232,10 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                 SnackBar(
                   content: Text(
                     _isMixedMode
-                        ? s.chat_filter_mode_all
+                        ? appLocalizations.chat_filter_mode_all
                         : (currentAppMode == AppMode.buyer
-                            ? s.chat_filter_mode_buyer
-                            : s.chat_filter_mode_seller),
+                            ? appLocalizations.chat_filter_mode_buyer
+                            : appLocalizations.chat_filter_mode_seller),
                   ),
                   duration: const Duration(seconds: 1),
                 ),
@@ -269,7 +269,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
           return BlocListener<ChatListBloc, ChatListState>(
             listener: (context, state) {
               // 获取国际化资源
-              final S s = S.of(context);
+              final appLocalizations = AppLocalizations.of(context)!;
               
               if (state.navigateToChatId != null) {
                 final chatId = state.navigateToChatId!;
@@ -292,7 +292,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                 if (state.status == ChatListStatus.loading && state.chatRooms.isEmpty) {
                   return Center(child: CircularProgressIndicator()); 
                 } else if (state.status == ChatListStatus.failure) {
-                  return _buildSystemItemsOnly(context, currentUserId, s.chat_error_loading(state.errorMessage ?? s.chat_unknown_message));
+                  return _buildSystemItemsOnly(context, currentUserId, appLocalizations.chat_error_loading(state.errorMessage ?? appLocalizations.chat_unknown_message));
                 } else if (state.status == ChatListStatus.success || state.chatRooms.isNotEmpty) {
                   // 调试：打印当前用户信息
                   print('[ChatListPage] Current user referId: $referId, AppMode: $currentAppMode, MixedMode: $_isMixedMode');

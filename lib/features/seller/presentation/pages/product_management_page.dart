@@ -11,7 +11,7 @@ import '../routes/seller_routes.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/loading_state.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 商品管理页面
 class ProductManagementPage extends StatefulWidget {
@@ -162,10 +162,10 @@ class _ProductManagementPageState extends State<ProductManagementPage>
           TabBar(
           controller: _tabController,
           tabs: [
-            Tab(text: S.of(context)?.product_management_tab_on_sale ?? 'On Sale'),
+            Tab(text: AppLocalizations.of(context)!?.product_management_tab_on_sale ?? 'On Sale'),
             // 轻咨询模式：移除草稿Tab
-            // Tab(text: S.of(context)?.product_management_tab_draft ?? 'Drafts'),
-            Tab(text: S.of(context)?.product_management_tab_off_shelf ?? 'Off Shelf'),
+            // Tab(text: AppLocalizations.of(context)!?.product_management_tab_draft ?? 'Drafts'),
+            Tab(text: AppLocalizations.of(context)!?.product_management_tab_off_shelf ?? 'Off Shelf'),
           ],
           indicatorColor: Theme.of(context).primaryColor,
           labelColor: Theme.of(context).primaryColor,
@@ -324,7 +324,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
           context.read<ProductManagementBloc>().add(const NavigateToProductCreate());
         },
         child: const Icon(Icons.add),
-        tooltip: S.of(context)?.product_management_create_product ?? 'Create Product',
+        tooltip: AppLocalizations.of(context)!?.product_management_create_product ?? 'Create Product',
       ),
     );
   }
@@ -447,7 +447,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
         actions.add(
           _buildActionButton(
             context,
-            S.of(context)?.product_management_action_off_shelf ?? 'Off Shelf',
+            AppLocalizations.of(context)!?.product_management_action_off_shelf ?? 'Off Shelf',
             Icons.arrow_downward,
             isProcessing,
             () => _confirmOffShelfProduct(product.id, product.name),
@@ -471,7 +471,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
                 Icon(Icons.hourglass_empty, size: 16, color: Colors.orange[700]),
                 const SizedBox(width: 4),
                 Text(
-                  S.of(context)?.product_management_status_waiting_review ?? 'Waiting for Review',
+                  AppLocalizations.of(context)!?.product_management_status_waiting_review ?? 'Waiting for Review',
                   style: TextStyle(
                     color: Colors.orange[700],
                     fontSize: 12,
@@ -488,7 +488,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
         actions.add(
           _buildActionButton(
             context,
-            S.of(context)?.product_management_action_resubmit ?? 'Resubmit',
+            AppLocalizations.of(context)!?.product_management_action_resubmit ?? 'Resubmit',
             Icons.refresh,
             isProcessing,
             () {
@@ -505,7 +505,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
         actions.add(
           _buildActionButton(
             context,
-            S.of(context)?.product_management_action_publish ?? 'Publish',
+            AppLocalizations.of(context)!?.product_management_action_publish ?? 'Publish',
             Icons.publish,
             isProcessing,
             () {
@@ -523,7 +523,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
         actions.add(
           _buildActionButton(
             context,
-            S.of(context)?.product_management_action_delete ?? 'Delete',
+            AppLocalizations.of(context)!?.product_management_action_delete ?? 'Delete',
             Icons.delete_outline,
             isProcessing,
             () => _deleteProduct(product.id),
@@ -535,7 +535,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
         actions.add(
           _buildActionButton(
             context,
-            S.of(context)?.product_management_action_on_shelf ?? 'On Shelf',
+            AppLocalizations.of(context)!?.product_management_action_on_shelf ?? 'On Shelf',
             Icons.arrow_upward,
             isProcessing,
             () => _updateProductStatus(product.id, ProductStatus.normal),
@@ -544,7 +544,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
         actions.add(
           _buildActionButton(
             context,
-            S.of(context)?.product_management_action_delete ?? 'Delete',
+            AppLocalizations.of(context)!?.product_management_action_delete ?? 'Delete',
             Icons.delete_outline,
             isProcessing,
             () => _deleteProduct(product.id),
@@ -561,7 +561,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
       actions.add(
         _buildActionButton(
           context,
-          S.of(context)?.product_management_action_edit ?? 'Edit',
+          AppLocalizations.of(context)!?.product_management_action_edit ?? 'Edit',
           Icons.edit_outlined,
           isProcessing,
           () {
@@ -586,7 +586,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
             // 草稿状态显示提示信息
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(S.of(context)?.product_management_draft_preview_hint ?? 'Draft products need to be published before preview'),
+                content: Text(AppLocalizations.of(context)!?.product_management_draft_preview_hint ?? 'Draft products need to be published before preview'),
                 duration: const Duration(seconds: 2),
               ),
             );
@@ -645,7 +645,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
                         Row(
                           children: [
                             Text(
-                              '${S.of(context)?.product_management_stock_label ?? 'Stock'}: --',
+                              '${AppLocalizations.of(context)!?.product_management_stock_label ?? 'Stock'}: --',
                               style: TextStyle(
                                 fontSize: 13.0,
                                 color: Colors.grey[600],
@@ -653,7 +653,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
                             ),
                             const SizedBox(width: 12.0),
                             Text(
-                              '${S.of(context)?.product_management_sales_label ?? 'Sales'}: ${product.sales ?? 0}',
+                              '${AppLocalizations.of(context)!?.product_management_sales_label ?? 'Sales'}: ${product.sales ?? 0}',
                               style: TextStyle(
                                 fontSize: 13.0,
                                 color: Colors.grey[600],
@@ -712,7 +712,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 16.0),
         child: Center(
-          child: Text(S.of(context)?.product_management_no_more_products ?? 'No more products', style: const TextStyle(color: Colors.grey)),
+          child: Text(AppLocalizations.of(context)!?.product_management_no_more_products ?? 'No more products', style: const TextStyle(color: Colors.grey)),
         ),
       );
     }
@@ -764,30 +764,30 @@ class _ProductManagementPageState extends State<ProductManagementPage>
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(S.of(context)?.product_management_confirm_off_shelf_title ?? 'Confirm Off Shelf'),
+        title: Text(AppLocalizations.of(context)!?.product_management_confirm_off_shelf_title ?? 'Confirm Off Shelf'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              S.of(context)?.product_management_confirm_off_shelf_message != null
-                  ? S.of(context)!.product_management_confirm_off_shelf_message(productName)
+              AppLocalizations.of(context)!?.product_management_confirm_off_shelf_message != null
+                  ? AppLocalizations.of(context)!.product_management_confirm_off_shelf_message(productName)
                   : 'Are you sure you want to take the product "$productName" off shelf?'
             ),
             const SizedBox(height: 8),
             Text(
-              S.of(context)?.product_management_confirm_off_shelf_desc ?? 'After off shelf:',
+              AppLocalizations.of(context)!?.product_management_confirm_off_shelf_desc ?? 'After off shelf:',
               style: TextStyle(fontWeight: FontWeight.w500),
             ),
-            Text(S.of(context)?.product_management_confirm_off_shelf_point1 ?? '• Buyers will not be able to see or purchase this product'),
-            Text(S.of(context)?.product_management_confirm_off_shelf_point2 ?? '• You can put it back on shelf at any time'),
-            Text(S.of(context)?.product_management_confirm_off_shelf_point3 ?? '• Product data will be retained'),
+            Text(AppLocalizations.of(context)!?.product_management_confirm_off_shelf_point1 ?? '• Buyers will not be able to see or purchase this product'),
+            Text(AppLocalizations.of(context)!?.product_management_confirm_off_shelf_point2 ?? '• You can put it back on shelf at any time'),
+            Text(AppLocalizations.of(context)!?.product_management_confirm_off_shelf_point3 ?? '• Product data will be retained'),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(S.of(context)?.product_management_cancel ?? 'Cancel'),
+            child: Text(AppLocalizations.of(context)!?.product_management_cancel ?? 'Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -801,7 +801,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
             style: TextButton.styleFrom(
               foregroundColor: Colors.orange[700],
             ),
-            child: Text(S.of(context)?.product_management_confirm ?? 'Confirm Off Shelf'),
+            child: Text(AppLocalizations.of(context)!?.product_management_confirm ?? 'Confirm Off Shelf'),
           ),
         ],
       ),
@@ -815,12 +815,12 @@ class _ProductManagementPageState extends State<ProductManagementPage>
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(S.of(context)?.product_management_confirm_delete_title ?? 'Confirm Delete'),
-        content: Text(S.of(context)?.product_management_confirm_delete_message ?? 'Are you sure you want to delete this product? This action cannot be undone.'),
+        title: Text(AppLocalizations.of(context)!?.product_management_confirm_delete_title ?? 'Confirm Delete'),
+        content: Text(AppLocalizations.of(context)!?.product_management_confirm_delete_message ?? 'Are you sure you want to delete this product? This action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(S.of(context)?.product_management_cancel ?? 'Cancel'),
+            child: Text(AppLocalizations.of(context)!?.product_management_cancel ?? 'Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -828,7 +828,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
               // 使用之前获取的bloc引用，避免Provider作用域问题
               bloc.add(DeleteProduct(productId: productId));
             },
-            child: Text(S.of(context)?.product_management_delete ?? 'Delete'),
+            child: Text(AppLocalizations.of(context)!?.product_management_delete ?? 'Delete'),
             style: TextButton.styleFrom(
               foregroundColor: Colors.red,
             ),
@@ -870,13 +870,13 @@ class _ProductManagementPageState extends State<ProductManagementPage>
   String _getEmptyStateText(ProductStatus status) {
     switch (status) {
       case ProductStatus.normal:
-        return S.of(context)?.product_management_empty_on_sale ?? 'No products on sale';
+        return AppLocalizations.of(context)!?.product_management_empty_on_sale ?? 'No products on sale';
       case ProductStatus.draft:
-        return S.of(context)?.product_management_empty_draft ?? 'No draft products';
+        return AppLocalizations.of(context)!?.product_management_empty_draft ?? 'No draft products';
       case ProductStatus.disabled:
-        return S.of(context)?.product_management_empty_off_shelf ?? 'No off-shelf products';
+        return AppLocalizations.of(context)!?.product_management_empty_off_shelf ?? 'No off-shelf products';
       default:
-        return S.of(context)?.product_management_empty_default ?? 'No product data';
+        return AppLocalizations.of(context)!?.product_management_empty_default ?? 'No product data';
     }
   }
   
@@ -934,32 +934,32 @@ class _ProductManagementPageState extends State<ProductManagementPage>
       case ProductStatus.reviewing:
         bgColor = Colors.orange[50]!;
         textColor = Colors.orange[700]!;
-        text = S.of(context)?.product_management_status_reviewing ?? 'Under Review';
+        text = AppLocalizations.of(context)!?.product_management_status_reviewing ?? 'Under Review';
         break;
       case ProductStatus.rejected:
         bgColor = Colors.red[50]!;
         textColor = Colors.red[700]!;
-        text = S.of(context)?.product_management_status_rejected ?? 'Review Failed';
+        text = AppLocalizations.of(context)!?.product_management_status_rejected ?? 'Review Failed';
         break;
       case ProductStatus.normal:
         bgColor = Colors.green[50]!;
         textColor = Colors.green[700]!;
-        text = S.of(context)?.product_management_status_on_shelf ?? 'On Shelf';
+        text = AppLocalizations.of(context)!?.product_management_status_on_shelf ?? 'On Shelf';
         break;
       case ProductStatus.disabled:
         bgColor = Colors.grey[100]!;
         textColor = Colors.grey[700]!;
-        text = S.of(context)?.product_management_status_off_shelf ?? 'Off Shelf';
+        text = AppLocalizations.of(context)!?.product_management_status_off_shelf ?? 'Off Shelf';
         break;
       case ProductStatus.draft:
         bgColor = Colors.blue[50]!;
         textColor = Colors.blue[700]!;
-        text = S.of(context)?.product_management_status_draft ?? 'Draft';
+        text = AppLocalizations.of(context)!?.product_management_status_draft ?? 'Draft';
         break;
       default:
         bgColor = Colors.grey[100]!;
         textColor = Colors.grey[700]!;
-        text = S.of(context)?.product_management_status_unknown ?? 'Unknown';
+        text = AppLocalizations.of(context)!?.product_management_status_unknown ?? 'Unknown';
     }
     
     return Container(

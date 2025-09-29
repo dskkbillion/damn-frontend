@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/bloc/ai_chat/ai_chat_bloc.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
 class AnimatedAllocationButton extends StatefulWidget {
   final VoidCallback? onTap;
@@ -100,19 +100,19 @@ class _AnimatedAllocationButtonState extends State<AnimatedAllocationButton> wit
   }
   
   // 获取当前打字机状态对应的文本
-  String _getTextForCurrentStep(S s) {
+  String _getTextForCurrentStep(AppLocalizations appLocalizations) {
     // 根据国际化资源获取不同语言的文本
     switch (_currentTextStep) {
       case 0:
-        return s.allocating_step1; // 分发中
+        return appLocalizations.allocating_step1; // 分发中
       case 1:
-        return s.allocating_step2; // 分发中.
+        return appLocalizations.allocating_step2; // 分发中.
       case 2:
-        return s.allocating_step3; // 分发中..
+        return appLocalizations.allocating_step3; // 分发中..
       case 3:
-        return s.allocating_step4; // 分发中...
+        return appLocalizations.allocating_step4; // 分发中...
       default:
-        return s.allocating_step1; // 默认分发中
+        return appLocalizations.allocating_step1; // 默认分发中
     }
   }
   
@@ -200,7 +200,7 @@ class _AnimatedAllocationButtonState extends State<AnimatedAllocationButton> wit
   
   // 初始状态按钮
   Widget _buildInitialButton() {
-    final S s = S.of(context); // 获取国际化资源
+    final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
     
     return Container(
       key: const ValueKey('initial'),
@@ -220,7 +220,7 @@ class _AnimatedAllocationButtonState extends State<AnimatedAllocationButton> wit
           padding: EdgeInsets.zero,
         ),
         child: Text(
-          s.ai_docs_let_them_see, // 使用国际化文本
+          appLocalizations.ai_docs_let_them_see, // 使用国际化文本
           style: const TextStyle(color: Colors.white, fontSize: 14),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -231,7 +231,7 @@ class _AnimatedAllocationButtonState extends State<AnimatedAllocationButton> wit
   
   // 加载中状态按钮 - 包含打字机效果和进度条
   Widget _buildLoadingButton() {
-    final S s = S.of(context); // 获取国际化资源
+    final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
     
     return Container(
       key: const ValueKey('loading'),
@@ -265,7 +265,7 @@ class _AnimatedAllocationButtonState extends State<AnimatedAllocationButton> wit
           // 顶层文字
           Center(
             child: Text(
-              _getTextForCurrentStep(s), // 使用国际化文本
+              _getTextForCurrentStep(appLocalizations), // 使用国际化文本
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 14,
@@ -283,7 +283,7 @@ class _AnimatedAllocationButtonState extends State<AnimatedAllocationButton> wit
   
   // 成功状态按钮
   Widget _buildSuccessButton() {
-    final S s = S.of(context); // 获取国际化资源
+    final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
     
     return Container(
       key: const ValueKey('success'),
@@ -303,7 +303,7 @@ class _AnimatedAllocationButtonState extends State<AnimatedAllocationButton> wit
           padding: EdgeInsets.zero,
         ),
         child: Text(
-          s.ai_docs_enter_chat, // 使用国际化文本 "进入聊天"
+          appLocalizations.ai_docs_enter_chat, // 使用国际化文本 "进入聊天"
           style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -314,7 +314,7 @@ class _AnimatedAllocationButtonState extends State<AnimatedAllocationButton> wit
   
   // 失败状态按钮
   Widget _buildFailureButton() {
-    final S s = S.of(context); // 获取国际化资源
+    final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
     
     return Container(
       key: const ValueKey('failure'),
@@ -334,7 +334,7 @@ class _AnimatedAllocationButtonState extends State<AnimatedAllocationButton> wit
           padding: EdgeInsets.zero,
         ),
         child: Text(
-          s.ai_docs_retry, // 使用国际化文本
+          appLocalizations.ai_docs_retry, // 使用国际化文本
           style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,

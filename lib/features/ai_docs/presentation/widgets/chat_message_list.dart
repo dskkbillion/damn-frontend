@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
 import '../bloc/ai_chat/ai_chat_bloc.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_chat_message_entity.dart';
@@ -93,7 +93,7 @@ class _ChatMessageListState extends State<ChatMessageList> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return BlocListener<AiChatBloc, AiChatState>(
       listenWhen: (previous, current) => 
@@ -125,7 +125,7 @@ class _ChatMessageListState extends State<ChatMessageList> {
                            const Icon(Icons.error_outline, color: Colors.red, size: 48),
                            const SizedBox(height: 16),
                            Text(
-                             s.ai_docs_recommendations_error(state.errorMessage ?? '未知错误'),
+                             appLocalizations.ai_docs_recommendations_error(state.errorMessage ?? '未知错误'),
                              style: const TextStyle(color: Colors.red),
                              textAlign: TextAlign.center,
                            ),
@@ -158,7 +158,7 @@ class _ChatMessageListState extends State<ChatMessageList> {
                              Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey[400]),
                              const SizedBox(height: 16),
                              Text(
-                               s.ai_docs_welcome_title,
+                               appLocalizations.ai_docs_welcome_title,
                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                  fontWeight: FontWeight.bold,
                                  color: Colors.grey[600],
@@ -166,7 +166,7 @@ class _ChatMessageListState extends State<ChatMessageList> {
                              ),
                              const SizedBox(height: 8),
                              Text(
-                               s.ai_docs_welcome_message,
+                               appLocalizations.ai_docs_welcome_message,
                                textAlign: TextAlign.center,
                                style: TextStyle(color: Colors.grey[600]),
                              ),

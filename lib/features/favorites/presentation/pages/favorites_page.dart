@@ -13,7 +13,7 @@ import '../widgets/empty_favorites.dart';
 import '../widgets/favorite_seller_item.dart';
 import '../widgets/favorite_service_item.dart';
 import '../../../../app/navigation/app_router_config.dart';
-import '../../../../generated/l10n.dart';
+import '../../../../generated/app_localizations.dart';
 import '../../../../core/utils/haptic_utils.dart';
 
 /// 收藏页面
@@ -139,7 +139,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
     // 读取是否显示开发tab的配置
     final showDevTab = ref.watch(showDevTabProvider);
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     // 根据配置构建导航栏项目
     final List<BottomNavigationBarItem> items = [
@@ -156,22 +156,22 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
           height: 24,
           colorFilter: ColorFilter.mode(const Color(0xFFD0903D), BlendMode.srcIn),
         ),
-        label: s.nav_ai_assistant,
+        label: appLocalizations.nav_ai_assistant,
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.home_outlined),
         activeIcon: const Icon(Icons.home),
-        label: s.nav_home,
+        label: appLocalizations.nav_home,
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.chat_bubble_outline),
         activeIcon: const Icon(Icons.chat_bubble),
-        label: s.nav_messages,
+        label: appLocalizations.nav_messages,
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.person_outline),
         activeIcon: const Icon(Icons.person),
-        label: s.nav_profile,
+        label: appLocalizations.nav_profile,
       ),
     ];
     
@@ -180,7 +180,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
       items.add(BottomNavigationBarItem(
         icon: const Icon(Icons.developer_mode_outlined),
         activeIcon: const Icon(Icons.developer_mode),
-        label: s.nav_dev,
+        label: appLocalizations.nav_dev,
       ));
     }
 

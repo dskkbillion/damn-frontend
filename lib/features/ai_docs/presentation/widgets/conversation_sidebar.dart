@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
 // Import necessary Bloc (which exports State, Event, and Entities it imports)
 import '../bloc/ai_chat/ai_chat_bloc.dart';
@@ -52,7 +52,7 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
 
   @override
   Widget build(BuildContext context) {
-    final S s = S.of(context); // 获取国际化资源
+    final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
     
     // Wrap the content in SafeArea to avoid status bar overlap
     return SafeArea(
@@ -80,7 +80,7 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
                   padding: const EdgeInsets.all(8.0),
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.add_circle_outline),
-                    label: Text(s.ai_docs_new_chat), // 使用国际化文本
+                    label: Text(appLocalizations.ai_docs_new_chat), // 使用国际化文本
                     style: ElevatedButton.styleFrom(
                        minimumSize: const Size(double.infinity, 40), 
                     ),
@@ -115,7 +115,7 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
 
   // Helper method to build the list based on status
   Widget _buildConversationList(BuildContext context, AiChatState state) {
-     final S s = S.of(context); // 获取国际化资源
+     final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
      
      switch (state.conversationsStatus) {
        case ConversationsStatus.loading:
@@ -136,14 +136,14 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
                  const Icon(Icons.error_outline, color: Colors.red, size: 32),
                  const SizedBox(height: 8),
                  Text(
-                   state.conversationListErrorMessage ?? s.ai_docs_load_conversations_failed, // 使用国际化文本
+                   state.conversationListErrorMessage ?? appLocalizations.ai_docs_load_conversations_failed, // 使用国际化文本
                    textAlign: TextAlign.center,
                    style: const TextStyle(color: Colors.red)
                  ),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                      icon: const Icon(Icons.refresh), 
-                     label: Text(s.ai_docs_retry), // 使用国际化文本
+                     label: Text(appLocalizations.ai_docs_retry), // 使用国际化文本
                      onPressed: () => context.read<AiChatBloc>().add(const LoadConversations()),
                   )
                ],
@@ -154,7 +154,7 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
         case ConversationsStatus.initial: // Treat initial as loaded (or show loading initially)
         default:
           if (state.conversations.isEmpty) {
-             return Center(child: Text(s.ai_docs_no_conversations)); // 使用国际化文本
+             return Center(child: Text(appLocalizations.ai_docs_no_conversations)); // 使用国际化文本
           }
           return _buildList(context, state.conversations, state.selectedConversationId, state);
      }
@@ -162,7 +162,7 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
 
   // Helper method to build the actual ListView with pagination support
   Widget _buildList(BuildContext context, List<AiConversationEntity> conversations, int? selectedId, AiChatState state) {
-    final S s = S.of(context); // 获取国际化资源
+    final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
     
     return ListView.builder(
        controller: _scrollController,
@@ -193,7 +193,7 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
           final conv = conversations[index];
           return ListTile(
               title: Text(
-                  conv.title?.isNotEmpty ?? false ? conv.title! : s.ai_docs_unnamed_conversation, // 使用国际化文本
+                  conv.title?.isNotEmpty ?? false ? conv.title! : appLocalizations.ai_docs_unnamed_conversation, // 使用国际化文本
                   overflow: TextOverflow.ellipsis,
               ),
               // 移除ID展示
@@ -212,7 +212,7 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
               // Add delete button
                trailing: IconButton(
                  icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey), // Subtle color
-                 tooltip: s.ai_docs_delete_conversation_tooltip, // 使用国际化文本
+                 tooltip: appLocalizations.ai_docs_delete_conversation_tooltip, // 使用国际化文本
                  onPressed: () => _confirmDelete(context, conv.id), // Show confirmation
                ),
             );
@@ -222,22 +222,22 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
 
   // Helper method to show delete confirmation dialog
   Future<void> _confirmDelete(BuildContext context, int conversationId) async {
-     final S s = S.of(context); // 获取国际化资源
+     final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
      
      final bool? confirm = await showDialog<bool>(
         context: context,
         builder: (BuildContext dialogContext) {
           return AlertDialog(
-            title: Text(s.ai_docs_delete_conversation_title), // 使用国际化文本
-            content: Text(s.ai_docs_delete_conversation_content), // 使用国际化文本
+            title: Text(appLocalizations.ai_docs_delete_conversation_title), // 使用国际化文本
+            content: Text(appLocalizations.ai_docs_delete_conversation_content), // 使用国际化文本
             actions: <Widget>[
               TextButton(
-                child: Text(s.ai_docs_cancel), // 使用国际化文本
+                child: Text(appLocalizations.ai_docs_cancel), // 使用国际化文本
                 onPressed: () => Navigator.of(dialogContext).pop(false), // Return false
               ),
               TextButton(
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: Text(s.ai_docs_delete), // 使用国际化文本
+                child: Text(appLocalizations.ai_docs_delete), // 使用国际化文本
                 onPressed: () => Navigator.of(dialogContext).pop(true), // Return true
               ),
             ],

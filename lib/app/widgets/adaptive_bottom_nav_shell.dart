@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../app/app_mode.dart';
-import '../../generated/l10n.dart';
+import '../../generated/app_localizations.dart';
 import '../../core/utils/haptic_utils.dart';
 import '../navigation/app_router_config.dart';
 
@@ -29,12 +29,12 @@ class AdaptiveBottomNavShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentMode = ref.watch(appModeProvider);
     final showDevTab = ref.watch(showDevTabProvider);
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     // 根据模式构建不同的底部导航项
     final List<BottomNavigationBarItem> items = currentMode == AppMode.buyer
-        ? _buildBuyerNavItems(s, showDevTab)
-        : _buildSellerNavItems(s);
+        ? _buildBuyerNavItems(appLocalizations, showDevTab)
+        : _buildSellerNavItems(appLocalizations);
     
     return Scaffold(
       body: navigationShell,
@@ -50,7 +50,7 @@ class AdaptiveBottomNavShell extends ConsumerWidget {
     );
   }
   
-  List<BottomNavigationBarItem> _buildBuyerNavItems(S s, bool showDevTab) {
+  List<BottomNavigationBarItem> _buildBuyerNavItems(AppLocalizations appLocalizations, bool showDevTab) {
     final items = [
       BottomNavigationBarItem(
         icon: SvgPicture.asset(
@@ -65,22 +65,22 @@ class AdaptiveBottomNavShell extends ConsumerWidget {
           height: 24,
           colorFilter: ColorFilter.mode(const Color(0xFFD0903D), BlendMode.srcIn),
         ),
-        label: s.nav_ai_assistant,
+        label: appLocalizations.nav_ai_assistant,
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.home_outlined),
         activeIcon: const Icon(Icons.home),
-        label: s.nav_home,
+        label: appLocalizations.nav_home,
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.chat_bubble_outline),
         activeIcon: const Icon(Icons.chat_bubble),
-        label: s.nav_messages,
+        label: appLocalizations.nav_messages,
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.person_outline),
         activeIcon: const Icon(Icons.person),
-        label: s.nav_profile,
+        label: appLocalizations.nav_profile,
       ),
     ];
     
@@ -88,34 +88,34 @@ class AdaptiveBottomNavShell extends ConsumerWidget {
       items.add(BottomNavigationBarItem(
         icon: const Icon(Icons.developer_mode_outlined),
         activeIcon: const Icon(Icons.developer_mode),
-        label: s.nav_dev,
+        label: appLocalizations.nav_dev,
       ));
     }
     
     return items;
   }
   
-  List<BottomNavigationBarItem> _buildSellerNavItems(S s) {
+  List<BottomNavigationBarItem> _buildSellerNavItems(AppLocalizations appLocalizations) {
     return [
       BottomNavigationBarItem(
         icon: const Icon(Icons.analytics_outlined),
         activeIcon: const Icon(Icons.analytics),
-        label: s.seller_nav_stats,
+        label: appLocalizations.nav_seller_analytics,
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.inventory_2_outlined),
         activeIcon: const Icon(Icons.inventory_2),
-        label: s.seller_nav_products,
+        label: appLocalizations.nav_seller_products,
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.chat_bubble_outline),
         activeIcon: const Icon(Icons.chat_bubble),
-        label: s.nav_messages,
+        label: appLocalizations.nav_messages,
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.person_outline),
         activeIcon: const Icon(Icons.person),
-        label: s.nav_profile,
+        label: appLocalizations.nav_profile,
       ),
     ];
   }

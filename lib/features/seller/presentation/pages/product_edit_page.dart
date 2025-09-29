@@ -22,7 +22,7 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/product_ed
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/service_tier_models.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 // 输入验证常量
 class ValidationConstants {
@@ -630,7 +630,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
             // 轻咨询模式：直接发布
             child: const Text('保存并发布'),
             // 原草稿按钮文案
-            // child: Text(S.of(context)?.product_edit_save_draft ?? 'Save Draft'),
+            // child: Text(AppLocalizations.of(context)!?.product_edit_save_draft ?? 'Save Draft'),
           ),
         ],
       ),
@@ -855,7 +855,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     // 验证商品名称
     if (_nameController.text.trim().isEmpty) {
       setState(() {
-        _formErrors['name'] = S.of(context)?.product_edit_validation_name_required ?? 'Please enter service name';
+        _formErrors['name'] = AppLocalizations.of(context)!?.product_edit_validation_name_required ?? 'Please enter service name';
       });
       isValid = false;
     }
@@ -863,7 +863,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     // 验证商品描述
     if (_descriptionController.text.trim().isEmpty) {
       setState(() {
-        _formErrors['description'] = S.of(context)?.product_edit_validation_description_required ?? 'Please enter service description';
+        _formErrors['description'] = AppLocalizations.of(context)!?.product_edit_validation_description_required ?? 'Please enter service description';
       });
       isValid = false;
     }
@@ -876,7 +876,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     if (!hasImages) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(S.of(context)?.product_edit_at_least_one_image ?? 'Please upload at least one product image'),
+          content: Text(AppLocalizations.of(context)!?.product_edit_at_least_one_image ?? 'Please upload at least one product image'),
           backgroundColor: Colors.red,
         ),
       );
@@ -938,9 +938,9 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
             controller: nameController,
             maxLength: ValidationConstants.maxAttributeNameLength,
             decoration: InputDecoration(
-              hintText: S.of(context)?.product_edit_attribute_name_hint ?? 'Please enter attribute name',
-              helperText: S.of(context)?.product_edit_max_characters != null 
-                  ? S.of(context)!.product_edit_max_characters(ValidationConstants.maxAttributeNameLength)
+              hintText: AppLocalizations.of(context)!?.product_edit_attribute_name_hint ?? 'Please enter attribute name',
+              helperText: AppLocalizations.of(context)!?.product_edit_max_characters != null 
+                  ? AppLocalizations.of(context)!.product_edit_max_characters(ValidationConstants.maxAttributeNameLength)
                   : 'Max ${ValidationConstants.maxAttributeNameLength} characters',
               errorText: errorText,
               border: const OutlineInputBorder(),
@@ -1076,8 +1076,8 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.isPreviewMode 
-            ? S.of(context)?.product_edit_preview_product ?? 'Preview Product' 
-            : (widget.productId == null ? S.of(context)?.product_edit_publish_product ?? 'Publish Product' : S.of(context)?.product_edit_title_edit ?? 'Edit Product')),
+            ? AppLocalizations.of(context)!?.product_edit_preview_product ?? 'Preview Product' 
+            : (widget.productId == null ? AppLocalizations.of(context)!?.product_edit_publish_product ?? 'Publish Product' : AppLocalizations.of(context)!?.product_edit_title_edit ?? 'Edit Product')),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () async {
@@ -1103,7 +1103,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                 );
               },
               icon: const Icon(Icons.edit),
-              label: Text(S.of(context)?.product_management_action_edit ?? 'Edit'),
+              label: Text(AppLocalizations.of(context)!?.product_management_action_edit ?? 'Edit'),
               style: TextButton.styleFrom(
                 backgroundColor: const Color(0xFFBF7D2A),
                 foregroundColor: Colors.white,
@@ -1129,7 +1129,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                       IconButton(
                         onPressed: () => _previewProduct(),
                         icon: const Icon(Icons.preview),
-                        tooltip: S.of(context)?.product_edit_preview_product ?? 'Preview',
+                        tooltip: AppLocalizations.of(context)!?.product_edit_preview_product ?? 'Preview',
                       ),
                       const SizedBox(width: 8),
                     ],
@@ -1384,7 +1384,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                S.of(context)?.product_edit_service_tiers ?? 'Service Tier Settings',
+                AppLocalizations.of(context)!?.product_edit_service_tiers ?? 'Service Tier Settings',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -1892,7 +1892,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                   Navigator.pop(context);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(S.of(context)?.product_edit_please_enter_label ?? 'Please enter information label')),
+                    SnackBar(content: Text(AppLocalizations.of(context)!?.product_edit_please_enter_label ?? 'Please enter information label')),
                   );
                 }
               },
@@ -1975,7 +1975,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                   Navigator.pop(context);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(S.of(context)?.product_edit_please_enter_label ?? 'Please enter information label')),
+                    SnackBar(content: Text(AppLocalizations.of(context)!?.product_edit_please_enter_label ?? 'Please enter information label')),
                   );
                 }
               },
@@ -2004,7 +2004,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                S.of(context)?.product_edit_success_cases ?? 'Success Cases',
+                AppLocalizations.of(context)!?.product_edit_success_cases ?? 'Success Cases',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -2405,7 +2405,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(S.of(context)?.product_edit_add_success_case ?? 'Add Success Case'),
+          title: Text(AppLocalizations.of(context)!?.product_edit_add_success_case ?? 'Add Success Case'),
           content: ConstrainedBox(
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.6, // 限制最大高度为屏幕高度的60%
@@ -2525,7 +2525,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(S.of(context)?.product_edit_edit_success_case ?? 'Edit Success Case'),
+          title: Text(AppLocalizations.of(context)!?.product_edit_edit_success_case ?? 'Edit Success Case'),
           content: ConstrainedBox(
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.6, // 限制最大高度为屏幕高度的60%
@@ -2704,8 +2704,8 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
             ),
             const SizedBox(width: 8),
             Text(
-              S.of(context)?.product_edit_uploading_progress != null
-                  ? S.of(context)!.product_edit_uploading_progress(state.uploadedCount, state.totalUploadCount)
+              AppLocalizations.of(context)!?.product_edit_uploading_progress != null
+                  ? AppLocalizations.of(context)!.product_edit_uploading_progress(state.uploadedCount, state.totalUploadCount)
                   : 'Uploading ${state.uploadedCount}/${state.totalUploadCount}',
               style: TextStyle(
                 fontSize: 12,
@@ -2958,7 +2958,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
             ),
             const SizedBox(height: 4),
             Text(
-              isUploading ? (S.of(context)?.product_edit_uploading ?? 'Uploading...') : (S.of(context)?.product_edit_add_image ?? 'Add Image'),
+              isUploading ? (AppLocalizations.of(context)!?.product_edit_uploading ?? 'Uploading...') : (AppLocalizations.of(context)!?.product_edit_add_image ?? 'Add Image'),
               style: TextStyle(
                 fontSize: 12,
                 color: canAdd ? Colors.grey[700] : Colors.grey,
@@ -3779,9 +3779,9 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                 controller: nameController,
                 maxLength: ValidationConstants.maxAttributeNameLength,
                 decoration: InputDecoration(
-                  hintText: S.of(context)?.product_edit_attribute_name_hint ?? 'Please enter attribute name',
-                  helperText: S.of(context)?.product_edit_max_characters != null 
-                  ? S.of(context)!.product_edit_max_characters(ValidationConstants.maxAttributeNameLength)
+                  hintText: AppLocalizations.of(context)!?.product_edit_attribute_name_hint ?? 'Please enter attribute name',
+                  helperText: AppLocalizations.of(context)!?.product_edit_max_characters != null 
+                  ? AppLocalizations.of(context)!.product_edit_max_characters(ValidationConstants.maxAttributeNameLength)
                   : 'Max ${ValidationConstants.maxAttributeNameLength} characters',
                   errorText: errorText,
                   border: const OutlineInputBorder(),
@@ -4072,7 +4072,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(S.of(context)?.product_edit_edit_attribute ?? 'Edit Product Attributes'),
+          title: Text(AppLocalizations.of(context)!?.product_edit_edit_attribute ?? 'Edit Product Attributes'),
           content: ConstrainedBox(
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.7,
@@ -4129,8 +4129,8 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                     TextField(
                       controller: placeholderController,
                       decoration: _lightBorderDecoration.copyWith(
-                        labelText: S.of(context)?.product_edit_placeholder_label ?? 'Placeholder Text',
-                        hintText: S.of(context)?.product_edit_placeholder_hint ?? 'e.g., Please select color, Please enter model',
+                        labelText: AppLocalizations.of(context)!?.product_edit_placeholder_label ?? 'Placeholder Text',
+                        hintText: AppLocalizations.of(context)!?.product_edit_placeholder_hint ?? 'e.g., Please select color, Please enter model',
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -4165,7 +4165,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
               onPressed: () {
                 if (nameController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(S.of(context)?.product_edit_please_enter_attribute_name ?? 'Please enter attribute name')),
+                    SnackBar(content: Text(AppLocalizations.of(context)!?.product_edit_please_enter_attribute_name ?? 'Please enter attribute name')),
                   );
                   return;
                 }

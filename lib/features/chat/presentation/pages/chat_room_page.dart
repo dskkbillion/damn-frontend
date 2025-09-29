@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart'; // Import intl for date formatting
-import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_messages/chat_messages_bloc.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/chat_message_bubble.dart';
@@ -229,7 +229,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return Scaffold(
       backgroundColor: const Color(0xFFEDEDED), // Set background color here
@@ -251,17 +251,17 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         title: BlocBuilder<ChatMessagesBloc, ChatMessagesState>(
           builder: (context, state) {
             if (state is ChatMessagesLoaded) {
-              return Text(state.opponent.nickName ?? s.chat_unknown_user);
+              return Text(state.opponent.nickName ?? appLocalizations.chat_unknown_user);
             } else if (state is ChatMessagesLoading && state is! ChatMessagesInitial) {
                  final bloc = context.read<ChatMessagesBloc>();
                  if (bloc.state is ChatMessagesLoaded) {
-                     return Text((bloc.state as ChatMessagesLoaded).opponent.nickName ?? s.chat_unknown_user);
+                     return Text((bloc.state as ChatMessagesLoaded).opponent.nickName ?? appLocalizations.chat_unknown_user);
                  }
-                  return Text(s.chat_loading);
+                  return Text(appLocalizations.chat_loading);
             } else if (state is ChatMessagesInitial) {
-                 return Text(s.chat_loading);
+                 return Text(appLocalizations.chat_loading);
             } else {
-              return Text(s.chat_unknown_user);
+              return Text(appLocalizations.chat_unknown_user);
             }
           },
         ),
@@ -389,7 +389,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       return Center(child: CircularProgressIndicator());
                     } else if (state is ChatMessagesLoaded) {
                       if (state.messages.isEmpty) {
-                        return Center(child: Text(s.chat_no_messages));
+                        return Center(child: Text(appLocalizations.chat_no_messages));
                       }
                       
                       return Stack(
@@ -466,11 +466,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       );
                     } else if (state is ChatMessagesError) {
                       return Center(
-                        child: Text(s.chat_error_loading(state.message)),
+                        child: Text(appLocalizations.chat_error_loading(state.message)),
                       );
                     } else {
                       // Initial state or unexpected state
-                      return Center(child: Text(s.chat_loading));
+                      return Center(child: Text(appLocalizations.chat_loading));
                     }
                   },
                 ),

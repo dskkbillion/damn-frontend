@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
 import '../cubit/search_cubit.dart';
 import '../widgets/home_feed_list.dart';
@@ -20,7 +20,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
 
     return BlocProvider(
       create: (_) {
@@ -77,13 +77,13 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(s.search_failed(state.message)),
+                    Text(appLocalizations.search_failed(state.message)),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
                         context.read<SearchCubit>().searchProducts(widget.keyword);
                       },
-                      child: Text(s.home_retry),
+                      child: Text(appLocalizations.home_retry),
                     ),
                   ],
                 ),
@@ -91,7 +91,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
             } else if (state is SearchLoaded) {
               if (state.products.isEmpty) {
                 return Center(
-                  child: Text(s.search_no_results, style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                  child: Text(appLocalizations.search_no_results, style: const TextStyle(fontSize: 16, color: Colors.grey)),
                 );
               }
               

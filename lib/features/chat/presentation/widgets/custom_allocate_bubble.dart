@@ -3,7 +3,7 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import '../utils/markdown_style_helper.dart';
 
 /// Custom bubble widget for allocate message type - matching original warning style
@@ -40,21 +40,21 @@ class _CustomAllocateBubbleState extends State<CustomAllocateBubble> {
   
   // Generate title text based on sender/receiver
   String get _titleText {
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     final sellerName = widget.allocateData['sellerName'] ?? '卖家';
     
     if (widget.isCurrentUser) {
       // Current user is sender (buyer)
-      return s.chat_i_want_seller_to_see;
+      return appLocalizations.chat_i_want_seller_to_see;
     } else {
       // Current user is receiver (seller)
-      return "${sellerName}${s.chat_wants_to_see}";
+      return "${sellerName}${appLocalizations.chat_wants_to_see}";
     }
   }
   
   @override
   Widget build(BuildContext context) {
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -147,7 +147,7 @@ class _CustomAllocateBubbleState extends State<CustomAllocateBubble> {
                     child: Padding(
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
-                        _isExpanded ? s.chat_collapse : s.chat_expand,
+                        _isExpanded ? appLocalizations.chat_collapse : appLocalizations.chat_expand,
                         style: TextStyle(
                           color: Theme.of(context).primaryColor,
                           fontWeight: FontWeight.bold,

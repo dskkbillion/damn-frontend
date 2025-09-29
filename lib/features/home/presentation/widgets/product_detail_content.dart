@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/features/home/domain/entities/product_detail.dart';
 import 'package:dskk_flutter_refactor/features/home/presentation/widgets/product_images_carousel.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 
@@ -182,7 +182,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
                             const Icon(Icons.check_circle, color: Colors.green, size: 14),
                             const SizedBox(width: 2),
                             Text(
-                              S.of(context).product_detail_verified_label,
+                              AppLocalizations.of(context)!.product_detail_verified_label,
                               style: const TextStyle(
                                 color: Colors.green,
                                 fontSize: 12,
@@ -225,7 +225,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
                   children: [
                     const Icon(Icons.chat_bubble_outline, size: 16),
                     const SizedBox(width: 4),
-                    Text(S.of(context).product_detail_contact_seller),
+                    Text(AppLocalizations.of(context)!.product_detail_contact_seller),
                   ],
                 ),
               ),
@@ -252,7 +252,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
             child: Text(
               widget.isPreviewMode 
                   ? '预览模式' 
-                  : S.of(context).product_detail_published_status,
+                  : AppLocalizations.of(context)!.product_detail_published_status,
               style: const TextStyle(
                 fontSize: 12,
                 color: Colors.black87,
@@ -319,8 +319,8 @@ class _ProductDetailContentState extends State<ProductDetailContent>
                               children: [
                                 Text(
                                   _isDescriptionExpanded 
-                                    ? S.of(context).product_detail_collapse 
-                                    : S.of(context).product_detail_more,
+                                    ? AppLocalizations.of(context)!.product_detail_collapse 
+                                    : AppLocalizations.of(context)!.product_detail_more,
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.blue[600],
@@ -351,11 +351,11 @@ class _ProductDetailContentState extends State<ProductDetailContent>
   String _getTierDisplayName(String tierName, BuildContext context) {
     switch (tierName) {
       case 'Basic Tier':
-        return S.of(context).product_detail_basic_tier;
+        return AppLocalizations.of(context)!.product_detail_basic_tier;
       case 'Standard Tier':
-        return S.of(context).product_detail_standard_tier;
+        return AppLocalizations.of(context)!.product_detail_standard_tier;
       case 'Premium Tier':
-        return S.of(context).product_detail_premium_tier;
+        return AppLocalizations.of(context)!.product_detail_premium_tier;
       default:
         return tierName;
     }
@@ -459,7 +459,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(S.of(context).product_detail_delivery_times, style: const TextStyle(fontSize: 16)),
+            Text(AppLocalizations.of(context)!.product_detail_delivery_times, style: const TextStyle(fontSize: 16)),
             Text('${variant.editNum}', style: const TextStyle(fontSize: 16)),
           ],
         ),
@@ -475,7 +475,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(S.of(context).product_detail_delivery_period, style: const TextStyle(fontSize: 16)),
+            Text(AppLocalizations.of(context)!.product_detail_delivery_period, style: const TextStyle(fontSize: 16)),
             Text('${variant.deliveryDay}', style: const TextStyle(fontSize: 16)),
           ],
         ),
@@ -653,7 +653,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
       child: ExpansionTile(
         initiallyExpanded: true, // 默认展开
         title: Text(
-          S.of(context).product_detail_faq,
+          AppLocalizations.of(context)!.product_detail_faq,
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -744,7 +744,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            S.of(context).product_detail_case_showcase,
+            AppLocalizations.of(context)!.product_detail_case_showcase,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -760,7 +760,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
             ),
             child: Center(
               child: Text(
-                S.of(context).product_detail_no_cases,
+                AppLocalizations.of(context)!.product_detail_no_cases,
                 style: TextStyle(color: Colors.grey[600]),
               ),
             ),
@@ -780,7 +780,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                S.of(context).product_detail_reviews(widget.product.evaluateNum),
+                AppLocalizations.of(context)!.product_detail_reviews(widget.product.evaluateNum),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -796,7 +796,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(S.of(context).product_detail_view_all, 
+                    Text(AppLocalizations.of(context)!.product_detail_view_all, 
                         style: const TextStyle(color: Colors.grey)),
                     const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
                   ],
@@ -812,7 +812,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
                 child: Text(
-                  S.of(context).product_detail_no_reviews,
+                  AppLocalizations.of(context)!.product_detail_no_reviews,
                   style: const TextStyle(color: Colors.grey, fontSize: 14),
                 ),
               ),
@@ -836,7 +836,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
                         children: [
                           Flexible(
                             child: Text(
-                              S.of(context).product_detail_sample_user, 
+                              AppLocalizations.of(context)!.product_detail_sample_user, 
                               style: const TextStyle(fontWeight: FontWeight.bold),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -851,12 +851,12 @@ class _ProductDetailContentState extends State<ProductDetailContent>
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Text(S.of(context).product_detail_basic_package, 
+                          Text(AppLocalizations.of(context)!.product_detail_basic_package, 
                               style: const TextStyle(color: Colors.grey, fontSize: 12)),
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text(S.of(context).product_detail_sample_review),
+                      Text(AppLocalizations.of(context)!.product_detail_sample_review),
                     ],
                   ),
                 ),

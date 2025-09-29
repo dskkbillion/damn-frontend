@@ -8,7 +8,7 @@ import 'package:image_picker/image_picker.dart'; // Import image_picker
 import 'package:record/record.dart'; // Import record
 import 'package:permission_handler/permission_handler.dart'; // Import permission_handler
 import 'package:path_provider/path_provider.dart'; // Import path_provider
-import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 
 import '../bloc/chat_messages/chat_messages_bloc.dart';
@@ -83,12 +83,12 @@ class _MessageInputBarState extends State<MessageInputBar> {
 
   Future<void> _startRecording() async {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     // --- Add Web Check --- 
     if (kIsWeb) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(s.chat_web_recording_not_supported)),
+        SnackBar(content: Text(appLocalizations.chat_web_recording_not_supported)),
       );
       return;
     }
@@ -104,15 +104,15 @@ class _MessageInputBarState extends State<MessageInputBar> {
         showDialog(
             context: context,
             builder: (context) => AlertDialog(
-                title: Text(s.chat_mic_permission_denied_title),
-                content: Text(s.chat_mic_permission_denied_message),
+                title: Text(appLocalizations.chat_mic_permission_denied_title),
+                content: Text(appLocalizations.chat_mic_permission_denied_message),
                 actions: <Widget>[
                     TextButton(
-                        child: Text(s.chat_permission_denied_cancel),
+                        child: Text(appLocalizations.chat_permission_denied_cancel),
                         onPressed: () => Navigator.of(context).pop(),
                     ),
                     TextButton(
-                        child: Text(s.chat_permission_denied_settings),
+                        child: Text(appLocalizations.chat_permission_denied_settings),
                         onPressed: () {
                             Navigator.of(context).pop();
                             openAppSettings(); // Open app settings
@@ -134,7 +134,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
     if (!status.isGranted) {
       // FIX: Provide slightly more context if denied after request
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(s.chat_mic_permission_denied)),
+        SnackBar(content: Text(appLocalizations.chat_mic_permission_denied)),
       );
       return;
     }
@@ -168,7 +168,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
     } catch (e) {
       print('Error starting recording: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(s.chat_recording_error('$e'))),
+        SnackBar(content: Text(appLocalizations.chat_recording_error('$e'))),
       );
       _resetRecordingState();
     }
@@ -187,7 +187,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
 
   Future<void> _stopRecordingAndSend() async {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     _recordingTimer?.cancel();
     try {
@@ -208,7 +208,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
     } catch (e) {
       print('Error stopping recording: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(s.chat_stop_recording_error('$e'))),
+        SnackBar(content: Text(appLocalizations.chat_stop_recording_error('$e'))),
       );
     } finally {
       if(mounted) {
@@ -248,7 +248,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
 
   Future<void> _pickImage(ImageSource source) async {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     try {
       // Use ImageUploadHelper for consistent image processing
@@ -305,7 +305,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
     } catch (e) {
        print('Error picking image: $e');
        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.chat_image_picking_error('$e'))), 
+          SnackBar(content: Text(appLocalizations.chat_image_picking_error('$e'))), 
       ); 
     }
   }
@@ -531,21 +531,21 @@ class _MessageInputBarState extends State<MessageInputBar> {
     Navigator.of(context).pop();
     
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     // 使用国际化字符串构建Markdown示例
     final String markdownExample = """
-# ${s.chat_markdown_example_title1}
-## ${s.chat_markdown_example_title2}
+# ${appLocalizations.chat_markdown_example_title1}
+## ${appLocalizations.chat_markdown_example_title2}
 
-${s.chat_markdown_example_bold_italic}
+${appLocalizations.chat_markdown_example_bold_italic}
 
-- ${s.chat_markdown_example_list1}
-- ${s.chat_markdown_example_list2}
-  - ${s.chat_markdown_example_list3}
+- ${appLocalizations.chat_markdown_example_list1}
+- ${appLocalizations.chat_markdown_example_list2}
+  - ${appLocalizations.chat_markdown_example_list3}
 
-> ${s.chat_markdown_example_quote}
-> ${s.chat_markdown_example_quote}
+> ${appLocalizations.chat_markdown_example_quote}
+> ${appLocalizations.chat_markdown_example_quote}
 
 [This is a link](https://flutter.dev)
 
@@ -555,10 +555,10 @@ void main() {
 }
 ```
 
-${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
+${appLocalizations.chat_markdown_example_table_col1} | ${appLocalizations.chat_markdown_example_table_col2} |
 |-----|-----|
-| ${s.chat_markdown_example_table_content1} | ${s.chat_markdown_example_table_content2} |
-| ${s.chat_markdown_example_table_content3} | ${s.chat_markdown_example_table_content4} |
+| ${appLocalizations.chat_markdown_example_table_content1} | ${appLocalizations.chat_markdown_example_table_content2} |
+| ${appLocalizations.chat_markdown_example_table_content3} | ${appLocalizations.chat_markdown_example_table_content4} |
 """;
 
     // 发送Markdown消息
@@ -569,7 +569,7 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
 
   void _showAttachmentMenu(BuildContext context) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
      
     showModalBottomSheet(
         context: context,
@@ -579,14 +579,14 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
               children: <Widget>[
                 ListTile(
                     leading: const Icon(Icons.photo_library),
-                    title: Text(s.chat_pick_from_gallery),
+                    title: Text(appLocalizations.chat_pick_from_gallery),
                     onTap: () {
                       Navigator.of(context).pop(); // Close bottom sheet
                       _pickImage(ImageSource.gallery);
                     }),
                 ListTile(
                   leading: const Icon(Icons.photo_camera),
-                  title: Text(s.chat_take_photo),
+                  title: Text(appLocalizations.chat_take_photo),
                   onTap: () {
                      Navigator.of(context).pop(); // Close bottom sheet
                     _pickImage(ImageSource.camera);
@@ -604,7 +604,7 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
                 // 添加Markdown消息示例按钮
                 ListTile(
                   leading: const Icon(Icons.text_format),
-                  title: Text(s.chat_send_markdown),
+                  title: Text(appLocalizations.chat_send_markdown),
                   onTap: _sendMarkdownExample,
                 ),
                  // TODO: Add options for file selection etc. later
@@ -617,7 +617,7 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
   // Helper widget builders
   Widget _buildVoiceKeyboardButton() {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return IconButton(
       icon: Icon(_isVoiceMode ? Icons.keyboard_alt_outlined : Icons.mic_none_outlined),
@@ -628,14 +628,14 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
         // Hide keyboard if switching to voice mode
         if (_isVoiceMode) FocusScope.of(context).unfocus();
       },
-      tooltip: _isVoiceMode ? s.chat_switch_to_text : s.chat_switch_to_voice,
+      tooltip: _isVoiceMode ? appLocalizations.chat_switch_to_text : appLocalizations.chat_switch_to_voice,
       color: Colors.grey[700],
     );
   }
 
   Widget _buildTextField() {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return TextField(
       controller: _controller,
@@ -643,7 +643,7 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
       minLines: 1,
       textInputAction: TextInputAction.newline, // Or send on enter? Decide behavior
       decoration: InputDecoration(
-        hintText: s.chat_enter_message,
+        hintText: appLocalizations.chat_enter_message,
         filled: true,
         fillColor: Colors.grey[100],
         contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
@@ -666,10 +666,10 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
 
   Widget _buildPressToTalkButton() {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     Color buttonColor = _isRecording ? Colors.red : Theme.of(context).primaryColor;
-    String buttonText = _isRecording ? s.chat_release_to_send(_recordingDuration) : s.chat_press_to_talk;
+    String buttonText = _isRecording ? appLocalizations.chat_release_to_send(_recordingDuration) : appLocalizations.chat_press_to_talk;
 
     return GestureDetector(
       // Use LongPressDraggable or simple LongPress handlers based on complexity needed
@@ -710,26 +710,26 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
 
   Widget _buildAttachmentButton() {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return IconButton(
       icon: const Icon(Icons.add_circle_outline),
       onPressed: () => _showAttachmentMenu(context),
-      tooltip: s.chat_attach,
+      tooltip: appLocalizations.chat_attach,
       color: Colors.grey[700],
     );
   }
 
   Widget _buildSendButton() {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return Visibility(
       visible: _canSend && !_isVoiceMode, // Show only if text entered and not in voice mode
       child: IconButton(
         icon: const Icon(Icons.send),
         onPressed: _sendMessage,
-        tooltip: s.chat_send,
+        tooltip: appLocalizations.chat_send,
         color: Theme.of(context).primaryColor, // Use theme color
       ),
     );

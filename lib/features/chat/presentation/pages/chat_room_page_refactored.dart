@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
 import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
@@ -290,7 +290,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
   
   @override
   Widget build(BuildContext context) {
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return MultiBlocProvider(
       providers: [
@@ -322,13 +322,13 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
           title: BlocBuilder<chat_cubit.ChatCubit, chat_cubit.ChatState>(
             builder: (context, state) {
               return state.when(
-                initial: () => Text(s.chat_loading),
-                loading: () => Text(s.chat_loading),
+                initial: () => Text(appLocalizations.chat_loading),
+                loading: () => Text(appLocalizations.chat_loading),
                 ready: (chatRoom, lastReceivedMessage, hasNewMessage) {
                   // 如果_currentUserId还没加载完成，显示加载中
                   if (_currentUserId == null) {
                     print('DEBUG: _currentUserId is still loading when trying to display title');
-                    return Text(s.chat_loading);
+                    return Text(appLocalizations.chat_loading);
                   }
                   
                   // 找到当前用户的参与者对象
@@ -353,9 +353,9 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                   
                   print('DEBUG: Title display - currentUserId=$_currentUserId, currentParticipantId=${currentUserParticipant.id}, opponentId=${opponent.id}, opponentName=${opponent.nickName}');
                   
-                  return Text(opponent.nickName ?? s.chat_unknown_user);
+                  return Text(opponent.nickName ?? appLocalizations.chat_unknown_user);
                 },
-                error: (message) => Text(s.chat_unknown_user),
+                error: (message) => Text(appLocalizations.chat_unknown_user),
               );
             },
           ),
@@ -496,7 +496,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                               );
                             },
                             error: (message) => Center(
-                              child: Text(s.chat_error_loading(message)),
+                              child: Text(appLocalizations.chat_error_loading(message)),
                             ),
                           );
                         },

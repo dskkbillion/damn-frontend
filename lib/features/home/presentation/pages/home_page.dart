@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
 import '../../domain/entities/banner.dart' as home_banner;
 import '../../domain/entities/home_feed_item.dart';
@@ -19,10 +19,10 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     // 注意：在预览应用中，HomeBloc 已经在上层通过 BlocProvider 提供
-    return HomeView(title: s.home_title);
+    return HomeView(title: appLocalizations.home_title);
   }
 }
 
@@ -55,7 +55,7 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return Scaffold(
       appBar: AppBar(
@@ -97,7 +97,7 @@ class _HomeViewState extends State<HomeView> {
                           // 显示点击信息
                           // ScaffoldMessenger.of(context).showSnackBar(
                           //   SnackBar(
-                          //     content: Text(s.home_banner_clicked(banner.targetType, banner.targetValue)),
+                          //     content: Text(appLocalizations.home_banner_clicked(banner.targetType, banner.targetValue)),
                           //     duration: const Duration(seconds: 1),
                           //   ),
                           // );
@@ -165,7 +165,7 @@ class _HomeViewState extends State<HomeView> {
                               // 显示点击信息
                               // ScaffoldMessenger.of(context).showSnackBar(
                               //   SnackBar(
-                              //     content: Text(s.home_product_card_clicked(item.name)),
+                              //     content: Text(appLocalizations.home_product_card_clicked(item.name)),
                               //     duration: const Duration(seconds: 1),
                               //   ),
                               // );
@@ -178,7 +178,7 @@ class _HomeViewState extends State<HomeView> {
                               // 显示点击信息
                               // ScaffoldMessenger.of(context).showSnackBar(
                               //   SnackBar(
-                              //     content: Text(s.home_recommend_clicked(item.name)),
+                              //     content: Text(appLocalizations.home_recommend_clicked(item.name)),
                               //     duration: const Duration(seconds: 1),
                               //   ),
                               // );
@@ -261,7 +261,7 @@ class _HomeViewState extends State<HomeView> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    s.home_loading_failed(state.message),
+                    appLocalizations.home_loading_failed(state.message),
                     style: const TextStyle(color: Colors.red),
                   ),
                   const SizedBox(height: 16),
@@ -269,7 +269,7 @@ class _HomeViewState extends State<HomeView> {
                     onPressed: () {
                       context.read<HomeBloc>().add(const LoadHomeData());
                     },
-                    child: Text(s.home_retry),
+                    child: Text(appLocalizations.home_retry),
                   ),
                 ],
               ),
@@ -296,7 +296,7 @@ class _HomeViewState extends State<HomeView> {
   /// 构建搜索栏
   Widget _buildSearchBar(BuildContext context) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return GestureDetector(
       onTap: () {
@@ -317,7 +317,7 @@ class _HomeViewState extends State<HomeView> {
           ),
           Expanded(
               child: Text(
-                s.home_search_hint,
+                appLocalizations.home_search_hint,
                 style: const TextStyle(color: Colors.grey),
               ),
             ),

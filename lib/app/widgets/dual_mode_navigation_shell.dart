@@ -6,7 +6,7 @@ import '../../app/app_mode.dart';
 import 'main_shell_page.dart';
 import '../../features/seller/presentation/widgets/seller_shell_page.dart';
 import '../navigation/app_router_config.dart';
-import '../../generated/l10n.dart';
+import '../../generated/app_localizations.dart';
 import '../../core/utils/haptic_utils.dart';
 import '../../core/services/profile_preloader_service.dart';
 import '../../features/profile/presentation/bloc/profile_bloc.dart';
@@ -101,7 +101,7 @@ class _DualModeNavigationShellState extends ConsumerState<DualModeNavigationShel
   Widget _buildSellerBottomNavigationBar(_SellerNavigationShellWrapper wrapper) {
     return Consumer(
       builder: (context, ref, child) {
-        final S s = S.of(context);
+        final appLocalizations = AppLocalizations.of(context)!;
         
         return BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
@@ -112,22 +112,22 @@ class _DualModeNavigationShellState extends ConsumerState<DualModeNavigationShel
             BottomNavigationBarItem(
               icon: const Icon(Icons.analytics_outlined),
               activeIcon: const Icon(Icons.analytics),
-              label: s.nav_seller_analytics,
+              label: appLocalizations.nav_seller_analytics,
             ),
             BottomNavigationBarItem(
               icon: const Icon(Icons.inventory_2_outlined),
               activeIcon: const Icon(Icons.inventory_2),
-              label: s.nav_seller_products,
+              label: appLocalizations.nav_seller_products,
             ),
             BottomNavigationBarItem(
               icon: const Icon(Icons.chat_bubble_outline),
               activeIcon: const Icon(Icons.chat_bubble),
-              label: s.nav_seller_messages,
+              label: appLocalizations.nav_seller_messages,
             ),
             BottomNavigationBarItem(
               icon: const Icon(Icons.account_circle_outlined),
               activeIcon: const Icon(Icons.account_circle),
-              label: s.nav_seller_profile,
+              label: appLocalizations.nav_seller_profile,
             ),
           ],
           currentIndex: wrapper.currentIndex,

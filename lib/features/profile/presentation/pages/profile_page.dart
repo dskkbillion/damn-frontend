@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
 import '../../../../core/services/profile_preloader_service.dart';
 import '../../../../app/app_mode.dart';
@@ -51,10 +51,10 @@ class _ProfilePageState extends State<ProfilePage> {
             // 不需要重新获取，ProfileUpdated 状态已经包含最新数据
           } else if (state is ProfileAvatarUploadError) {
             // 处理头像上传失败，显示友好的错误提示，便于调试
-            final S s = S.of(context);
+            final appLocalizations = AppLocalizations.of(context)!;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(s.profile_avatar_upload_failed),
+                content: Text(appLocalizations.profile_avatar_upload_failed),
                 backgroundColor: Colors.red,
                 duration: const Duration(seconds: 3),
               ),
@@ -64,7 +64,7 @@ class _ProfilePageState extends State<ProfilePage> {
         child: BlocBuilder<ProfileBloc, ProfileState>(
           builder: (context, state) {
             // 获取国际化资源
-            final S s = S.of(context);
+            final appLocalizations = AppLocalizations.of(context)!;
             
             print('[ProfilePage] BlocBuilder received state: ${state.runtimeType}');
             
@@ -82,7 +82,7 @@ class _ProfilePageState extends State<ProfilePage> {
             }
 
             if (state is ProfileError) {
-              return Center(child: Text(s.profile_loading_error(state.message)));
+              return Center(child: Text(appLocalizations.profile_loading_error(state.message)));
             }
             
             return _buildMainContent(context, state); 
@@ -94,11 +94,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildLoginPrompt(BuildContext context) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return Scaffold(
       appBar: AppBar(
-        title: Text(s.profile_personal_center),
+        title: Text(appLocalizations.profile_personal_center),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: Center(
@@ -106,7 +106,7 @@ class _ProfilePageState extends State<ProfilePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              s.profile_login_prompt,
+              appLocalizations.profile_login_prompt,
               style: const TextStyle(fontSize: 18),
             ),
             const SizedBox(height: 24),
@@ -116,7 +116,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 // TODO: 使用导航服务
                 // navigationService.navigateToLogin();
               },
-              child: Text(s.profile_login_button),
+              child: Text(appLocalizations.profile_login_button),
             ),
           ],
         ),
@@ -126,7 +126,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildMainContent(BuildContext context, ProfileState state) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return Scaffold(
       body: SafeArea(
@@ -164,11 +164,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 // 我的多看
                 ProfileMenuSection(
-                  title: s.profile_my_dskk,
+                  title: appLocalizations.profile_my_dskk,
                   menuItems: [
                     MenuItem(
                       icon: Icons.star_border,
-                      text: s.profile_favorites,
+                      text: appLocalizations.profile_favorites,
                       onTap: () {
                         // 导航到收藏列表
                         context.go('/favorites');
@@ -179,11 +179,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 // 我的钱包
                 ProfileMenuSection(
-                  title: s.profile_my_wallet,
+                  title: appLocalizations.profile_my_wallet,
                   menuItems: [
                     MenuItem(
                       icon: Icons.account_balance_wallet,
-                      text: s.profile_wallet,
+                      text: appLocalizations.profile_wallet,
                       onTap: () {
                         // 使用go_router导航到钱包页面
                         context.go(ProfileRoutes.walletPath);
@@ -194,11 +194,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 // 设置
                 ProfileMenuSection(
-                  title: s.profile_settings,
+                  title: appLocalizations.profile_settings,
                   menuItems: [
                     MenuItem(
                       icon: Icons.security,
-                      text: s.profile_account_security,
+                      text: appLocalizations.profile_account_security,
                       onTap: () {
                         // 使用go_router导航到账号安全页面
                         context.go(ProfileRoutes.accountSecurityPath);
@@ -206,7 +206,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     MenuItem(
                       icon: Icons.notifications_none,
-                      text: s.profile_message_notifications,
+                      text: appLocalizations.profile_message_notifications,
                       onTap: () {
                         // TODO: 导航到消息通知页面
                         // navigationService.navigateToNotifications();
@@ -215,7 +215,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     // 添加语言设置选项
                     MenuItem(
                       icon: Icons.language,
-                      text: s.language_settings,
+                      text: appLocalizations.language_settings,
                       onTap: () {
                         context.go(ProfileRoutes.languageSettingsPath);
                       },
@@ -225,11 +225,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 // 关于我们
                 ProfileMenuSection(
-                  title: s.profile_about_us,
+                  title: appLocalizations.profile_about_us,
                   menuItems: [
                     MenuItem(
                       icon: Icons.smart_toy_outlined,
-                      text: s.profile_assistant_mission,
+                      text: appLocalizations.profile_assistant_mission,
                       onTap: () {
                         // 导航到小帮手的使命页面
                         context.go(ProfileRoutes.assistantMissionPath);

@@ -9,7 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:get_it/get_it.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/core/services/file_upload_service.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/cubit/message_queue/message_queue_cubit.dart';
@@ -117,11 +117,11 @@ class _CustomInputBarState extends State<CustomInputBar> {
   }
 
   Future<void> _startRecording() async {
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     if (kIsWeb) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(s.chat_web_recording_not_supported)),
+        SnackBar(content: Text(appLocalizations.chat_web_recording_not_supported)),
       );
       return;
     }
@@ -133,15 +133,15 @@ class _CustomInputBarState extends State<CustomInputBar> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text(s.chat_mic_permission_denied_title),
-          content: Text(s.chat_mic_permission_denied_message),
+          title: Text(appLocalizations.chat_mic_permission_denied_title),
+          content: Text(appLocalizations.chat_mic_permission_denied_message),
           actions: [
             TextButton(
-              child: Text(s.chat_permission_denied_cancel),
+              child: Text(appLocalizations.chat_permission_denied_cancel),
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
-              child: Text(s.chat_permission_denied_settings),
+              child: Text(appLocalizations.chat_permission_denied_settings),
               onPressed: () {
                 Navigator.of(context).pop();
                 openAppSettings();
@@ -159,7 +159,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
 
     if (!status.isGranted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(s.chat_mic_permission_denied)),
+        SnackBar(content: Text(appLocalizations.chat_mic_permission_denied)),
       );
       return;
     }
@@ -187,7 +187,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(s.chat_recording_error('$e'))),
+        SnackBar(content: Text(appLocalizations.chat_recording_error('$e'))),
       );
       _resetRecordingState();
     }
@@ -205,7 +205,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
   }
 
   Future<void> _stopRecordingAndSend() async {
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
 
     _recordingTimer?.cancel();
     try {
@@ -223,7 +223,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(s.chat_stop_recording_error('$e'))),
+        SnackBar(content: Text(appLocalizations.chat_stop_recording_error('$e'))),
       );
     } finally {
       if (mounted) {
@@ -260,7 +260,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     try {
       ImageProcessResult? result;
@@ -360,13 +360,13 @@ class _CustomInputBarState extends State<CustomInputBar> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(s.chat_image_picking_error('$e'))),
+        SnackBar(content: Text(appLocalizations.chat_image_picking_error('$e'))),
       );
     }
   }
 
   Future<void> _pickFile() async {
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     try {
       // 使用 FilePicker 选择文件

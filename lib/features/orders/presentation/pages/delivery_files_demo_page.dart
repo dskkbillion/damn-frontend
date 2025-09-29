@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import '../widgets/delivery_file_viewer.dart';
 
 /// 交付文件预览和下载功能演示页面
@@ -8,7 +8,7 @@ class DeliveryFilesDemoPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = S.of(context)!;
+    final l10n = AppLocalizations.of(context)!;
     
     // 模拟交付文件数据
     final deliveryFiles = [

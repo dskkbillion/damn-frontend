@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/country_code.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/country_code_selector.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 手机号输入框 Widget，支持国际区号选择
 class PhoneInputField extends StatelessWidget {
@@ -24,7 +24,7 @@ class PhoneInputField extends StatelessWidget {
       controller: controller,
       keyboardType: TextInputType.phone,
       decoration: InputDecoration(
-        labelText: S.of(context)?.auth_phone_number ?? 'Phone Number',
+        labelText: AppLocalizations.of(context)!?.auth_phone_number ?? 'Phone Number',
         border: const OutlineInputBorder(),
         prefixIcon: Padding(
           padding: const EdgeInsets.only(left: 8.0),
@@ -38,7 +38,7 @@ class PhoneInputField extends StatelessWidget {
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return S.of(context)?.auth_phone_validation_empty ?? 'Please enter phone number';
+          return AppLocalizations.of(context)!?.auth_phone_validation_empty ?? 'Please enter phone number';
         }
         // 根据不同国家进行验证
         return _validatePhoneNumber(value, selectedCountry.code, context);
@@ -47,7 +47,7 @@ class PhoneInputField extends StatelessWidget {
   }
 
   String? _validatePhoneNumber(String value, String countryCode, BuildContext context) {
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context)!;
     // 移除所有非数字字符
     final digitsOnly = value.replaceAll(RegExp(r'\D'), '');
     

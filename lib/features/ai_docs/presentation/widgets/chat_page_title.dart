@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:collection/collection.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/bloc/ai_chat/ai_chat_bloc.dart';
 
 /// 聊天页面的可交互标题组件
@@ -11,7 +11,7 @@ class ChatPageTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return BlocBuilder<AiChatBloc, AiChatState>(
       buildWhen: (previous, current) => 
@@ -24,7 +24,7 @@ class ChatPageTitle extends StatelessWidget {
         
         // 如果没有选中会话，显示默认标题
         if (selectedId == null) {
-          return Text(s.ai_docs_assistant_title);
+          return Text(appLocalizations.ai_docs_assistant_title);
         }
         
         // 查找选中的会话
@@ -33,11 +33,11 @@ class ChatPageTitle extends StatelessWidget {
         );
         
         if (selectedConversation == null) {
-          return Text(s.ai_docs_loading);
+          return Text(appLocalizations.ai_docs_loading);
         }
         
-        final title = selectedConversation.title ?? s.ai_docs_unnamed_conversation;
-        final shouldShowAIGenerate = _shouldShowAIGenerateButton(state, selectedConversation, title);
+        final title = selectedConversation.title ?? appLocalizations.ai_docs_unnamed_conversation;
+        final shouldShowAIGenerate = _shouldShowAIGenerateButton(state, selectedConversation, title, appLocalizations.ai_docs_unnamed_conversation);
         
         return Row(
           children: [
@@ -96,7 +96,7 @@ class ChatPageTitle extends StatelessWidget {
                               ),
                             const SizedBox(width: 4),
                             Text(
-                              isGenerating ? s.ai_docs_generating_title : s.ai_docs_generate_title,
+                              isGenerating ? appLocalizations.ai_docs_generating_title : appLocalizations.ai_docs_generate_title,
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Theme.of(context).colorScheme.primary,
@@ -119,12 +119,13 @@ class ChatPageTitle extends StatelessWidget {
 
   /// 判断是否应该显示AI生成标题按钮
   bool _shouldShowAIGenerateButton(
-    AiChatState state, 
-    AiConversationEntity conversation, 
-    String title
+    AiChatState state,
+    AiConversationEntity conversation,
+    String title,
+    String unnamedConversationTitle
   ) {
     // 1. 检查是否为默认标题
-    final isDefaultTitle = title == S.current.ai_docs_unnamed_conversation || 
+    final isDefaultTitle = title == unnamedConversationTitle ||
                           title.isEmpty ||
                           title.trim().isEmpty;
     
@@ -195,14 +196,14 @@ class _TitleEditDialogState extends State<_TitleEditDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return AlertDialog(
-      title: Text(s.ai_docs_edit_title),
+      title: Text(appLocalizations.ai_docs_edit_title),
       content: TextField(
         controller: _controller,
         decoration: InputDecoration(
-          hintText: s.ai_docs_edit_title_hint,
+          hintText: appLocalizations.ai_docs_edit_title_hint,
           counterText: '',
           border: const OutlineInputBorder(),
         ),
@@ -213,7 +214,7 @@ class _TitleEditDialogState extends State<_TitleEditDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text(s.ai_docs_cancel),
+          child: Text(appLocalizations.ai_docs_cancel),
         ),
         BlocBuilder<AiChatBloc, AiChatState>(
           buildWhen: (previous, current) => 
@@ -233,7 +234,7 @@ class _TitleEditDialogState extends State<_TitleEditDialog> {
                       color: Theme.of(dialogBuilderContext).colorScheme.primary,
                     ),
                   )
-                : Text(s.profile_save),
+                : Text(appLocalizations.profile_save),
             );
           },
         ),

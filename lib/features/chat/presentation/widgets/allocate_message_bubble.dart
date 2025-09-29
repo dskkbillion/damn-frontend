@@ -4,7 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart'; // 添加日期格式化导入
 import '../utils/markdown_style_helper.dart';
 import '../../domain/entities/chat_message.dart';
-import 'package:dskk_flutter_refactor/generated/l10n.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
 class AllocateMessageBubble extends StatefulWidget {
   final ChatMessage message;
@@ -31,21 +31,21 @@ class _AllocateMessageBubbleState extends State<AllocateMessageBubble> {
   // 根据当前用户是发送者还是接收者生成不同的标题文本
   String get _titleText {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     if (widget.isCurrentUserMessage) {
       // 当前用户是发送者（买家）
-      return s.chat_i_want_seller_to_see;
+      return appLocalizations.chat_i_want_seller_to_see;
     } else {
       // 当前用户是接收者（卖家）
-      return "${widget.sellerName}${s.chat_wants_to_see}";
+      return "${widget.sellerName}${appLocalizations.chat_wants_to_see}";
     }
   }
   
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final S s = S.of(context);
+    final appLocalizations = AppLocalizations.of(context)!;
     
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -136,7 +136,7 @@ class _AllocateMessageBubbleState extends State<AllocateMessageBubble> {
                     child: Padding(
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
-                        _isExpanded ? s.chat_collapse : s.chat_expand,
+                        _isExpanded ? appLocalizations.chat_collapse : appLocalizations.chat_expand,
                         style: TextStyle(
                           color: Theme.of(context).primaryColor,
                           fontWeight: FontWeight.bold,
