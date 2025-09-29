@@ -301,17 +301,19 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Flexible(
-            child: MarkdownBody(
-              data: widget.message.content,
-              selectable: true, // 允许用户选择文本
-              styleSheet: MarkdownStyleHelper.buildChatBubbleStyle(context, textColor),
-              onTapLink: (text, href, title) {
-                // 处理链接点击
-                if (href != null) {
-                  launchUrl(Uri.parse(href), mode: LaunchMode.externalApplication);
-                }
-              },
-              shrinkWrap: true, // 确保内容自适应并限制在消息气泡内
+            child: SelectionArea(
+              child: MarkdownBody(
+                data: widget.message.content,
+                selectable: true, // 允许用户选择文本
+                styleSheet: MarkdownStyleHelper.buildChatBubbleStyle(context, textColor),
+                onTapLink: (text, href, title) {
+                  // 处理链接点击
+                  if (href != null) {
+                    launchUrl(Uri.parse(href), mode: LaunchMode.externalApplication);
+                  }
+                },
+                shrinkWrap: true, // 确保内容自适应并限制在消息气泡内
+              ),
             ),
           ),
           if (widget.isStreaming)

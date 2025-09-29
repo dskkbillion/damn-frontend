@@ -51,7 +51,7 @@ class ChatMessageWidget extends StatelessWidget {
           children: [
             // TODO: Display sender name/icon if needed (e.g., for group chats or distinct AI)
             // TODO: Handle file attachments display (e.g., show image thumbnail or file icon)
-            Text(
+            SelectableText(
               message.content,
               style: TextStyle(color: textColor, fontSize: 16),
             ),

@@ -177,11 +177,14 @@ class _ChatMessageListState extends State<ChatMessageList> {
                }
 
               // --- Build Message List ---
-              return ListView.builder(
-                controller: _scrollController, 
-                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
-                itemCount: _getItemCount(state),
-                itemBuilder: (context, index) => _buildItem(context, state, index),
+              // Wrap with SelectionArea for better text selection on iOS
+              return SelectionArea(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+                  itemCount: _getItemCount(state),
+                  itemBuilder: (context, index) => _buildItem(context, state, index),
+                ),
               );
             },
           ),

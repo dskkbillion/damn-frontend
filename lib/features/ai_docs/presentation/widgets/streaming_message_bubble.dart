@@ -46,8 +46,8 @@ class StreamingMessageBubble extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 显示流式文本
-            Text(
+            // 显示流式文本 - 使用 SelectableText 支持文本选择和复制
+            SelectableText(
               streamingText.isEmpty ? '...' : streamingText,
               style: TextStyle(
                 fontSize: 16,
