@@ -290,7 +290,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
   
   @override
   Widget build(BuildContext context) {
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return MultiBlocProvider(
       providers: [

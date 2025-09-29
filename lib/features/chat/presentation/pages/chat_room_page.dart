@@ -229,7 +229,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final s = S.of(context);
+    final S s = S.of(context);
     
     return Scaffold(
       backgroundColor: const Color(0xFFEDEDED), // Set background color here

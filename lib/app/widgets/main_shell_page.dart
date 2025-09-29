@@ -26,9 +26,9 @@ class MainShellPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // 读取是否显示开发tab的配置
     final showDevTab = ref.watch(showDevTabProvider);
-    // 获取国际化资源
-    final s = S.of(context);
-    
+    // 获取国际化资源 - 确保非空
+    final S s = S.of(context);
+
     // 根据配置构建导航栏项目
     final List<BottomNavigationBarItem> items = [
       BottomNavigationBarItem(
