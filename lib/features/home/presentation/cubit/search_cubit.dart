@@ -13,16 +13,20 @@ class SearchCubit extends Cubit<SearchState> {
       : super(SearchInitial());
 
   Future<void> searchProducts(String keyword) async {
+    if (isClosed) return; // 防止在closed状态下emit
+
     emit(SearchLoading());
-    
+
     final result = await searchProductsUsecase(
       SearchProductsParams(keyword: keyword, page: 1),
     );
-    
+
+    if (isClosed) return; // 防止在异步操作完成后emit到已关闭的cubit
+
     result.fold(
       (failure) => emit(SearchError(message: failure.message)),
       (products) => emit(SearchLoaded(
-        products: products, 
+        products: products,
         currentPage: 1,
         hasMore: products.length == 20,
         isLoadingMore: false,
@@ -31,6 +35,8 @@ class SearchCubit extends Cubit<SearchState> {
   }
 
   Future<void> loadMoreProducts(String keyword) async {
+    if (isClosed) return; // 防止在closed状态下操作
+
     final currentState = state;
     if (currentState is SearchLoaded) {
       emit(SearchLoaded(
@@ -39,14 +45,16 @@ class SearchCubit extends Cubit<SearchState> {
         hasMore: currentState.hasMore,
         isLoadingMore: true,
       ));
-      
+
       final result = await searchProductsUsecase(
         SearchProductsParams(
-          keyword: keyword, 
+          keyword: keyword,
           page: currentState.currentPage + 1,
         ),
       );
-      
+
+      if (isClosed) return; // 防止在异步操作完成后emit到已关闭的cubit
+
       result.fold(
         (failure) => emit(SearchError(message: failure.message)),
         (newProducts) {

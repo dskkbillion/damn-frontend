@@ -21,9 +21,18 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
   Widget build(BuildContext context) {
     // 获取国际化资源
     final s = S.of(context);
-    
+
     return BlocProvider(
-      create: (_) => GetIt.I<SearchCubit>()..searchProducts(widget.keyword),
+      create: (_) {
+        final cubit = GetIt.I<SearchCubit>();
+        // 延迟执行搜索，避免在构建过程中立即触发
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (context.mounted) {
+            cubit.searchProducts(widget.keyword);
+          }
+        });
+        return cubit;
+      },
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.white,

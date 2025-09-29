@@ -146,7 +146,7 @@ class SmartRouterUtils {
 
 /// 页面构建器扩展 - 基础稳定版本
 extension SmartPageBuilder on GoRouterState {
-  /// 创建页面，使用唯一key策略避免重复
+  /// 创建页面，使用稳定key策略确保正确的页面导航动画
   MaterialPage<T> buildSmartPage<T extends Object?>(
     Widget child, {
     String? name,
@@ -154,11 +154,20 @@ extension SmartPageBuilder on GoRouterState {
     Object? arguments,
     bool maintainState = true,
     bool fullscreenDialog = false,
+    bool forceNewInstance = false, // 新增参数：是否强制创建新实例
   }) {
-    // 使用路径+参数+时间戳作为key，确保每个页面实例的唯一性
-    final timestamp = DateTime.now().microsecondsSinceEpoch;
-    final pathWithParams = '${matchedLocation}_${pathParameters.toString()}_${uri.queryParameters.toString()}_$timestamp';
-    final finalKey = pathWithParams
+    String finalKey;
+
+    if (forceNewInstance) {
+      // 只有明确需要强制创建新实例时才使用时间戳
+      final timestamp = DateTime.now().microsecondsSinceEpoch;
+      finalKey = '${matchedLocation}_${pathParameters.toString()}_${uri.queryParameters.toString()}_$timestamp';
+    } else {
+      // 正常情况下使用稳定的key，让Flutter能正确识别和缓存页面
+      finalKey = '${matchedLocation}_${pathParameters.toString()}_${uri.queryParameters.toString()}';
+    }
+
+    final cleanKey = finalKey
         .replaceAll('/', '_')
         .replaceAll(':', '')
         .replaceAll('{', '')
@@ -168,11 +177,11 @@ extension SmartPageBuilder on GoRouterState {
         .replaceAll('?', '_')
         .replaceAll('=', '_')
         .replaceAll('&', '_');
-    
-    debugPrint('SmartPage: 创建页面 $matchedLocation (唯一key: $finalKey)');
-    
+
+    debugPrint('SmartPage: 创建页面 $matchedLocation (key: $cleanKey, forceNew: $forceNewInstance)');
+
     return MaterialPage<T>(
-      key: ValueKey(finalKey),
+      key: ValueKey(cleanKey),
       child: child,
       name: name,
       arguments: arguments,
