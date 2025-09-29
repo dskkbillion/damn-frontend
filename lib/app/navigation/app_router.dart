@@ -595,12 +595,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                      name: 'productDetail',
                      pageBuilder: (context, state) {
                        final productId = state.pathParameters['productId'] ?? '';
-                       return MaterialPage(
-                         key: ValueKey(state.matchedLocation), // 使用最简单的key策略
-                         child: BlocProvider(
+                       return state.buildSmartPage(
+                         BlocProvider(
                            create: (context) => getIt<ProductDetailCubit>(),
                            child: ProductDetailPage(productId: productId),
                          ),
+                        name: 'productDetail',
+                        source: 'buyer_shell_home',
                        );
                      },
                      routes: [
