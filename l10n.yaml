@@ -1,7 +1,7 @@
 arb-dir: lib/l10n
 template-arb-file: intl_zh.arb
-output-localization-file: l10n.dart
-output-class: S
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
 output-dir: lib/generated
 preferred-supported-locales: [zh, en]
 use-deferred-loading: false
