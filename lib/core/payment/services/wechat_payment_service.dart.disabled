@@ -14,7 +14,7 @@ import 'i_payment_service.dart';
 
 /// 微信支付服务
 /// 服务端托管模式：后端处理所有签名和密钥管理，客户端只负责调用SDK和展示结果
-@Injectable(as: IPaymentService)
+// @Injectable(as: IPaymentService) // 暂时禁用微信支付
 class WechatPaymentService implements IPaymentService {
   final ApiClient _apiClient;
   WechatConfig? _config;

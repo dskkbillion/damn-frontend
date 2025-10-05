@@ -5,7 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../presentation/bloc/payment_bloc.dart';
 import '../../../core/payment/services/i_payment_service.dart';
 import '../../../core/payment/services/alipay_payment_service.dart';
-import '../../../core/payment/services/wechat_payment_service.dart';
+// import '../../../core/payment/services/wechat_payment_service.dart'; // 暂时禁用
 import '../../../core/payment/services/payment_service_factory.dart';
 import '../../../core/api/api_client.dart';
 import '../../../features/orders/domain/usecases/create_order_use_case.dart';
@@ -25,13 +25,13 @@ class PaymentDI {
       print('[payment_di] Registered PaymentServiceFactory');
     }
     
-    // 注册微信支付服务
-    if (!sl.isRegistered<WechatPaymentService>()) {
-      sl.registerLazySingleton<WechatPaymentService>(
-        () => WechatPaymentService(sl<ApiClient>()),
-      );
-      print('[payment_di] Registered WechatPaymentService');
-    }
+    // 注册微信支付服务 - 暂时禁用
+    // if (!sl.isRegistered<WechatPaymentService>()) {
+    //   sl.registerLazySingleton<WechatPaymentService>(
+    //     () => WechatPaymentService(sl<ApiClient>()),
+    //   );
+    //   print('[payment_di] Registered WechatPaymentService');
+    // }
     
     // 注册 PaymentBloc - 使用PaymentServiceFactory
     if (!sl.isRegistered<PaymentBloc>()) {

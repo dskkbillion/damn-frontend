@@ -409,7 +409,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chat_camera_permission_denied_title => '相机权限已被禁用';
 
   @override
-  String get chat_camera_permission_denied_message => '请在系统设置中手动开启相机权限才能使用拍照功能。';
+  String get chat_camera_permission_denied_message =>
+      '请在系统设置中手动开启相机权限才能使用拍照功能。';
 
   @override
   String get chat_mic_permission_denied_title => '麦克风权限已被禁用';
@@ -1320,19 +1321,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get seller_auth_application_load_failed => '加载失败';
 
   @override
-  String get seller_auth_application_id_upload_hint => '请上传清晰的身份证正反面照片，确保信息清晰可见，不得遮挡、涂改';
+  String get seller_auth_application_id_upload_hint =>
+      '请上传清晰的身份证正反面照片，确保信息清晰可见，不得遮挡、涂改';
 
   @override
-  String get seller_auth_application_education_upload_hint => '请上传学历证书、学位证书等证明材料，需包含完整信息';
+  String get seller_auth_application_education_upload_hint =>
+      '请上传学历证书、学位证书等证明材料，需包含完整信息';
 
   @override
-  String get seller_auth_application_profession_upload_hint => '请上传职业资格证书、专业技能证书等证明材料';
+  String get seller_auth_application_profession_upload_hint =>
+      '请上传职业资格证书、专业技能证书等证明材料';
 
   @override
-  String get seller_auth_application_company_upload_hint => '请上传营业执照、组织机构代码证等企业资质证明材料';
+  String get seller_auth_application_company_upload_hint =>
+      '请上传营业执照、组织机构代码证等企业资质证明材料';
 
   @override
-  String get seller_auth_application_default_upload_hint => '请上传相关证明材料，确保图片清晰、信息完整';
+  String get seller_auth_application_default_upload_hint =>
+      '请上传相关证明材料，确保图片清晰、信息完整';
 
   @override
   String get seller_auth_application_agreement_read => '我已阅读并同意';
@@ -1347,7 +1353,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get seller_auth_application_agreement_title => '认证服务协议';
 
   @override
-  String get seller_auth_application_agreement_content => '本协议是您与DSKK平台之间关于认证服务的法律协议。请您仔细阅读以下条款，确保完全理解本协议中的所有权利和义务。\n\n一、服务内容\nDSKK平台提供认证服务，旨在验证您提供的身份、资质等信息的真实性，提高您在平台上的可信度。\n\n二、用户义务\n1. 您应当提供真实、准确、完整的认证信息和材料。\n2. 您应当确保提供的认证材料不侵犯任何第三方的合法权益。\n\n三、平台权利与义务\n1. 平台有权对您提供的认证信息和材料进行审核。\n2. 平台将在合理的时间内完成审核，并告知您审核结果。';
+  String get seller_auth_application_agreement_content =>
+      '本协议是您与DSKK平台之间关于认证服务的法律协议。请您仔细阅读以下条款，确保完全理解本协议中的所有权利和义务。\n\n一、服务内容\nDSKK平台提供认证服务，旨在验证您提供的身份、资质等信息的真实性，提高您在平台上的可信度。\n\n二、用户义务\n1. 您应当提供真实、准确、完整的认证信息和材料。\n2. 您应当确保提供的认证材料不侵犯任何第三方的合法权益。\n\n三、平台权利与义务\n1. 平台有权对您提供的认证信息和材料进行审核。\n2. 平台将在合理的时间内完成审核，并告知您审核结果。';
 
   @override
   String get seller_auth_application_agreement_close => '关闭';
@@ -1365,7 +1372,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get seller_auth_application_submit_success => '提交成功';
 
   @override
-  String get seller_auth_application_submit_success_desc => '您的认证申请已提交，我们将在1-3个工作日内完成审核，请耐心等待。';
+  String get seller_auth_application_submit_success_desc =>
+      '您的认证申请已提交，我们将在1-3个工作日内完成审核，请耐心等待。';
 
   @override
   String get seller_auth_application_ok => '确定';
@@ -1739,10 +1747,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get time_management_offline_status_description => '离线状态说明';
 
   @override
-  String get time_management_online_description => '您当前处于在线状态，买家可以向您发送消息，您将收到新消息的通知。请确保及时回复买家消息，保持良好的响应率有助于提高您的服务质量评分。';
+  String get time_management_online_description =>
+      '您当前处于在线状态，买家可以向您发送消息，您将收到新消息的通知。请确保及时回复买家消息，保持良好的响应率有助于提高您的服务质量评分。';
 
   @override
-  String get time_management_offline_description => '您当前处于离线状态，买家仍然可以向您发送消息，但系统会告知买家您暂时不在线。您仍然会收到新消息的通知，但可能无法立即回复。长时间保持离线状态可能会影响您的接单效率。';
+  String get time_management_offline_description =>
+      '您当前处于离线状态，买家仍然可以向您发送消息，但系统会告知买家您暂时不在线。您仍然会收到新消息的通知，但可能无法立即回复。长时间保持离线状态可能会影响您的接单效率。';
 
   @override
   String get time_management_save_settings => '保存设置';
@@ -1804,7 +1814,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get order_delivery_instruction_title => '订单交付说明';
 
   @override
-  String get order_delivery_instruction_content => '请提交您针对此订单的交付内容。您可以提供详细说明以及附加相关文件，确保买家能够清晰了解您提供的服务或产品。';
+  String get order_delivery_instruction_content =>
+      '请提交您针对此订单的交付内容。您可以提供详细说明以及附加相关文件，确保买家能够清晰了解您提供的服务或产品。';
 
   @override
   String get order_delivery_content_label => '交付内容描述:';

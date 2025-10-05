@@ -15,7 +15,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get system_language => 'System Language';
 
   @override
-  String get system_language_description => 'Automatically use device language settings';
+  String get system_language_description =>
+      'Automatically use device language settings';
 
   @override
   String get ai_docs_assistant_title => 'AI Assistant';
@@ -30,7 +31,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ai_docs_match_button => 'Match';
 
   @override
-  String get ai_docs_select_conversation_first => 'Please select a conversation first';
+  String get ai_docs_select_conversation_first =>
+      'Please select a conversation first';
 
   @override
   String get ai_docs_please_enter_message => 'Please enter a message';
@@ -59,13 +61,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ai_docs_welcome_title => 'Welcome to AI Assistant';
 
   @override
-  String get ai_docs_welcome_message => 'Just send a message to start chatting, and the system will automatically create a chat room for you';
+  String get ai_docs_welcome_message =>
+      'Just send a message to start chatting, and the system will automatically create a chat room for you';
 
   @override
-  String get ai_docs_auto_create_text => 'No conversation selected, automatically creating a new conversation and sending message';
+  String get ai_docs_auto_create_text =>
+      'No conversation selected, automatically creating a new conversation and sending message';
 
   @override
-  String get ai_docs_auto_create_voice => 'No conversation selected, automatically creating a new conversation and sending voice message';
+  String get ai_docs_auto_create_voice =>
+      'No conversation selected, automatically creating a new conversation and sending voice message';
 
   @override
   String get ai_docs_cancelling_generation => 'Cancelling generation...';
@@ -115,7 +120,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get ai_docs_recording_file_not_found => 'Error: Recording file not found';
+  String get ai_docs_recording_file_not_found =>
+      'Error: Recording file not found';
 
   @override
   String get ai_docs_stop_recording_error => 'Error stopping recording';
@@ -140,7 +146,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ai_docs_new_chat => 'New Chat';
 
   @override
-  String get ai_docs_load_conversations_failed => 'Failed to load conversations';
+  String get ai_docs_load_conversations_failed =>
+      'Failed to load conversations';
 
   @override
   String get ai_docs_retry => 'Retry';
@@ -155,7 +162,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ai_docs_delete_conversation_title => 'Delete conversation?';
 
   @override
-  String get ai_docs_delete_conversation_content => 'Are you sure you want to permanently delete this conversation?';
+  String get ai_docs_delete_conversation_content =>
+      'Are you sure you want to permanently delete this conversation?';
 
   @override
   String get ai_docs_cancel => 'Cancel';
@@ -164,13 +172,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ai_docs_delete => 'Delete';
 
   @override
-  String get ai_docs_please_select_conversation_to_delete => 'Please select the conversation to delete first';
+  String get ai_docs_please_select_conversation_to_delete =>
+      'Please select the conversation to delete first';
 
   @override
   String get ai_docs_generate_title => 'AI Generate Title';
 
   @override
-  String get ai_docs_generate_title_tooltip => 'Let AI generate a title for this conversation';
+  String get ai_docs_generate_title_tooltip =>
+      'Let AI generate a title for this conversation';
 
   @override
   String get ai_docs_generating_title => 'Generating title...';
@@ -251,7 +261,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chat_notification_center => 'Notification Center';
 
   @override
-  String get chat_notification_description => 'System, orders, reviews and important notifications';
+  String get chat_notification_description =>
+      'System, orders, reviews and important notifications';
 
   @override
   String get chat_enter_message => 'Enter message...';
@@ -278,7 +289,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chat_invalid_session => 'Invalid session';
 
   @override
-  String get chat_opponent_not_found => 'Cannot find the other party\'s information';
+  String get chat_opponent_not_found =>
+      'Cannot find the other party\'s information';
 
   @override
   String get chat_message_recalled => 'Message recalled';
@@ -326,7 +338,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chat_markdown_example_title2 => 'This is a level 2 heading';
 
   @override
-  String get chat_markdown_example_bold_italic => 'This is **bold** text and *italic* text.';
+  String get chat_markdown_example_bold_italic =>
+      'This is **bold** text and *italic* text.';
 
   @override
   String get chat_markdown_example_list1 => 'This is list item 1';
@@ -338,7 +351,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chat_markdown_example_list3 => 'This is a nested list item';
 
   @override
-  String get chat_markdown_example_quote => 'This is a quote text, supporting multiple lines';
+  String get chat_markdown_example_quote =>
+      'This is a quote text, supporting multiple lines';
 
   @override
   String get chat_markdown_example_table_col1 => 'Column 1';
@@ -409,13 +423,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chat_camera_permission_denied_title => 'Camera Permission Denied';
 
   @override
-  String get chat_camera_permission_denied_message => 'Please enable camera permission in system settings to use the photo feature.';
+  String get chat_camera_permission_denied_message =>
+      'Please enable camera permission in system settings to use the photo feature.';
 
   @override
   String get chat_mic_permission_denied_title => 'Microphone Permission Denied';
 
   @override
-  String get chat_mic_permission_denied_message => 'Please enable microphone permission in system settings to use the recording feature.';
+  String get chat_mic_permission_denied_message =>
+      'Please enable microphone permission in system settings to use the recording feature.';
 
   @override
   String get chat_permission_denied_cancel => 'Cancel';
@@ -424,10 +440,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chat_permission_denied_settings => 'Settings';
 
   @override
-  String get chat_mic_permission_denied => 'Microphone permission denied, cannot record';
+  String get chat_mic_permission_denied =>
+      'Microphone permission denied, cannot record';
 
   @override
-  String get chat_camera_permission_denied => 'Camera permission denied, cannot take photo';
+  String get chat_camera_permission_denied =>
+      'Camera permission denied, cannot take photo';
 
   @override
   String chat_recording_error(String error) {
@@ -445,7 +463,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get chat_web_recording_not_supported => 'Recording is not supported on Web platform';
+  String get chat_web_recording_not_supported =>
+      'Recording is not supported on Web platform';
 
   @override
   String get profile_personal_center => 'Personal Center';
@@ -466,19 +485,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get auth_phone_validation_empty => 'Please enter phone number';
 
   @override
-  String get auth_phone_validation_invalid_cn => 'Please enter 11-digit phone number';
+  String get auth_phone_validation_invalid_cn =>
+      'Please enter 11-digit phone number';
 
   @override
-  String get auth_phone_validation_invalid_cn_start => 'Phone number must start with 1';
+  String get auth_phone_validation_invalid_cn_start =>
+      'Phone number must start with 1';
 
   @override
-  String get auth_phone_validation_invalid_us => 'Please enter 10-digit phone number';
+  String get auth_phone_validation_invalid_us =>
+      'Please enter 10-digit phone number';
 
   @override
-  String get auth_phone_validation_invalid_jp_kr => 'Please enter 10 or 11-digit phone number';
+  String get auth_phone_validation_invalid_jp_kr =>
+      'Please enter 10 or 11-digit phone number';
 
   @override
-  String get auth_phone_validation_invalid_general => 'Please enter a valid phone number';
+  String get auth_phone_validation_invalid_general =>
+      'Please enter a valid phone number';
 
   @override
   String profile_loading_error(String error) {
@@ -542,7 +566,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profile_offline => 'Offline';
 
   @override
-  String get profile_avatar_upload_failed => 'Avatar upload failed, please try again';
+  String get profile_avatar_upload_failed =>
+      'Avatar upload failed, please try again';
 
   @override
   String get profile_orders => 'My Orders';
@@ -1122,49 +1147,61 @@ class AppLocalizationsEn extends AppLocalizations {
   String get seller_auth_management_server_timeout => 'Server Response Timeout';
 
   @override
-  String get seller_auth_management_server_timeout_desc => 'Server took too long to process the request, please try again later';
+  String get seller_auth_management_server_timeout_desc =>
+      'Server took too long to process the request, please try again later';
 
   @override
   String get seller_auth_management_network_error => 'Network Connection Error';
 
   @override
-  String get seller_auth_management_network_error_desc => 'Unable to connect to server, please check network settings';
+  String get seller_auth_management_network_error_desc =>
+      'Unable to connect to server, please check network settings';
 
   @override
   String get seller_auth_management_loading_failed => 'Loading Failed';
 
   @override
-  String get seller_auth_management_unknown_error => 'An unknown error occurred, please retry';
+  String get seller_auth_management_unknown_error =>
+      'An unknown error occurred, please retry';
 
   @override
-  String get seller_auth_management_troubleshooting => 'Troubleshooting Suggestions:';
+  String get seller_auth_management_troubleshooting =>
+      'Troubleshooting Suggestions:';
 
   @override
-  String get seller_auth_management_check_network => '• Check if network connection is stable';
+  String get seller_auth_management_check_network =>
+      '• Check if network connection is stable';
 
   @override
-  String get seller_auth_management_wait_retry => '• Wait a few minutes and try again';
+  String get seller_auth_management_wait_retry =>
+      '• Wait a few minutes and try again';
 
   @override
-  String get seller_auth_management_contact_support => '• If the problem persists, please contact customer service';
+  String get seller_auth_management_contact_support =>
+      '• If the problem persists, please contact customer service';
 
   @override
-  String get seller_auth_management_check_wifi => '• Check WiFi or mobile data connection';
+  String get seller_auth_management_check_wifi =>
+      '• Check WiFi or mobile data connection';
 
   @override
-  String get seller_auth_management_switch_network => '• Try switching network environment';
+  String get seller_auth_management_switch_network =>
+      '• Try switching network environment';
 
   @override
-  String get seller_auth_management_restart_app => '• Close and reopen the application';
+  String get seller_auth_management_restart_app =>
+      '• Close and reopen the application';
 
   @override
-  String get seller_auth_management_check_connection => '• Check network connection status';
+  String get seller_auth_management_check_connection =>
+      '• Check network connection status';
 
   @override
   String get seller_auth_management_try_later => '• Try again later';
 
   @override
-  String get seller_auth_management_contact_tech => '• If the problem persists, please contact technical support';
+  String get seller_auth_management_contact_tech =>
+      '• If the problem persists, please contact technical support';
 
   @override
   String get seller_auth_management_reload => 'Reload';
@@ -1183,7 +1220,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get seller_auth_application_review_time => 'Certification review usually takes 1-3 business days, please be patient.';
+  String get seller_auth_application_review_time =>
+      'Certification review usually takes 1-3 business days, please be patient.';
 
   @override
   String get seller_auth_application_basic_info => 'Basic Information';
@@ -1192,34 +1230,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get seller_auth_application_company_name => 'Company Name';
 
   @override
-  String get seller_auth_application_company_name_hint => 'Please enter the full company name';
+  String get seller_auth_application_company_name_hint =>
+      'Please enter the full company name';
 
   @override
-  String get seller_auth_application_company_name_required => 'Please enter company name';
+  String get seller_auth_application_company_name_required =>
+      'Please enter company name';
 
   @override
-  String get seller_auth_application_credit_code => 'Unified Social Credit Code';
+  String get seller_auth_application_credit_code =>
+      'Unified Social Credit Code';
 
   @override
-  String get seller_auth_application_credit_code_hint => 'Please enter 18-digit unified social credit code';
+  String get seller_auth_application_credit_code_hint =>
+      'Please enter 18-digit unified social credit code';
 
   @override
-  String get seller_auth_application_credit_code_required => 'Please enter unified social credit code';
+  String get seller_auth_application_credit_code_required =>
+      'Please enter unified social credit code';
 
   @override
-  String get seller_auth_application_credit_code_invalid => 'Unified social credit code should be 18 digits';
+  String get seller_auth_application_credit_code_invalid =>
+      'Unified social credit code should be 18 digits';
 
   @override
   String get seller_auth_application_company_intro => 'Company Introduction';
 
   @override
-  String get seller_auth_application_company_intro_hint => 'Please briefly describe the company\'s business and situation';
+  String get seller_auth_application_company_intro_hint =>
+      'Please briefly describe the company\'s business and situation';
 
   @override
   String get seller_auth_application_real_name => 'Name';
 
   @override
-  String get seller_auth_application_real_name_hint => 'Please enter your real name';
+  String get seller_auth_application_real_name_hint =>
+      'Please enter your real name';
 
   @override
   String get seller_auth_application_real_name_required => 'Please enter name';
@@ -1228,31 +1274,38 @@ class AppLocalizationsEn extends AppLocalizations {
   String get seller_auth_application_id_number => 'ID Number';
 
   @override
-  String get seller_auth_application_id_number_hint => 'Please enter 18-digit ID number';
+  String get seller_auth_application_id_number_hint =>
+      'Please enter 18-digit ID number';
 
   @override
-  String get seller_auth_application_id_number_required => 'Please enter ID number';
+  String get seller_auth_application_id_number_required =>
+      'Please enter ID number';
 
   @override
-  String get seller_auth_application_id_number_invalid => 'ID number should be 18 digits';
+  String get seller_auth_application_id_number_invalid =>
+      'ID number should be 18 digits';
 
   @override
   String get seller_auth_application_school_name => 'School Name';
 
   @override
-  String get seller_auth_application_school_name_hint => 'Please enter the full school name';
+  String get seller_auth_application_school_name_hint =>
+      'Please enter the full school name';
 
   @override
-  String get seller_auth_application_school_name_required => 'Please enter school name';
+  String get seller_auth_application_school_name_required =>
+      'Please enter school name';
 
   @override
   String get seller_auth_application_degree => 'Degree/Education';
 
   @override
-  String get seller_auth_application_degree_hint => 'e.g., Bachelor\'s, Master\'s, etc.';
+  String get seller_auth_application_degree_hint =>
+      'e.g., Bachelor\'s, Master\'s, etc.';
 
   @override
-  String get seller_auth_application_degree_required => 'Please enter degree/education';
+  String get seller_auth_application_degree_required =>
+      'Please enter degree/education';
 
   @override
   String get seller_auth_application_major => 'Major';
@@ -1264,46 +1317,57 @@ class AppLocalizationsEn extends AppLocalizations {
   String get seller_auth_application_profession => 'Profession/Position';
 
   @override
-  String get seller_auth_application_profession_hint => 'Please enter your profession or position';
+  String get seller_auth_application_profession_hint =>
+      'Please enter your profession or position';
 
   @override
-  String get seller_auth_application_profession_required => 'Please enter profession/position';
+  String get seller_auth_application_profession_required =>
+      'Please enter profession/position';
 
   @override
   String get seller_auth_application_cert_number => 'Certificate Number';
 
   @override
-  String get seller_auth_application_cert_number_hint => 'Please enter professional qualification certificate number';
+  String get seller_auth_application_cert_number_hint =>
+      'Please enter professional qualification certificate number';
 
   @override
   String get seller_auth_application_work_experience => 'Work Experience';
 
   @override
-  String get seller_auth_application_work_experience_hint => 'Please briefly describe your work experience';
+  String get seller_auth_application_work_experience_hint =>
+      'Please briefly describe your work experience';
 
   @override
   String get seller_auth_application_auth_name => 'Certification Name';
 
   @override
-  String get seller_auth_application_auth_name_hint => 'Please enter certification name';
+  String get seller_auth_application_auth_name_hint =>
+      'Please enter certification name';
 
   @override
-  String get seller_auth_application_auth_name_required => 'Please enter certification name';
+  String get seller_auth_application_auth_name_required =>
+      'Please enter certification name';
 
   @override
-  String get seller_auth_application_auth_identifier => 'Certification Identifier';
+  String get seller_auth_application_auth_identifier =>
+      'Certification Identifier';
 
   @override
-  String get seller_auth_application_auth_identifier_hint => 'Please enter certification identifier or number';
+  String get seller_auth_application_auth_identifier_hint =>
+      'Please enter certification identifier or number';
 
   @override
-  String get seller_auth_application_auth_description => 'Certification Description';
+  String get seller_auth_application_auth_description =>
+      'Certification Description';
 
   @override
-  String get seller_auth_application_auth_description_hint => 'Please describe the certification content';
+  String get seller_auth_application_auth_description_hint =>
+      'Please describe the certification content';
 
   @override
-  String get seller_auth_application_upload_materials => 'Upload Supporting Materials';
+  String get seller_auth_application_upload_materials =>
+      'Upload Supporting Materials';
 
   @override
   String get seller_auth_application_upload_file => 'Upload File';
@@ -1320,34 +1384,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String get seller_auth_application_load_failed => 'Load Failed';
 
   @override
-  String get seller_auth_application_id_upload_hint => 'Please upload clear photos of both sides of your ID card, ensuring information is clearly visible without obstruction or alteration';
+  String get seller_auth_application_id_upload_hint =>
+      'Please upload clear photos of both sides of your ID card, ensuring information is clearly visible without obstruction or alteration';
 
   @override
-  String get seller_auth_application_education_upload_hint => 'Please upload educational certificates, degree certificates and other supporting materials with complete information';
+  String get seller_auth_application_education_upload_hint =>
+      'Please upload educational certificates, degree certificates and other supporting materials with complete information';
 
   @override
-  String get seller_auth_application_profession_upload_hint => 'Please upload professional qualification certificates, professional skill certificates and other supporting materials';
+  String get seller_auth_application_profession_upload_hint =>
+      'Please upload professional qualification certificates, professional skill certificates and other supporting materials';
 
   @override
-  String get seller_auth_application_company_upload_hint => 'Please upload business license, organization code certificate and other enterprise qualification certificates';
+  String get seller_auth_application_company_upload_hint =>
+      'Please upload business license, organization code certificate and other enterprise qualification certificates';
 
   @override
-  String get seller_auth_application_default_upload_hint => 'Please upload relevant supporting materials, ensuring images are clear and information is complete';
+  String get seller_auth_application_default_upload_hint =>
+      'Please upload relevant supporting materials, ensuring images are clear and information is complete';
 
   @override
-  String get seller_auth_application_agreement_read => 'I have read and agree to';
+  String get seller_auth_application_agreement_read =>
+      'I have read and agree to';
 
   @override
-  String get seller_auth_application_agreement_link => 'Certification Service Agreement';
+  String get seller_auth_application_agreement_link =>
+      'Certification Service Agreement';
 
   @override
-  String get seller_auth_application_agreement_guarantee => ', and guarantee that the information provided is true and valid';
+  String get seller_auth_application_agreement_guarantee =>
+      ', and guarantee that the information provided is true and valid';
 
   @override
-  String get seller_auth_application_agreement_title => 'Certification Service Agreement';
+  String get seller_auth_application_agreement_title =>
+      'Certification Service Agreement';
 
   @override
-  String get seller_auth_application_agreement_content => 'This agreement is a legal agreement between you and the DSKK platform regarding certification services. Please read the following terms carefully to ensure you fully understand all rights and obligations in this agreement.\n\n1. Service Content\nThe DSKK platform provides certification services aimed at verifying the authenticity of the identity, qualifications and other information you provide, and improving your credibility on the platform.\n\n2. User Obligations\n1. You shall provide true, accurate and complete certification information and materials.\n2. You shall ensure that the certification materials provided do not infringe on any third party\'s legitimate rights and interests.\n\n3. Platform Rights and Obligations\n1. The platform has the right to review the certification information and materials you provide.\n2. The platform will complete the review within a reasonable time and notify you of the review results.';
+  String get seller_auth_application_agreement_content =>
+      'This agreement is a legal agreement between you and the DSKK platform regarding certification services. Please read the following terms carefully to ensure you fully understand all rights and obligations in this agreement.\n\n1. Service Content\nThe DSKK platform provides certification services aimed at verifying the authenticity of the identity, qualifications and other information you provide, and improving your credibility on the platform.\n\n2. User Obligations\n1. You shall provide true, accurate and complete certification information and materials.\n2. You shall ensure that the certification materials provided do not infringe on any third party\'s legitimate rights and interests.\n\n3. Platform Rights and Obligations\n1. The platform has the right to review the certification information and materials you provide.\n2. The platform will complete the review within a reasonable time and notify you of the review results.';
 
   @override
   String get seller_auth_application_agreement_close => 'Close';
@@ -1356,16 +1430,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get seller_auth_application_agreement_agree => 'Agree';
 
   @override
-  String get seller_auth_application_submit => 'Submit Certification Application';
+  String get seller_auth_application_submit =>
+      'Submit Certification Application';
 
   @override
-  String get seller_auth_application_check_form => 'Please check if the form is filled correctly';
+  String get seller_auth_application_check_form =>
+      'Please check if the form is filled correctly';
 
   @override
   String get seller_auth_application_submit_success => 'Submission Successful';
 
   @override
-  String get seller_auth_application_submit_success_desc => 'Your certification application has been submitted. We will complete the review within 1-3 business days. Please be patient.';
+  String get seller_auth_application_submit_success_desc =>
+      'Your certification application has been submitted. We will complete the review within 1-3 business days. Please be patient.';
 
   @override
   String get seller_auth_application_ok => 'OK';
@@ -1451,7 +1528,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get product_management_empty_default => 'No product data';
 
   @override
-  String get product_management_draft_preview_hint => 'Draft products need to be published before preview';
+  String get product_management_draft_preview_hint =>
+      'Draft products need to be published before preview';
 
   @override
   String get product_management_confirm_off_shelf_title => 'Confirm Off Shelf';
@@ -1465,19 +1543,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get product_management_confirm_off_shelf_desc => 'After off shelf:';
 
   @override
-  String get product_management_confirm_off_shelf_point1 => '• Buyers will not be able to see or purchase this product';
+  String get product_management_confirm_off_shelf_point1 =>
+      '• Buyers will not be able to see or purchase this product';
 
   @override
-  String get product_management_confirm_off_shelf_point2 => '• You can put it back on shelf at any time';
+  String get product_management_confirm_off_shelf_point2 =>
+      '• You can put it back on shelf at any time';
 
   @override
-  String get product_management_confirm_off_shelf_point3 => '• Product data will be retained';
+  String get product_management_confirm_off_shelf_point3 =>
+      '• Product data will be retained';
 
   @override
   String get product_management_confirm_delete_title => 'Confirm Delete';
 
   @override
-  String get product_management_confirm_delete_message => 'Are you sure you want to delete this product? This action cannot be undone.';
+  String get product_management_confirm_delete_message =>
+      'Are you sure you want to delete this product? This action cannot be undone.';
 
   @override
   String get product_management_cancel => 'Cancel';
@@ -1507,7 +1589,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get product_edit_product_description => 'Product Description';
 
   @override
-  String get product_edit_product_description_hint => 'Please enter product description';
+  String get product_edit_product_description_hint =>
+      'Please enter product description';
 
   @override
   String get product_edit_product_price => 'Product Price';
@@ -1537,13 +1620,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get product_edit_preview_product => 'Preview Product';
 
   @override
-  String get product_edit_at_least_one_image => 'Please upload at least one product image';
+  String get product_edit_at_least_one_image =>
+      'Please upload at least one product image';
 
   @override
   String get product_edit_save_draft_dialog_title => 'Save Draft';
 
   @override
-  String get product_edit_save_draft_dialog_message => 'Do you want to save as draft?';
+  String get product_edit_save_draft_dialog_message =>
+      'Do you want to save as draft?';
 
   @override
   String get product_edit_save_draft_dialog_confirm => 'Save';
@@ -1552,13 +1637,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get product_edit_edit_attribute => 'Edit Product Attributes';
 
   @override
-  String get product_edit_validation_name_required => 'Please enter product name';
+  String get product_edit_validation_name_required =>
+      'Please enter product name';
 
   @override
-  String get product_edit_validation_description_required => 'Please enter product description';
+  String get product_edit_validation_description_required =>
+      'Please enter product description';
 
   @override
-  String get product_edit_validation_image_required => 'Please upload at least one product image';
+  String get product_edit_validation_image_required =>
+      'Please upload at least one product image';
 
   @override
   String get product_preview_current_seller => 'Current Seller';
@@ -1581,16 +1669,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get product_edit_please_enter_label => 'Please enter information label';
+  String get product_edit_please_enter_label =>
+      'Please enter information label';
 
   @override
-  String get product_edit_please_enter_attribute_name => 'Please enter attribute name';
+  String get product_edit_please_enter_attribute_name =>
+      'Please enter attribute name';
 
   @override
   String get product_edit_attribute_name_hint => 'Please enter attribute name';
 
   @override
-  String get product_edit_placeholder_hint => 'e.g., Please select color, Please enter model';
+  String get product_edit_placeholder_hint =>
+      'e.g., Please select color, Please enter model';
 
   @override
   String get product_edit_placeholder_label => 'Placeholder Text';
@@ -1676,7 +1767,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get after_sales_confirm_title => 'Confirm';
 
   @override
-  String get after_sales_confirm_message => 'Are you sure you want to approve this after-sales request?';
+  String get after_sales_confirm_message =>
+      'Are you sure you want to approve this after-sales request?';
 
   @override
   String get after_sales_reject_reason => 'Rejection Reason';
@@ -1685,7 +1777,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get after_sales_reject_reason_hint => 'Please enter rejection reason';
 
   @override
-  String get after_sales_reject_reason_required => 'Please enter rejection reason';
+  String get after_sales_reject_reason_required =>
+      'Please enter rejection reason';
 
   @override
   String get after_sales_type_refund_only => 'Refund Only';
@@ -1733,16 +1826,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get time_management_offline => 'Offline';
 
   @override
-  String get time_management_online_status_description => 'Online Status Description';
+  String get time_management_online_status_description =>
+      'Online Status Description';
 
   @override
-  String get time_management_offline_status_description => 'Offline Status Description';
+  String get time_management_offline_status_description =>
+      'Offline Status Description';
 
   @override
-  String get time_management_online_description => 'You are currently online. Buyers can send you messages and you will receive notifications for new messages. Please ensure timely responses to buyer messages as maintaining a good response rate helps improve your service quality rating.';
+  String get time_management_online_description =>
+      'You are currently online. Buyers can send you messages and you will receive notifications for new messages. Please ensure timely responses to buyer messages as maintaining a good response rate helps improve your service quality rating.';
 
   @override
-  String get time_management_offline_description => 'You are currently offline. Buyers can still send you messages but the system will inform them that you are temporarily unavailable. You will still receive notifications for new messages but may not be able to respond immediately. Staying offline for extended periods may affect your order efficiency.';
+  String get time_management_offline_description =>
+      'You are currently offline. Buyers can still send you messages but the system will inform them that you are temporarily unavailable. You will still receive notifications for new messages but may not be able to respond immediately. Staying offline for extended periods may affect your order efficiency.';
 
   @override
   String get time_management_save_settings => 'Save Settings';
@@ -1772,7 +1869,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get auto_reply_content_hint => 'Please enter auto reply content';
 
   @override
-  String get auto_reply_content_description => 'When customers send messages, the system will automatically reply with this content';
+  String get auto_reply_content_description =>
+      'When customers send messages, the system will automatically reply with this content';
 
   @override
   String get auto_reply_save_settings => 'Save Settings';
@@ -1804,13 +1902,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get order_delivery_instruction_title => 'Delivery Instructions';
 
   @override
-  String get order_delivery_instruction_content => 'Please submit your delivery content for this order. You can provide detailed instructions and attach relevant files to ensure the buyer clearly understands the services or products you provide.';
+  String get order_delivery_instruction_content =>
+      'Please submit your delivery content for this order. You can provide detailed instructions and attach relevant files to ensure the buyer clearly understands the services or products you provide.';
 
   @override
   String get order_delivery_content_label => 'Delivery Content Description:';
 
   @override
-  String get order_delivery_content_hint => 'Please describe your delivery content...';
+  String get order_delivery_content_hint =>
+      'Please describe your delivery content...';
 
   @override
   String get order_delivery_attachments_label => 'Attachment Files:';
@@ -1819,10 +1919,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get order_delivery_submit_button => 'Submit Delivery';
 
   @override
-  String get order_delivery_content_required => 'Please enter delivery content description';
+  String get order_delivery_content_required =>
+      'Please enter delivery content description';
 
   @override
-  String get order_delivery_submit_success => 'Delivery content submitted successfully';
+  String get order_delivery_submit_success =>
+      'Delivery content submitted successfully';
 
   @override
   String get order_delivery_logistics_company => 'Logistics Company';
@@ -1924,7 +2026,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notification_empty_review => 'No review notifications';
 
   @override
-  String get notification_empty_authentication => 'No authentication notifications';
+  String get notification_empty_authentication =>
+      'No authentication notifications';
 
   @override
   String get notification_empty_other => 'No other notifications';
@@ -2039,7 +2142,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get openFileFailed => 'Failed to open file';
 
   @override
-  String get storagePermissionRequired => 'Storage permission required to download files';
+  String get storagePermissionRequired =>
+      'Storage permission required to download files';
 
   @override
   String get pdfLoadFailed => 'Failed to load PDF';

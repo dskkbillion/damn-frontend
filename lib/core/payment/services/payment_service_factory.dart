@@ -5,7 +5,7 @@ import '../config/alipay_config.dart';
 import '../config/wechat_config.dart';
 import 'i_payment_service.dart';
 import 'alipay_payment_service.dart';
-import 'wechat_payment_service.dart';
+// import 'wechat_payment_service.dart'; // 暂时禁用
 import 'stripe_payment_service.dart';
 
 /// 支付服务工厂
@@ -16,7 +16,7 @@ class PaymentServiceFactory {
   
   // 缓存服务实例
   AlipayPaymentService? _alipayService;
-  WechatPaymentService? _wechatService;
+  // WechatPaymentService? _wechatService; // 暂时禁用
   StripePaymentService? _stripeService;
 
   PaymentServiceFactory(this._apiClient);
@@ -28,11 +28,12 @@ class PaymentServiceFactory {
     return _alipayService!;
   }
 
-  /// 获取微信支付服务
+  /// 获取微信支付服务 - 暂时禁用
   Future<IPaymentService> getWechatService() async {
-    _wechatService ??= WechatPaymentService(_apiClient);
-    await _wechatService!.initialize();
-    return _wechatService!;
+    // _wechatService ??= WechatPaymentService(_apiClient);
+    // await _wechatService!.initialize();
+    // return _wechatService!;
+    throw UnimplementedError('WeChat payment is temporarily disabled');
   }
 
   /// 获取Stripe支付服务
@@ -165,9 +166,9 @@ class PaymentServiceFactory {
   /// 释放资源
   void dispose() {
     // AlipayPaymentService 和 StripePaymentService 没有dispose方法
-    _wechatService?.dispose();
+    // _wechatService?.dispose(); // 暂时禁用
     _alipayService = null;
-    _wechatService = null;
+    // _wechatService = null; // 暂时禁用
     _stripeService = null;
   }
 } 

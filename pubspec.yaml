@@ -99,7 +99,7 @@ dependencies:
 
   # 支付功能
   tobias: ^3.3.0 # 支付宝SDK Flutter插件
-  fluwx: ^5.5.5 # 微信SDK Flutter插件
+  # fluwx: ^5.5.5 # 微信SDK Flutter插件 - 暂时禁用
   google_sign_in: ^6.2.1 # Google登录SDK
   fluttertoast: ^8.2.4 # 用于显示支付结果提示
   yaml: ^3.1.2 # 用于解析配置文件
@@ -123,7 +123,7 @@ dev_dependencies:
   test: ^1.24.9
 
   # Overrides - Merged
-  analyzer: ^6.4.1
+  analyzer: ^7.6.0
   intl_utils: ^2.8.8
 
 # For information on the generic Dart part of this file, see the
