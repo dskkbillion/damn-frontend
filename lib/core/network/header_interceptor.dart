@@ -1,6 +1,7 @@
+import 'dart:io' show Platform;
 import 'package:dio/dio.dart';
 // import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart'; // Temporarily removed
-import 'package:get_it/get_it.dart'; 
+import 'package:get_it/get_it.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import FlutterSecureStorage directly
 
 class HeaderInterceptor extends Interceptor {
@@ -16,10 +17,10 @@ class HeaderInterceptor extends Interceptor {
     print('[HeaderInterceptor] 进入拦截器，当前headers: ${options.headers}');
     
     // Add required headers here
-    // TODO: Replace hardcoded values with actual app info later
-    options.headers['clienttype'] = '1';       // Example value
-    options.headers['client'] = 'android';   // Example value
-    options.headers['version'] = '100';      // Example value
+    // 根据实际平台设置client头
+    options.headers['clienttype'] = '1';       // 固定值
+    options.headers['client'] = Platform.isAndroid ? 'android' : (Platform.isIOS ? 'ios' : 'unknown');   // 根据平台动态设置
+    options.headers['version'] = '100';      // 固定版本号
 
     // 检查是否已存在Authorization头，避免重复添加
     if (!options.headers.containsKey('Authorization')) {

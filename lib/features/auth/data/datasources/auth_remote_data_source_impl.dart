@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:dio/dio.dart'; // 假设使用 Dio 作为网络客户端
 
 import 'package:dskk_flutter_refactor/core/error/exceptions.dart'; // 假设有自定义 Exception
@@ -20,7 +21,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       'Content-Type': 'application/json',
       // 添加后端实际需要的请求头
       'clienttype': '1',
-      'client': 'android',
+      'client': Platform.isAndroid ? 'android' : (Platform.isIOS ? 'ios' : 'unknown'),
       'version': '100',
     };
     print('Dio配置: 基础URL=${dio.options.baseUrl}, 请求头=${dio.options.headers}');
