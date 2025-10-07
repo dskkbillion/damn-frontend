@@ -287,6 +287,8 @@
     
     "profile_edit_nickname": "修改昵称",
     "profile_nickname_hint": "请输入新昵称",
+    "profile_nickname_empty_error": "昵称不能为空",
+    "profile_nickname_length_error": "昵称长度不能超过20个字符",
     "profile_cancel": "取消",
     "profile_save": "保存",
     "profile_default_name": "用户",

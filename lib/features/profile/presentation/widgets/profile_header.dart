@@ -231,7 +231,7 @@ class ProfileHeader extends ConsumerWidget {
   void _showEditNicknameDialog(BuildContext context, String? currentNickname) {
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context)!;
-    
+
     final textController = TextEditingController(text: currentNickname);
 
     showDialog(
@@ -240,10 +240,21 @@ class ProfileHeader extends ConsumerWidget {
         title: Text(appLocalizations.profile_edit_nickname),
         content: TextField(
           controller: textController,
+          textInputAction: TextInputAction.done,
           decoration: InputDecoration(
             hintText: appLocalizations.profile_nickname_hint,
+            counterText: '', // 隐藏默认计数器
           ),
-          maxLength: 20,
+          onSubmitted: (_) {
+            // 支持键盘确认键直接保存
+            final newNickname = textController.text.trim();
+            if (newNickname.isNotEmpty && newNickname.length <= 20) {
+              context.read<ProfileBloc>().add(
+                UpdateUserProfileEvent(nickName: newNickname)
+              );
+              Navigator.pop(context);
+            }
+          },
         ),
         actions: [
           TextButton(
@@ -253,11 +264,21 @@ class ProfileHeader extends ConsumerWidget {
           TextButton(
             onPressed: () {
               final newNickname = textController.text.trim();
-              if (newNickname.isNotEmpty) {
-                context.read<ProfileBloc>().add(
-                  UpdateUserProfileEvent(nickName: newNickname)
+              if (newNickname.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(appLocalizations.profile_nickname_empty_error)),
                 );
+                return;
               }
+              if (newNickname.length > 20) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(appLocalizations.profile_nickname_length_error)),
+                );
+                return;
+              }
+              context.read<ProfileBloc>().add(
+                UpdateUserProfileEvent(nickName: newNickname)
+              );
               Navigator.pop(context);
             },
             child: Text(appLocalizations.profile_save),

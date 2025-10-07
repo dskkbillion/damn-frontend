@@ -551,6 +551,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profile_nickname_hint => 'Please enter new nickname';
 
   @override
+  String get profile_nickname_empty_error => 'Nickname cannot be empty';
+
+  @override
+  String get profile_nickname_length_error =>
+      'Nickname length cannot exceed 20 characters';
+
+  @override
   String get profile_cancel => 'Cancel';
 
   @override

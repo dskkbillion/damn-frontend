@@ -528,6 +528,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get profile_nickname_hint => '请输入新昵称';
 
   @override
+  String get profile_nickname_empty_error => '昵称不能为空';
+
+  @override
+  String get profile_nickname_length_error => '昵称长度不能超过20个字符';
+
+  @override
   String get profile_cancel => '取消';
 
   @override

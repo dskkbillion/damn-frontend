@@ -287,6 +287,8 @@
     
     "profile_edit_nickname": "Edit Nickname",
     "profile_nickname_hint": "Please enter new nickname",
+    "profile_nickname_empty_error": "Nickname cannot be empty",
+    "profile_nickname_length_error": "Nickname length cannot exceed 20 characters",
     "profile_cancel": "Cancel",
     "profile_save": "Save",
     "profile_default_name": "User",

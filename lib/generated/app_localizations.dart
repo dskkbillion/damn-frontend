@@ -1082,6 +1082,18 @@ abstract class AppLocalizations {
   /// **'请输入新昵称'**
   String get profile_nickname_hint;
 
+  /// No description provided for @profile_nickname_empty_error.
+  ///
+  /// In zh, this message translates to:
+  /// **'昵称不能为空'**
+  String get profile_nickname_empty_error;
+
+  /// No description provided for @profile_nickname_length_error.
+  ///
+  /// In zh, this message translates to:
+  /// **'昵称长度不能超过20个字符'**
+  String get profile_nickname_length_error;
+
   /// No description provided for @profile_cancel.
   ///
   /// In zh, this message translates to:

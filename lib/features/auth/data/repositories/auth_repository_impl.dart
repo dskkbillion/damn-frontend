@@ -2,9 +2,6 @@ import 'package:dartz/dartz.dart';
 import 'dart:async';
 import 'package:injectable/injectable.dart'; // Import injectable
 
-// 尝试导入主项目的 main.dart
-import 'package:dskk_flutter_refactor/main.dart'; // 假设主文件是 lib/main.dart
-
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/network/network_info.dart';
