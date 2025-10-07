@@ -6,6 +6,7 @@ import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/phone_i
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_input_field.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_button.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/country_code.dart';
+import 'package:dskk_flutter_refactor/core/utils/phone_validator.dart';
 
 enum LoginMode { phone, email }
 
@@ -230,11 +231,15 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                                   debugPrint('Sending code to email: $account');
                                   context.read<SmsLoginCubit>().sendCode(account);
                                 } else {
-                                  // 手机模式验证
-                                  final bool isValidPhone = RegExp(r'^1[3-9]\d{9}$').hasMatch(account);
-                                  if (!isValidPhone) {
+                                  // 手机模式验证 - 使用统一的验证工具类
+                                  final validationResult = PhoneValidator.validate(
+                                    account,
+                                    _selectedCountry.code,
+                                    context: context,
+                                  );
+                                  if (!validationResult.isValid) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('请输入有效的11位手机号')),
+                                      SnackBar(content: Text(validationResult.errorMessage!)),
                                     );
                                     return;
                                   }
