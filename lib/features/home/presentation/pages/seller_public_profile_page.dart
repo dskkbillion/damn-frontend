@@ -217,7 +217,14 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                   children: [
                     // 返回按钮
                     IconButton(
-                      onPressed: () => context.pop(),
+                      onPressed: () {
+                        // 检查是否可以pop，如果不能则返回卖家首页
+                        if (Navigator.canPop(context)) {
+                          context.pop();
+                        } else {
+                          context.go('/seller');
+                        }
+                      },
                       icon: const Icon(Icons.arrow_back, color: Colors.white),
                     ),
                     Expanded(

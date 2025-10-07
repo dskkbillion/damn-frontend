@@ -133,20 +133,41 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
           // 用户信息
           Row(
             children: [
-              // 头像
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
-                ),
-                child: ClipOval(
-                  child: profile?.avatarUrl != null && profile!.avatarUrl!.isNotEmpty
-                    ? Image.network(
-                        profile.avatarUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
+              // 头像 - 点击跳转到店铺页面
+              GestureDetector(
+                onTap: () {
+                  print('[SellerProfilePage] Avatar tapped, profile: $profile');
+                  print('[SellerProfilePage] userId: ${profile?.userId}');
+                  if (profile?.userId != null) {
+                    final route = '/seller-profile/${profile!.userId}';
+                    print('[SellerProfilePage] Navigating to: $route');
+                    context.go(route);
+                  } else {
+                    print('[SellerProfilePage] Cannot navigate: userId is null');
+                  }
+                },
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: ClipOval(
+                    child: profile?.avatarUrl != null && profile!.avatarUrl!.isNotEmpty
+                      ? Image.network(
+                          profile.avatarUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: Colors.grey,
+                            child: const Icon(
+                              Icons.person,
+                              size: 50,
+                              color: Colors.white,
+                            ),
+                          ),
+                        )
+                      : Container(
                           color: Colors.grey,
                           child: const Icon(
                             Icons.person,
@@ -154,15 +175,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                             color: Colors.white,
                           ),
                         ),
-                      )
-                    : Container(
-                        color: Colors.grey,
-                        child: const Icon(
-                          Icons.person,
-                          size: 50,
-                          color: Colors.white,
-                        ),
-                      ),
+                  ),
                 ),
               ),
               const SizedBox(width: 16),

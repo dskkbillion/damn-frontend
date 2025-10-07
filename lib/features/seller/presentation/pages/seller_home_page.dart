@@ -169,20 +169,28 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 店铺logo
-                    CircleAvatar(
-                      radius: 32,
-                      backgroundColor: Colors.white,
-                      backgroundImage: profile.logoUrl != null && profile.logoUrl!.isNotEmpty
-                          ? NetworkImage(profile.logoUrl!)
-                          : null,
-                      child: profile.logoUrl == null || profile.logoUrl!.isEmpty
-                          ? Icon(
-                              Icons.store_rounded,
-                              size: 36,
-                              color: Theme.of(context).primaryColor,
-                            )
-                          : null,
+                    // 店铺logo - 点击跳转到店铺公开页面
+                    GestureDetector(
+                      onTap: () {
+                        print('[SellerHomePage] Store logo tapped');
+                        print('[SellerHomePage] storeId: ${profile.storeId}');
+                        // 使用 storeId 作为 sellerId 跳转
+                        context.go('/seller-profile/${profile.storeId}');
+                      },
+                      child: CircleAvatar(
+                        radius: 32,
+                        backgroundColor: Colors.white,
+                        backgroundImage: profile.logoUrl != null && profile.logoUrl!.isNotEmpty
+                            ? NetworkImage(profile.logoUrl!)
+                            : null,
+                        child: profile.logoUrl == null || profile.logoUrl!.isEmpty
+                            ? Icon(
+                                Icons.store_rounded,
+                                size: 36,
+                                color: Theme.of(context).primaryColor,
+                              )
+                            : null,
+                      ),
                     ),
                     const SizedBox(width: 16),
                     
