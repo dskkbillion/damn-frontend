@@ -299,10 +299,15 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
         BlocProvider.value(value: _webSocketCubit),
         BlocProvider.value(value: _messageQueueCubit),
       ],
-      child: Scaffold(
-        backgroundColor: const Color(0xFFEDEDED),
-        // FAB will be added later when we have access to scroll controller
-        appBar: AppBar(
+      child: GestureDetector(
+        // 点击聊天区域时隐藏键盘
+        onTap: () {
+          FocusScope.of(context).unfocus();
+        },
+        child: Scaffold(
+          backgroundColor: const Color(0xFFEDEDED),
+          // FAB will be added later when we have access to scroll controller
+          appBar: AppBar(
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
           elevation: 0.5,
@@ -645,6 +650,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
