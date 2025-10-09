@@ -118,7 +118,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
 
   Future<void> _startRecording() async {
     final appLocalizations = AppLocalizations.of(context)!;
-    
+
     if (kIsWeb) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(appLocalizations.chat_web_recording_not_supported)),
@@ -126,42 +126,47 @@ class _CustomInputBarState extends State<CustomInputBar> {
       return;
     }
 
-    // Check and request microphone permission
-    var status = await Permission.microphone.status;
-    
-    if (status.isPermanentlyDenied) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(appLocalizations.chat_mic_permission_denied_title),
-          content: Text(appLocalizations.chat_mic_permission_denied_message),
-          actions: [
-            TextButton(
-              child: Text(appLocalizations.chat_permission_denied_cancel),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            TextButton(
-              child: Text(appLocalizations.chat_permission_denied_settings),
-              onPressed: () {
-                Navigator.of(context).pop();
-                openAppSettings();
-              },
-            ),
-          ],
-        ),
-      );
-      return;
-    }
+    // ✅ 使用与AI Chat相同的权限检查方式，更可靠
+    // 先用 AudioRecorder 的原生方法检查权限
+    if (!await _audioRecorder.hasPermission()) {
+        print('[CustomInputBar] AudioRecorder.hasPermission() returned false, requesting permission...');
 
-    if (!status.isGranted) {
-      status = await Permission.microphone.request();
-    }
+        // 使用 permission_handler 请求权限
+        final status = await Permission.microphone.request();
+        print('[CustomInputBar] Permission.microphone.request() result: $status');
 
-    if (!status.isGranted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(appLocalizations.chat_mic_permission_denied)),
-      );
-      return;
+        if (!status.isGranted) {
+            // 检查是否永久拒绝
+            if (status.isPermanentlyDenied) {
+                print("[CustomInputBar] Permission permanently denied.");
+                showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                        title: Text(appLocalizations.chat_mic_permission_denied_title),
+                        content: Text(appLocalizations.chat_mic_permission_denied_message),
+                        actions: [
+                            TextButton(
+                                child: Text(appLocalizations.chat_permission_denied_cancel),
+                                onPressed: () => Navigator.of(context).pop(),
+                            ),
+                            TextButton(
+                                child: Text(appLocalizations.chat_permission_denied_settings),
+                                onPressed: () {
+                                    Navigator.of(context).pop();
+                                    openAppSettings();
+                                },
+                            ),
+                        ],
+                    ),
+                );
+            } else {
+                // 普通拒绝
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(appLocalizations.chat_mic_permission_denied)),
+                );
+            }
+            return;
+        }
     }
 
     try {
@@ -474,48 +479,61 @@ class _CustomInputBarState extends State<CustomInputBar> {
   }
 
   void _showAttachmentOptions() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      isDismissible: true, // 允许点击外部区域关闭
-      enableDrag: true, // 允许下滑关闭
-      isScrollControlled: false, // 不控制滚动，保持默认行为
-      builder: (context) => Container(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt, color: Colors.blue),
-              title: const Text('拍照'),
-              onTap: () {
-                Navigator.pop(context);
-                _pickImage(ImageSource.camera);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library, color: Colors.green),
-              title: const Text('从相册选择'),
-              onTap: () {
-                Navigator.pop(context);
-                _pickImage(ImageSource.gallery);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.attach_file, color: Colors.orange),
-              title: const Text('文件'),
-              onTap: () {
-                Navigator.pop(context);
-                _pickFile();
-              },
-            ),
-          ],
+    // 先隐藏键盘，避免键盘干扰 modal 的触摸事件
+    FocusScope.of(context).unfocus();
+
+    // 延迟300ms确保键盘完全关闭后再显示modal
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: Colors.transparent, // 设置为透明，让下方的圆角容器显示
+        isDismissible: true, // 允许点击外部区域关闭
+        enableDrag: true, // 允许下滑关闭
+        isScrollControlled: false, // 不控制滚动，保持默认行为
+        builder: (context) {
+          return Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
-      ),
-    );
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: Colors.blue),
+                title: const Text('拍照'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library, color: Colors.green),
+                title: const Text('从相册选择'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.attach_file, color: Colors.orange),
+                title: const Text('文件'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickFile();
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+        },
+      );
+    });
   }
 
   String _formatDuration(int seconds) {

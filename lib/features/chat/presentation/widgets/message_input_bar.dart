@@ -84,59 +84,57 @@ class _MessageInputBarState extends State<MessageInputBar> {
   Future<void> _startRecording() async {
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context)!;
-    
-    // --- Add Web Check --- 
+
+    // --- Add Web Check ---
     if (kIsWeb) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(appLocalizations.chat_web_recording_not_supported)),
       );
       return;
     }
-    // --- End Web Check --- 
+    // --- End Web Check ---
 
-    // Check and Request permission AT RUNTIME
-    var status = await Permission.microphone.status;
-    print('[Permission Check] Microphone status BEFORE request: $status');
+    // ✅ 使用与AI Chat相同的权限检查方式，更可靠
+    // 先用 AudioRecorder 的原生方法检查权限
+    if (!await _audioRecorder.hasPermission()) {
+        print('[Permission Check] AudioRecorder.hasPermission() returned false, requesting permission...');
 
-    if (status.isPermanentlyDenied) {
-        // FIX: Handle permanently denied status
-        print("[Permission Check] Permission permanently denied.");
-        showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-                title: Text(appLocalizations.chat_mic_permission_denied_title),
-                content: Text(appLocalizations.chat_mic_permission_denied_message),
-                actions: <Widget>[
-                    TextButton(
-                        child: Text(appLocalizations.chat_permission_denied_cancel),
-                        onPressed: () => Navigator.of(context).pop(),
+        // 使用 permission_handler 请求权限
+        final status = await Permission.microphone.request();
+        print('[Permission Check] Permission.microphone.request() result: $status');
+
+        if (!status.isGranted) {
+            // 检查是否永久拒绝
+            if (status.isPermanentlyDenied) {
+                print("[Permission Check] Permission permanently denied.");
+                showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                        title: Text(appLocalizations.chat_mic_permission_denied_title),
+                        content: Text(appLocalizations.chat_mic_permission_denied_message),
+                        actions: <Widget>[
+                            TextButton(
+                                child: Text(appLocalizations.chat_permission_denied_cancel),
+                                onPressed: () => Navigator.of(context).pop(),
+                            ),
+                            TextButton(
+                                child: Text(appLocalizations.chat_permission_denied_settings),
+                                onPressed: () {
+                                    Navigator.of(context).pop();
+                                    openAppSettings();
+                                },
+                            ),
+                        ],
                     ),
-                    TextButton(
-                        child: Text(appLocalizations.chat_permission_denied_settings),
-                        onPressed: () {
-                            Navigator.of(context).pop();
-                            openAppSettings(); // Open app settings
-                        },
-                    ),
-                ],
-            ),
-        );
-        return; // Stop execution
-    }
-
-    // Request if denied or restricted, but not permanently denied
-    if (!status.isGranted) {
-        status = await Permission.microphone.request();
-        print('[Permission Check] Microphone status AFTER request: $status');
-    }
-
-    // Check final status after potential request
-    if (!status.isGranted) {
-      // FIX: Provide slightly more context if denied after request
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(appLocalizations.chat_mic_permission_denied)),
-      );
-      return;
+                );
+            } else {
+                // 普通拒绝
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(appLocalizations.chat_mic_permission_denied)),
+                );
+            }
+            return;
+        }
     }
 
     // --- Permission Granted - Proceed with recording --- 
@@ -571,50 +569,78 @@ ${appLocalizations.chat_markdown_example_table_col1} | ${appLocalizations.chat_m
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context)!;
 
-    showModalBottomSheet(
-        context: context,
-        isDismissible: true, // 允许点击外部区域关闭
-        enableDrag: true, // 允许下滑关闭
-        isScrollControlled: false, // 不控制滚动，保持默认行为
-        builder: (BuildContext bc) {
-          return SafeArea(
-            child: Wrap(
-              children: <Widget>[
-                ListTile(
-                    leading: const Icon(Icons.photo_library),
-                    title: Text(appLocalizations.chat_pick_from_gallery),
+    // 先隐藏键盘，避免键盘干扰 modal 的触摸事件
+    FocusScope.of(context).unfocus();
+
+    // 延迟300ms确保键盘完全关闭后再显示modal
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+
+      showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.transparent, // 设置为透明
+          isDismissible: true, // 允许点击外部区域关闭
+          enableDrag: true, // 允许下滑关闭
+          isScrollControlled: false, // 不控制滚动，保持默认行为
+          builder: (BuildContext bc) {
+            return Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  const SizedBox(height: 8), // 顶部间距
+                  // 可选：添加一个拖动指示器
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ListTile(
+                      leading: const Icon(Icons.photo_library),
+                      title: Text(appLocalizations.chat_pick_from_gallery),
+                      onTap: () {
+                        Navigator.of(context).pop(); // Close bottom sheet
+                        _pickImage(ImageSource.gallery);
+                      }),
+                  ListTile(
+                    leading: const Icon(Icons.photo_camera),
+                    title: Text(appLocalizations.chat_take_photo),
                     onTap: () {
-                      Navigator.of(context).pop(); // Close bottom sheet
-                      _pickImage(ImageSource.gallery);
-                    }),
-                ListTile(
-                  leading: const Icon(Icons.photo_camera),
-                  title: Text(appLocalizations.chat_take_photo),
-                  onTap: () {
-                     Navigator.of(context).pop(); // Close bottom sheet
-                    _pickImage(ImageSource.camera);
-                  },
-                ),
-                // 新增多图片选择
-                ListTile(
-                  leading: const Icon(Icons.photo_library_outlined),
-                  title: const Text('选择多张图片'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    _pickMultipleImages();
-                  },
-                ),
-                // 添加Markdown消息示例按钮
-                ListTile(
-                  leading: const Icon(Icons.text_format),
-                  title: Text(appLocalizations.chat_send_markdown),
-                  onTap: _sendMarkdownExample,
-                ),
-                 // TODO: Add options for file selection etc. later
-              ],
+                       Navigator.of(context).pop(); // Close bottom sheet
+                      _pickImage(ImageSource.camera);
+                    },
+                  ),
+                  // 新增多图片选择
+                  ListTile(
+                    leading: const Icon(Icons.photo_library_outlined),
+                    title: const Text('选择多张图片'),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      _pickMultipleImages();
+                    },
+                  ),
+                  // 添加Markdown消息示例按钮
+                  ListTile(
+                    leading: const Icon(Icons.text_format),
+                    title: Text(appLocalizations.chat_send_markdown),
+                    onTap: _sendMarkdownExample,
+                  ),
+                  const SizedBox(height: 8), // 底部间距
+                   // TODO: Add options for file selection etc. later
+                ],
+              ),
             ),
           );
-        });
+          });
+    });
   }
 
   // Helper widget builders
