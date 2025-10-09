@@ -480,6 +480,9 @@ class _CustomInputBarState extends State<CustomInputBar> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      isDismissible: true, // 允许点击外部区域关闭
+      enableDrag: true, // 允许下滑关闭
+      isScrollControlled: false, // 不控制滚动，保持默认行为
       builder: (context) => Container(
         padding: const EdgeInsets.symmetric(vertical: 20),
         child: Column(

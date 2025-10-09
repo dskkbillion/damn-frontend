@@ -570,9 +570,12 @@ ${appLocalizations.chat_markdown_example_table_col1} | ${appLocalizations.chat_m
   void _showAttachmentMenu(BuildContext context) {
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context)!;
-     
+
     showModalBottomSheet(
         context: context,
+        isDismissible: true, // 允许点击外部区域关闭
+        enableDrag: true, // 允许下滑关闭
+        isScrollControlled: false, // 不控制滚动，保持默认行为
         builder: (BuildContext bc) {
           return SafeArea(
             child: Wrap(
