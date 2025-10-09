@@ -311,7 +311,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chat_buyer => 'Buyer';
 
   @override
-  String get chat_i_want_seller_to_see => 'I want the seller to see';
+  String get chat_i_want_seller_to_see => 'I want to see';
 
   @override
   String get chat_wants_to_see => 'wants to see';

@@ -378,7 +378,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
            if (widget.message.content.isNotEmpty)
              Padding(
                padding: const EdgeInsets.only(top: 8.0),
-               child: Text(
+               child: SelectableText(
                  widget.message.content,
                  style: TextStyle(
                    fontSize: 15.0,
@@ -433,7 +433,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
                ],
              )
            else if (widget.message.content.isNotEmpty && widget.message.content != "转录中...")
-             Text(
+             SelectableText(
                widget.message.content,
                style: TextStyle(
                  fontSize: 14.0,
@@ -490,7 +490,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
            if (widget.message.content.isNotEmpty && widget.message.content != "转录中...")
              Padding(
                padding: const EdgeInsets.only(top: 8.0),
-               child: Text(
+               child: SelectableText(
                  widget.message.content,
                  style: TextStyle(
                    fontSize: 14.0,
@@ -597,7 +597,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
         else if (widget.message.content.isNotEmpty && widget.message.content != "转录中...")
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
-            child: Text(
+            child: SelectableText(
               widget.message.content,
               style: TextStyle(
                 fontSize: 14.0,

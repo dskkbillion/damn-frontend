@@ -299,7 +299,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chat_buyer => '买家';
 
   @override
-  String get chat_i_want_seller_to_see => '我想让商家看看';
+  String get chat_i_want_seller_to_see => '我想看看';
 
   @override
   String get chat_wants_to_see => '想看看';

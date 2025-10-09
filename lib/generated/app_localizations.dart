@@ -653,7 +653,7 @@ abstract class AppLocalizations {
   /// No description provided for @chat_i_want_seller_to_see.
   ///
   /// In zh, this message translates to:
-  /// **'我想让商家看看'**
+  /// **'我想看看'**
   String get chat_i_want_seller_to_see;
 
   /// No description provided for @chat_wants_to_see.
