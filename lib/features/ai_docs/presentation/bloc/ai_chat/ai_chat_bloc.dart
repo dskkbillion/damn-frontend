@@ -136,23 +136,38 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     on<ResetRateLimit>(_onResetRateLimit);
   }
 
-  // --- Helper to get current user ID --- 
+  // --- Helper to get current user ID (common_user_id) ---
+  // Returns common_user_id which is used for AI chat, recommendations, etc.
   // Returns null if not found or not an int
   Future<int?> _getCurrentUserId() async {
     // 修改：使用common_user_id而不是user_id
     final commonUserIdString = await _storage.read(key: 'common_user_id');
-    
+
     // 调试日志
     final userIdString = await _storage.read(key: 'user_id');
     print("[AiChatBloc] 用户ID信息: user_id = $userIdString, common_user_id = $commonUserIdString");
-    
+
     if (commonUserIdString != null) {
       // 转换为整数并返回
       return int.tryParse(commonUserIdString);
     }
-    
+
     // 不再回退使用user_id，如果没有common_user_id则直接返回null（错误）
     print("[AiChatBloc] 错误: 未找到common_user_id，AI聊天功能需要正确的common_user_id");
+    return null;
+  }
+
+  // --- Helper to get member user ID (user_id) ---
+  // Returns user_id (member table primary key) which is used for allocation API
+  // Returns null if not found or not an int
+  Future<int?> _getMemberUserId() async {
+    final userIdString = await _storage.read(key: 'user_id');
+
+    if (userIdString != null) {
+      return int.tryParse(userIdString);
+    }
+
+    print("[AiChatBloc] 错误: 未找到user_id");
     return null;
   }
 
@@ -1411,21 +1426,21 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       serviceAllocationStatus: updatedAllocationStatus
     ));
 
-    // 获取用户ID
-    final userId = await _getCurrentUserId();
+    // 获取用户ID - 分发接口使用member user_id而不是common_user_id
+    final userId = await _getMemberUserId();
     if (userId == null) {
       // 更新分发状态为失败
         final failureStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
         failureStatus[event.serviceId] = AllocationStatus.failure;
-      
+
       emit(state.copyWith(
-        status: AiChatStatus.allocationFailure, 
+        status: AiChatStatus.allocationFailure,
           errorMessage: '用户未认证或ID格式无效',
           serviceAllocationStatus: failureStatus
         ));
       return;
     }
-    
+
     // 调用分配资源用例
     final result = await _allocateChatResource(AllocateChatResourceParams(
        conversationId: currentConvId,
