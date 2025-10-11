@@ -277,6 +277,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chat_audio_message => '[Audio]';
 
   @override
+  String get chat_file_message => '[File]';
+
+  @override
+  String get chat_allocate_message => '[DSKK]';
+
+  @override
   String get chat_revoked_message => '[Message withdrawn]';
 
   @override

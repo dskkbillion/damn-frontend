@@ -22,6 +22,7 @@ import '../../domain/entities/order_creation_result.dart';
 import 'package:dskk_flutter_refactor/core/config/app_config.dart';
 import 'package:dskk_flutter_refactor/features/orders/data/datasources/simple_mock_order_data_source.dart';
 import 'package:dskk_flutter_refactor/core/services/file_upload_service.dart';
+import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
 
 /// 订单仓库接口的实现类。
 @LazySingleton(as: IOrderRepository) // Add injectable annotation
@@ -31,6 +32,7 @@ class OrderRepositoryImpl implements IOrderRepository {
   final IOrderMaterialsRemoteDataSource materialsDataSource;
   final NetworkInfo networkInfo;
   final IFileUploadService fileUploadService;
+  final ISecureStorageRepository secureStorage; // 添加安全存储依赖
 
   OrderRepositoryImpl({
     required this.remoteDataSource,
@@ -38,6 +40,7 @@ class OrderRepositoryImpl implements IOrderRepository {
     required this.materialsDataSource,
     required this.networkInfo,
     required this.fileUploadService,
+    required this.secureStorage, // 注入安全存储
   });
 
   /// 辅助函数，用于执行网络请求并处理通用错误。
@@ -160,13 +163,17 @@ class OrderRepositoryImpl implements IOrderRepository {
         final networkOrders = remoteOrders.map((model) => model.toEntity()).toList();
         print('[OrderRepository] Fetched ${networkOrders.length} orders from network for $stateKey page $page.');
 
-        // 3. Cache the network response
+        // 【数据防护】验证和过滤订单列表，确保只返回属于当前用户的订单
+        final filteredOrders = await _filterOrdersByUserRole(networkOrders, userRole);
+        print('[OrderRepository] Filtered to ${filteredOrders.length} orders after validation.');
+
+        // 3. Cache the filtered response
         // We might want to clear cache for this state before inserting new page?
         // Or handle potential duplicates with insertOrReplace
         // For now, just insert/replace
-        await localDataSource.cacheOrders(networkOrders);
+        await localDataSource.cacheOrders(filteredOrders);
 
-        return Right(networkOrders);
+        return Right(filteredOrders);
 
     } on ServerFailure catch (e) {
         print('[OrderRepository] Network fetch failed for $stateKey page $page: $e');
@@ -204,12 +211,54 @@ class OrderRepositoryImpl implements IOrderRepository {
           userRole: userRole,
         );
         final networkOrders = remoteOrders.map((model) => model.toEntity()).toList();
-        await localDataSource.cacheOrders(networkOrders);
+
+        // 【数据防护】验证和过滤订单列表
+        final filteredOrders = await _filterOrdersByUserRole(networkOrders, userRole);
+        print('[OrderRepository] Background fetch filtered to ${filteredOrders.length} orders after validation.');
+
+        await localDataSource.cacheOrders(filteredOrders);
         print('[OrderRepository] Background fetch and cache update successful for $stateKey page $page.');
       } catch (e) {
          print('[OrderRepository] Background fetch failed for $stateKey page $page: $e');
          // Log error, maybe implement retry or other strategy later
       }
+  }
+
+  /// 根据用户角色过滤订单列表，确保数据安全性
+  /// 防止后端返回不属于当前用户的订单
+  Future<List<Order>> _filterOrdersByUserRole(
+    List<Order> orders,
+    String userRole,
+  ) async {
+    try {
+      final currentUserId = await secureStorage.getUserId();
+      if (currentUserId == null) {
+        print('[OrderRepository] Warning: Current user ID is null, returning empty list');
+        return [];
+      }
+
+      return orders.where((order) {
+        if (userRole == 'buyer') {
+          // 买家视角：只保留 buyerId 匹配的订单
+          final matches = order.buyer?.id == currentUserId;
+          if (!matches) {
+            print('[OrderRepository] Filtered out order ${order.id}: buyerId=${order.buyer?.id} != currentUserId=$currentUserId');
+          }
+          return matches;
+        } else if (userRole == 'seller') {
+          // 卖家视角：只保留 tenantId 匹配的订单
+          final matches = order.tenant?.id == currentUserId;
+          if (!matches) {
+            print('[OrderRepository] Filtered out order ${order.id}: tenantId=${order.tenant?.id} != currentUserId=$currentUserId');
+          }
+          return matches;
+        }
+        return false;
+      }).toList();
+    } catch (e) {
+      print('[OrderRepository] Error filtering orders: $e');
+      return []; // 出错时返回空列表，确保安全
+    }
   }
 
   @override

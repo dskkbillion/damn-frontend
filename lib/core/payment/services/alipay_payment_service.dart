@@ -140,7 +140,8 @@ class AlipayPaymentService implements IPaymentService {
     final requestData = {
               'businessId': int.tryParse(request.orderId) ?? 0, // 后端期望的是驼峰命名businessId
       'scene': request.scene.code, // 业务场景：order, vip, wallet
-      'payway': request.method.code, // 支付方式：alipay, wechat, wallet
+      'payway': request.method.code, // 支付方式：alipay, wechat, wallet, stripe
+      'currency': request.method == models.PaymentMethod.stripe ? 'usd' : 'cny', // Stripe使用usd，其他使用cny
     };
 
     final response = await _apiClient.dio.post('/api/payment', data: requestData);

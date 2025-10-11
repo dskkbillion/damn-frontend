@@ -1,5 +1,3 @@
-import 'dart:convert'; // For JSON parsing
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For date formatting
@@ -65,15 +63,15 @@ class _ChatListItemState extends State<ChatListItem> {
   String _getLastMessagePreview(ChatMessage? message) {
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context)!;
-    
+
     if (message == null) return '';
-    
+
     switch (message.type) {
       case 'text':
         // Limit preview length for text messages
-        const maxLength = 30; 
-        String contextPreview = message.context.length > maxLength 
-            ? '${message.context.substring(0, maxLength)}...' 
+        const maxLength = 30;
+        String contextPreview = message.context.length > maxLength
+            ? '${message.context.substring(0, maxLength)}...'
             : message.context;
         return contextPreview;
       case 'image':
@@ -81,25 +79,15 @@ class _ChatListItemState extends State<ChatListItem> {
       case 'audio':
         return appLocalizations.chat_audio_message;
       case 'file':
-        // 解析文件信息以显示文件名
-        try {
-          // 尝试解析JSON格式的文件信息
-          if (message.context.startsWith('{')) {
-            final Map<String, dynamic> fileInfo = jsonDecode(message.context);
-            final fileName = fileInfo['name'] ?? '文件';
-            return '[文件] $fileName';
-          }
-        } catch (e) {
-          // 解析失败，返回默认文件消息
-        }
-        return '[文件]';
+        return appLocalizations.chat_file_message;
+      case 'allocate':
+        return appLocalizations.chat_allocate_message;
       // 移除 'revoke' 类型处理，因为撤回消息已在BLoC层过滤
-      // TODO: Add cases for other custom types ('order', 'distribute')
       default:
         // Show context for unknown types if not empty, otherwise indicate unknown
         const maxLength = 30;
-        String contextPreview = message.context.length > maxLength 
-            ? '${message.context.substring(0, maxLength)}...' 
+        String contextPreview = message.context.length > maxLength
+            ? '${message.context.substring(0, maxLength)}...'
             : message.context;
         return contextPreview.isNotEmpty ? contextPreview : appLocalizations.chat_unknown_message;
     }

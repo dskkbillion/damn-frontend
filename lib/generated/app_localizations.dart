@@ -575,14 +575,26 @@ abstract class AppLocalizations {
   /// No description provided for @chat_image_message.
   ///
   /// In zh, this message translates to:
-  /// **'[图片]'**
+  /// **'【图片】'**
   String get chat_image_message;
 
   /// No description provided for @chat_audio_message.
   ///
   /// In zh, this message translates to:
-  /// **'[语音]'**
+  /// **'【语音】'**
   String get chat_audio_message;
+
+  /// No description provided for @chat_file_message.
+  ///
+  /// In zh, this message translates to:
+  /// **'【文件】'**
+  String get chat_file_message;
+
+  /// No description provided for @chat_allocate_message.
+  ///
+  /// In zh, this message translates to:
+  /// **'【多少看看】'**
+  String get chat_allocate_message;
 
   /// No description provided for @chat_revoked_message.
   ///

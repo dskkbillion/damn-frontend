@@ -260,10 +260,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chat_yesterday => '昨天';
 
   @override
-  String get chat_image_message => '[图片]';
+  String get chat_image_message => '【图片】';
 
   @override
-  String get chat_audio_message => '[语音]';
+  String get chat_audio_message => '【语音】';
+
+  @override
+  String get chat_file_message => '【文件】';
+
+  @override
+  String get chat_allocate_message => '【多少看看】';
 
   @override
   String get chat_revoked_message => '[消息已撤回]';
