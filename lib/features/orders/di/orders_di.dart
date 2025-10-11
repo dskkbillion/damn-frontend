@@ -8,6 +8,7 @@ import 'package:dskk_flutter_refactor/core/database/app_database.dart';
 import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
 import 'package:dskk_flutter_refactor/core/payment/services/i_payment_service.dart';
 import 'package:dskk_flutter_refactor/core/services/file_upload_service.dart';
+import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
 
 // 数据源
 import '../data/datasources/i_order_remote_data_source.dart';
@@ -118,6 +119,7 @@ class OrdersDI {
           materialsDataSource: sl<IOrderMaterialsRemoteDataSource>(),
           networkInfo: sl<NetworkInfo>(),
           fileUploadService: sl<IFileUploadService>(),
+          secureStorage: sl<ISecureStorageRepository>(),
         )
       );
       print('[OrdersDI] 已注册 IOrderRepository');
