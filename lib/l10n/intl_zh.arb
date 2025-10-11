@@ -149,6 +149,7 @@
     "chat_audio_message": "【语音】",
     "chat_file_message": "【文件】",
     "chat_allocate_message": "【多少看看】",
+    "chat_payment_prompt_message": "【付费提示】",
     "chat_revoked_message": "[消息已撤回]",
     "chat_unknown_message": "[未知消息]",
     "chat_unknown_user": "未知用户",

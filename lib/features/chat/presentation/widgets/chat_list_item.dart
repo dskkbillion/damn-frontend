@@ -66,6 +66,9 @@ class _ChatListItemState extends State<ChatListItem> {
 
     if (message == null) return '';
 
+    // Debug: 打印消息类型
+    print('[ChatListItem] Message type: ${message.type}, context: ${message.context.substring(0, message.context.length > 20 ? 20 : message.context.length)}');
+
     switch (message.type) {
       case 'text':
         // Limit preview length for text messages
@@ -82,6 +85,8 @@ class _ChatListItemState extends State<ChatListItem> {
         return appLocalizations.chat_file_message;
       case 'allocate':
         return appLocalizations.chat_allocate_message;
+      case 'payment_prompt':
+        return appLocalizations.chat_payment_prompt_message;
       // 移除 'revoke' 类型处理，因为撤回消息已在BLoC层过滤
       default:
         // Show context for unknown types if not empty, otherwise indicate unknown

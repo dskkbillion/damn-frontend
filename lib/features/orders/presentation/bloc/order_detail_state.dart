@@ -136,12 +136,27 @@ class OrderDetailPaymentLoading extends OrderDetailState {
 class OrderDetailPaymentResult extends OrderDetailState {
   final PaymentResponse paymentResponse;
   final OrderDetailLoaded previousState;
-  
+
   const OrderDetailPaymentResult({
     required this.paymentResponse,
     required this.previousState,
   });
-  
+
   @override
   List<Object?> get props => [paymentResponse, previousState];
+}
+
+/// State indicating navigation to payment method selection page should occur.
+/// UI layer should listen for this state and navigate to the payment selection page.
+class OrderDetailNavigateToPaymentSelection extends OrderDetailState {
+  final Order order;
+  final OrderDetailLoaded previousState;
+
+  const OrderDetailNavigateToPaymentSelection({
+    required this.order,
+    required this.previousState,
+  });
+
+  @override
+  List<Object?> get props => [order, previousState];
 } 

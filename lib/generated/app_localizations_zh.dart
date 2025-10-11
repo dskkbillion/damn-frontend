@@ -272,6 +272,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chat_allocate_message => '【多少看看】';
 
   @override
+  String get chat_payment_prompt_message => '【付费提示】';
+
+  @override
   String get chat_revoked_message => '[消息已撤回]';
 
   @override

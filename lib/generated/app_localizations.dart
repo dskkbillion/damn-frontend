@@ -596,6 +596,12 @@ abstract class AppLocalizations {
   /// **'【多少看看】'**
   String get chat_allocate_message;
 
+  /// No description provided for @chat_payment_prompt_message.
+  ///
+  /// In zh, this message translates to:
+  /// **'【付费提示】'**
+  String get chat_payment_prompt_message;
+
   /// No description provided for @chat_revoked_message.
   ///
   /// In zh, this message translates to:

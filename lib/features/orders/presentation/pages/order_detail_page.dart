@@ -186,7 +186,15 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   /// 处理BLoC状态变化
   void _handleBlocStateChanges(BuildContext context, OrderDetailState state) {
-    if (state is OrderDetailActionSuccess) {
+    if (state is OrderDetailNavigateToPaymentSelection) {
+      // 导航到支付方式选择页面
+      print('[OrderDetailPage] 导航到支付方式选择页面，订单ID: ${state.order.id}');
+      context.pushNamed(
+        'orderPaymentMethodSelection',
+        pathParameters: {'orderId': state.order.id.toString()},
+        extra: {'order': state.order},
+      );
+    } else if (state is OrderDetailActionSuccess) {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
@@ -196,7 +204,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             behavior: SnackBarBehavior.floating,
           ),
         );
-      
+
       if (state.actionType == OrderAction.cancel || state.actionType == OrderAction.delete) {
         Future.delayed(const Duration(milliseconds: 1000), () {
           if (mounted) {

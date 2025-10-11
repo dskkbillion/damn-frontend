@@ -96,6 +96,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     // Add more event handlers as needed
     // Register handlers for GoToPayment, GoToTracking, GoToEvaluation if they have specific logic
     on<GoToPayment>(_onGoToPayment);
+    on<ProcessPaymentWithMethod>(_onProcessPaymentWithMethod);
     on<GoToTracking>(_onGoToTracking);
     on<GoToEvaluation>(_onGoToEvaluation);
     on<PlatformInterventionRequested>(_onPlatformInterventionRequested);
@@ -371,7 +372,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
      }
      final currentState = state as OrderDetailLoaded;
      final order = currentState.order;
-     
+
      // 检查订单状态是否允许支付
      if (order.state != OrderStatus.awaitingPayment) {
         print('[OrderDetailBloc] 订单状态不允许支付: ${order.state}');
@@ -381,40 +382,53 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         ));
         return;
      }
-     
-     print('[OrderDetailBloc] Initiating payment for order ${event.orderId}');
-     
+
+     print('[OrderDetailBloc] Navigating to payment method selection for order ${event.orderId}');
+
+     // 发出导航到支付方式选择页面的状态
+     emit(OrderDetailNavigateToPaymentSelection(
+       order: order,
+       previousState: currentState,
+     ));
+  }
+
+  /// 处理使用指定支付方式进行支付的事件
+  Future<void> _onProcessPaymentWithMethod(ProcessPaymentWithMethod event, Emitter<OrderDetailState> emit) async {
+     // 如果当前状态不是已加载，无法进行支付
+     if (state is! OrderDetailLoaded) {
+        emit(const OrderDetailError(message: '无法进行支付：订单数据未加载'));
+        return;
+     }
+     final currentState = state as OrderDetailLoaded;
+     final order = currentState.order;
+
+     print('[OrderDetailBloc] Processing payment for order ${event.orderId} with method ${event.paymentMethod.code}');
+
      // 发出支付中状态
      emit(OrderDetailPaymentLoading(previousState: currentState));
-     
+
      try {
         // 从订单中获取实际金额和商品信息
         final payAmount = order.priceSummary.payPrice;
         final productName = order.items.isNotEmpty ? order.items.first.productName : '商品订单';
-        
-        // 调用支付服务创建支付 - 使用区域配置的默认支付方式
-        final supportedMethods = RegionConfig.supportedPaymentMethods;
-        final defaultPaymentMethod = supportedMethods.isNotEmpty 
-            ? supportedMethods.first 
-            : PaymentMethod.alipay;
-            
+
         final paymentRequest = PaymentRequest(
           orderId: event.orderId.toString(),
           amount: payAmount.toStringAsFixed(2), // 使用实际订单金额
           subject: productName,
           description: '订单号: ${order.orderSn}',
-          method: defaultPaymentMethod,
+          method: event.paymentMethod, // 使用用户选择的支付方式
           scene: PaymentScene.order,
         );
-        
+
         final response = await _paymentService.createPayment(paymentRequest);
-        
+
         // 发出支付结果状态，让UI层处理导航
         emit(OrderDetailPaymentResult(
           paymentResponse: response,
           previousState: currentState,
         ));
-        
+
      } catch (e) {
         print('[OrderDetailBloc] Error initiating payment: $e');
         emit(OrderDetailActionFailure(
@@ -619,6 +633,20 @@ class GoToPayment extends OrderDetailEvent {
   const GoToPayment({required this.orderId});
    @override
   List<Object?> get props => [orderId];
+}
+
+/// Event to process payment with a specific payment method
+class ProcessPaymentWithMethod extends OrderDetailEvent {
+  final int orderId;
+  final PaymentMethod paymentMethod;
+
+  const ProcessPaymentWithMethod({
+    required this.orderId,
+    required this.paymentMethod,
+  });
+
+  @override
+  List<Object?> get props => [orderId, paymentMethod];
 }
 
 /// Event to trigger navigation to the after-sale application flow.

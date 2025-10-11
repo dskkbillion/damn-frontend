@@ -283,6 +283,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chat_allocate_message => '[DSKK]';
 
   @override
+  String get chat_payment_prompt_message => '[Payment Request]';
+
+  @override
   String get chat_revoked_message => '[Message withdrawn]';
 
   @override

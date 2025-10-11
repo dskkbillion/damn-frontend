@@ -149,6 +149,7 @@
     "chat_audio_message": "[Audio]",
     "chat_file_message": "[File]",
     "chat_allocate_message": "[DSKK]",
+    "chat_payment_prompt_message": "[Payment Request]",
     "chat_revoked_message": "[Message withdrawn]",
     "chat_unknown_message": "[Unknown message]",
     "chat_unknown_user": "Unknown User",

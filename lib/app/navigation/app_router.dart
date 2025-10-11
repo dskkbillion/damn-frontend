@@ -24,6 +24,7 @@ import 'package:dskk_flutter_refactor/app/widgets/dev_menu_page.dart';
 // Import feature routes (Merged imports)
 import 'package:dskk_flutter_refactor/features/orders/presentation/routes/order_routes.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/pages/platform_intervention_apply_page.dart';
+import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
 import 'package:dskk_flutter_refactor/features/after_sales/presentation/routes/after_sales_routes.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/routes/ai_docs_routes.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/routes/auth_routes.dart'; 
@@ -105,6 +106,7 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_
 import '../../features/payment/presentation/bloc/payment_bloc.dart';
 import '../../features/payment/presentation/pages/order_confirm_page.dart';
 import '../../features/payment/presentation/pages/payment_result_page.dart';
+import '../../features/payment/presentation/pages/order_payment_method_page.dart';
 
 // Import mock preview page
 import 'package:dskk_flutter_refactor/features/orders/presentation/pages/mock_orders_preview_page.dart';
@@ -709,7 +711,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           final orderId = state.pathParameters['orderId'] ?? '';
           final extra = state.extra as Map<String, dynamic>?;
           final orderSn = extra?['orderSn'];
-          
+
           return state.buildSmartPage(
             PlatformInterventionApplyPage(
               orderId: orderId,
@@ -717,6 +719,37 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             ),
             name: 'platformIntervention',
             source: 'app_navigation_orders',
+          );
+        },
+      ),
+
+      // Order Payment Method Selection Route
+      GoRoute(
+        path: '/order/:orderId/payment-method',
+        name: 'orderPaymentMethodSelection',
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final order = extra?['order'];
+
+          if (order == null) {
+            // If order is not passed, redirect to order list
+            return state.buildSmartPage(
+              Scaffold(
+                appBar: AppBar(title: const Text('错误')),
+                body: const Center(child: Text('订单信息未找到')),
+              ),
+              name: 'orderPaymentError',
+              source: 'app_navigation_payment',
+            );
+          }
+
+          return state.buildSmartPage(
+            BlocProvider.value(
+              value: GetIt.I<OrderDetailBloc>(),
+              child: OrderPaymentMethodPage(order: order),
+            ),
+            name: 'orderPaymentMethodSelection',
+            source: 'app_navigation_payment',
           );
         },
       ),
