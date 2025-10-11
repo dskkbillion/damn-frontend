@@ -611,9 +611,12 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
       print('[OrderConfirmPage] 正在处理中，忽略重复点击');
       return;
     }
-    
+
     print('[OrderConfirmPage] 开始创建订单并支付 - 商品: ${widget.productName}, 支付方式: $_selectedPaymentMethod');
-    
+
+    // 设置BuildContext给PaymentBloc，用于Stripe支付的WebView
+    context.read<PaymentBloc>().setContext(context);
+
     // 发起创建订单并支付事件
     context.read<PaymentBloc>().add(
       CreateOrderAndPayEvent(

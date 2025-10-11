@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../core/api/api_client.dart';
@@ -13,13 +14,19 @@ import 'stripe_payment_service.dart';
 @Injectable()
 class PaymentServiceFactory {
   final ApiClient _apiClient;
-  
+  BuildContext? _context;
+
   // 缓存服务实例
   AlipayPaymentService? _alipayService;
   // WechatPaymentService? _wechatService; // 暂时禁用
   StripePaymentService? _stripeService;
 
   PaymentServiceFactory(this._apiClient);
+
+  /// 设置BuildContext，用于Stripe支付的WebView
+  void setContext(BuildContext context) {
+    _context = context;
+  }
 
   /// 获取支付宝支付服务
   Future<IPaymentService> getAlipayService() async {
@@ -40,6 +47,12 @@ class PaymentServiceFactory {
   Future<IPaymentService> getStripeService() async {
     _stripeService ??= StripePaymentService(_apiClient);
     await _stripeService!.initialize();
+
+    // 如果有context，设置到服务中
+    if (_context != null) {
+      _stripeService!.setContext(_context!);
+    }
+
     return _stripeService!;
   }
 

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:get_it/get_it.dart';
 
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_status_timeline_header.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/repositories/i_chat_repository.dart';
 
 // 新的组件导入
 import '../widgets/order_action_buttons.dart';
@@ -28,6 +30,8 @@ class OrderDetailPage extends StatefulWidget {
 
 class _OrderDetailPageState extends State<OrderDetailPage> {
   int? _orderIdInt;
+  bool _isCreatingChat = false;
+  late final IChatRepository _chatRepository = GetIt.I<IChatRepository>();
 
   @override
   void initState() {
@@ -70,6 +74,71 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       return state.previousState!.order;
     }
     return null;
+  }
+
+  /// 处理联系卖家功能
+  Future<void> _handleContactSeller(Order order) async {
+    if (_isCreatingChat) return;
+
+    if (order.tenant == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('无法获取卖家信息')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isCreatingChat = true;
+    });
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    try {
+      final productId = order.items.isNotEmpty ? order.items.first.productId : null;
+
+      final result = await _chatRepository.createRoom(
+        order.tenant!.id,
+        productId: productId,
+      );
+
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+
+      result.fold(
+        (failure) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('创建聊天失败: ${failure.message}')),
+            );
+          }
+        },
+        (chatId) {
+          if (mounted) {
+            GoRouter.of(context).push('/chat/refactored/$chatId');
+          }
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('发生错误: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCreatingChat = false;
+        });
+      }
+    }
   }
 
   @override
@@ -228,7 +297,11 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   ),
                   padding: const EdgeInsets.all(16.0),
                   child: SafeArea(
-                    child: OrderDetailActionButtons(order: buttonOrder),
+                    child: OrderDetailActionButtons(
+                      order: buttonOrder,
+                      onContactSeller: _handleContactSeller,
+                      isCreatingChat: _isCreatingChat,
+                    ),
                   ),
                 );
               }
@@ -293,7 +366,11 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         // 底部操作按钮
         BlocBuilder<OrderDetailBloc, OrderDetailState>(
           builder: (context, buttonState) {
-            return OrderDetailActionButtons(order: order);
+            return OrderDetailActionButtons(
+              order: order,
+              onContactSeller: _handleContactSeller,
+              isCreatingChat: _isCreatingChat,
+            );
           },
         ),
       ],

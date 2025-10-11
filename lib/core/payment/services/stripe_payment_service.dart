@@ -1,54 +1,85 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:dartz/dartz.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/material.dart';
 
 import '../../../core/api/api_client.dart';
 import '../../../core/error/failures.dart';
 import '../models/payment_models.dart' as models;
+import '../presentation/pages/stripe_payment_webview_page.dart';
 import 'i_payment_service.dart';
 
 /// Stripe支付服务实现
-/// 使用支付链接方式，后端返回支付URL，前端跳转到该URL完成支付
+/// 使用WebView在应用内打开支付链接，拦截支付成功URL并返回结果
 @Injectable(as: IPaymentService)
 class StripePaymentService implements IPaymentService {
   final ApiClient _apiClient;
   bool _isInitialized = false;
+  BuildContext? _context;
 
   StripePaymentService(this._apiClient);
+
+  /// 设置BuildContext，用于打开WebView
+  void setContext(BuildContext context) {
+    _context = context;
+  }
 
   @override
   Future<models.PaymentResponse> createPayment(models.PaymentRequest request) async {
     try {
       print('[StripePaymentService] createPayment开始 - orderId: ${request.orderId}');
-      
+
+      if (_context == null) {
+        print('[StripePaymentService] Context未设置，无法打开WebView');
+        return models.PaymentResponse.failure(
+          message: 'Context未设置，无法打开支付页面',
+          orderId: request.orderId,
+        );
+      }
+
       // 1. 调用后端创建Stripe支付会话
       final response = await _createPaymentSession(request);
       if (!response.success) {
         print('[StripePaymentService] 创建支付会话失败: ${response.message}');
         return response;
       }
-      
-      // 2. 跳转到Stripe支付页面
+
+      // 2. 在WebView中打开Stripe支付页面
       final paymentUrl = response.data;
-      print('[StripePaymentService] 准备打开支付URL: $paymentUrl');
-      
+      print('[StripePaymentService] 准备在WebView中打开支付URL: $paymentUrl');
+
       if (paymentUrl != null && paymentUrl.isNotEmpty) {
-        // 尝试打开支付URL，但不等待结果，避免阻塞支付流程
-        _launchPaymentUrl(paymentUrl).then((_) {
-          print('[StripePaymentService] 支付URL打开尝试完成');
-        }).catchError((e) {
-          print('[StripePaymentService] 支付URL打开失败，但不影响支付流程: $e');
-        });
-        
-        // 立即返回成功状态，让用户可以选择其他方式打开链接
-        return models.PaymentResponse(
-          success: true,
-          data: paymentUrl,
+        // 打开WebView并等待结果
+        final result = await _openPaymentWebView(
+          context: _context!,
+          paymentUrl: paymentUrl,
           orderId: request.orderId,
-          message: '正在跳转到Stripe支付页面',
-          resultType: models.PaymentResultType.processing,
         );
+
+        print('[StripePaymentService] WebView返回结果: $result');
+
+        if (result != null && result['result'] == PaymentWebViewResult.success) {
+          // 支付成功
+          return models.PaymentResponse(
+            success: true,
+            data: paymentUrl,
+            orderId: request.orderId,
+            message: '支付成功',
+            resultType: models.PaymentResultType.success,
+          );
+        } else if (result != null && result['result'] == PaymentWebViewResult.cancelled) {
+          // 用户取消
+          return models.PaymentResponse.failure(
+            message: '用户取消支付',
+            orderId: request.orderId,
+          );
+        } else {
+          // 支付失败
+          return models.PaymentResponse.failure(
+            message: '支付失败',
+            orderId: request.orderId,
+          );
+        }
       } else {
         print('[StripePaymentService] 支付URL为空');
         return models.PaymentResponse.failure(
@@ -166,62 +197,33 @@ class StripePaymentService implements IPaymentService {
     }
   }
 
-  /// 启动支付URL
-  Future<void> _launchPaymentUrl(String url) async {
+  /// 在WebView中打开支付URL
+  Future<Map<String, dynamic>?> _openPaymentWebView({
+    required BuildContext context,
+    required String paymentUrl,
+    required String orderId,
+  }) async {
     try {
-      print('[StripePaymentService] 尝试打开支付URL: $url');
-      final uri = Uri.parse(url);
-      
-      // 对于Windows平台，直接使用platformDefault模式
-      // 这会在默认浏览器中打开URL
-      print('[StripePaymentService] 使用platformDefault模式打开URL');
-      
-      final launched = await launchUrl(
-        uri,
-        mode: LaunchMode.platformDefault,
-      );
-      
-      print('[StripePaymentService] launchUrl结果: $launched');
-      
-      if (!launched) {
-        // 如果第一次失败，尝试使用externalApplication模式
-        print('[StripePaymentService] platformDefault失败，尝试externalApplication模式');
-        
-        final externalLaunched = await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication,
-          webViewConfiguration: const WebViewConfiguration(
-            enableJavaScript: true,
-            enableDomStorage: true,
+      print('[StripePaymentService] 打开WebView - URL: $paymentUrl');
+
+      final result = await Navigator.of(context).push<Map<String, dynamic>>(
+        MaterialPageRoute(
+          builder: (context) => StripePaymentWebViewPage(
+            paymentUrl: paymentUrl,
+            orderId: orderId,
+            // 匹配后端配置的 URL: /stripe/callback/success 和 /stripe/callback/cancel
+            successUrlPattern: 'stripe/callback/success',
+            cancelUrlPattern: 'stripe/callback/cancel',
+            failureUrlPattern: 'stripe/callback/failure',
           ),
-        );
-        
-        print('[StripePaymentService] externalApplication模式结果: $externalLaunched');
-        
-        if (!externalLaunched) {
-          // 最后尝试使用externalNonBrowserApplication
-          print('[StripePaymentService] 尝试externalNonBrowserApplication模式');
-          
-          final nonBrowserLaunched = await launchUrl(
-            uri,
-            mode: LaunchMode.externalNonBrowserApplication,
-          );
-          
-          print('[StripePaymentService] externalNonBrowserApplication模式结果: $nonBrowserLaunched');
-          
-          if (!nonBrowserLaunched) {
-            throw Exception('所有launchUrl模式都失败了');
-          }
-        }
-      }
-      
-      print('[StripePaymentService] URL成功打开');
+        ),
+      );
+
+      print('[StripePaymentService] WebView关闭，结果: $result');
+      return result;
     } catch (e) {
-      print('[StripePaymentService] 打开支付页面失败: $e');
-      print('[StripePaymentService] 错误堆栈: ${StackTrace.current}');
-      // 不要抛出异常，让支付流程继续
-      // 用户可以手动复制链接到浏览器
-      print('[StripePaymentService] 用户可能需要手动复制链接: $url');
+      print('[StripePaymentService] 打开WebView失败: $e');
+      return null;
     }
   }
 
@@ -367,14 +369,45 @@ class StripePaymentService implements IPaymentService {
   @override
   Future<PaymentResult> pay(String orderInfo) async {
     try {
+      if (_context == null) {
+        return PaymentResult(
+          success: false,
+          errorMessage: 'Context未设置，无法打开支付页面',
+        );
+      }
+
       // 对于Stripe，orderInfo就是支付URL
-      await _launchPaymentUrl(orderInfo);
-      
-      // 由于是跳转到外部页面，这里返回处理中状态
-      return PaymentResult(
-        success: false,
-        errorMessage: '正在处理支付，请在浏览器中完成',
+      // 从orderInfo中提取orderId（如果包含）
+      String orderId = 'unknown';
+      try {
+        final uri = Uri.parse(orderInfo);
+        orderId = uri.queryParameters['orderId'] ?? orderId;
+      } catch (_) {
+        // 如果解析失败，使用默认值
+      }
+
+      final result = await _openPaymentWebView(
+        context: _context!,
+        paymentUrl: orderInfo,
+        orderId: orderId,
       );
+
+      if (result != null && result['result'] == PaymentWebViewResult.success) {
+        return PaymentResult(
+          success: true,
+          errorMessage: null,
+        );
+      } else if (result != null && result['result'] == PaymentWebViewResult.cancelled) {
+        return PaymentResult(
+          success: false,
+          errorMessage: '用户取消支付',
+        );
+      } else {
+        return PaymentResult(
+          success: false,
+          errorMessage: '支付失败',
+        );
+      }
     } catch (e) {
       return PaymentResult(
         success: false,

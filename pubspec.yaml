@@ -55,6 +55,7 @@ dependencies:
   cached_network_image: ^3.3.1 # Added for image caching
   flutter_markdown: ^0.6.19 # 添加Markdown渲染支持
   url_launcher: ^6.2.5 # 用于处理Markdown链接点击
+  webview_flutter: ^4.10.0 # 用于 Stripe 支付页面
 
   # Networking - Merged
   dio: ^5.8.0+1

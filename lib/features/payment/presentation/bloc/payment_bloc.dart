@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -14,7 +15,7 @@ import 'payment_state.dart';
 class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
   final CreateOrderUseCase createOrderUseCase;
   final PaymentServiceFactory paymentServiceFactory;
-  
+
   bool _isProcessing = false; // 防重复处理标志
 
   PaymentBloc({
@@ -27,6 +28,11 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
       _isProcessing = false; // 重置时清除处理标志
       emit(PaymentInitial());
     });
+  }
+
+  /// 设置BuildContext，用于Stripe支付的WebView
+  void setContext(BuildContext context) {
+    paymentServiceFactory.setContext(context);
   }
 
   /// 处理创建订单并支付事件

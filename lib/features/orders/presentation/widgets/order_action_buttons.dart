@@ -12,10 +12,14 @@ import 'package:dskk_flutter_refactor/features/orders/presentation/utils/order_s
 /// 根据订单状态显示【订单详情页】可用操作按钮的 Widget
 class OrderDetailActionButtons extends StatelessWidget {
   final Order order;
+  final Future<void> Function(Order)? onContactSeller;
+  final bool isCreatingChat;
 
   const OrderDetailActionButtons({
     super.key,
     required this.order,
+    this.onContactSeller,
+    this.isCreatingChat = false,
   });
 
   @override
@@ -389,9 +393,15 @@ class OrderDetailActionButtons extends StatelessWidget {
       case OrderStatus.awaitingDelivery:
       case OrderStatus.awaitingConfirmation:
         // 咨询进行中：联系顾问
-        primaryButton = _buildButton(context, '联系顾问', () {
-          context.push('/chat');
-        }, isPrimary: true);
+        primaryButton = _buildButton(
+          context,
+          isCreatingChat ? '连接中...' : '联系顾问',
+          (isCreatingChat || onContactSeller == null)
+              ? null
+              : () => onContactSeller!(order),
+          isPrimary: true,
+          isLoading: isCreatingChat,
+        );
         break;
         
       case OrderStatus.awaitingEvaluation:
