@@ -210,7 +210,9 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   @override
   Future<List<HomeFeedItemModel>> getRecommendedProducts(int limit) async {
     try {
-      final commonUserId = await getCommonUserId();
+      // 修复Issue #172: 传递userId(member.id)而不是commonUserId
+      // 因为Product.tenant_id对应的是Member.id
+      final userId = await getUserId();
       final url = Uri.parse('$modelBaseUrl/recsys/conversation/recommend');
 
       final headers = {
@@ -219,7 +221,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       };
 
       final body = json.encode({
-        'user_id': int.tryParse(commonUserId) ?? 1,
+        'user_id': int.tryParse(userId) ?? 1,
         'limit': limit,
       });
 

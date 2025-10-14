@@ -1355,7 +1355,9 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       clearRecommendationsErrorMessage: true,
     ));
 
-    final userId = await _getCurrentUserId();
+    // 修复Issue #172: 推荐系统需要member.id而不是common_user_id
+    // 因为Product.tenant_id对应的是Member.id
+    final userId = await _getMemberUserId();
     if (userId == null) {
       emit(state.copyWith(
         recommendationsStatus: RecommendationsStatus.error,
