@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import BlocProvider
 
+// Import smart router utils for buildSmartPage
+import 'package:dskk_flutter_refactor/core/router/smart_router_utils.dart';
+
 // Import the DI container instance
 import '../../../../app/di/injection_container.dart';
 
@@ -52,12 +55,15 @@ class OrderRoutes {
     GoRoute(
       path: '/orderDetail/:orderId',
       name: 'orderDetail',
-      builder: (BuildContext context, GoRouterState state) {
+      pageBuilder: (BuildContext context, GoRouterState state) {
         final String orderId = state.pathParameters['orderId'] ?? 'invalid';
         // Provide OrderDetailBloc for the page
-        return BlocProvider(
-          create: (_) => getIt<OrderDetailBloc>(),
-          child: OrderDetailPage(orderId: orderId),
+        return state.buildSmartPage(
+          BlocProvider(
+            create: (_) => getIt<OrderDetailBloc>(),
+            child: OrderDetailPage(orderId: orderId),
+          ),
+          name: 'orderDetail',
         );
       },
     ),

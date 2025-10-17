@@ -114,6 +114,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       result.fold(
         (failure) {
           if (mounted) {
+            setState(() {
+              _isCreatingChat = false;
+            });
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('创建聊天失败: ${failure.message}')),
             );
@@ -121,22 +124,20 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         },
         (chatId) {
           if (mounted) {
-            GoRouter.of(context).push('/chat/refactored/$chatId');
+            // 使用 go 而不是 push，因为跨 StatefulShellBranch 导航
+            GoRouter.of(context).go('/chat/refactored/$chatId');
           }
         },
       );
     } catch (e) {
       if (mounted) {
         Navigator.of(context, rootNavigator: true).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('发生错误: $e')),
-        );
-      }
-    } finally {
-      if (mounted) {
         setState(() {
           _isCreatingChat = false;
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('发生错误: $e')),
+        );
       }
     }
   }

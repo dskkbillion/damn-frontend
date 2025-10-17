@@ -3,6 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart'; // Assuming GetIt for DI
 
+// Import smart router utils for buildSmartPage
+import 'package:dskk_flutter_refactor/core/router/smart_router_utils.dart';
+
 // Import Chat module pages and Blocs
 import 'package:dskk_flutter_refactor/features/chat/presentation/pages/chat_list_page.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/pages/chat_room_page.dart';
@@ -115,7 +118,7 @@ class ChatRoutes {
         GoRoute(
           path: 'refactored/:chatId', // Relative path, becomes /chat/refactored/:chatId
           name: 'chatRoomRefactored', // Optional name for navigation
-          builder: (context, state) {
+          pageBuilder: (context, state) {
             // Extract chatId from the path parameters
             final chatIdString = state.pathParameters['chatId'];
             final chatId = int.tryParse(chatIdString ?? '');
@@ -123,65 +126,30 @@ class ChatRoutes {
             // Validate chatId
             if (chatId == null || chatId == 0) {
               print("Error: Invalid or missing chatId: $chatIdString");
-              return Scaffold(
-                appBar: AppBar(title: const Text("Error")),
-                body: Center(child: Text("Invalid Chat ID '$chatIdString'. Please go back.")),
+              return state.buildSmartPage(
+                Scaffold(
+                  appBar: AppBar(title: const Text("Error")),
+                  body: Center(child: Text("Invalid Chat ID '$chatIdString'. Please go back.")),
+                ),
+                name: 'chatRoomError',
               );
             }
 
             // Return the refactored chat room page
-            // The page will handle its own Cubit initialization
-            return ChatRoomPageRefactored(
-              chatId: chatId,
-              onMessagesLoaded: () {
-                // This callback can be used to update unread count in parent
-                print('[ChatRoutes] Messages loaded for chat $chatId');
-              },
-              onMessageRevoked: (chatId, newLastMessage) {
-                // This callback can be used to update last message in chat list
-                print('[ChatRoutes] Message revoked in chat $chatId');
-              },
-              onMessageSent: () {
-                // 使用本地缓存更新代替服务器刷新
-                print('[ChatRoutes] Message sent in chat $chatId, updating local chat list...');
-
-                // 方法1：尝试从 context 获取 ChatListBloc 和 ChatMessagesBloc
-                try {
-                  final chatListBloc = context.read<ChatListBloc>();
-                  final chatMessagesBloc = context.read<ChatMessagesBloc>();
-
-                  // 获取最新消息并更新本地聊天列表
-                  if (chatMessagesBloc.state is ChatMessagesLoaded) {
-                    final messagesState = chatMessagesBloc.state as ChatMessagesLoaded;
-                    if (messagesState.messages.isNotEmpty) {
-                      final lastMessage = messagesState.messages.last;
-
-                      // 仅更新本地缓存中的最后一条消息
-                      print('[ChatRoutes] Updating local cache for chat $chatId with last message');
-                      chatListBloc.add(UpdateChatRoomLastMessage(
-                        chatId: chatId,
-                        lastMessage: lastMessage,
-                      ));
-                    }
-                  }
-                } catch (e) {
-                  print('[ChatRoutes] Error accessing BLoCs from context: $e');
-
-                  // 方法2：尝试从 GetIt 获取（作为后备方案）
-                  try {
-                    if (sl.isRegistered<ChatListBloc>()) {
-                      final chatListBloc = sl<ChatListBloc>();
-                      print('[ChatRoutes] Found ChatListBloc from GetIt, falling back to server refresh...');
-                      // 仅在无法进行本地更新时才刷新
-                      chatListBloc.add(RefreshChatList());
-                    } else {
-                      print('[ChatRoutes] ChatListBloc not registered in GetIt');
-                    }
-                  } catch (e2) {
-                    print('[ChatRoutes] Failed to get ChatListBloc from GetIt: $e2');
-                  }
-                }
-              },
+            return state.buildSmartPage(
+              ChatRoomPageRefactored(
+                chatId: chatId,
+                onMessagesLoaded: () {
+                  print('[ChatRoutes] Messages loaded for chat $chatId');
+                },
+                onMessageRevoked: (chatId, newLastMessage) {
+                  print('[ChatRoutes] Message revoked in chat $chatId');
+                },
+                onMessageSent: () {
+                  print('[ChatRoutes] Message sent in chat $chatId');
+                },
+              ),
+              name: 'chatRoomRefactored',
             );
           },
         ),
