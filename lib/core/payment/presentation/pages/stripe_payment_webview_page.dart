@@ -27,6 +27,7 @@ class _StripePaymentWebViewPageState extends State<StripePaymentWebViewPage> {
   late final WebViewController _controller;
   bool _isLoading = true;
   String? _currentUrl;
+  bool _isHandlingResult = false; // 添加标志位防止重复处理
 
   @override
   void initState() {
@@ -108,12 +109,17 @@ class _StripePaymentWebViewPageState extends State<StripePaymentWebViewPage> {
   /// 处理支付结果
   void _handlePaymentResult(PaymentWebViewResult result, String url) {
     // 避免重复处理
-    if (!mounted) return;
+    if (!mounted || _isHandlingResult) return;
+
+    // 设置标志位，防止重复处理
+    _isHandlingResult = true;
+    print('[StripePaymentWebView] 开始处理支付结果: $result');
 
     // 延迟一下确保页面完全加载
     Future.delayed(const Duration(milliseconds: 500), () {
       if (!mounted) return;
 
+      print('[StripePaymentWebView] 关闭WebView并返回结果');
       Navigator.of(context).pop({
         'result': result,
         'orderId': widget.orderId,

@@ -123,41 +123,54 @@ class _ChatPageState extends State<ChatPage> {
          actions: [
            // 频率限制指示器
            const RateLimitIndicator(),
-           // Replace IconButton with a TextButton
-           Padding(
-             // Add some padding to align with other AppBar elements
-             padding: const EdgeInsets.only(right: 8.0), 
-             child: TextButton(
-               style: TextButton.styleFrom(
-                 // Use primary color from the theme for the text
-                 foregroundColor: Theme.of(context).colorScheme.primary, 
-                 // Adjust padding inside the button if needed
-                 // padding: EdgeInsets.symmetric(horizontal: 12.0), 
-               ),
-               onPressed: () {
-                  // Dispatch event to fetch recommendations first
-                  // Ensure a conversation is selected before fetching
-                  final bloc = context.read<AiChatBloc>();
-                  if (bloc.state.selectedConversationId != null) {
-                    bloc.add(FetchRecommendations());
-                  } else {
-                     // Optionally show a message if no conversation is selected
-                     ScaffoldMessenger.of(context).showSnackBar(
-                       SnackBar(content: Text(appLocalizations.ai_docs_select_conversation_first)), // 使用国际化文本
-                     );
-                     return; // Don't show bottom sheet if no conversation
-                  }
-                  // Then show the bottom sheet (it will initially show loading)
-                  _showRecommendationsBottomSheet(context);
-               },
-               child: Text(
-                  appLocalizations.ai_docs_match_button, // 使用国际化文本
-                  style: const TextStyle(
-                     fontWeight: FontWeight.bold, // Make text bold
-                     fontSize: 16, // Adjust font size if needed
-                  ),
-               ),
-             ),
+           // Replace IconButton with a TextButton - wrapped with BlocBuilder to check generation status
+           BlocBuilder<AiChatBloc, AiChatState>(
+             buildWhen: (previous, current) => previous.status != current.status,
+             builder: (context, state) {
+               // 检查是否正在生成阶段
+               final isGenerating = state.status == AiChatStatus.sendingMessage ||
+                   state.status == AiChatStatus.waitingForResponse ||
+                   state.status == AiChatStatus.streamingResponse ||
+                   state.status == AiChatStatus.transcribingAudio;
+
+               return Padding(
+                 // Add some padding to align with other AppBar elements
+                 padding: const EdgeInsets.only(right: 8.0),
+                 child: TextButton(
+                   style: TextButton.styleFrom(
+                     // Use primary color from the theme for the text, gray when disabled
+                     foregroundColor: isGenerating
+                         ? Colors.grey
+                         : Theme.of(context).colorScheme.primary,
+                     // Adjust padding inside the button if needed
+                     // padding: EdgeInsets.symmetric(horizontal: 12.0),
+                   ),
+                   onPressed: isGenerating ? null : () {
+                      // Dispatch event to fetch recommendations first
+                      // Ensure a conversation is selected before fetching
+                      final bloc = context.read<AiChatBloc>();
+                      if (bloc.state.selectedConversationId != null) {
+                        bloc.add(FetchRecommendations());
+                      } else {
+                         // Optionally show a message if no conversation is selected
+                         ScaffoldMessenger.of(context).showSnackBar(
+                           SnackBar(content: Text(appLocalizations.ai_docs_select_conversation_first)), // 使用国际化文本
+                         );
+                         return; // Don't show bottom sheet if no conversation
+                      }
+                      // Then show the bottom sheet (it will initially show loading)
+                      _showRecommendationsBottomSheet(context);
+                   },
+                   child: Text(
+                      appLocalizations.ai_docs_match_button, // 使用国际化文本
+                      style: const TextStyle(
+                         fontWeight: FontWeight.bold, // Make text bold
+                         fontSize: 16, // Adjust font size if needed
+                      ),
+                   ),
+                 ),
+               );
+             },
            ),
          ],
       ),
