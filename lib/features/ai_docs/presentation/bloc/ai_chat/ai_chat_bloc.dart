@@ -805,8 +805,10 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       }
     }
 
-    // --- Add user message optimistically --- 
-    final userId = await _getCurrentUserId();
+    // --- Add user message optimistically ---
+    // 修复Issue #174: AI发送消息接口需要使用member.id而不是common_user_id
+    // 因为消息会被推荐系统使用，需要关联到Product.tenant_id (即Member.id)
+    final userId = await _getMemberUserId();
     if (userId == null) {
       emit(state.copyWith(status: AiChatStatus.messageSendFailure, errorMessage: 'User not authenticated or invalid ID format'));
       return;
@@ -889,9 +891,11 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     Emitter<AiChatState> emit,
   ) async {
     // 1. 获取基础信息
-    final userId = await _getCurrentUserId();
+    // 修复Issue #174: AI发送消息接口需要使用member.id而不是common_user_id
+    // 因为消息会被推荐系统使用，需要关联到Product.tenant_id (即Member.id)
+    final userId = await _getMemberUserId();
     final currentConversationId = state.selectedConversationId;
-    
+
     if (userId == null) {
       emit(state.copyWith(status: AiChatStatus.messageSendFailure, errorMessage: '用户ID未找到，无法上传音频'));
       return;
@@ -1705,19 +1709,20 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       updatedAllocationStatus[event.serviceId] = AllocationStatus.loading;
       
       emit(state.copyWith(
-        status: AiChatStatus.allocatingResource, 
+        status: AiChatStatus.allocatingResource,
         clearErrorMessage: true,
         serviceAllocationStatus: updatedAllocationStatus
       ));
 
       // 获取用户ID
-      final userId = await _getCurrentUserId();
+      // 注意：OptimizedAllocation接口可能需要member.id，与推荐系统保持一致
+      final userId = await _getMemberUserId();
       if (userId == null) {
         final failureStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
         failureStatus[event.serviceId] = AllocationStatus.failure;
-      
+
      emit(state.copyWith(
-          status: AiChatStatus.allocationFailure, 
+          status: AiChatStatus.allocationFailure,
           errorMessage: '用户未认证或ID格式无效',
           serviceAllocationStatus: failureStatus
         ));
