@@ -21,15 +21,19 @@ class ProductManagementPage extends StatefulWidget {
   State<ProductManagementPage> createState() => _ProductManagementPageState();
 }
 
-class _ProductManagementPageState extends State<ProductManagementPage> 
+class _ProductManagementPageState extends State<ProductManagementPage>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late TabController _tabController;
   final ScrollController _onSaleScrollController = ScrollController();
   final ScrollController _draftScrollController = ScrollController();
   final ScrollController _offShelfScrollController = ScrollController();
-  
+
   // Track if we're currently changing tabs to prevent scroll events
   bool _isChangingTab = false;
+
+  // Track last navigation time to prevent duplicate navigation
+  DateTime? _lastNavigationTime;
+  static const _navigationDebounceMs = 500; // 500ms防抖
   
   @override
   void initState() {
@@ -577,6 +581,15 @@ class _ProductManagementPageState extends State<ProductManagementPage>
       margin: const EdgeInsets.only(bottom: 12.0),
       child: InkWell(
         onTap: () {
+          // 防抖检查：防止快速重复点击导致重复导航
+          final now = DateTime.now();
+          if (_lastNavigationTime != null &&
+              now.difference(_lastNavigationTime!).inMilliseconds < _navigationDebounceMs) {
+            print('[ProductManagementPage] 防止快速重复点击，忽略本次导航');
+            return;
+          }
+          _lastNavigationTime = now;
+
           // 只有非草稿状态的商品才能预览
           if (product.status != ProductStatus.draft) {
             context.read<ProductManagementBloc>().add(

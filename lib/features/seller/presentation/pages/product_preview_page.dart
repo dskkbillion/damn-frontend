@@ -422,7 +422,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
   Widget _buildContent(ProductDetail productDetail) {
     return ProductDetailContent(
       product: productDetail,
-      isPreviewMode: false, // 设置为false，显示与买家一致的界面
+      isPreviewMode: true, // 设置为true，隐藏购买按钮和评价区域
       // 不传递任何自定义内容，让预览页面与买家看到的完全一致
     );
   }
