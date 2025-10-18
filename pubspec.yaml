@@ -99,7 +99,7 @@ dependencies:
   open_file: ^3.5.3  # For opening files with system apps
 
   # 支付功能
-  tobias: ^3.3.0 # 支付宝SDK Flutter插件
+  # tobias: ^3.3.0 # 支付宝SDK Flutter插件 - 暂时禁用
   # fluwx: ^5.5.5 # 微信SDK Flutter插件 - 暂时禁用
   google_sign_in: ^6.2.1 # Google登录SDK
   fluttertoast: ^8.2.4 # 用于显示支付结果提示
@@ -173,6 +173,6 @@ flutter:
 flutter_intl:
   enabled: true
 
-# 支付宝 tobias 插件配置
-tobias:
-  url_scheme: com.duoshaokankan.weapp
+# 支付宝 tobias 插件配置 - 暂时禁用
+# tobias:
+#   url_scheme: com.duoshaokankan.weapp

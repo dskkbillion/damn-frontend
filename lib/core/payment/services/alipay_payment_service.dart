@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:tobias/tobias.dart';
+// import 'package:tobias/tobias.dart'; // 暂时禁用支付宝SDK
 import 'package:injectable/injectable.dart';
 import 'package:dartz/dartz.dart';
 
@@ -165,9 +165,11 @@ class AlipayPaymentService implements IPaymentService {
 
   /// 调用支付宝SDK
   Future<Map<String, dynamic>> _callAlipaySdk(String paymentString) async {
-    final tobias = Tobias();
-    final result = await tobias.pay(paymentString);
-    return Map<String, dynamic>.from(result);
+    // 暂时禁用支付宝SDK
+    throw UnimplementedError('支付宝支付暂不可用，请使用其他支付方式');
+    // final tobias = Tobias();
+    // final result = await tobias.pay(paymentString);
+    // return Map<String, dynamic>.from(result);
   }
 
   /// 解析支付结果
@@ -403,14 +405,20 @@ class AlipayPaymentService implements IPaymentService {
 
   @override
   Future<PaymentResult> pay(String orderInfo) async {
+    // 暂时禁用支付宝SDK
+    return PaymentResult(
+      success: false,
+      errorMessage: '支付宝支付暂不可用，请使用其他支付方式（Stripe）',
+    );
+    /* 原支付宝SDK实现，暂时注释
     try {
       // 调用支付宝SDK进行支付
       final tobias = Tobias();
       final Map<dynamic, dynamic> payResult = await tobias.pay(orderInfo);
-      
+
       // 解析支付结果
       final String resultStatus = payResult['resultStatus']?.toString() ?? '4000';
-      
+
       // 根据结果状态码判断支付是否成功
       if (resultStatus == '9000') {
         // 支付成功
@@ -418,11 +426,11 @@ class AlipayPaymentService implements IPaymentService {
         if (payResult.containsKey('result')) {
           response = payResult['result'] is Map ? payResult['result'] : {};
         } else if (payResult.containsKey('alipay_trade_app_pay_response')) {
-          response = payResult['alipay_trade_app_pay_response'] is Map 
-            ? payResult['alipay_trade_app_pay_response'] 
+          response = payResult['alipay_trade_app_pay_response'] is Map
+            ? payResult['alipay_trade_app_pay_response']
             : {};
         }
-        
+
         return PaymentResult(
           success: true,
           orderId: response['out_trade_no']?.toString(),
@@ -440,6 +448,7 @@ class AlipayPaymentService implements IPaymentService {
         errorMessage: '支付异常: $e',
       );
     }
+    */
   }
 
   /// 获取支付错误信息
