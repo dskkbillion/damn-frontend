@@ -523,26 +523,49 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
   }
 
   Widget _buildDeliveryInfo(ProductVariant variant) {
+    // 只有当交付信息有值且大于1时才显示
+    final bool hasDeliveryInfo = (variant.editNum != null && variant.editNum! > 1) ||
+                                  (variant.deliveryDay != null && variant.deliveryDay! > 1);
+
+    if (!hasDeliveryInfo) {
+      return const SizedBox.shrink(); // 返回空widget，不显示任何内容
+    }
+
+    final List<Widget> deliveryRows = [];
+
+    // 只显示有意义的交付次数
+    if (variant.editNum != null && variant.editNum! > 1) {
+      deliveryRows.add(
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(AppLocalizations.of(context)!.product_detail_delivery_times, style: const TextStyle(fontSize: 16)),
+            Text('${variant.editNum}', style: const TextStyle(fontSize: 16)),
+          ],
+        ),
+      );
+    }
+
+    // 只显示有意义的交付周期
+    if (variant.deliveryDay != null && variant.deliveryDay! > 1) {
+      if (deliveryRows.isNotEmpty) {
+        deliveryRows.add(const SizedBox(height: 12));
+      }
+      deliveryRows.add(
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(AppLocalizations.of(context)!.product_detail_delivery_period, style: const TextStyle(fontSize: 16)),
+            Text('${variant.deliveryDay}', style: const TextStyle(fontSize: 16)),
+          ],
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(AppLocalizations.of(context)!.product_detail_delivery_times, style: const TextStyle(fontSize: 16)),
-              Text('${variant.editNum}', style: const TextStyle(fontSize: 16)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-              Text(AppLocalizations.of(context)!.product_detail_delivery_period, style: const TextStyle(fontSize: 16)),
-              Text('${variant.deliveryDay}', style: const TextStyle(fontSize: 16)),
-            ],
-            ),
-        ],
+        children: deliveryRows,
       ),
     );
   }
