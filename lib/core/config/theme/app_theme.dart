@@ -15,8 +15,8 @@ class AppTheme {
       primaryContainer: AppColors.primaryLight,
       secondary: AppColors.primaryVariant,
       secondaryContainer: AppColors.primaryLight,
-      surface: AppColors.backgroundPrimary,
-      background: AppColors.backgroundPrimary,
+      surface: AppColors.backgroundCard, // 使用橙色系背景
+      background: AppColors.backgroundCard, // 使用橙色系背景
       error: AppColors.error,
       onPrimary: AppColors.getOnPrimaryColor(),
       onSecondary: AppColors.getOnPrimaryColor(),

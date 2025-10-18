@@ -152,7 +152,7 @@ class _ModeFlipTransitionOverlayState extends ConsumerState<ModeFlipTransitionOv
     return Directionality(
       textDirection: TextDirection.ltr,
       child: Container(
-        color: Theme.of(context).scaffoldBackgroundColor, // 使用主题配置的橙色系背景色
+        color: const Color(0xFFFDF9F5), // 使用项目橙色系主题背景色（硬编码确保显示正确）
         child: Center(
           child: Stack(
             alignment: Alignment.center,

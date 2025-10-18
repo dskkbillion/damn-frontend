@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_cubit.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_state.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/phone_input_field.dart';
@@ -119,14 +120,18 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                       // 顶部Logo区域（保持原有设计）
                       const SizedBox(height: 60),
                       
-                      // Logo占位（可以从原页面复制Logo相关代码）
+                      // App Logo
                       Center(
                         child: Column(
                           children: [
-                            Icon(
-                              Icons.shopping_bag,
-                              size: 80,
-                              color: primaryColor,
+                            SvgPicture.asset(
+                              'assets/icons/nav/dskk_logo.svg',
+                              width: 100,
+                              height: 100,
+                              colorFilter: ColorFilter.mode(
+                                primaryColor,
+                                BlendMode.srcIn,
+                              ),
                             ),
                             const SizedBox(height: 16),
                             Text(

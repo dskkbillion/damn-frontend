@@ -85,7 +85,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                           ..setEntry(3, 2, 0.001)
                           ..rotateY(rotationValue),
                         child: Container(
-                          color: Theme.of(context).scaffoldBackgroundColor, // 使用主题配置的橙色系背景
+                          color: const Color(0xFFFDF9F5), // 使用项目橙色系主题背景色
                         ),
                       );
                     }
@@ -126,7 +126,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                           ..setEntry(3, 2, 0.001)
                           ..rotateY(rotationValue),
                         child: Container(
-                          color: Theme.of(context).scaffoldBackgroundColor, // 使用主题配置的橙色系背景
+                          color: const Color(0xFFFDF9F5), // 使用项目橙色系主题背景色
                         ),
                       );
                     }
