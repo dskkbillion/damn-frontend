@@ -446,7 +446,7 @@ class OrderActionDialogs {
                   ],
                 ),
               ),
-              const Divider(height: 1),
+              Divider(height: 1, color: Colors.grey[200]),
               // 表单内容
               Expanded(
                 child: BlocProvider.value(

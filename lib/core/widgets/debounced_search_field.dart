@@ -311,7 +311,7 @@ class _DebouncedSearchFieldWithSuggestionsState<T>
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: _suggestions.length,
-                    separatorBuilder: (context, index) => const Divider(height: 1),
+                    separatorBuilder: (context, index) => Divider(height: 1, color: Colors.grey[200]),
                     itemBuilder: (context, index) {
                       final suggestion = _suggestions[index];
                       return InkWell(

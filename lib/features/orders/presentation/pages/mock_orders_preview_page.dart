@@ -200,7 +200,7 @@ class MockOrdersPreviewPage extends StatelessWidget {
                   context.push('/orderDetail/${order.id}');
                 },
               ),
-              if (orders.last != order) const Divider(height: 1),
+              if (orders.last != order) Divider(height: 1, color: Colors.grey[200]),
             ],
           )).toList(),
         ],

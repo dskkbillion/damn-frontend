@@ -354,7 +354,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
               ],
             ),
           ),
-          const Divider(height: 1),
+          Divider(height: 1, color: Colors.grey[200]),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Row(
