@@ -93,7 +93,7 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
                                  },
                   ),
                 ),
-                const Divider(height: 1),
+                Divider(height: 1, color: Colors.grey[200]),
                 // --- Conversation List Area with Pull to Refresh ---
                 Expanded(
                   child: RefreshIndicator(

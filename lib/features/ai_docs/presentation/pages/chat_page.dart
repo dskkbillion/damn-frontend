@@ -323,8 +323,8 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                 ],
               ),
            ),
-            const Divider(height: 1),
-            
+            Divider(height: 1, color: Colors.grey[200]),
+
             // 内容区域
           Expanded( 
              child: BlocBuilder<AiChatBloc, AiChatState>(
