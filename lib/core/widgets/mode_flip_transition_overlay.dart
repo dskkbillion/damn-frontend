@@ -159,33 +159,33 @@ class _ModeFlipTransitionOverlayState extends ConsumerState<ModeFlipTransitionOv
             children: [
               // 当前模式图标：从一开始就完全显示，到70%时淡出
               AnimatedOpacity(
-                opacity: _animation.value < 0.5 
+                opacity: _animation.value < 0.5
                   ? 1.0
-                  : _animation.value < 0.7 
+                  : _animation.value < 0.7
                     ? 1.0 - ((_animation.value - 0.5) / 0.2)
                     : 0.0,
                 duration: const Duration(milliseconds: 100),
                 child: Icon(
-                  displayMode == AppMode.buyer 
-                    ? Icons.shopping_bag_outlined 
+                  displayMode == AppMode.buyer
+                    ? Icons.shopping_bag_outlined
                     : Icons.storefront_outlined,
                   size: 80,
-                  color: Theme.of(context).primaryColor,
+                  color: const Color(0xFFB66D0E), // 使用项目主题橙色
                 ),
               ),
-              
+
               // 目标模式图标：70%-100%时淡入
               AnimatedOpacity(
-                opacity: _animation.value > 0.7 
+                opacity: _animation.value > 0.7
                   ? ((_animation.value - 0.7) / 0.3).clamp(0.0, 1.0)
                   : 0.0,
                 duration: const Duration(milliseconds: 100),
                 child: Icon(
-                  targetMode == AppMode.buyer 
-                    ? Icons.shopping_bag_outlined 
+                  targetMode == AppMode.buyer
+                    ? Icons.shopping_bag_outlined
                     : Icons.storefront_outlined,
                   size: 80,
-                  color: Theme.of(context).primaryColor,
+                  color: const Color(0xFFB66D0E), // 使用项目主题橙色
                 ),
               ),
             ],
