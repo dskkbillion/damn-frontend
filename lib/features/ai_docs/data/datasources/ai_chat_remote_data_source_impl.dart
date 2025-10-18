@@ -625,11 +625,11 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     
     if (conversationId > 0) {
       requestData['conversation_id'] = conversationId;
-      
-      if (messageId != null) {
+
+      // message_id是可选参数，只有明确提供时才添加
+      // 根据API文档，新会话推荐时可以不传message_id
+      if (messageId != null && messageId > 0) {
         requestData['message_id'] = messageId;
-      } else {
-        requestData['message_id'] = 5;
       }
     }
     
