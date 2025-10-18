@@ -806,9 +806,10 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     }
 
     // --- Add user message optimistically ---
-    // 修复Issue #174: AI发送消息接口需要使用member.id而不是common_user_id
-    // 因为消息会被推荐系统使用，需要关联到Product.tenant_id (即Member.id)
-    final userId = await _getMemberUserId();
+    // 修复: AI聊天系统内部API需要使用common_user_id，而不是member.id
+    // 因为对话、历史消息等都是用common_user_id创建和查询的
+    // 只有推荐系统API才需要使用member.id (关联Product.tenant_id)
+    final userId = await _getCurrentUserId();
     if (userId == null) {
       emit(state.copyWith(status: AiChatStatus.messageSendFailure, errorMessage: 'User not authenticated or invalid ID format'));
       return;
@@ -891,9 +892,10 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     Emitter<AiChatState> emit,
   ) async {
     // 1. 获取基础信息
-    // 修复Issue #174: AI发送消息接口需要使用member.id而不是common_user_id
-    // 因为消息会被推荐系统使用，需要关联到Product.tenant_id (即Member.id)
-    final userId = await _getMemberUserId();
+    // 修复: AI聊天系统内部API需要使用common_user_id，而不是member.id
+    // 因为对话、历史消息等都是用common_user_id创建和查询的
+    // 只有推荐系统API才需要使用member.id (关联Product.tenant_id)
+    final userId = await _getCurrentUserId();
     final currentConversationId = state.selectedConversationId;
 
     if (userId == null) {
