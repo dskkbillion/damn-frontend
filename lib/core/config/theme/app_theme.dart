@@ -9,6 +9,7 @@ class AppTheme {
   /// Defines the light theme for the application.
   static final ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
+    scaffoldBackgroundColor: AppColors.backgroundCard, // 设置Scaffold背景色为淡橙色
     colorScheme: ColorScheme.light(
       primary: AppColors.primary,
       primaryContainer: AppColors.primaryLight,
