@@ -679,9 +679,9 @@ class _ProductManagementPageState extends State<ProductManagementPage>
                   ),
                 ],
               ),
-              
+
               if (actions.isNotEmpty) ...[
-                const Divider(height: 24.0),
+                Divider(height: 24.0, color: Colors.grey[200]),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
