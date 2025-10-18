@@ -76,6 +76,7 @@ app.*.map.json
 **/ios/Runner/GeneratedPluginRegistrant.*
 
 # iOS build files and configurations (编译生成的文件)
+**/ios/build/
 **/ios/Podfile.lock
 **/ios/*.xcodeproj/project.pbxuser
 **/ios/*.xcodeproj/xcuserdata/
