@@ -125,7 +125,9 @@ class _ChatPageState extends State<ChatPage> {
            const RateLimitIndicator(),
            // Replace IconButton with a TextButton - wrapped with BlocBuilder to check generation status
            BlocBuilder<AiChatBloc, AiChatState>(
-             buildWhen: (previous, current) => previous.status != current.status,
+             buildWhen: (previous, current) =>
+               previous.status != current.status ||
+               previous.messages.length != current.messages.length,
              builder: (context, state) {
                // 检查是否正在生成阶段
                final isGenerating = state.status == AiChatStatus.sendingMessage ||
@@ -133,19 +135,22 @@ class _ChatPageState extends State<ChatPage> {
                    state.status == AiChatStatus.streamingResponse ||
                    state.status == AiChatStatus.transcribingAudio;
 
+               // 检查是否有消息（推荐需要基于现有对话内容）
+               final hasMessages = state.messages.isNotEmpty;
+
                return Padding(
                  // Add some padding to align with other AppBar elements
                  padding: const EdgeInsets.only(right: 8.0),
                  child: TextButton(
                    style: TextButton.styleFrom(
                      // Use primary color from the theme for the text, gray when disabled
-                     foregroundColor: isGenerating
+                     foregroundColor: (isGenerating || !hasMessages)
                          ? Colors.grey
                          : Theme.of(context).colorScheme.primary,
                      // Adjust padding inside the button if needed
                      // padding: EdgeInsets.symmetric(horizontal: 12.0),
                    ),
-                   onPressed: isGenerating ? null : () {
+                   onPressed: (isGenerating || !hasMessages) ? null : () {
                       // Dispatch event to fetch recommendations first
                       // Ensure a conversation is selected before fetching
                       final bloc = context.read<AiChatBloc>();
@@ -380,19 +385,30 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                        return ServiceGridItem(
                        service: service,
                        onTap: () {
-                          print('服务点击: ${service.title}');
+                          print('[点击分发] ==========');
+                          print('[点击分发] 服务名称: ${service.title}');
+                          print('[点击分发] 服务ID: ${service.id}');
+                          print('[点击分发] 商家ID(tenantId): ${service.tenantId}');
+                          print('[点击分发] 价格: ${service.price}');
+
                           final itemData = {
                             'id': service.id.toString(), // 转换为字符串类型
                             'name': service.title,
                             'description': '推荐服务: ${service.title}，价格: ￥${service.price}',
                           };
+                          print('[点击分发] 构造的itemData: $itemData');
+                          print('[点击分发] 准备触发TriggerOptimizedAllocation事件...');
+
                           context.read<AiChatBloc>().add(TriggerOptimizedAllocation(
                              item: itemData,
                                merchantId: service.tenantId, // 使用服务的实际商家ID
                                serviceId: service.id, // 添加服务ID用于状态追踪
                           ));
+
+                          print('[点击分发] TriggerOptimizedAllocation事件已触发');
+                          print('[点击分发] ==========');
                             // 移除Navigator.pop，让底部弹窗保持打开状态，用户可以看到按钮状态变化
-                            // Navigator.pop(context); 
+                            // Navigator.pop(context);
                        },
                        onEnterChat: () {
                          // 处理进入聊天的逻辑

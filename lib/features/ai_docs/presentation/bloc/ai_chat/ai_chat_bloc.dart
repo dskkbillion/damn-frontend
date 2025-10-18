@@ -1372,11 +1372,32 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       return;
     }
 
+    // 🆕 获取最新消息的ID - 后端要求必须传递message_id，否则返回空推荐
+    int? latestMessageId;
+    if (state.messages.isNotEmpty) {
+      // 找到最后一条AI消息的ID（因为推荐是基于AI的回复）
+      final latestAiMessage = state.messages.lastWhere(
+        (msg) => msg.sender == MessageSender.ai,
+        orElse: () => state.messages.last, // 如果没有AI消息，使用最后一条
+      );
+
+      // 将String类型的messageId转换为int（去掉"local_ai_"等前缀）
+      latestMessageId = int.tryParse(latestAiMessage.messageId);
+      print('[推荐] 获取最新消息ID: ${latestAiMessage.messageId} -> $latestMessageId');
+
+      if (latestMessageId == null) {
+        print('[推荐] ⚠️ 无法解析messageId，可能是本地临时ID');
+      }
+    } else {
+      print('[推荐] ⚠️ 消息列表为空，无法获取messageId');
+    }
+
     final result = await _getRelatedServices(
       GetRelatedServicesParams(
         conversationId: currentConvId,
         userId: userId,
         limit: 10,
+        messageId: latestMessageId, // ✅ 传递消息ID
       ),
     );
 
@@ -1696,11 +1717,17 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     TriggerOptimizedAllocation event,
     Emitter<AiChatState> emit,
   ) async {
+    print('[优化分发] 开始处理分发事件 - serviceId: ${event.serviceId}, merchantId: ${event.merchantId}');
+    print('[优化分发] 商品数据: ${event.item}');
+
     try {
       final currentConvId = state.selectedConversationId;
+      print('[优化分发] 当前conversationId: $currentConvId');
+
       if (currentConvId == null) {
+        print('[优化分发] ❌ conversationId为空，无法进行分发');
         emit(state.copyWith(
-          status: AiChatStatus.allocationFailure, 
+          status: AiChatStatus.allocationFailure,
           errorMessage: 'No conversation selected for allocation'
         ));
         return;
@@ -1717,9 +1744,13 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       ));
 
       // 获取用户ID
-      // 注意：OptimizedAllocation接口可能需要member.id，与推荐系统保持一致
-      final userId = await _getMemberUserId();
+      // 修复：应该使用common_user_id，因为AI对话系统使用的是common_user_id
+      // conversation是用common_user_id创建的，分发API也必须使用相同的ID
+      final userId = await _getCurrentUserId(); // ✅ 改为使用common_user_id
+      print('[优化分发] 获取到的userId (common_user_id): $userId');
+
       if (userId == null) {
+        print('[优化分发] ❌ userId为空，用户未认证或ID格式无效');
         final failureStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
         failureStatus[event.serviceId] = AllocationStatus.failure;
 
@@ -1730,7 +1761,9 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         ));
         return;
       }
-      
+
+      print('[优化分发] ✅ 准备调用OptimizedAllocation - conversationId: $currentConvId, userId: $userId (common_user_id), merchantId: ${event.merchantId}');
+
       // 调用优化分配用例
       final result = await _optimizedAllocation(OptimizedAllocationParams(
         conversationId: currentConvId,
@@ -1738,6 +1771,8 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         item: event.item,
         merchantId: event.merchantId,
       ));
+
+      print('[优化分发] OptimizedAllocation调用完成，结果: ${result.isRight() ? "成功" : "失败"}');
 
       // 处理结果
       result.fold(
