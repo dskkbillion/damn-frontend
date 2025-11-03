@@ -24,7 +24,6 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
   WebSocketChannel? _channel;
   StreamSubscription? _channelSubscription;
   Timer? _heartbeatTimer;
-  Timer? _pongTimeoutTimer;
   String? _token; // Store token for authentication
   String? _commonUserId; // Store user ID for connection URL
   int _reconnectAttempts = 0;
@@ -163,9 +162,6 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
                } catch (e) {
                    print("[WebSocket] Error parsing message data: $e");
                }
-            } else if (decodedMessage['action'] == 'PONG' || decodedMessage['type'] == 'pong') {
-               print("[WebSocket] Received Pong (Heartbeat ACK)");
-               _cancelPongTimeout(); // Cancel timeout when pong is received
             } else {
               // Handle other message types if necessary
               print("[WebSocket] Received unhandled message action: ${decodedMessage['action']}");
@@ -244,37 +240,20 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
 
   void _startHeartbeat() {
     _heartbeatTimer?.cancel(); // Cancel existing timer
-    _heartbeatTimer = Timer.periodic(const Duration(seconds: 20), (timer) { // Changed to 20 seconds to match React Native
+    _heartbeatTimer = Timer.periodic(const Duration(seconds: 30), (timer) { // 30秒发送一次心跳保活
       if (_channel != null) {
-        final heartbeatMessage = jsonEncode({'type': 'heartbeat'}); // Changed to 'heartbeat' to match React Native
-        print("[WebSocket] Sending Heartbeat");
+        final heartbeatMessage = jsonEncode({'type': 'heartbeat'});
+        print("[WebSocket] Sending Heartbeat (keep-alive only, no response expected)");
         _channel!.sink.add(heartbeatMessage);
-        
-        // Start pong timeout timer (15 seconds)
-        _startPongTimeout();
+        // ✅ 不再期待 PONG 响应，只是保持连接活跃
       }
     });
-    print("[WebSocket] Heartbeat started (20s interval).");
-  }
-  
-  void _startPongTimeout() {
-    _pongTimeoutTimer?.cancel();
-    _pongTimeoutTimer = Timer(const Duration(seconds: 15), () {
-      print("[WebSocket] Pong timeout - no response received within 15 seconds");
-      _connectionStatusController.add(ConnectionStatus.disconnected);
-      _handleReconnect();
-    });
-  }
-  
-  void _cancelPongTimeout() {
-    _pongTimeoutTimer?.cancel();
-    _pongTimeoutTimer = null;
+    print("[WebSocket] Heartbeat started (30s interval, keep-alive mode).");
   }
 
   void _handleReconnect() {
      print("[WebSocket] Handling reconnect...");
     _heartbeatTimer?.cancel(); // Stop heartbeat during reconnection attempts
-    _pongTimeoutTimer?.cancel(); // Cancel pong timeout
     _channelSubscription?.cancel();
     _channel?.sink.close();
     _channel = null;
@@ -303,7 +282,6 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
     print("[WebSocket] Disconnecting...");
     _reconnectAttempts = _maxReconnectAttempts; // Prevent auto-reconnect after explicit disconnect
     _heartbeatTimer?.cancel();
-    _pongTimeoutTimer?.cancel();
     _channelSubscription?.cancel();
     await _channel?.sink.close();
     _channel = null;
