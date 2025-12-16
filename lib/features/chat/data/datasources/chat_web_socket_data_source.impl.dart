@@ -154,14 +154,15 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
     _channelSubscription = _channel?.stream.listen(
       (message) {
         // Handle incoming messages
-        // 注释掉原始消息日志，避免日志过量
-        // print("[WebSocket] Received raw: $message");
+        print("[WebSocket] 🔍 Received raw: $message"); // 临时开启调试
         try {
           final decodedMessage = jsonDecode(message);
           if (decodedMessage is Map<String, dynamic>) {
             // Handle both numeric action 3 (new message) and string 'CHAT'
             final action = decodedMessage['action'];
-            if ((action == 'CHAT' || action == 3) && decodedMessage['data'] != null) {
+            print("[WebSocket] 🔍 Decoded action: $action, hasData: ${decodedMessage['data'] != null}");
+
+            if ((action == 'CHAT' || action == 3 || action == 0) && decodedMessage['data'] != null) {
               // Assuming 'data' contains the ChatMessageDto structure
                try {
                  final messageData = decodedMessage['data'];
