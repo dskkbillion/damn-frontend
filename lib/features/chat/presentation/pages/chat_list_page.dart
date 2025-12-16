@@ -331,8 +331,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
               if (state.navigateToChatId != null) {
                 final chatId = state.navigateToChatId!;
                 print('[ChatListPage] BlocListener triggered navigation to chatId: $chatId');
-                // Navigate to ChatRoomPage using GoRouter
-                context.push('/chat/$chatId').then((result) {
+                // Navigate to refactored ChatRoomPage using GoRouter
+                context.push('/chat/refactored/$chatId').then((result) {
                    // Reset navigation trigger in Bloc state after navigation
                    context.read<ChatListBloc>().add(ClearNavigationTrigger());
                    // Remove the RefreshChatList since we now update unread count directly
