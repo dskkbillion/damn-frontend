@@ -48,9 +48,6 @@ import 'package:dskk_flutter_refactor/features/payment/presentation/routes/payme
 // Import AppMode
 import 'package:dskk_flutter_refactor/app/app_mode.dart';
 // Import AppRouterConfig
-
-// Global navigator key for accessing Overlay from anywhere
-final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart';
 
 // Import Shell Pages
@@ -141,6 +138,9 @@ import 'package:dskk_flutter_refactor/core/services/image_compress_service.dart'
 
 // Import auth application page and bloc
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/auth_application/auth_application_bloc.dart';
+
+// Global navigator key for accessing Overlay from anywhere
+final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
 // Placeholder page (defined once) - Only used if a module's routes aren't ready
 class PlaceholderPage extends StatelessWidget {
