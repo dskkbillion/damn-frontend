@@ -212,13 +212,15 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
   void dispose() {
     // Leave chat room
     _chatCubit.leaveChatRoom();
-    
-    // Disconnect WebSocket if no other chats are active
-    _webSocketCubit.disconnect();
-    
+
+    // ❌ 不要在这里断开 WebSocket！
+    // WebSocket 是全局单例，应该保持连接，以便聊天列表接收实时消息
+    // 只在用户登出或应用关闭时才应该断开 WebSocket
+    // _webSocketCubit.disconnect();
+
     // Dispose scroll controller
     _scrollController.dispose();
-    
+
     super.dispose();
   }
   

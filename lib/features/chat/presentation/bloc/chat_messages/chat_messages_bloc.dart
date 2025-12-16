@@ -663,7 +663,8 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
   Future<void> close() {
     print("[Bloc] Closing ChatMessagesBloc for chatId: $chatId");
     _messageSubscription?.cancel();
-    webSocketDataSource.disconnect();
+    // ❌ 不要断开 WebSocket！它是全局单例，应该保持连接
+    // webSocketDataSource.disconnect();
     return super.close();
   }
 } 
