@@ -15,7 +15,6 @@ import 'package:dskk_flutter_refactor/app/app_mode.dart';
 import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart';
 
 // Import all module DI configurations
-import 'package:dskk_flutter_refactor/features/auth/di/auth_di.dart';
 import 'package:dskk_flutter_refactor/features/home/di/home_di.dart';
 import 'package:dskk_flutter_refactor/features/favorites/di/favorites_di.dart';
 import 'package:dskk_flutter_refactor/features/seller/di/seller_statistics_di.dart';
@@ -99,9 +98,13 @@ Future<void> main() async {
   
   await ChatDI.init(getIt);
   print('[Unified Production] Chat module initialized.');
-  
+
   await ProfileDI.init(getIt);
   print('[Unified Production] Profile module initialized.');
+
+  // 初始化全局 WebSocket 管理器（必须在 AuthDI 和 ChatDI 之后）
+  ChatDI.initGlobalWebSocketManager(getIt);
+  print('[Unified Production] Global WebSocket manager initialized.');
   
   SellerStatisticsDI.init(getIt);
   print('[Unified Production] Seller Statistics module initialized.');

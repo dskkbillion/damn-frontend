@@ -4,7 +4,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
-import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
 import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
 
 import 'package:dskk_flutter_refactor/features/chat/presentation/cubit/chat/chat_cubit.dart' as chat_cubit;
@@ -185,26 +184,11 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
 
     // Load initial messages
     await _messageListCubit.loadMessages(widget.chatId);
-    
-    // Connect WebSocket with user credentials
-    try {
-      final storage = getIt<ISecureStorageRepository>();
-      final commonUserId = await storage.getCommonUserId();
-      final token = await storage.getToken();
-      
-      if (commonUserId != null && token != null) {
-        _webSocketCubit.connect(
-          commonUserId: commonUserId.toString(),
-          token: token,
-        );
-        print('[ChatRoom] WebSocket connecting with userId: $commonUserId');
-      } else {
-        print('[ChatRoom] WARNING: Cannot connect WebSocket - missing credentials');
-      }
-    } catch (e) {
-      print('[ChatRoom] ERROR connecting WebSocket: $e');
-    }
-    
+
+    // WebSocket 连接由全局管理器处理，无需在聊天室中手动连接
+    // GlobalWebSocketManager 会在用户登录后自动连接
+    print('[ChatRoom] Using global WebSocket connection managed by GlobalWebSocketManager');
+
     // Notify that messages have been loaded
     widget.onMessagesLoaded?.call();
   }

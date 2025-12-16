@@ -3,10 +3,13 @@ import 'package:injectable/injectable.dart';
 import 'package:dio/dio.dart';
 import 'package:dskk_flutter_refactor/core/network/network_info.dart'; // Import NetworkInfo
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_repository.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart'; // Import IAuthRepository
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/user.dart';
+import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart'; // Import ISecureStorageRepository
+import 'package:dskk_flutter_refactor/core/services/global_websocket_manager.dart'; // Import GlobalWebSocketManager
 // 导入我们新创建的MockUserRepository
 import 'package:dskk_flutter_refactor/features/chat/data/repositories/mocks/mock_user_repository.dart';
 
@@ -456,5 +459,36 @@ class ChatDI {
     }
 
     print('[ChatDI] Chat module dependencies initialized');
+  }
+
+  /// 初始化全局 WebSocket 管理器
+  ///
+  /// 注意：必须在 AuthDI 和 ChatDI 初始化之后调用
+  /// 这样才能确保 IAuthRepository 和 WebSocketCubit 已注册
+  static GlobalWebSocketManager? initGlobalWebSocketManager(GetIt getIt) {
+    if (!getIt.isRegistered<GlobalWebSocketManager>()) {
+      try {
+        final manager = GlobalWebSocketManager(
+          authRepository: getIt<IAuthRepository>(),
+          webSocketCubit: getIt<WebSocketCubit>(),
+          storage: getIt<ISecureStorageRepository>(),
+        );
+
+        getIt.registerSingleton<GlobalWebSocketManager>(manager);
+        print('[ChatDI] ✅ Registered GlobalWebSocketManager');
+
+        // 初始化管理器，开始监听认证状态
+        manager.initialize();
+        print('[ChatDI] ✅ GlobalWebSocketManager initialized and listening');
+
+        return manager;
+      } catch (e) {
+        print('[ChatDI] ❌ Failed to initialize GlobalWebSocketManager: $e');
+        return null;
+      }
+    } else {
+      print('[ChatDI] GlobalWebSocketManager already registered');
+      return getIt<GlobalWebSocketManager>();
+    }
   }
 } 
