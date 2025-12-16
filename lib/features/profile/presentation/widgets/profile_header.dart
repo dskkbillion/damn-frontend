@@ -232,11 +232,14 @@ class ProfileHeader extends ConsumerWidget {
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context)!;
 
+    // 在创建 Dialog 前先获取 ProfileBloc 的引用，避免 Dialog 内部 Context 作用域问题
+    final profileBloc = context.read<ProfileBloc>();
+
     final textController = TextEditingController(text: currentNickname);
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(appLocalizations.profile_edit_nickname),
         content: TextField(
           controller: textController,
@@ -249,16 +252,16 @@ class ProfileHeader extends ConsumerWidget {
             // 支持键盘确认键直接保存
             final newNickname = textController.text.trim();
             if (newNickname.isNotEmpty && newNickname.length <= 20) {
-              context.read<ProfileBloc>().add(
+              profileBloc.add(
                 UpdateUserProfileEvent(nickName: newNickname)
               );
-              Navigator.pop(context);
+              Navigator.of(context).pop(); // 使用原始 context，兼容 GoRouter
             }
           },
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.of(context).pop(), // 使用原始 context，兼容 GoRouter
             child: Text(appLocalizations.profile_cancel),
           ),
           TextButton(
@@ -276,10 +279,10 @@ class ProfileHeader extends ConsumerWidget {
                 );
                 return;
               }
-              context.read<ProfileBloc>().add(
+              profileBloc.add(
                 UpdateUserProfileEvent(nickName: newNickname)
               );
-              Navigator.pop(context);
+              Navigator.of(context).pop(); // 使用原始 context，兼容 GoRouter
             },
             child: Text(appLocalizations.profile_save),
           ),
