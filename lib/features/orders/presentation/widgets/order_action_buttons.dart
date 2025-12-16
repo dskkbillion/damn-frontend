@@ -386,12 +386,47 @@ class OrderDetailActionButtons extends StatelessWidget {
         );
         break;
         
-      // 待交付状态组（多个状态映射）
+      // 待确认收货状态：单独处理，显示确认收货按钮
+      case OrderStatus.awaitingConfirmation:
+        // 待确认收货：显示确认收货主按钮
+        primaryButton = BlocBuilder<OrderDetailBloc, OrderDetailState>(
+          builder: (context, state) {
+            final isLoading = state is OrderDetailActionLoading;
+            return _buildButton(
+              context,
+              isLoading ? '处理中...' : '确认收货',
+              isLoading ? null : () {
+                dialogs.showConfirmationDialog(
+                  context: context,
+                  title: '确认收货',
+                  content: '确认已收到满意的服务吗？',
+                  onConfirm: () {
+                    context.read<OrderDetailBloc>().add(
+                      OrderActionRequested(
+                        action: OrderAction.confirmReceipt,
+                        orderId: order.id.toString()
+                      )
+                    );
+                  },
+                );
+              },
+              isPrimary: true,
+              isLoading: isLoading,
+            );
+          },
+        );
+        // 次要按钮：联系顾问
+        buttons.add(_buildButton(context, '联系顾问',
+          (isCreatingChat || onContactSeller == null)
+              ? null
+              : () => onContactSeller!(order)));
+        break;
+
+      // 其他待交付状态组（服务进行中）
       case OrderStatus.awaitingSubmission:
       case OrderStatus.buyAwaitingSubmission:
       case OrderStatus.awaitingStart:
       case OrderStatus.awaitingDelivery:
-      case OrderStatus.awaitingConfirmation:
         // 咨询进行中：联系顾问
         primaryButton = _buildButton(
           context,
