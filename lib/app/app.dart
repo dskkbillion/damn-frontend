@@ -27,46 +27,52 @@ class MyApp extends ConsumerWidget { // Changed to ConsumerWidget
     // 获取语言设置
     final locale = ref.watch(localeProvider);
 
-    // 使用GlobalMessageNotification和ModeFlipTransitionOverlay包装MaterialApp
-    return GlobalMessageNotification(
-      child: ModeFlipTransitionOverlay(
-        child: MaterialApp.router(
-          // Use the router instance obtained from the provider
-          routerConfig: router, 
+    // MaterialApp 创建 Overlay，所以 GlobalMessageNotification 需要在其内部
+    return MaterialApp.router(
+      // Use the router instance obtained from the provider
+      routerConfig: router,
 
-        title: 'DSKK Flutter Refactor',
+      title: 'DSKK Flutter Refactor',
 
-        // Use the centralized light theme
-        theme: AppTheme.lightTheme,
+      // Use the centralized light theme
+      theme: AppTheme.lightTheme,
 
-        // 添加国际化配置
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          Locale('zh'), // 中文
-          Locale('en'), // 英文
-        ],
-        locale: locale, // 用户设置的语言
-        localeResolutionCallback: (deviceLocale, supportedLocales) {
-          if (locale != null) {
-            return locale; // 如果用户设置了语言，使用用户设置
-          }
-          // 否则尝试使用设备语言，如不支持则使用中文
-          if (deviceLocale != null) {
-            for (final supportedLocale in supportedLocales) {
-              if (supportedLocale.languageCode == deviceLocale.languageCode) {
-                return deviceLocale;
-              }
+      // 添加国际化配置
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('zh'), // 中文
+        Locale('en'), // 英文
+      ],
+      locale: locale, // 用户设置的语言
+      localeResolutionCallback: (deviceLocale, supportedLocales) {
+        if (locale != null) {
+          return locale; // 如果用户设置了语言，使用用户设置
+        }
+        // 否则尝试使用设备语言，如不支持则使用中文
+        if (deviceLocale != null) {
+          for (final supportedLocale in supportedLocales) {
+            if (supportedLocale.languageCode == deviceLocale.languageCode) {
+              return deviceLocale;
             }
           }
-          return const Locale('zh'); // 默认使用中文
-        },
-        ),
-      ),
+        }
+        return const Locale('zh'); // 默认使用中文
+      },
+
+      // 使用 builder 将 GlobalMessageNotification 和 ModeFlipTransitionOverlay 放在 MaterialApp 内部
+      // 这样它们可以访问 Overlay 和路由信息
+      builder: (context, child) {
+        return GlobalMessageNotification(
+          child: ModeFlipTransitionOverlay(
+            child: child!,
+          ),
+        );
+      },
     );
   }
 } 
