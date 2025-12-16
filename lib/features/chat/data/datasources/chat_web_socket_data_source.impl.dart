@@ -158,11 +158,16 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
         try {
           final decodedMessage = jsonDecode(message);
           if (decodedMessage is Map<String, dynamic>) {
-            // Handle both numeric action 3 (new message) and string 'CHAT'
             final action = decodedMessage['action'];
-            print("[WebSocket] 🔍 Decoded action: $action, hasData: ${decodedMessage['data'] != null}");
+            final hasData = decodedMessage['data'] != null;
+            print("[WebSocket] 🔍 Decoded action: $action (type: ${action.runtimeType}), hasData: $hasData");
 
-            if ((action == 'CHAT' || action == 3 || action == 0) && decodedMessage['data'] != null) {
+            // 处理所有包含 data 字段的消息（只要不是明确的错误消息）
+            // 支持多种 action 格式：字符串 'CHAT'、数字 0/3、或其他表示聊天消息的值
+            final isLoginMessage = action == 'LOGIN_SUCCESS' || action == 'LOGIN_FAIL';
+            final isChatMessage = hasData && !isLoginMessage;
+
+            if (isChatMessage) {
               // Assuming 'data' contains the ChatMessageDto structure
                try {
                  final messageData = decodedMessage['data'];
@@ -211,16 +216,30 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
   // 触发聊天消息全局通知
   void _triggerChatNotification(ChatMessageDto messageDto) {
     try {
-      // 假设我们只对别人发给我们的消息触发通知
-      if (messageDto.memberId != int.tryParse(_commonUserId ?? '0') &&
-          messageDto.doctorId != int.tryParse(_commonUserId ?? '0')) {
-        
-        // 获取发送者信息（根据ChatMessageDto实际结构）
+      final currentUserId = int.tryParse(_commonUserId ?? '0') ?? 0;
+
+      // 聊天室中，memberId 和 doctorId 分别代表聊天的两方
+      // 判断消息是否是别人发的：如果当前用户既不是 memberId 也不是 doctorId，说明不是这个聊天室的参与者
+      // 如果当前用户是参与者之一，则对方就是另一个 ID
+      final isParticipant = (messageDto.memberId == currentUserId || messageDto.doctorId == currentUserId);
+
+      // 获取对方的 ID（发送者）
+      final senderId = (messageDto.memberId == currentUserId)
+          ? messageDto.doctorId?.toString() ?? "0"  // 如果我是 member，对方是 doctor
+          : messageDto.memberId?.toString() ?? "0";  // 如果我是 doctor，对方是 member
+
+      // 注意：WebSocket 推送的消息可能包括自己发的和别人发的
+      // 简单判断：如果我们在这个聊天室中，就处理所有消息（包括自己发的）
+      // 前端 UI 会自动过滤显示
+      print("[WebSocket] 🔔 Message check: currentUserId=$currentUserId, memberId=${messageDto.memberId}, doctorId=${messageDto.doctorId}, isParticipant=$isParticipant, senderId=$senderId");
+
+      if (isParticipant) {
+        // 我们是聊天室参与者，触发更新（包括自己发的消息，用于多设备同步）
+
         String senderName = "新消息";  // 没有名称字段，使用默认值
         String content = messageDto.context;
-        String senderId = messageDto.memberId?.toString() ?? messageDto.doctorId?.toString() ?? "0";
         String chatId = messageDto.chatId.toString();
-        
+
         // 创建消息事件并触发
         final chatEvent = ChatMessageEvent(
           senderName: senderName,
