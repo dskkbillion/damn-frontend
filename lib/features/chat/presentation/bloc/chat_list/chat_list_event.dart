@@ -50,4 +50,18 @@ class UpdateChatRoomLastMessage extends ChatListEvent {
   List<Object?> get props => [chatId, lastMessage];
 }
 
-// Add other events like UpdateChatRoomListWithNewMessage later 
+/// 内部事件：处理来自 EventBus 的聊天列表更新
+class _HandleChatListUpdate extends ChatListEvent {
+  final ChatListUpdateEvent updateEvent;
+
+  const _HandleChatListUpdate(this.updateEvent);
+
+  @override
+  List<Object?> get props => [
+    updateEvent.chatId,
+    updateEvent.lastMessage,
+    updateEvent.lastMessageTime,
+    updateEvent.unreadCountDelta,
+    updateEvent.resetUnread,
+  ];
+} 

@@ -36,11 +36,12 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
     on<ClearNavigationTrigger>(_onClearNavigationTrigger);
     on<UpdateChatRoomUnreadCount>(_onUpdateChatRoomUnreadCount);
     on<UpdateChatRoomLastMessage>(_onUpdateChatRoomLastMessage);
+    on<_HandleChatListUpdate>(_onHandleChatListUpdate);
 
     // 监听聊天列表更新事件
     _chatListUpdateSubscription = _eventBus.chatListUpdateStream.listen((event) {
       print('[ChatListBloc] Received ChatListUpdateEvent for chatId: ${event.chatId}');
-      _handleChatListUpdate(event);
+      add(_HandleChatListUpdate(event));
     });
   }
 
@@ -182,12 +183,14 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
     emit(state.copyWith(chatRooms: updatedChatRooms));
   }
 
-  // 处理聊天列表更新事件
-  void _handleChatListUpdate(ChatListUpdateEvent event) {
-    print('[ChatListBloc] Processing chat list update for chatId: ${event.chatId}');
+  // 处理来自 EventBus 的聊天列表更新事件
+  void _onHandleChatListUpdate(_HandleChatListUpdate event, Emitter<ChatListState> emit) {
+    final updateEvent = event.updateEvent;
+    print('[ChatListBloc] Processing chat list update for chatId: ${updateEvent.chatId}');
+    print('[ChatListBloc] resetUnread: ${updateEvent.resetUnread}, unreadCountDelta: ${updateEvent.unreadCountDelta}');
 
     // 查找对应的聊天室
-    final roomIndex = state.chatRooms.indexWhere((room) => room.id == event.chatId);
+    final roomIndex = state.chatRooms.indexWhere((room) => room.id == updateEvent.chatId);
 
     if (roomIndex == -1) {
       print('[ChatListBloc] Chat room not found in current list, refreshing...');
@@ -200,14 +203,14 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
     var updatedRoom = room;
 
     // 更新最后消息
-    if (event.lastMessage != null) {
+    if (updateEvent.lastMessage != null) {
       updatedRoom = updatedRoom.copyWith(
         lastMessage: ChatMessage(
           id: 0, // 临时ID，因为我们只关心显示内容
-          context: event.lastMessage!,
+          context: updateEvent.lastMessage!,
           senderId: 0, // 临时senderId
-          chatId: event.chatId,
-          createTime: event.lastMessageTime ?? DateTime.now(),
+          chatId: updateEvent.chatId,
+          createTime: updateEvent.lastMessageTime ?? DateTime.now(),
           withdrawFlag: false,
           type: 'text', // 默认文本类型
         ),
@@ -215,10 +218,14 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
     }
 
     // 更新未读数
-    if (event.resetUnread) {
+    if (updateEvent.resetUnread) {
+      print('[ChatListBloc] Resetting unread count for chatId: ${updateEvent.chatId}, old unreadCount: ${updatedRoom.unreadCount}');
       updatedRoom = updatedRoom.copyWith(unreadCount: 0);
-    } else if (event.unreadCountDelta != null) {
-      final newUnreadCount = (updatedRoom.unreadCount ?? 0) + event.unreadCountDelta!;
+      print('[ChatListBloc] After reset, new unreadCount: ${updatedRoom.unreadCount}');
+    } else if (updateEvent.unreadCountDelta != null) {
+      final oldUnreadCount = updatedRoom.unreadCount ?? 0;
+      final newUnreadCount = oldUnreadCount + updateEvent.unreadCountDelta!;
+      print('[ChatListBloc] Updating unread count for chatId: ${updateEvent.chatId}, old: $oldUnreadCount, delta: ${updateEvent.unreadCountDelta}, new: $newUnreadCount');
       updatedRoom = updatedRoom.copyWith(
         unreadCount: newUnreadCount >= 0 ? newUnreadCount : 0,
       );
@@ -238,9 +245,9 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
       return bTime.compareTo(aTime);
     });
 
-    // 直接发出新状态，而不是通过add事件（避免异步处理）
+    // 发出新状态
     emit(state.copyWith(chatRooms: updatedChatRooms));
-    print('[ChatListBloc] Chat list updated immediately for chatId: ${event.chatId}');
+    print('[ChatListBloc] Chat list updated for chatId: ${updateEvent.chatId}');
   }
 
   @override

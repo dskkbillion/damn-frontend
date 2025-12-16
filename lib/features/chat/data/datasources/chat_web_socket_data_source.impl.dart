@@ -29,6 +29,7 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
   int _reconnectAttempts = 0;
   final int _maxReconnectAttempts = 5;
   final Duration _reconnectDelay = const Duration(seconds: 5);
+  bool _isConnected = false; // 连接状态标志
 
   final StreamController<ChatMessageDto> _messageStreamController = StreamController.broadcast();
   final StreamController<ConnectionStatus> _connectionStatusController = StreamController.broadcast();
@@ -40,6 +41,20 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
 
   @override
   Future<void> connect(String commonUserId, String token) async {
+    // 防止重复连接：如果已经连接了相同的用户，直接返回
+    if (_isConnected &&
+        _commonUserId == commonUserId &&
+        _token == token) {
+      print("[WebSocket] ✅ Already connected with userId: $commonUserId, skipping duplicate connection");
+      return;
+    }
+
+    // 如果是不同用户或token，先断开旧连接
+    if (_isConnected && (_commonUserId != commonUserId || _token != token)) {
+      print("[WebSocket] ⚠️ User/token changed from $_commonUserId to $commonUserId, disconnecting old connection");
+      await disconnect();
+    }
+
     _commonUserId = commonUserId;
     _token = token;
     _reconnectAttempts = 0; // Reset attempts on new connect call
@@ -111,6 +126,7 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
            return;
       }
 
+      _isConnected = true; // 标记为已连接
       _connectionStatusController.add(ConnectionStatus.connected);
       print("[WebSocket] Connected successfully.");
       _reconnectAttempts = 0; // Reset attempts on successful connection
@@ -126,6 +142,7 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
 
     } catch (e) {
       print("[WebSocket] Connection error: $e");
+      _isConnected = false; // 标记为未连接
       _connectionStatusController.add(ConnectionStatus.error);
       _handleReconnect(); // Attempt to reconnect on error
     }
@@ -175,11 +192,13 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
       },
       onDone: () {
         print("[WebSocket] Channel closed by server.");
+        _isConnected = false;
         _connectionStatusController.add(ConnectionStatus.disconnected);
         _handleReconnect(); // Attempt to reconnect when channel closes
       },
       onError: (error) {
         print("[WebSocket] Channel error: $error");
+        _isConnected = false;
         _connectionStatusController.add(ConnectionStatus.error);
         _handleReconnect(); // Attempt to reconnect on error
       },
@@ -253,6 +272,7 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
 
   void _handleReconnect() {
      print("[WebSocket] Handling reconnect...");
+    _isConnected = false; // 标记为未连接
     _heartbeatTimer?.cancel(); // Stop heartbeat during reconnection attempts
     _channelSubscription?.cancel();
     _channel?.sink.close();
@@ -285,6 +305,7 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
     _channelSubscription?.cancel();
     await _channel?.sink.close();
     _channel = null;
+    _isConnected = false; // 标记为未连接
     _connectionStatusController.add(ConnectionStatus.disconnected);
      print("[WebSocket] Disconnected.");
      // Don't close controllers here if the Bloc might reconnect later
