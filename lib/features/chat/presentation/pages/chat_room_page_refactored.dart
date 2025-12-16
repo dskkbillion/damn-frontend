@@ -50,6 +50,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
   Participant? _opponent;
   double _lastScrollOffset = 0;
   int? _currentUserId; // 存储当前用户ID
+  bool _isInitialLoad = true; // 标记是否是初次加载
   
   @override
   void initState() {
@@ -438,11 +439,18 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                       state.maybeWhen(
                         loaded: (messages, hasMore, isLoadingMore, loadMoreError, sendError, actionError,
                                 substantiveMessageCount, isPaid, hasShownPaymentDialog, userRole, productId) {
-                          // Scroll to bottom on new message
+                          // Scroll to bottom on message state changes
                           if (messages.isNotEmpty) {
                             WidgetsBinding.instance.addPostFrameCallback((_) {
-                              if (_scrollController.hasClients && _scrollController.offset < 100) {
-                                _scrollToBottom();
+                              if (_scrollController.hasClients) {
+                                // On initial load, always scroll to bottom to show latest message
+                                if (_isInitialLoad) {
+                                  _scrollToBottom();
+                                  _isInitialLoad = false;
+                                } else if (_scrollController.offset < 100) {
+                                  // After initial load, only auto-scroll if user is near bottom
+                                  _scrollToBottom();
+                                }
                               }
                             });
                           }
