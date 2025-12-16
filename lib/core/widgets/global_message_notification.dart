@@ -64,9 +64,15 @@ class _GlobalMessageNotificationState extends State<GlobalMessageNotification> {
       return;
     }
 
-    // 移除之前显示的通知
-    _overlayEntry?.remove();
-    _overlayEntry = null;
+    // 安全地移除之前显示的通知
+    if (_overlayEntry != null) {
+      try {
+        _overlayEntry!.remove();
+      } catch (e) {
+        print('[GlobalMessageNotification] Error removing previous overlay: $e');
+      }
+      _overlayEntry = null;
+    }
 
     // 创建新的通知
     _overlayEntry = OverlayEntry(
@@ -142,14 +148,37 @@ class _GlobalMessageNotificationState extends State<GlobalMessageNotification> {
     );
     
     // 显示通知
-    if (mounted) {
-      Overlay.of(context)?.insert(_overlayEntry!);
-      
+    if (!mounted) {
+      print('[GlobalMessageNotification] Widget not mounted when trying to show notification');
+      _overlayEntry = null;
+      return;
+    }
+
+    try {
+      final overlay = Overlay.of(context);
+      if (overlay == null) {
+        print('[GlobalMessageNotification] No Overlay found in context');
+        _overlayEntry = null;
+        return;
+      }
+
+      overlay.insert(_overlayEntry!);
+      print('[GlobalMessageNotification] Notification displayed: ${event.content}');
+
       // 3秒后自动移除
       Future.delayed(const Duration(seconds: 3), () {
-        _overlayEntry?.remove();
-        _overlayEntry = null;
+        if (_overlayEntry != null && mounted) {
+          try {
+            _overlayEntry!.remove();
+          } catch (e) {
+            print('[GlobalMessageNotification] Error auto-removing overlay: $e');
+          }
+          _overlayEntry = null;
+        }
       });
+    } catch (e) {
+      print('[GlobalMessageNotification] Error showing notification: $e');
+      _overlayEntry = null;
     }
   }
   
@@ -181,7 +210,13 @@ class _GlobalMessageNotificationState extends State<GlobalMessageNotification> {
   
   @override
   void dispose() {
-    _overlayEntry?.remove();
+    if (_overlayEntry != null) {
+      try {
+        _overlayEntry!.remove();
+      } catch (e) {
+        print('[GlobalMessageNotification] Error removing overlay in dispose: $e');
+      }
+    }
     super.dispose();
   }
   
