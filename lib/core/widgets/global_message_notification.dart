@@ -34,15 +34,28 @@ class _GlobalMessageNotificationState extends State<GlobalMessageNotification> {
   
   /// 显示通知
   void _showNotification(ChatMessageEvent event) {
-    // 检查当前是否在聊天室内
-    final router = GoRouter.of(context);
-    final currentRoute = router.routerDelegate.currentConfiguration;
+    // 检查 widget 是否还挂载
+    if (!mounted) {
+      print('[GlobalMessageNotification] Widget not mounted, skipping notification');
+      return;
+    }
 
-    // 从当前路由中获取路径参数
+    // 安全地获取当前路由
     String? currentChatId;
-    if (currentRoute.uri.pathSegments.length >= 2 &&
-        currentRoute.uri.pathSegments[0] == 'chat') {
-      currentChatId = currentRoute.uri.pathSegments[1];
+    try {
+      // 使用 ModalRoute 获取当前路由名称（更安全）
+      final modalRoute = ModalRoute.of(context);
+      if (modalRoute != null && modalRoute.settings.name != null) {
+        final routeName = modalRoute.settings.name!;
+        // 检查是否在聊天室页面：/chat/:chatId
+        final chatMatch = RegExp(r'^/chat/(\d+)$').firstMatch(routeName);
+        if (chatMatch != null) {
+          currentChatId = chatMatch.group(1);
+        }
+      }
+    } catch (e) {
+      print('[GlobalMessageNotification] Error getting current route: $e');
+      // 无法获取当前路由，继续显示通知
     }
 
     // 如果当前正在该聊天室内，不显示通知
@@ -144,12 +157,26 @@ class _GlobalMessageNotificationState extends State<GlobalMessageNotification> {
   void _navigateToChatDetail(BuildContext context, ChatMessageEvent event) {
     _overlayEntry?.remove();
     _overlayEntry = null;
-    
-    // 使用 GoRouter 导航到聊天详情页
-    GoRouter.of(context).pushNamed(
-      'chatRoom', 
-      pathParameters: {'chatId': event.chatId},
-    );
+
+    try {
+      // 使用 GoRouter 导航到聊天详情页
+      final router = GoRouter.of(context);
+      router.pushNamed(
+        'chatRoom',
+        pathParameters: {'chatId': event.chatId},
+      );
+      print('[GlobalMessageNotification] Navigating to chat room: ${event.chatId}');
+    } catch (e) {
+      print('[GlobalMessageNotification] Error navigating to chat: $e');
+      // 备用方案：使用 Navigator
+      try {
+        Navigator.of(context).pushNamed(
+          '/chat/${event.chatId}',
+        );
+      } catch (e2) {
+        print('[GlobalMessageNotification] Fallback navigation also failed: $e2');
+      }
+    }
   }
   
   @override
