@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
+import 'package:dskk_flutter_refactor/app/navigation/app_router.dart'; // 导入 rootNavigatorKey
 
 /// 全局消息通知组件
 /// 这个组件监听消息事件并在屏幕顶部显示通知
@@ -155,15 +156,16 @@ class _GlobalMessageNotificationState extends State<GlobalMessageNotification> {
     }
 
     try {
-      final overlay = Overlay.of(context);
+      // 使用全局 navigator key 直接访问 Overlay，避免 context 问题
+      final overlay = rootNavigatorKey.currentState?.overlay;
       if (overlay == null) {
-        print('[GlobalMessageNotification] No Overlay found in context');
+        print('[GlobalMessageNotification] No Overlay found from navigator key');
         _overlayEntry = null;
         return;
       }
 
       overlay.insert(_overlayEntry!);
-      print('[GlobalMessageNotification] Notification displayed: ${event.content}');
+      print('[GlobalMessageNotification] ✅ Notification displayed: ${event.content}');
 
       // 3秒后自动移除
       Future.delayed(const Duration(seconds: 3), () {

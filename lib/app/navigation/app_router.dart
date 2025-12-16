@@ -48,6 +48,9 @@ import 'package:dskk_flutter_refactor/features/payment/presentation/routes/payme
 // Import AppMode
 import 'package:dskk_flutter_refactor/app/app_mode.dart';
 // Import AppRouterConfig
+
+// Global navigator key for accessing Overlay from anywhere
+final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart';
 
 // Import Shell Pages
@@ -159,9 +162,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   // 读取是否显示开发tab的配置  
   final showDevTab = ref.watch(showDevTabProvider);    
   
-  final authRepository = GetIt.instance<IAuthRepository>();  
-  final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');  
-  // Navigation keys for ShellRoutes  
+  final authRepository = GetIt.instance<IAuthRepository>();
+  // rootNavigatorKey is now defined globally at the top of this file
+  // Navigation keys for ShellRoutes
   final buyerShellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'buyer_shell');  
   final sellerShellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'seller_shell');
 
