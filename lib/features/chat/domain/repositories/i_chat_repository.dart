@@ -35,4 +35,7 @@ abstract class IChatRepository {
 
   /// Deletes specified messages for the current user within a chat room.
   Future<Either<Failure, void>> deleteChatMessages(List<int> messageIds, int chatId);
+
+  /// Deletes specified chat rooms.
+  Future<Either<Failure, void>> deleteChatRooms(List<int> chatIds);
 } 

@@ -12,6 +12,7 @@ import '../../domain/entities/participant.dart';
 class ChatListItem extends StatefulWidget { // Change to StatefulWidget for initState
   final ChatRoom chatRoom;
   final VoidCallback? onTap;
+  final VoidCallback? onDelete;
   final int currentUserId;
 
   const ChatListItem({
@@ -19,6 +20,7 @@ class ChatListItem extends StatefulWidget { // Change to StatefulWidget for init
     required this.chatRoom,
     required this.currentUserId,
     this.onTap,
+    this.onDelete,
   });
 
   @override
@@ -118,7 +120,7 @@ class _ChatListItemState extends State<ChatListItem> {
     final timestampText = _formatTimestamp(widget.chatRoom.lastActivityTime);
     final lastMessageText = _getLastMessagePreview(widget.chatRoom.lastMessage);
 
-    return ListTile(
+    final listTile = ListTile(
       leading: CircleAvatar(
         radius: 25, // Standard ListTile leading size adjust if needed
         backgroundImage: (opponent.avatar != null && opponent.avatar!.isNotEmpty)
@@ -250,5 +252,51 @@ class _ChatListItemState extends State<ChatListItem> {
       onTap: widget.onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // Adjust padding
     );
+
+    // 如果有删除回调，包裹在 Dismissible 中实现滑动删除
+    if (widget.onDelete != null) {
+      return Dismissible(
+        key: ValueKey('chat_${widget.chatRoom.id}'),
+        direction: DismissDirection.endToStart, // 从右向左滑动
+        confirmDismiss: (direction) async {
+          // 显示确认对话框
+          return await showDialog<bool>(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('确认删除'),
+                content: const Text('确定要删除这个聊天会话吗？删除后将无法恢复。'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('取消'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: TextButton.styleFrom(foregroundColor: Colors.red),
+                    child: const Text('删除'),
+                  ),
+                ],
+              );
+            },
+          ) ?? false;
+        },
+        onDismissed: (direction) {
+          widget.onDelete!();
+        },
+        background: Container(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 20),
+          color: Colors.red,
+          child: const Icon(
+            Icons.delete,
+            color: Colors.white,
+          ),
+        ),
+        child: listTile,
+      );
+    }
+
+    return listTile;
   }
 } 

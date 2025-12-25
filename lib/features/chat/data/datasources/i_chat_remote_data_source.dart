@@ -13,4 +13,5 @@ abstract class IChatRemoteDataSource {
   });
   Future<void> revokeMessage(int messageId);
   Future<void> deleteChatMessages(List<int> messageIds, int chatId); // Match repository method
+  Future<void> deleteChatRooms(List<int> chatIds); // Delete chat rooms
 } 

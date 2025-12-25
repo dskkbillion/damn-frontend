@@ -164,12 +164,14 @@ class SellerGroupItem extends StatefulWidget {
   final SellerChatGroup group;
   final int currentUserId;
   final Function(ChatRoom) onTap;
-  
+  final Function(ChatRoom)? onDelete;
+
   const SellerGroupItem({
     Key? key,
     required this.group,
     required this.currentUserId,
     required this.onTap,
+    this.onDelete,
   }) : super(key: key);
 
   @override
@@ -432,6 +434,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                       chatRoom: chatRoom,
                       currentUserId: widget.currentUserId,
                       onTap: () => widget.onTap(chatRoom),
+                      onDelete: widget.onDelete != null ? () => widget.onDelete!(chatRoom) : null,
                     ),
                   );
                 }).toList(),
@@ -442,7 +445,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
       ),
     );
   }
-  
+
   String _formatTime(DateTime time) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -471,12 +474,14 @@ class ProductChatItem extends StatelessWidget {
   final ChatRoom chatRoom;
   final int currentUserId;
   final VoidCallback onTap;
-  
+  final VoidCallback? onDelete;
+
   const ProductChatItem({
     Key? key,
     required this.chatRoom,
     required this.currentUserId,
     required this.onTap,
+    this.onDelete,
   }) : super(key: key);
   
   String _getMessagePreview(ChatMessage? message) {
@@ -514,8 +519,8 @@ class ProductChatItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appLocalizations = AppLocalizations.of(context)!;
-    
-    return ListTile(
+
+    final listTile = ListTile(
       leading: chatRoom.productImage != null
           ? ClipRRect(
               borderRadius: BorderRadius.circular(8),
@@ -599,8 +604,52 @@ class ProductChatItem extends StatelessWidget {
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
     );
+
+    if (onDelete != null) {
+      return Dismissible(
+        key: ValueKey('product_chat_${chatRoom.id}'),
+        direction: DismissDirection.endToStart,
+        confirmDismiss: (direction) async {
+          return await showDialog<bool>(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('确认删除'),
+                content: const Text('确定要删除这个聊天会话吗？删除后将无法恢复。'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('取消'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: TextButton.styleFrom(foregroundColor: Colors.red),
+                    child: const Text('删除'),
+                  ),
+                ],
+              );
+            },
+          ) ?? false;
+        },
+        onDismissed: (direction) {
+          onDelete!();
+        },
+        background: Container(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 20),
+          color: Colors.red,
+          child: const Icon(
+            Icons.delete,
+            color: Colors.white,
+          ),
+        ),
+        child: listTile,
+      );
+    }
+
+    return listTile;
   }
-  
+
   String _formatTime(DateTime time) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -646,12 +695,14 @@ class ProductGroupItem extends StatefulWidget {
   final ProductChatGroup group;
   final int currentUserId;
   final Function(ChatRoom) onTap;
-  
+  final Function(ChatRoom)? onDelete;
+
   const ProductGroupItem({
     Key? key,
     required this.group,
     required this.currentUserId,
     required this.onTap,
+    this.onDelete,
   }) : super(key: key);
 
   @override
@@ -928,6 +979,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                       chatRoom: chatRoom,
                       currentUserId: widget.currentUserId,
                       onTap: () => widget.onTap(chatRoom),
+                      onDelete: widget.onDelete != null ? () => widget.onDelete!(chatRoom) : null,
                     ),
                   );
                 }).toList(),
@@ -938,7 +990,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
       ),
     );
   }
-  
+
   String _formatTime(DateTime time) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -967,12 +1019,14 @@ class BuyerChatItem extends StatelessWidget {
   final ChatRoom chatRoom;
   final int currentUserId;
   final VoidCallback onTap;
-  
+  final VoidCallback? onDelete;
+
   const BuyerChatItem({
     Key? key,
     required this.chatRoom,
     required this.currentUserId,
     required this.onTap,
+    this.onDelete,
   }) : super(key: key);
   
   String _getMessagePreview(ChatMessage? message) {
@@ -1011,8 +1065,8 @@ class BuyerChatItem extends StatelessWidget {
   Widget build(BuildContext context) {
     // 在卖家视角下，participant2是买家
     final buyer = chatRoom.participant2;
-    
-    return ListTile(
+
+    final listTile = ListTile(
       leading: CircleAvatar(
         radius: 20,
         backgroundImage: (buyer.avatar != null && buyer.avatar!.isNotEmpty)
@@ -1072,8 +1126,52 @@ class BuyerChatItem extends StatelessWidget {
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
     );
+
+    if (onDelete != null) {
+      return Dismissible(
+        key: ValueKey('buyer_chat_${chatRoom.id}'),
+        direction: DismissDirection.endToStart,
+        confirmDismiss: (direction) async {
+          return await showDialog<bool>(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('确认删除'),
+                content: const Text('确定要删除这个聊天会话吗？删除后将无法恢复。'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('取消'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: TextButton.styleFrom(foregroundColor: Colors.red),
+                    child: const Text('删除'),
+                  ),
+                ],
+              );
+            },
+          ) ?? false;
+        },
+        onDismissed: (direction) {
+          onDelete!();
+        },
+        background: Container(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 20),
+          color: Colors.red,
+          child: const Icon(
+            Icons.delete,
+            color: Colors.white,
+          ),
+        ),
+        child: listTile,
+      );
+    }
+
+    return listTile;
   }
-  
+
   String _formatTime(DateTime time) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);

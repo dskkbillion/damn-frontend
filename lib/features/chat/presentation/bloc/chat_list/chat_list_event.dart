@@ -64,4 +64,14 @@ class _HandleChatListUpdate extends ChatListEvent {
     updateEvent.unreadCountDelta,
     updateEvent.resetUnread,
   ];
+}
+
+/// Event to delete a chat room
+class DeleteChatRoomRequested extends ChatListEvent {
+  final int chatId;
+
+  const DeleteChatRoomRequested({required this.chatId});
+
+  @override
+  List<Object?> get props => [chatId];
 } 

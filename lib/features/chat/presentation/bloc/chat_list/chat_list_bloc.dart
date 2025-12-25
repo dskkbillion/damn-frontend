@@ -14,6 +14,7 @@ import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_room.da
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_chat_room_list.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/create_chat_room.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/usecases/delete_chat_room.dart';
 
 part 'chat_list_event.dart';
 part 'chat_list_state.dart';
@@ -22,12 +23,14 @@ part 'chat_list_state.dart';
 class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
   final GetChatRoomList getChatRoomList;
   final CreateChatRoom createChatRoom;
+  final DeleteChatRoom deleteChatRoom;
   final EventBus _eventBus = EventBus();
   StreamSubscription<ChatListUpdateEvent>? _chatListUpdateSubscription;
 
   ChatListBloc({
     required this.getChatRoomList,
     required this.createChatRoom,
+    required this.deleteChatRoom,
   })
       : super(const ChatListState()) {
     on<LoadChatRoomList>(_onLoadChatRoomList);
@@ -37,6 +40,7 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
     on<UpdateChatRoomUnreadCount>(_onUpdateChatRoomUnreadCount);
     on<UpdateChatRoomLastMessage>(_onUpdateChatRoomLastMessage);
     on<_HandleChatListUpdate>(_onHandleChatListUpdate);
+    on<DeleteChatRoomRequested>(_onDeleteChatRoomRequested);
 
     // 监听聊天列表更新事件
     _chatListUpdateSubscription = _eventBus.chatListUpdateStream.listen((event) {
@@ -248,6 +252,38 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
     // 发出新状态
     emit(state.copyWith(chatRooms: updatedChatRooms));
     print('[ChatListBloc] Chat list updated for chatId: ${updateEvent.chatId}');
+  }
+
+  // Handler for deleting a chat room
+  Future<void> _onDeleteChatRoomRequested(
+    DeleteChatRoomRequested event,
+    Emitter<ChatListState> emit,
+  ) async {
+    print('[ChatListBloc] Handling DeleteChatRoomRequested for chatId: ${event.chatId}');
+
+    // 先从本地列表中移除（乐观更新）
+    final updatedChatRooms = state.chatRooms.where((room) => room.id != event.chatId).toList();
+    emit(state.copyWith(chatRooms: updatedChatRooms));
+
+    // 调用后端API删除
+    final result = await deleteChatRoom(DeleteChatRoomParams(chatIds: [event.chatId]));
+
+    result.fold(
+      (failure) {
+        print('[ChatListBloc] Failed to delete chat room: ${failure.message}');
+        // 删除失败，恢复列表并显示错误
+        emit(state.copyWith(
+          chatRooms: state.chatRooms, // 恢复原列表会触发刷新
+          errorMessage: '删除失败: ${failure.message}',
+        ));
+        // 刷新列表以恢复数据
+        add(RefreshChatList());
+      },
+      (_) {
+        print('[ChatListBloc] Successfully deleted chat room: ${event.chatId}');
+        // 删除成功，列表已经更新
+      },
+    );
   }
 
   @override

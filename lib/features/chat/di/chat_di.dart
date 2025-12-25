@@ -35,6 +35,7 @@ import '../domain/usecases/revoke_message.dart';
 import '../domain/usecases/get_chat_room_details.dart';
 import '../domain/usecases/delete_chat_message.dart';
 import '../domain/usecases/create_chat_room.dart';
+import '../domain/usecases/delete_chat_room.dart';
 
 // Blocs
 import '../presentation/bloc/chat_list/chat_list_bloc.dart';
@@ -195,14 +196,20 @@ abstract class ChatInjectableModule {
   CreateChatRoom createChatRoom(IChatRepository repository) =>
       CreateChatRoomImpl(repository);
 
+  @lazySingleton
+  DeleteChatRoom deleteChatRoom(IChatRepository repository) =>
+      DeleteChatRoomImpl(repository);
+
   // --- Blocs ---
   @injectable
   ChatListBloc chatListBloc(
     GetChatRoomList getChatRoomList,
     CreateChatRoom createChatRoom,
+    DeleteChatRoom deleteChatRoom,
   ) => ChatListBloc(
         getChatRoomList: getChatRoomList,
         createChatRoom: createChatRoom,
+        deleteChatRoom: deleteChatRoom,
       );
   
   // 注册ChatMessagesBloc
@@ -358,12 +365,20 @@ class ChatDI {
       print('[ChatDI] Registered GetChatRoomDetails');
     }
 
+    if (!getIt.isRegistered<DeleteChatRoom>()) {
+      getIt.registerLazySingleton<DeleteChatRoom>(
+        () => DeleteChatRoomImpl(getIt<IChatRepository>()),
+      );
+      print('[ChatDI] Registered DeleteChatRoom');
+    }
+
     // Bloc
     // 使用 LazySingleton 让 ChatListBloc 成为单例，这样所有地方共享同一个实例
     if (!getIt.isRegistered<ChatListBloc>()) {
       getIt.registerLazySingleton<ChatListBloc>(() => ChatListBloc(
             getChatRoomList: getIt<GetChatRoomList>(),
             createChatRoom: getIt<CreateChatRoom>(),
+            deleteChatRoom: getIt<DeleteChatRoom>(),
           ));
       print('[ChatDI] Registered ChatListBloc as singleton');
     } else {

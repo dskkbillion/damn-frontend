@@ -592,15 +592,16 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       delegate: SliverChildBuilderDelegate(
         (context, index) {
           final groupedChats = _groupChatsBySeller(chatRooms, currentUserId);
-          
+
           if (index >= groupedChats.length) return null;
-          
+
           final group = groupedChats[index];
-          
+
           return SellerGroupItem(
             group: group,
             currentUserId: currentUserId,
             onTap: (chatRoom) => _navigateToChat(context, chatRoom),
+            onDelete: (chatRoom) => _deleteChatRoom(context, chatRoom),
           );
         },
         childCount: _groupChatsBySeller(chatRooms, currentUserId).length,
@@ -614,20 +615,26 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       delegate: SliverChildBuilderDelegate(
         (context, index) {
           final groupedChats = _groupChatsByProduct(chatRooms, currentUserId);
-          
+
           if (index >= groupedChats.length) return null;
-          
+
           final group = groupedChats[index];
-          
+
           return ProductGroupItem(
             group: group,
             currentUserId: currentUserId,
             onTap: (chatRoom) => _navigateToChat(context, chatRoom),
+            onDelete: (chatRoom) => _deleteChatRoom(context, chatRoom),
           );
         },
         childCount: _groupChatsByProduct(chatRooms, currentUserId).length,
       ),
     );
+  }
+
+  // 删除聊天室
+  void _deleteChatRoom(BuildContext context, ChatRoom chatRoom) {
+    context.read<ChatListBloc>().add(DeleteChatRoomRequested(chatId: chatRoom.id));
   }
 
   // 提取分组逻辑到单独方法 - 买家模式使用

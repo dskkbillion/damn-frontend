@@ -397,4 +397,19 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
       throw ServerException(message: "An unexpected error occurred while deleting messages");
     }
   }
+
+  @override
+  Future<void> deleteChatRooms(List<int> chatIds) async {
+    print("[API Call] Deleting chat rooms: $chatIds...");
+    try {
+      final response = await dio.post('/api/chat/delete', data: chatIds);
+      _handleVoidResponse(response, "delete chat rooms");
+    } on DioException catch (e) {
+      print("DioException deleting chat rooms: ${e.message}, Response: ${e.response?.data}");
+      throw ServerException(message: e.message ?? "Network error deleting chat rooms", statusCode: e.response?.statusCode);
+    } catch (e) {
+      print("Unexpected error deleting chat rooms: $e");
+      throw ServerException(message: "An unexpected error occurred while deleting chat rooms");
+    }
+  }
 } 

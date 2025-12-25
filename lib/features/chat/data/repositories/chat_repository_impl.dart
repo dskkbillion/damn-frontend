@@ -209,4 +209,17 @@ class ChatRepositoryImpl implements IChatRepository {
      // TODO: Implement deleteChatMessages
     throw UnimplementedError();
   }
+
+  @override
+  Future<Either<Failure, void>> deleteChatRooms(List<int> chatIds) async {
+    try {
+      await remoteDataSource.deleteChatRooms(chatIds);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message ?? '删除聊天室失败', code: e.statusCode?.toString()));
+    } catch (e) {
+      print("Unexpected error in deleteChatRooms Repository: $e");
+      return Left(GeneralFailure(message: '删除聊天室失败: ${e.toString()}'));
+    }
+  }
 } 
