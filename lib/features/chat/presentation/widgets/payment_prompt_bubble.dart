@@ -7,13 +7,15 @@ import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 class PaymentPromptBubble extends StatelessWidget {
   final bool isSeller;
   final String? productId;
+  final int? sellerId;
   final List<Map<String, dynamic>>? variants;
   final String content;
-  
+
   const PaymentPromptBubble({
     super.key,
     required this.isSeller,
     this.productId,
+    this.sellerId,
     this.variants,
     required this.content,
   });
@@ -139,7 +141,7 @@ class PaymentPromptBubble extends StatelessWidget {
           children: [
             ElevatedButton(
               onPressed: () {
-                if (productId != null) {
+                if (productId != null && sellerId != null) {
                   // 直接跳转到订单确认页（购买页面）
                   context.pushNamed(
                     'productPaymentConfirm',
@@ -148,8 +150,14 @@ class PaymentPromptBubble extends StatelessWidget {
                       'variantId': variant['id'],
                       'quantity': 1,
                       'price': variant['price'],
+                      'sellerId': sellerId,
                       'productName': variant['name'] ?? '咨询服务',
                     },
+                  );
+                } else {
+                  // sellerId 缺失时显示错误提示
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('无法下单：商品信息不完整，请稍后重试')),
                   );
                 }
               },

@@ -700,6 +700,7 @@ class MessageListCubit extends Cubit<MessageListState> {
       'source': 'seller',
       'content': promptText,
       'productId': _currentChatRoom?.productId?.toString(),
+      'sellerId': _productDetail?.sellerId,  // 添加卖家ID，用于订单创建
       'roundCount': _roundCount,
       'variants': variants,
       'showPopup': showPopup,  // 添加弹窗标记

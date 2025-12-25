@@ -940,16 +940,22 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     try {
       // 解析JSON内容
       final Map<String, dynamic> promptData = jsonDecode(widget.message.context);
-      
+
       final String content = promptData['content'] ?? '根据平台规则，您已完成5轮免费咨询。继续咨询请选择服务套餐：';
       final String? productId = promptData['productId']?.toString();
+      final int? sellerId = promptData['sellerId'] != null
+          ? (promptData['sellerId'] is int
+              ? promptData['sellerId']
+              : int.tryParse(promptData['sellerId'].toString()))
+          : null;
       final List<Map<String, dynamic>>? variants = promptData['variants'] != null
           ? List<Map<String, dynamic>>.from(promptData['variants'])
           : null;
-      
+
       return PaymentPromptBubble(
         isSeller: isSeller,
         productId: productId,
+        sellerId: sellerId,
         variants: variants,
         content: content,
       );
@@ -958,6 +964,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       return PaymentPromptBubble(
         isSeller: isSeller,
         productId: null,
+        sellerId: null,
         variants: null,
         content: '根据平台规则，您已完成5轮免费咨询。继续咨询请选择服务套餐：',
       );
