@@ -231,6 +231,11 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     // 这里可能需要在 BLoC 以外处理实际的导航逻辑
     // 例如通过 `BlocListener` 监听此状态并使用导航服务
     emit(const ProfileSwitchedToSellerMode());
+
+    // 切换完成后，恢复用户数据状态，确保卖家模式能显示最新的用户信息
+    if (_currentProfile != null) {
+      emit(ProfileLoaded(profile: _currentProfile!));
+    }
   }
 
   Future<void> _onSwitchToBuyerMode(
@@ -240,5 +245,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     emit(const ProfileSwitchingToBuyerMode());
     // 这里可能需要在 BLoC 以外处理实际的导航逻辑
     emit(const ProfileSwitchedToBuyerMode());
+
+    // 切换完成后，恢复用户数据状态，确保买家模式能显示最新的用户信息
+    if (_currentProfile != null) {
+      emit(ProfileLoaded(profile: _currentProfile!));
+    }
   }
 }

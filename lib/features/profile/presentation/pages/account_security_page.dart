@@ -649,8 +649,8 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
                   enabled: !_isLoading,
                   inputFormatters: [
                     LengthLimitingTextInputFormatter(20),
-                    // 只允许中文、英文、数字、下划线，禁止空格和其他特殊字符
-                    FilteringTextInputFormatter.allow(RegExp(r'[\u4e00-\u9fa5a-zA-Z0-9_]')),
+                    // 不再使用 FilteringTextInputFormatter，因为它会干扰 iOS 拼音输入
+                    // 验证逻辑在 _validateNickname 中处理，用户输入非法字符时按钮变灰并显示错误提示
                   ],
                   decoration: InputDecoration(
                     hintText: '请输入昵称',
