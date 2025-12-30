@@ -31,53 +31,56 @@ class OrderEvaluationPage extends StatefulWidget {
 class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('评价订单'),
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 0,
-      ),
-      body: BlocProvider(
-        create: (_) => GetIt.instance<OrderDetailBloc>(),
-        child: BlocListener<OrderDetailBloc, OrderDetailState>(
-          listener: (context, state) {
-            if (state is OrderDetailActionSuccess) {
-              // 评价提交成功
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.green,
-                ),
-              );
-              // 延迟返回，让用户看到成功消息
-              Future.delayed(const Duration(seconds: 1), () {
-                if (mounted && context.canPop()) {
-                  context.pop(true); // 返回true表示评价成功，需要刷新
-                }
-              });
-            } else if (state is OrderDetailActionFailure) {
-              // 评价提交失败
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
-          },
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 16),
-                // 商品信息卡片
-                if (widget.orderItem != null) _buildOrderItemCard(),
-                const SizedBox(height: 16),
-                
-                // 评价表单
-                _buildEvaluationForm(),
-                const SizedBox(height: 32), // 底部留白
-              ],
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('评价订单'),
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          elevation: 0,
+        ),
+        body: BlocProvider(
+          create: (_) => GetIt.instance<OrderDetailBloc>(),
+          child: BlocListener<OrderDetailBloc, OrderDetailState>(
+            listener: (context, state) {
+              if (state is OrderDetailActionSuccess) {
+                // 评价提交成功
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                // 延迟返回，让用户看到成功消息
+                Future.delayed(const Duration(seconds: 1), () {
+                  if (mounted && context.canPop()) {
+                    context.pop(true); // 返回true表示评价成功，需要刷新
+                  }
+                });
+              } else if (state is OrderDetailActionFailure) {
+                // 评价提交失败
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  // 商品信息卡片
+                  if (widget.orderItem != null) _buildOrderItemCard(),
+                  const SizedBox(height: 16),
+
+                  // 评价表单
+                  _buildEvaluationForm(),
+                  const SizedBox(height: 32), // 底部留白
+                ],
+              ),
             ),
           ),
         ),

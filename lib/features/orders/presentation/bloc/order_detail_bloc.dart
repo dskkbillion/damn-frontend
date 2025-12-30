@@ -318,14 +318,12 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
   }
 
   Future<void> _onSubmitEvaluationRequested(SubmitEvaluationRequested event, Emitter<OrderDetailState> emit) async {
-    if (state is! OrderDetailLoaded) {
-      emit(const OrderDetailActionFailure(message: '无法提交评价：订单数据未加载'));
-      return;
-    }
-    final currentState = state as OrderDetailLoaded;
+    // 获取当前状态，如果是 OrderDetailLoaded 则更新 loading flag
+    final currentState = state is OrderDetailLoaded ? state as OrderDetailLoaded : null;
 
-    // Emit loading state by updating the flag in OrderDetailLoaded
-    emit(currentState.copyWith(isSubmittingEvaluation: true));
+    if (currentState != null) {
+      emit(currentState.copyWith(isSubmittingEvaluation: true));
+    }
     print('[OrderDetailBloc] Submitting evaluation...');
 
     try {
@@ -337,7 +335,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
           // Emit failure state, resetting the loading flag
           emit(OrderDetailActionFailure(
             message: _mapFailureToMessage(failure, defaultMsg: '评价提交失败'),
-            previousState: currentState.copyWith(isSubmittingEvaluation: false), // Reset flag
+            previousState: currentState?.copyWith(isSubmittingEvaluation: false),
           ));
         },
         (_) {
@@ -345,18 +343,15 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
           // Emit success state FIRST (for SnackBar)
           emit(OrderDetailActionSuccess(
             message: '评价提交成功!',
-            actionType: OrderAction.submitEvaluation, // Assuming OrderAction has this value
-            // No need to pass updatedState, BlocListener will trigger reload
+            actionType: OrderAction.submitEvaluation,
           ));
-          // Reloading is handled by BlocListener based on OrderDetailActionSuccess
         },
       );
     } catch (e) {
        print('[OrderDetailBloc] Exception during evaluation submission: ${e.toString()}');
-        // Emit failure state in case of unexpected exceptions, resetting the loading flag
        emit(OrderDetailActionFailure(
-          message: '评价提交时发生意外错误: ${e.toString()}', // Provide error message
-          previousState: currentState.copyWith(isSubmittingEvaluation: false), // Reset flag
+          message: '评价提交时发生意外错误: ${e.toString()}',
+          previousState: currentState?.copyWith(isSubmittingEvaluation: false),
         ));
     }
   }
