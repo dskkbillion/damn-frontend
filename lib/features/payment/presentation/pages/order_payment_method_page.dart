@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/region_config.dart';
 import '../../../../core/payment/models/payment_models.dart' as payment_models;
+import '../../../../core/payment/presentation/pages/stripe_payment_webview_page.dart';
 import '../../../../core/widgets/custom_loading_dialog.dart';
 import '../../../../features/orders/domain/entities/order.dart';
 import '../../../orders/presentation/bloc/order_detail_bloc.dart';
@@ -80,7 +81,17 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
 
           final response = state.paymentResponse;
 
-          // 跳转到支付结果页面
+          // Stripe支付需要打开WebView完成实际支付
+          if (response.success &&
+              _selectedPaymentMethod == payment_models.PaymentMethod.stripe &&
+              response.data != null &&
+              response.data!.isNotEmpty) {
+            // 打开Stripe WebView
+            _openStripeWebView(response.data!, response.orderId ?? widget.order.id.toString());
+            return;
+          }
+
+          // 其他支付方式：跳转到支付结果页面
           if (mounted) {
             final params = <String, String>{
               'success': response.success ? 'true' : 'false',
@@ -414,6 +425,56 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
     if (_isLoadingDialogShowing && mounted) {
       _isLoadingDialogShowing = false;
       dismissLoadingDialog(context);
+    }
+  }
+
+  /// 打开Stripe WebView进行支付
+  Future<void> _openStripeWebView(String paymentUrl, String orderId) async {
+    print('[OrderPaymentMethodPage] 打开Stripe WebView - URL: $paymentUrl');
+
+    try {
+      final result = await Navigator.of(context).push<Map<String, dynamic>>(
+        MaterialPageRoute(
+          builder: (context) => StripePaymentWebViewPage(
+            paymentUrl: paymentUrl,
+            orderId: orderId,
+            successUrlPattern: 'stripe/callback/success',
+            cancelUrlPattern: 'stripe/callback/cancel',
+            failureUrlPattern: 'stripe/callback/failure',
+          ),
+        ),
+      );
+
+      print('[OrderPaymentMethodPage] Stripe WebView结果: $result');
+
+      // 根据WebView结果导航到支付结果页面
+      if (mounted) {
+        final params = <String, String>{
+          'orderId': orderId,
+        };
+
+        if (result != null && result['result'] == PaymentWebViewResult.success) {
+          params['success'] = 'true';
+        } else if (result != null && result['result'] == PaymentWebViewResult.cancelled) {
+          params['success'] = 'false';
+          params['errorMessage'] = '用户取消支付';
+        } else {
+          params['success'] = 'false';
+          params['errorMessage'] = '支付失败';
+        }
+
+        context.pushNamed('paymentResult', queryParameters: params);
+      }
+    } catch (e) {
+      print('[OrderPaymentMethodPage] 打开Stripe WebView失败: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('打开支付页面失败: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

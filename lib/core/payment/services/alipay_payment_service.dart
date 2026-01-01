@@ -43,11 +43,18 @@ class AlipayPaymentService implements IPaymentService {
       if (!response.success) {
         return response;
       }
-      
-      // 2. 调用支付宝SDK
+
+      // 2. 根据支付方式处理
+      if (request.method == models.PaymentMethod.stripe) {
+        // Stripe支付：直接返回URL，由UI层处理WebView
+        // 注意：这里只返回成功获取URL，实际支付在WebView完成后才确定
+        return response;
+      }
+
+      // 3. 支付宝：调用SDK
       final payResult = await _callAlipaySdk(response.data!);
-      
-      // 3. 解析支付结果
+
+      // 4. 解析支付结果
       return _parsePayResult(payResult, request.orderId);
       
     } catch (e) {
@@ -146,10 +153,23 @@ class AlipayPaymentService implements IPaymentService {
 
     final response = await _apiClient.dio.post('/api/payment', data: requestData);
 
-    // 后端返回格式: {"msg":"支付成功","code":200,"data":"alipay_sdk=..."}
+    // 后端返回格式:
+    // - 支付宝: {"msg":"支付成功","code":200,"data":"alipay_sdk=..."}
+    // - Stripe: {"msg":"支付成功","code":200,"data":{"url":"https://checkout.stripe.com/..."}}
     if (response.statusCode == 200 && response.data['code'] == 200) {
+      // 处理不同支付方式的响应格式
+      final responseData = response.data['data'];
+      String paymentData;
+      if (responseData is Map) {
+        // Stripe 格式：从 data 对象中提取 url
+        paymentData = responseData['url']?.toString() ?? '';
+      } else {
+        // 支付宝格式：data 直接是字符串
+        paymentData = responseData?.toString() ?? '';
+      }
+
       return models.PaymentResponse.success(
-        data: response.data['data'], // 这里是支付宝SDK字符串
+        data: paymentData,
         orderId: request.orderId,
         paymentId: null, // 后端没有返回paymentId
         message: response.data['msg'],
