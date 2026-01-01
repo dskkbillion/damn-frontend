@@ -555,7 +555,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final sellerOrderDetailRoute = OrderRoutes.routes.firstWhere((r) => r is GoRoute && r.path == '/seller/orders/:orderId');
 
   // Define Evaluation Route
-  final evaluationRoute = OrderRoutes.routes.firstWhere((r) => r is GoRoute && r.path == '/evaluation/:itemId');
+  final evaluationRoute = OrderRoutes.routes.firstWhere((r) => r is GoRoute && r.path == '/evaluation/:orderId');
   
   // Create the GoRouter instance
   final router = GoRouter(
