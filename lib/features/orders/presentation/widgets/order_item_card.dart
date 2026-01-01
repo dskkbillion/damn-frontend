@@ -375,9 +375,14 @@ class OrderItemCard extends StatelessWidget {
                    // Navigation actions mostly point to detail for now
                    onPay: navigateToDetail, // Go to detail, which might handle payment trigger
                    onViewLogistics: navigateToDetail,
-                   onEvaluate: () {
-                     // 直接导航到评价页面
-                     context.push('/evaluation/${order.id}', extra: order);
+                   onEvaluate: () async {
+                     // 导航到评价页面，并等待结果
+                     final result = await context.push<bool>('/evaluation/${order.id}', extra: order);
+                     // 如果评价成功，刷新订单列表
+                     if (result == true && context.mounted) {
+                       final orderListBloc = context.read<OrderListBloc>();
+                       orderListBloc.add(LoadOrders(status: orderListBloc.currentStatus));
+                     }
                    },
                    onApplyAfterSale: navigateToDetail,
                    onViewDetails: navigateToDetail,

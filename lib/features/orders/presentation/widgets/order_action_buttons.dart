@@ -285,24 +285,27 @@ class OrderDetailActionButtons extends StatelessWidget {
     }
   }
 
-  void _navigateToEvaluation(BuildContext context) {
+  Future<void> _navigateToEvaluation(BuildContext context) async {
     try {
       final orderId = order.id;
-      Future.delayed(const Duration(milliseconds: 50), () {
-        if (context.mounted) {
-          try {
-            context.push('/evaluation/$orderId', extra: order);
-            print('Navigate to evaluation for order ID: $orderId');
-          } catch (e) {
-            print('Error navigating to evaluation: $e');
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('导航失败: $e')),
-              );
-            }
+      await Future.delayed(const Duration(milliseconds: 50));
+      if (context.mounted) {
+        try {
+          final result = await context.push<bool>('/evaluation/$orderId', extra: order);
+          print('Navigate to evaluation for order ID: $orderId, result: $result');
+          // 如果评价成功，刷新订单详情
+          if (result == true && context.mounted) {
+            context.read<OrderDetailBloc>().add(LoadOrderDetail(orderId: orderId));
+          }
+        } catch (e) {
+          print('Error navigating to evaluation: $e');
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('导航失败: $e')),
+            );
           }
         }
-      });
+      }
     } catch (e) {
       print('Error in _navigateToEvaluation: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -439,10 +442,16 @@ class OrderDetailActionButtons extends StatelessWidget {
         break;
         
       case OrderStatus.orderCompleted:
-        // 已完成：再次咨询
-        primaryButton = _buildButton(context, '再次咨询', () {
-          context.go('/home');
-        }, isPrimary: true);
+        // 已完成：再次咨询（进入与卖家的聊天室）
+        primaryButton = _buildButton(
+          context,
+          isCreatingChat ? '连接中...' : '再次咨询',
+          (isCreatingChat || onContactSeller == null)
+              ? null
+              : () => onContactSeller!(order),
+          isPrimary: true,
+          isLoading: isCreatingChat,
+        );
         break;
         
       case OrderStatus.applyingForMediation:
