@@ -294,21 +294,21 @@ class MockOrderRepository implements IOrderRepository {
 
   @override
   Future<Either<Failure, void>> addEvaluation({
-    required int orderItemId,
+    required int orderId,
     required double score,
     required String content,
     required bool isAnonymous,
     required List<String> pictures,
   }) async {
-     print('[MockOrderRepository] Adding Evaluation for OrderItem ID: $orderItemId, Score: $score');
+     print('[MockOrderRepository] Adding Evaluation for Order ID: $orderId, Score: $score');
      await Future.delayed(const Duration(milliseconds: 150));
-    // Find the order containing the item and update its state if needed
-    final orderIndex = _mockOrders.indexWhere((o) => o.items.any((item) => item.id == orderItemId));
+    // Find the order and update its state if needed
+    final orderIndex = _mockOrders.indexWhere((o) => o.id == orderId);
     if (orderIndex != -1 && _mockOrders[orderIndex].state == OrderStatus.awaitingEvaluation) {
       _mockOrders[orderIndex] = _mockOrders[orderIndex].copyWith(state: OrderStatus.orderCompleted);
       print('[MockOrderRepository] Order ${_mockOrders[orderIndex].id} status changed to orderCompleted after evaluation.');
     } else {
-       print('[MockOrderRepository] Could not find order in awaitingEvaluation state for item $orderItemId.');
+       print('[MockOrderRepository] Could not find order in awaitingEvaluation state for order $orderId.');
        // Return success anyway for mock, or failure if strict check needed
        // return Left(ServerFailure(message: 'Mock: Cannot evaluate order in its current state'));
     }

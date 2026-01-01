@@ -60,9 +60,9 @@ abstract class IOrderRemoteDataSource {
   /// 失败时应抛出特定异常。
   Future<void> deleteOrder(int orderId);
 
-  /// Adds an evaluation for a specific order item.
+  /// Adds an evaluation for a specific order.
   Future<void> addEvaluation({
-    required int orderItemId,
+    required int orderId,
     required double score,
     required String content,
     required bool isAnonymous,

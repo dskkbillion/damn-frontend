@@ -15,10 +15,10 @@ class SubmitEvaluationUseCase implements UseCase<void, SubmitEvaluationParams> {
 
   @override
   Future<Either<Failure, void>> call(SubmitEvaluationParams params) async {
-    print('[SubmitEvaluationUseCase] Called with orderItemId: ${params.orderItemId}');
+    print('[SubmitEvaluationUseCase] Called with orderId: ${params.orderId}');
     // Ensure repository method gets a non-nullable list
     return await repository.addEvaluation(
-      orderItemId: params.orderItemId,
+      orderId: params.orderId,
       score: params.score,
       content: params.content,
       isAnonymous: params.isAnonymous,
@@ -29,14 +29,14 @@ class SubmitEvaluationUseCase implements UseCase<void, SubmitEvaluationParams> {
 
 /// Parameters for the SubmitEvaluationUseCase.
 class SubmitEvaluationParams extends Equatable {
-  final int orderItemId;
+  final int orderId;
   final double score;
   final String content;
   final bool isAnonymous;
   final List<String>? pictures; // Optional
 
   const SubmitEvaluationParams({
-    required this.orderItemId,
+    required this.orderId,
     required this.score,
     required this.content,
     required this.isAnonymous,
@@ -45,7 +45,7 @@ class SubmitEvaluationParams extends Equatable {
 
   @override
   List<Object?> get props => [
-        orderItemId,
+        orderId,
         score,
         content,
         isAnonymous,

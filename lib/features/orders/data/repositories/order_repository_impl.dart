@@ -323,7 +323,7 @@ class OrderRepositoryImpl implements IOrderRepository {
   // --- Add Evaluation Repository Method ---
   @override
   Future<Either<Failure, void>> addEvaluation({
-    required int orderItemId,
+    required int orderId,
     required double score,
     required String content,
     required bool isAnonymous,
@@ -332,7 +332,7 @@ class OrderRepositoryImpl implements IOrderRepository {
     // TODO: Add network check if required
     try {
       await remoteDataSource.addEvaluation(
-          orderItemId: orderItemId,
+          orderId: orderId,
           score: score,
           content: content,
           isAnonymous: isAnonymous,

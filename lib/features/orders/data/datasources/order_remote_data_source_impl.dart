@@ -259,15 +259,14 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
   // --- Add Evaluation Method ---
   @override
   Future<void> addEvaluation({
-    // required String orderId, // Keep commented out
-    required int orderItemId,
+    required int orderId,
     required double score,
     required String content,
     required bool isAnonymous,
     required List<String> pictures,
   }) async {
     final Map<String, dynamic> requestData = {
-      'orderItemId': orderItemId,
+      'orderId': orderId,
       'score': score,
       'content': content,
       'isAnonymous': isAnonymous ? 1 : 0, // Assuming API expects 0/1

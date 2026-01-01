@@ -48,16 +48,10 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
 
   void _submitEvaluation() {
     if (_formKey.currentState!.validate()) {
-      final orderItemId = widget.order.items.isNotEmpty ? widget.order.items.first.id : -1;
-      if (orderItemId == -1) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('错误：无法找到要评价的商品项'), backgroundColor: Colors.red),
-        );
-        return;
-      }
+      final orderId = widget.order.id;
 
       final params = SubmitEvaluationParams(
-        orderItemId: orderItemId,
+        orderId: orderId,
         score: _score.toDouble(),
         content: _contentController.text,
         isAnonymous: _isAnonymous,

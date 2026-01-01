@@ -90,9 +90,9 @@ abstract class IOrderRepository {
   /// 返回一个空的 [Either] 表示成功，或者一个 [Failure]。
   Future<Either<Failure, void>> deleteOrder(int orderId);
 
-  /// Submits an evaluation for a specific order item.
+  /// Submits an evaluation for a specific order.
   Future<Either<Failure, void>> addEvaluation({
-    required int orderItemId,
+    required int orderId,
     required double score,
     required String content,
     required bool isAnonymous,

@@ -388,7 +388,7 @@ class MockSellerOrderRepository implements IOrderRepository {
 
   @override
   Future<Either<Failure, void>> addEvaluation(
-      {required int orderItemId,
+      {required int orderId,
       required double score,
       required String content,
       required bool isAnonymous,
