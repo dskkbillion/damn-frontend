@@ -68,6 +68,7 @@ abstract class IOrderRepository {
     required int page,
     required int limit,
     required String userRole,
+    bool forceRefresh = false,
   });
 
   /// 获取指定 ID 的订单详情。

@@ -21,6 +21,123 @@ class OrderItemCard extends StatelessWidget {
 
   const OrderItemCard({super.key, required this.order, this.onTap});
 
+  /// 显示取消订单确认对话框
+  Future<void> _showCancelConfirmationDialog(BuildContext context, Order order) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('取消订单'),
+          content: const SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('您确定要取消这个订单吗？'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('返回'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('确定取消'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                _performCancelOrder(context, order);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// 执行取消订单操作
+  Future<void> _performCancelOrder(BuildContext context, Order order) async {
+    try {
+      final orderDetailBloc = getIt<OrderDetailBloc>();
+
+      print('[OrderItemCard] 准备取消订单: ${order.id}');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('正在取消订单...')),
+      );
+
+      late StreamSubscription streamSubscription;
+      bool orderLoaded = false;
+
+      streamSubscription = orderDetailBloc.stream.listen((state) {
+        print('[OrderItemCard] 取消订单 - 收到BLoC状态变化: ${state.runtimeType}');
+
+        if (state is OrderDetailLoaded && !orderLoaded) {
+          print('[OrderItemCard] 订单详情加载完成，执行取消操作');
+          orderLoaded = true;
+          orderDetailBloc.add(OrderActionRequested(
+            action: OrderAction.cancel,
+            orderId: order.id.toString(),
+          ));
+        } else if (state is OrderDetailActionSuccess) {
+          print('[OrderItemCard] 取消成功');
+          streamSubscription.cancel();
+
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('订单已取消'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          // 刷新订单列表
+          if (context.mounted) {
+            final orderListBloc = context.read<OrderListBloc>();
+            orderListBloc.add(LoadOrders(status: orderListBloc.currentStatus, forceRefresh: true));
+          }
+        } else if (state is OrderDetailActionFailure) {
+          print('[OrderItemCard] 取消失败: ${state.message}');
+          streamSubscription.cancel();
+
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('取消失败：${state.message}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        } else if (state is OrderDetailError) {
+          print('[OrderItemCard] 加载订单详情失败: ${state.message}');
+          streamSubscription.cancel();
+
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('加载订单详情失败：${state.message}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      });
+
+      // 先加载订单详情
+      print('[OrderItemCard] 先加载订单详情');
+      orderDetailBloc.add(LoadOrderDetail(orderId: order.id));
+
+    } catch (e) {
+      print('[OrderItemCard] 取消操作异常: $e');
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('取消失败：$e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   /// 显示删除订单确认对话框
   Future<void> _showDeleteConfirmationDialog(BuildContext context, Order order) async {
     return showDialog<void>(
@@ -161,13 +278,6 @@ class OrderItemCard extends StatelessWidget {
 
     // 假设 order.items 非空，并且我们显示第一个 item 的信息作为预览
     final firstItem = order.items.isNotEmpty ? order.items.first : null;
-
-    // Define the callback for navigating to detail page (used by multiple buttons)
-    VoidCallback navigateToDetail = () {
-      if (onTap != null) {
-        onTap!(); // Use the main onTap callback passed from the list page
-      }
-    };
 
     return Card(
       // 使用 Card 来获得圆角、阴影和白色背景，符合原型风格
@@ -372,30 +482,50 @@ class OrderItemCard extends StatelessWidget {
                  // Use OrderItemCardActionButtons with callbacks
                  child: OrderItemCardActionButtons(
                    order: order,
-                   // Navigation actions mostly point to detail for now
-                   onPay: navigateToDetail, // Go to detail, which might handle payment trigger
-                   onViewLogistics: navigateToDetail,
+                   // 支付：直接导航到订单详情页
+                   onPay: () {
+                     print('[OrderItemCard] Pay order: ${order.id}');
+                     context.push('/orderDetail/${order.id}');
+                   },
+                   onViewLogistics: () {
+                     print('[OrderItemCard] View logistics: ${order.id}');
+                     context.push('/orderDetail/${order.id}');
+                   },
                    onEvaluate: () async {
                      // 导航到评价页面，并等待结果
+                     print('[OrderItemCard] Navigating to evaluation for order ${order.id}');
                      final result = await context.push<bool>('/evaluation/${order.id}', extra: order);
-                     // 如果评价成功，刷新订单列表
+                     print('[OrderItemCard] Evaluation returned with result: $result, context.mounted: ${context.mounted}');
+                     // 如果评价成功，强制刷新订单列表（绕过缓存）
                      if (result == true && context.mounted) {
+                       print('[OrderItemCard] Triggering force refresh...');
                        final orderListBloc = context.read<OrderListBloc>();
-                       orderListBloc.add(LoadOrders(status: orderListBloc.currentStatus));
+                       print('[OrderItemCard] Current status: ${orderListBloc.currentStatus}');
+                       orderListBloc.add(LoadOrders(status: orderListBloc.currentStatus, forceRefresh: true));
+                       print('[OrderItemCard] LoadOrders event sent with forceRefresh: true');
+                     } else {
+                       print('[OrderItemCard] Not refreshing. result=$result, mounted=${context.mounted}');
                      }
                    },
-                   onApplyAfterSale: navigateToDetail,
-                   onViewDetails: navigateToDetail,
-                   // Actions that modify state (might interact with OrderListBloc later)
+                   onApplyAfterSale: () {
+                     print('[OrderItemCard] Apply after sale: ${order.id}');
+                     context.push('/orderDetail/${order.id}');
+                   },
+                   onViewDetails: () {
+                     print('[OrderItemCard] View details: ${order.id}');
+                     context.push('/orderDetail/${order.id}');
+                   },
+                   // 取消订单：显示确认对话框
                    onCancel: () {
-                     // TODO: Connect to OrderListBloc if needed for immediate UI update
                      print('[OrderItemCard] Cancel order: ${order.id}');
+                     _showCancelConfirmationDialog(context, order);
                    },
+                   // 确认收货
                    onConfirmReceipt: () {
-                     // TODO: Connect to OrderListBloc if needed
                      print('[OrderItemCard] Confirm receipt: ${order.id}');
+                     context.push('/orderDetail/${order.id}');
                    },
-                    onRemindDelivery: () {
+                   onRemindDelivery: () {
                      // Show a snackbar directly
                      ScaffoldMessenger.of(context).showSnackBar(
                        const SnackBar(content: Text('已提醒卖家发货'), duration: Duration(seconds: 2)),

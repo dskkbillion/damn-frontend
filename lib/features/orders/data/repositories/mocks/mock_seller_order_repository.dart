@@ -225,8 +225,9 @@ class MockSellerOrderRepository implements IOrderRepository {
     required int page,
     required int limit,
     required String userRole,
+    bool forceRefresh = false,
   }) async {
-    print('[MockSellerOrderRepository] getOrderList called. Page: $page, Status: $status, Keyword: $keyword, Role: $userRole');
+    print('[MockSellerOrderRepository] getOrderList called. Page: $page, Status: $status, Keyword: $keyword, Role: $userRole, forceRefresh: $forceRefresh');
     await Future.delayed(const Duration(milliseconds: 300)); // Simulate network delay
 
     List<Order> filteredOrders = _mockSellerOrders;

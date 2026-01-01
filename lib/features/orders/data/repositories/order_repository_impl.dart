@@ -68,6 +68,7 @@ class OrderRepositoryImpl implements IOrderRepository {
     required int page,
     required int limit,
     required String userRole,
+    bool forceRefresh = false,
   }) async {
     // 如果启用了模拟数据模式，直接返回模拟数据
     if (AppConfig.useMockData) {
@@ -111,6 +112,12 @@ class OrderRepositoryImpl implements IOrderRepository {
     final int offset = (page - 1) * limit;
     final bool isFetchingAll = status == null;
     final String stateKey = status?.toJsonString() ?? 'all'; // Still useful for logging
+
+    // 如果强制刷新，直接从网络获取
+    if (forceRefresh) {
+      print('[OrderRepository] Force refresh requested, skipping cache for $stateKey page $page.');
+      return _fetchFromNetwork(status, keyword, page, limit, stateKey, userRole);
+    }
 
     // 1. Try fetching from cache first
     final Either<Failure, List<Order>> cachedResult = isFetchingAll
@@ -190,6 +197,44 @@ class OrderRepositoryImpl implements IOrderRepository {
             print('[OrderRepository] Network fetch failed (unexpected), but cache was already returned. Suppressing error.');
             return resultToReturn!; 
          }
+    }
+  }
+
+  // Helper function to fetch from network (used for force refresh)
+  Future<Either<Failure, List<Order>>> _fetchFromNetwork(
+    OrderStatus? status,
+    String? keyword,
+    int page,
+    int limit,
+    String stateKey,
+    String userRole,
+  ) async {
+    try {
+      print('[OrderRepository] Fetching order list from remote. Page: $page, Limit: $limit, Status: $status, Keyword: $keyword, Role: $userRole');
+      final remoteOrders = await remoteDataSource.getOrderList(
+        status: status,
+        keyword: keyword,
+        page: page,
+        limit: limit,
+        userRole: userRole,
+      );
+      final networkOrders = remoteOrders.map((model) => model.toEntity()).toList();
+      print('[OrderRepository] Fetched ${networkOrders.length} orders from network for $stateKey page $page.');
+
+      // 【数据防护】验证和过滤订单列表
+      final filteredOrders = await _filterOrdersByUserRole(networkOrders, userRole);
+      print('[OrderRepository] Filtered to ${filteredOrders.length} orders after validation.');
+
+      // Cache the filtered response
+      await localDataSource.cacheOrders(filteredOrders);
+
+      return Right(filteredOrders);
+    } on ServerFailure catch (e) {
+      print('[OrderRepository] Network fetch failed for $stateKey page $page: $e');
+      return Left(e);
+    } catch (e) {
+      print('[OrderRepository] Unexpected error during network fetch for $stateKey page $page: $e');
+      return Left(ServerFailure(message: 'Unexpected error: ${e.toString()}'));
     }
   }
 

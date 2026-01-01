@@ -43,17 +43,18 @@ class OrderListBloc extends Bloc<OrderListEvent, OrderListState> {
   }
 
   Future<void> _onLoadOrders(LoadOrders event, Emitter<OrderListState> emit) async {
-    print('[OrderListBloc _onLoadOrders] Received event with status: ${event.status}');
-    
+    print('[OrderListBloc _onLoadOrders] Received event with status: ${event.status}, forceRefresh: ${event.forceRefresh}');
+
     currentPage = 1; // Reset page for new filter/refresh
     currentStatus = event.status;
     emit(OrderListLoading()); // Indicate loading
-    
+
     final params = GetOrderListParams(
       page: currentPage,
       limit: _pageSize,
       status: currentStatus == OrderStatus.unknown ? null : currentStatus,
       userRole: 'buyer', // Pass 'buyer' role
+      forceRefresh: event.forceRefresh,
     );
     final Either<Failure, List<Order>> result = await _getOrderListUseCase(params);
 
@@ -178,9 +179,10 @@ abstract class OrderListEvent extends Equatable {
 /// Event to load the initial list of orders, potentially with a filter.
 class LoadOrders extends OrderListEvent {
   final OrderStatus? status; // Optional status filter
-  const LoadOrders({this.status});
-    @override
-  List<Object?> get props => [status];
+  final bool forceRefresh; // 强制刷新，绕过缓存
+  const LoadOrders({this.status, this.forceRefresh = false});
+  @override
+  List<Object?> get props => [status, forceRefresh];
 }
 
 /// Event to load the next page of orders.
