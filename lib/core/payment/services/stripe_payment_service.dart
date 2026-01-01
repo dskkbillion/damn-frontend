@@ -354,7 +354,13 @@ class StripePaymentService implements IPaymentService {
         );
         
         if (payResponse.statusCode == 200 && payResponse.data['code'] == 200) {
-          return payResponse.data['data']; // 返回Stripe支付URL
+          // 从data对象中获取url字段，与_createPaymentSession保持一致
+          final data = payResponse.data['data'];
+          final stripeUrl = data is Map ? data['url'] : data;
+          if (stripeUrl == null || stripeUrl.toString().isEmpty) {
+            throw Exception('未获取到支付链接');
+          }
+          return stripeUrl.toString(); // 返回Stripe支付URL
         } else {
           throw Exception(payResponse.data['msg'] ?? '获取支付链接失败');
         }
