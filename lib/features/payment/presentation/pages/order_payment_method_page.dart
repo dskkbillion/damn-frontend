@@ -39,6 +39,16 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
     _selectedPaymentMethod = _availablePaymentMethods.isNotEmpty
         ? _availablePaymentMethods.first
         : payment_models.PaymentMethod.alipay;
+
+    // 确保 BLoC 状态是 OrderDetailLoaded，以便支付功能正常工作
+    // 这可以解决从支付取消后再次进入时状态不正确的问题
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final bloc = context.read<OrderDetailBloc>();
+      if (bloc.state is! OrderDetailLoaded) {
+        print('[OrderPaymentMethodPage] State is not OrderDetailLoaded, reloading order...');
+        bloc.add(LoadOrderDetail(orderId: widget.order.id));
+      }
+    });
   }
 
   @override
