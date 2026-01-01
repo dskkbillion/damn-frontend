@@ -287,30 +287,22 @@ class OrderDetailActionButtons extends StatelessWidget {
 
   void _navigateToEvaluation(BuildContext context) {
     try {
-      if (order.items.isNotEmpty) {
-        final firstItem = order.items.first;
-        final firstItemId = firstItem.id;
-        Future.delayed(const Duration(milliseconds: 50), () {
-          if (context.mounted) {
-            try {
-              context.push('/evaluation/$firstItemId', extra: firstItem);
-              print('Navigate to evaluation for item ID: $firstItemId');
-            } catch (e) {
-              print('Error navigating to evaluation: $e');
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('导航失败: $e')),
-                );
-              }
+      final orderId = order.id;
+      Future.delayed(const Duration(milliseconds: 50), () {
+        if (context.mounted) {
+          try {
+            context.push('/evaluation/$orderId', extra: order);
+            print('Navigate to evaluation for order ID: $orderId');
+          } catch (e) {
+            print('Error navigating to evaluation: $e');
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('导航失败: $e')),
+              );
             }
           }
-        });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('错误：无法为没有商品的订单进行评价')),
-        );
-        print('Error: Cannot evaluate order ${order.id} with no items.');
-      }
+        }
+      });
     } catch (e) {
       print('Error in _navigateToEvaluation: $e');
       ScaffoldMessenger.of(context).showSnackBar(

@@ -377,10 +377,7 @@ class OrderItemCard extends StatelessWidget {
                    onViewLogistics: navigateToDetail,
                    onEvaluate: () {
                      // 直接导航到评价页面
-                     if (order.items.isNotEmpty) {
-                       final firstItemId = order.items.first.id;
-                       context.push('/evaluation/$firstItemId', extra: order.items.first);
-                     }
+                     context.push('/evaluation/${order.id}', extra: order);
                    },
                    onApplyAfterSale: navigateToDetail,
                    onViewDetails: navigateToDetail,

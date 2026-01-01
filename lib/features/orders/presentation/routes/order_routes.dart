@@ -14,7 +14,8 @@ import '../bloc/order_detail_bloc.dart';
 import '../seller/bloc/seller_order_list_bloc.dart';
 // Import OrderStatus and potentially an extension for parsing
 import '../../domain/entities/order_status.dart';
-import '../../domain/entities/order_item.dart'; 
+import '../../domain/entities/order_item.dart';
+import '../../domain/entities/order.dart'; 
 
 // Import pages used in this module's routes
 import '../pages/order_list_page.dart';
@@ -68,23 +69,23 @@ class OrderRoutes {
       },
     ),
     GoRoute(
-      path: '/evaluation/:itemId',
+      path: '/evaluation/:orderId',
       name: 'evaluation',
       builder: (BuildContext context, GoRouterState state) {
-        final String itemIdStr = state.pathParameters['itemId'] ?? 'invalid';
-        final int? itemId = int.tryParse(itemIdStr);
-        if (itemId == null) {
-          print('Error: Invalid itemId parameter in route: $itemIdStr');
+        final String orderIdStr = state.pathParameters['orderId'] ?? 'invalid';
+        final int? orderId = int.tryParse(orderIdStr);
+        if (orderId == null) {
+          print('Error: Invalid orderId parameter in route: $orderIdStr');
           return Scaffold(
             appBar: AppBar(title: const Text('错误')),
-            body: Center(child: Text('无效的商品ID: $itemIdStr')),
+            body: Center(child: Text('无效的订单ID: $orderIdStr')),
           );
         }
-        // Get orderItem from extra if available
-        final orderItem = state.extra as OrderItem?;
+        // Get order from extra if available
+        final order = state.extra as Order?;
         return OrderEvaluationPage(
-          itemId: itemId,
-          orderItem: orderItem,
+          orderId: orderId,
+          order: order,
         );
       },
     ),

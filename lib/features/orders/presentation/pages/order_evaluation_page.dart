@@ -5,23 +5,17 @@ import 'package:get_it/get_it.dart';
 
 import '../bloc/order_detail_bloc.dart';
 import '../widgets/order_evaluation_form.dart';
-import '../../domain/entities/order_item.dart';
 import '../../domain/entities/order.dart';
-import '../../domain/entities/order_status.dart';
-import '../../domain/entities/order_price_summary.dart';
-import '../../domain/entities/order_payment_info.dart';
-import '../../domain/entities/order_shipping_info.dart';
-import '../../domain/entities/address.dart';
 
 /// 订单评价页面
 class OrderEvaluationPage extends StatefulWidget {
-  final int itemId;
-  final OrderItem? orderItem;
+  final int orderId;
+  final Order? order;
 
   const OrderEvaluationPage({
     super.key,
-    required this.itemId,
-    this.orderItem,
+    required this.orderId,
+    this.order,
   });
 
   @override
@@ -73,7 +67,8 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
                 children: [
                   const SizedBox(height: 16),
                   // 商品信息卡片
-                  if (widget.orderItem != null) _buildOrderItemCard(),
+                  if (widget.order != null && widget.order!.items.isNotEmpty)
+                    _buildOrderItemCard(),
                   const SizedBox(height: 16),
 
                   // 评价表单
@@ -90,8 +85,8 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
 
   /// 构建订单商品信息卡片
   Widget _buildOrderItemCard() {
-    final item = widget.orderItem!;
-    
+    final item = widget.order!.items.first;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
@@ -168,7 +163,7 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
                       : Icon(Icons.image, color: Colors.grey[500], size: 40),
                 ),
                 const SizedBox(width: 16),
-                
+
                 // 商品信息
                 Expanded(
                   child: Column(
@@ -214,26 +209,23 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
 
   /// 构建评价表单
   Widget _buildEvaluationForm() {
-    final itemPrice = widget.orderItem?.price ?? 0.0;
-    
-    // 创建一个模拟的Order对象，只包含当前商品项
-    final mockOrder = Order(
-      id: widget.itemId,
-      orderSn: '',
-      state: OrderStatus.awaitingEvaluation,
-      items: widget.orderItem != null ? [widget.orderItem!] : [],
-      shippingAddress: Address.empty,
-      priceSummary: OrderPriceSummary(
-        totalPrice: itemPrice,
-        discountPrice: 0.0,
-        deliveryPrice: 0.0,
-        payPrice: itemPrice,
-      ),
-      paymentInfo: OrderPaymentInfo.empty,
-      shippingInfo: OrderShippingInfo.empty,
-      createdAt: DateTime.now(),
-    );
-
-    return OrderEvaluationForm(order: mockOrder);
+    if (widget.order != null) {
+      // 使用传入的完整订单对象
+      return OrderEvaluationForm(order: widget.order!);
+    } else {
+      // 如果没有传入订单对象，显示错误提示
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.red[50],
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Text(
+          '无法加载订单信息，请返回重试',
+          style: TextStyle(color: Colors.red),
+        ),
+      );
+    }
   }
 }
