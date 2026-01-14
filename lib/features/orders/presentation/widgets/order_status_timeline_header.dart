@@ -312,9 +312,9 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
         
       case OrderStatus.awaitingEvaluation:
         return 3; // 评价
-        
+
       case OrderStatus.orderCompleted:
-        return 4; // 完成
+        return totalSteps; // 完成（返回totalSteps使所有步骤都显示为已完成）
         
       // 平台介入、售后、取消等特殊状态
       case OrderStatus.applyingForMediation:
