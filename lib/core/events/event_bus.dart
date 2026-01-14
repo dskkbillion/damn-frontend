@@ -27,6 +27,21 @@ class ChatMessageEvent {
   });
 }
 
+/// 评价提交成功事件，用于通知商品详情页刷新评论
+class EvaluationSubmittedEvent {
+  /// 商品ID
+  final int productId;
+
+  /// 订单ID
+  final int orderId;
+
+  /// 构造函数
+  EvaluationSubmittedEvent({
+    required this.productId,
+    required this.orderId,
+  });
+}
+
 /// 聊天列表更新事件类，用于通知聊天列表需要更新
 class ChatListUpdateEvent {
   /// 聊天室ID
@@ -71,11 +86,17 @@ class EventBus {
   /// 聊天列表更新事件的广播控制器
   final _chatListUpdateStreamController = StreamController<ChatListUpdateEvent>.broadcast();
 
+  /// 评价提交事件的广播控制器
+  final _evaluationSubmittedStreamController = StreamController<EvaluationSubmittedEvent>.broadcast();
+
   /// 消息事件流
   Stream<ChatMessageEvent> get messageStream => _messageStreamController.stream;
 
   /// 聊天列表更新事件流
   Stream<ChatListUpdateEvent> get chatListUpdateStream => _chatListUpdateStreamController.stream;
+
+  /// 评价提交事件流
+  Stream<EvaluationSubmittedEvent> get evaluationSubmittedStream => _evaluationSubmittedStreamController.stream;
 
   /// 发送一个聊天消息事件
   void fireChatMessageEvent(ChatMessageEvent event) {
@@ -87,9 +108,15 @@ class EventBus {
     _chatListUpdateStreamController.add(event);
   }
 
+  /// 发送一个评价提交成功事件
+  void fireEvaluationSubmittedEvent(EvaluationSubmittedEvent event) {
+    _evaluationSubmittedStreamController.add(event);
+  }
+
   /// 关闭事件总线
   void dispose() {
     _messageStreamController.close();
     _chatListUpdateStreamController.close();
+    _evaluationSubmittedStreamController.close();
   }
 } 

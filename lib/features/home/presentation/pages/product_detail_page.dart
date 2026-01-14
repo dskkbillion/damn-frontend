@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart' hide CarouselController;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -7,7 +8,10 @@ import 'package:go_router/go_router.dart';
 import '../../../../generated/app_localizations.dart';
 
 import '../../domain/entities/product_detail.dart';
+import '../../domain/entities/product_review.dart';
 import '../cubit/product_detail_cubit.dart';
+import '../cubit/product_reviews_cubit.dart';
+import '../cubit/product_reviews_state.dart';
 import '../widgets/product_images_carousel.dart';
 // 导入收藏相关模块
 import '../../../../features/favorites/presentation/bloc/favorites_bloc.dart';
@@ -16,6 +20,9 @@ import '../../../../features/favorites/presentation/bloc/favorites_event.dart';
 // 导入聊天模块
 import '../../../../features/chat/domain/repositories/i_chat_repository.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+// 导入事件总线
+import '../../../../core/events/event_bus.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 /// 商品详情页面
 class ProductDetailPage extends StatefulWidget {
@@ -39,16 +46,35 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
   bool _isCreatingChat = false;
   // 添加描述展开状态控制
   bool _isDescriptionExpanded = false;
-  
+  // 评价提交事件订阅
+  StreamSubscription<EvaluationSubmittedEvent>? _evaluationSubscription;
+
   @override
   void initState() {
     super.initState();
     // Don't initialize TabController here, wait for product data
+
+    // 监听评价提交事件
+    _evaluationSubscription = EventBus().evaluationSubmittedStream.listen((event) {
+      final currentProductId = int.tryParse(widget.productId) ?? 0;
+      // 只有当前商品的评价才刷新
+      if (event.productId == currentProductId) {
+        print('[ProductDetailPage] 收到评价提交事件，刷新商品详情 productId: ${event.productId}');
+        // 需要从 context 中获取 cubit，但 initState 中没有 context
+        // 使用 addPostFrameCallback 延迟执行
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            context.read<ProductDetailCubit>().getProductDetail(widget.productId);
+          }
+        });
+      }
+    });
   }
   
   @override
   void dispose() {
     _tabController?.dispose();
+    _evaluationSubscription?.cancel();
     super.dispose();
   }
   
@@ -143,6 +169,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
               type: 'org_product',
               objectIds: [int.tryParse(widget.productId) ?? 0],
             )),
+        ),
+        // 添加评论 Cubit 来获取真实评论数据
+        BlocProvider(
+          create: (_) => GetIt.I<ProductReviewsCubit>()
+            ..getProductReviews(int.tryParse(widget.productId) ?? 0),
         ),
       ],
       child: Scaffold(
@@ -725,99 +756,209 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
   }
 
   Widget _buildReviewsSection(ProductDetail product) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return BlocBuilder<ProductReviewsCubit, ProductReviewsState>(
+      builder: (context, state) {
+        // 获取真实的评论数量：优先使用API返回的total，fallback到product.evaluateNum
+        final int reviewCount = state is ProductReviewsLoaded
+            ? state.total
+            : product.evaluateNum;
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                AppLocalizations.of(context)!.product_detail_reviews(product.evaluateNum),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.product_detail_reviews(reviewCount),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      // 跳转到评论详情页 - 使用标准Go Router导航
+                      final productId = int.tryParse(widget.productId) ?? 0;
+                      if (productId > 0) {
+                        context.go('/home/product/$productId/reviews');
+                      }
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(AppLocalizations.of(context)!.product_detail_view_all, style: const TextStyle(color: Colors.grey)),
+                        const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // 根据状态显示内容
+              if (state is ProductReviewsLoading)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                )
+              else if (state is ProductReviewsError)
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: Text(
+                      state.message,
+                      style: const TextStyle(color: Colors.grey, fontSize: 14),
+                    ),
+                  ),
+                )
+              else if (state is ProductReviewsLoaded)
+                state.reviews.isEmpty
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          child: Text(
+                            AppLocalizations.of(context)!.product_detail_no_reviews,
+                            style: const TextStyle(color: Colors.grey, fontSize: 14),
+                          ),
+                        ),
+                      )
+                    : _buildReviewItem(state.reviews.first)
+              else
+                // 初始状态：显示加载中
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
                 ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  // 跳转到评论详情页 - 使用标准Go Router导航
-                  final productId = int.tryParse(widget.productId) ?? 0;
-                  if (productId > 0) {
-                    context.go('/home/product/$productId/reviews');
-                  }
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(AppLocalizations.of(context)!.product_detail_view_all, style: const TextStyle(color: Colors.grey)),
-                    const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
-                  ],
-          ),
-              ),
             ],
           ),
-          const SizedBox(height: 16),
-          
-          // 如果没有评价，显示"暂无评价"提示
-          if (product.evaluateNum <= 0)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Text(
-                  AppLocalizations.of(context)!.product_detail_no_reviews,
-                  style: const TextStyle(color: Colors.grey, fontSize: 14),
+        );
+      },
+    );
+  }
+
+  /// 构建单条评论项
+  Widget _buildReviewItem(ProductReview review) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 用户头像
+        if (review.buyer.avatar != null && review.buyer.avatar!.isNotEmpty)
+          CircleAvatar(
+            radius: 20,
+            backgroundImage: CachedNetworkImageProvider(review.buyer.avatar!),
+          )
+        else
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: Colors.amber[100],
+            child: const Icon(Icons.person, color: Colors.amber),
+          ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: Text(
+                      review.anonymityFlag ? '匿名用户' : review.buyer.nickName,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    _formatReviewTime(review.createTime),
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              // 显示SKU名称
+              if (review.skuName.isNotEmpty)
+                Row(
+                  children: [
+                    Text(
+                      review.skuName,
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                  ],
+                ),
+              const SizedBox(height: 4),
+              // 评论内容
+              Text(
+                review.content ?? '用户未填写评价内容',
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: review.content == null ? Colors.grey : null,
                 ),
               ),
-            )
-          else
-            // 有评价就显示示例评价
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const CircleAvatar(
-                  radius: 20,
-                  backgroundImage: NetworkImage('https://via.placeholder.com/40'),
-          ),
-                const SizedBox(width: 12),
-          Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              AppLocalizations.of(context)!.product_detail_sample_user, 
-                              style: const TextStyle(fontWeight: FontWeight.bold),
-                              overflow: TextOverflow.ellipsis,
+              // 显示评价图片（如果有）
+              if (review.images != null && review.images!.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 60,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: review.images!.length > 3 ? 3 : review.images!.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: CachedNetworkImage(
+                            imageUrl: review.images![index],
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              color: Colors.grey[200],
+                              child: const Icon(Icons.image, color: Colors.grey),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              color: Colors.grey[200],
+                              child: const Icon(Icons.broken_image, color: Colors.grey),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            '2025-03-12 11:20:05', 
-                            style: TextStyle(color: Colors.grey, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Text(AppLocalizations.of(context)!.product_detail_basic_package, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                        ],
-              ),
-                      const SizedBox(height: 4),
-                      Text(AppLocalizations.of(context)!.product_detail_sample_review),
-                    ],
-            ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ],
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
+  }
+
+  /// 格式化评论时间
+  String _formatReviewTime(String createTime) {
+    if (createTime.isEmpty) return '';
+    // 如果时间格式已经是 yyyy-MM-dd HH:mm:ss，直接截取日期部分
+    if (createTime.length >= 10) {
+      return createTime.substring(0, 10);
+    }
+    return createTime;
   }
 
   // 需要卖家提供板块 - 使用productMaterials中的ATTACHMENT和TEXT类型

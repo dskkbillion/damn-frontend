@@ -822,9 +822,10 @@ class _ProductDetailContentState extends State<ProductDetailContent>
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 20,
-                  backgroundImage: NetworkImage('https://via.placeholder.com/40'),
+                  backgroundColor: Colors.amber[100],
+                  child: const Icon(Icons.person, color: Colors.amber),
                 ),
                 const SizedBox(width: 12),
                 Expanded(

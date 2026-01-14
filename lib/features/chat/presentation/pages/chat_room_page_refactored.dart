@@ -210,7 +210,8 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
   }
   
   void _onScroll() {
-    if (_scrollController.hasClients) {
+    if (_scrollController.hasClients &&
+        _scrollController.position.hasContentDimensions) {
       final currentScroll = _scrollController.offset;
       
       // In reversed list, scrolling up means offset is increasing
@@ -238,7 +239,8 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
   }
   
   void _scrollToBottom() {
-    if (_scrollController.hasClients) {
+    if (_scrollController.hasClients &&
+        _scrollController.position.hasContentDimensions) {
       _scrollController.animateTo(
         0.0, // In reversed list, bottom is at 0
         duration: const Duration(milliseconds: 300),
@@ -426,7 +428,8 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                           // Scroll to bottom on message state changes
                           if (messages.isNotEmpty) {
                             WidgetsBinding.instance.addPostFrameCallback((_) {
-                              if (_scrollController.hasClients) {
+                              if (_scrollController.hasClients &&
+                                  _scrollController.position.hasContentDimensions) {
                                 // On initial load, always scroll to bottom to show latest message
                                 if (_isInitialLoad) {
                                   _scrollToBottom();

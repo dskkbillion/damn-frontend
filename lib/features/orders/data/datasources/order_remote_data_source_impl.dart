@@ -268,12 +268,16 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
     final Map<String, dynamic> requestData = {
       'orderId': orderId,
       'score': score,
-      'content': content,
-      'isAnonymous': isAnonymous ? 1 : 0, // Assuming API expects 0/1
-      'pictures': pictures, // Assuming API accepts a list of strings
+      'remark': content,  // 后端字段名是remark，不是content
+      'anonymityFlag': isAnonymous,  // 后端字段名是anonymityFlag，不是isAnonymous
+      'images': pictures,  // 后端字段名可能是images而不是pictures
     };
+
+    print('[评价API] 请求数据: $requestData');
+
     try {
       final response = await coreDioClient.post(_addEvaluationEndpoint, data: requestData);
+      print('[评价API] 响应: ${response.data}');
       if (response.statusCode != 200 || (response.data != null && response.data['code'] != 200)) {
         throw ServerFailure(message: response.data?['msg'] ?? 'Failed to add evaluation');
       }

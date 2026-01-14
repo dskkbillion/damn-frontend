@@ -24,15 +24,15 @@ class ProductReviewModel extends ProductReview {
 
   factory ProductReviewModel.fromJson(Map<String, dynamic> json) {
     return ProductReviewModel(
-      id: json['id'],
-      merchantId: json['merchantId'],
-      orderId: json['orderId'],
-      productId: json['productId'],
-      optionId: json['optionId'],
+      id: json['id'] ?? json['orderId'] ?? 0,  // API 可能没有 id 字段，用 orderId 作为 fallback
+      merchantId: json['merchantId'] ?? 0,  // merchantId 可能为 null
+      orderId: json['orderId'] ?? 0,
+      productId: json['productId'] ?? 0,
+      optionId: json['optionId'] ?? 0,
       skuName: json['skuName'] ?? '',
-      memberId: json['memberId'],
-      score: json['score'],
-      content: json['content'] ?? json['evaluateContent'],  // 兼容不同的字段名
+      memberId: json['memberId'] ?? 0,
+      score: json['score'] ?? 0,
+      content: json['content'] ?? json['evaluateContent'] ?? json['remark'],  // 兼容不同的字段名
       images: json['images'] != null
           ? List<String>.from(json['images'])
           : null,

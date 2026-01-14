@@ -66,11 +66,27 @@ class ProductReviewsRemoteDataSourceImpl implements ProductReviewsRemoteDataSour
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body) as Map<String, dynamic>;
-        if (responseData['code'] == 200) {
-          return ProductReviewsResponseModel.fromJson(responseData);
+
+        // 处理两种可能的响应格式：
+        // 1. 直接返回 {total: x, rows: [...]}
+        // 2. 包装格式 {code: 200, data: {total: x, rows: [...]}}
+        Map<String, dynamic> reviewData;
+
+        if (responseData.containsKey('total') && responseData.containsKey('rows')) {
+          // 直接返回数据的格式
+          reviewData = responseData;
+        } else if (responseData['code'] == 200) {
+          // 包装格式
+          final data = responseData['data'] as Map<String, dynamic>?;
+          if (data == null) {
+            throw ServerException(message: '评论数据为空');
+          }
+          reviewData = data;
         } else {
           throw ServerException(message: responseData['msg'] ?? '获取评论失败');
         }
+
+        return ProductReviewsResponseModel.fromJson(reviewData);
       } else {
         throw ServerException(message: '获取评论失败: HTTP ${response.statusCode}');
       }

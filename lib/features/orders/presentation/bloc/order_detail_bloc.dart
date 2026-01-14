@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
+import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
 // Removed INavigationService import as it might not be needed for direct navigation
 // import 'package:dskk_flutter_refactor/core/navigation/services/i_navigation_service.dart';
 import 'package:dskk_flutter_refactor/core/payment/services/i_payment_service.dart';
@@ -340,6 +341,19 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         },
         (_) {
           print('[OrderDetailBloc] Evaluation submitted successfully.');
+
+          // 触发评价提交事件，通知商品详情页刷新评论
+          if (currentState != null && currentState.order.items.isNotEmpty) {
+            final productId = currentState.order.items.first.productId;
+            EventBus().fireEvaluationSubmittedEvent(
+              EvaluationSubmittedEvent(
+                productId: productId,
+                orderId: event.params.orderId,
+              ),
+            );
+            print('[OrderDetailBloc] Fired EvaluationSubmittedEvent for productId: $productId');
+          }
+
           // Emit success state FIRST (for SnackBar)
           emit(OrderDetailActionSuccess(
             message: '评价提交成功!',

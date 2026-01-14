@@ -140,10 +140,11 @@ class ProductReviewsPage extends StatelessWidget {
         const SizedBox(height: 12),
         // 显示评论内容
         Text(
-          review.content ?? '不错，很有耐心',
-          style: const TextStyle(
+          review.content ?? '用户未填写评价内容',
+          style: TextStyle(
             fontSize: 14,
             height: 1.5,
+            color: review.content == null ? Colors.grey : null,
           ),
         ),
         

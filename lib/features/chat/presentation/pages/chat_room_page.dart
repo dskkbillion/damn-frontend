@@ -72,7 +72,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   // 处理滚动事件
   void _onScroll() {
-    if (_scrollController.hasClients) {
+    if (_scrollController.hasClients &&
+        _scrollController.position.hasContentDimensions) {
       final maxScroll = _scrollController.position.maxScrollExtent;
       final currentScroll = _scrollController.offset;
       
@@ -147,10 +148,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   // 优化滚动到底部的方法 - 在reverse模式下，底部是位置0
   void _scrollToBottom() {
-    if (_scrollController.hasClients) {
+    if (_scrollController.hasClients &&
+        _scrollController.position.hasContentDimensions) {
       try {
         final currentScroll = _scrollController.position.pixels;
-        
+
         // 在reverse模式下，如果当前不在底部（位置0），使用直接跳转，避免卡顿
         if (currentScroll > 10) { // 允许10像素的误差
           _scrollController.jumpTo(0); // 在reverse模式下，底部是位置0
@@ -160,7 +162,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         // 处理可能的异常，避免因滚动问题导致应用崩溃
         print("[ChatRoom] Error scrolling to bottom: $e");
       }
-    } else {
+    } else if (!_scrollController.hasClients) {
       print("[ChatRoom] ScrollController has no clients yet");
     }
   }
