@@ -17,7 +17,11 @@ class SellerStatisticsDataSourceImpl implements ISellerStatisticsDataSource {
     try {
       final response = await dio.post('/api/project/statistics/upgradeLevel');
       if (response.statusCode == 200) {
-        return SellerUpgradeStatisticsDto.fromJson(response.data['data']);
+        final data = response.data['data'];
+        if (data == null) {
+          throw ServerException(message: '升级统计数据为空');
+        }
+        return SellerUpgradeStatisticsDto.fromJson(data as Map<String, dynamic>);
       } else {
         throw ServerException(message: '服务器响应错误: ${response.statusCode}');
       }
@@ -33,7 +37,11 @@ class SellerStatisticsDataSourceImpl implements ISellerStatisticsDataSource {
     try {
       final response = await dio.post('/api/project/statistics/index');
       if (response.statusCode == 200) {
-        return SellerIndexStatisticsDto.fromJson(response.data['data']);
+        final data = response.data['data'];
+        if (data == null) {
+          throw ServerException(message: '指标统计数据为空');
+        }
+        return SellerIndexStatisticsDto.fromJson(data as Map<String, dynamic>);
       } else {
         throw ServerException(message: '服务器响应错误: ${response.statusCode}');
       }
@@ -49,7 +57,11 @@ class SellerStatisticsDataSourceImpl implements ISellerStatisticsDataSource {
     try {
       final response = await dio.post('/api/project/statistics/percent');
       if (response.statusCode == 200) {
-        return SellerPercentStatisticsDto.fromJson(response.data['data']);
+        final data = response.data['data'];
+        if (data == null) {
+          throw ServerException(message: '百分比统计数据为空');
+        }
+        return SellerPercentStatisticsDto.fromJson(data as Map<String, dynamic>);
       } else {
         throw ServerException(message: '服务器响应错误: ${response.statusCode}');
       }
