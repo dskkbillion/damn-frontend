@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -212,7 +213,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           // 尝试从GetIt获取
           return GetIt.I<SellerStatisticsBloc>();
         } catch (e) {
-          print('[GoRouter] 无法从GetIt获取SellerStatisticsBloc，创建新实例: $e');
+          AppLogger.d('[GoRouter] 无法从GetIt获取SellerStatisticsBloc，创建新实例: $e');
           // 如果从GetIt获取失败，则手动创建
           try {
             // 尝试获取仓库和usecase
@@ -227,7 +228,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               percentUseCase,
             );
           } catch (e2) {
-            print('[GoRouter] 无法创建SellerStatisticsBloc的依赖: $e2');
+            AppLogger.d('[GoRouter] 无法创建SellerStatisticsBloc的依赖: $e2');
             // 回退使用GetIt获取
             return GetIt.I<SellerStatisticsBloc>();
           }
@@ -245,7 +246,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       pageBuilder: (context, state) {
         // 提取status查询参数
         final statusString = state.uri.queryParameters['status'];
-        print('[GoRoute /seller/orders] Received status param: $statusString');
+        AppLogger.d('[GoRoute /seller/orders] Received status param: $statusString');
         
         // 解析status为OrderStatus枚举
         final parsedStatus = OrderStatusExtension.fromString(statusString);
@@ -272,7 +273,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           // 优先使用GetIt工厂获取ProductManagementBloc
           return GetIt.I<ProductManagementBloc>()..add(LoadProductList());
         } catch (e) {
-          print('[GoRouter] 无法从GetIt获取ProductManagementBloc，创建新实例: $e');
+          AppLogger.d('[GoRouter] 无法从GetIt获取ProductManagementBloc，创建新实例: $e');
           // 如果从GetIt获取失败，则手动创建
           final sellerRepository = GetIt.I<ISellerRepository>();
           return ProductManagementBloc(
@@ -322,7 +323,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           // 使用GetIt工厂获取SellerHomeBloc，而不是使用手动创建的实例
           return GetIt.I<SellerHomeBloc>();
         } catch (e) {
-          print('[GoRouter] 无法从GetIt获取SellerHomeBloc: $e');
+          AppLogger.d('[GoRouter] 无法从GetIt获取SellerHomeBloc: $e');
           // 仅在获取失败时备用的手动创建方法
           final repo = GetIt.I<ISellerRepository>();
           return SellerHomeBloc(
@@ -461,7 +462,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             try {
               networkInfo = getIt<NetworkInfo>();
             } catch (e) {
-              print('NetworkInfo not found in GetIt, using mock');
+              AppLogger.d('NetworkInfo not found in GetIt, using mock');
               networkInfo = mock.MockNetworkInfo();
             }
             
@@ -497,7 +498,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               source: 'app_navigation_seller_non_shell',
             );
           } catch (e) {
-            print('Error creating WalletBloc: $e');
+            AppLogger.d('Error creating WalletBloc: $e');
             return state.buildSmartPage(
               Scaffold(
               appBar: AppBar(title: const Text('钱包')),
@@ -819,21 +820,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           final productId = int.parse(state.pathParameters['id'] ?? '0');
           final Map<String, dynamic> extra = state.extra as Map<String, dynamic>? ?? {};
           
-          print('[Router] productPaymentConfirm - productId: $productId, extra: $extra');
+          AppLogger.d('[Router] productPaymentConfirm - productId: $productId, extra: $extra');
           
           return state.buildSmartPage(
             Builder(
               builder: (context) {
-                print('[Router] Building OrderConfirmPage widget');
+                AppLogger.d('[Router] Building OrderConfirmPage widget');
                 return BlocProvider(
                   create: (_) {
-                    print('[Router] Creating PaymentBloc instance');
+                    AppLogger.d('[Router] Creating PaymentBloc instance');
                     try {
                       final bloc = getIt<PaymentBloc>();
-                      print('[Router] PaymentBloc created successfully');
+                      AppLogger.d('[Router] PaymentBloc created successfully');
                       return bloc;
                     } catch (e) {
-                      print('[Router] Error creating PaymentBloc: $e');
+                      AppLogger.d('[Router] Error creating PaymentBloc: $e');
                       rethrow;
                     }
                   },
@@ -873,16 +874,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final isUnknown = loginStatus is AuthUnknown;
       final currentMode = ref.read(appModeProvider); // Use read for redirect
 
-      print('Redirect Check: Location: ${state.matchedLocation}, Login: $loginStatus, Mode: $currentMode, Logging In: $isLoggingIn');
+      AppLogger.d('Redirect Check: Location: ${state.matchedLocation}, Login: $loginStatus, Mode: $currentMode, Logging In: $isLoggingIn');
 
       if (isUnknown) return null;
 
       if (loginStatus is Unauthenticated && !isLoggingIn) {
-        print('Redirect: Not logged in -> ${AuthRoutes.loginPath}');
+        AppLogger.d('Redirect: Not logged in -> ${AuthRoutes.loginPath}');
         return AuthRoutes.loginPath;
       }
       if (loginStatus is Authenticated && isLoggingIn) {
-         print('Redirect: Logged in but on login page -> ${HomeRoutes.homePath}');
+         AppLogger.d('Redirect: Logged in but on login page -> ${HomeRoutes.homePath}');
          return HomeRoutes.homePath; 
       }
 
@@ -926,15 +927,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           !location.startsWith(sellerPublicProfilePathPrefix); // 简化检查逻辑
       
       if (currentMode == AppMode.buyer && isSellerShellLocation) {
-        print('Redirect: In Buyer Mode, tried to access Seller Shell ($location) -> ${HomeRoutes.homePath}');
+        AppLogger.d('Redirect: In Buyer Mode, tried to access Seller Shell ($location) -> ${HomeRoutes.homePath}');
         return HomeRoutes.homePath; 
       }
       if (currentMode == AppMode.seller && isBuyerShellLocation) {
-         print('Redirect: In Seller Mode, tried to access Buyer Shell ($location) -> ${SellerRoutes.home}');
+         AppLogger.d('Redirect: In Seller Mode, tried to access Buyer Shell ($location) -> ${SellerRoutes.home}');
          return SellerRoutes.home; // Redirect to seller "My" tab content
       }
 
-      print('Redirect: No redirect needed.');
+      AppLogger.d('Redirect: No redirect needed.');
       return null; 
     },
   );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 void main() async {
@@ -18,7 +19,7 @@ void main() async {
     value: '10318'
   );
   
-  print('认证信息已设置完成！');
-  print('Token和UserId已存储在安全存储中。');
-  print('现在可以运行main_home.dart查看home模块。');
+  AppLogger.d('认证信息已设置完成！');
+  AppLogger.d('Token和UserId已存储在安全存储中。');
+  AppLogger.d('现在可以运行main_home.dart查看home模块。');
 }

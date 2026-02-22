@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../../core/error/failures.dart';
@@ -92,7 +93,7 @@ class MockAfterSalesRepository implements IAfterSalesRepository {
 
   @override
   Future<Either<Failure, int>> applyForAfterSales(ApplyAfterSalesParams params) async {
-    print('[MockAfterSalesRepository] applyForAfterSales called with params: $params');
+    AppLogger.d('[MockAfterSalesRepository] applyForAfterSales called with params: $params');
     await Future.delayed(const Duration(milliseconds: 300)); // Simulate network delay
 
     // Simulate successful application, return a new mock ID
@@ -109,7 +110,7 @@ class MockAfterSalesRepository implements IAfterSalesRepository {
       // refundPrice needs to be determined or mocked, using default for now
     );
     _mockApplications.add(newApp); // Add to our mock list
-    print('[MockAfterSalesRepository] New application created with ID: $newId');
+    AppLogger.d('[MockAfterSalesRepository] New application created with ID: $newId');
     return Right(newId);
 
     // Simulate failure example:
@@ -118,7 +119,7 @@ class MockAfterSalesRepository implements IAfterSalesRepository {
 
   @override
   Future<Either<Failure, List<AfterSalesApplication>>> getAfterSalesList(GetAfterSalesListParams params) async {
-     print('[MockAfterSalesRepository] getAfterSalesList called with params: $params');
+     AppLogger.d('[MockAfterSalesRepository] getAfterSalesList called with params: $params');
      await Future.delayed(const Duration(milliseconds: 500));
 
      // Simple filtering mock
@@ -135,7 +136,7 @@ class MockAfterSalesRepository implements IAfterSalesRepository {
        endIndex.clamp(0, results.length),
      );
 
-     print('[MockAfterSalesRepository] Returning ${paginatedResults.length} applications for page ${params.page}');
+     AppLogger.d('[MockAfterSalesRepository] Returning ${paginatedResults.length} applications for page ${params.page}');
      return Right(paginatedResults);
 
      // Simulate failure example:
@@ -144,47 +145,47 @@ class MockAfterSalesRepository implements IAfterSalesRepository {
 
   @override
   Future<Either<Failure, AfterSalesApplication>> getAfterSalesDetail(int refundId) async {
-    print('[MockAfterSalesRepository] getAfterSalesDetail called for refundId: $refundId');
+    AppLogger.d('[MockAfterSalesRepository] getAfterSalesDetail called for refundId: $refundId');
     await Future.delayed(const Duration(milliseconds: 200));
 
     try {
        final application = _mockApplications.firstWhere((app) => app.id == refundId);
-       print('[MockAfterSalesRepository] Found application detail for ID: $refundId');
+       AppLogger.d('[MockAfterSalesRepository] Found application detail for ID: $refundId');
        return Right(application);
     } catch (e) {
-       print('[MockAfterSalesRepository] Application not found for ID: $refundId');
+       AppLogger.d('[MockAfterSalesRepository] Application not found for ID: $refundId');
        return Left(ServerFailure(message: 'Mock Error: Refund application not found.'));
     }
   }
 
   @override
   Future<Either<Failure, void>> cancelAfterSales(int refundId) async {
-     print('[MockAfterSalesRepository] cancelAfterSales called for refundId: $refundId');
+     AppLogger.d('[MockAfterSalesRepository] cancelAfterSales called for refundId: $refundId');
      await Future.delayed(const Duration(milliseconds: 150));
 
      final index = _mockApplications.indexWhere((app) => app.id == refundId);
      if (index != -1 && (_mockApplications[index].refundState == 'WAIT_AUDIT' || _mockApplications[index].refundState == 'AUDIT_PASS')) { // Only cancel specific states
         // Simulate cancellation by changing state (in a real mock, might need immutable updates)
         // For simplicity, we just print here. Ideally, update the mock list state.
-        print('[MockAfterSalesRepository] Successfully cancelled refund ID: $refundId');
+        AppLogger.d('[MockAfterSalesRepository] Successfully cancelled refund ID: $refundId');
         return const Right(null);
      } else if (index != -1) {
-        print('[MockAfterSalesRepository] Cannot cancel refund ID: $refundId in state ${_mockApplications[index].refundState}');
+        AppLogger.d('[MockAfterSalesRepository] Cannot cancel refund ID: $refundId in state ${_mockApplications[index].refundState}');
         return Left(ServerFailure(message: 'Mock Error: Cannot cancel refund in the current state.'));
      } else {
-        print('[MockAfterSalesRepository] Refund ID: $refundId not found for cancellation.');
+        AppLogger.d('[MockAfterSalesRepository] Refund ID: $refundId not found for cancellation.');
         return Left(ServerFailure(message: 'Mock Error: Refund application not found.'));
      }
   }
 
   @override
   Future<Either<Failure, void>> deleteAfterSales(List<int> refundIds) async {
-     print('[MockAfterSalesRepository] deleteAfterSales called for refundIds: $refundIds');
+     AppLogger.d('[MockAfterSalesRepository] deleteAfterSales called for refundIds: $refundIds');
      await Future.delayed(const Duration(milliseconds: 100));
 
      // Simulate deletion (just print for now)
      // In a real mock, remove items from _mockApplications list
-     print('[MockAfterSalesRepository] Successfully deleted refund records for IDs: $refundIds');
+     AppLogger.d('[MockAfterSalesRepository] Successfully deleted refund records for IDs: $refundIds');
      return const Right(null);
 
      // Simulate failure example:

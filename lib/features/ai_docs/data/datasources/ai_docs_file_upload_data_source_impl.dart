@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -29,7 +30,7 @@ class AiDocsFileUploadDataSourceImpl implements IFileUploadDataSource {
 
     // 构造完整URL
     final String fullUrl = backendBaseUrl + uploadPath;
-    print("[AiDocs] 上传文件到: $fullUrl，文件大小: ${await file.length() / 1024} KB");
+    AppLogger.d("[AiDocs] 上传文件到: $fullUrl，文件大小: ${await file.length() / 1024} KB");
     
     try {
       // 调用postMultipart上传文件
@@ -39,7 +40,7 @@ class AiDocsFileUploadDataSourceImpl implements IFileUploadDataSource {
       );
 
       // 打印响应内容，便于调试
-      print("[AiDocs] 文件上传响应: $response");
+      AppLogger.d("[AiDocs] 文件上传响应: $response");
 
       // 处理响应
       final int code = response['code'] ?? 500;
@@ -67,7 +68,7 @@ class AiDocsFileUploadDataSourceImpl implements IFileUploadDataSource {
             }
             
             // 打印所有字段，帮助调试
-            print("[AiDocs] 无法在响应中找到URL，可用字段: ${data.keys.toList()}");
+            AppLogger.d("[AiDocs] 无法在响应中找到URL，可用字段: ${data.keys.toList()}");
             throw ds_exceptions.ServerException(
               message: "文件上传成功但无法从响应中找到URL",
               statusCode: code
@@ -85,16 +86,16 @@ class AiDocsFileUploadDataSourceImpl implements IFileUploadDataSource {
         statusCode: code
       );
     } on ds_exceptions.NetworkException catch (e) {
-      print("[AiDocs] 上传文件网络异常: $e");
+      AppLogger.d("[AiDocs] 上传文件网络异常: $e");
       throw ds_exceptions.NetworkException(message: "文件上传网络错误: ${e.message}");
     } on ds_exceptions.ServerException catch (e) {
-      print("[AiDocs] 上传文件服务器异常: $e");
+      AppLogger.d("[AiDocs] 上传文件服务器异常: $e");
       throw ds_exceptions.ServerException(
         message: "文件上传服务器错误: ${e.message}", 
         statusCode: e.statusCode
       );
     } catch (e) {
-      print("[AiDocs] 上传文件未预期异常: $e");
+      AppLogger.d("[AiDocs] 上传文件未预期异常: $e");
       throw ds_exceptions.DataSourceException(message: "文件上传未预期错误: ${e.toString()}");
     }
   }

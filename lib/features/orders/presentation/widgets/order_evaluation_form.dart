@@ -1,4 +1,5 @@
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart'; // Import Bloc and Events
@@ -361,7 +362,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
         }
       }
     } catch (e) {
-       print('Error picking images: $e');
+       AppLogger.d('Error picking images: $e');
        ScaffoldMessenger.of(context).showSnackBar(
          SnackBar(content: Text('选择图片失败: ${e.toString()}')),
        );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
@@ -65,7 +66,7 @@ class _ChatMessageListState extends State<ChatMessageList> {
       if (state.hasMoreHistory && 
           !state.isLoadingMoreHistory && 
           state.messages.isNotEmpty) {
-        print("[ChatMessageList] Triggering LoadMoreHistory");
+        AppLogger.d("[ChatMessageList] Triggering LoadMoreHistory");
         context.read<AiChatBloc>().add(const LoadMoreHistory());
       }
     }

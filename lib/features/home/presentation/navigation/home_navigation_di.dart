@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:go_router/go_router.dart';
 
 import 'home_navigation_service.dart';
@@ -24,7 +25,7 @@ class HomeNavigationDI {
     // 恢复默认设置
     sl.allowReassignment = false;
     
-    print('[HomeNavigationDI] 已注册RealHomeNavigationService');
+    AppLogger.d('[HomeNavigationDI] 已注册RealHomeNavigationService');
   }
   
   /// 检查当前注册的HomeNavigationService类型

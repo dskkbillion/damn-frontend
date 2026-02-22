@@ -1,4 +1,5 @@
 import 'package:dskk_flutter_refactor/core/navigation/services/i_navigation_service.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 /// INavigationService 的手动 Mock 实现，主要用于记录导航调用。
 class MockNavigationService implements INavigationService {
@@ -14,7 +15,7 @@ class MockNavigationService implements INavigationService {
   void _logNavigation(String routeName, Map<String, dynamic> args) {
     lastNavigatedRoute = routeName;
     lastNavigationArguments = args;
-    print('[MockNavigationService] Navigating to $routeName with args: $args');
+    AppLogger.d('[MockNavigationService] Navigating to $routeName with args: $args');
   }
 
   @override
@@ -54,7 +55,7 @@ class MockNavigationService implements INavigationService {
 
   @override
   void goBack() {
-    print('[MockNavigationService] Going back (pop).');
+    AppLogger.d('[MockNavigationService] Going back (pop).');
     // 在测试中可能不需要记录 goBack 的具体状态，但可以根据需要添加
   }
 

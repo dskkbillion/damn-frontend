@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 import 'package:dio/dio.dart'; // Import Dio
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -31,7 +32,7 @@ class FileRemoteDataSourceImpl implements IFileRemoteDataSource {
   Future<String> uploadFile(File file) async {
     final uploadPath = '/api/common/public/upload'; // Define path clearly
     final targetUrl = dio.options.baseUrl + uploadPath;
-    print("[API Call] Uploading file: ${file.path} to $targetUrl"); // Log full target URL
+    AppLogger.d("[API Call] Uploading file: ${file.path} to $targetUrl"); // Log full target URL
 
     String fileName = file.path.split('/').last;
     FormData formData = FormData.fromMap({
@@ -45,7 +46,7 @@ class FileRemoteDataSourceImpl implements IFileRemoteDataSource {
         // Let Dio handle multipart Content-Type
         onSendProgress: (int sent, int total) {
            if (total > 0) { // Avoid division by zero
-              // print('Upload progress: ${(sent / total * 100).toStringAsFixed(0)}%');
+              // AppLogger.d('Upload progress: ${(sent / total * 100).toStringAsFixed(0)}%');
            }
         },
       );
@@ -58,28 +59,28 @@ class FileRemoteDataSourceImpl implements IFileRemoteDataSource {
              // Check for 'data' field containing the url, as per API doc example
              final dynamic dataField = responseData['data'];
              if (dataField is Map<String, dynamic> && dataField['url'] is String) {
-                 print("[API Call] File upload successful. URL: ${dataField['url']}");
+                 AppLogger.d("[API Call] File upload successful. URL: ${dataField['url']}");
                  return dataField['url'] as String;
              } else {
-                print("API Error (upload): Successful code but 'data.url' field is missing or invalid. Response: $responseData");
+                AppLogger.d("API Error (upload): Successful code but 'data.url' field is missing or invalid. Response: $responseData");
                 throw ServerException(message: "Invalid response format after upload (missing URL)", statusCode: response.statusCode);
              }
           } else {
              // Handle business error code from server
              final errorMessage = responseData['msg']?.toString() ?? 'File upload failed (server logic)';
              final errorCode = responseData['code']?.toString();
-             print("API Business Error (upload): $errorMessage, Code: $errorCode, Status: ${response.statusCode}");
+             AppLogger.d("API Business Error (upload): $errorMessage, Code: $errorCode, Status: ${response.statusCode}");
              throw ServerException(message: errorMessage, statusCode: response.statusCode); // Keep original status for context
           }
       } else {
          // Handle non-200 status or unexpected response type
-         print("API Error (upload): Unexpected status ${response.statusCode} or data type ${response.data?.runtimeType}. Response: ${response.data}");
+         AppLogger.d("API Error (upload): Unexpected status ${response.statusCode} or data type ${response.data?.runtimeType}. Response: ${response.data}");
          throw ServerException(message: "Server returned unexpected status or data format during upload", statusCode: response.statusCode);
       }
 
     } on DioException catch (e) {
       // Handle Dio/network errors
-      print("DioException uploading file: ${e.message}, Type: ${e.type}, Response: ${e.response?.data}");
+      AppLogger.d("DioException uploading file: ${e.message}, Type: ${e.type}, Response: ${e.response?.data}");
       // Provide more specific error messages based on DioErrorType if needed
       String failureMessage = e.message ?? "Network error uploading file";
       if (e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.sendTimeout || e.type == DioExceptionType.receiveTimeout) {
@@ -91,7 +92,7 @@ class FileRemoteDataSourceImpl implements IFileRemoteDataSource {
       throw ServerException(message: failureMessage, statusCode: e.response?.statusCode);
     } catch (e, stacktrace) {
       // Handle other unexpected errors (e.g., during FormData creation)
-      print("Unexpected error during uploadFile: $e\n$stacktrace");
+      AppLogger.d("Unexpected error during uploadFile: $e\n$stacktrace");
       throw ServerException(message: "Unexpected error while processing file upload"); // Generic internal error message
     }
   }

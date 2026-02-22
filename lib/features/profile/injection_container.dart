@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dartz/dartz.dart';
 import 'package:get_it/get_it.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -98,7 +99,7 @@ Future<void> initProfileDependencies(GetIt locator) async {
   // 这里只是做一个检查，如果 Auth 模块已经注册了这个服务，就不再重复注册
   if (!locator.isRegistered<IAuthRepository>()) {
     // 这里不再定义MockAuthRepository，而是使用Auth模块提供的实现
-    print("IAuthRepository expected to be registered by auth module");
+    AppLogger.d("IAuthRepository expected to be registered by auth module");
   }
 
   // Data sources - 修正构造函数参数，使用FlutterSecureStorage
@@ -116,7 +117,7 @@ Future<void> initProfileDependencies(GetIt locator) async {
 
   // Core
   if (!locator.isRegistered<NetworkInfo>()) {
-    print("NetworkInfo expected to be registered by core module");
+    AppLogger.d("NetworkInfo expected to be registered by core module");
   }
 
   // External

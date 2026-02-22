@@ -2,6 +2,7 @@
 /// 从product_edit_page.dart中提取出来以减少代码复杂度
 
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_managed_product.dart';
 
 /// 服务档位枚举
@@ -262,11 +263,11 @@ class ServiceTierConfig {
     
     // 调试日志：打印价格选择逻辑
     final selectedPrice = value.sellingPrice > 0 ? value.sellingPrice : value.price;
-    print('[ServiceTierConfig] Creating tier config from variant:');
-    print('  - Variant name: ${value.name}');
-    print('  - sellingPrice: ${value.sellingPrice}');
-    print('  - price: ${value.price}');
-    print('  - Selected price: $selectedPrice');
+    AppLogger.d('[ServiceTierConfig] Creating tier config from variant:');
+    AppLogger.d('  - Variant name: ${value.name}');
+    AppLogger.d('  - sellingPrice: ${value.sellingPrice}');
+    AppLogger.d('  - price: ${value.price}');
+    AppLogger.d('  - Selected price: $selectedPrice');
     
     return ServiceTierConfig(
       tier: tier,
@@ -387,7 +388,7 @@ class ProductServiceTiers {
     List<ProductAttributeTemplate> attributeTemplates = [];
     Map<String, String> attributeNameToId = {}; // 名称到ID的映射
 
-    print('[ProductServiceTiers.fromProductOptionValues] Creating from ${variants.length} variants');
+    AppLogger.d('[ProductServiceTiers.fromProductOptionValues] Creating from ${variants.length} variants');
 
     // 第一步：从第一个有效的variant创建属性模板
     for (var variant in variants) {
@@ -414,7 +415,7 @@ class ProductServiceTiers {
     // 第二步：创建各个档位的配置
     for (int i = 0; i < variants.length; i++) {
       final variant = variants[i];
-      print('  - Variant $i: name="${variant.name}", price=${variant.price}, sellingPrice=${variant.sellingPrice}');
+      AppLogger.d('  - Variant $i: name="${variant.name}", price=${variant.price}, sellingPrice=${variant.sellingPrice}');
 
       // 创建配置
       var config = ServiceTierConfig.fromProductOptionValue(variant);

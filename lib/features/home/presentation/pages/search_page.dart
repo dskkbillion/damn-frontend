@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -73,7 +74,7 @@ class _SearchPageState extends State<SearchPage> {
         }
       }
     } catch (e) {
-      print('获取热搜词出错: $e');
+      AppLogger.d('获取热搜词出错: $e');
       // 发生错误时继续使用默认热搜词
     } finally {
       setState(() {
@@ -91,7 +92,7 @@ class _SearchPageState extends State<SearchPage> {
       }
       return [];
     } catch (e) {
-      print('解析热搜词出错: $e');
+      AppLogger.d('解析热搜词出错: $e');
       return [];
     }
   }

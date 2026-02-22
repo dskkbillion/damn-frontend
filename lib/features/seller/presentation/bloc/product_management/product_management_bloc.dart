@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/enums/product_status.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_managed_product.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/delete_product_usecase.dart';
@@ -58,7 +59,7 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     LoadProductList event,
     Emitter<ProductManagementState> emit,
   ) async {
-    print('[ProductManagementBloc] _onLoadProductList called, event.status: ${event.status}, forceRefresh: ${event.forceRefresh}, loadMore: ${event.loadMore}');
+    AppLogger.d('[ProductManagementBloc] _onLoadProductList called, event.status: ${event.status}, forceRefresh: ${event.forceRefresh}, loadMore: ${event.loadMore}');
     
     // 如果是强制刷新，重置页码
     if (event.forceRefresh) {
@@ -72,17 +73,17 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     
     // 确定要加载的商品状态
     final ProductStatus status = event.status ?? _getStatusByTabIndex(state.tabIndex);
-    print('[ProductManagementBloc] Determined status: $status');
+    AppLogger.d('[ProductManagementBloc] Determined status: $status');
     
     // 根据状态确定加载哪种类型的商品列表
     // 注意：forceRefresh时loadMore应该是false，因为是重新加载第一页
     final bool isLoadMore = event.loadMore && !event.forceRefresh;
     
     if (status == ProductStatus.draft) {
-      print('[ProductManagementBloc] Loading draft list...');
+      AppLogger.d('[ProductManagementBloc] Loading draft list...');
       await _loadDraftList(emit, isLoadMore);
     } else {
-      print('[ProductManagementBloc] Loading products by status: $status');
+      AppLogger.d('[ProductManagementBloc] Loading products by status: $status');
       await _loadProductsByStatus(status, emit, isLoadMore);
     }
   }
@@ -117,7 +118,7 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     // 确定当前页码 - 如果是加载更多，使用当前页码；否则使用1
     final int currentPage = isLoadMore ? _getCurrentPageByStatus(status) : 1;
     
-    print('[ProductManagementBloc] _loadProductsByStatus: status=$status, isLoadMore=$isLoadMore, currentPage=$currentPage');
+    AppLogger.d('[ProductManagementBloc] _loadProductsByStatus: status=$status, isLoadMore=$isLoadMore, currentPage=$currentPage');
     
     // 根据状态决定API参数
     String? apiState;
@@ -139,7 +140,7 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
       state: apiState,
     );
     
-    print('[ProductManagementBloc] API params: pageNum=$currentPage, pageSize=$_pageSize, state=$apiState');
+    AppLogger.d('[ProductManagementBloc] API params: pageNum=$currentPage, pageSize=$_pageSize, state=$apiState');
     
     final result = await _getSellerProductListUseCase(params);
     
@@ -157,9 +158,9 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
           _updateCurrentPageByStatus(status, products.isNotEmpty ? 2 : 1);
         }
 
-        print('[ProductManagementBloc] Success. Status: $status, Fetched Products: ${products.length}, HasMore: $hasMore, IsLoadMore: $isLoadMore');
+        AppLogger.d('[ProductManagementBloc] Success. Status: $status, Fetched Products: ${products.length}, HasMore: $hasMore, IsLoadMore: $isLoadMore');
         if (products.isNotEmpty) {
-           print('[ProductManagementBloc] First product ID: ${products.first.id}, Name: ${products.first.name}, ProductStatus: ${products.first.status}');
+           AppLogger.d('[ProductManagementBloc] First product ID: ${products.first.id}, Name: ${products.first.name}, ProductStatus: ${products.first.status}');
         }
 
         switch (status) {
@@ -178,10 +179,10 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
               return product.status == ProductStatus.disabled;
             }).toList();
             
-            print('[ProductManagementBloc] 已下架商品过滤: 原始数量=${products.length}, 过滤后=${filteredProducts.length}');
+            AppLogger.d('[ProductManagementBloc] 已下架商品过滤: 原始数量=${products.length}, 过滤后=${filteredProducts.length}');
             for (var product in products) {
               if (product.status != ProductStatus.disabled) {
-                print('[ProductManagementBloc] 过滤掉的商品: ID=${product.id}, 状态=${product.status}, 名称=${product.name}');
+                AppLogger.d('[ProductManagementBloc] 过滤掉的商品: ID=${product.id}, 状态=${product.status}, 名称=${product.name}');
               }
             }
             
@@ -204,14 +205,14 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     // 确定当前页码 - 如果是加载更多，使用当前页码；否则使用1
     final int currentPage = isLoadMore ? _draftCurrentPage : 1;
     
-    print('[ProductManagementBloc] _loadDraftList called, page: $currentPage, isLoadMore: $isLoadMore');
+    AppLogger.d('[ProductManagementBloc] _loadDraftList called, page: $currentPage, isLoadMore: $isLoadMore');
     
     final params = GetSellerDraftListParams(
       pageNum: currentPage,
       pageSize: _pageSize,
     );
     
-    print('[ProductManagementBloc] Calling GetSellerDraftListUseCase with params: $params');
+    AppLogger.d('[ProductManagementBloc] Calling GetSellerDraftListUseCase with params: $params');
     final result = await _getSellerDraftListUseCase(params);
     
     result.fold(
@@ -274,7 +275,7 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     ChangeProductTab event,
     Emitter<ProductManagementState> emit,
   ) async {
-    print('[ProductManagementBloc] _onChangeProductTab called, tabIndex: ${event.tabIndex}');
+    AppLogger.d('[ProductManagementBloc] _onChangeProductTab called, tabIndex: ${event.tabIndex}');
     
     // 判断是否需要加载数据
     bool needLoad = false;
@@ -285,15 +286,15 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
         // 如果在售列表为空，或者有强制刷新标记，则需要加载
         needLoad = state.onSaleProducts == null || state.needRefreshOnSale;
         shouldClearRefreshFlag = state.needRefreshOnSale;
-        print('[ProductManagementBloc] Tab 0 (在售): onSaleProducts null? ${state.onSaleProducts == null}, needRefreshOnSale: ${state.needRefreshOnSale}, needLoad: $needLoad');
+        AppLogger.d('[ProductManagementBloc] Tab 0 (在售): onSaleProducts null? ${state.onSaleProducts == null}, needRefreshOnSale: ${state.needRefreshOnSale}, needLoad: $needLoad');
         break;
       case 1: // 草稿
         needLoad = state.draftProducts == null;
-        print('[ProductManagementBloc] Tab 1 (草稿): draftProducts null? ${state.draftProducts == null}, length: ${state.draftProducts?.length}, needLoad: $needLoad');
+        AppLogger.d('[ProductManagementBloc] Tab 1 (草稿): draftProducts null? ${state.draftProducts == null}, length: ${state.draftProducts?.length}, needLoad: $needLoad');
         break;
       case 2: // 已下架
         needLoad = state.offShelfProducts == null;
-        print('[ProductManagementBloc] Tab 2 (已下架): offShelfProducts null? ${state.offShelfProducts == null}, needLoad: $needLoad');
+        AppLogger.d('[ProductManagementBloc] Tab 2 (已下架): offShelfProducts null? ${state.offShelfProducts == null}, needLoad: $needLoad');
         break;
     }
 
@@ -305,10 +306,10 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     // 如果需要加载，触发加载事件
     if (needLoad) {
       final status = _getStatusByTabIndex(event.tabIndex);
-      print('[ProductManagementBloc] Need to load, triggering LoadProductList with status: $status');
+      AppLogger.d('[ProductManagementBloc] Need to load, triggering LoadProductList with status: $status');
       add(LoadProductList(status: status, forceRefresh: true));
     } else {
-      print('[ProductManagementBloc] No need to load data for tab ${event.tabIndex}');
+      AppLogger.d('[ProductManagementBloc] No need to load data for tab ${event.tabIndex}');
     }
   }
   
@@ -343,7 +344,7 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
         emit(state.removeProcessingProductId(event.productId));
         
         if (success) {
-          print('🎉 [ProductManagementBloc] 商品${event.productId}状态更新成功，目标状态: ${event.targetStatus}');
+          AppLogger.d('🎉 [ProductManagementBloc] 商品${event.productId}状态更新成功，目标状态: ${event.targetStatus}');
           // 更新成功，需要刷新相关的列表
           
           // 重置所有页码
@@ -362,7 +363,7 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
           // 如果是从其他状态更新过来的，也需要刷新原状态的列表
           // 例如：从"在售"下架到"已下架"，需要刷新"在售"和"已下架"两个列表
           
-          print('🔄 [ProductManagementBloc] 需要刷新的状态列表: $needRefreshStatuses');
+          AppLogger.d('🔄 [ProductManagementBloc] 需要刷新的状态列表: $needRefreshStatuses');
           
           // 如果商品从草稿发布到审核中，设置需要刷新在售列表的标志
           // 因为审核通过后会自动变成在售状态
@@ -443,12 +444,12 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
       return;
     }
     
-    print('=== 开始删除商品 ===');
-    print('商品ID: ${productToDelete.id}');
-    print('商品名称: ${productToDelete.name}');
-    print('商品状态: ${productToDelete.status}');
-    print('状态值: ${productToDelete.status.value}');
-    print('状态显示: ${productToDelete.status.displayName}');
+    AppLogger.d('=== 开始删除商品 ===');
+    AppLogger.d('商品ID: ${productToDelete.id}');
+    AppLogger.d('商品名称: ${productToDelete.name}');
+    AppLogger.d('商品状态: ${productToDelete.status}');
+    AppLogger.d('状态值: ${productToDelete.status.value}');
+    AppLogger.d('状态显示: ${productToDelete.status.displayName}');
     
     // 创建删除参数，包含商品信息
     final params = DeleteProductParams(
@@ -474,7 +475,7 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
         
         if (success) {
           // 删除成功，更新列表
-          print('🗑️ [ProductManagementBloc] 商品${event.productId}删除成功');
+          AppLogger.d('🗑️ [ProductManagementBloc] 商品${event.productId}删除成功');
           
           // 重置所有页码
           _resetPages();
@@ -534,7 +535,7 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
     // 在卖家模式下，使用卖家的预览页面路由
     final String path = '/seller/products/${event.productId}/preview';
     
-    print('[ProductManagementBloc] Navigating to product preview: $path');
+    AppLogger.d('[ProductManagementBloc] Navigating to product preview: $path');
     
     // 发出带有导航路径的状态
     emit(state.copyWith(navigationPath: path));
@@ -544,7 +545,7 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
   
   /// 在后台刷新指定状态的商品列表
   void _refreshStatusListInBackground(ProductStatus status) {
-    print('[ProductManagementBloc] 后台刷新 $status 状态的商品列表');
+    AppLogger.d('[ProductManagementBloc] 后台刷新 $status 状态的商品列表');
     
     // 简单地触发加载事件，让正常的事件处理流程来处理
     // 这样避免了在回调中使用emit的问题

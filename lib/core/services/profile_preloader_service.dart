@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import '../../app/app_mode.dart';
@@ -66,9 +67,9 @@ class ProfilePreloaderService {
       _completedTasks.add(taskKey);
       completer.complete();
       
-      print('[ProfilePreloader] 买家数据预加载完成');
+      AppLogger.d('[ProfilePreloader] 买家数据预加载完成');
     } catch (e) {
-      print('[ProfilePreloader] 买家数据预加载失败: $e');
+      AppLogger.d('[ProfilePreloader] 买家数据预加载失败: $e');
       completer.completeError(e);
     } finally {
       _loadingTasks.remove(taskKey);
@@ -104,9 +105,9 @@ class ProfilePreloaderService {
       _completedTasks.add(taskKey);
       completer.complete();
       
-      print('[ProfilePreloader] 卖家数据预加载完成');
+      AppLogger.d('[ProfilePreloader] 卖家数据预加载完成');
     } catch (e) {
-      print('[ProfilePreloader] 卖家数据预加载失败: $e');
+      AppLogger.d('[ProfilePreloader] 卖家数据预加载失败: $e');
       completer.completeError(e);
     } finally {
       _loadingTasks.remove(taskKey);
@@ -146,7 +147,7 @@ class ProfilePreloaderService {
     try {
       final result = await _userProfileRepository.getUserProfile();
       result.fold(
-        (failure) => print('[ProfilePreloader] 预加载用户信息失败: ${failure.message}'),
+        (failure) => AppLogger.d('[ProfilePreloader] 预加载用户信息失败: ${failure.message}'),
         (userProfile) async {
           // 如果指定了group，使用指定的；否则同时缓存到两个group
           if (group != null) {
@@ -176,7 +177,7 @@ class ProfilePreloaderService {
         },
       );
     } catch (e) {
-      print('[ProfilePreloader] 预加载用户信息失败: $e');
+      AppLogger.d('[ProfilePreloader] 预加载用户信息失败: $e');
     }
   }
 
@@ -218,7 +219,7 @@ class ProfilePreloaderService {
         ttl: _cacheExpiry,
       );
     } catch (e) {
-      print('[ProfilePreloader] 预加载买家订单统计失败: $e');
+      AppLogger.d('[ProfilePreloader] 预加载买家订单统计失败: $e');
     }
   }
 
@@ -236,7 +237,7 @@ class ProfilePreloaderService {
         ttl: _cacheExpiry,
       );
     } catch (e) {
-      print('[ProfilePreloader] 预加载收藏数量失败: $e');
+      AppLogger.d('[ProfilePreloader] 预加载收藏数量失败: $e');
     }
   }
 
@@ -254,7 +255,7 @@ class ProfilePreloaderService {
         ttl: _cacheExpiry,
       );
     } catch (e) {
-      print('[ProfilePreloader] 预加载钱包余额失败: $e');
+      AppLogger.d('[ProfilePreloader] 预加载钱包余额失败: $e');
     }
   }
 
@@ -263,7 +264,7 @@ class ProfilePreloaderService {
     try {
       final result = await _sellerRepository.getDashboardData();
       result.fold(
-        (failure) => print('[ProfilePreloader] 预加载卖家仪表板数据失败: ${failure.message}'),
+        (failure) => AppLogger.d('[ProfilePreloader] 预加载卖家仪表板数据失败: ${failure.message}'),
         (dashboardData) async {
           await _cacheManager.set(
             'seller_dashboard',
@@ -274,7 +275,7 @@ class ProfilePreloaderService {
         },
       );
     } catch (e) {
-      print('[ProfilePreloader] 预加载卖家仪表板数据失败: $e');
+      AppLogger.d('[ProfilePreloader] 预加载卖家仪表板数据失败: $e');
     }
   }
 
@@ -289,7 +290,7 @@ class ProfilePreloaderService {
       );
       
       orderListResult.fold(
-        (failure) => print('[ProfilePreloader] 预加载卖家订单统计失败: ${failure.message}'),
+        (failure) => AppLogger.d('[ProfilePreloader] 预加载卖家订单统计失败: ${failure.message}'),
         (orders) async {
           final orderStats = {
             'total': orders.length,
@@ -307,7 +308,7 @@ class ProfilePreloaderService {
         },
       );
     } catch (e) {
-      print('[ProfilePreloader] 预加载卖家订单统计失败: $e');
+      AppLogger.d('[ProfilePreloader] 预加载卖家订单统计失败: $e');
     }
   }
 
@@ -316,7 +317,7 @@ class ProfilePreloaderService {
     try {
       final result = await _sellerRepository.getAuthenticationStatus();
       result.fold(
-        (failure) => print('[ProfilePreloader] 预加载卖家认证状态失败: ${failure.message}'),
+        (failure) => AppLogger.d('[ProfilePreloader] 预加载卖家认证状态失败: ${failure.message}'),
         (authStatusList) async {
           await _cacheManager.set(
             'seller_auth_status',
@@ -327,7 +328,7 @@ class ProfilePreloaderService {
         },
       );
     } catch (e) {
-      print('[ProfilePreloader] 预加载卖家认证状态失败: $e');
+      AppLogger.d('[ProfilePreloader] 预加载卖家认证状态失败: $e');
     }
   }
 
@@ -336,7 +337,7 @@ class ProfilePreloaderService {
     try {
       final result = await _sellerRepository.getStoreProfile();
       result.fold(
-        (failure) => print('[ProfilePreloader] 预加载店铺信息失败: ${failure.message}'),
+        (failure) => AppLogger.d('[ProfilePreloader] 预加载店铺信息失败: ${failure.message}'),
         (storeProfile) async {
           await _cacheManager.set(
             'store_profile',
@@ -347,7 +348,7 @@ class ProfilePreloaderService {
         },
       );
     } catch (e) {
-      print('[ProfilePreloader] 预加载店铺信息失败: $e');
+      AppLogger.d('[ProfilePreloader] 预加载店铺信息失败: $e');
     }
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 /// 表示订单的不同状态
 ///
@@ -88,7 +89,7 @@ enum OrderStatus {
       default:
         // 在开发环境下打印警告，以便发现未处理的状态
         if (kDebugMode) {
-          print('Warning: Unknown OrderStatus string received: \$statusString');
+          AppLogger.d('Warning: Unknown OrderStatus string received: \$statusString');
         }
         return OrderStatus.unknown;
     }

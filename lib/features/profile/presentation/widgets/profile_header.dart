@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -45,12 +46,12 @@ class ProfileHeader extends ConsumerWidget {
           // 头像上传成功，使用新头像URL和保存的用户信息
           profile = state.profile;
           pendingAvatarUrl = state.avatarUrl;
-          print('[ProfileHeader] Avatar upload completed, pending URL: $pendingAvatarUrl');
+          AppLogger.d('[ProfileHeader] Avatar upload completed, pending URL: $pendingAvatarUrl');
         }
         
-        print('[ProfileHeader] Received state: ${state.runtimeType}');
-        print('[ProfileHeader] Extracted profile nickname: ${profile?.nickName}');
-        print('[ProfileHeader] Avatar URL: ${profile?.avatarUrl}, Has URL: ${profile?.avatarUrl?.isNotEmpty == true}, IsUploading: $isUploading');
+        AppLogger.d('[ProfileHeader] Received state: ${state.runtimeType}');
+        AppLogger.d('[ProfileHeader] Extracted profile nickname: ${profile?.nickName}');
+        AppLogger.d('[ProfileHeader] Avatar URL: ${profile?.avatarUrl}, Has URL: ${profile?.avatarUrl?.isNotEmpty == true}, IsUploading: $isUploading');
 
         return Container(
           margin: const EdgeInsets.all(12.0),
@@ -105,7 +106,7 @@ class ProfileHeader extends ConsumerWidget {
 
     final hasUrl = imageUrl != null && imageUrl.isNotEmpty;
     final isUploading = state is ProfileAvatarUploading || state is ProfileUpdating;
-    print('[ProfileHeader] Avatar URL: $imageUrl (pending: $pendingAvatarUrl, profile: ${profile?.avatarUrl}), Has URL: $hasUrl, IsUploading: $isUploading');
+    AppLogger.d('[ProfileHeader] Avatar URL: $imageUrl (pending: $pendingAvatarUrl, profile: ${profile?.avatarUrl}), Has URL: $hasUrl, IsUploading: $isUploading');
 
     // 使用InkWell使头像可点击，点击后跳转到账号与安全页面
     return InkWell(

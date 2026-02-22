@@ -1,4 +1,5 @@
 import 'package:dskk_flutter_refactor/features/chat/data/models/chat_message_dto.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/features/chat/data/models/participant_dto.dart';
 import 'package:dskk_flutter_refactor/features/chat/data/models/product_vo_dto.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_room.dart';
@@ -39,9 +40,9 @@ class ChatRoomDto with _$ChatRoomDto {
            timeString = timeString.replaceFirst(' ', 'T');
          }
          lastActivity = DateTime.parse(timeString);
-         // print("[ChatRoomDto] Successfully parsed lastActivity: ${chatMessageNewVo!.createTime} -> $lastActivity");
+         // AppLogger.d("[ChatRoomDto] Successfully parsed lastActivity: ${chatMessageNewVo!.createTime} -> $lastActivity");
        } catch (e) {
-         print("[ChatRoomDto] Error parsing last activity time: ${chatMessageNewVo!.createTime}, error: $e");
+         AppLogger.d("[ChatRoomDto] Error parsing last activity time: ${chatMessageNewVo!.createTime}, error: $e");
          lastActivity = null; // Fallback
        }
      }
@@ -66,27 +67,27 @@ class ChatRoomDto with _$ChatRoomDto {
       // 当前用户是买家(member)
       currentUserParticipant = memberEntity;
       opponentParticipant = doctorEntity; // 对方是卖家(doctor)
-      // print("[ChatRoomDto] Current user (by id) is MEMBER (buyer), opponent is DOCTOR (seller): ${doctorEntity.nickName}");
+      // AppLogger.d("[ChatRoomDto] Current user (by id) is MEMBER (buyer), opponent is DOCTOR (seller): ${doctorEntity.nickName}");
     } else if (doctorEntity.id == currentUserId) {
       // 当前用户是卖家(doctor)
       currentUserParticipant = doctorEntity;
       opponentParticipant = memberEntity; // 对方是买家(member)
-      // print("[ChatRoomDto] Current user (by id) is DOCTOR (seller), opponent is MEMBER (buyer): ${memberEntity.nickName}");
+      // AppLogger.d("[ChatRoomDto] Current user (by id) is DOCTOR (seller), opponent is MEMBER (buyer): ${memberEntity.nickName}");
     } else if (memberEntity.referId == currentUserId) {
       // 尝试使用referId进行匹配（外部引用ID）
       currentUserParticipant = memberEntity;
       opponentParticipant = doctorEntity;
-      // print("[ChatRoomDto] Current user (by referId) is MEMBER (buyer), opponent is DOCTOR (seller): ${doctorEntity.nickName}");
+      // AppLogger.d("[ChatRoomDto] Current user (by referId) is MEMBER (buyer), opponent is DOCTOR (seller): ${doctorEntity.nickName}");
     } else if (doctorEntity.referId == currentUserId) {
       currentUserParticipant = doctorEntity;
       opponentParticipant = memberEntity;
-      // print("[ChatRoomDto] Current user (by referId) is DOCTOR (seller), opponent is MEMBER (buyer): ${memberEntity.nickName}");
+      // AppLogger.d("[ChatRoomDto] Current user (by referId) is DOCTOR (seller), opponent is MEMBER (buyer): ${memberEntity.nickName}");
     } else {
       // 无法确定当前用户身份，这是一个严重错误
-      print("[ChatRoomDto] ERROR: Cannot determine current user identity!");
-      print("[ChatRoomDto] currentUserId: $currentUserId");
-      print("[ChatRoomDto] member.id: ${memberEntity.id}, member.referId: ${memberEntity.referId}");
-      print("[ChatRoomDto] doctor.id: ${doctorEntity.id}, doctor.referId: ${doctorEntity.referId}");
+      AppLogger.d("[ChatRoomDto] ERROR: Cannot determine current user identity!");
+      AppLogger.d("[ChatRoomDto] currentUserId: $currentUserId");
+      AppLogger.d("[ChatRoomDto] member.id: ${memberEntity.id}, member.referId: ${memberEntity.referId}");
+      AppLogger.d("[ChatRoomDto] doctor.id: ${doctorEntity.id}, doctor.referId: ${doctorEntity.referId}");
       // 抛出异常，让问题暴露出来而不是隐藏
       throw Exception("Cannot determine current user identity in chat room $id. CurrentUserId: $currentUserId doesn't match any participant.");
     }

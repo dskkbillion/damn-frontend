@@ -1,4 +1,5 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import '../../domain/entities/home_feed_item.dart';
 
 /// HomeFeedItem 模型，用于序列化和反序列化 API 响应
@@ -23,7 +24,7 @@ class HomeFeedItemModel extends HomeFeedItem {
 
   /// 从 JSON 创建 HomeFeedItemModel 实例
   factory HomeFeedItemModel.fromJson(Map<String, dynamic> json) {
-    print('Parsing HomeFeedItemModel from JSON: $json');
+    AppLogger.d('Parsing HomeFeedItemModel from JSON: $json');
     
     // 处理图片URL
     List<String> imagesList = [];
@@ -57,10 +58,10 @@ class HomeFeedItemModel extends HomeFeedItem {
     
     // 如果仍然没有图片，使用空列表
     if (imagesList.isEmpty) {
-      print('没有找到产品图片');
+      AppLogger.d('没有找到产品图片');
       imagesList = [];
     } else {
-      print('产品图片列表: $imagesList');
+      AppLogger.d('产品图片列表: $imagesList');
     }
 
     // 尝试解析价格
@@ -73,7 +74,7 @@ class HomeFeedItemModel extends HomeFeedItem {
         price = priceValue.toDouble();
       }
     } catch (e) {
-      print('Error parsing price: $e');
+      AppLogger.d('Error parsing price: $e');
       price = 0.0;
     }
 
@@ -87,7 +88,7 @@ class HomeFeedItemModel extends HomeFeedItem {
         score = scoreValue.toDouble();
       }
     } catch (e) {
-      print('Error parsing score: $e');
+      AppLogger.d('Error parsing score: $e');
       score = 5.0;
     }
 
@@ -96,7 +97,7 @@ class HomeFeedItemModel extends HomeFeedItem {
     try {
       evaluateNum = int.parse((json['evaluateNum'] ?? json['rating_num'] ?? '0').toString());
     } catch (e) {
-      print('Error parsing evaluateNum: $e');
+      AppLogger.d('Error parsing evaluateNum: $e');
       evaluateNum = 0;
     }
 
@@ -113,7 +114,7 @@ class HomeFeedItemModel extends HomeFeedItem {
   
   /// 将相对图片URL转换为完整URL
   static String _getFullImageUrl(String relativeUrl) {
-    print('处理产品图片URL: $relativeUrl');
+    AppLogger.d('处理产品图片URL: $relativeUrl');
     
     if (relativeUrl.isEmpty) return '';
     
@@ -128,17 +129,17 @@ class HomeFeedItemModel extends HomeFeedItem {
             
         // 如果清理后的URL以http开头，直接返回
         if (cleaned.startsWith('http')) {
-          print('解析JSON后的完整产品图片URL: $cleaned');
+          AppLogger.d('解析JSON后的完整产品图片URL: $cleaned');
           return cleaned;
         }
       } catch (e) {
-        print('解析JSON图片URL失败: $e');
+        AppLogger.d('解析JSON图片URL失败: $e');
       }
     }
     
     // 如果是完整URL，直接返回
     if (relativeUrl.startsWith('http')) {
-      print('完整产品图片URL: $relativeUrl');
+      AppLogger.d('完整产品图片URL: $relativeUrl');
       return relativeUrl;
     }
     
@@ -154,7 +155,7 @@ class HomeFeedItemModel extends HomeFeedItem {
     final cleanRelativeUrl = relativeUrl.startsWith('/') ? relativeUrl : '/$relativeUrl';
     
     final fullUrl = '$cleanBaseUrl$cleanRelativeUrl';
-    print('转换后的完整产品图片URL: $fullUrl');
+    AppLogger.d('转换后的完整产品图片URL: $fullUrl');
     return fullUrl;
   }
 

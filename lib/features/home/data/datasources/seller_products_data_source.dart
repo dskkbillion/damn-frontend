@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/error/exceptions.dart';
 import 'package:dskk_flutter_refactor/features/home/data/models/seller_products_response.dart';
 import 'package:dskk_flutter_refactor/features/home/domain/entities/seller_product.dart';
@@ -146,12 +147,12 @@ class SellerProductsDataSourceImpl implements SellerProductsDataSource {
               isFollowing = followData[sellerId.toString()] ?? false;
             }
           } catch (e) {
-            print('查询关注状态失败: $e');
+            AppLogger.d('查询关注状态失败: $e');
           }
           
           try {
             // 🔥 获取真实粉丝数：查询所有关注记录，然后筛选出关注该卖家的记录
-            print('[getSellerInfo] 开始获取卖家 $sellerId 的真实粉丝数...');
+            AppLogger.d('[getSellerInfo] 开始获取卖家 $sellerId 的真实粉丝数...');
             final fansResponse = await dio.get(
               '/api/collect/list',
               queryParameters: {
@@ -161,7 +162,7 @@ class SellerProductsDataSourceImpl implements SellerProductsDataSource {
             
             if (fansResponse.statusCode == 200 && fansResponse.data['code'] == 200) {
               final List<dynamic> allFollowRecords = fansResponse.data['rows'] ?? [];
-              print('[getSellerInfo] 获取到全部关注记录数: ${allFollowRecords.length}');
+              AppLogger.d('[getSellerInfo] 获取到全部关注记录数: ${allFollowRecords.length}');
               
               // 筛选出关注该卖家的记录
               final fansRecords = allFollowRecords.where((record) {
@@ -174,16 +175,16 @@ class SellerProductsDataSourceImpl implements SellerProductsDataSource {
               }).toList();
               
               realFansCount = fansRecords.length;
-              print('[getSellerInfo] 筛选得到关注卖家 $sellerId 的粉丝数: $realFansCount');
+              AppLogger.d('[getSellerInfo] 筛选得到关注卖家 $sellerId 的粉丝数: $realFansCount');
             } else {
-              print('[getSellerInfo] 获取关注记录失败: ${fansResponse.data['msg']}');
+              AppLogger.d('[getSellerInfo] 获取关注记录失败: ${fansResponse.data['msg']}');
               realFansCount = data['collectNum'] ?? 0;
             }
           } catch (e) {
-            print('[getSellerInfo] 获取粉丝数出错: $e');
+            AppLogger.d('[getSellerInfo] 获取粉丝数出错: $e');
             // 如果获取失败，使用collectNum作为备选
             realFansCount = data['collectNum'] ?? 0;
-            print('[getSellerInfo] 使用备选方案，粉丝数: $realFansCount');
+            AppLogger.d('[getSellerInfo] 使用备选方案，粉丝数: $realFansCount');
           }
           
           return SellerInfo(
@@ -197,11 +198,11 @@ class SellerProductsDataSourceImpl implements SellerProductsDataSource {
           );
         }
       } else {
-        print('获取卖家信息失败: ${response.data['msg']}');
+        AppLogger.d('获取卖家信息失败: ${response.data['msg']}');
       }
       return null;
     } catch (e) {
-      print('获取卖家信息出错: $e');
+      AppLogger.d('获取卖家信息出错: $e');
       return null;
     }
   }

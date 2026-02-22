@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -64,7 +65,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
     super.didChangeAppLifecycleState(state);
     // 当应用从后台回到前台时刷新数据
     if (state == AppLifecycleState.resumed) {
-      print('[ProductManagementPage] App resumed, refreshing current tab');
+      AppLogger.d('[ProductManagementPage] App resumed, refreshing current tab');
       final currentStatus = _getStatusByTabIndex(_tabController.index);
       context.read<ProductManagementBloc>().add(LoadProductList(
         status: currentStatus,
@@ -116,7 +117,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
           break;
       }
       
-      print('[ProductManagementPage] _onScrollEnd: tabIndex=$tabIndex, hasMore=$hasMore, isLoading=${state.isLoading}');
+      AppLogger.d('[ProductManagementPage] _onScrollEnd: tabIndex=$tabIndex, hasMore=$hasMore, isLoading=${state.isLoading}');
       
       if (hasMore && !state.isLoading) {
         ProductStatus status;
@@ -134,7 +135,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
             status = ProductStatus.normal;
         }
         
-        print('[ProductManagementPage] Triggering load more for status: $status');
+        AppLogger.d('[ProductManagementPage] Triggering load more for status: $status');
         context.read<ProductManagementBloc>().add(LoadProductList(
           status: status,
           loadMore: true,
@@ -210,15 +211,15 @@ class _ProductManagementPageState extends State<ProductManagementPage>
               }
             }
             
-            print('=== DEBUG NAVIGATION ===');
-            print('[ProductManagementPage] Full navigation path: ${state.navigationPath}');
-            print('[ProductManagementPage] Path without query: ${state.navigationPath!.split('?')[0]}');
-            print('[ProductManagementPage] Query string: ${state.navigationPath!.contains('?') ? state.navigationPath!.split('?')[1] : 'none'}');
-            print('[ProductManagementPage] Path parts: ${state.navigationPath!.split('?')[0].split('/')}');
-            print('[ProductManagementPage] Edit index found: ${state.navigationPath!.split('?')[0].split('/').indexWhere((part) => part == 'edit')}');
-            print('[ProductManagementPage] Extracted productId: $productId, isPreviewMode: $isPreviewMode');
-            print('[ProductManagementPage] About to create ${isPreviewMode ? 'ProductPreviewPage' : 'ProductEditPage'} with productId: $productId');
-            print('======================');
+            AppLogger.d('=== DEBUG NAVIGATION ===');
+            AppLogger.d('[ProductManagementPage] Full navigation path: ${state.navigationPath}');
+            AppLogger.d('[ProductManagementPage] Path without query: ${state.navigationPath!.split('?')[0]}');
+            AppLogger.d('[ProductManagementPage] Query string: ${state.navigationPath!.contains('?') ? state.navigationPath!.split('?')[1] : 'none'}');
+            AppLogger.d('[ProductManagementPage] Path parts: ${state.navigationPath!.split('?')[0].split('/')}');
+            AppLogger.d('[ProductManagementPage] Edit index found: ${state.navigationPath!.split('?')[0].split('/').indexWhere((part) => part == 'edit')}');
+            AppLogger.d('[ProductManagementPage] Extracted productId: $productId, isPreviewMode: $isPreviewMode');
+            AppLogger.d('[ProductManagementPage] About to create ${isPreviewMode ? 'ProductPreviewPage' : 'ProductEditPage'} with productId: $productId');
+            AppLogger.d('======================');
             
             // 如果是预览模式，使用新的ProductPreviewPage
             if (isPreviewMode) {
@@ -231,12 +232,12 @@ class _ProductManagementPageState extends State<ProductManagementPage>
               final String routePath = isCreateMode 
                   ? '/seller/products/create' 
                   : '/seller/products/$productId/edit';
-              print('[ProductManagementPage] Navigating to: $routePath');
+              AppLogger.d('[ProductManagementPage] Navigating to: $routePath');
               final needRefresh = await context.push<bool>(routePath);
               
               // 如果返回值为true，说明需要刷新列表
               if (needRefresh == true) {
-                print('[ProductManagementPage] Product ${isCreateMode ? "created" : "edited"} successfully, refreshing lists');
+                AppLogger.d('[ProductManagementPage] Product ${isCreateMode ? "created" : "edited"} successfully, refreshing lists');
                 
                 // 如果是创建商品，切换到在售Tab并刷新
                 if (isCreateMode) {
@@ -367,11 +368,11 @@ class _ProductManagementPageState extends State<ProductManagementPage>
       },
       builder: (context, state) {
         final products = _getProductListByStatus(state, status);
-        print('[ProductManagementPage] Builder executing for Tab: $tabIndex ($status)');
-        print('[ProductManagementPage] State: isLoading=${state.isLoading}, hasError=${state.hasError}');
-        print('[ProductManagementPage] Products from state (via _getProductListByStatus): ${products?.length ?? 'null'}');
+        AppLogger.d('[ProductManagementPage] Builder executing for Tab: $tabIndex ($status)');
+        AppLogger.d('[ProductManagementPage] State: isLoading=${state.isLoading}, hasError=${state.hasError}');
+        AppLogger.d('[ProductManagementPage] Products from state (via _getProductListByStatus): ${products?.length ?? 'null'}');
         if (products != null && products.isNotEmpty) {
-          print('[ProductManagementPage] First product in list: ID=${products.first.id}, Name=${products.first.name}');
+          AppLogger.d('[ProductManagementPage] First product in list: ID=${products.first.id}, Name=${products.first.name}');
         }
         
         if (state.isLoading && _getProductListByStatus(state, status) == null) {
@@ -440,7 +441,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
     SellerManagedProduct product,
     ProductManagementState state,
   ) {
-    print('[ProductManagementPage] _buildProductItem: Product ID=${product.id}, Status=${product.status}, TabIndex=${state.tabIndex}');
+    AppLogger.d('[ProductManagementPage] _buildProductItem: Product ID=${product.id}, Status=${product.status}, TabIndex=${state.tabIndex}');
 
     final isProcessing = state.processingProductIds.contains(product.id);
     
@@ -585,7 +586,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
           final now = DateTime.now();
           if (_lastNavigationTime != null &&
               now.difference(_lastNavigationTime!).inMilliseconds < _navigationDebounceMs) {
-            print('[ProductManagementPage] 防止快速重复点击，忽略本次导航');
+            AppLogger.d('[ProductManagementPage] 防止快速重复点击，忽略本次导航');
             return;
           }
           _lastNavigationTime = now;
@@ -857,18 +858,18 @@ class _ProductManagementPageState extends State<ProductManagementPage>
         // 在售列表包含：已上架、审核中、审核失败的商品
         final List<SellerManagedProduct> result = [];
         if (state.onSaleProducts != null) {
-          print('[_getProductListByStatus] onSaleProducts count: ${state.onSaleProducts!.length}');
+          AppLogger.d('[_getProductListByStatus] onSaleProducts count: ${state.onSaleProducts!.length}');
           for (var product in state.onSaleProducts!) {
-            print('[_getProductListByStatus] Product ${product.id}: status=${product.status}, statusValue=${product.status.value}');
+            AppLogger.d('[_getProductListByStatus] Product ${product.id}: status=${product.status}, statusValue=${product.status.value}');
           }
           result.addAll(state.onSaleProducts!.where((product) => 
             product.status == ProductStatus.normal ||
             product.status == ProductStatus.reviewing ||
             product.status == ProductStatus.rejected
           ));
-          print('[_getProductListByStatus] Filtered result count: ${result.length}');
+          AppLogger.d('[_getProductListByStatus] Filtered result count: ${result.length}');
         } else {
-          print('[_getProductListByStatus] onSaleProducts is null');
+          AppLogger.d('[_getProductListByStatus] onSaleProducts is null');
         }
         return result.isEmpty ? null : result;
       case ProductStatus.draft:
@@ -897,17 +898,17 @@ class _ProductManagementPageState extends State<ProductManagementPage>
   /// 构建商品图片
   Widget _buildProductImage(SellerManagedProduct product) {
     // 调试日志
-    print('[_buildProductImage] Product ${product.id} - images: "${product.images}"');
-    print('[_buildProductImage] Product ${product.id} - status: ${product.status}');
+    AppLogger.d('[_buildProductImage] Product ${product.id} - images: "${product.images}"');
+    AppLogger.d('[_buildProductImage] Product ${product.id} - status: ${product.status}');
     
     // 从逗号分隔的字符串中获取第一张图片
     String? firstImage;
     if (product.images.isNotEmpty) {
       final imageList = product.images.split(',');
-      print('[_buildProductImage] Product ${product.id} - imageList: $imageList');
+      AppLogger.d('[_buildProductImage] Product ${product.id} - imageList: $imageList');
       if (imageList.isNotEmpty) {
         firstImage = imageList.first.trim();
-        print('[_buildProductImage] Product ${product.id} - firstImage: "$firstImage"');
+        AppLogger.d('[_buildProductImage] Product ${product.id} - firstImage: "$firstImage"');
       }
     }
     
@@ -918,7 +919,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
         height: 80,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
-          print('[_buildProductImage] Image load error for ${product.id}: $error');
+          AppLogger.d('[_buildProductImage] Image load error for ${product.id}: $error');
           return Container(
             width: 80,
             height: 80,

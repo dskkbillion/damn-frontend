@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dio/dio.dart';
 import 'package:dskk_flutter_refactor/core/error/exceptions.dart';
 import 'package:dskk_flutter_refactor/features/seller/data/models/member_dto.dart';
@@ -23,55 +24,55 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
   
   @override
   Future<SellerDashboardData> getDashboardData() async {
-    print('[DataSource DEBUG] Entering getDashboardData'); // DEBUG LOG
+    AppLogger.d('[DataSource DEBUG] Entering getDashboardData'); // DEBUG LOG
     try {
       final response = await _dio.post('/api/project/statistics/index');
       _checkResponse(response);
-      print('[DataSource DEBUG] API Response OK'); // DEBUG LOG
+      AppLogger.d('[DataSource DEBUG] API Response OK'); // DEBUG LOG
       
       final data = response.data['data'];
       if (data == null || data is! Map<String, dynamic>) {
         throw ServerException(message: 'Invalid dashboard data format received');
       }
-      print('[DataSource DEBUG] Response data fetched: $data'); // DEBUG LOG
+      AppLogger.d('[DataSource DEBUG] Response data fetched: $data'); // DEBUG LOG
 
       // Map response data to SellerDashboardData, using actual keys from the response
-      print('[DataSource DEBUG] Parsing income...'); // DEBUG LOG
+      AppLogger.d('[DataSource DEBUG] Parsing income...'); // DEBUG LOG
       final income = SellerIncomeData(
         total: (data['totalEarnings'] ?? 0.0).toDouble(), // Use 'totalEarnings' from response
         today: (data['thisMonthTotalEarnings'] ?? 0.0).toDouble(), // Map appropriately, e.g., today's might not be directly available or use a different key
         pending: (data['pendingIncome'] ?? 0.0).toDouble(), // Assuming pendingIncome exists or map to relevant key
       );
-      print('[DataSource DEBUG] Parsed income: $income'); // DEBUG LOG
+      AppLogger.d('[DataSource DEBUG] Parsed income: $income'); // DEBUG LOG
       
-      print('[DataSource DEBUG] Parsing orders...'); // DEBUG LOG
+      AppLogger.d('[DataSource DEBUG] Parsing orders...'); // DEBUG LOG
       final orders = SellerOrdersData(
         total: data['totalOrderNum'] ?? 0,       // Use 'totalOrderNum' from response
         pending: data['pendingOrderNum'] ?? 0,   // Use 'pendingOrderNum' from response
         completed: data['receiptOrderNum'] ?? 0, // Map 'receiptOrderNum' to completed, adjust if needed
         canceled: data['canceledOrders'] ?? 0,  // Assuming canceledOrders exists or map to relevant key
       );
-      print('[DataSource DEBUG] Parsed orders: $orders'); // DEBUG LOG
+      AppLogger.d('[DataSource DEBUG] Parsed orders: $orders'); // DEBUG LOG
       
       // Notifications and Rating seem to be missing in the response, handle gracefully
-      print('[DataSource DEBUG] Parsing notifications...'); // DEBUG LOG
+      AppLogger.d('[DataSource DEBUG] Parsing notifications...'); // DEBUG LOG
       final notifications = SellerNotificationsData(
         unread: data['unreadNotifications'] ?? 0, // Assuming unreadNotifications exists
       );
-      print('[DataSource DEBUG] Parsed notifications: $notifications'); // DEBUG LOG
+      AppLogger.d('[DataSource DEBUG] Parsed notifications: $notifications'); // DEBUG LOG
       
-      print('[DataSource DEBUG] Parsing rating...'); // DEBUG LOG
+      AppLogger.d('[DataSource DEBUG] Parsing rating...'); // DEBUG LOG
       final double rating = (data['rating'] ?? 0.0).toDouble(); // Assuming rating exists
-      print('[DataSource DEBUG] Parsed rating: $rating'); // DEBUG LOG
+      AppLogger.d('[DataSource DEBUG] Parsed rating: $rating'); // DEBUG LOG
 
       // Weekly income data seems missing in the response, handle gracefully
-      print('[DataSource DEBUG] Parsing statistics...'); // DEBUG LOG
+      AppLogger.d('[DataSource DEBUG] Parsing statistics...'); // DEBUG LOG
       final statistics = SellerStatistics(
         weeklyIncome: [], // Return empty list as weeklyIncome is missing
       );
-      print('[DataSource DEBUG] Parsed statistics: $statistics'); // DEBUG LOG
+      AppLogger.d('[DataSource DEBUG] Parsed statistics: $statistics'); // DEBUG LOG
       
-      print('[DataSource DEBUG] Creating final SellerDashboardData...'); // DEBUG LOG
+      AppLogger.d('[DataSource DEBUG] Creating final SellerDashboardData...'); // DEBUG LOG
       return SellerDashboardData(
         income: income,
         orders: orders,
@@ -80,8 +81,8 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
         statistics: statistics,
       );
     } catch (e, s) { // Catch stacktrace as well
-      print('[DataSource ERROR] Error in getDashboardData: $e'); // Log error
-      print('[DataSource ERROR] Stacktrace: $s'); // Log stacktrace
+      AppLogger.d('[DataSource ERROR] Error in getDashboardData: $e'); // Log error
+      AppLogger.d('[DataSource ERROR] Stacktrace: $s'); // Log stacktrace
       _handleError(e);
       rethrow; // Rethrow after handling to let BLoC know about the failure
     }
@@ -94,7 +95,7 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
     String? state,
   }) async {
     try {
-      print('[getSellerProductList] Called with state: $state, pageNum: $pageNum, pageSize: $pageSize');
+      AppLogger.d('[getSellerProductList] Called with state: $state, pageNum: $pageNum, pageSize: $pageSize');
       
       // 后端支持分页，需要发送 pageNum 和 pageSize 参数
       final requestData = <String, dynamic>{
@@ -109,8 +110,8 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
         requestData['state'] = state; // 保持原状态值，不转换大小写
       }
       
-      print('[getSellerProductList] Request data before sending: $requestData');
-      print('[getSellerProductList] Request data isEmpty: ${requestData.isEmpty}');
+      AppLogger.d('[getSellerProductList] Request data before sending: $requestData');
+      AppLogger.d('[getSellerProductList] Request data isEmpty: ${requestData.isEmpty}');
 
       // 修改 API 端点为 /api/shop/product/myList
       final response = await _dio.post('/api/shop/product/myList', 
@@ -119,17 +120,17 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       
       _checkResponse(response);
       
-      print('[getSellerProductList] Response received, parsing data...');
+      AppLogger.d('[getSellerProductList] Response received, parsing data...');
       final responseData = response.data;
-      print('[getSellerProductList] Response total: ${responseData['total']}, records count: ${responseData['records']?.length ?? 0}');
+      AppLogger.d('[getSellerProductList] Response total: ${responseData['total']}, records count: ${responseData['records']?.length ?? 0}');
       
       // 打印前几个商品的详细信息
       if (responseData['records'] != null && responseData['records'].isNotEmpty) {
         final records = responseData['records'] as List;
-        print('[getSellerProductList] First 3 products:');
+        AppLogger.d('[getSellerProductList] First 3 products:');
         for (int i = 0; i < 3 && i < records.length; i++) {
           final product = records[i];
-          print('  Product ${i+1}: ID=${product['id']}, Name=${product['name']}, State=${product['state']}, StatusAudit=${product['statusAudit']}');
+          AppLogger.d('  Product ${i+1}: ID=${product['id']}, Name=${product['name']}, State=${product['state']}, StatusAudit=${product['statusAudit']}');
         }
       }
       
@@ -149,7 +150,7 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
     required int pageSize,
   }) async {
     try {
-      print('[SellerRemoteDataSource] 获取草稿列表 - 页码: $pageNum, 每页: $pageSize');
+      AppLogger.d('[SellerRemoteDataSource] 获取草稿列表 - 页码: $pageNum, 每页: $pageSize');
       
       // 使用正确的草稿API端点
       final response = await _dio.post('/api/shop/product/myDraft', data: {
@@ -160,20 +161,20 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       _checkResponse(response);
       
       final data = response.data;
-      print('[SellerRemoteDataSource] 草稿API响应: $data');
+      AppLogger.d('[SellerRemoteDataSource] 草稿API响应: $data');
       
       // 处理分页数据
       final records = data['rows'] as List? ?? data['records'] as List? ?? [];
       final total = data['total'] as int? ?? records.length;
       
-      print('[SellerRemoteDataSource] 草稿数量: ${records.length}, 总数: $total');
+      AppLogger.d('[SellerRemoteDataSource] 草稿数量: ${records.length}, 总数: $total');
       
       return PaginatedListDto<dynamic>(
         total: total,
         records: records,
       );
     } catch (e) {
-      print('[SellerRemoteDataSource] 草稿列表获取失败: $e');
+      AppLogger.d('[SellerRemoteDataSource] 草稿列表获取失败: $e');
       
       // 返回空列表而不是抛出异常，保证UI能正常显示
       return PaginatedListDto<dynamic>(
@@ -186,7 +187,7 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
   @override
   Future<dynamic> getProductDetail(int productId) async {
     try {
-      print('[SellerRemoteDataSource] Getting product detail for ID: $productId');
+      AppLogger.d('[SellerRemoteDataSource] Getting product detail for ID: $productId');
       final response = await _dio.get('/api/shop/product/get', queryParameters: {
         'id': productId,
       });
@@ -196,22 +197,22 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       final productData = response.data['data'];
       
       // 调试日志：打印API返回的价格字段
-      print('[SellerRemoteDataSource] Product $productId API response:');
-      print('  - sellingPrice: ${productData['sellingPrice']}');
-      print('  - originalPrice: ${productData['originalPrice']}');
-      print('  - Has variants: ${productData['variants'] != null && (productData['variants'] as List).isNotEmpty}');
+      AppLogger.d('[SellerRemoteDataSource] Product $productId API response:');
+      AppLogger.d('  - sellingPrice: ${productData['sellingPrice']}');
+      AppLogger.d('  - originalPrice: ${productData['originalPrice']}');
+      AppLogger.d('  - Has variants: ${productData['variants'] != null && (productData['variants'] as List).isNotEmpty}');
       
       if (productData['variants'] != null && productData['variants'] is List) {
         final variants = productData['variants'] as List;
-        print('  - Variants count: ${variants.length}');
+        AppLogger.d('  - Variants count: ${variants.length}');
         for (var i = 0; i < variants.length && i < 3; i++) {
-          print('    - Variant ${i + 1}: ${variants[i]['name']} - sellingPrice: ${variants[i]['sellingPrice']}');
+          AppLogger.d('    - Variant ${i + 1}: ${variants[i]['name']} - sellingPrice: ${variants[i]['sellingPrice']}');
         }
       }
       
       return productData;
     } catch (e) {
-      print('[SellerRemoteDataSource] Error getting product detail: $e');
+      AppLogger.d('[SellerRemoteDataSource] Error getting product detail: $e');
       _handleError(e);
       rethrow;
     }
@@ -239,7 +240,7 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
           apiState = state.toLowerCase();
       }
       
-      print('[SellerRemoteDataSource] 🔄 使用专门的上下架端点更新商品状态: productId=$productId, state=$apiState');
+      AppLogger.d('[SellerRemoteDataSource] 🔄 使用专门的上下架端点更新商品状态: productId=$productId, state=$apiState');
       
       // 获取完整的商品信息
       final getResponse = await _dio.get('/api/shop/product/get', queryParameters: {
@@ -253,7 +254,7 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
         throw Exception('商品信息不存在');
       }
       
-      print('[SellerRemoteDataSource] ✅ 获取商品信息成功，准备使用edit端点更新状态');
+      AppLogger.d('[SellerRemoteDataSource] ✅ 获取商品信息成功，准备使用edit端点更新状态');
       
       // 构建完整的商品数据，但只修改状态字段
       final editData = {
@@ -291,17 +292,17 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
         'auditRemark': productData['auditRemark'],
       };
       
-      print('[SellerRemoteDataSource] 📤 使用edit端点发送上下架请求，数据字段数: ${editData.keys.length}');
+      AppLogger.d('[SellerRemoteDataSource] 📤 使用edit端点发送上下架请求，数据字段数: ${editData.keys.length}');
       
       // 使用专门的上下架端点
       final response = await _dio.post('/api/shop/product/edit', data: editData);
       
       _checkResponse(response);
       
-      print('[SellerRemoteDataSource] ✅ 商品状态更新成功 (使用edit端点)');
+      AppLogger.d('[SellerRemoteDataSource] ✅ 商品状态更新成功 (使用edit端点)');
       return true;
     } catch (e) {
-      print('[SellerRemoteDataSource] ❌ 商品状态更新失败: $e');
+      AppLogger.d('[SellerRemoteDataSource] ❌ 商品状态更新失败: $e');
       _handleError(e);
       rethrow;
     }
@@ -314,15 +315,15 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       final data = productData.toJson();
       
       // 添加调试日志，确认productType的值
-      print('[createProduct] 准备创建商品，productType=${data['productType']}, state=${data['state']}, statusAudit=${data['statusAudit']}');
-      print('[createProduct] 完整请求数据: $data');
+      AppLogger.d('[createProduct] 准备创建商品，productType=${data['productType']}, state=${data['state']}, statusAudit=${data['statusAudit']}');
+      AppLogger.d('[createProduct] 完整请求数据: $data');
       
       // 特别调试winImages字段
       if (data['winImages'] != null && data['winImages'] is List) {
         final winImagesList = data['winImages'] as List;
-        print('[DEBUG] 创建商品时的winImages: 数量=${winImagesList.length}, 内容=$winImagesList');
+        AppLogger.d('[DEBUG] 创建商品时的winImages: 数量=${winImagesList.length}, 内容=$winImagesList');
       } else {
-        print('[DEBUG] 创建商品时的winImages为空或格式不正确: ${data['winImages']}');
+        AppLogger.d('[DEBUG] 创建商品时的winImages为空或格式不正确: ${data['winImages']}');
       }
 
       // 创建一个专用于商品创建的Dio实例，配置更长的超时时间
@@ -344,7 +345,7 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
           }
         }
       } catch (e) {
-        print('Warning: Error copying interceptors: $e');
+        AppLogger.d('Warning: Error copying interceptors: $e');
       }
 
       // 创建设置更长超时的Options
@@ -354,14 +355,14 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       );
       
       // 使用新的Dio实例和更长的超时设置发送请求
-      print('Sending product creation request with extended timeout (120s)');
+      AppLogger.d('Sending product creation request with extended timeout (120s)');
       final response = await productCreateDio.post('/api/shop/product/create', data: data, options: options);
       
       _checkResponse(response);
       
       return true;
     } catch (e) {
-      print('Error in createProduct: $e');
+      AppLogger.d('Error in createProduct: $e');
       _handleError(e);
       rethrow;
     }
@@ -370,7 +371,7 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
   @override
   Future<bool> updateProduct(ProductUpdateData productData) async {
     try {
-      print('[SellerRemoteDataSource] 🔄 更新商品信息: productId=${productData.id}');
+      AppLogger.d('[SellerRemoteDataSource] 🔄 更新商品信息: productId=${productData.id}');
       
       // 获取完整的商品信息
       final getResponse = await _dio.get('/api/shop/product/get', queryParameters: {
@@ -384,28 +385,28 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
         throw Exception('商品信息不存在');
       }
       
-      print('[SellerRemoteDataSource] ✅ 获取商品信息成功，准备合并更新数据');
+      AppLogger.d('[SellerRemoteDataSource] ✅ 获取商品信息成功，准备合并更新数据');
       
       // 构建完整的商品数据，合并现有数据和更新数据
       final mergedData = _mergeProductData(existingData, productData);
       
       // 打印请求数据，便于调试
-      print('Updating product with merged data: $mergedData');
+      AppLogger.d('Updating product with merged data: $mergedData');
       
       // 特别调试productMaterials字段
       if (mergedData['productMaterials'] != null && mergedData['productMaterials'] is List) {
         final materialsList = mergedData['productMaterials'] as List;
-        print('[DEBUG] 最终发送的productMaterials: 数量=${materialsList.length}, 内容=$materialsList');
+        AppLogger.d('[DEBUG] 最终发送的productMaterials: 数量=${materialsList.length}, 内容=$materialsList');
       } else {
-        print('[DEBUG] 最终发送的productMaterials为空或格式不正确: ${mergedData['productMaterials']}');
+        AppLogger.d('[DEBUG] 最终发送的productMaterials为空或格式不正确: ${mergedData['productMaterials']}');
       }
       
       // 特别调试winImages字段
       if (mergedData['winImages'] != null && mergedData['winImages'] is List) {
         final winImagesList = mergedData['winImages'] as List;
-        print('[DEBUG] 最终发送的winImages: 数量=${winImagesList.length}, 内容=$winImagesList');
+        AppLogger.d('[DEBUG] 最终发送的winImages: 数量=${winImagesList.length}, 内容=$winImagesList');
       } else {
-        print('[DEBUG] 最终发送的winImages为空或格式不正确: ${mergedData['winImages']}');
+        AppLogger.d('[DEBUG] 最终发送的winImages为空或格式不正确: ${mergedData['winImages']}');
       }
       
       // 创建一个专用于商品更新的Dio实例，配置更长的超时时间
@@ -427,7 +428,7 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
           }
         }
       } catch (e) {
-        print('Warning: Error copying interceptors: $e');
+        AppLogger.d('Warning: Error copying interceptors: $e');
       }
 
       // 创建设置更长超时的Options
@@ -437,19 +438,19 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       );
       
       // 使用新的Dio实例和更长的超时设置发送请求
-      print('Sending product update request with extended timeout (120s)');
+      AppLogger.d('Sending product update request with extended timeout (120s)');
       // 使用update端点进行完整更新
       // 注意：后端需要修复审核状态被重置的问题
       final endpoint = '/api/shop/product/update';
-      print('Using endpoint: $endpoint for all product updates to ensure productMaterials are saved');
+      AppLogger.d('Using endpoint: $endpoint for all product updates to ensure productMaterials are saved');
       final response = await productUpdateDio.post(endpoint, data: mergedData, options: options);
       
       _checkResponse(response);
       
-      print('[SellerRemoteDataSource] ✅ 商品更新成功');
+      AppLogger.d('[SellerRemoteDataSource] ✅ 商品更新成功');
       return true;
     } catch (e) {
-      print('Error in updateProduct: $e');
+      AppLogger.d('Error in updateProduct: $e');
       _handleError(e);
       rethrow;
     }
@@ -618,7 +619,7 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       
       // 检查响应格式
       if (response.data == null || response.data is String) {
-        print('Warning: Unexpected response format for notifications: ${response.data}');
+        AppLogger.d('Warning: Unexpected response format for notifications: ${response.data}');
         return []; // 返回空列表
       }
       
@@ -626,12 +627,12 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       if (response.data.containsKey('rows')) {
         final rows = response.data['rows'];
         if (rows == null) {
-          print('Warning: Notification rows is null');
+          AppLogger.d('Warning: Notification rows is null');
           return [];
         }
         
         if (rows is! List) {
-          print('Warning: Notification rows is not a List: $rows');
+          AppLogger.d('Warning: Notification rows is not a List: $rows');
           return [];
         }
         
@@ -641,23 +642,23 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       else if (response.data.containsKey('data')) {
         final data = response.data['data'];
         if (data == null) {
-          print('Warning: Notification data is null');
+          AppLogger.d('Warning: Notification data is null');
           return [];
         }
         
         if (data is! List) {
-          print('Warning: Notification data is not a List: $data');
+          AppLogger.d('Warning: Notification data is not a List: $data');
           return [];
         }
         
         return data.map((json) => NotificationDto.fromJson(json)).toList();
       } 
       else {
-        print('Warning: Notification response has neither rows nor data field: ${response.data}');
+        AppLogger.d('Warning: Notification response has neither rows nor data field: ${response.data}');
         return []; // 没有找到有效的数据字段
       }
     } catch (e) {
-      print('Error in getNotificationList: $e');
+      AppLogger.d('Error in getNotificationList: $e');
       _handleError(e);
       rethrow;
     }
@@ -745,8 +746,8 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
           final auditInfo = json['authenticationAuditVo'];
           final auditStatus = auditInfo['auditStatus']?.toString();
           
-          print('[DataSource] 认证审核信息: $auditInfo');
-          print('[DataSource] 审核状态: $auditStatus');
+          AppLogger.d('[DataSource] 认证审核信息: $auditInfo');
+          AppLogger.d('[DataSource] 审核状态: $auditStatus');
           
           // 修复：使用更准确的状态映射，并添加调试信息
           switch (auditStatus?.toLowerCase()) {
@@ -754,14 +755,14 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
             case 'approved':
             case '1':
               status = AuthenticationStatus.approved;
-              print('[DataSource] 状态映射为: approved');
+              AppLogger.d('[DataSource] 状态映射为: approved');
               break;
             case 'fail':
             case 'rejected':
             case '2':
               status = AuthenticationStatus.rejected;
               rejectionReason = auditInfo['rejectReason']?.toString();
-              print('[DataSource] 状态映射为: rejected, 原因: $rejectionReason');
+              AppLogger.d('[DataSource] 状态映射为: rejected, 原因: $rejectionReason');
               break;
             case 'pending':
             case 'wait':
@@ -770,12 +771,12 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
             case 'null':
             case null:
               status = AuthenticationStatus.pending;
-              print('[DataSource] 状态映射为: pending');
+              AppLogger.d('[DataSource] 状态映射为: pending');
               break;
             default:
               // 修复：如果有审核信息但状态不明确，默认为pending
               status = AuthenticationStatus.pending;
-              print('[DataSource] 未知状态 [$auditStatus]，默认映射为: pending');
+              AppLogger.d('[DataSource] 未知状态 [$auditStatus]，默认映射为: pending');
           }
           
           // 解析提交时间
@@ -789,21 +790,21 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
           // 修复：增强图片解析逻辑并添加调试信息
           if (auditInfo['images'] != null) {
             final images = auditInfo['images'];
-            print('[DataSource] 解析认证图片: $images (类型: ${images.runtimeType})');
+            AppLogger.d('[DataSource] 解析认证图片: $images (类型: ${images.runtimeType})');
             
             if (images is List && images.isNotEmpty) {
               final imageUrls = images.map((img) => img.toString()).where((url) => url.isNotEmpty).toList();
               parsedFields['images'] = imageUrls;
-              print('[DataSource] 图片列表解析结果: $imageUrls');
+              AppLogger.d('[DataSource] 图片列表解析结果: $imageUrls');
             } else if (images is String && images.isNotEmpty) {
               final imageUrls = images.split(',').where((img) => img.trim().isNotEmpty).map((img) => img.trim()).toList();
               parsedFields['images'] = imageUrls;
-              print('[DataSource] 图片字符串解析结果: $imageUrls');
+              AppLogger.d('[DataSource] 图片字符串解析结果: $imageUrls');
             } else {
-              print('[DataSource] 图片数据为空或格式不正确');
+              AppLogger.d('[DataSource] 图片数据为空或格式不正确');
             }
           } else {
-            print('[DataSource] 没有找到图片字段');
+            AppLogger.d('[DataSource] 没有找到图片字段');
           }
           
           // 获取提交的姓名/公司名称
@@ -1030,7 +1031,7 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
   Future<dynamic> getShopVerificationStatus() async {
     // TODO: Implement actual API call for getShopVerificationStatus
     // TODO: Define ShopVerificationStatus type and return correctly
-    print('WARNING: Using placeholder implementation for getShopVerificationStatus in SellerRemoteDataSourceImpl');
+    AppLogger.d('WARNING: Using placeholder implementation for getShopVerificationStatus in SellerRemoteDataSourceImpl');
     await Future.delayed(const Duration(milliseconds: 100)); // Simulate network delay
     // return ShopVerificationStatus.unknown; 
     return null; // Return null as placeholder
@@ -1066,10 +1067,10 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
     final updateJson = updateData.toJson();
     
     // 调试日志：检查productMaterials和winImages的处理
-    print('[DEBUG] _mergeProductData - updateJson[productMaterials]: ${updateJson['productMaterials']}');
-    print('[DEBUG] _mergeProductData - existingData[productMaterials]: ${existingData['productMaterials']}');
-    print('[DEBUG] _mergeProductData - updateJson[winImages]: ${updateJson['winImages']}');
-    print('[DEBUG] _mergeProductData - existingData[winImages]: ${existingData['winImages']}');
+    AppLogger.d('[DEBUG] _mergeProductData - updateJson[productMaterials]: ${updateJson['productMaterials']}');
+    AppLogger.d('[DEBUG] _mergeProductData - existingData[productMaterials]: ${existingData['productMaterials']}');
+    AppLogger.d('[DEBUG] _mergeProductData - updateJson[winImages]: ${updateJson['winImages']}');
+    AppLogger.d('[DEBUG] _mergeProductData - existingData[winImages]: ${existingData['winImages']}');
     
     // 构建完整的商品数据，确保所有必需字段都存在
     final mergedData = {

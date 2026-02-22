@@ -58,7 +58,7 @@ class SellerProduct {
                 }
               }
             } catch (e) {
-              print('Error parsing image URL: $e');
+              AppLogger.d('Error parsing image URL: $e');
             }
           }
         }

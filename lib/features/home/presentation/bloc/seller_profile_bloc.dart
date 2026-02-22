@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:equatable/equatable.dart';
 import 'package:dskk_flutter_refactor/features/home/domain/entities/seller_product.dart';
 import 'package:dskk_flutter_refactor/features/home/domain/usecases/get_seller_products.dart';
@@ -42,7 +43,7 @@ class SellerProfileBloc extends Bloc<SellerProfileEvent, SellerProfileState> {
         final sellerInfoResult = await getSellerInfo.execute(event.sellerId);
         sellerInfoResult.fold(
           (failure) {
-            print('获取卖家信息失败: ${failure.message}');
+            AppLogger.d('获取卖家信息失败: ${failure.message}');
             // 如果getSellerInfo失败，才回退到使用商品列表中的tenant信息
             seller = products.isNotEmpty && products.first.tenant != null
             ? products.first.tenant
@@ -66,7 +67,7 @@ class SellerProfileBloc extends Bloc<SellerProfileEvent, SellerProfileState> {
     // 保存当前状态，以便操作失败时还原
     final currentState = state;
     if (currentState is SellerProfileLoaded) {
-      print('[SellerProfileBloc] 开始关注用户: ${event.sellerId}');
+      AppLogger.d('[SellerProfileBloc] 开始关注用户: ${event.sellerId}');
       
       // 先乐观更新UI（快速响应用户操作）
       final updatedSeller = currentState.seller != null
@@ -87,12 +88,12 @@ class SellerProfileBloc extends Bloc<SellerProfileEvent, SellerProfileState> {
       ));
       
       // 调用API执行实际关注操作
-      print('[SellerProfileBloc] 调用关注API...');
+      AppLogger.d('[SellerProfileBloc] 调用关注API...');
       final result = await followSeller.execute(event.sellerId);
       
       result.fold(
         (failure) {
-          print('[SellerProfileBloc] 关注API失败: ${failure.message}');
+          AppLogger.d('[SellerProfileBloc] 关注API失败: ${failure.message}');
           // 操作失败，还原状态并显示错误
           if (!emit.isDone) {
             emit(SellerProfileLoaded(
@@ -103,13 +104,13 @@ class SellerProfileBloc extends Bloc<SellerProfileEvent, SellerProfileState> {
           }
         },
         (success) async {
-          print('[SellerProfileBloc] 关注API成功');
+          AppLogger.d('[SellerProfileBloc] 关注API成功');
           
           // 🔥 重新获取真实的卖家信息（包含准确的粉丝数）
           final sellerInfoResult = await getSellerInfo.execute(event.sellerId);
           sellerInfoResult.fold(
             (failure) {
-              print('[SellerProfileBloc] 获取更新后的卖家信息失败: ${failure.message}');
+              AppLogger.d('[SellerProfileBloc] 获取更新后的卖家信息失败: ${failure.message}');
               // 如果获取失败，保持乐观更新的状态
               if (!emit.isDone) {
                 emit(SellerProfileLoaded(
@@ -119,7 +120,7 @@ class SellerProfileBloc extends Bloc<SellerProfileEvent, SellerProfileState> {
               }
             },
             (realSellerInfo) {
-              print('[SellerProfileBloc] 获取到真实的粉丝数: ${realSellerInfo?.fansCount}');
+              AppLogger.d('[SellerProfileBloc] 获取到真实的粉丝数: ${realSellerInfo?.fansCount}');
               // 使用真实的卖家信息更新状态
               if (!emit.isDone) {
                 emit(SellerProfileLoaded(
@@ -141,7 +142,7 @@ class SellerProfileBloc extends Bloc<SellerProfileEvent, SellerProfileState> {
     // 保存当前状态，以便操作失败时还原
     final currentState = state;
     if (currentState is SellerProfileLoaded) {
-      print('[SellerProfileBloc] 开始取消关注用户: ${event.sellerId}');
+      AppLogger.d('[SellerProfileBloc] 开始取消关注用户: ${event.sellerId}');
       
       // 先乐观更新UI（快速响应用户操作）
       final updatedSeller = currentState.seller != null
@@ -162,12 +163,12 @@ class SellerProfileBloc extends Bloc<SellerProfileEvent, SellerProfileState> {
       ));
       
       // 调用API执行实际取消关注操作
-      print('[SellerProfileBloc] 调用取消关注API...');
+      AppLogger.d('[SellerProfileBloc] 调用取消关注API...');
       final result = await unfollowSeller.execute(event.sellerId);
       
       result.fold(
         (failure) {
-          print('[SellerProfileBloc] 取消关注API失败: ${failure.message}');
+          AppLogger.d('[SellerProfileBloc] 取消关注API失败: ${failure.message}');
           // 操作失败，还原状态并显示错误
           if (!emit.isDone) {
             emit(SellerProfileLoaded(
@@ -178,13 +179,13 @@ class SellerProfileBloc extends Bloc<SellerProfileEvent, SellerProfileState> {
           }
         },
         (success) async {
-          print('[SellerProfileBloc] 取消关注API成功');
+          AppLogger.d('[SellerProfileBloc] 取消关注API成功');
           
           // 🔥 重新获取真实的卖家信息（包含准确的粉丝数）
           final sellerInfoResult = await getSellerInfo.execute(event.sellerId);
           sellerInfoResult.fold(
             (failure) {
-              print('[SellerProfileBloc] 获取更新后的卖家信息失败: ${failure.message}');
+              AppLogger.d('[SellerProfileBloc] 获取更新后的卖家信息失败: ${failure.message}');
               // 如果获取失败，保持乐观更新的状态
               if (!emit.isDone) {
                 emit(SellerProfileLoaded(
@@ -194,7 +195,7 @@ class SellerProfileBloc extends Bloc<SellerProfileEvent, SellerProfileState> {
               }
             },
             (realSellerInfo) {
-              print('[SellerProfileBloc] 获取到真实的粉丝数: ${realSellerInfo?.fansCount}');
+              AppLogger.d('[SellerProfileBloc] 获取到真实的粉丝数: ${realSellerInfo?.fansCount}');
               // 使用真实的卖家信息更新状态
               if (!emit.isDone) {
                 emit(SellerProfileLoaded(

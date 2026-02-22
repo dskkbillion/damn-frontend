@@ -1,4 +1,5 @@
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
@@ -96,12 +97,12 @@ class _OrderRequirementSubmissionFormState
           _uploadedUrls = attachments;
         }
         
-        print('Draft loaded successfully for order ${widget.order.id}');
+        AppLogger.d('Draft loaded successfully for order ${widget.order.id}');
       } else {
-         print('No draft found for order ${widget.order.id}');
+         AppLogger.d('No draft found for order ${widget.order.id}');
       }
     } catch (e) {
-      print('Error loading draft: $e');
+      AppLogger.d('Error loading draft: $e');
       // Optionally show an error message to the user
       if (mounted) { // Check if widget is still in the tree
         ScaffoldMessenger.of(context).showSnackBar(
@@ -145,9 +146,9 @@ class _OrderRequirementSubmissionFormState
 
       final String draftJson = jsonEncode(draftData);
       await prefs.setString(draftKey, draftJson);
-      print('Draft saved for order ${widget.order.id}');
+      AppLogger.d('Draft saved for order ${widget.order.id}');
     } catch (e) {
-      print('Error saving draft: $e');
+      AppLogger.d('Error saving draft: $e');
       // Optionally show an error message to the user
       if (mounted) { // Check if widget is still in the tree
          ScaffoldMessenger.of(context).showSnackBar(
@@ -163,9 +164,9 @@ class _OrderRequirementSubmissionFormState
        final prefs = await SharedPreferences.getInstance();
        final draftKey = _getDraftKey(widget.order.id.toString());
        await prefs.remove(draftKey);
-       print('Draft cleared for order ${widget.order.id}');
+       AppLogger.d('Draft cleared for order ${widget.order.id}');
      } catch (e) {
-        print('Error clearing draft: $e');
+        AppLogger.d('Error clearing draft: $e');
         // Optionally inform the user
      }
   }
@@ -403,7 +404,7 @@ class _OrderRequirementSubmissionFormState
                                   attachmentPaths: _uploadedUrls, // 使用已上传的URL列表
                                 ),
                               );
-                            print('Confirm Submission Tapped');
+                            AppLogger.d('Confirm Submission Tapped');
                             
                             // 成功提交后清除草稿
                             _clearDraft();
@@ -594,7 +595,7 @@ class _OrderRequirementSubmissionFormState
         }
       }
     } catch (e) {
-      print('Error picking files: $e');
+      AppLogger.d('Error picking files: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('选择文件失败: ${e.toString()}')),
       );

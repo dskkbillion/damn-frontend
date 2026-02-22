@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:yaml/yaml.dart';
 
 /// 支付宝配置管理类（服务端托管模式）
@@ -41,7 +42,7 @@ class AlipayConfig {
         }),
       );
     } catch (e) {
-      print('加载支付宝配置失败: $e');
+      AppLogger.d('加载支付宝配置失败: $e');
       // 返回默认配置
       return AlipayConfig._(
         environment: 'production',

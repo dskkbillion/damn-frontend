@@ -1,4 +1,5 @@
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/config/unified_region_config.dart';
 import 'package:dskk_flutter_refactor/core/currency/domain/entities/currency.dart';
 import 'package:dskk_flutter_refactor/core/payment/models/payment_models.dart';
@@ -10,7 +11,7 @@ class RegionConfigAdapter {
   static void initializeAdapter() {
     // This would typically use method interception or proxy pattern
     // For now, we'll document the migration path
-    print('[RegionConfigAdapter] Initialized - RegionConfig calls will use UnifiedRegionConfig');
+    AppLogger.d('[RegionConfigAdapter] Initialized - RegionConfig calls will use UnifiedRegionConfig');
   }
   
   /// Create a compatibility layer for RegionConfig
@@ -27,7 +28,7 @@ class RegionConfigCompat {
   
   /// Set region (no-op in unified mode)
   void setRegion(RegionType region) {
-    print('[RegionConfigCompat] setRegion called with $region - ignored in unified mode');
+    AppLogger.d('[RegionConfigCompat] setRegion called with $region - ignored in unified mode');
   }
   
   /// Get default currency (always USD in unified)

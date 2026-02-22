@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 // Import OrderItem
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_item.dart';
 import 'dart:io'; // Import dart:io for File
@@ -108,7 +109,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
         }
       }
     } catch (e) {
-      print("Error picking images: $e");
+      AppLogger.d("Error picking images: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('选择图片失败: $e')),
       );
@@ -243,7 +244,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
                  onPressed: () {
                    if (_formKey.currentState!.validate()) {
                      // Form is valid
-                     print('Form is valid. Submitting...');
+                     AppLogger.d('Form is valid. Submitting...');
 
                      // Collect amount if applicable
                      double? refundAmount;
@@ -260,7 +261,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
                        imagePaths: _selectedImages.map((result) => result.finalFile.path).toList(),
                        refundAmount: refundAmount,
                      );
-                     print('Adding event: $submitEvent with amount $refundAmount');
+                     AppLogger.d('Adding event: $submitEvent with amount $refundAmount');
                      context.read<AfterSalesBloc>().add(submitEvent);
 
                      // TODO: Optionally show loading indicator or navigate back after submission

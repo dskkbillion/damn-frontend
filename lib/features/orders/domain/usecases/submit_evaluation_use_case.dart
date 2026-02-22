@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
 
@@ -15,7 +16,7 @@ class SubmitEvaluationUseCase implements UseCase<void, SubmitEvaluationParams> {
 
   @override
   Future<Either<Failure, void>> call(SubmitEvaluationParams params) async {
-    print('[SubmitEvaluationUseCase] Called with orderId: ${params.orderId}');
+    AppLogger.d('[SubmitEvaluationUseCase] Called with orderId: ${params.orderId}');
     // Ensure repository method gets a non-nullable list
     return await repository.addEvaluation(
       orderId: params.orderId,

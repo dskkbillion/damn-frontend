@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
@@ -59,7 +60,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ) async {
     // 如果已经有用户数据，不需要重新检查认证状态
     if (state is ProfileLoaded || state is ProfileUpdated) {
-      print('[ProfileBloc] Already has profile data, skipping auth check');
+      AppLogger.d('[ProfileBloc] Already has profile data, skipping auth check');
       emit(ProfileAuthStatusLoaded(isAuthenticated: true));
       return;
     }
@@ -86,16 +87,16 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         );
 
         if (cachedProfile != null) {
-          print('[ProfileBloc] Using cached profile data: ${cachedProfile.nickName}');
+          AppLogger.d('[ProfileBloc] Using cached profile data: ${cachedProfile.nickName}');
           _currentProfile = cachedProfile;
           emit(ProfileLoaded(profile: cachedProfile));
           return;
         }
       } catch (e) {
-        print('[ProfileBloc] Failed to get cached profile: $e');
+        AppLogger.d('[ProfileBloc] Failed to get cached profile: $e');
       }
     } else {
-      print('[ProfileBloc] Skipping cache, fetching fresh data from server');
+      AppLogger.d('[ProfileBloc] Skipping cache, fetching fresh data from server');
     }
 
     // 缓存未命中或跳过缓存，执行正常的数据获取流程
@@ -105,7 +106,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       (failure) => emit(ProfileError(message: failure.toString())),
       (profile) {
         _currentProfile = profile; // 保存当前用户信息
-        print('[ProfileBloc] Emitting ProfileLoaded with profile: ${profile.nickName}, avatar: ${profile.avatarUrl}');
+        AppLogger.d('[ProfileBloc] Emitting ProfileLoaded with profile: ${profile.nickName}, avatar: ${profile.avatarUrl}');
         emit(ProfileLoaded(profile: profile));
       },
     );
@@ -123,17 +124,17 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       );
       
       if (cachedProfile != null) {
-        print('[ProfileBloc] Using cached profile data for ${event.mode.name}: ${cachedProfile.nickName}');
+        AppLogger.d('[ProfileBloc] Using cached profile data for ${event.mode.name}: ${cachedProfile.nickName}');
         _currentProfile = cachedProfile;
         emit(ProfileLoaded(profile: cachedProfile));
         return;
       } else {
-        print('[ProfileBloc] No cached data found for ${event.mode.name}, triggering normal load');
+        AppLogger.d('[ProfileBloc] No cached data found for ${event.mode.name}, triggering normal load');
         // 缓存未命中，触发普通的获取流程
         add(GetUserProfileEvent());
       }
     } catch (e) {
-      print('[ProfileBloc] Failed to get cached profile for ${event.mode.name}: $e');
+      AppLogger.d('[ProfileBloc] Failed to get cached profile for ${event.mode.name}: $e');
       // 发生错误时，回退到普通获取流程
       add(GetUserProfileEvent());
     }
@@ -156,12 +157,12 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     );
     await result.fold(
       (failure) {
-        print('[ProfileBloc] Failed to update profile: $failure');
+        AppLogger.d('[ProfileBloc] Failed to update profile: $failure');
         emit(ProfileError(message: failure.toString()));
       },
       (profile) async {
         _currentProfile = profile; // 更新当前用户信息
-        print('[ProfileBloc] Profile updated successfully with avatar: ${profile.avatarUrl}');
+        AppLogger.d('[ProfileBloc] Profile updated successfully with avatar: ${profile.avatarUrl}');
 
         // 清除缓存，确保下次获取最新数据
         try {
@@ -169,7 +170,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           await preloaderService.clearCache(AppMode.buyer);
           await preloaderService.clearCache(AppMode.seller);
         } catch (e) {
-          print('[ProfileBloc] Failed to clear cache: $e');
+          AppLogger.d('[ProfileBloc] Failed to clear cache: $e');
         }
 
         emit(ProfileUpdated(profile: profile));
@@ -186,7 +187,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     result.fold(
       (failure) => emit(ProfileAvatarUploadError(message: failure.toString(), profile: _currentProfile)),
       (avatarUrl) {
-        print('[ProfileBloc] Avatar uploaded successfully, URL: $avatarUrl');
+        AppLogger.d('[ProfileBloc] Avatar uploaded successfully, URL: $avatarUrl');
         // 更新当前用户资料的头像URL
         if (_currentProfile != null) {
           _currentProfile = _currentProfile!.copyWith(avatarUrl: avatarUrl);

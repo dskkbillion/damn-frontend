@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
@@ -76,7 +77,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     result.fold(
       (failure) {
           // 当交易记录API返回失败时，仍然保留钱包摘要信息
-          print('获取交易记录失败: ${failure.toString()}');
+          AppLogger.d('获取交易记录失败: ${failure.toString()}');
           emit(WalletLoaded(
             walletSummary,
             [], // 空交易记录列表
@@ -103,7 +104,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
       await summaryResult.fold(
         (failure) async {
           // 如果获取摘要失败，尝试只获取交易记录
-          print('获取钱包摘要失败，尝试只获取交易记录: ${failure.toString()}');
+          AppLogger.d('获取钱包摘要失败，尝试只获取交易记录: ${failure.toString()}');
           
           final transactionsResult = await getWalletTransactions(TransactionsParams(
             page: 1,
@@ -141,7 +142,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
           transactionsResult.fold(
             (failure) {
               // 即使获取交易记录失败，也保留钱包摘要
-              print('获取交易记录失败: ${failure.toString()}');
+              AppLogger.d('获取交易记录失败: ${failure.toString()}');
               emit(WalletLoaded(
                 walletSummary,
                 [], // 空交易记录列表

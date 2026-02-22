@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -226,7 +227,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
   void initState() {
     super.initState();
     
-    print('[ProductEditPage] initState called with productId: ${widget.productId}, isPreviewMode: ${widget.isPreviewMode}');
+    AppLogger.d('[ProductEditPage] initState called with productId: ${widget.productId}, isPreviewMode: ${widget.isPreviewMode}');
     
     // 从DI容器获取BLoC实例
     _bloc = getIt<ProductEditBloc>();
@@ -297,10 +298,10 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
 
     // 解析商品ID
     final productIdInt = widget.productId != null ? int.tryParse(widget.productId!) : null;
-    print('[ProductEditPage] Parsed productId as int: $productIdInt');
+    AppLogger.d('[ProductEditPage] Parsed productId as int: $productIdInt');
     
     // 初始化页面
-    print('[ProductEditPage] Initializing ProductEdit with productId: $productIdInt, isPreviewMode: ${widget.isPreviewMode}');
+    AppLogger.d('[ProductEditPage] Initializing ProductEdit with productId: $productIdInt, isPreviewMode: ${widget.isPreviewMode}');
     _bloc.add(InitializeProductEdit(
       productId: productIdInt,
     ));
@@ -313,19 +314,19 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     
     // 监听状态变化，更新控制器（预览模式和编辑模式都需要）
     _bloc.stream.listen((state) {
-      print('[ProductEditPage] State changed - isLoading: ${state.isLoading}, hasProduct: ${state.product != null}, isPreviewMode: ${widget.isPreviewMode}');
+      AppLogger.d('[ProductEditPage] State changed - isLoading: ${state.isLoading}, hasProduct: ${state.product != null}, isPreviewMode: ${widget.isPreviewMode}');
       if (!state.isLoading && state.product != null) {
         // 只在初始加载或者非用户输入触发的状态变化时同步数据
         // 避免在用户输入时触发同步导致光标跳转
         if (_isInitialDataLoad) {
-          print('[ProductEditPage] Initial data load - syncing data from state');
+          AppLogger.d('[ProductEditPage] Initial data load - syncing data from state');
           _syncDataFromState(state.formData);
           _isInitialDataLoad = false;
         } else if (state.formData.name != _nameController.text ||
                    state.formData.description != _descriptionController.text) {
           // 只有当BLoC状态与当前控制器值不同时才同步（说明不是由用户输入触发的）
           // 但要小心处理，避免覆盖用户正在编辑的内容
-          print('[ProductEditPage] External state change detected - syncing carefully');
+          AppLogger.d('[ProductEditPage] External state change detected - syncing carefully');
           _syncDataFromState(state.formData);
         }
 
@@ -444,7 +445,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     
     // 如果产品ID发生变化，重新初始化页面
     if (oldWidget.productId != widget.productId) {
-      print('[ProductEditPage] Product ID changed from ${oldWidget.productId} to ${widget.productId}, reinitializing...');
+      AppLogger.d('[ProductEditPage] Product ID changed from ${oldWidget.productId} to ${widget.productId}, reinitializing...');
       
       // 重置数据同步标志位
       _isInitialDataLoad = true;
@@ -639,9 +640,9 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
 
   /// 从BLoC状态同步数据到页面组件
   void _syncDataFromState(ProductFormData formData) {
-    print('[ProductEditPage] _syncDataFromState called with name: "${formData.name}", description: "${formData.description}", variants count: ${formData.variants.length}');
-    print('[ProductEditPage] isPreviewMode: ${widget.isPreviewMode}, productId: ${widget.productId}');
-    print('[ProductEditPage] Current controller values - name: "${_nameController.text}", description: "${_descriptionController.text}"');
+    AppLogger.d('[ProductEditPage] _syncDataFromState called with name: "${formData.name}", description: "${formData.description}", variants count: ${formData.variants.length}');
+    AppLogger.d('[ProductEditPage] isPreviewMode: ${widget.isPreviewMode}, productId: ${widget.productId}');
+    AppLogger.d('[ProductEditPage] Current controller values - name: "${_nameController.text}", description: "${_descriptionController.text}"');
 
     // 更新基本文本字段 - 只在值真正改变时更新，避免光标跳转
     if (mounted) {
@@ -654,33 +655,33 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
         setState(() {
           _nameController.text = formData.name;
         });
-        print('[ProductEditPage] Updated name controller - "${_nameController.text}"');
+        AppLogger.d('[ProductEditPage] Updated name controller - "${_nameController.text}"');
       }
 
       if (_descriptionController.text != formData.description) {
         setState(() {
           _descriptionController.text = formData.description;
         });
-        print('[ProductEditPage] Updated description controller - "${_descriptionController.text}"');
+        AppLogger.d('[ProductEditPage] Updated description controller - "${_descriptionController.text}"');
       }
     }
     
     // 如果有变体数据，更新到本地服务档位（编辑模式和预览模式都需要）
     if (formData.variants.isNotEmpty && (!_bloc.state.isCreateMode || widget.isPreviewMode)) {
-      print('[ProductEditPage] Updating service tiers from ${formData.variants.length} variants');
+      AppLogger.d('[ProductEditPage] Updating service tiers from ${formData.variants.length} variants');
       for (int i = 0; i < formData.variants.length; i++) {
         final variant = formData.variants[i];
-        print('[ProductEditPage] Variant $i: name="${variant.name}", price=${variant.price}, sellingPrice=${variant.sellingPrice}');
+        AppLogger.d('[ProductEditPage] Variant $i: name="${variant.name}", price=${variant.price}, sellingPrice=${variant.sellingPrice}');
       }
       
       if (mounted) {
         setState(() {
           _serviceTiers = ProductServiceTiers.fromProductOptionValues(formData.variants);
         });
-        print('[ProductEditPage] Updated service tiers from variants:');
-        print('[ProductEditPage] - Basic: price=${_serviceTiers.basic.price}, delivery=${_serviceTiers.basic.deliveryDay}');
-        print('[ProductEditPage] - Standard: price=${_serviceTiers.standard.price}, delivery=${_serviceTiers.standard.deliveryDay}'); 
-        print('[ProductEditPage] - Premium: price=${_serviceTiers.premium.price}, delivery=${_serviceTiers.premium.deliveryDay}');
+        AppLogger.d('[ProductEditPage] Updated service tiers from variants:');
+        AppLogger.d('[ProductEditPage] - Basic: price=${_serviceTiers.basic.price}, delivery=${_serviceTiers.basic.deliveryDay}');
+        AppLogger.d('[ProductEditPage] - Standard: price=${_serviceTiers.standard.price}, delivery=${_serviceTiers.standard.deliveryDay}'); 
+        AppLogger.d('[ProductEditPage] - Premium: price=${_serviceTiers.premium.price}, delivery=${_serviceTiers.premium.deliveryDay}');
       }
     }
     
@@ -700,26 +701,26 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                 'answer': qaMap['answer'] ?? '',
               };
               _qaList.add(QAPair.fromJson(qaData));
-              print('[ProductEditPage] Added QA item: question="${qaMap['question']}", answer="${qaMap['answer']}"');
+              AppLogger.d('[ProductEditPage] Added QA item: question="${qaMap['question']}", answer="${qaMap['answer']}"');
             } catch (e) {
-              print('[ProductEditPage] Error parsing QA data: $e, qaMap: $qaMap');
+              AppLogger.d('[ProductEditPage] Error parsing QA data: $e, qaMap: $qaMap');
             }
           }
           // 清理未使用的QA控制器
           _cleanupUnusedQAControllers();
-          print('[ProductEditPage] Synced ${_qaList.length} QA items from formData');
+          AppLogger.d('[ProductEditPage] Synced ${_qaList.length} QA items from formData');
           
           // 同步买家信息列表
           _buyerInfoItems.clear();
           for (final buyerInfoMap in formData.buyerInfoItems) {
             try {
               _buyerInfoItems.add(BuyerInfoItem.fromJson(buyerInfoMap));
-              print('[ProductEditPage] Added buyer info item: type="${buyerInfoMap['type']}", label="${buyerInfoMap['label']}"');
+              AppLogger.d('[ProductEditPage] Added buyer info item: type="${buyerInfoMap['type']}", label="${buyerInfoMap['label']}"');
             } catch (e) {
-              print('[ProductEditPage] Error parsing buyer info data: $e, buyerInfoMap: $buyerInfoMap');
+              AppLogger.d('[ProductEditPage] Error parsing buyer info data: $e, buyerInfoMap: $buyerInfoMap');
             }
           }
-          print('[ProductEditPage] Synced ${_buyerInfoItems.length} buyer info items from formData');
+          AppLogger.d('[ProductEditPage] Synced ${_buyerInfoItems.length} buyer info items from formData');
           
           // 标记初始数据已加载
           _isInitialDataLoad = false;
@@ -730,19 +731,19 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     // Success cases are now managed in BLoC state
     // No need to sync here
     
-    print('[ProductEditPage] Synced data from state:');
-    print('  - QA items: ${_qaList.length}');
-    print('  - Buyer info items: ${_buyerInfoItems.length}');
-    print('  - Success cases: managed in BLoC');
-    print('  - Variants: ${formData.variants.length}');
+    AppLogger.d('[ProductEditPage] Synced data from state:');
+    AppLogger.d('  - QA items: ${_qaList.length}');
+    AppLogger.d('  - Buyer info items: ${_buyerInfoItems.length}');
+    AppLogger.d('  - Success cases: managed in BLoC');
+    AppLogger.d('  - Variants: ${formData.variants.length}');
   }
 
   /// 将页面组件的本地数据同步到BLoC状态
   void _syncLocalDataToBLoC() {
-    print('[ProductEditPage] Syncing local data to BLoC:');
-    print('  - QA items: ${_qaList.length}');
-    print('  - Buyer info items: ${_buyerInfoItems.length}');
-    print('  - Success cases: managed in BLoC');
+    AppLogger.d('[ProductEditPage] Syncing local data to BLoC:');
+    AppLogger.d('  - QA items: ${_qaList.length}');
+    AppLogger.d('  - Buyer info items: ${_buyerInfoItems.length}');
+    AppLogger.d('  - Success cases: managed in BLoC');
     
     // 直接调用现有的同步方法
     _syncAdditionalFormData();
@@ -1151,10 +1152,10 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                     //     ));
                     //     
                     //     // 添加调试日志
-                    //     print('[ProductEditPage] Saving draft with price: ${_serviceTiers.basic.price}');
-                    //     print('[ProductEditPage] Variants count: ${variants.length}');
+                    //     AppLogger.d('[ProductEditPage] Saving draft with price: ${_serviceTiers.basic.price}');
+                    //     AppLogger.d('[ProductEditPage] Variants count: ${variants.length}');
                     //     for (var i = 0; i < variants.length; i++) {
-                    //       print('[ProductEditPage] Variant $i: ${variants[i].name} - price: ${variants[i].sellingPrice}');
+                    //       AppLogger.d('[ProductEditPage] Variant $i: ${variants[i].name} - price: ${variants[i].sellingPrice}');
                     //     }
                     //     
                     //     // 保存草稿

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:audioplayers/audioplayers.dart'; // Import audioplayers
 import 'package:flutter_markdown/flutter_markdown.dart'; // 导入Markdown渲染包
 import 'package:url_launcher/url_launcher.dart'; // 导入URL处理包
@@ -74,7 +75,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
         _audioUrl != null && 
         !widget.message.isTranscribing && 
         _audioPlayer == null) {
-      print('[AudioPlayer] Initializing for URL: $_audioUrl');
+      AppLogger.d('[AudioPlayer] Initializing for URL: $_audioUrl');
       // 延迟初始化，给UI一些时间渲染
       Future.delayed(const Duration(milliseconds: 100), () {
         if (mounted) {
@@ -118,12 +119,12 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
       // Prepare the player (optional but good practice)
       // 使用异步方式设置音频源，避免阻塞UI
       _audioPlayer!.setSourceUrl(_audioUrl!).then((_) {
-        print('[AudioPlayer] Audio source set successfully for: $_audioUrl');
+        AppLogger.d('[AudioPlayer] Audio source set successfully for: $_audioUrl');
         if (mounted) {
           setState(() {}); // 触发重新渲染以更新UI状态
         }
       }).catchError((e) {
-        print('[AudioPlayer] Failed to set audio source: $e');
+        AppLogger.d('[AudioPlayer] Failed to set audio source: $e');
         // 不立即显示错误，而是标记为初始化失败
         if (mounted) {
           setState(() {
@@ -133,7 +134,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
         }
       });
     } catch (e) {
-      print('[AudioPlayer] Exception during initialization: $e');
+      AppLogger.d('[AudioPlayer] Exception during initialization: $e');
       _audioPlayer?.dispose();
       _audioPlayer = null;
       if (mounted) {
@@ -160,7 +161,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
         // 等待初始化完成
         await Future.delayed(const Duration(milliseconds: 200));
         if (_audioPlayer == null) {
-          print('[AudioPlayer] Failed to initialize player for playback');
+          AppLogger.d('[AudioPlayer] Failed to initialize player for playback');
           return;
         }
         await _audioPlayer!.play(UrlSource(_audioUrl!));
@@ -174,7 +175,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
         setState(() => _playerState = PlayerState.playing);
       }
     } catch (e) {
-      print('[AudioPlayer] Error during playback: $e');
+      AppLogger.d('[AudioPlayer] Error during playback: $e');
       // 播放失败时重置播放器状态
       if (mounted) {
         setState(() {
@@ -401,7 +402,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
                       : Colors.black87; // AI消息使用固定的深色图标
     
      final url = _audioUrl;
-     print('[AudioPlayer] Building audio content - URL: $url, Player: ${_audioPlayer != null}, Message Type: ${widget.message.messageType}');
+     AppLogger.d('[AudioPlayer] Building audio content - URL: $url, Player: ${_audioPlayer != null}, Message Type: ${widget.message.messageType}');
      
      // 如果没有URL，只显示转录状态，不显示错误信息（避免初始阶段的错误闪现）
      if (url == null) {
@@ -462,7 +463,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
                    size: 30,
                  ),
                  onPressed: () {
-                   print('[AudioPlayer] Retrying initialization...');
+                   AppLogger.d('[AudioPlayer] Retrying initialization...');
                    _initAudioPlayer();
                  },
                  padding: EdgeInsets.zero,

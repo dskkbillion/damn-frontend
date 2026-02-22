@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart'; // Import Failure
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
@@ -43,7 +44,7 @@ class OrderListBloc extends Bloc<OrderListEvent, OrderListState> {
   }
 
   Future<void> _onLoadOrders(LoadOrders event, Emitter<OrderListState> emit) async {
-    print('[OrderListBloc _onLoadOrders] Received event with status: ${event.status}, forceRefresh: ${event.forceRefresh}');
+    AppLogger.d('[OrderListBloc _onLoadOrders] Received event with status: ${event.status}, forceRefresh: ${event.forceRefresh}');
 
     currentPage = 1; // Reset page for new filter/refresh
     currentStatus = event.status;
@@ -75,7 +76,7 @@ class OrderListBloc extends Bloc<OrderListEvent, OrderListState> {
       final currentState = state as OrderListLoaded;
       currentPage++; // Increment page number
 
-      print('[OrderListBloc] Loading page $currentPage...');
+      AppLogger.d('[OrderListBloc] Loading page $currentPage...');
 
       final params = GetOrderListParams(
         page: currentPage,
@@ -87,7 +88,7 @@ class OrderListBloc extends Bloc<OrderListEvent, OrderListState> {
 
       result.fold(
         (failure) {
-           print('[OrderListBloc] Failed to load more orders: ${failure.toString()}');
+           AppLogger.d('[OrderListBloc] Failed to load more orders: ${failure.toString()}');
            // Optionally emit an error state specific to load more, or keep current state
            // For simplicity, we keep the current state but might show a snackbar in UI
            // Revert page number if load failed?
@@ -99,16 +100,16 @@ class OrderListBloc extends Bloc<OrderListEvent, OrderListState> {
             orders: List.of(currentState.orders)..addAll(newOrders), // Append new orders
             hasReachedMax: newHasReachedMax, // Update hasReachedMax status
           ));
-           print('[OrderListBloc] Loaded page $currentPage successfully. HasReachedMax: $newHasReachedMax');
+           AppLogger.d('[OrderListBloc] Loaded page $currentPage successfully. HasReachedMax: $newHasReachedMax');
         },
       );
     } else {
-       print('[OrderListBloc] Cannot load more. State: ${state.runtimeType}, hasReachedMax: ${(state is OrderListLoaded ? (state as OrderListLoaded).hasReachedMax : 'N/A')}');
+       AppLogger.d('[OrderListBloc] Cannot load more. State: ${state.runtimeType}, hasReachedMax: ${(state is OrderListLoaded ? (state as OrderListLoaded).hasReachedMax : 'N/A')}');
     }
   }
   
   Future<void> _onSearchOrders(SearchOrders event, Emitter<OrderListState> emit) async {
-    print('[OrderListBloc _onSearchOrders] Search query: ${event.query}');
+    AppLogger.d('[OrderListBloc _onSearchOrders] Search query: ${event.query}');
     
     currentPage = 1; // Reset page for new search
     currentSearchQuery = event.query.trim();

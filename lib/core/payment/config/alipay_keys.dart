@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:yaml/yaml.dart';
 
 /// 支付宝密钥管理类（服务端托管模式）
@@ -34,7 +35,7 @@ class AlipayKeys {
         note: alipayKeys['note'] ?? '服务端托管模式，客户端无需配置密钥',
       );
     } catch (e) {
-      print('加载支付宝密钥配置失败: $e');
+      AppLogger.d('加载支付宝密钥配置失败: $e');
       // 返回默认配置
       return AlipayKeys._(
         mode: 'server_hosted',

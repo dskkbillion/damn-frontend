@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
@@ -79,15 +80,15 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
           setState(() {
             _currentUserId = userId;
           });
-          print('DEBUG: Got current user ID from storage: $_currentUserId');
+          AppLogger.d('DEBUG: Got current user ID from storage: $_currentUserId');
         } else {
-          print('ERROR: Failed to parse common_user_id: $commonUserIdStr');
+          AppLogger.d('ERROR: Failed to parse common_user_id: $commonUserIdStr');
         }
       } else {
-        print('WARNING: No common_user_id found in storage');
+        AppLogger.d('WARNING: No common_user_id found in storage');
       }
     } catch (e) {
-      print('ERROR: Failed to get current user ID: $e');
+      AppLogger.d('ERROR: Failed to get current user ID: $e');
     }
 
     // Enter the chat room
@@ -98,7 +99,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
       chatId: widget.chatId,
       resetUnread: true,
     ));
-    print('[ChatRoomPage] Reset unread count for chat ${widget.chatId}');
+    AppLogger.d('[ChatRoomPage] Reset unread count for chat ${widget.chatId}');
 
     // Get chat room info and set current user participant ID
     // 修改为await确保在设置ID之后再继续
@@ -110,8 +111,8 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
             (p) => p.id == _currentUserId,
             orElse: () {
               // 如果找不到，直接报错
-              print('ERROR: Could not find participant with id=$_currentUserId in room ${chatRoom.id}');
-              print('ERROR: Available participants: ${chatRoom.participants.map((p) => 'id=${p.id}, type=${p.type}').join(', ')}');
+              AppLogger.d('ERROR: Could not find participant with id=$_currentUserId in room ${chatRoom.id}');
+              AppLogger.d('ERROR: Available participants: ${chatRoom.participants.map((p) => 'id=${p.id}, type=${p.type}').join(', ')}');
               throw Exception('Current user is not a participant in this chat room');
             },
           );
@@ -151,32 +152,32 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
           // 如果当前用户的 participant ID 等于 doctorId，则是卖家
           if (chatRoom.doctorId != null && currentUserParticipant.id == chatRoom.doctorId) {
             isSeller = true;
-            print('[ChatRoom] Current user is SELLER (doctor) - participantId: ${currentUserParticipant.id} matches doctorId: ${chatRoom.doctorId}');
+            AppLogger.d('[ChatRoom] Current user is SELLER (doctor) - participantId: ${currentUserParticipant.id} matches doctorId: ${chatRoom.doctorId}');
           } else if (chatRoom.memberId != null && currentUserParticipant.id == chatRoom.memberId) {
             isSeller = false;
-            print('[ChatRoom] Current user is BUYER (member) - participantId: ${currentUserParticipant.id} matches memberId: ${chatRoom.memberId}');
+            AppLogger.d('[ChatRoom] Current user is BUYER (member) - participantId: ${currentUserParticipant.id} matches memberId: ${chatRoom.memberId}');
           } else {
             // 如果无法确定，记录错误信息
-            print('[ChatRoom] WARNING: Cannot determine user role');
-            print('[ChatRoom] currentUserParticipant.id: ${currentUserParticipant.id}');
-            print('[ChatRoom] chatRoom.doctorId: ${chatRoom.doctorId}');
-            print('[ChatRoom] chatRoom.memberId: ${chatRoom.memberId}');
+            AppLogger.d('[ChatRoom] WARNING: Cannot determine user role');
+            AppLogger.d('[ChatRoom] currentUserParticipant.id: ${currentUserParticipant.id}');
+            AppLogger.d('[ChatRoom] chatRoom.doctorId: ${chatRoom.doctorId}');
+            AppLogger.d('[ChatRoom] chatRoom.memberId: ${chatRoom.memberId}');
             // 默认设为买家
             isSeller = false;
           }
 
-          print('[ChatRoom] Analyzing role - currentUserParticipantId: $_currentUserParticipantId');
-          print('[ChatRoom] Current user: ${currentUserParticipant.nickName}, opponent: ${opponent.nickName}');
-          print('[ChatRoom] Final determination - isSeller: $isSeller');
+          AppLogger.d('[ChatRoom] Analyzing role - currentUserParticipantId: $_currentUserParticipantId');
+          AppLogger.d('[ChatRoom] Current user: ${currentUserParticipant.nickName}, opponent: ${opponent.nickName}');
+          AppLogger.d('[ChatRoom] Final determination - isSeller: $isSeller');
           _messageListCubit.setSellerAndConsultationMode(
             isSeller: isSeller,
             isLightConsultation: true, // 默认启用轻咨询模式
           );
 
-          print('DEBUG: Set currentUserParticipantId to $_currentUserParticipantId at initialization');
-          print('DEBUG: Current user participant: id=${currentUserParticipant.id}, type=${currentUserParticipant.type}');
-          print('DEBUG: Opponent participant: id=${opponent.id}, type=${opponent.type}');
-          print('DEBUG: Light consultation mode enabled, isSeller: $isSeller');
+          AppLogger.d('DEBUG: Set currentUserParticipantId to $_currentUserParticipantId at initialization');
+          AppLogger.d('DEBUG: Current user participant: id=${currentUserParticipant.id}, type=${currentUserParticipant.type}');
+          AppLogger.d('DEBUG: Opponent participant: id=${opponent.id}, type=${opponent.type}');
+          AppLogger.d('DEBUG: Light consultation mode enabled, isSeller: $isSeller');
         },
         orElse: () {},
       );
@@ -187,7 +188,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
 
     // WebSocket 连接由全局管理器处理，无需在聊天室中手动连接
     // GlobalWebSocketManager 会在用户登录后自动连接
-    print('[ChatRoom] Using global WebSocket connection managed by GlobalWebSocketManager');
+    AppLogger.d('[ChatRoom] Using global WebSocket connection managed by GlobalWebSocketManager');
 
     // Notify that messages have been loaded
     widget.onMessagesLoaded?.call();
@@ -321,7 +322,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                 ready: (chatRoom, lastReceivedMessage, hasNewMessage) {
                   // 如果_currentUserId还没加载完成，显示加载中
                   if (_currentUserId == null) {
-                    print('DEBUG: _currentUserId is still loading when trying to display title');
+                    AppLogger.d('DEBUG: _currentUserId is still loading when trying to display title');
                     return Text(appLocalizations.chat_loading);
                   }
                   
@@ -329,8 +330,8 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                   final currentUserParticipant = chatRoom.participants.firstWhere(
                     (p) => p.id == _currentUserId,
                     orElse: () {
-                      print('ERROR: Could not find current user participant with id=$_currentUserId');
-                      print('ERROR: Available participants: ${chatRoom.participants.map((p) => 'id=${p.id}, name=${p.nickName}').join(', ')}');
+                      AppLogger.d('ERROR: Could not find current user participant with id=$_currentUserId');
+                      AppLogger.d('ERROR: Available participants: ${chatRoom.participants.map((p) => 'id=${p.id}, name=${p.nickName}').join(', ')}');
                       throw Exception('Current user is not in this chat room');
                     },
                   );
@@ -339,13 +340,13 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                   final opponent = chatRoom.participants.firstWhere(
                     (p) => p.id != currentUserParticipant.id,
                     orElse: () {
-                      print('ERROR: Could not find opponent, currentUserParticipantId=${currentUserParticipant.id}');
-                      print('ERROR: Participants: ${chatRoom.participants.map((p) => 'id=${p.id}, name=${p.nickName}').join(', ')}');
+                      AppLogger.d('ERROR: Could not find opponent, currentUserParticipantId=${currentUserParticipant.id}');
+                      AppLogger.d('ERROR: Participants: ${chatRoom.participants.map((p) => 'id=${p.id}, name=${p.nickName}').join(', ')}');
                       throw Exception('Could not find opponent in chat room');
                     },
                   );
                   
-                  print('DEBUG: Title display - currentUserId=$_currentUserId, currentParticipantId=${currentUserParticipant.id}, opponentId=${opponent.id}, opponentName=${opponent.nickName}');
+                  AppLogger.d('DEBUG: Title display - currentUserId=$_currentUserId, currentParticipantId=${currentUserParticipant.id}, opponentId=${opponent.id}, opponentName=${opponent.nickName}');
                   
                   return Text(opponent.nickName ?? appLocalizations.chat_unknown_user);
                 },
@@ -404,7 +405,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                         ready: (chatRoom, lastReceivedMessage, hasNewMessage) {
                           // When a new message is received via WebSocket
                           if (hasNewMessage && lastReceivedMessage != null) {
-                            print('[ChatRoomPage] New message received via WebSocket: type=${lastReceivedMessage.type}, id=${lastReceivedMessage.id}');
+                            AppLogger.d('[ChatRoomPage] New message received via WebSocket: type=${lastReceivedMessage.type}, id=${lastReceivedMessage.id}');
                             // Add the message to the message list
                             _messageListCubit.addReceivedMessage(lastReceivedMessage);
                             
@@ -460,15 +461,15 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                           
                           // Find current user participant using the stored user ID
                           if (_currentUserId == null) {
-                            print('ERROR: _currentUserId is null in build method');
+                            AppLogger.d('ERROR: _currentUserId is null in build method');
                             return Center(child: Text('Error: User ID not loaded'));
                           }
                           
                           final currentUserParticipant = chatRoom.participants.firstWhere(
                             (p) => p.id == _currentUserId,
                             orElse: () {
-                              print('ERROR: Could not find participant with id=$_currentUserId in room ${chatRoom.id}');
-                              print('ERROR: Available participants: ${chatRoom.participants.map((p) => 'id=${p.id}, type=${p.type}').join(', ')}');
+                              AppLogger.d('ERROR: Could not find participant with id=$_currentUserId in room ${chatRoom.id}');
+                              AppLogger.d('ERROR: Available participants: ${chatRoom.participants.map((p) => 'id=${p.id}, type=${p.type}').join(', ')}');
                               throw Exception('Current user is not a participant in this chat room');
                             },
                           );
@@ -585,7 +586,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                                       final chatListBloc = getIt<ChatListBloc>();
                                       chatListBloc.add(RefreshChatList());
                                     } catch (e) {
-                                      print('[ChatRoomPageRefactored] Failed to refresh chat list: $e');
+                                      AppLogger.d('[ChatRoomPageRefactored] Failed to refresh chat list: $e');
                                     }
                                   } catch (e) {
                                     // 显示错误提示
@@ -629,9 +630,9 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                       try {
                         final chatListBloc = getIt<ChatListBloc>();
                         chatListBloc.add(RefreshChatList());
-                        print('[ChatRoomPageRefactored] Refreshing chat list after sending message');
+                        AppLogger.d('[ChatRoomPageRefactored] Refreshing chat list after sending message');
                       } catch (e) {
-                        print('[ChatRoomPageRefactored] Failed to refresh chat list: $e');
+                        AppLogger.d('[ChatRoomPageRefactored] Failed to refresh chat list: $e');
                       }
 
                       Future.delayed(const Duration(milliseconds: 100), () {

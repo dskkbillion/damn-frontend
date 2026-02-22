@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -32,7 +33,7 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
   @override
   void initState() {
     super.initState();
-    print('[OrderPaymentMethodPage] initState() - Order ID: ${widget.order.id}');
+    AppLogger.d('[OrderPaymentMethodPage] initState() - Order ID: ${widget.order.id}');
 
     // 根据区域配置获取可用的支付方式
     _availablePaymentMethods = RegionConfig.supportedPaymentMethods;
@@ -46,7 +47,7 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final bloc = context.read<OrderDetailBloc>();
       if (bloc.state is! OrderDetailLoaded) {
-        print('[OrderPaymentMethodPage] State is not OrderDetailLoaded, reloading order...');
+        AppLogger.d('[OrderPaymentMethodPage] State is not OrderDetailLoaded, reloading order...');
         bloc.add(LoadOrderDetail(orderId: widget.order.id));
       }
     });
@@ -54,7 +55,7 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
 
   @override
   void dispose() {
-    print('[OrderPaymentMethodPage] dispose() called');
+    AppLogger.d('[OrderPaymentMethodPage] dispose() called');
     // 如果有对话框显示，确保关闭它
     if (_isLoadingDialogShowing && mounted) {
       Navigator.of(context, rootNavigator: true).pop();
@@ -430,7 +431,7 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
 
   /// 打开Stripe WebView进行支付
   Future<void> _openStripeWebView(String paymentUrl, String orderId) async {
-    print('[OrderPaymentMethodPage] 打开Stripe WebView - URL: $paymentUrl');
+    AppLogger.d('[OrderPaymentMethodPage] 打开Stripe WebView - URL: $paymentUrl');
 
     try {
       final result = await Navigator.of(context).push<Map<String, dynamic>>(
@@ -445,7 +446,7 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
         ),
       );
 
-      print('[OrderPaymentMethodPage] Stripe WebView结果: $result');
+      AppLogger.d('[OrderPaymentMethodPage] Stripe WebView结果: $result');
 
       // 根据WebView结果导航到支付结果页面
       if (mounted) {
@@ -466,7 +467,7 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
         context.pushNamed('paymentResult', queryParameters: params);
       }
     } catch (e) {
-      print('[OrderPaymentMethodPage] 打开Stripe WebView失败: $e');
+      AppLogger.d('[OrderPaymentMethodPage] 打开Stripe WebView失败: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -482,11 +483,11 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
   void _confirmPayment() {
     // 防重复点击检查
     if (_isProcessing) {
-      print('[OrderPaymentMethodPage] 正在处理中，忽略重复点击');
+      AppLogger.d('[OrderPaymentMethodPage] 正在处理中，忽略重复点击');
       return;
     }
 
-    print('[OrderPaymentMethodPage] 开始支付 - 订单ID: ${widget.order.id}, 支付方式: $_selectedPaymentMethod');
+    AppLogger.d('[OrderPaymentMethodPage] 开始支付 - 订单ID: ${widget.order.id}, 支付方式: $_selectedPaymentMethod');
 
     // 触发支付事件 - 传递选择的支付方式
     context.read<OrderDetailBloc>().add(

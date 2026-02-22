@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart'; // Import GetIt instance
 import 'package:dskk_flutter_refactor/features/after_sales/presentation/bloc/after_sales_bloc.dart';
@@ -98,7 +99,7 @@ class _AfterSalesListPageState extends State<AfterSalesListPage> {
               onTap: () {
                  // TODO: Navigate to AfterSalesDetailPage
                  // context.go('/afterSalesDetail/${application.id}');
-                 print('Tapped on AfterSales application ID: ${application.id}');
+                 AppLogger.d('Tapped on AfterSales application ID: ${application.id}');
               },
            );
         },

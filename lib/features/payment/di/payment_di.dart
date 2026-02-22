@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -22,7 +23,7 @@ class PaymentDI {
       sl.registerLazySingleton<PaymentServiceFactory>(
         () => PaymentServiceFactory(sl<ApiClient>()),
       );
-      print('[payment_di] Registered PaymentServiceFactory');
+      AppLogger.d('[payment_di] Registered PaymentServiceFactory');
     }
     
     // 注册微信支付服务 - 暂时禁用
@@ -30,7 +31,7 @@ class PaymentDI {
     //   sl.registerLazySingleton<WechatPaymentService>(
     //     () => WechatPaymentService(sl<ApiClient>()),
     //   );
-    //   print('[payment_di] Registered WechatPaymentService');
+    //   AppLogger.d('[payment_di] Registered WechatPaymentService');
     // }
     
     // 注册 PaymentBloc - 使用PaymentServiceFactory
@@ -39,7 +40,7 @@ class PaymentDI {
         createOrderUseCase: sl<CreateOrderUseCase>(),
         paymentServiceFactory: sl<PaymentServiceFactory>(),
       ));
-      print('[payment_di] Registered PaymentBloc');
+      AppLogger.d('[payment_di] Registered PaymentBloc');
     }
     
     // 注册 ApiClient（如果尚未注册）
@@ -54,7 +55,7 @@ class PaymentDI {
           token: null,
         ),
       );
-      print('[payment_di] Registered ApiClient with URL: $baseUrl');
+      AppLogger.d('[payment_di] Registered ApiClient with URL: $baseUrl');
     }
 
     // 注册默认的支付服务（支付宝作为默认）
@@ -62,7 +63,7 @@ class PaymentDI {
       sl.registerLazySingleton<IPaymentService>(
         () => AlipayPaymentService(sl<ApiClient>()),
       );
-      print('[payment_di] Registered AlipayPaymentService as default IPaymentService');
+      AppLogger.d('[payment_di] Registered AlipayPaymentService as default IPaymentService');
     }
     
     // 确保 CreateOrderUseCase 已注册
@@ -70,7 +71,7 @@ class PaymentDI {
       sl.registerLazySingleton<CreateOrderUseCase>(
         () => CreateOrderUseCase(sl<IOrderRepository>()),
       );
-      print('[payment_di] Registered CreateOrderUseCase');
+      AppLogger.d('[payment_di] Registered CreateOrderUseCase');
     }
   }
 } 

@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:get_it/get_it.dart';
 import '../analytics_manager.dart';
 
@@ -12,7 +13,7 @@ class AnalyticsBlocObserver extends BlocObserver {
   @override
   void onEvent(BlocBase bloc, Object? event) {
     super.onEvent(bloc as Bloc, event);
-    print('[AnalyticsBlocObserver] BLoC事件: ${bloc.runtimeType} - ${event.runtimeType}');
+    AppLogger.d('[AnalyticsBlocObserver] BLoC事件: ${bloc.runtimeType} - ${event.runtimeType}');
     _trackBlocEvent(bloc, event);
   }
 
@@ -22,12 +23,12 @@ class AnalyticsBlocObserver extends BlocObserver {
       final blocType = bloc.runtimeType.toString();
       final eventStr = event.toString();
       
-      print('[AnalyticsBlocObserver] 分析事件: $blocType - $eventStr');
+      AppLogger.d('[AnalyticsBlocObserver] 分析事件: $blocType - $eventStr');
 
       // 处理登录事件
       if (eventStr.contains('LoginRequested') || eventStr.contains('SmsLoginRequested')) {
         final loginMethod = _extractLoginMethod(eventStr);
-        print('[AnalyticsBlocObserver] 检测到登录事件，方法: $loginMethod');
+        AppLogger.d('[AnalyticsBlocObserver] 检测到登录事件，方法: $loginMethod');
         
         _analytics.trackEvent(
           businessType: 'login_attempt',
@@ -42,7 +43,7 @@ class AnalyticsBlocObserver extends BlocObserver {
       // 处理订单事件
       else if (eventStr.contains('ConfirmReceipt')) {
         final orderId = _extractOrderId(eventStr);
-        print('[AnalyticsBlocObserver] 检测到确认收货事件，订单ID: $orderId');
+        AppLogger.d('[AnalyticsBlocObserver] 检测到确认收货事件，订单ID: $orderId');
         
         if (orderId != null) {
           _analytics.trackOrder(
@@ -50,14 +51,14 @@ class AnalyticsBlocObserver extends BlocObserver {
             orderId: orderId,
           );
         } else {
-          print('[AnalyticsBlocObserver] 未能从事件中提取订单ID: $eventStr');
+          AppLogger.d('[AnalyticsBlocObserver] 未能从事件中提取订单ID: $eventStr');
         }
       }
 
       // 处理购物车事件
       else if (eventStr.contains('AddToCart')) {
         final productId = _extractProductId(eventStr);
-        print('[AnalyticsBlocObserver] 检测到加入购物车事件，商品ID: $productId');
+        AppLogger.d('[AnalyticsBlocObserver] 检测到加入购物车事件，商品ID: $productId');
         
         if (productId != null) {
           _analytics.trackCartAction(
@@ -67,14 +68,14 @@ class AnalyticsBlocObserver extends BlocObserver {
             sourcePage: 'unknown',
           );
         } else {
-          print('[AnalyticsBlocObserver] 未能从事件中提取商品ID: $eventStr');
+          AppLogger.d('[AnalyticsBlocObserver] 未能从事件中提取商品ID: $eventStr');
         }
       }
 
       // 处理商品点击事件
       else if (eventStr.contains('ProductCardClicked')) {
         final productId = _extractProductId(eventStr);
-        print('[AnalyticsBlocObserver] 检测到商品卡片点击事件，商品ID: $productId');
+        AppLogger.d('[AnalyticsBlocObserver] 检测到商品卡片点击事件，商品ID: $productId');
         
         if (productId != null) {
           _analytics.trackClick(
@@ -84,11 +85,11 @@ class AnalyticsBlocObserver extends BlocObserver {
             source: 'home_page',
           );
         } else {
-          print('[AnalyticsBlocObserver] 未能从事件中提取商品ID: $eventStr');
+          AppLogger.d('[AnalyticsBlocObserver] 未能从事件中提取商品ID: $eventStr');
         }
       }
     } catch (e) {
-      print('[AnalyticsBlocObserver] 处理BLoC事件失败: $e');
+      AppLogger.d('[AnalyticsBlocObserver] 处理BLoC事件失败: $e');
     }
   }
 

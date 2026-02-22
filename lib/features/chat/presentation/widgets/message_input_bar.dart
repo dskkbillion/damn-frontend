@@ -1,4 +1,5 @@
 import 'dart:io'; // Import File
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:async'; // Import async
 import 'package:flutter/foundation.dart'; // Import for kIsWeb
 
@@ -97,16 +98,16 @@ class _MessageInputBarState extends State<MessageInputBar> {
     // ✅ 使用与AI Chat相同的权限检查方式，更可靠
     // 先用 AudioRecorder 的原生方法检查权限
     if (!await _audioRecorder.hasPermission()) {
-        print('[Permission Check] AudioRecorder.hasPermission() returned false, requesting permission...');
+        AppLogger.d('[Permission Check] AudioRecorder.hasPermission() returned false, requesting permission...');
 
         // 使用 permission_handler 请求权限
         final status = await Permission.microphone.request();
-        print('[Permission Check] Permission.microphone.request() result: $status');
+        AppLogger.d('[Permission Check] Permission.microphone.request() result: $status');
 
         if (!status.isGranted) {
             // 检查是否永久拒绝
             if (status.isPermanentlyDenied) {
-                print("[Permission Check] Permission permanently denied.");
+                AppLogger.d("[Permission Check] Permission permanently denied.");
                 showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
@@ -160,11 +161,11 @@ class _MessageInputBarState extends State<MessageInputBar> {
           _recordingDuration = 0;
         });
         _startRecordingTimer();
-        print('Recording started: $_recordingPath');
+        AppLogger.d('Recording started: $_recordingPath');
       }
 
     } catch (e) {
-      print('Error starting recording: $e');
+      AppLogger.d('Error starting recording: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(appLocalizations.chat_recording_error('$e'))),
       );
@@ -191,20 +192,20 @@ class _MessageInputBarState extends State<MessageInputBar> {
     try {
       final path = await _audioRecorder.stop();
       if (path != null && mounted) {
-        print('Recording stopped: $path, Duration: $_recordingDuration s');
+        AppLogger.d('Recording stopped: $path, Duration: $_recordingDuration s');
         final recordingFile = File(path);
         if (await recordingFile.exists() && _recordingDuration > 0) {
           context.read<ChatMessagesBloc>().add(
             SendMessageRequested(type: 'audio', file: recordingFile),
           );
         } else {
-          print('Recording file invalid or too short.');
+          AppLogger.d('Recording file invalid or too short.');
         }
       } else {
-        print('Stopping recording failed or component unmounted.');
+        AppLogger.d('Stopping recording failed or component unmounted.');
       }
     } catch (e) {
-      print('Error stopping recording: $e');
+      AppLogger.d('Error stopping recording: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(appLocalizations.chat_stop_recording_error('$e'))),
       );
@@ -224,11 +225,11 @@ class _MessageInputBarState extends State<MessageInputBar> {
         final file = File(_recordingPath!);
         if(await file.exists()) {
           await file.delete();
-          print("Recording cancelled and file deleted.");
+          AppLogger.d("Recording cancelled and file deleted.");
         }
       }
     } catch (e) {
-      print("Error cancelling recording: $e");
+      AppLogger.d("Error cancelling recording: $e");
     } finally {
       if(mounted) {
         _resetRecordingState();
@@ -272,7 +273,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
             _fileUploadStates[processResult.finalFile.path] = const FileUploadState.uploading();
           });
 
-          print('Image processed: ${processResult.finalFile.path}, compression: ${processResult.compressionRatio?.toStringAsFixed(1)}%');
+          AppLogger.d('Image processed: ${processResult.finalFile.path}, compression: ${processResult.compressionRatio?.toStringAsFixed(1)}%');
           
           // 2. 发送消息（会触发上传）
           context.read<ChatMessagesBloc>().add(
@@ -298,10 +299,10 @@ class _MessageInputBarState extends State<MessageInputBar> {
           );
         }
       } else {
-        print('No image selected.');
+        AppLogger.d('No image selected.');
       }
     } catch (e) {
-       print('Error picking image: $e');
+       AppLogger.d('Error picking image: $e');
        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(appLocalizations.chat_image_picking_error('$e'))), 
       ); 
@@ -367,7 +368,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
         }
       }
     } catch (e) {
-      print('Error picking multiple images: $e');
+      AppLogger.d('Error picking multiple images: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('选择图片出错: $e')),
       );
@@ -549,7 +550,7 @@ ${appLocalizations.chat_markdown_example_bold_italic}
 
 ```dart
 void main() {
-  print('Hello, Markdown!');
+  AppLogger.d('Hello, Markdown!');
 }
 ```
 
@@ -715,7 +716,7 @@ ${appLocalizations.chat_markdown_example_table_col1} | ${appLocalizations.chat_m
       onLongPressCancel: () { // This might not trigger easily, consider drag update
           if(_isRecording) {
               _cancelRecording();
-              print('Recording cancelled via onLongPressCancel');
+              AppLogger.d('Recording cancelled via onLongPressCancel');
           }
       },
       // Consider adding onLongPressMoveUpdate for cancel-by-dragging logic

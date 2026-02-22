@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_cubit.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/usecases/login_with_verification_code.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/usecases/send_verification_code.dart';
@@ -27,7 +28,7 @@ import 'package:dskk_flutter_refactor/core/error/failures.dart';
 class AuthDI {
   /// 初始化Auth模块的所有依赖
   static Future<void> init(GetIt getIt) async {
-    print('[AuthDI] Initializing Auth module dependencies');
+    AppLogger.d('[AuthDI] Initializing Auth module dependencies');
     
     // 注册Cubit
     getIt.registerFactory<SmsLoginCubit>(() => SmsLoginCubit(
@@ -53,14 +54,14 @@ class AuthDI {
       getIt.registerLazySingleton<ISecureStorageRepository>(
         () => SecureStorageRepositoryImpl(getIt<FlutterSecureStorage>()),
       );
-      print('[AuthDI] Registered ISecureStorageRepository');
+      AppLogger.d('[AuthDI] Registered ISecureStorageRepository');
     }
     
     // 注册TokenValidator
     if (!getIt.isRegistered<TokenValidator>()) {
       // 创建一个简单的TokenValidator实现，而不是使用抽象类
       getIt.registerLazySingleton<TokenValidator>(() => SimpleTokenValidator());
-      print('[AuthDI] Registered TokenValidator');
+      AppLogger.d('[AuthDI] Registered TokenValidator');
     }
     
     // 注册UserInfoRemoteDataSource
@@ -68,7 +69,7 @@ class AuthDI {
       getIt.registerLazySingleton<UserInfoRemoteDataSource>(() => UserInfoRemoteDataSourceImpl(
         getIt<Dio>(),
       ));
-      print('[AuthDI] Registered UserInfoRemoteDataSourceImpl');
+      AppLogger.d('[AuthDI] Registered UserInfoRemoteDataSourceImpl');
     }
     
     // 注册IUserInfoRepository（真实实现）
@@ -77,7 +78,7 @@ class AuthDI {
         remoteDataSource: getIt<UserInfoRemoteDataSource>(),
         networkInfo: getIt<NetworkInfo>(),
       ));
-      print('[AuthDI] Registered UserInfoRepositoryImpl');
+      AppLogger.d('[AuthDI] Registered UserInfoRepositoryImpl');
     }
     
     // 注册AuthRepositoryImpl
@@ -89,7 +90,7 @@ class AuthDI {
         userInfoRepository: getIt<IUserInfoRepository>(),
         tokenValidator: getIt<TokenValidator>(),
       ));
-      print('[AuthDI] Registered IAuthRepository');
+      AppLogger.d('[AuthDI] Registered IAuthRepository');
     }
     
     // 注册真实的AuthRemoteDataSourceImpl，替换模拟实现
@@ -97,10 +98,10 @@ class AuthDI {
       getIt.registerLazySingleton<AuthRemoteDataSource>(() => AuthRemoteDataSourceImpl(
         dio: getIt<Dio>(),
       ));
-      print('[AuthDI] Registered AuthRemoteDataSourceImpl');
+      AppLogger.d('[AuthDI] Registered AuthRemoteDataSourceImpl');
     }
     
-    print('[AuthDI] Auth module dependencies initialized');
+    AppLogger.d('[AuthDI] Auth module dependencies initialized');
   }
 }
 

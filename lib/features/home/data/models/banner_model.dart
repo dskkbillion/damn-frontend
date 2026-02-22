@@ -1,4 +1,5 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import '../../domain/entities/banner.dart';
 
 /// Banner 模型，用于序列化和反序列化 API 响应
@@ -21,7 +22,7 @@ class BannerModel extends Banner {
 
   /// 从 JSON 创建 BannerModel 实例
   factory BannerModel.fromJson(Map<String, dynamic> json) {
-    print('解析Banner JSON: $json');
+    AppLogger.d('解析Banner JSON: $json');
     
     // 获取图片URL，可能是image、advImg、mainImage或images字段
     String imageUrl = '';
@@ -39,7 +40,7 @@ class BannerModel extends Banner {
       }
     }
     
-    print('解析后的图片URL: $imageUrl');
+    AppLogger.d('解析后的图片URL: $imageUrl');
     
     return BannerModel(
       id: json['id']?.toString() ?? '0',
@@ -53,13 +54,13 @@ class BannerModel extends Banner {
   
   /// 将相对图片URL转换为完整URL
   static String _getFullImageUrl(String relativeUrl) {
-    print('处理图片URL: $relativeUrl');
+    AppLogger.d('处理图片URL: $relativeUrl');
     
     if (relativeUrl.isEmpty) return '';
     
     // 如果是完整URL，直接返回
     if (relativeUrl.startsWith('http')) {
-      print('完整URL: $relativeUrl');
+      AppLogger.d('完整URL: $relativeUrl');
       return relativeUrl;
     }
     
@@ -80,7 +81,7 @@ class BannerModel extends Banner {
     final cleanRelativeUrl = relativeUrl.startsWith('/') ? relativeUrl : '/$relativeUrl';
     
     final fullUrl = '$cleanBaseUrl$cleanRelativeUrl';
-    print('转换后的完整URL: $fullUrl');
+    AppLogger.d('转换后的完整URL: $fullUrl');
     return fullUrl;
   }
 

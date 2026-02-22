@@ -1,4 +1,5 @@
 // import 'dart:convert';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -118,7 +119,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   Future<UserProfileDto> getUserProfile() async {
     try {
       final path = '/api/member/info';
-      print('Requesting user profile from: $path');
+      AppLogger.d('Requesting user profile from: $path');
 
       final response = await dio.get(path);
 
@@ -128,7 +129,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
           try {
             return UserProfileDto.fromJson(data['data']);
           } catch (e) {
-            print("Error parsing UserProfileDto: $e");
+            AppLogger.d("Error parsing UserProfileDto: $e");
             throw ServerException(message: "解析用户信息失败: ${e.toString()}");
           }
         } else {
@@ -144,11 +145,11 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         );
       }
     } on DioException catch (e) {
-      print("DioException in getUserProfile: ${e.response?.data}");
+      AppLogger.d("DioException in getUserProfile: ${e.response?.data}");
       throw ServerException(message: e.message ?? '网络请求失败', statusCode: e.response?.statusCode);
     } catch (e) {
       if (e is ServerException) rethrow;
-      print("Unexpected error in getUserProfile: $e");
+      AppLogger.d("Unexpected error in getUserProfile: $e");
       throw ServerException(message: e.toString());
     }
   }
@@ -183,7 +184,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
             return UserProfileDto.fromJson(responseData['data']);
           } else {
             // 如果只返回成功消息，重新获取用户信息
-            print('Update successful but no user data returned, fetching latest profile...');
+            AppLogger.d('Update successful but no user data returned, fetching latest profile...');
             return await getUserProfile();
           }
         } else {
@@ -212,7 +213,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       final file = File(imageFilePath);
       
       // 先压缩图片
-      print('[ProfileRemoteDataSourceImpl] 开始压缩头像图片...');
+      AppLogger.d('[ProfileRemoteDataSourceImpl] 开始压缩头像图片...');
       final compressedFile = await imageCompressService.compressAvatar(file);
       
       if (compressedFile == null) {
@@ -221,12 +222,12 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       
       // 检查压缩后的文件大小
       final compressedSize = await compressedFile.length();
-      print('[ProfileRemoteDataSourceImpl] 压缩后文件大小: ${_formatFileSize(compressedSize)}');
+      AppLogger.d('[ProfileRemoteDataSourceImpl] 压缩后文件大小: ${_formatFileSize(compressedSize)}');
       
       // 如果压缩后仍然很大，进一步压缩到5MB以下
       File finalFile = compressedFile;
       if (compressedSize > 5 * 1024 * 1024) {
-        print('[ProfileRemoteDataSourceImpl] 文件仍然较大，进一步压缩...');
+        AppLogger.d('[ProfileRemoteDataSourceImpl] 文件仍然较大，进一步压缩...');
         final furtherCompressed = await imageCompressService.compressToMaxSize(
           compressedFile,
           maxSizeBytes: 5 * 1024 * 1024, // 5MB
@@ -237,7 +238,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         if (furtherCompressed != null) {
           finalFile = furtherCompressed;
           final finalSize = await finalFile.length();
-          print('[ProfileRemoteDataSourceImpl] 最终文件大小: ${_formatFileSize(finalSize)}');
+          AppLogger.d('[ProfileRemoteDataSourceImpl] 最终文件大小: ${_formatFileSize(finalSize)}');
         }
       }
       
@@ -323,8 +324,8 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       final response = await dio.get('/api/member/balance/info');
       
       // 打印调试信息
-      print('Requesting wallet info from: /api/member/balance/info');
-      print('Available user IDs - userId: $userId, commonUserId: $commonUserId');
+      AppLogger.d('Requesting wallet info from: /api/member/balance/info');
+      AppLogger.d('Available user IDs - userId: $userId, commonUserId: $commonUserId');
 
       if (response.statusCode == 200) {
         final data = response.data;
@@ -376,7 +377,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       }
 
       // 临时返回模拟数据，因为API不存在
-      print('交易记录API未实现，返回模拟数据');
+      AppLogger.d('交易记录API未实现，返回模拟数据');
       // 延迟1秒模拟网络请求
       await Future.delayed(const Duration(seconds: 1));
       
@@ -413,7 +414,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       return [];
       */
     } catch (e) {
-      print('获取交易记录失败: $e');
+      AppLogger.d('获取交易记录失败: $e');
       throw ServerException(
         message: '获取交易记录失败: $e',
         statusCode: e is DioException ? e.response?.statusCode : null,

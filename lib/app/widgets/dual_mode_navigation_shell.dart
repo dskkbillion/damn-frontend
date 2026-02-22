@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
@@ -38,21 +39,21 @@ class _DualModeNavigationShellState extends ConsumerState<DualModeNavigationShel
       final preloaderService = GetIt.instance<ProfilePreloaderService>();
       // 异步预加载，不阻塞UI
       preloaderService.preloadForMode(mode).then((_) {
-        print('[ModeSwitch] Successfully preloaded data for ${mode.name} mode');
+        AppLogger.d('[ModeSwitch] Successfully preloaded data for ${mode.name} mode');
         
         // 触发ProfileBloc使用缓存数据
         try {
           final profileBloc = GetIt.instance<ProfileBloc>();
           profileBloc.add(GetUserProfileCachedEvent(mode: mode));
-          print('[ModeSwitch] Triggered ProfileBloc cached load for ${mode.name}');
+          AppLogger.d('[ModeSwitch] Triggered ProfileBloc cached load for ${mode.name}');
         } catch (e) {
-          print('[ModeSwitch] Failed to trigger ProfileBloc: $e');
+          AppLogger.d('[ModeSwitch] Failed to trigger ProfileBloc: $e');
         }
       }).catchError((error) {
-        print('[ModeSwitch] Failed to preload data for ${mode.name} mode: $error');
+        AppLogger.d('[ModeSwitch] Failed to preload data for ${mode.name} mode: $error');
       });
     } catch (e) {
-      print('[ModeSwitch] Error getting ProfilePreloader service: $e');
+      AppLogger.d('[ModeSwitch] Error getting ProfilePreloader service: $e');
     }
   }
   

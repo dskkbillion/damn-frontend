@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../core/api/api_client.dart';
@@ -81,7 +82,7 @@ class PaymentServiceFactory {
         services.add(alipayService);
       }
     } catch (e) {
-      print('[PaymentServiceFactory] Failed to load Alipay service: $e');
+      AppLogger.d('[PaymentServiceFactory] Failed to load Alipay service: $e');
     }
     
     try {
@@ -90,7 +91,7 @@ class PaymentServiceFactory {
         services.add(wechatService);
       }
     } catch (e) {
-      print('[PaymentServiceFactory] Failed to load Wechat service: $e');
+      AppLogger.d('[PaymentServiceFactory] Failed to load Wechat service: $e');
     }
     
     try {
@@ -99,7 +100,7 @@ class PaymentServiceFactory {
         services.add(stripeService);
       }
     } catch (e) {
-      print('[PaymentServiceFactory] Failed to load Stripe service: $e');
+      AppLogger.d('[PaymentServiceFactory] Failed to load Stripe service: $e');
     }
     
     return services;
@@ -111,7 +112,7 @@ class PaymentServiceFactory {
       final service = await getPaymentService(paymentMethod);
       return service.isAvailable;
     } catch (e) {
-      print('[PaymentServiceFactory] Payment method $paymentMethod not available: $e');
+      AppLogger.d('[PaymentServiceFactory] Payment method $paymentMethod not available: $e');
       return false;
     }
   }

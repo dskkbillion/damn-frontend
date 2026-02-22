@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -51,7 +52,7 @@ import '../presentation/seller/bloc/seller_order_detail_bloc.dart';
 class OrdersDI {
   /// 初始化订单模块的所有依赖
   static Future<void> init(GetIt sl) async {
-    print('[OrdersDI] ========== 开始初始化订单模块依赖 ==========');
+    AppLogger.d('[OrdersDI] ========== 开始初始化订单模块依赖 ==========');
 
     try {
       // 数据源
@@ -66,9 +67,9 @@ class OrdersDI {
       // BLoC
       _registerBlocs(sl);
 
-      print('[OrdersDI] ========== 订单模块依赖初始化完成 ==========');
+      AppLogger.d('[OrdersDI] ========== 订单模块依赖初始化完成 ==========');
     } catch (e) {
-      print('[OrdersDI] 初始化订单模块依赖时出错: $e');
+      AppLogger.d('[OrdersDI] 初始化订单模块依赖时出错: $e');
       rethrow;
     }
   }
@@ -83,9 +84,9 @@ class OrdersDI {
           secureStorage: sl<FlutterSecureStorage>(),
         )
       );
-      print('[OrdersDI] 已注册 IOrderRemoteDataSource');
+      AppLogger.d('[OrdersDI] 已注册 IOrderRemoteDataSource');
     } else {
-      print('[OrdersDI] IOrderRemoteDataSource 已存在，跳过注册');
+      AppLogger.d('[OrdersDI] IOrderRemoteDataSource 已存在，跳过注册');
     }
 
     // 本地数据源
@@ -93,9 +94,9 @@ class OrdersDI {
       sl.registerLazySingleton<IOrderLocalDataSource>(
         () => OrderLocalDataSourceImpl(appDatabase: sl<AppDatabase>())
       );
-      print('[OrdersDI] 已注册 IOrderLocalDataSource');
+      AppLogger.d('[OrdersDI] 已注册 IOrderLocalDataSource');
     } else {
-      print('[OrdersDI] IOrderLocalDataSource 已存在，跳过注册');
+      AppLogger.d('[OrdersDI] IOrderLocalDataSource 已存在，跳过注册');
     }
 
     // 材料数据源
@@ -103,9 +104,9 @@ class OrdersDI {
       sl.registerLazySingleton<IOrderMaterialsRemoteDataSource>(
         () => OrderMaterialsRemoteDataSourceImpl(sl<Dio>())
       );
-      print('[OrdersDI] 已注册 IOrderMaterialsRemoteDataSource');
+      AppLogger.d('[OrdersDI] 已注册 IOrderMaterialsRemoteDataSource');
     } else {
-      print('[OrdersDI] IOrderMaterialsRemoteDataSource 已存在，跳过注册');
+      AppLogger.d('[OrdersDI] IOrderMaterialsRemoteDataSource 已存在，跳过注册');
     }
   }
 
@@ -122,9 +123,9 @@ class OrdersDI {
           secureStorage: sl<ISecureStorageRepository>(),
         )
       );
-      print('[OrdersDI] 已注册 IOrderRepository');
+      AppLogger.d('[OrdersDI] 已注册 IOrderRepository');
     } else {
-      print('[OrdersDI] IOrderRepository 已存在，跳过注册');
+      AppLogger.d('[OrdersDI] IOrderRepository 已存在，跳过注册');
     }
   }
 
@@ -135,77 +136,77 @@ class OrdersDI {
       sl.registerLazySingleton<CreateOrderUseCase>(
         () => CreateOrderUseCase(sl<IOrderRepository>())
       );
-      print('[OrdersDI] 已注册 CreateOrderUseCase');
+      AppLogger.d('[OrdersDI] 已注册 CreateOrderUseCase');
     }
 
     if (!sl.isRegistered<GetOrderListUseCase>()) {
       sl.registerLazySingleton<GetOrderListUseCase>(
         () => GetOrderListUseCase(sl<IOrderRepository>())
       );
-      print('[OrdersDI] 已注册 GetOrderListUseCase');
+      AppLogger.d('[OrdersDI] 已注册 GetOrderListUseCase');
     }
 
     if (!sl.isRegistered<GetOrderDetailUseCase>()) {
       sl.registerLazySingleton<GetOrderDetailUseCase>(
         () => GetOrderDetailUseCase(sl<IOrderRepository>())
       );
-      print('[OrdersDI] 已注册 GetOrderDetailUseCase');
+      AppLogger.d('[OrdersDI] 已注册 GetOrderDetailUseCase');
     }
 
     if (!sl.isRegistered<CancelOrderUseCase>()) {
       sl.registerLazySingleton<CancelOrderUseCase>(
         () => CancelOrderUseCase(sl<IOrderRepository>())
       );
-      print('[OrdersDI] 已注册 CancelOrderUseCase');
+      AppLogger.d('[OrdersDI] 已注册 CancelOrderUseCase');
     }
 
     if (!sl.isRegistered<ConfirmOrderReceiptUseCase>()) {
       sl.registerLazySingleton<ConfirmOrderReceiptUseCase>(
         () => ConfirmOrderReceiptUseCase(sl<IOrderRepository>())
       );
-      print('[OrdersDI] 已注册 ConfirmOrderReceiptUseCase');
+      AppLogger.d('[OrdersDI] 已注册 ConfirmOrderReceiptUseCase');
     }
 
     if (!sl.isRegistered<DeleteOrderUseCase>()) {
       sl.registerLazySingleton<DeleteOrderUseCase>(
         () => DeleteOrderUseCase(sl<IOrderRepository>())
       );
-      print('[OrdersDI] 已注册 DeleteOrderUseCase');
+      AppLogger.d('[OrdersDI] 已注册 DeleteOrderUseCase');
     }
 
     if (!sl.isRegistered<SubmitRequirementsUseCase>()) {
       sl.registerLazySingleton<SubmitRequirementsUseCase>(
         () => SubmitRequirementsUseCase(sl<IOrderRepository>())
       );
-      print('[OrdersDI] 已注册 SubmitRequirementsUseCase');
+      AppLogger.d('[OrdersDI] 已注册 SubmitRequirementsUseCase');
     }
 
     if (!sl.isRegistered<SubmitEvaluationUseCase>()) {
       sl.registerLazySingleton<SubmitEvaluationUseCase>(
         () => SubmitEvaluationUseCase(sl<IOrderRepository>())
       );
-      print('[OrdersDI] 已注册 SubmitEvaluationUseCase');
+      AppLogger.d('[OrdersDI] 已注册 SubmitEvaluationUseCase');
     }
 
     if (!sl.isRegistered<GetOrderMaterialsUseCase>()) {
       sl.registerLazySingleton<GetOrderMaterialsUseCase>(
         () => GetOrderMaterialsUseCase(sl<IOrderRepository>())
       );
-      print('[OrdersDI] 已注册 GetOrderMaterialsUseCase');
+      AppLogger.d('[OrdersDI] 已注册 GetOrderMaterialsUseCase');
     }
 
     if (!sl.isRegistered<RejectOrderUseCase>()) {
       sl.registerLazySingleton<RejectOrderUseCase>(
         () => RejectOrderUseCase(sl<IOrderRepository>())
       );
-      print('[OrdersDI] 已注册 RejectOrderUseCase');
+      AppLogger.d('[OrdersDI] 已注册 RejectOrderUseCase');
     }
 
     if (!sl.isRegistered<InviteEvaluationUseCase>()) {
       sl.registerLazySingleton<InviteEvaluationUseCase>(
         () => InviteEvaluationUseCase(sl<IOrderRepository>())
       );
-      print('[OrdersDI] 已注册 InviteEvaluationUseCase');
+      AppLogger.d('[OrdersDI] 已注册 InviteEvaluationUseCase');
     }
 
     // 卖家订单用例
@@ -213,21 +214,21 @@ class OrdersDI {
       sl.registerLazySingleton<ConfirmOrderAcceptanceUseCase>(
         () => ConfirmOrderAcceptanceUseCase(sl<IOrderRepository>())
       );
-      print('[OrdersDI] 已注册 ConfirmOrderAcceptanceUseCase');
+      AppLogger.d('[OrdersDI] 已注册 ConfirmOrderAcceptanceUseCase');
     }
 
     if (!sl.isRegistered<DeliverOrderUseCase>()) {
       sl.registerLazySingleton<DeliverOrderUseCase>(
         () => DeliverOrderUseCase(sl<IOrderRepository>())
       );
-      print('[OrdersDI] 已注册 DeliverOrderUseCase');
+      AppLogger.d('[OrdersDI] 已注册 DeliverOrderUseCase');
     }
 
     if (!sl.isRegistered<DeleteSellerRecordUseCase>()) {
       sl.registerLazySingleton<DeleteSellerRecordUseCase>(
         () => DeleteSellerRecordUseCase(sl<IOrderRepository>())
       );
-      print('[OrdersDI] 已注册 DeleteSellerRecordUseCase');
+      AppLogger.d('[OrdersDI] 已注册 DeleteSellerRecordUseCase');
     }
 
     // 卖家订单附加用例 (使用别名)
@@ -235,7 +236,7 @@ class OrdersDI {
       sl.registerLazySingleton<seller_actions.AddOrderDemandUseCase>(
         () => seller_actions.AddOrderDemandUseCase(sl<IOrderRepository>())
       );
-      print('[OrdersDI] 已注册 AddOrderDemandUseCase');
+      AppLogger.d('[OrdersDI] 已注册 AddOrderDemandUseCase');
     }
   }
 
@@ -248,9 +249,9 @@ class OrdersDI {
           getOrderListUseCase: sl<GetOrderListUseCase>(),
         )
       );
-      print('[OrdersDI] 已注册 OrderListBloc');
+      AppLogger.d('[OrdersDI] 已注册 OrderListBloc');
     } else {
-      print('[OrdersDI] OrderListBloc 已存在，跳过注册');
+      AppLogger.d('[OrdersDI] OrderListBloc 已存在，跳过注册');
     }
 
     if (!sl.isRegistered<OrderDetailBloc>()) {
@@ -267,9 +268,9 @@ class OrdersDI {
           orderRepository: sl<IOrderRepository>(), // Added
         )
       );
-      print('[OrdersDI] 已注册 OrderDetailBloc');
+      AppLogger.d('[OrdersDI] 已注册 OrderDetailBloc');
     } else {
-      print('[OrdersDI] OrderDetailBloc 已存在，跳过注册');
+      AppLogger.d('[OrdersDI] OrderDetailBloc 已存在，跳过注册');
     }
 
     // 卖家订单BLoC
@@ -284,9 +285,9 @@ class OrdersDI {
           sl<DeleteSellerRecordUseCase>(),
         )
       );
-      print('[OrdersDI] 已注册 SellerOrderListBloc');
+      AppLogger.d('[OrdersDI] 已注册 SellerOrderListBloc');
     } else {
-      print('[OrdersDI] SellerOrderListBloc 已存在，跳过注册');
+      AppLogger.d('[OrdersDI] SellerOrderListBloc 已存在，跳过注册');
     }
 
     if (!sl.isRegistered<SellerOrderDetailBloc>()) {
@@ -300,9 +301,9 @@ class OrdersDI {
           sl<IOrderRepository>(),
         )
       );
-      print('[OrdersDI] 已注册 SellerOrderDetailBloc');
+      AppLogger.d('[OrdersDI] 已注册 SellerOrderDetailBloc');
     } else {
-      print('[OrdersDI] SellerOrderDetailBloc 已存在，跳过注册');
+      AppLogger.d('[OrdersDI] SellerOrderDetailBloc 已存在，跳过注册');
     }
   }
 } 

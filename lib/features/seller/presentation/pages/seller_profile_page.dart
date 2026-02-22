@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -27,31 +28,31 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
   @override
   void initState() {
     super.initState();
-    print('[SellerProfilePage] initState called');
+    AppLogger.d('[SellerProfilePage] initState called');
   }
 
   @override
   void dispose() {
-    print('[SellerProfilePage] dispose called');
+    AppLogger.d('[SellerProfilePage] dispose called');
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    print('[SellerProfilePage] build called');
+    AppLogger.d('[SellerProfilePage] build called');
     // 使用BlocProvider.value来使用现有的单例BLoC实例
     final profileBloc = GetIt.instance<ProfileBloc>();
     
     // 检查当前状态，避免重复初始化
     final currentState = profileBloc.state;
-    print('[SellerProfilePage] Current ProfileBloc state: ${currentState.runtimeType}');
+    AppLogger.d('[SellerProfilePage] Current ProfileBloc state: ${currentState.runtimeType}');
     
     // 只在真正需要时才触发初始化
     if (currentState is ProfileInitial) {
-      print('[SellerProfilePage] ProfileBloc is in Initial state, triggering CheckAuthStatus');
+      AppLogger.d('[SellerProfilePage] ProfileBloc is in Initial state, triggering CheckAuthStatus');
       profileBloc.add(CheckAuthStatusEvent());
     } else if (currentState is ProfileLoaded || currentState is ProfileUpdated) {
-      print('[SellerProfilePage] Profile already loaded: ${(currentState as dynamic).profile?.nickName}');
+      AppLogger.d('[SellerProfilePage] Profile already loaded: ${(currentState as dynamic).profile?.nickName}');
       // 已经有数据了，不需要重新加载
     }
     
@@ -136,14 +137,14 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
               // 头像 - 点击跳转到店铺页面
               GestureDetector(
                 onTap: () {
-                  print('[SellerProfilePage] Avatar tapped, profile: $profile');
-                  print('[SellerProfilePage] userId: ${profile?.userId}');
+                  AppLogger.d('[SellerProfilePage] Avatar tapped, profile: $profile');
+                  AppLogger.d('[SellerProfilePage] userId: ${profile?.userId}');
                   if (profile?.userId != null) {
                     final route = '/seller-profile/${profile!.userId}';
-                    print('[SellerProfilePage] Navigating to: $route');
+                    AppLogger.d('[SellerProfilePage] Navigating to: $route');
                     context.go(route);
                   } else {
-                    print('[SellerProfilePage] Cannot navigate: userId is null');
+                    AppLogger.d('[SellerProfilePage] Cannot navigate: userId is null');
                   }
                 },
                 child: Container(

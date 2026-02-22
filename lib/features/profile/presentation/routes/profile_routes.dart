@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart'; // 导入Flutter Material包
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:go_router/go_router.dart';
 import '../pages/profile_page.dart'; // 引入 ProfilePage
 import '../pages/account_security_page.dart'; // 引入账号与安全页面
@@ -74,7 +75,7 @@ class ProfileRoutes {
               try {
                 networkInfo = getIt<NetworkInfo>();
               } catch (e) {
-                print('NetworkInfo not found in GetIt, using mock: $e');
+                AppLogger.d('NetworkInfo not found in GetIt, using mock: $e');
                 networkInfo = mock_network.MockNetworkInfo();
               }
               
@@ -101,7 +102,7 @@ class ProfileRoutes {
                 getWalletTransactions: getWalletTransactions,
               );
               
-              print('Successfully created WalletBloc with app dependencies');
+              AppLogger.d('Successfully created WalletBloc with app dependencies');
               
               // 返回带BlocProvider的WalletPage
               return BlocProvider<WalletBloc>(
@@ -110,7 +111,7 @@ class ProfileRoutes {
               );
             } catch (e) {
               // 如果从GetIt获取依赖失败，打印错误并返回一个简单的错误提示页面
-              print('Error creating WalletBloc with app dependencies: $e');
+              AppLogger.d('Error creating WalletBloc with app dependencies: $e');
               return Scaffold(
                 appBar: AppBar(title: const Text('钱包')),
                 body: Center(
@@ -151,7 +152,7 @@ class ProfileRoutes {
           builder: (context, state) {
             // 提取status查询参数
             final statusString = state.uri.queryParameters['status'];
-            print('[ProfileRoutes] Orders route - status param: $statusString');
+            AppLogger.d('[ProfileRoutes] Orders route - status param: $statusString');
             
             // 解析status
             OrderStatus? parsedStatus;
@@ -161,7 +162,7 @@ class ProfileRoutes {
                   (e) => e.toString().split('.').last == statusString,
                 );
               } catch (e) {
-                print('[ProfileRoutes] Failed to parse status: $statusString');
+                AppLogger.d('[ProfileRoutes] Failed to parse status: $statusString');
               }
             }
             

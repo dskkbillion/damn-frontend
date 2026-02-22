@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_authentication_info.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/routes/seller_routes.dart';
@@ -689,21 +690,21 @@ class AuthStatusPage extends StatelessWidget {
   /// 获取认证相关图片
   List<String> _getAuthImages() {
     // 修复：添加调试信息并增强图片获取逻辑
-    print('获取认证图片 - 认证名称: ${authInfo.name}');
-    print('认证字段数据: ${authInfo.fields}');
+    AppLogger.d('获取认证图片 - 认证名称: ${authInfo.name}');
+    AppLogger.d('认证字段数据: ${authInfo.fields}');
     
     // 修复：从实际认证数据中获取图片
     if (authInfo.fields != null && authInfo.fields!.containsKey('images')) {
       final images = authInfo.fields!['images'];
-      print('找到图片数据: $images (类型: ${images.runtimeType})');
+      AppLogger.d('找到图片数据: $images (类型: ${images.runtimeType})');
       
       if (images is List) {
         final imageUrls = images.map((img) => img.toString()).where((url) => url.isNotEmpty).toList();
-        print('解析图片列表: $imageUrls');
+        AppLogger.d('解析图片列表: $imageUrls');
         return imageUrls;
       } else if (images is String && images.isNotEmpty) {
         final imageUrls = images.split(',').where((img) => img.trim().isNotEmpty).map((img) => img.trim()).toList();
-        print('解析图片字符串: $imageUrls');
+        AppLogger.d('解析图片字符串: $imageUrls');
         return imageUrls;
       }
     }
@@ -714,18 +715,18 @@ class AuthStatusPage extends StatelessWidget {
       for (final key in ['imageUrls', 'attachments', 'documents', 'files']) {
         if (authInfo.fields!.containsKey(key)) {
           final value = authInfo.fields![key];
-          print('尝试从 $key 字段获取图片: $value');
+          AppLogger.d('尝试从 $key 字段获取图片: $value');
           
           if (value is List && value.isNotEmpty) {
             final imageUrls = value.map((img) => img.toString()).where((url) => url.isNotEmpty).toList();
             if (imageUrls.isNotEmpty) {
-              print('从 $key 字段找到图片: $imageUrls');
+              AppLogger.d('从 $key 字段找到图片: $imageUrls');
               return imageUrls;
             }
           } else if (value is String && value.isNotEmpty) {
             final imageUrls = value.split(',').where((img) => img.trim().isNotEmpty).map((img) => img.trim()).toList();
             if (imageUrls.isNotEmpty) {
-              print('从 $key 字段解析图片: $imageUrls');
+              AppLogger.d('从 $key 字段解析图片: $imageUrls');
               return imageUrls;
             }
           }
@@ -733,7 +734,7 @@ class AuthStatusPage extends StatelessWidget {
       }
     }
     
-    print('没有找到图片数据');
+    AppLogger.d('没有找到图片数据');
     return [];
   }
   

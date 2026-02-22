@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:io';
 import 'dart:async';
@@ -348,7 +349,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
         }
       }
     } catch (e) {
-        print("Error picking image: $e");
+        AppLogger.d("Error picking image: $e");
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('选择图片出错: $e')),
@@ -392,7 +393,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
 
       try {
           await _audioRecorder.start(recordConfig, path: filePath);
-          print("Recording started: $filePath");
+          AppLogger.d("Recording started: $filePath");
           setState(() {
              _isRecording = true;
              _recordingPath = filePath; // Store the path
@@ -409,7 +410,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
              }
            });
       } catch (e) {
-         print("Error starting recording: $e");
+         AppLogger.d("Error starting recording: $e");
          if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(appLocalizations.ai_docs_recording_error(e.toString()))), // 使用国际化文本
@@ -421,7 +422,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
       // --- Stop Recording ---
       try {
          final String? path = await _audioRecorder.stop();
-         print("Recording stopped: $path");
+         AppLogger.d("Recording stopped: $path");
 
          setState(() {
            _isRecording = false;
@@ -437,7 +438,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
             final recordedFile = File(path);
             if (await recordedFile.exists()) {
                 // TODO: Add encoding/compression step here if needed to meet 16kbps
-                print("Recorded file size: ${await recordedFile.length()} bytes");
+                AppLogger.d("Recorded file size: ${await recordedFile.length()} bytes");
 
                // Dispatch the event with the **actual recorded file**
                 if (mounted) {
@@ -448,7 +449,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                    // 检查是否已选择对话，如果没有选择，先创建新对话
                    if (currentState.selectedConversationId == null) {
                      // 先创建新对话，再发送语音消息
-                     print("[ChatInputField] ${appLocalizations.ai_docs_auto_create_voice}");
+                     AppLogger.d("[ChatInputField] ${appLocalizations.ai_docs_auto_create_voice}");
                      aiChatBloc.add(CreateNewConversationAndSendVoiceMessage(audioFile: recordedFile));
                    } else {
                      // 已有对话，直接发送语音消息
@@ -456,7 +457,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                    }
                 } 
              } else {
-               print("Error: Recorded file not found at path: $path");
+               AppLogger.d("Error: Recorded file not found at path: $path");
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(appLocalizations.ai_docs_recording_file_not_found)), // 使用国际化文本
@@ -464,7 +465,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                }
              }
          } else {
-            print("Error: Stopping recording failed, path is null.");
+            AppLogger.d("Error: Stopping recording failed, path is null.");
             if (mounted) {
                ScaffoldMessenger.of(context).showSnackBar(
                  SnackBar(content: Text(appLocalizations.ai_docs_stop_recording_error)), // 使用国际化文本
@@ -472,7 +473,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
             }
          }
       } catch (e) {
-         print("Error stopping recording: $e");
+         AppLogger.d("Error stopping recording: $e");
          if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(appLocalizations.ai_docs_stop_recording_error_with_reason(e.toString()))), // 使用国际化文本
@@ -546,7 +547,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
 代码块示例:
 ```dart
 void main() {
-  print('Hello, Markdown!');
+  AppLogger.d('Hello, Markdown!');
 }
 ```
                   """);
@@ -611,7 +612,7 @@ void main() {
 代码示例:
 ```dart
 void main() {
-  print('Hello, Markdown!');
+  AppLogger.d('Hello, Markdown!');
 }
 ```
 

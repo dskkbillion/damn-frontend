@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // 添加Riverpod导入
 import 'package:get_it/get_it.dart'; // Import GetIt
@@ -67,7 +68,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         _isMixedMode = prefs.getBool('chat_mixed_mode') ?? false;
       });
     } catch (e) {
-      print('[ChatListPage] Error loading mixed mode setting: $e');
+      AppLogger.d('[ChatListPage] Error loading mixed mode setting: $e');
     }
   }
   
@@ -77,27 +78,27 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('chat_mixed_mode', value);
     } catch (e) {
-      print('[ChatListPage] Error saving mixed mode setting: $e');
+      AppLogger.d('[ChatListPage] Error saving mixed mode setting: $e');
     }
   }
   
   // 初始化全局 WebSocket 连接
   Future<void> _initializeWebSocket() async {
-    print('[ChatListPage] 🔌 _initializeWebSocket() called');
+    AppLogger.d('[ChatListPage] 🔌 _initializeWebSocket() called');
     try {
       final secureStorage = sl<FlutterSecureStorage>();
-      print('[ChatListPage] 🔌 Got secureStorage instance');
+      AppLogger.d('[ChatListPage] 🔌 Got secureStorage instance');
 
       // 获取用户凭证
       final commonUserIdStr = await secureStorage.read(key: 'common_user_id');
       final token = await secureStorage.read(key: 'auth_token');
 
-      print('[ChatListPage] 🔌 Credentials check:');
-      print('[ChatListPage] 🔌   commonUserId: ${commonUserIdStr != null ? commonUserIdStr : "NULL"}');
-      print('[ChatListPage] 🔌   token: ${token != null ? "EXISTS (${token.length} chars)" : "NULL"}');
+      AppLogger.d('[ChatListPage] 🔌 Credentials check:');
+      AppLogger.d('[ChatListPage] 🔌   commonUserId: ${commonUserIdStr != null ? commonUserIdStr : "NULL"}');
+      AppLogger.d('[ChatListPage] 🔌   token: ${token != null ? "EXISTS (${token.length} chars)" : "NULL"}');
 
       if (commonUserIdStr != null && token != null) {
-        print('[ChatListPage] 🔌 Initializing global WebSocket connection for userId: $commonUserIdStr');
+        AppLogger.d('[ChatListPage] 🔌 Initializing global WebSocket connection for userId: $commonUserIdStr');
 
         // 获取 WebSocket 数据源
         _webSocketDataSource = sl<IChatWebSocketDataSource>();
@@ -108,23 +109,23 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         // 订阅消息流 - 这里只是确保连接，实际消息处理由 EventBus 完成
         _webSocketMessageSubscription = _webSocketDataSource!.messageStream.listen(
           (messageDto) {
-            print('[ChatListPage] WebSocket message received in chat list page: ${messageDto.id}');
+            AppLogger.d('[ChatListPage] WebSocket message received in chat list page: ${messageDto.id}');
             // 消息会通过 EventBus 自动分发到 ChatListBloc，无需手动处理
           },
           onError: (error) {
-            print('[ChatListPage] WebSocket error: $error');
+            AppLogger.d('[ChatListPage] WebSocket error: $error');
           },
         );
 
-        print('[ChatListPage] 🔌 ✅ Global WebSocket connection established successfully');
+        AppLogger.d('[ChatListPage] 🔌 ✅ Global WebSocket connection established successfully');
       } else {
-        print('[ChatListPage] 🔌 ❌ Cannot establish WebSocket: missing credentials');
-        print('[ChatListPage] 🔌 ❌ commonUserId is null: ${commonUserIdStr == null}');
-        print('[ChatListPage] 🔌 ❌ token is null: ${token == null}');
+        AppLogger.d('[ChatListPage] 🔌 ❌ Cannot establish WebSocket: missing credentials');
+        AppLogger.d('[ChatListPage] 🔌 ❌ commonUserId is null: ${commonUserIdStr == null}');
+        AppLogger.d('[ChatListPage] 🔌 ❌ token is null: ${token == null}');
       }
     } catch (e, stackTrace) {
-      print('[ChatListPage] 🔌 ❌ Error initializing WebSocket: $e');
-      print('[ChatListPage] 🔌 ❌ Stack trace: $stackTrace');
+      AppLogger.d('[ChatListPage] 🔌 ❌ Error initializing WebSocket: $e');
+      AppLogger.d('[ChatListPage] 🔌 ❌ Stack trace: $stackTrace');
     }
   }
 
@@ -147,21 +148,21 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       
       if (commonUserIdStr != null) {
         final commonUserId = int.tryParse(commonUserIdStr);
-        print('[ChatListPage] Retrieved common_user_id from secure storage: $commonUserId');
+        AppLogger.d('[ChatListPage] Retrieved common_user_id from secure storage: $commonUserId');
         return commonUserId;
       } else {
         // 如果没有common_user_id，尝试获取refer_id作为备选
         final referIdStr = await secureStorage.read(key: 'refer_id');
         if (referIdStr != null) {
           final referId = int.tryParse(referIdStr);
-          print('[ChatListPage] Using refer_id as fallback: $referId');
+          AppLogger.d('[ChatListPage] Using refer_id as fallback: $referId');
           return referId;
         }
-        print('[ChatListPage] Neither common_user_id nor refer_id found in secure storage');
+        AppLogger.d('[ChatListPage] Neither common_user_id nor refer_id found in secure storage');
         return null;
       }
     } catch (e) {
-      print('[ChatListPage] Error reading user ID from secure storage: $e');
+      AppLogger.d('[ChatListPage] Error reading user ID from secure storage: $e');
       return null;
     }
   }
@@ -225,7 +226,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             final currentPath = GoRouterState.of(context).matchedLocation;
             isSellerMode = currentPath.startsWith('/seller');
           } catch (e) {
-            print('Error detecting current mode: $e');
+            AppLogger.d('Error detecting current mode: $e');
           }
           
           if (isSellerMode) {
@@ -235,7 +236,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             // 买家模式 - 导航到买家通知页面
             // 重要：必须使用 /notifications 而不是 /seller/notifications
             // 否则会被路由器的模式检查重定向回买家主页
-            print('[ChatListPage] Navigating to buyer notifications: /notifications');
+            AppLogger.d('[ChatListPage] Navigating to buyer notifications: /notifications');
             context.push('/notifications');
           }
         },
@@ -310,7 +311,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
           }
           
           if (snapshot.hasError) {
-            print('[ChatListPage] Error getting referId: ${snapshot.error}');
+            AppLogger.d('[ChatListPage] Error getting referId: ${snapshot.error}');
             return Center(child: Text('获取用户信息失败: ${snapshot.error}'));
           }
           
@@ -321,7 +322,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
           
           // 使用获取到的ID作为currentUserId
           final currentUserId = referId;
-          print('[ChatListPage] Using userId: $referId as currentUserId for both data and UI, appMode: $currentAppMode');
+          AppLogger.d('[ChatListPage] Using userId: $referId as currentUserId for both data and UI, appMode: $currentAppMode');
           
           return BlocListener<ChatListBloc, ChatListState>(
             listener: (context, state) {
@@ -330,14 +331,14 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
               
               if (state.navigateToChatId != null) {
                 final chatId = state.navigateToChatId!;
-                print('[ChatListPage] BlocListener triggered navigation to chatId: $chatId');
+                AppLogger.d('[ChatListPage] BlocListener triggered navigation to chatId: $chatId');
                 // Navigate to refactored ChatRoomPage using GoRouter
                 context.push('/chat/refactored/$chatId').then((result) {
                    // Reset navigation trigger in Bloc state after navigation
                    context.read<ChatListBloc>().add(ClearNavigationTrigger());
                    // Remove the RefreshChatList since we now update unread count directly
                    // if (result == true) {
-                   //   print('[ChatListPage] Refreshing list after viewing chat $chatId');
+                   //   AppLogger.d('[ChatListPage] Refreshing list after viewing chat $chatId');
                    //   context.read<ChatListBloc>().add(RefreshChatList()); 
                    // }
                 });
@@ -352,12 +353,12 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                   return _buildSystemItemsOnly(context, currentUserId, appLocalizations.chat_error_loading(state.errorMessage ?? appLocalizations.chat_unknown_message));
                 } else if (state.status == ChatListStatus.success || state.chatRooms.isNotEmpty) {
                   // 调试：打印当前用户信息
-                  print('[ChatListPage] Current user referId: $referId, AppMode: $currentAppMode, MixedMode: $_isMixedMode');
-                  print('[ChatListPage] Total chat rooms from API: ${state.chatRooms.length}');
+                  AppLogger.d('[ChatListPage] Current user referId: $referId, AppMode: $currentAppMode, MixedMode: $_isMixedMode');
+                  AppLogger.d('[ChatListPage] Total chat rooms from API: ${state.chatRooms.length}');
                   
                   // 打印每个聊天室的参与者信息
                   for (final room in state.chatRooms) {
-                    print('[ChatListPage] Room ${room.id}: participant1(id=${room.participant1.id}, referId=${room.participant1.referId}, type=${room.participant1.type}), participant2(id=${room.participant2.id}, referId=${room.participant2.referId}, type=${room.participant2.type})');
+                    AppLogger.d('[ChatListPage] Room ${room.id}: participant1(id=${room.participant1.id}, referId=${room.participant1.referId}, type=${room.participant1.type}), participant2(id=${room.participant2.id}, referId=${room.participant2.referId}, type=${room.participant2.type})');
                   }
                   
                   // 根据混合模式决定是否筛选
@@ -365,7 +366,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                       ? _filterChatRoomsForMixedMode(state.chatRooms, referId) // 混合模式：显示所有聊天
                       : _filterChatRoomsByAppMode(state.chatRooms, currentAppMode, referId); // 分类模式：根据身份筛选
                   
-                  print('[ChatListPage] Filtered rooms count: ${filteredRooms.length}');
+                  AppLogger.d('[ChatListPage] Filtered rooms count: ${filteredRooms.length}');
                   
                   // 触发头像预加载（异步执行，不阻塞UI）
                   if (filteredRooms.isNotEmpty && context.mounted) {
@@ -400,7 +401,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   List<ChatRoom> _filterChatRoomsForMixedMode(List<ChatRoom> chatRooms, int referId) {
     final filteredRooms = <ChatRoom>[];
     
-    print("[ChatListPage] Mixed mode filter with referId: $referId, total rooms: ${chatRooms.length}");
+    AppLogger.d("[ChatListPage] Mixed mode filter with referId: $referId, total rooms: ${chatRooms.length}");
     
     for (final room in chatRooms) {
       // 检查是否是系统管理员聊天室
@@ -418,11 +419,11 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       // 检查当前用户是否是参与者（使用id匹配，不管什么身份）
       if (room.participant1.id == referId || room.participant2.id == referId) {
         filteredRooms.add(room);
-        print("[ChatListPage] Mixed mode: Including room ${room.id}");
+        AppLogger.d("[ChatListPage] Mixed mode: Including room ${room.id}");
       }
     }
     
-    print("[ChatListPage] Mixed mode: filtered ${filteredRooms.length} rooms");
+    AppLogger.d("[ChatListPage] Mixed mode: filtered ${filteredRooms.length} rooms");
     return filteredRooms;
   }
   
@@ -430,23 +431,23 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   List<ChatRoom> _filterChatRoomsByAppMode(List<ChatRoom> chatRooms, AppMode appMode, int userId) {
     final filteredRooms = <ChatRoom>[];
     
-    print("[ChatListPage] ===== Filter Debug Info =====");
-    print("[ChatListPage] Current user ID: $userId");
-    print("[ChatListPage] Current app mode: $appMode");
-    print("[ChatListPage] Total rooms before filter: ${chatRooms.length}");
-    print("[ChatListPage] =============================");
+    AppLogger.d("[ChatListPage] ===== Filter Debug Info =====");
+    AppLogger.d("[ChatListPage] Current user ID: $userId");
+    AppLogger.d("[ChatListPage] Current app mode: $appMode");
+    AppLogger.d("[ChatListPage] Total rooms before filter: ${chatRooms.length}");
+    AppLogger.d("[ChatListPage] =============================");
     
     for (final room in chatRooms) {
-      print("[ChatListPage] Checking room ${room.id}:");
-      print("  - participant1: type=${room.participant1.type}, referId=${room.participant1.referId}, id=${room.participant1.id}, name=${room.participant1.nickName}");
-      print("  - participant2: type=${room.participant2.type}, referId=${room.participant2.referId}, id=${room.participant2.id}, name=${room.participant2.nickName}");
+      AppLogger.d("[ChatListPage] Checking room ${room.id}:");
+      AppLogger.d("  - participant1: type=${room.participant1.type}, referId=${room.participant1.referId}, id=${room.participant1.id}, name=${room.participant1.nickName}");
+      AppLogger.d("  - participant2: type=${room.participant2.type}, referId=${room.participant2.referId}, id=${room.participant2.id}, name=${room.participant2.nickName}");
       
       // 检查是否是系统管理员聊天室
       bool isAdminChat = false;
       if ((room.participant1.type == 'ADMIN' && room.participant1.referId == 0) ||
           (room.participant2.type == 'ADMIN' && room.participant2.referId == 0)) {
         isAdminChat = true;
-        print("[ChatListPage] 🚫 Skipping admin chat room ${room.id} - will be shown in system items");
+        AppLogger.d("[ChatListPage] 🚫 Skipping admin chat room ${room.id} - will be shown in system items");
       }
       
       // 排除系统管理员聊天室
@@ -465,7 +466,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         // doctorId 是卖家的 participant ID
         // memberId 是买家的 participant ID
 
-        print("[ChatListPage] Room ${room.id}: doctorId=${room.doctorId}, memberId=${room.memberId}");
+        AppLogger.d("[ChatListPage] Room ${room.id}: doctorId=${room.doctorId}, memberId=${room.memberId}");
 
         if (appMode == AppMode.buyer) {
           // 买家模式：只显示用户作为买家（memberId）的聊天
@@ -473,9 +474,9 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             shouldInclude = true;
             // 找到对方（卖家）的名字
             final opponent = room.participant1.id == userId ? room.participant2 : room.participant1;
-            print("[ChatListPage] ✅ Buyer mode: Including room ${room.id} where user is BUYER, chatting with seller ${opponent.nickName}");
+            AppLogger.d("[ChatListPage] ✅ Buyer mode: Including room ${room.id} where user is BUYER, chatting with seller ${opponent.nickName}");
           } else {
-            print("[ChatListPage] ❌ Buyer mode: Excluding room ${room.id} - user is SELLER in this room");
+            AppLogger.d("[ChatListPage] ❌ Buyer mode: Excluding room ${room.id} - user is SELLER in this room");
           }
         } else if (appMode == AppMode.seller) {
           // 卖家模式：只显示用户作为卖家（doctorId）的聊天
@@ -483,13 +484,13 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             shouldInclude = true;
             // 找到对方（买家）的名字
             final opponent = room.participant1.id == userId ? room.participant2 : room.participant1;
-            print("[ChatListPage] ✅ Seller mode: Including room ${room.id} where user is SELLER, chatting with buyer ${opponent.nickName}");
+            AppLogger.d("[ChatListPage] ✅ Seller mode: Including room ${room.id} where user is SELLER, chatting with buyer ${opponent.nickName}");
           } else {
-            print("[ChatListPage] ❌ Seller mode: Excluding room ${room.id} - user is BUYER in this room");
+            AppLogger.d("[ChatListPage] ❌ Seller mode: Excluding room ${room.id} - user is BUYER in this room");
           }
         }
       } else {
-        print("[ChatListPage] ❌ User not participant: userId $userId not in room ${room.id}");
+        AppLogger.d("[ChatListPage] ❌ User not participant: userId $userId not in room ${room.id}");
       }
       
       if (shouldInclude) {
@@ -497,7 +498,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       }
     }
     
-    print("[ChatListPage] App mode: $appMode, filtered ${filteredRooms.length} rooms (mode-specific and admin excluded)");
+    AppLogger.d("[ChatListPage] App mode: $appMode, filtered ${filteredRooms.length} rooms (mode-specific and admin excluded)");
     return filteredRooms;
   }
 
@@ -505,7 +506,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   Widget _buildChatListView(BuildContext context, List<ChatRoom> filteredRooms, AppMode appMode, int currentUserId) {
     return RefreshIndicator(
       onRefresh: () async {
-        print('[ChatListPage] Pull-to-refresh triggered');
+        AppLogger.d('[ChatListPage] Pull-to-refresh triggered');
         context.read<ChatListBloc>().add(RefreshChatList());
         
         final completer = Completer();
@@ -648,7 +649,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       final sellerId = seller.referId ?? 0;
       
       grouped.putIfAbsent(sellerId, () => []).add(chatRoom);
-      print("[ChatListPage] Grouping chat room ${chatRoom.id} under seller: ${seller.nickName} (ID: $sellerId)");
+      AppLogger.d("[ChatListPage] Grouping chat room ${chatRoom.id} under seller: ${seller.nickName} (ID: $sellerId)");
     }
     
     return grouped.entries.map((entry) {
@@ -659,7 +660,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       final isCurrentUserParticipant1 = firstRoom.participant1.id == currentUserId;
       final seller = isCurrentUserParticipant1 ? firstRoom.participant2 : firstRoom.participant1;
       
-      print("[ChatListPage] Created seller group: ${seller.nickName} with ${rooms.length} chat rooms");
+      AppLogger.d("[ChatListPage] Created seller group: ${seller.nickName} with ${rooms.length} chat rooms");
       
       return SellerChatGroup(
         sellerId: sellerId,
@@ -678,7 +679,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       final productId = chatRoom.productId ?? 'no_product';
       
       grouped.putIfAbsent(productId, () => []).add(chatRoom);
-      print("[ChatListPage] Grouping chat room ${chatRoom.id} under product: ${chatRoom.productName ?? 'Unknown'} (ID: $productId)");
+      AppLogger.d("[ChatListPage] Grouping chat room ${chatRoom.id} under product: ${chatRoom.productName ?? 'Unknown'} (ID: $productId)");
     }
     
     return grouped.entries.map((entry) {
@@ -686,7 +687,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       final rooms = entry.value;
       final firstRoom = rooms.first; // 从第一个房间获取商品信息
       
-      print("[ChatListPage] Created product group: ${firstRoom.productName ?? 'Unknown'} with ${rooms.length} chat rooms");
+      AppLogger.d("[ChatListPage] Created product group: ${firstRoom.productName ?? 'Unknown'} with ${rooms.length} chat rooms");
       
       return ProductChatGroup(
         productId: productId,

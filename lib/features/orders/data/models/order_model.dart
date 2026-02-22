@@ -1,4 +1,5 @@
 import 'package:dskk_flutter_refactor/features/orders/data/models/address_model.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 import '../../domain/entities/address.dart';
 import '../../domain/entities/order.dart';
@@ -110,7 +111,7 @@ class OrderModel {
        try {
          parsedAddress = AddressModel.fromJson(json['address']);
        } catch (e) {
-         print('Error parsing address: $e'); // Log error if parsing fails
+         AppLogger.d('Error parsing address: $e'); // Log error if parsing fails
          parsedAddress = null;
        }
     }
@@ -121,7 +122,7 @@ class OrderModel {
       try {
         parsedBuyer = MemberModel.fromJson(json['buyer']);
       } catch (e) {
-        print('Error parsing buyer: $e');
+        AppLogger.d('Error parsing buyer: $e');
       }
     }
     
@@ -130,7 +131,7 @@ class OrderModel {
       try {
         parsedTenant = MemberModel.fromJson(json['tenant']);
       } catch (e) {
-        print('Error parsing tenant: $e');
+        AppLogger.d('Error parsing tenant: $e');
       }
     }
 

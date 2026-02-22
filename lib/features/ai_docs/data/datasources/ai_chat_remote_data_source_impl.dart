@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dartz/dartz.dart';
 import 'dart:convert';
 import 'dart:async';
@@ -62,7 +63,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     String orderBy = 'desc',
   }) async {
     const String path = '/model/chat/list';
-    print("Fetching conversations using path: $path with pagination");
+    AppLogger.d("Fetching conversations using path: $path with pagination");
     
     final Map<String, dynamic> requestData = {
       'user_id': userId,
@@ -75,7 +76,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       // 获取token - 添加手动获取token的代码
       final storage = const FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      print("[AiDocs] 获取对话列表，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 获取对话列表，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
       // 创建包含认证头的选项
       final options = Options(
@@ -84,7 +85,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
             'Authorization': token, // 直接使用token，不添加Bearer前缀
         }
       );
-      print("[AiDocs] 请求参数: $requestData");
+      AppLogger.d("[AiDocs] 请求参数: $requestData");
       
       // 直接使用Dio实例，带上认证头
       final response = await _httpClient.getDioInstance().post(
@@ -128,7 +129,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
           'hasMore': conversations.length >= pageSize,
         };
       } else {
-        print('Warning: fetchConversations received unexpected format. Data: $data');
+        AppLogger.d('Warning: fetchConversations received unexpected format. Data: $data');
         conversations = [];
       }
       
@@ -146,7 +147,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      print('Unexpected error in fetchConversations at $path: $e');
+      AppLogger.d('Unexpected error in fetchConversations at $path: $e');
       throw ds_exceptions.DataSourceException(message: 'Failed to fetch conversations: ${e.toString()}');
     }
   }
@@ -161,7 +162,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     bool getAll = false,
   }) async {
     const String path = '/model/chat/messages';
-    print("Loading history using path: $path for conv $conversationId with pagination");
+    AppLogger.d("Loading history using path: $path for conv $conversationId with pagination");
     
     final Map<String, dynamic> requestData = {
       'conversation_id': conversationId,
@@ -176,7 +177,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       // 获取token
       final storage = const FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      print("[AiDocs] 加载历史记录，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 加载历史记录，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
       // 创建包含认证头的选项
       final options = Options(
@@ -185,7 +186,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
             'Authorization': token, // 直接使用token
         }
       );
-      print("[AiDocs] 请求参数: $requestData");
+      AppLogger.d("[AiDocs] 请求参数: $requestData");
       
       // 直接使用Dio实例
       final response = await _httpClient.getDioInstance().post(
@@ -202,48 +203,48 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       List<AiChatMessageModel> messages = [];
       
       if (data != null && data is List) { 
-        print("[DATASOURCE DEBUG] Parsing ${data.length} messages from root data list.");
+        AppLogger.d("[DATASOURCE DEBUG] Parsing ${data.length} messages from root data list.");
         messages = (data as List).map((msgJson) {
-          print("[DATASOURCE DEBUG] Parsing msgJson: ${jsonEncode(msgJson)}");
+          AppLogger.d("[DATASOURCE DEBUG] Parsing msgJson: ${jsonEncode(msgJson)}");
            if (msgJson is Map<String, dynamic>) { 
-             print("[DATASOURCE DEBUG]  -> id type: ${msgJson['id']?.runtimeType}");
-             print("[DATASOURCE DEBUG]  -> message_id type: ${msgJson['message_id']?.runtimeType}");
-             print("[DATASOURCE DEBUG]  -> conversation_id type: ${msgJson['conversation_id']?.runtimeType}");
-             print("[DATASOURCE DEBUG]  -> role type: ${msgJson['role']?.runtimeType}");
-             print("[DATASOURCE DEBUG]  -> content type: ${msgJson['content']?.runtimeType}");
-             print("[DATASOURCE DEBUG]  -> files type: ${msgJson['files']?.runtimeType}");
-             print("[DATASOURCE DEBUG]  -> timestamp type: ${msgJson['timestamp']?.runtimeType}");
+             AppLogger.d("[DATASOURCE DEBUG]  -> id type: ${msgJson['id']?.runtimeType}");
+             AppLogger.d("[DATASOURCE DEBUG]  -> message_id type: ${msgJson['message_id']?.runtimeType}");
+             AppLogger.d("[DATASOURCE DEBUG]  -> conversation_id type: ${msgJson['conversation_id']?.runtimeType}");
+             AppLogger.d("[DATASOURCE DEBUG]  -> role type: ${msgJson['role']?.runtimeType}");
+             AppLogger.d("[DATASOURCE DEBUG]  -> content type: ${msgJson['content']?.runtimeType}");
+             AppLogger.d("[DATASOURCE DEBUG]  -> files type: ${msgJson['files']?.runtimeType}");
+             AppLogger.d("[DATASOURCE DEBUG]  -> timestamp type: ${msgJson['timestamp']?.runtimeType}");
            }
            try {
               return AiChatMessageModel.fromJson(msgJson as Map<String, dynamic>);
            } catch (e, stacktrace) {
-              print("[DATASOURCE ERROR] Failed to parse msgJson: $e");
-              print("[DATASOURCE ERROR] Stacktrace: $stacktrace");
-              print("[DATASOURCE ERROR] Failing msgJson: ${jsonEncode(msgJson)}");
+              AppLogger.d("[DATASOURCE ERROR] Failed to parse msgJson: $e");
+              AppLogger.d("[DATASOURCE ERROR] Stacktrace: $stacktrace");
+              AppLogger.d("[DATASOURCE ERROR] Failing msgJson: ${jsonEncode(msgJson)}");
               rethrow;
            }
         }).toList();
       } else if (data != null && data is Map<String, dynamic>) {
         // 处理可能包含分页信息的响应格式
         if (data['messages'] is List) {
-          print("[DATASOURCE DEBUG] Parsing ${(data['messages'] as List).length} messages from nested 'messages' key.");
+          AppLogger.d("[DATASOURCE DEBUG] Parsing ${(data['messages'] as List).length} messages from nested 'messages' key.");
           messages = (data['messages'] as List).map((msgJson) {
-             print("[DATASOURCE DEBUG] Parsing msgJson: ${jsonEncode(msgJson)}"); 
+             AppLogger.d("[DATASOURCE DEBUG] Parsing msgJson: ${jsonEncode(msgJson)}"); 
             if (msgJson is Map<String, dynamic>) { 
-               print("[DATASOURCE DEBUG]  -> id type: ${msgJson['id']?.runtimeType}");
-               print("[DATASOURCE DEBUG]  -> message_id type: ${msgJson['message_id']?.runtimeType}");
-               print("[DATASOURCE DEBUG]  -> conversation_id type: ${msgJson['conversation_id']?.runtimeType}");
-               print("[DATASOURCE DEBUG]  -> role type: ${msgJson['role']?.runtimeType}");
-               print("[DATASOURCE DEBUG]  -> content type: ${msgJson['content']?.runtimeType}");
-               print("[DATASOURCE DEBUG]  -> files type: ${msgJson['files']?.runtimeType}");
-               print("[DATASOURCE DEBUG]  -> timestamp type: ${msgJson['timestamp']?.runtimeType}");
+               AppLogger.d("[DATASOURCE DEBUG]  -> id type: ${msgJson['id']?.runtimeType}");
+               AppLogger.d("[DATASOURCE DEBUG]  -> message_id type: ${msgJson['message_id']?.runtimeType}");
+               AppLogger.d("[DATASOURCE DEBUG]  -> conversation_id type: ${msgJson['conversation_id']?.runtimeType}");
+               AppLogger.d("[DATASOURCE DEBUG]  -> role type: ${msgJson['role']?.runtimeType}");
+               AppLogger.d("[DATASOURCE DEBUG]  -> content type: ${msgJson['content']?.runtimeType}");
+               AppLogger.d("[DATASOURCE DEBUG]  -> files type: ${msgJson['files']?.runtimeType}");
+               AppLogger.d("[DATASOURCE DEBUG]  -> timestamp type: ${msgJson['timestamp']?.runtimeType}");
             }
             try {
               return AiChatMessageModel.fromJson(msgJson as Map<String, dynamic>); 
             } catch (e, stacktrace) {
-              print("[DATASOURCE ERROR] Failed to parse msgJson: $e");
-              print("[DATASOURCE ERROR] Stacktrace: $stacktrace");
-              print("[DATASOURCE ERROR] Failing msgJson: ${jsonEncode(msgJson)}");
+              AppLogger.d("[DATASOURCE ERROR] Failed to parse msgJson: $e");
+              AppLogger.d("[DATASOURCE ERROR] Stacktrace: $stacktrace");
+              AppLogger.d("[DATASOURCE ERROR] Failing msgJson: ${jsonEncode(msgJson)}");
               rethrow; 
             }
           }).toList();
@@ -258,7 +259,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
           'hasMore': data['has_more'] ?? (messages.length >= pageSize),
         };
       } else {
-        print('Warning: loadHistory received unexpected format for $conversationId. Data: $data');
+        AppLogger.d('Warning: loadHistory received unexpected format for $conversationId. Data: $data');
         messages = [];
       }
       
@@ -276,7 +277,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      print('Unexpected error in loadHistory for $conversationId at $path: $e');
+      AppLogger.d('Unexpected error in loadHistory for $conversationId at $path: $e');
       throw ds_exceptions.DataSourceException(message: 'Failed to load history for $conversationId: ${e.toString()}');
     }
   }
@@ -287,14 +288,14 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     String? title,
   }) async {
     const String path = '/model/chat/create';
-    print("Creating conversation using path: $path");
+    AppLogger.d("Creating conversation using path: $path");
     final Map<String, dynamic> requestData = {'user_id': userId};
     if (title != null) requestData['title'] = title;
     try {
       // 获取token
       final storage = const FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      print("[AiDocs] 创建会话，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 创建会话，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
       // 创建包含认证头的选项
       final options = Options(
@@ -303,7 +304,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
             'Authorization': token, // 直接使用token
         }
       );
-      print("[AiDocs] 请求头: ${options.headers}");
+      AppLogger.d("[AiDocs] 请求头: ${options.headers}");
       
       // 直接使用Dio实例
       final response = await _httpClient.getDioInstance().post(
@@ -326,7 +327,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      print('Unexpected error in createConversation at $path: $e');
+      AppLogger.d('Unexpected error in createConversation at $path: $e');
       throw ds_exceptions.DataSourceException(message: 'Failed to create conversation: ${e.toString()}');
     }
   }
@@ -337,7 +338,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     required int userId,
   }) async {
     const String path = '/model/chat/delete';
-    print("Deleting conversation $conversationId using path: $path");
+    AppLogger.d("Deleting conversation $conversationId using path: $path");
     final Map<String, dynamic> requestData = {
       'conversation_id': conversationId,
       'user_id': userId,
@@ -346,7 +347,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       // 获取token
       final storage = const FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      print("[AiDocs] 删除会话，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 删除会话，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
       // 创建包含认证头的选项
       final options = Options(
@@ -355,7 +356,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
             'Authorization': token, // 直接使用token
         }
       );
-      print("[AiDocs] 请求头: ${options.headers}");
+      AppLogger.d("[AiDocs] 请求头: ${options.headers}");
       
       // 直接使用Dio实例
       final response = await _httpClient.getDioInstance().post(
@@ -372,7 +373,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      print('Unexpected error in deleteConversation for $conversationId at $path: $e');
+      AppLogger.d('Unexpected error in deleteConversation for $conversationId at $path: $e');
       throw ds_exceptions.DataSourceException(message: 'Failed to delete conversation $conversationId: ${e.toString()}');
     }
   }
@@ -387,7 +388,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     String? transcription,
   }) {
     const String path = '/model/chat';
-    print("Streaming chat completion using path: $path");
+    AppLogger.d("Streaming chat completion using path: $path");
     
     // 构建请求数据，支持新的语音消息参数
     final Map<String, dynamic> requestData = {
@@ -400,12 +401,12 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     // 添加音频URL和转录文本参数
     if (audioUrls != null && audioUrls.isNotEmpty) {
       requestData['audio_urls'] = audioUrls;
-      print('[DataSource] Adding audio_urls: $audioUrls');
+      AppLogger.d('[DataSource] Adding audio_urls: $audioUrls');
     }
     
     if (transcription != null && transcription.isNotEmpty) {
       requestData['transcription'] = transcription;
-      print('[DataSource] Adding transcription: $transcription');
+      AppLogger.d('[DataSource] Adding transcription: $transcription');
     }
     
     // 支持多模态：判断是否为图像URL并使用相应的参数名
@@ -422,20 +423,20 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       
       if (isImageUrls) {
         requestData['image_urls'] = fileUrls; // 使用新的 image_urls 参数
-        print('[DataSource] Adding image_urls: $fileUrls');
+        AppLogger.d('[DataSource] Adding image_urls: $fileUrls');
       } else {
         requestData['files'] = fileUrls; // 保持向后兼容（用于其他文件类型）
-        print('[DataSource] Adding files: $fileUrls');
+        AppLogger.d('[DataSource] Adding files: $fileUrls');
       }
     }
     
-    print('[DataSource] Calling streamChatCompletion with data: $requestData');
+    AppLogger.d('[DataSource] Calling streamChatCompletion with data: $requestData');
 
     try {
       // 获取token
       final storage = const FlutterSecureStorage();
       final token = storage.read(key: 'auth_token').then((token) {
-        print("[AiDocs] 流式聊天，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+        AppLogger.d("[AiDocs] 流式聊天，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
         
         // 创建完整的URL
         final String baseUrl = _getModelBaseUrl();
@@ -443,7 +444,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
         if (!fullUrl.startsWith('http')) {
           fullUrl = 'http://' + fullUrl;
         }
-        print("[AiDocs] 完整URL: $fullUrl");
+        AppLogger.d("[AiDocs] 完整URL: $fullUrl");
         
         // 创建HTTP请求
         final request = http.Request('POST', Uri.parse(fullUrl));
@@ -453,7 +454,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
         if (token != null && token.isNotEmpty) {
           request.headers['Authorization'] = token; // 直接使用token
         }
-        print("[AiDocs] SSE请求头: ${request.headers}");
+        AppLogger.d("[AiDocs] SSE请求头: ${request.headers}");
         
         // 添加请求体
         request.body = jsonEncode(requestData);
@@ -469,13 +470,13 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
                   _processSSEData(data, sink);
                 },
                 handleError: (error, stackTrace, sink) {
-                  print('[DataSource - SSE Stream] Error: $error');
+                  AppLogger.d('[DataSource - SSE Stream] Error: $error');
                   sink.addError(ds_exceptions.NetworkException(
                     message: "Network error during stream: ${error.toString()}"
                   ));
                 },
                 handleDone: (sink) {
-                  print('[DataSource - SSE Stream] Stream completed.');
+                  AppLogger.d('[DataSource - SSE Stream] Stream completed.');
                   sink.close();
                 },
               ));
@@ -494,7 +495,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       
     } catch (e) {
       // 处理错误
-      print("Error initiating streamChatCompletion to $path: $e");
+      AppLogger.d("Error initiating streamChatCompletion to $path: $e");
       if (e is ds_exceptions.ServerException || e is ds_exceptions.NetworkException) {
         return Stream.error(e);
       } else {
@@ -545,7 +546,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
               }
               
               if (contentChunk != null && contentChunk.isNotEmpty) {
-                print('[DataSource - SSE] Content chunk: $contentChunk');
+                AppLogger.d('[DataSource - SSE] Content chunk: $contentChunk');
                 sink.add(contentChunk);
               }
             }
@@ -553,22 +554,22 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
           break;
           
         case 'conversation.message.completed':
-          print('[DataSource - SSE] Message completed');
+          AppLogger.d('[DataSource - SSE] Message completed');
           if (data.isNotEmpty) {
             final jsonData = jsonDecode(data);
-            print('[DataSource - SSE] Completion data: $jsonData');
+            AppLogger.d('[DataSource - SSE] Completion data: $jsonData');
           }
           // 发送特殊标记表示消息完成
           sink.add('[COMPLETED]');
           break;
           
         case 'conversation.message.cancelled':
-          print('[DataSource - SSE] Message cancelled by user');
+          AppLogger.d('[DataSource - SSE] Message cancelled by user');
           sink.add('[CANCELLED]');
           break;
           
         case 'conversation.message.error':
-          print('[DataSource - SSE] Message error');
+          AppLogger.d('[DataSource - SSE] Message error');
           if (data.isNotEmpty) {
             final jsonData = jsonDecode(data);
             final errorMsg = jsonData['error'] ?? 'Unknown error';
@@ -577,7 +578,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
           break;
           
         case 'done':
-          print('[DataSource - SSE] Stream done');
+          AppLogger.d('[DataSource - SSE] Stream done');
           sink.add('[DONE]');
           break;
           
@@ -585,11 +586,11 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
           // 处理元数据事件，检测是否跳过用户消息显示
           if (data.isNotEmpty) {
             final jsonData = jsonDecode(data);
-            print('[DataSource - SSE] Meta data: $jsonData');
+            AppLogger.d('[DataSource - SSE] Meta data: $jsonData');
             if (jsonData is Map<String, dynamic>) {
               final skipUserMessage = jsonData['skip_user_message_display'] as bool?;
               if (skipUserMessage == true) {
-                print('[DataSource - SSE] Received skip_user_message_display = true');
+                AppLogger.d('[DataSource - SSE] Received skip_user_message_display = true');
                 // 发送特殊标记给BLoC，表示需要跳过用户消息显示
                 sink.add('[SKIP_USER_MESSAGE]');
               }
@@ -598,11 +599,11 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
           break;
           
         default:
-          print('[DataSource - SSE] Unknown event type: $event');
+          AppLogger.d('[DataSource - SSE] Unknown event type: $event');
           break;
       }
     } catch (e) {
-      print('[DataSource - SSE] Error processing event $event: $e. Data: $data');
+      AppLogger.d('[DataSource - SSE] Error processing event $event: $e. Data: $data');
       sink.addError(ds_exceptions.DataSourceException(
         message: "Failed to parse SSE event: $e"
       ));
@@ -617,7 +618,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     int? messageId,
   }) async {
     const String path = '/recsys/conversation/recommend';
-    print("Fetching related services using path: $path");
+    AppLogger.d("Fetching related services using path: $path");
     
     Map<String, dynamic> requestData = {
       'user_id': userId,
@@ -643,7 +644,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       // 获取token
       final storage = const FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      print("[AiDocs] 获取相关服务，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 获取相关服务，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
       // 创建包含认证头的选项
       final options = Options(
@@ -652,7 +653,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
             'Authorization': token, // 直接使用token
         }
       );
-      print("[AiDocs] 请求头: ${options.headers}");
+      AppLogger.d("[AiDocs] 请求头: ${options.headers}");
       
       // 直接使用Dio实例
       final response = await _httpClient.getDioInstance().post(
@@ -675,11 +676,11 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       
       final data = _handleResponse(responseData);
       
-      print('[DataSource] Related services response: ${jsonEncode(data)}');
+      AppLogger.d('[DataSource] Related services response: ${jsonEncode(data)}');
       
       if (data != null && data['items'] is List) {
         return (data['items'] as List).map<RelatedServiceModel>((serviceJson) {
-           print('[DataSource] Item JSON: ${jsonEncode(serviceJson)}');
+           AppLogger.d('[DataSource] Item JSON: ${jsonEncode(serviceJson)}');
            try {
              return RelatedServiceModel(
                id: serviceJson['id'] as int? ?? 0,
@@ -689,24 +690,24 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
                tenantId: serviceJson['tenantId'] as int? ?? 0,
              );
            } catch (e, stacktrace) {
-              print('[DataSource] Error parsing item JSON: $e');
-              print(stacktrace); 
+              AppLogger.d('[DataSource] Error parsing item JSON: $e');
+              AppLogger.d(stacktrace); 
               rethrow;
            }
          }).toList();
       } else if (data != null && data['services'] is List) {
         return (data['services'] as List).map((serviceJson) {
-           print('[DataSource] Service JSON: ${jsonEncode(serviceJson)}');
+           AppLogger.d('[DataSource] Service JSON: ${jsonEncode(serviceJson)}');
            try {
              return RelatedServiceModel.fromJson(serviceJson);
            } catch (e, stacktrace) {
-              print('[DataSource] Error parsing service JSON: $e');
-              print(stacktrace); 
+              AppLogger.d('[DataSource] Error parsing service JSON: $e');
+              AppLogger.d(stacktrace); 
               rethrow;
            }
          }).toList();
       } else {
-        print('Warning: getRelatedServices received unexpected format. Data: $data');
+        AppLogger.d('Warning: getRelatedServices received unexpected format. Data: $data');
         return [];
       }
     } on ds_exceptions.RateLimitException {
@@ -716,7 +717,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      print('Unexpected error in getRelatedServices at $path: $e');
+      AppLogger.d('Unexpected error in getRelatedServices at $path: $e');
       throw ds_exceptions.DataSourceException(message: 'Failed to get related services: ${e.toString()}');
     }
   }
@@ -726,12 +727,12 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     required int userId,
   }) async {
     final String path = '/recsys/rate-limit/status/$userId';
-    print("Fetching rate limit status using path: $path");
+    AppLogger.d("Fetching rate limit status using path: $path");
     
     try {
       final storage = const FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      print("[AiDocs] 获取频率限制状态，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 获取频率限制状态，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
       final options = Options(
         headers: {
@@ -754,7 +755,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      print('Unexpected error in getRateLimitStatus: $e');
+      AppLogger.d('Unexpected error in getRateLimitStatus: $e');
       throw ds_exceptions.DataSourceException(
         message: 'Failed to get rate limit status: ${e.toString()}'
       );
@@ -768,7 +769,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     String? ruleName,
   }) async {
     final String path = '/recsys/rate-limit/reset/$userId';
-    print("Resetting user rate limit using path: $path");
+    AppLogger.d("Resetting user rate limit using path: $path");
     
     final Map<String, String> queryParams = {};
     if (serviceType != null) {
@@ -781,7 +782,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     try {
       final storage = const FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      print("[AiDocs] 重置频率限制，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 重置频率限制，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
       final options = Options(
         headers: {
@@ -805,7 +806,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      print('Unexpected error in resetUserRateLimit: $e');
+      AppLogger.d('Unexpected error in resetUserRateLimit: $e');
       throw ds_exceptions.DataSourceException(
         message: 'Failed to reset user rate limit: ${e.toString()}'
       );
@@ -815,12 +816,12 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
   @override
   Future<Map<String, dynamic>> getRateLimitConfig() async {
     const String path = '/recsys/rate-limit/config';
-    print("Fetching rate limit config using path: $path");
+    AppLogger.d("Fetching rate limit config using path: $path");
     
     try {
       final storage = const FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      print("[AiDocs] 获取频率限制配置，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 获取频率限制配置，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
       final options = Options(
         headers: {
@@ -843,7 +844,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      print('Unexpected error in getRateLimitConfig: $e');
+      AppLogger.d('Unexpected error in getRateLimitConfig: $e');
       throw ds_exceptions.DataSourceException(
         message: 'Failed to get rate limit config: ${e.toString()}'
       );
@@ -858,7 +859,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     required int merchantId,
   }) async {
     const String path = '/model/chat/allocate';
-    print("Allocating resource using path: $path");
+    AppLogger.d("Allocating resource using path: $path");
     final Map<String, dynamic> requestData = {
       'conversation_id': conversationId,
       'user_id': userId,
@@ -870,7 +871,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       // 获取token
       final storage = const FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      print("[AiDocs] 分发资源，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 分发资源，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
       // 创建包含认证头和更长超时设置的请求选项
       final options = Options(
@@ -882,8 +883,8 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
         }
       );
       
-      print("[AiDocs] 请求头: ${options.headers}");
-      print("使用60秒超时发起allocate请求");
+      AppLogger.d("[AiDocs] 请求头: ${options.headers}");
+      AppLogger.d("使用60秒超时发起allocate请求");
       
       // 使用带选项的post方法发送请求
       final response = await _httpClient.getDioInstance().post(path, 
@@ -897,7 +898,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      print('Unexpected error in allocateChatResource at $path: $e');
+      AppLogger.d('Unexpected error in allocateChatResource at $path: $e');
       throw ds_exceptions.DataSourceException(message: 'Failed to allocate resource: ${e.toString()}');
     }
   }
@@ -916,7 +917,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       // 获取token
       final storage = const FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      print("[AiDocs] 转录音频，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 转录音频，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
       // 创建包含认证头的选项
       final options = Options(
@@ -925,7 +926,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
             'Authorization': token, // 直接使用token
         }
       );
-      print("[AiDocs] 请求头: ${options.headers}");
+      AppLogger.d("[AiDocs] 请求头: ${options.headers}");
       
       // 直接使用Dio实例
       final response = await _httpClient.getDioInstance().post(
@@ -948,7 +949,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      print('Unexpected error in transcribeAudio: $e');
+      AppLogger.d('Unexpected error in transcribeAudio: $e');
       throw ds_exceptions.DataSourceException(message: 'Failed to transcribe audio: ${e.toString()}');
     }
   }
@@ -959,7 +960,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     required int userId,
   }) async {
     const String path = '/model/chat/cancel';
-    print("Cancelling chat generation for conversation $conversationId");
+    AppLogger.d("Cancelling chat generation for conversation $conversationId");
     
     final Map<String, dynamic> requestData = {
       'conversation_id': conversationId,
@@ -970,7 +971,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       // 获取token
       final storage = const FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      print("[AiDocs] 取消聊天，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 取消聊天，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
       // 创建包含认证头的选项
       final options = Options(
@@ -991,7 +992,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       final result = responseData is Map ? responseData : {};
       
       if (result['status'] == 'success') {
-        print('[AiDocs] Chat generation cancelled successfully');
+        AppLogger.d('[AiDocs] Chat generation cancelled successfully');
       } else {
         throw ds_exceptions.ServerException(
           message: result['message'] ?? 'Failed to cancel chat generation'
@@ -1003,7 +1004,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      print('Unexpected error in cancelChatGeneration: $e');
+      AppLogger.d('Unexpected error in cancelChatGeneration: $e');
       throw ds_exceptions.DataSourceException(
         message: 'Failed to cancel chat generation: ${e.toString()}'
       );
@@ -1017,7 +1018,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     required String title,
   }) async {
     const String path = '/model/chat/title/update';
-    print("Updating conversation title using path: $path");
+    AppLogger.d("Updating conversation title using path: $path");
     
     final Map<String, dynamic> requestData = {
       'conversation_id': conversationId,
@@ -1029,7 +1030,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       // 获取token
       final storage = const FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      print("[AiDocs] 更新标题，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 更新标题，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
       // 创建包含认证头的选项
       final options = Options(
@@ -1038,7 +1039,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
             'Authorization': token, // 直接使用token
         }
       );
-      print("[AiDocs] 请求头: ${options.headers}");
+      AppLogger.d("[AiDocs] 请求头: ${options.headers}");
       
       // 直接使用Dio实例
       final response = await _httpClient.getDioInstance().post(
@@ -1061,7 +1062,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      print('Unexpected error in updateConversationTitle at $path: $e');
+      AppLogger.d('Unexpected error in updateConversationTitle at $path: $e');
       throw ds_exceptions.DataSourceException(message: 'Failed to update conversation title: ${e.toString()}');
     }
   }
@@ -1072,7 +1073,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     required int userId,
   }) async {
     const String path = '/model/chat/title/generate';
-    print("Generating conversation title using path: $path");
+    AppLogger.d("Generating conversation title using path: $path");
     
     final Map<String, dynamic> requestData = {
       'conversation_id': conversationId,
@@ -1083,7 +1084,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       // 获取token
       final storage = const FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      print("[AiDocs] 生成标题，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 生成标题，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
       // 创建包含认证头的选项
       final options = Options(
@@ -1092,7 +1093,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
             'Authorization': token, // 直接使用token
         }
       );
-      print("[AiDocs] 请求头: ${options.headers}");
+      AppLogger.d("[AiDocs] 请求头: ${options.headers}");
       
       // 直接使用Dio实例
       final response = await _httpClient.getDioInstance().post(
@@ -1115,7 +1116,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      print('Unexpected error in generateConversationTitle at $path: $e');
+      AppLogger.d('Unexpected error in generateConversationTitle at $path: $e');
       throw ds_exceptions.DataSourceException(message: 'Failed to generate conversation title: ${e.toString()}');
     }
   }
@@ -1124,6 +1125,6 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
   void dispose() {
     // _sseSubscription?.cancel();
     // _sseClient?.close();
-    print("AiChatRemoteDataSource disposed.");
+    AppLogger.d("AiChatRemoteDataSource disposed.");
   }
 } 

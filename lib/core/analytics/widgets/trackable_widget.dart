@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import '../analytics_manager.dart';
@@ -40,7 +41,7 @@ class TrackableGestureDetector extends StatelessWidget {
               additionalData: additionalData,
             );
           } catch (e) {
-            print('[TrackableGestureDetector] 埋点记录失败: $e');
+            AppLogger.d('[TrackableGestureDetector] 埋点记录失败: $e');
           }
         }
         
@@ -104,7 +105,7 @@ class TrackableProductCard extends StatelessWidget {
             );
           }
         } catch (e) {
-          print('[TrackableProductCard] 埋点记录失败: $e');
+          AppLogger.d('[TrackableProductCard] 埋点记录失败: $e');
         }
         
         // 执行原有的点击逻辑
@@ -154,7 +155,7 @@ class TrackableButton extends StatelessWidget {
               },
             );
           } catch (e) {
-            print('[TrackableButton] 埋点记录失败: $e');
+            AppLogger.d('[TrackableButton] 埋点记录失败: $e');
           }
         }
         

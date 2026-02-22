@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 import '../entities/analytics_event.dart';
 import 'dart:convert';
@@ -15,7 +16,7 @@ class AnalyticsApiService {
 
   /// 记录单个事件
   Future<Map<String, dynamic>> recordEvent(AnalyticsEvent event) async {
-    print('[AnalyticsApiService] 开始上报单个事件: ${event.businessType}, 路径: ${event.path}, ID: ${event.businessId}');
+    AppLogger.d('[AnalyticsApiService] 开始上报单个事件: ${event.businessType}, 路径: ${event.path}, ID: ${event.businessId}');
     
     try {
       final response = await _dio.post(
@@ -32,7 +33,7 @@ class AnalyticsApiService {
       );
 
       if (response.statusCode == 200) {
-        print('[AnalyticsApiService] 事件上报成功: ${response.statusCode}, 响应: ${response.data}');
+        AppLogger.d('[AnalyticsApiService] 事件上报成功: ${response.statusCode}, 响应: ${response.data}');
         
         // 处理不同类型的响应
         if (response.data is Map<String, dynamic>) {
@@ -51,7 +52,7 @@ class AnalyticsApiService {
             );
             return jsonData;
           } catch (e) {
-            print('[AnalyticsApiService] 无法解析响应字符串为JSON: $e');
+            AppLogger.d('[AnalyticsApiService] 无法解析响应字符串为JSON: $e');
             // 返回一个带有原始字符串的成功响应
             return {
               'msg': response.data as String,
@@ -68,7 +69,7 @@ class AnalyticsApiService {
           };
         }
       } else {
-        print('[AnalyticsApiService] 事件上报失败: ${response.statusCode}, 响应: ${response.data}');
+        AppLogger.d('[AnalyticsApiService] 事件上报失败: ${response.statusCode}, 响应: ${response.data}');
         throw DioException(
           requestOptions: response.requestOptions,
           response: response,
@@ -76,11 +77,11 @@ class AnalyticsApiService {
         );
       }
     } on DioException catch (e) {
-      print('[AnalyticsApiService] 事件上报网络错误: ${e.message}, 状态码: ${e.response?.statusCode}, 响应: ${e.response?.data}');
+      AppLogger.d('[AnalyticsApiService] 事件上报网络错误: ${e.message}, 状态码: ${e.response?.statusCode}, 响应: ${e.response?.data}');
       // 网络错误，重新抛出以便上层处理
       rethrow;
     } catch (e) {
-      print('[AnalyticsApiService] 事件上报未知错误: $e');
+      AppLogger.d('[AnalyticsApiService] 事件上报未知错误: $e');
       // 其他错误
       throw DioException(
         requestOptions: RequestOptions(path: _dauEndpoint),
@@ -93,7 +94,7 @@ class AnalyticsApiService {
   Future<List<Map<String, dynamic>>> batchRecordEvents(
     List<AnalyticsEvent> events,
   ) async {
-    print('[AnalyticsApiService] 开始批量上报 ${events.length} 个事件');
+    AppLogger.d('[AnalyticsApiService] 开始批量上报 ${events.length} 个事件');
     
     final results = <Map<String, dynamic>>[];
     final errors = <String>[];
@@ -102,7 +103,7 @@ class AnalyticsApiService {
     const batchSize = 5;
     for (int i = 0; i < events.length; i += batchSize) {
       final batch = events.skip(i).take(batchSize).toList();
-      print('[AnalyticsApiService] 处理批次 ${i ~/ batchSize + 1}/${(events.length / batchSize).ceil()}, 本批次 ${batch.length} 个事件');
+      AppLogger.d('[AnalyticsApiService] 处理批次 ${i ~/ batchSize + 1}/${(events.length / batchSize).ceil()}, 本批次 ${batch.length} 个事件');
       
       final futures = batch.map((event) async {
         try {
@@ -120,12 +121,12 @@ class AnalyticsApiService {
 
     // 如果有错误，记录日志但不抛异常
     if (errors.isNotEmpty) {
-      print('[AnalyticsApiService] 批量上报部分失败: ${errors.length}/${events.length} 个事件失败');
+      AppLogger.d('[AnalyticsApiService] 批量上报部分失败: ${errors.length}/${events.length} 个事件失败');
       for (int i = 0; i < errors.length; i++) {
-        print('[AnalyticsApiService] 失败详情 ${i + 1}/${errors.length}: ${errors[i]}');
+        AppLogger.d('[AnalyticsApiService] 失败详情 ${i + 1}/${errors.length}: ${errors[i]}');
       }
     } else {
-      print('[AnalyticsApiService] 批量上报全部成功: ${events.length} 个事件');
+      AppLogger.d('[AnalyticsApiService] 批量上报全部成功: ${events.length} 个事件');
     }
 
     return results;
@@ -133,7 +134,7 @@ class AnalyticsApiService {
 
   /// 测试连接
   Future<bool> testConnection() async {
-    print('[AnalyticsApiService] 开始测试埋点API连接');
+    AppLogger.d('[AnalyticsApiService] 开始测试埋点API连接');
     
     try {
       final testEvent = AnalyticsEvent(
@@ -143,10 +144,10 @@ class AnalyticsApiService {
       );
       
       await recordEvent(testEvent);
-      print('[AnalyticsApiService] 连接测试成功');
+      AppLogger.d('[AnalyticsApiService] 连接测试成功');
       return true;
     } catch (e) {
-      print('[AnalyticsApiService] 连接测试失败: $e');
+      AppLogger.d('[AnalyticsApiService] 连接测试失败: $e');
       return false;
     }
   }

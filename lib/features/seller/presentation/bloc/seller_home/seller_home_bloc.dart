@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dskk_flutter_refactor/core/navigation/services/i_navigation_service.dart';
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart';
@@ -29,7 +30,7 @@ class SellerHomeBloc extends Bloc<SellerHomeEvent, SellerHomeState> {
     this._getDashboardDataUseCase,
     this._getStoreProfileUseCase,
   ) : super(SellerHomeState.initial()) {
-    print('[SellerHomeBloc] Created');
+    AppLogger.d('[SellerHomeBloc] Created');
     on<LoadDashboardData>(_onLoadDashboardData);
     on<RefreshDashboardData>(_onRefreshDashboardData);
     on<NavigateToOrders>(_onNavigateToOrders);
@@ -41,7 +42,7 @@ class SellerHomeBloc extends Bloc<SellerHomeEvent, SellerHomeState> {
     LoadDashboardData event,
     Emitter<SellerHomeState> emit,
   ) async {
-    print('[SellerHomeBloc] Received LoadDashboardData event, forceRefresh: ${event.forceRefresh}');
+    AppLogger.d('[SellerHomeBloc] Received LoadDashboardData event, forceRefresh: ${event.forceRefresh}');
     
     // 如果不是强制刷新，先尝试从缓存获取数据
     if (!event.forceRefresh) {
@@ -61,55 +62,55 @@ class SellerHomeBloc extends Bloc<SellerHomeEvent, SellerHomeState> {
         );
         
         if (cachedDashboard != null && cachedStoreProfile != null) {
-          print('[SellerHomeBloc] Using cached data, emitting SellerHomeLoaded state');
+          AppLogger.d('[SellerHomeBloc] Using cached data, emitting SellerHomeLoaded state');
           emit(SellerHomeLoaded(
             dashboardData: cachedDashboard,
             storeProfile: cachedStoreProfile,
           ));
           return;
         } else {
-          print('[SellerHomeBloc] Cache miss, will fetch from network');
+          AppLogger.d('[SellerHomeBloc] Cache miss, will fetch from network');
         }
       } catch (e) {
-        print('[SellerHomeBloc] Failed to get cached data: $e');
+        AppLogger.d('[SellerHomeBloc] Failed to get cached data: $e');
       }
     }
     
-    print('[SellerHomeBloc] Emitting SellerHomeLoading state');
+    AppLogger.d('[SellerHomeBloc] Emitting SellerHomeLoading state');
     emit(const SellerHomeLoading());
     
     try {
-      print('[SellerHomeBloc] Calling getDashboardDataUseCase');
+      AppLogger.d('[SellerHomeBloc] Calling getDashboardDataUseCase');
       final dashboardResult = await _getDashboardDataUseCase(NoParams());
-      print('[SellerHomeBloc] getDashboardDataUseCase returned: ${dashboardResult.isRight() ? "Success" : "Failure"}');
+      AppLogger.d('[SellerHomeBloc] getDashboardDataUseCase returned: ${dashboardResult.isRight() ? "Success" : "Failure"}');
 
-      print('[SellerHomeBloc] Calling getStoreProfileUseCase');
+      AppLogger.d('[SellerHomeBloc] Calling getStoreProfileUseCase');
       final storeProfileResult = await _getStoreProfileUseCase(NoParams());
-      print('[SellerHomeBloc] getStoreProfileUseCase returned: ${storeProfileResult.isRight() ? "Success" : "Failure"}');
+      AppLogger.d('[SellerHomeBloc] getStoreProfileUseCase returned: ${storeProfileResult.isRight() ? "Success" : "Failure"}');
       
       if (dashboardResult.isLeft() || storeProfileResult.isLeft()) {
-        print('[SellerHomeBloc] One or both UseCases failed');
+        AppLogger.d('[SellerHomeBloc] One or both UseCases failed');
         dashboardResult.fold(
           (failure) {
-            print('[SellerHomeBloc] Dashboard failed: $failure. Emitting SellerHomeError');
+            AppLogger.d('[SellerHomeBloc] Dashboard failed: $failure. Emitting SellerHomeError');
             emit(SellerHomeError(failure: failure));
           },
           (_) => storeProfileResult.fold(
             (failure) {
-              print('[SellerHomeBloc] StoreProfile failed: $failure. Emitting SellerHomeError');
+              AppLogger.d('[SellerHomeBloc] StoreProfile failed: $failure. Emitting SellerHomeError');
               emit(SellerHomeError(failure: failure));
             },
             (_) {}, 
           ),
         );
       } else {
-        print('[SellerHomeBloc] Both UseCases succeeded');
+        AppLogger.d('[SellerHomeBloc] Both UseCases succeeded');
         dashboardResult.fold(
           (_) {}, 
           (dashboardData) => storeProfileResult.fold(
             (_) {}, 
             (storeProfile) {
-               print('[SellerHomeBloc] Emitting SellerHomeLoaded state');
+               AppLogger.d('[SellerHomeBloc] Emitting SellerHomeLoaded state');
                emit(SellerHomeLoaded(
                 dashboardData: dashboardData,
                 storeProfile: storeProfile,
@@ -119,7 +120,7 @@ class SellerHomeBloc extends Bloc<SellerHomeEvent, SellerHomeState> {
         );
       }
     } catch (e) {
-      print('[SellerHomeBloc] Exception during data loading: $e. Emitting SellerHomeError');
+      AppLogger.d('[SellerHomeBloc] Exception during data loading: $e. Emitting SellerHomeError');
       emit(SellerHomeError(failure: CacheFailure(message: '未知错误: $e')));
     }
   }
@@ -171,7 +172,7 @@ class SellerHomeBloc extends Bloc<SellerHomeEvent, SellerHomeState> {
       path += '?type=${event.orderType}';
     }
     // 使用 navigateTo，路径是 Orders 模块的，暂时不确定是否正确
-    print('Warning: Navigation to orders ($path) requested but INavigationService dependency removed.');
+    AppLogger.d('Warning: Navigation to orders ($path) requested but INavigationService dependency removed.');
   }
   
   /// 处理导航到聊天列表页面事件
@@ -179,6 +180,6 @@ class SellerHomeBloc extends Bloc<SellerHomeEvent, SellerHomeState> {
     NavigateToChat event,
     Emitter<SellerHomeState> emit,
   ) async {
-    print('Warning: Navigation to chat requested but INavigationService dependency removed.');
+    AppLogger.d('Warning: Navigation to chat requested but INavigationService dependency removed.');
   }
 } 

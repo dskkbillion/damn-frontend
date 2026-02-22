@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:io';
 import 'dart:convert'; // For jsonDecode in stream handling
 import 'package:bloc/bloc.dart';
@@ -145,7 +146,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
 
     // 调试日志
     final userIdString = await _storage.read(key: 'user_id');
-    print("[AiChatBloc] 用户ID信息: user_id = $userIdString, common_user_id = $commonUserIdString");
+    AppLogger.d("[AiChatBloc] 用户ID信息: user_id = $userIdString, common_user_id = $commonUserIdString");
 
     if (commonUserIdString != null) {
       // 转换为整数并返回
@@ -153,7 +154,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     }
 
     // 不再回退使用user_id，如果没有common_user_id则直接返回null（错误）
-    print("[AiChatBloc] 错误: 未找到common_user_id，AI聊天功能需要正确的common_user_id");
+    AppLogger.d("[AiChatBloc] 错误: 未找到common_user_id，AI聊天功能需要正确的common_user_id");
     return null;
   }
 
@@ -167,7 +168,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       return int.tryParse(userIdString);
     }
 
-    print("[AiChatBloc] 错误: 未找到user_id");
+    AppLogger.d("[AiChatBloc] 错误: 未找到user_id");
     return null;
   }
 
@@ -177,7 +178,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     LoadConversations event,
     Emitter<AiChatState> emit,
   ) async {
-     print("[AiChatBloc] _onLoadConversations triggered.");
+     AppLogger.d("[AiChatBloc] _onLoadConversations triggered.");
      
      // 重置分页状态并设置加载状态
      emit(state.copyWith(
@@ -188,30 +189,30 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
      ));
      
      final userId = await _getCurrentUserId();
-     print("[AiChatBloc] _onLoadConversations: Retrieved userId = $userId");
+     AppLogger.d("[AiChatBloc] _onLoadConversations: Retrieved userId = $userId");
 
      if (userId == null) {
-       print("[AiChatBloc] _onLoadConversations: userId is null. Emitting error.");
+       AppLogger.d("[AiChatBloc] _onLoadConversations: userId is null. Emitting error.");
        emit(state.copyWith(conversationsStatus: ConversationsStatus.error, conversationListErrorMessage: "User not authenticated or invalid ID format"));
        return;
      }
 
-     print("[AiChatBloc] _onLoadConversations: Calling _getConversations with userId: $userId");
+     AppLogger.d("[AiChatBloc] _onLoadConversations: Calling _getConversations with userId: $userId");
      // 使用事件提供的页码或默认第1页
      final page = event.page ?? 1;
      final result = await _getConversations(GetConversationsParams(userId: userId, page: page)); 
-     print("[AiChatBloc] _onLoadConversations: _getConversations result: $result");
+     AppLogger.d("[AiChatBloc] _onLoadConversations: _getConversations result: $result");
 
      result.fold(
        (failure) {
-         print("[AiChatBloc] _onLoadConversations: Failure - $failure. Emitting error state.");
+         AppLogger.d("[AiChatBloc] _onLoadConversations: Failure - $failure. Emitting error state.");
          emit(state.copyWith(
              conversationsStatus: ConversationsStatus.error,
              conversationListErrorMessage: failure.toString(),
           ));
        },
        (conversationsResult) {
-         print("[AiChatBloc] _onLoadConversations: Success - Received ${conversationsResult.conversations.length} conversations. Emitting loaded state.");
+         AppLogger.d("[AiChatBloc] _onLoadConversations: Success - Received ${conversationsResult.conversations.length} conversations. Emitting loaded state.");
          emit(state.copyWith(
              conversationsStatus: ConversationsStatus.loaded,
              conversations: conversationsResult.conversations,
@@ -224,7 +225,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
        },
      );
      // Log the final emitted state for debugging
-     print("[AiChatBloc] _onLoadConversations: Final emitted state status = ${state.conversationsStatus}, count = ${state.conversations.length}"); 
+     AppLogger.d("[AiChatBloc] _onLoadConversations: Final emitted state status = ${state.conversationsStatus}, count = ${state.conversations.length}"); 
   }
 
   Future<void> _onLoadMoreConversations(
@@ -233,11 +234,11 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   ) async {
     // 防止重复加载
     if (state.isLoadingMoreConversations || !state.conversationsHasMore) {
-      print("[AiChatBloc] LoadMoreConversations ignored: isLoading=${state.isLoadingMoreConversations}, hasMore=${state.conversationsHasMore}");
+      AppLogger.d("[AiChatBloc] LoadMoreConversations ignored: isLoading=${state.isLoadingMoreConversations}, hasMore=${state.conversationsHasMore}");
       return;
     }
 
-    print("[AiChatBloc] Loading more conversations, current page: ${state.conversationsCurrentPage}");
+    AppLogger.d("[AiChatBloc] Loading more conversations, current page: ${state.conversationsCurrentPage}");
     
     emit(state.copyWith(isLoadingMoreConversations: true));
     
@@ -261,7 +262,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
 
     result.fold(
       (failure) {
-        print("[AiChatBloc] LoadMoreConversations failed: $failure");
+        AppLogger.d("[AiChatBloc] LoadMoreConversations failed: $failure");
         emit(state.copyWith(
           isLoadingMoreConversations: false,
           conversationsStatus: ConversationsStatus.error,
@@ -269,7 +270,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         ));
       },
       (conversationsResult) {
-        print("[AiChatBloc] LoadMoreConversations success: loaded ${conversationsResult.conversations.length} conversations");
+        AppLogger.d("[AiChatBloc] LoadMoreConversations success: loaded ${conversationsResult.conversations.length} conversations");
         
         // 将新对话插入到现有列表
         final allConversations = <AiConversationEntity>[];
@@ -293,7 +294,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     RefreshConversations event,
     Emitter<AiChatState> emit,
   ) async {
-    print("[AiChatBloc] Refreshing conversations");
+    AppLogger.d("[AiChatBloc] Refreshing conversations");
     
     // 刷新时重置到第一页
     add(const LoadConversations(page: 1));
@@ -306,7 +307,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     // If same conversation selected, do nothing (or maybe reload history?)
     if (state.selectedConversationId == event.conversationId) return;
 
-    print("[AiChatBloc] Selecting conversation: ${event.conversationId}");
+    AppLogger.d("[AiChatBloc] Selecting conversation: ${event.conversationId}");
 
     // Immediately update selected ID and clear messages/status for the main chat area
     emit(state.copyWith(
@@ -344,14 +345,14 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
 
     historyResult.fold(
       (failure) {
-        print("[AiChatBloc] Failed to load history: $failure");
+        AppLogger.d("[AiChatBloc] Failed to load history: $failure");
         emit(state.copyWith(
           status: AiChatStatus.historyLoadFailure, // Update main area status
           errorMessage: 'Failed to load history: ${failure.toString()}',
         ));
       },
       (historyData) {
-        print("[AiChatBloc] Loaded ${historyData.messages.length} messages for conversation ${event.conversationId}");
+        AppLogger.d("[AiChatBloc] Loaded ${historyData.messages.length} messages for conversation ${event.conversationId}");
         
         // 由于orderBy='desc'，需要反转消息顺序以保持时间正序显示
         final orderedMessages = historyData.messages.reversed.toList();
@@ -566,17 +567,17 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   ) async {
     // 防止重复加载
     if (state.isLoadingMoreHistory || !state.hasMoreHistory) {
-      print("[AiChatBloc] LoadMoreHistory ignored: isLoading=${state.isLoadingMoreHistory}, hasMore=${state.hasMoreHistory}");
+      AppLogger.d("[AiChatBloc] LoadMoreHistory ignored: isLoading=${state.isLoadingMoreHistory}, hasMore=${state.hasMoreHistory}");
       return;
     }
 
     final conversationId = state.selectedConversationId;
     if (conversationId == null) {
-      print("[AiChatBloc] LoadMoreHistory ignored: no conversation selected");
+      AppLogger.d("[AiChatBloc] LoadMoreHistory ignored: no conversation selected");
       return;
     }
 
-    print("[AiChatBloc] Loading more history for conversation $conversationId, current page: ${state.currentPage}");
+    AppLogger.d("[AiChatBloc] Loading more history for conversation $conversationId, current page: ${state.currentPage}");
     
     emit(state.copyWith(isLoadingMoreHistory: true));
     
@@ -603,7 +604,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
 
     historyResult.fold(
       (failure) {
-        print("[AiChatBloc] LoadMoreHistory failed: $failure");
+        AppLogger.d("[AiChatBloc] LoadMoreHistory failed: $failure");
         emit(state.copyWith(
           isLoadingMoreHistory: false,
           status: AiChatStatus.historyLoadFailure,
@@ -611,7 +612,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         ));
       },
       (historyData) {
-        print("[AiChatBloc] LoadMoreHistory success: loaded ${historyData.messages.length} messages");
+        AppLogger.d("[AiChatBloc] LoadMoreHistory success: loaded ${historyData.messages.length} messages");
         
         // 由于orderBy='desc'，新加载的消息需要插入到现有消息的前面
         // 但要保持时间顺序正确
@@ -640,7 +641,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   }
 
   void _onScrollToBottom(ScrollToBottom event, Emitter<AiChatState> emit) {
-    print("[AiChatBloc] ScrollToBottom triggered");
+    AppLogger.d("[AiChatBloc] ScrollToBottom triggered");
     emit(state.copyWith(shouldScrollToBottom: true));
     // 立即重置标志，避免重复触发
     emit(state.copyWith(shouldScrollToBottom: false));
@@ -671,7 +672,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     ));
 
     // 2. Start background upload
-    print("[Bloc] Starting upload for: $imagePath");
+    AppLogger.d("[Bloc] Starting upload for: $imagePath");
     try {
       final userId = await _getCurrentUserId();
       if (userId == null) {
@@ -681,18 +682,18 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       final uploadResult = await _uploadFile(UploadFileParams(file: imageFile));
       uploadResult.fold(
         (failure) {
-          print("[Bloc] Upload failed for $imagePath: $failure");
+          AppLogger.d("[Bloc] Upload failed for $imagePath: $failure");
           // Dispatch internal failure event using path
           add(_ImageUploadFailure(originalFilePath: imagePath, error: failure.toString()));
         },
         (url) {
-          print("[Bloc] Upload success for $imagePath: $url");
+          AppLogger.d("[Bloc] Upload success for $imagePath: $url");
           // Dispatch internal success event using path
           add(_ImageUploadSuccess(originalFilePath: imagePath, uploadedUrl: url));
         },
       );
     } catch (e) {
-       print("[Bloc] Exception during upload for $imagePath: $e");
+       AppLogger.d("[Bloc] Exception during upload for $imagePath: $e");
        add(_ImageUploadFailure(originalFilePath: imagePath, error: 'Upload exception: ${e.toString()}'));
     }
   }
@@ -708,7 +709,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         currentUploadStates[event.originalFilePath] = ImageUploadState.success(event.uploadedUrl);
         emit(state.copyWith(imageUploadStates: currentUploadStates));
     } else {
-        print("[Bloc] Warning: Received upload success for path not in state: ${event.originalFilePath}");
+        AppLogger.d("[Bloc] Warning: Received upload success for path not in state: ${event.originalFilePath}");
     }
   }
 
@@ -722,9 +723,9 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         currentUploadStates[event.originalFilePath] = ImageUploadState.failure(event.error);
         emit(state.copyWith(imageUploadStates: currentUploadStates));
      } else {
-        print("[Bloc] Warning: Received upload failure for path not in state: ${event.originalFilePath}");
+        AppLogger.d("[Bloc] Warning: Received upload failure for path not in state: ${event.originalFilePath}");
      }
-     print("Image upload failed for ${event.originalFilePath}: ${event.error}");
+     AppLogger.d("Image upload failed for ${event.originalFilePath}: ${event.error}");
   }
 
   // Updated handler for removing a pending image using path
@@ -747,7 +748,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       imageUploadStates: currentUploadStates,
     ));
 
-    print("[Bloc] Removed pending image: $imagePathToRemove");
+    AppLogger.d("[Bloc] Removed pending image: $imagePathToRemove");
     // TODO: Consider cancelling ongoing upload task if needed
   }
 
@@ -763,7 +764,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       return;
     }
     if (state.status == AiChatStatus.streamingResponse) {
-      print("Cannot send message while streaming");
+      AppLogger.d("Cannot send message while streaming");
       return;
     }
 
@@ -772,7 +773,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     final hasPendingImages = state.pendingImageFiles?.isNotEmpty == true;
     
     if (!hasText && !hasPendingImages) {
-        print("Cannot send empty message (no text and no images).");
+        AppLogger.d("Cannot send empty message (no text and no images).");
         // Optionally show snackbar feedback from here or rely on UI logic
         return; 
     }
@@ -794,14 +795,14 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
           if (uploadState.url != null) { 
              urlsToSend.add(uploadState.url!); 
           } else {
-             print("[Bloc] Warning: ImageUploadState.success for $path has null URL.");
+             AppLogger.d("[Bloc] Warning: ImageUploadState.success for $path has null URL.");
           }
       } 
       // Ignore images that are uploading or failed
       else if (uploadState?.status == ImageUploadStatus.uploading) {
-           print("[Bloc] Image still uploading, not included in message: $path");
+           AppLogger.d("[Bloc] Image still uploading, not included in message: $path");
       } else if (uploadState?.status == ImageUploadStatus.failure) {
-           print("[Bloc] Image upload failed, not included in message: $path");
+           AppLogger.d("[Bloc] Image upload failed, not included in message: $path");
       }
     }
 
@@ -852,13 +853,13 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     streamResult.fold(
       (failure) {
         // Handle error initiating the stream
-        print("[Bloc] Error initiating stream: $failure");
+        AppLogger.d("[Bloc] Error initiating stream: $failure");
         emit(state.copyWith(status: AiChatStatus.messageSendFailure, errorMessage: failure.toString()));
         // Note: Image state was already cleared optimistically. Consider if rollback is needed.
       },
       (contentStream) {
         // Successfully initiated stream, start listening
-        print("[Bloc] Stream initiated successfully. Listening...");
+        AppLogger.d("[Bloc] Stream initiated successfully. Listening...");
         
 
         
@@ -868,16 +869,16 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         
         _chatStreamSubscription = contentStream.listen(
           (chunk) {
-            print("[Bloc] Received stream chunk: '$chunk'");
+            AppLogger.d("[Bloc] Received stream chunk: '$chunk'");
             add(_ReceiveStreamChunk(chunk)); 
           },
           onError: (error) {
-            print("[Bloc] Stream error: $error");
+            AppLogger.d("[Bloc] Stream error: $error");
             add(_HandleStreamError(error.toString()));
             _chatStreamSubscription = null; 
           },
           onDone: () {
-            print("[Bloc] Stream completed");
+            AppLogger.d("[Bloc] Stream completed");
             add(const _HandleStreamDone()); 
              _chatStreamSubscription = null; 
           },
@@ -933,7 +934,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
 
     // 4. 上传音频文件
     final fileSize = await event.audioFile.length();
-    print('准备上传的音频文件大小: ${fileSize / 1024} KB, 路径: ${event.audioFile.path}');
+    AppLogger.d('准备上传的音频文件大小: ${fileSize / 1024} KB, 路径: ${event.audioFile.path}');
     
     // 添加重试逻辑
     int retryCount = 0;
@@ -942,7 +943,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     
     while (retryCount <= maxRetries) {
       if (retryCount > 0) {
-        print('正在重试音频上传 (${retryCount}/${maxRetries})...');
+        AppLogger.d('正在重试音频上传 (${retryCount}/${maxRetries})...');
         // 在重试时不改变消息状态，保持转录中状态
         await Future.delayed(Duration(seconds: 1));
       }
@@ -972,7 +973,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     await uploadResult.fold(
       // 5. 上传失败
       (failure) async {
-        print('音频上传失败: $failure');
+        AppLogger.d('音频上传失败: $failure');
         
         // 更新消息状态为上传失败
         final updatedMessages = state.messages.map((msg) {
@@ -1002,12 +1003,12 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       },
       // 6. 上传成功
       (audioOssUrl) async {
-        print('音频上传成功，URL: $audioOssUrl');
+        AppLogger.d('音频上传成功，URL: $audioOssUrl');
         
         // 5. 转录成功，更新语音消息显示转录结果
         final updatedMessages = state.messages.map((msg) {
           if (msg.messageId == tempVoiceMessageId) {
-            print('[语音消息] 更新消息 - 设置音频URL: $audioOssUrl');
+            AppLogger.d('[语音消息] 更新消息 - 设置音频URL: $audioOssUrl');
             return msg.copyWith(
               content: "转录中...", // 上传成功后显示转录中状态
               fileUrls: [audioOssUrl], // 设置音频URL到fileUrls
@@ -1025,7 +1026,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         ));
         
         // 8. 开始转录
-        print('开始调用语音转文字服务, URL: $audioOssUrl');
+        AppLogger.d('开始调用语音转文字服务, URL: $audioOssUrl');
         final transcriptionResult = await _transcribeAudio(
           TranscribeAudioParams(
             audioOssUrl: audioOssUrl,
@@ -1036,7 +1037,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         await transcriptionResult.fold(
           // 转录失败
           (failure) async {
-            print('语音转录失败: $failure');
+            AppLogger.d('语音转录失败: $failure');
             
             // 更新消息状态为转录失败
             final updatedMessages = state.messages.map((msg) {
@@ -1061,7 +1062,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
           },
           // 转录成功
           (transcription) async {
-            print('语音转录成功: $transcription');
+            AppLogger.d('语音转录成功: $transcription');
             
             // 更新消息显示转录结果 - content设置为转录文本，保持音频类型
             final updatedMessages = state.messages.map((msg) {
@@ -1108,14 +1109,14 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     
     streamResult.fold(
       (failure) {
-        print('音频消息发送失败: $failure');
+        AppLogger.d('音频消息发送失败: $failure');
         emit(state.copyWith(
           status: AiChatStatus.messageSendFailure,
           errorMessage: '音频消息发送失败: ${failure.toString()}',
         ));
       },
       (contentStream) {
-        print('音频消息发送成功，开始AI响应');
+        AppLogger.d('音频消息发送成功，开始AI响应');
         emit(state.copyWith(status: AiChatStatus.streamingResponse));
         
         _chatStreamSubscription = contentStream.listen(
@@ -1129,14 +1130,14 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
 
   // --- Internal Stream Handlers (Updated) ---
   void _onReceiveStreamChunk(_ReceiveStreamChunk event, Emitter<AiChatState> emit) {
-    print("[AiChatBloc] 收到流式数据块: ${event.chunk}");
+    AppLogger.d("[AiChatBloc] 收到流式数据块: ${event.chunk}");
     
     // 检查是否是特殊控制标记
     final chunk = event.chunk.trim();
     
     // 处理跳过用户消息显示的标识
     if (chunk == '[SKIP_USER_MESSAGE]') {
-      print("[AiChatBloc] 收到跳过用户消息显示标识");
+      AppLogger.d("[AiChatBloc] 收到跳过用户消息显示标识");
       // 对于语音消息，我们已经在前端显示了语音消息气泡（包含转录状态和结果）
       // 这个标识只是确认后端已经处理了用户消息，不需要额外显示
       // 我们只需要继续等待AI响应即可
@@ -1147,7 +1148,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     if (chunk == '[COMPLETED]' || 
         chunk == '[DONE]' || 
         chunk == '[CANCELLED]') {
-      print("[AiChatBloc] 收到控制标记: $chunk，完成流式响应");
+      AppLogger.d("[AiChatBloc] 收到控制标记: $chunk，完成流式响应");
       
 
       
@@ -1174,7 +1175,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
             streamingResponseText: '',
             messages: currentMessages,
           ));
-        print("[AiChatBloc] 流式响应完成，添加最终消息到列表");
+        AppLogger.d("[AiChatBloc] 流式响应完成，添加最终消息到列表");
       }
       return;
     }
@@ -1200,7 +1201,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
                 streamingResponseText: '', // Clear placeholder
                 messages: currentMessages,
             ));
-            print("[AiChatBloc] 流式响应结束，添加最终消息到列表");
+            AppLogger.d("[AiChatBloc] 流式响应结束，添加最终消息到列表");
        } // else: Stream might finish due to cancellation, state already handled by _onCancelStreaming
     } else {
       // 直接添加到流式响应文本（恢复简单的逐字符输出）
@@ -1233,7 +1234,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
    // --- Other Action Handlers (Updated) ---
    void _onCancelStreaming(CancelStreaming event, Emitter<AiChatState> emit) {
      if (state.status == AiChatStatus.streamingResponse) {
-        print("Cancelling stream...");
+        AppLogger.d("Cancelling stream...");
         _chatStreamSubscription?.cancel();
         _chatStreamSubscription = null;
         
@@ -1265,13 +1266,13 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
    ) async {
      // 只有在正在流式响应时才能取消
      if (state.status != AiChatStatus.streamingResponse) {
-       print("[AiChatBloc] Cannot cancel: not in streaming state. Current status: ${state.status}");
+       AppLogger.d("[AiChatBloc] Cannot cancel: not in streaming state. Current status: ${state.status}");
        return;
      }
 
      final currentConversationId = state.selectedConversationId;
      if (currentConversationId == null) {
-       print("[AiChatBloc] Cannot cancel: no conversation selected");
+       AppLogger.d("[AiChatBloc] Cannot cancel: no conversation selected");
        return;
      }
 
@@ -1297,7 +1298,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
 
        result.fold(
          (failure) {
-           print("[AiChatBloc] Cancel chat generation failed: $failure");
+           AppLogger.d("[AiChatBloc] Cancel chat generation failed: $failure");
            // 如果取消失败，恢复到流式响应状态
            emit(state.copyWith(
              status: AiChatStatus.streamingResponse,
@@ -1305,7 +1306,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
            ));
          },
          (_) {
-           print("[AiChatBloc] Chat generation cancelled successfully");
+           AppLogger.d("[AiChatBloc] Chat generation cancelled successfully");
            
            // 取消本地流订阅
            _chatStreamSubscription?.cancel();
@@ -1335,7 +1336,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
          }
        );
      } catch (e) {
-       print("[AiChatBloc] Exception while cancelling chat generation: $e");
+       AppLogger.d("[AiChatBloc] Exception while cancelling chat generation: $e");
        emit(state.copyWith(
          status: AiChatStatus.messageSendFailure,
          errorMessage: 'Exception while cancelling: ${e.toString()}'
@@ -1383,13 +1384,13 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
 
       // 将String类型的messageId转换为int（去掉"local_ai_"等前缀）
       latestMessageId = int.tryParse(latestAiMessage.messageId);
-      print('[推荐] 获取最新消息ID: ${latestAiMessage.messageId} -> $latestMessageId');
+      AppLogger.d('[推荐] 获取最新消息ID: ${latestAiMessage.messageId} -> $latestMessageId');
 
       if (latestMessageId == null) {
-        print('[推荐] ⚠️ 无法解析messageId，可能是本地临时ID');
+        AppLogger.d('[推荐] ⚠️ 无法解析messageId，可能是本地临时ID');
       }
     } else {
-      print('[推荐] ⚠️ 消息列表为空，无法获取messageId');
+      AppLogger.d('[推荐] ⚠️ 消息列表为空，无法获取messageId');
     }
 
     final result = await _getRelatedServices(
@@ -1515,7 +1516,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         
         // 获取AI生成的专业需求总结
         final summary = allocationResult.summary;
-        print('Allocation successful: $summary'); 
+        AppLogger.d('Allocation successful: $summary'); 
         
         // 发射成功状态
         emit(state.copyWith(
@@ -1530,12 +1531,12 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
           event.item, 
           summary
         ).catchError((e) {
-          print('向商家发送消息失败(不影响UI状态): $e');
+          AppLogger.d('向商家发送消息失败(不影响UI状态): $e');
         });
       }
     } catch (e, stackTrace) {
-      print('分发处理中发生未处理异常: $e');
-      print(stackTrace);
+      AppLogger.d('分发处理中发生未处理异常: $e');
+      AppLogger.d(stackTrace);
       
       // 异常情况下，确保按钮状态正确
       final errorStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
@@ -1552,7 +1553,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   // --- Internal Event Handlers for Stream ---
 
   void _onHandleStreamDone(_HandleStreamDone event, Emitter<AiChatState> emit) {
-      print("[AiChatBloc] 流式响应结束，当前状态: ${state.status}, 文本长度: ${state.streamingResponseText.length}");
+      AppLogger.d("[AiChatBloc] 流式响应结束，当前状态: ${state.status}, 文本长度: ${state.streamingResponseText.length}");
       
       // Add the complete streamed message as a final AI message
      _addFinalAiMessageFromStream(emit);
@@ -1563,7 +1564,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
          streamingResponseText: '', // Clear stream text on completion
      ));
       
-      print("[AiChatBloc] 流式响应处理完成，最终状态: ${state.status}, 消息数: ${state.messages.length}");
+      AppLogger.d("[AiChatBloc] 流式响应处理完成，最终状态: ${state.status}, 消息数: ${state.messages.length}");
   }
 
   // Helper to add the final AI message from the accumulated stream text
@@ -1593,7 +1594,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   @override
   Future<void> close() {
     _chatStreamSubscription?.cancel();
-    print("AiChatBloc closed, stream subscription cancelled.");
+    AppLogger.d("AiChatBloc closed, stream subscription cancelled.");
     return super.close();
    }
    
@@ -1604,7 +1605,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
      String summary
    ) async {
      try {
-       print('准备发送消息给商家ID: $merchantId, 商品: ${item['name']}');
+       AppLogger.d('准备发送消息给商家ID: $merchantId, 商品: ${item['name']}');
            
       // 创建新的Dio实例并设置基础URL和超时配置
       final baseUrl = dotenv.env['BACKEND_BASE_URL'];
@@ -1641,7 +1642,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
            );
            
            // 第一步：创建聊天室
-           print("发送创建聊天室请求...");
+           AppLogger.d("发送创建聊天室请求...");
            
        // 构建创建聊天室的请求参数
            final createRoomParams = {
@@ -1654,7 +1655,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         createRoomParams['productId'] = item['id'];
       }
            
-           print("创建聊天室请求参数: $createRoomParams");
+           AppLogger.d("创建聊天室请求参数: $createRoomParams");
            
            final createRoomResponse = await dio.post(
              '/api/chat/addChat',
@@ -1662,8 +1663,8 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
              options: options
            );
            
-           print("创建聊天室响应状态码: ${createRoomResponse.statusCode}");
-           print("创建聊天室响应数据: ${createRoomResponse.data}");
+           AppLogger.d("创建聊天室响应状态码: ${createRoomResponse.statusCode}");
+           AppLogger.d("创建聊天室响应数据: ${createRoomResponse.data}");
            
            if (createRoomResponse.statusCode == 200 && 
                createRoomResponse.data != null && 
@@ -1671,10 +1672,10 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
              
         final chatRoomData = createRoomResponse.data['data'];
         final chatId = chatRoomData['id']; // 从聊天室对象中提取id字段
-             print('成功创建聊天室，ID: $chatId');
+             AppLogger.d('成功创建聊天室，ID: $chatId');
              
              // 第二步：发送消息
-             print("发送消息请求...");
+             AppLogger.d("发送消息请求...");
              
              // 构建一个更丰富的消息，包含服务名称和AI分析的总结
          String messageContent = summary;
@@ -1686,7 +1687,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
                'type': 'allocate',
              };
              
-             print("发送消息请求参数: $sendMessageParams");
+             AppLogger.d("发送消息请求参数: $sendMessageParams");
              
              final sendMsgResponse = await dio.post(
                '/common/chat/message/add',
@@ -1694,21 +1695,21 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
                options: options
              );
              
-             print("发送消息响应状态码: ${sendMsgResponse.statusCode}");
-             print("发送消息响应数据: ${sendMsgResponse.data}");
+             AppLogger.d("发送消息响应状态码: ${sendMsgResponse.statusCode}");
+             AppLogger.d("发送消息响应数据: ${sendMsgResponse.data}");
              
              if (sendMsgResponse.statusCode == 200 && 
                  sendMsgResponse.data != null && 
                  sendMsgResponse.data['code'] == 200) {
-               print('消息已成功发送给商家!');
+               AppLogger.d('消息已成功发送给商家!');
              } else {
-               print('发送消息API返回错误: ${sendMsgResponse.data}');
+               AppLogger.d('发送消息API返回错误: ${sendMsgResponse.data}');
              }
            } else {
-             print('创建聊天室API返回错误: ${createRoomResponse.data}');
+             AppLogger.d('创建聊天室API返回错误: ${createRoomResponse.data}');
            }
          } catch (e) {
-           print('向商家发送消息失败: $e');
+           AppLogger.d('向商家发送消息失败: $e');
      }
    }
 
@@ -1717,15 +1718,15 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     TriggerOptimizedAllocation event,
     Emitter<AiChatState> emit,
   ) async {
-    print('[优化分发] 开始处理分发事件 - serviceId: ${event.serviceId}, merchantId: ${event.merchantId}');
-    print('[优化分发] 商品数据: ${event.item}');
+    AppLogger.d('[优化分发] 开始处理分发事件 - serviceId: ${event.serviceId}, merchantId: ${event.merchantId}');
+    AppLogger.d('[优化分发] 商品数据: ${event.item}');
 
     try {
       final currentConvId = state.selectedConversationId;
-      print('[优化分发] 当前conversationId: $currentConvId');
+      AppLogger.d('[优化分发] 当前conversationId: $currentConvId');
 
       if (currentConvId == null) {
-        print('[优化分发] ❌ conversationId为空，无法进行分发');
+        AppLogger.d('[优化分发] ❌ conversationId为空，无法进行分发');
         emit(state.copyWith(
           status: AiChatStatus.allocationFailure,
           errorMessage: 'No conversation selected for allocation'
@@ -1747,10 +1748,10 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       // 修复：应该使用common_user_id，因为AI对话系统使用的是common_user_id
       // conversation是用common_user_id创建的，分发API也必须使用相同的ID
       final userId = await _getCurrentUserId(); // ✅ 改为使用common_user_id
-      print('[优化分发] 获取到的userId (common_user_id): $userId');
+      AppLogger.d('[优化分发] 获取到的userId (common_user_id): $userId');
 
       if (userId == null) {
-        print('[优化分发] ❌ userId为空，用户未认证或ID格式无效');
+        AppLogger.d('[优化分发] ❌ userId为空，用户未认证或ID格式无效');
         final failureStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
         failureStatus[event.serviceId] = AllocationStatus.failure;
 
@@ -1762,7 +1763,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         return;
       }
 
-      print('[优化分发] ✅ 准备调用OptimizedAllocation - conversationId: $currentConvId, userId: $userId (common_user_id), merchantId: ${event.merchantId}');
+      AppLogger.d('[优化分发] ✅ 准备调用OptimizedAllocation - conversationId: $currentConvId, userId: $userId (common_user_id), merchantId: ${event.merchantId}');
 
       // 调用优化分配用例
       final result = await _optimizedAllocation(OptimizedAllocationParams(
@@ -1772,7 +1773,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         merchantId: event.merchantId,
       ));
 
-      print('[优化分发] OptimizedAllocation调用完成，结果: ${result.isRight() ? "成功" : "失败"}');
+      AppLogger.d('[优化分发] OptimizedAllocation调用完成，结果: ${result.isRight() ? "成功" : "失败"}');
 
       // 处理结果
       result.fold(
@@ -1812,14 +1813,14 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
               event.item, 
               optimizedResult.summary
             ).catchError((e) {
-              print('向商家发送消息失败(不影响UI状态): $e');
+              AppLogger.d('向商家发送消息失败(不影响UI状态): $e');
             });
           }
         }
       );
     } catch (e, stackTrace) {
-      print('优化分发处理中发生未处理异常: $e');
-      print(stackTrace);
+      AppLogger.d('优化分发处理中发生未处理异常: $e');
+      AppLogger.d(stackTrace);
       
       final errorStatus = Map<int, AllocationStatus>.from(state.serviceAllocationStatus);
       errorStatus[event.serviceId] = AllocationStatus.failure;
@@ -1900,7 +1901,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
           clearTitleErrorMessage: true,
         ));
         
-        print('[AiChatBloc] 标题更新成功: ${event.conversationId} -> $updatedTitle');
+        AppLogger.d('[AiChatBloc] 标题更新成功: ${event.conversationId} -> $updatedTitle');
       },
     );
   }
@@ -1970,7 +1971,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
           clearTitleErrorMessage: true,
         ));
         
-        print('[AiChatBloc] AI标题生成成功: ${event.conversationId} -> $generatedTitle');
+        AppLogger.d('[AiChatBloc] AI标题生成成功: ${event.conversationId} -> $generatedTitle');
       },
     );
   }
@@ -1997,7 +1998,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         userId: userId,
       );
       
-      print('[AiChatBloc] Rate limit API result: $result');
+      AppLogger.d('[AiChatBloc] Rate limit API result: $result');
       
       // result已经是API响应的data部分，不需要再访问result['data']
       final conversationData = result['conversation'] as Map<String, dynamic>?;
@@ -2006,8 +2007,8 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       final conversationLimit = _parseServiceLimitInfo(conversationData);
       final personalizedLimit = _parseServiceLimitInfo(personalizedData);
       
-      print('[AiChatBloc] Parsed conversation limit: $conversationLimit');
-      print('[AiChatBloc] Parsed personalized limit: $personalizedLimit');
+      AppLogger.d('[AiChatBloc] Parsed conversation limit: $conversationLimit');
+      AppLogger.d('[AiChatBloc] Parsed personalized limit: $personalizedLimit');
       
       emit(state.copyWith(
         rateLimitStatus: RateLimitStatus.loaded,
@@ -2017,7 +2018,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       ));
       
     } catch (e) {
-      print('[AiChatBloc] Failed to fetch rate limit status: $e');
+      AppLogger.d('[AiChatBloc] Failed to fetch rate limit status: $e');
       emit(state.copyWith(
         rateLimitStatus: RateLimitStatus.error,
         rateLimitErrorMessage: e.toString(),
@@ -2049,7 +2050,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       add(FetchRateLimitStatus(userId: userId));
       
     } catch (e) {
-      print('[AiChatBloc] Failed to reset rate limit: $e');
+      AppLogger.d('[AiChatBloc] Failed to reset rate limit: $e');
       emit(state.copyWith(
         rateLimitStatus: RateLimitStatus.error,
         rateLimitErrorMessage: e.toString(),

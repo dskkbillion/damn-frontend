@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/core/error/exceptions.dart';
@@ -26,13 +27,13 @@ class UserInfoRepositoryImpl implements IUserInfoRepository {
         // UserInfoModel now extends UserInfo, so we can return it directly.
         return Right(userInfoModel);
       } on UnauthenticatedException catch (e) {
-        print('UnauthenticatedException in UserInfoRepository: ${e.message}');
+        AppLogger.d('UnauthenticatedException in UserInfoRepository: ${e.message}');
         return Left(AuthenticationFailure(message: e.message));
       } on ServerException catch (e) {
-        print('ServerException in UserInfoRepository: ${e.message}');
+        AppLogger.d('ServerException in UserInfoRepository: ${e.message}');
         return Left(ServerFailure(message: e.message ?? '获取用户信息时发生服务器错误'));
       } catch (e) {
-        print('Unknown exception in UserInfoRepository: ${e.toString()}');
+        AppLogger.d('Unknown exception in UserInfoRepository: ${e.toString()}');
         return Left(UnknownFailure(message: 'Failed to fetch user info'));
       }
     } else {

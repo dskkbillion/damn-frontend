@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -47,14 +48,14 @@ class WechatConfig {
       );
       
       // 日志记录配置来源
-      print('[WechatConfig] App ID source: ${envAppId != null ? 'Environment Variable' : 'YAML File'}');
-      print('[WechatConfig] Universal Link source: ${envUniversalLink != null ? 'Environment Variable' : 'YAML File'}');
+      AppLogger.d('[WechatConfig] App ID source: ${envAppId != null ? 'Environment Variable' : 'YAML File'}');
+      AppLogger.d('[WechatConfig] Universal Link source: ${envUniversalLink != null ? 'Environment Variable' : 'YAML File'}');
       
       // 平台特定的配置提示
       if (Platform.isAndroid) {
-        print('[WechatConfig] Running on Android - Universal Link is optional');
+        AppLogger.d('[WechatConfig] Running on Android - Universal Link is optional');
       } else if (Platform.isIOS) {
-        print('[WechatConfig] Running on iOS - Universal Link is required');
+        AppLogger.d('[WechatConfig] Running on iOS - Universal Link is required');
       }
       
       return WechatConfig(
@@ -66,7 +67,7 @@ class WechatConfig {
         paymentTypes: List<String>.from(yamlMap['payment_types'] ?? ['app']),
       );
     } catch (e) {
-      print('[WechatConfig] Failed to load config: $e');
+      AppLogger.d('[WechatConfig] Failed to load config: $e');
       
       // 尝试仅从环境变量读取
       final envAppId = dotenv.env['WECHAT_APP_ID'];
@@ -78,7 +79,7 @@ class WechatConfig {
           : (envAppId != null && envUniversalLink != null);
           
               if (hasRequiredConfig) {
-          print('[WechatConfig] Using environment variables only');
+          AppLogger.d('[WechatConfig] Using environment variables only');
           return WechatConfig(
             environment: dotenv.env['PAYMENT_ENVIRONMENT'] ?? 'production',
             mockPayment: _parseBool(dotenv.env['PAYMENT_MOCK_ENABLED']) ?? false,

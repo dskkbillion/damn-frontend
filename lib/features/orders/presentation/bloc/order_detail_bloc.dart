@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
@@ -121,7 +122,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
 
   Future<void> _onLoadOrderMaterials(LoadOrderMaterials event, Emitter<OrderDetailState> emit) async {
     if (state is! OrderDetailLoaded) {
-      print('[OrderDetailBloc] Cannot load materials: State is not OrderDetailLoaded.');
+      AppLogger.d('[OrderDetailBloc] Cannot load materials: State is not OrderDetailLoaded.');
       return;
     }
     
@@ -134,11 +135,11 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
       
       result.fold(
         (failure) {
-          print('[OrderDetailBloc] Failed to load materials and deliveries: ${failure.toString()}');
+          AppLogger.d('[OrderDetailBloc] Failed to load materials and deliveries: ${failure.toString()}');
           // 不发出错误状态，保持当前状态，只是记录错误
         },
         (materialsAndDeliveries) {
-          print('[OrderDetailBloc] Loaded ${materialsAndDeliveries.materials.length} materials and ${materialsAndDeliveries.deliveries.length} deliveries');
+          AppLogger.d('[OrderDetailBloc] Loaded ${materialsAndDeliveries.materials.length} materials and ${materialsAndDeliveries.deliveries.length} deliveries');
           emit(currentState.copyWith(
             materials: materialsAndDeliveries.materials,
             deliveries: materialsAndDeliveries.deliveries,
@@ -146,7 +147,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         },
       );
     } catch (e) {
-      print('[OrderDetailBloc] Exception while loading materials: $e');
+      AppLogger.d('[OrderDetailBloc] Exception while loading materials: $e');
     }
   }
 
@@ -169,7 +170,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
 
     // Emit loading state, passing previous state to keep displaying data
     emit(OrderDetailActionLoading(previousState: currentState));
-    print('[OrderDetailBloc] Received OrderActionRequested: ${event.action}');
+    AppLogger.d('[OrderDetailBloc] Received OrderActionRequested: ${event.action}');
 
     Either<Failure, void>? result;
     bool shouldReload = false;
@@ -179,19 +180,19 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     try {
        switch (event.action) {
          case OrderAction.confirmReceipt:
-           print('[OrderDetailBloc] Calling confirmOrderReceiptUseCase...');
+           AppLogger.d('[OrderDetailBloc] Calling confirmOrderReceiptUseCase...');
            result = await _confirmOrderReceiptUseCase(orderIdInt);
            shouldReload = true;
            successMessage = '确认收货成功!';
            break;
          case OrderAction.cancel:
-           print('[OrderDetailBloc] Calling cancelOrderUseCase...');
+           AppLogger.d('[OrderDetailBloc] Calling cancelOrderUseCase...');
            result = await _cancelOrderUseCase(orderIdInt);
            shouldGoBack = true;
            successMessage = '订单已取消';
            break;
          case OrderAction.delete:
-           print('[OrderDetailBloc] Calling deleteOrderUseCase...');
+           AppLogger.d('[OrderDetailBloc] Calling deleteOrderUseCase...');
            result = await _deleteOrderUseCase(orderIdInt);
            shouldGoBack = true;
            successMessage = '订单已删除';
@@ -212,7 +213,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
             // Let's assume this event is still used to *show* the evaluation form within the page, not navigate away
             // If it was purely for navigation, remove the case.
             // For now, let's keep it but remove the navigation service call and emit.
-            print('[OrderDetailBloc] GoToEvaluation action received - UI should handle showing form.');
+            AppLogger.d('[OrderDetailBloc] GoToEvaluation action received - UI should handle showing form.');
             emit(currentState);
            return;
          case OrderAction.goToTracking:
@@ -222,7 +223,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
          */
           // Add default case or handle unknown actions
           default:
-             print('[OrderDetailBloc] Unhandled OrderAction: ${event.action}');
+             AppLogger.d('[OrderDetailBloc] Unhandled OrderAction: ${event.action}');
              emit(OrderDetailActionFailure(
                 message: '未知的操作: ${event.action}',
                 previousState: currentState
@@ -231,7 +232,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
        }
      } catch (e) {
        // Catch potential errors during UseCase call or parsing
-       print('[OrderDetailBloc] Error during action execution: ${e.toString()}');
+       AppLogger.d('[OrderDetailBloc] Error during action execution: ${e.toString()}');
        // Ensure correct construction of OrderDetailActionFailure
        emit(OrderDetailActionFailure(
            message: '执行操作 [${event.action}] 时出错: ${e.toString()}',
@@ -244,7 +245,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     if (result != null) {
       result.fold(
         (failure) {
-          print('[OrderDetailBloc] Action [${event.action}] failed: ${failure.toString()}');
+          AppLogger.d('[OrderDetailBloc] Action [${event.action}] failed: ${failure.toString()}');
           // Ensure correct construction of OrderDetailActionFailure
           emit(OrderDetailActionFailure(
             message: _mapFailureToMessage(failure), // Use helper function
@@ -252,7 +253,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
           ));
         },
         (_) {
-          print('[OrderDetailBloc] Action [${event.action}] succeeded.');
+          AppLogger.d('[OrderDetailBloc] Action [${event.action}] succeeded.');
           // Emit success state FIRST (for SnackBar/UI feedback)
           // We will add actionType to the State definition next.
           emit(OrderDetailActionSuccess(
@@ -267,7 +268,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
       );
     } else {
        // This case might happen if goToPayment was the action
-       print('[OrderDetailBloc] Action [${event.action}] had null result or was handled directly.');
+       AppLogger.d('[OrderDetailBloc] Action [${event.action}] had null result or was handled directly.');
        // State was already reverted or handled
     }
   }
@@ -277,12 +278,12 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     Emitter<OrderDetailState> emit,
   ) async {
      if (state is! OrderDetailLoaded) {
-        print('[OrderDetailBloc] Cannot submit requirements: State is not OrderDetailLoaded.');
+        AppLogger.d('[OrderDetailBloc] Cannot submit requirements: State is not OrderDetailLoaded.');
         emit(const OrderDetailError(message: '无法提交要求：订单数据未加载'));
         return;
      }
      final currentState = state as OrderDetailLoaded;
-     print('[OrderDetailBloc] Received SubmitRequirementsSubmitted event...');
+     AppLogger.d('[OrderDetailBloc] Received SubmitRequirementsSubmitted event...');
      emit(currentState.copyWith(isSubmittingRequirements: true));
 
      // Call the SubmitRequirementsUseCase with correct event properties
@@ -298,14 +299,14 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
 
       result.fold(
          (failure) {
-           print('[OrderDetailBloc] SubmitRequirementsUseCase failed: ${failure.toString()}');
+           AppLogger.d('[OrderDetailBloc] SubmitRequirementsUseCase failed: ${failure.toString()}');
            emit(OrderDetailActionFailure(
              message: '提交要求失败: ${failure.toString()}',
              previousState: currentState.copyWith(isSubmittingRequirements: false),
            ));
          },
          (_) {
-            print('[OrderDetailBloc] SubmitRequirementsUseCase succeeded.');
+            AppLogger.d('[OrderDetailBloc] SubmitRequirementsUseCase succeeded.');
             // Emit success state with the correct action type
             emit(OrderDetailActionSuccess(
               message: '要求提交成功!',
@@ -325,14 +326,14 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     if (currentState != null) {
       emit(currentState.copyWith(isSubmittingEvaluation: true));
     }
-    print('[OrderDetailBloc] Submitting evaluation...');
+    AppLogger.d('[OrderDetailBloc] Submitting evaluation...');
 
     try {
       final result = await _submitEvaluationUseCase(event.params);
 
       result.fold(
         (failure) {
-          print('[OrderDetailBloc] Evaluation submission failed: ${failure.toString()}');
+          AppLogger.d('[OrderDetailBloc] Evaluation submission failed: ${failure.toString()}');
           // Emit failure state, resetting the loading flag
           emit(OrderDetailActionFailure(
             message: _mapFailureToMessage(failure, defaultMsg: '评价提交失败'),
@@ -340,7 +341,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
           ));
         },
         (_) {
-          print('[OrderDetailBloc] Evaluation submitted successfully.');
+          AppLogger.d('[OrderDetailBloc] Evaluation submitted successfully.');
 
           // 触发评价提交事件，通知商品详情页刷新评论
           if (currentState != null && currentState.order.items.isNotEmpty) {
@@ -351,7 +352,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
                 orderId: event.params.orderId,
               ),
             );
-            print('[OrderDetailBloc] Fired EvaluationSubmittedEvent for productId: $productId');
+            AppLogger.d('[OrderDetailBloc] Fired EvaluationSubmittedEvent for productId: $productId');
           }
 
           // Emit success state FIRST (for SnackBar)
@@ -362,7 +363,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         },
       );
     } catch (e) {
-       print('[OrderDetailBloc] Exception during evaluation submission: ${e.toString()}');
+       AppLogger.d('[OrderDetailBloc] Exception during evaluation submission: ${e.toString()}');
        emit(OrderDetailActionFailure(
           message: '评价提交时发生意外错误: ${e.toString()}',
           previousState: currentState?.copyWith(isSubmittingEvaluation: false),
@@ -384,7 +385,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
 
      // 检查订单状态是否允许支付
      if (order.state != OrderStatus.awaitingPayment) {
-        print('[OrderDetailBloc] 订单状态不允许支付: ${order.state}');
+        AppLogger.d('[OrderDetailBloc] 订单状态不允许支付: ${order.state}');
         emit(OrderDetailActionFailure(
           message: '该订单状态不允许支付',
           previousState: currentState,
@@ -392,7 +393,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         return;
      }
 
-     print('[OrderDetailBloc] Navigating to payment method selection for order ${event.orderId}');
+     AppLogger.d('[OrderDetailBloc] Navigating to payment method selection for order ${event.orderId}');
 
      // 发出导航到支付方式选择页面的状态
      emit(OrderDetailNavigateToPaymentSelection(
@@ -411,7 +412,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
      final currentState = state as OrderDetailLoaded;
      final order = currentState.order;
 
-     print('[OrderDetailBloc] Processing payment for order ${event.orderId} with method ${event.paymentMethod.code}');
+     AppLogger.d('[OrderDetailBloc] Processing payment for order ${event.orderId} with method ${event.paymentMethod.code}');
 
      // 发出支付中状态
      emit(OrderDetailPaymentLoading(previousState: currentState));
@@ -439,7 +440,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         ));
 
      } catch (e) {
-        print('[OrderDetailBloc] Error initiating payment: $e');
+        AppLogger.d('[OrderDetailBloc] Error initiating payment: $e');
         emit(OrderDetailActionFailure(
           message: '发起支付失败: $e',
           previousState: currentState,
@@ -449,7 +450,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
 
   Future<void> _onGoToTracking(GoToTracking event, Emitter<OrderDetailState> emit) async {
      // Usually navigation is handled in UI. Add logic here if Bloc needs to do something.
-     print('[OrderDetailBloc] GoToTracking requested for order ${event.orderId}. Navigation handled by UI.');
+     AppLogger.d('[OrderDetailBloc] GoToTracking requested for order ${event.orderId}. Navigation handled by UI.');
      // Perhaps emit a state to signal UI to navigate?
      // emit(NavigateToTrackingState(orderId: event.orderId));
   }
@@ -457,7 +458,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     Future<void> _onGoToEvaluation(GoToEvaluation event, Emitter<OrderDetailState> emit) async {
      // Similar to tracking, often UI handles showing the form.
      // Add logic if Bloc needs to prepare something before evaluation.
-     print('[OrderDetailBloc] GoToEvaluation requested for order ${event.orderId}. UI should handle showing the form.');
+     AppLogger.d('[OrderDetailBloc] GoToEvaluation requested for order ${event.orderId}. UI should handle showing the form.');
      // emit(ShowEvaluationFormState(orderId: event.orderId));
   }
 
@@ -580,7 +581,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
        return '网络连接错误，请检查您的网络连接'; // NetworkFailure implies connection issue
     } else {
        // Handle generic Failure or other specific types
-       print('[OrderDetailBloc] Unmapped Failure type: ${failure.runtimeType}');
+       AppLogger.d('[OrderDetailBloc] Unmapped Failure type: ${failure.runtimeType}');
        return defaultMsg; // Generic fallback
     }
   }

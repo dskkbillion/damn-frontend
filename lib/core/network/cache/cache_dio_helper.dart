@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:get_it/get_it.dart';
 import '../core_dio_client.dart';
 import '../interceptors/cache_interceptor.dart';
@@ -14,7 +15,7 @@ class CacheDioHelper {
     try {
       return _getIt<CoreDioClient>(instanceName: 'cachedDioClient');
     } catch (e) {
-      print('[CacheDioHelper] 获取缓存客户端失败，使用默认客户端: $e');
+      AppLogger.d('[CacheDioHelper] 获取缓存客户端失败，使用默认客户端: $e');
       return _getIt<CoreDioClient>();
     }
   }
@@ -71,7 +72,7 @@ class CacheDioHelper {
       final cacheManager = _getIt<CacheInterceptorManager>();
       await cacheManager.clearAll();
     } catch (e) {
-      print('[CacheDioHelper] 清除缓存失败: $e');
+      AppLogger.d('[CacheDioHelper] 清除缓存失败: $e');
     }
   }
 }

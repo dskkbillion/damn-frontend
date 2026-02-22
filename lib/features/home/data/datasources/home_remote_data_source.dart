@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 import 'package:http/http.dart' as http;
 
@@ -112,16 +113,16 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
     
     try {
       final headers = await _getHeaders();
-      print('商品详情API请求URL: $url');
-      print('商品详情API请求头: $headers');
+      AppLogger.d('商品详情API请求URL: $url');
+      AppLogger.d('商品详情API请求头: $headers');
       
       final response = await client.get(
         url,
         headers: headers,
       );
 
-      print('商品详情API响应状态码: ${response.statusCode}');
-      print('商品详情API响应内容: ${response.body}');
+      AppLogger.d('商品详情API响应状态码: ${response.statusCode}');
+      AppLogger.d('商品详情API响应内容: ${response.body}');
 
       if (response.statusCode == 200) {
         // 确保使用UTF-8解码
@@ -129,10 +130,10 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         final jsonData = json.decode(responseBody);
         if (jsonData['code'] == 200 && jsonData['data'] != null) {
           final data = jsonData['data'];
-          print('商品详情数据: $data');
+          AppLogger.d('商品详情数据: $data');
           
           final productDetail = ProductDetailModel.fromJson(data);
-          print('解析后的商品详情: $productDetail');
+          AppLogger.d('解析后的商品详情: $productDetail');
           
           return productDetail;
         } else {
@@ -142,7 +143,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         throw ServerException(message: 'Failed to load product details');
       }
     } catch (e) {
-      print('获取商品详情出错: $e');
+      AppLogger.d('获取商品详情出错: $e');
       if (e is ServerException) {
         rethrow;
       }
@@ -156,8 +157,8 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
     
     try {
       final headers = await _getHeaders();
-      print('Banner API请求URL: $url');
-      print('Banner API请求头: $headers');
+      AppLogger.d('Banner API请求URL: $url');
+      AppLogger.d('Banner API请求头: $headers');
       
       final response = await client.post(
         url,
@@ -168,8 +169,8 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         }),
       );
 
-      print('Banner API响应状态码: ${response.statusCode}');
-      print('Banner API响应内容: ${response.body}');
+      AppLogger.d('Banner API响应状态码: ${response.statusCode}');
+      AppLogger.d('Banner API响应内容: ${response.body}');
 
       if (response.statusCode == 200) {
         // 确保使用UTF-8解码
@@ -177,26 +178,26 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         final jsonData = json.decode(responseBody);
         if (jsonData['code'] == 200) {
           final List<dynamic> bannersList = jsonData['rows'] ?? [];
-          print('Banner列表: $bannersList');
+          AppLogger.d('Banner列表: $bannersList');
           
           final banners = bannersList
               .map((item) => BannerModel.fromJson(item))
               .toList();
           
-          print('解析后的Banner列表: $banners');
-          print('Banner图片URL: ${banners.map((b) => b.imageUrl).toList()}');
+          AppLogger.d('解析后的Banner列表: $banners');
+          AppLogger.d('Banner图片URL: ${banners.map((b) => b.imageUrl).toList()}');
           
           return banners;
         } else {
-          print('Banner API返回信息: ${jsonData['msg']}');
+          AppLogger.d('Banner API返回信息: ${jsonData['msg']}');
           return [];
         }
       } else {
-        print('Banner API请求失败: ${response.statusCode}');
+        AppLogger.d('Banner API请求失败: ${response.statusCode}');
         return [];
       }
     } catch (e) {
-      print('获取轮播图出错: $e');
+      AppLogger.d('获取轮播图出错: $e');
       return [];
     }
   }
@@ -225,8 +226,8 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         'limit': limit,
       });
 
-      print('推荐系统API请求URL: $url');
-      print('推荐系统API请求体: $body');
+      AppLogger.d('推荐系统API请求URL: $url');
+      AppLogger.d('推荐系统API请求体: $body');
 
       // 添加超时设置，防止长时间等待
       final response = await client.post(
@@ -240,36 +241,36 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         },
       );
 
-      print('推荐系统API响应状态码: ${response.statusCode}');
+      AppLogger.d('推荐系统API响应状态码: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         // 确保使用UTF-8解码
         final responseBody = utf8.decode(response.bodyBytes);
         final jsonData = json.decode(responseBody);
-        print('推荐系统API响应内容: $jsonData');
+        AppLogger.d('推荐系统API响应内容: $jsonData');
 
         if (jsonData['code'] == 200 && jsonData['data'] != null && jsonData['data']['items'] != null) {
           final items = jsonData['data']['items'] as List<dynamic>;
 
           // 如果推荐系统返回空数组，返回空列表而不是抛出异常
           if (items.isEmpty) {
-            print('推荐系统返回空数据，这是新用户的正常情况');
+            AppLogger.d('推荐系统返回空数据，这是新用户的正常情况');
             return [];
           }
 
           return items.map((item) => HomeFeedItemModel.fromJson(item)).toList();
         } else {
-          print('推荐系统返回异常: ${jsonData['message']}');
+          AppLogger.d('推荐系统返回异常: ${jsonData['message']}');
           // 返回空列表而不是抛出异常，让用户看到空状态而不是错误
           return [];
         }
       } else {
-        print('推荐系统API响应错误: ${response.statusCode}');
+        AppLogger.d('推荐系统API响应错误: ${response.statusCode}');
         // 返回空列表，不抛出异常
         return [];
       }
     } catch (e) {
-      print('获取推荐产品出错: $e');
+      AppLogger.d('获取推荐产品出错: $e');
       // 出错时返回空列表，让用户可以手动刷新
       return [];
     }
@@ -284,7 +285,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
     
     try {
       final headers = await _getHeaders();
-      print('搜索API请求URL: $url');
+      AppLogger.d('搜索API请求URL: $url');
       
       final body = json.encode({
         'keyword': keyword,
@@ -293,7 +294,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         'pageSize': pageSize,
       });
       
-      print('搜索API请求体: $body');
+      AppLogger.d('搜索API请求体: $body');
       
       final response = await client.post(
         url,
@@ -301,8 +302,8 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         body: body,
       );
 
-      print('搜索API响应状态码: ${response.statusCode}');
-      print('搜索API响应内容: ${response.body}');
+      AppLogger.d('搜索API响应状态码: ${response.statusCode}');
+      AppLogger.d('搜索API响应内容: ${response.body}');
 
       if (response.statusCode == 200) {
         // 确保使用UTF-8解码
@@ -310,7 +311,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         final jsonData = json.decode(responseBody);
         if (jsonData['code'] == 200 && jsonData['rows'] != null) {
           final List<dynamic> productsList = jsonData['rows'] ?? [];
-          print('搜索结果列表: $productsList');
+          AppLogger.d('搜索结果列表: $productsList');
           
           final List<HomeFeedItemModel> products = [];
           
@@ -373,7 +374,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         throw ServerException(message: 'Failed to search products');
       }
     } catch (e) {
-      print('搜索产品出错: $e');
+      AppLogger.d('搜索产品出错: $e');
       if (e is ServerException) {
         rethrow;
       }

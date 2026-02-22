@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -159,7 +160,7 @@ class OrderDetailActionButtons extends StatelessWidget {
 
       case OrderStatus.awaitingEvaluation: // 待评价
         buttons.add(_buildButton(context, '查看物流', () {
-          print('查看物流 for order ${order.id}');
+          AppLogger.d('查看物流 for order ${order.id}');
         }));
         buttons.add(_buildButton(context, '申请售后', () {
           _navigateToAfterSales(context);
@@ -198,7 +199,7 @@ class OrderDetailActionButtons extends StatelessWidget {
       case OrderStatus.AfterSaleRejection: // 售后被拒
       case OrderStatus.applyingForMediation: // 平台介入中
         buttons.add(_buildButton(context, '查看订单', () {
-          print('查看订单: ${order.id}');
+          AppLogger.d('查看订单: ${order.id}');
         }));
         buttons.add(_buildButton(context, '删除订单', () {
           dialogs.showConfirmationDialog(
@@ -260,9 +261,9 @@ class OrderDetailActionButtons extends StatelessWidget {
           if (context.mounted) {
             try {
               context.push('/selectAfterSalesType/$firstItemId', extra: firstItem);
-              print('Navigate to select after sales type for item ID: $firstItemId');
+              AppLogger.d('Navigate to select after sales type for item ID: $firstItemId');
             } catch (e) {
-              print('Error navigating to after sales: $e');
+              AppLogger.d('Error navigating to after sales: $e');
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('导航失败: $e')),
@@ -275,10 +276,10 @@ class OrderDetailActionButtons extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('错误：无法为没有商品的订单申请售后')),
         );
-        print('Error: Cannot apply after sales for order ${order.id} with no items.');
+        AppLogger.d('Error: Cannot apply after sales for order ${order.id} with no items.');
       }
     } catch (e) {
-      print('Error in _navigateToAfterSales: $e');
+      AppLogger.d('Error in _navigateToAfterSales: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('操作失败: $e')),
       );
@@ -292,13 +293,13 @@ class OrderDetailActionButtons extends StatelessWidget {
       if (context.mounted) {
         try {
           final result = await context.push<bool>('/evaluation/$orderId', extra: order);
-          print('Navigate to evaluation for order ID: $orderId, result: $result');
+          AppLogger.d('Navigate to evaluation for order ID: $orderId, result: $result');
           // 如果评价成功，刷新订单详情
           if (result == true && context.mounted) {
             context.read<OrderDetailBloc>().add(LoadOrderDetail(orderId: orderId));
           }
         } catch (e) {
-          print('Error navigating to evaluation: $e');
+          AppLogger.d('Error navigating to evaluation: $e');
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('导航失败: $e')),
@@ -307,7 +308,7 @@ class OrderDetailActionButtons extends StatelessWidget {
         }
       }
     } catch (e) {
-      print('Error in _navigateToEvaluation: $e');
+      AppLogger.d('Error in _navigateToEvaluation: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('操作失败: $e')),
       );
@@ -322,9 +323,9 @@ class OrderDetailActionButtons extends StatelessWidget {
             context.push('/platform-intervention/${order.id}', extra: {
               'orderSn': order.orderSn,
             });
-            print('Navigate to platform intervention for order ID: ${order.id}');
+            AppLogger.d('Navigate to platform intervention for order ID: ${order.id}');
           } catch (e) {
-            print('Error navigating to platform intervention: $e');
+            AppLogger.d('Error navigating to platform intervention: $e');
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('导航失败: $e')),
@@ -334,7 +335,7 @@ class OrderDetailActionButtons extends StatelessWidget {
         }
       });
     } catch (e) {
-      print('Error in _navigateToPlatformIntervention: $e');
+      AppLogger.d('Error in _navigateToPlatformIntervention: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('操作失败: $e')),
       );

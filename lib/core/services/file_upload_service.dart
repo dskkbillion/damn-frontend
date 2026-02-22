@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dio/dio.dart';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
@@ -98,10 +99,10 @@ class FileUploadService implements IFileUploadService {
         return Left(ServerFailure(message: '文件上传失败'));
       }
     } on DioException catch (e) {
-      print('文件上传失败: ${e.message}');
+      AppLogger.d('文件上传失败: ${e.message}');
       return Left(NetworkFailure(message: e.message ?? '网络错误'));
     } catch (e) {
-      print('文件上传出错: $e');
+      AppLogger.d('文件上传出错: $e');
       return Left(UnknownFailure(message: '文件上传出错: $e'));
     }
   }
@@ -161,10 +162,10 @@ class FileUploadService implements IFileUploadService {
         return Left(ServerFailure(message: '文件上传失败'));
       }
     } on DioException catch (e) {
-      print('文件上传失败: ${e.message}');
+      AppLogger.d('文件上传失败: ${e.message}');
       return Left(NetworkFailure(message: e.message ?? '网络错误'));
     } catch (e) {
-      print('文件上传出错: $e');
+      AppLogger.d('文件上传出错: $e');
       return Left(UnknownFailure(message: '文件上传出错: $e'));
     }
   }

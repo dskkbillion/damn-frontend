@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart' hide Order;
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:drift/drift.dart'; // Import drift exceptions if needed
 import 'package:injectable/injectable.dart' hide Order; // Hide Order from injectable
 import 'dart:convert'; // Import jsonDecode
@@ -28,10 +29,10 @@ class OrderLocalDataSourceImpl implements IOrderLocalDataSource {
       final cachedOrders = await _appDatabase.getOrdersByState(state, limit, offset);
       // Map OrderCache list to Order list using the extension method
       final orders = cachedOrders.map((cache) => cache.toEntity()).toList();
-      print('[OrderLocalDataSource] Loaded ${orders.length} orders from cache for state: $state');
+      AppLogger.d('[OrderLocalDataSource] Loaded ${orders.length} orders from cache for state: $state');
       return Right(orders);
     } catch (e) {
-      print('[OrderLocalDataSource] Error getting orders from cache: $e');
+      AppLogger.d('[OrderLocalDataSource] Error getting orders from cache: $e');
       return Left(CacheFailure(message: '获取订单缓存失败'));
     }
   }
@@ -44,10 +45,10 @@ class OrderLocalDataSourceImpl implements IOrderLocalDataSource {
       final cachedOrders = await _appDatabase.getAllOrdersPaginated(limit, offset);
       // Map OrderCache list to Order list using the extension method
       final orders = cachedOrders.map((cache) => cache.toEntity()).toList();
-      print('[OrderLocalDataSource] Loaded ${orders.length} orders from cache (all states).');
+      AppLogger.d('[OrderLocalDataSource] Loaded ${orders.length} orders from cache (all states).');
       return Right(orders);
     } catch (e) {
-      print('[OrderLocalDataSource] Error getting all orders from cache: $e');
+      AppLogger.d('[OrderLocalDataSource] Error getting all orders from cache: $e');
       return Left(CacheFailure(message: '获取所有订单缓存失败'));
     }
   }
@@ -59,9 +60,9 @@ class OrderLocalDataSourceImpl implements IOrderLocalDataSource {
       final orderCaches = orders.map((order) => _mapOrderToOrderCache(order)).toList();
       // Call method directly on AppDatabase instance
       await _appDatabase.insertOrders(orderCaches);
-      print('[OrderLocalDataSource] Cached ${orderCaches.length} orders.');
+      AppLogger.d('[OrderLocalDataSource] Cached ${orderCaches.length} orders.');
     } catch (e) {
-      print('[OrderLocalDataSource] Error caching orders: $e');
+      AppLogger.d('[OrderLocalDataSource] Error caching orders: $e');
       // Depending on requirements, might want to throw or log differently
     }
   }
@@ -71,9 +72,9 @@ class OrderLocalDataSourceImpl implements IOrderLocalDataSource {
     try {
       // Call method directly on AppDatabase instance
       final count = await _appDatabase.deleteOrdersByState(state);
-      print('[OrderLocalDataSource] Cleared $count cached orders for state: $state');
+      AppLogger.d('[OrderLocalDataSource] Cleared $count cached orders for state: $state');
     } catch (e) {
-      print('[OrderLocalDataSource] Error clearing orders by state: $e');
+      AppLogger.d('[OrderLocalDataSource] Error clearing orders by state: $e');
     }
   }
 
@@ -82,9 +83,9 @@ class OrderLocalDataSourceImpl implements IOrderLocalDataSource {
      try {
       // Call method directly on AppDatabase instance
       final count = await _appDatabase.deleteAllOrders();
-      print('[OrderLocalDataSource] Cleared $count cached orders (all).');
+      AppLogger.d('[OrderLocalDataSource] Cleared $count cached orders (all).');
     } catch (e) {
-      print('[OrderLocalDataSource] Error clearing all orders: $e');
+      AppLogger.d('[OrderLocalDataSource] Error clearing all orders: $e');
     }
   }
 

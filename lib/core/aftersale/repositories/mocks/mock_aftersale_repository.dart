@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/core/aftersale/repositories/i_aftersale_repository.dart';
 
@@ -40,16 +41,16 @@ class MockAfterSaleRepository implements IAfterSaleRepository {
 
   @override
   Future<Either<Failure, SimpleAfterSaleStatus>> getSimpleOrderAfterSaleStatus(String orderId) async {
-    print('[MockAfterSaleRepository] Getting status for order: $orderId');
+    AppLogger.d('[MockAfterSaleRepository] Getting status for order: $orderId');
     await Future.delayed(const Duration(milliseconds: 80)); // 模拟延迟
 
     if (_shouldFail) {
-      print('[MockAfterSaleRepository] Returning Failure: $_failureToReturn');
+      AppLogger.d('[MockAfterSaleRepository] Returning Failure: $_failureToReturn');
       return Left(_failureToReturn);
     } else {
       // 检查是否有为这个 orderId 配置的特定状态，否则返回默认状态
       final statusToReturn = _orderStatuses[orderId] ?? _defaultStatus;
-      print('[MockAfterSaleRepository] Returning Status: $statusToReturn');
+      AppLogger.d('[MockAfterSaleRepository] Returning Status: $statusToReturn');
       return Right(statusToReturn);
     }
   }

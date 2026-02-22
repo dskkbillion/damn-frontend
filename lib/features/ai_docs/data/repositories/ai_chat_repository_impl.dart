@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 // Core Error Handling
 import 'package:dskk_flutter_refactor/core/error/failures.dart'; 
@@ -59,7 +60,7 @@ class AiChatRepositoryImpl implements IAiChatRepository {
     } on CacheException catch (e) {
       return Left(CacheFailure(message: e.message ?? 'Cache error'));
     } on Exception catch (e) {
-      print('Unexpected exception in AiChatRepository: $e');
+      AppLogger.d('Unexpected exception in AiChatRepository: $e');
       return Left(ServerFailure(message: 'An unexpected error occurred: ${e.toString()}'));
     }
   }
@@ -74,7 +75,7 @@ class AiChatRepositoryImpl implements IAiChatRepository {
     } on CacheException catch (e) {
       return Left(CacheFailure(message: e.message ?? 'Cache error'));
     } on Exception catch (e) {
-      print('Unexpected exception in AiChatRepository stream operation: $e');
+      AppLogger.d('Unexpected exception in AiChatRepository stream operation: $e');
       return Left(ServerFailure(message: 'An unexpected error occurred: ${e.toString()}'));
     }
   }

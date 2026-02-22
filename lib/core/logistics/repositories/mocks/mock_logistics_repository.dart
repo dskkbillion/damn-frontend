@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/core/logistics/repositories/i_logistics_repository.dart';
 
@@ -35,17 +36,17 @@ class MockLogisticsRepository implements ILogisticsRepository {
 
   @override
   Future<Either<Failure, SimplifiedTrackingInfo?>> getSimplifiedOrderTrackingInfo(String orderId) async {
-    print('[MockLogisticsRepository] Getting tracking info for order: $orderId');
+    AppLogger.d('[MockLogisticsRepository] Getting tracking info for order: $orderId');
     await Future.delayed(const Duration(milliseconds: 120)); // 模拟延迟
 
     if (_shouldFail) {
-      print('[MockLogisticsRepository] Returning Failure: $_failureToReturn');
+      AppLogger.d('[MockLogisticsRepository] Returning Failure: $_failureToReturn');
       return Left(_failureToReturn);
     } else {
       final info = _trackingInfos.containsKey(orderId)
                    ? _trackingInfos[orderId] // 如果 map 中存在 key，即使 value 是 null 也要返回
                    : _defaultTrackingInfo;
-      print('[MockLogisticsRepository] Returning Tracking Info: ${info?.trackingNumber ?? 'None'}');
+      AppLogger.d('[MockLogisticsRepository] Returning Tracking Info: ${info?.trackingNumber ?? 'None'}');
       return Right(info);
     }
   }

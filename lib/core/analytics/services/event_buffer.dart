@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:convert';
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,44 +30,44 @@ class EventBuffer {
 
   /// 添加事件到缓存
   void addEvent(AnalyticsEvent event) {
-    print('[EventBuffer] 添加事件到缓冲区: ${event.businessType}, ID: ${event.businessId}, 路径: ${event.path}');
+    AppLogger.d('[EventBuffer] 添加事件到缓冲区: ${event.businessType}, ID: ${event.businessId}, 路径: ${event.path}');
     _buffer.add(event);
     
     // 如果缓存满了，立即上报
     if (_buffer.length >= _maxBufferSize) {
-      print('[EventBuffer] 缓冲区已满 (${_buffer.length}/${_maxBufferSize})，触发即时上报');
+      AppLogger.d('[EventBuffer] 缓冲区已满 (${_buffer.length}/${_maxBufferSize})，触发即时上报');
       _uploadEvents();
     } else {
       // 否则保存到本地存储
-      print('[EventBuffer] 当前缓冲区事件数: ${_buffer.length}/${_maxBufferSize}');
+      AppLogger.d('[EventBuffer] 当前缓冲区事件数: ${_buffer.length}/${_maxBufferSize}');
       _saveCachedEvents();
     }
   }
 
   /// 强制上报所有缓存的事件
   Future<void> flush() async {
-    print('[EventBuffer] 手动触发事件上报，当前缓冲区事件数: ${_buffer.length}');
+    AppLogger.d('[EventBuffer] 手动触发事件上报，当前缓冲区事件数: ${_buffer.length}');
     if (_buffer.isNotEmpty && !_isUploading) {
       await _uploadEvents();
     } else if (_isUploading) {
-      print('[EventBuffer] 已有上报正在进行中，跳过本次上报');
+      AppLogger.d('[EventBuffer] 已有上报正在进行中，跳过本次上报');
     } else if (_buffer.isEmpty) {
-      print('[EventBuffer] 缓冲区为空，无需上报');
+      AppLogger.d('[EventBuffer] 缓冲区为空，无需上报');
     }
   }
 
   /// 开始定时上报
   void _startPeriodicUpload() {
-    print('[EventBuffer] 启动定时上报，间隔: ${_uploadInterval.inMinutes}分钟');
+    AppLogger.d('[EventBuffer] 启动定时上报，间隔: ${_uploadInterval.inMinutes}分钟');
     _uploadTimer?.cancel();
     _uploadTimer = Timer.periodic(_uploadInterval, (_) {
-      print('[EventBuffer] 定时上报触发，当前缓冲区事件数: ${_buffer.length}');
+      AppLogger.d('[EventBuffer] 定时上报触发，当前缓冲区事件数: ${_buffer.length}');
       if (_buffer.isNotEmpty && !_isUploading) {
         _uploadEvents();
       } else if (_isUploading) {
-        print('[EventBuffer] 已有上报正在进行中，跳过本次定时上报');
+        AppLogger.d('[EventBuffer] 已有上报正在进行中，跳过本次定时上报');
       } else if (_buffer.isEmpty) {
-        print('[EventBuffer] 缓冲区为空，跳过本次定时上报');
+        AppLogger.d('[EventBuffer] 缓冲区为空，跳过本次定时上报');
       }
     });
   }
@@ -74,7 +75,7 @@ class EventBuffer {
   /// 上报事件
   Future<void> _uploadEvents() async {
     if (_buffer.isEmpty || _isUploading) {
-      print('[EventBuffer] 不满足上报条件: ${_buffer.isEmpty ? "缓冲区为空" : "已有上报正在进行中"}');
+      AppLogger.d('[EventBuffer] 不满足上报条件: ${_buffer.isEmpty ? "缓冲区为空" : "已有上报正在进行中"}');
       return;
     }
     
@@ -82,11 +83,11 @@ class EventBuffer {
     final eventsToUpload = List<AnalyticsEvent>.from(_buffer);
     
     try {
-      print('[EventBuffer] 开始上报 ${eventsToUpload.length} 个事件');
-      print('[EventBuffer] 事件类型分布: ${_getEventTypeDistribution(eventsToUpload)}');
+      AppLogger.d('[EventBuffer] 开始上报 ${eventsToUpload.length} 个事件');
+      AppLogger.d('[EventBuffer] 事件类型分布: ${_getEventTypeDistribution(eventsToUpload)}');
       
       final results = await _apiService.batchRecordEvents(eventsToUpload);
-      print('[EventBuffer] 收到上报响应，处理结果...');
+      AppLogger.d('[EventBuffer] 收到上报响应，处理结果...');
       
       // 检查是否有失败的事件
       final failedIndices = <int>[];
@@ -113,7 +114,7 @@ class EventBuffer {
           failedIndices.add(i);
           final code = result['code'] ?? 'unknown';
           final message = result['msg'] ?? result['message'] ?? '未知错误';
-          print('[EventBuffer] 事件上报失败: index=$i, code=$code, message=$message');
+          AppLogger.d('[EventBuffer] 事件上报失败: index=$i, code=$code, message=$message');
         }
       }
       
@@ -121,7 +122,7 @@ class EventBuffer {
         // 全部成功，清空缓存
         _buffer.clear();
         await _clearCachedEvents();
-        print('[EventBuffer] 所有事件上报成功，缓冲区已清空');
+        AppLogger.d('[EventBuffer] 所有事件上报成功，缓冲区已清空');
       } else {
         // 部分失败，保留失败的事件
         final failedEvents = failedIndices.map((i) => eventsToUpload[i]).toList();
@@ -129,13 +130,13 @@ class EventBuffer {
         _buffer.addAll(failedEvents);
         await _saveCachedEvents();
         
-        print('[EventBuffer] ${failedIndices.length}/${eventsToUpload.length} 个事件上报失败，将在 ${_retryDelay.inMinutes} 分钟后重试');
+        AppLogger.d('[EventBuffer] ${failedIndices.length}/${eventsToUpload.length} 个事件上报失败，将在 ${_retryDelay.inMinutes} 分钟后重试');
         _scheduleRetry();
       }
     } catch (e) {
-      print('[EventBuffer] 事件上报异常: $e');
+      AppLogger.d('[EventBuffer] 事件上报异常: $e');
       // 上报失败，保持原有事件在缓存中
-      print('[EventBuffer] 将在 ${_retryDelay.inMinutes} 分钟后重试上报');
+      AppLogger.d('[EventBuffer] 将在 ${_retryDelay.inMinutes} 分钟后重试上报');
       _scheduleRetry();
     } finally {
       _isUploading = false;
@@ -173,7 +174,7 @@ class EventBuffer {
             .toList();
         
         _buffer.addAll(cachedEvents);
-        print('[EventBuffer] 加载了 ${cachedEvents.length} 个缓存事件');
+        AppLogger.d('[EventBuffer] 加载了 ${cachedEvents.length} 个缓存事件');
         
         // 如果有缓存事件，尝试上报
         if (_buffer.isNotEmpty) {
@@ -183,7 +184,7 @@ class EventBuffer {
         }
       }
     } catch (e) {
-      print('[EventBuffer] 加载缓存事件失败: $e');
+      AppLogger.d('[EventBuffer] 加载缓存事件失败: $e');
       // 清除损坏的缓存
       await _clearCachedEvents();
     }
@@ -196,7 +197,7 @@ class EventBuffer {
       final jsonString = jsonEncode(jsonList);
       await _prefs.setString(_bufferKey, jsonString);
     } catch (e) {
-      print('[EventBuffer] 保存缓存事件失败: $e');
+      AppLogger.d('[EventBuffer] 保存缓存事件失败: $e');
     }
   }
 
@@ -205,7 +206,7 @@ class EventBuffer {
     try {
       await _prefs.remove(_bufferKey);
     } catch (e) {
-      print('[EventBuffer] 清除缓存失败: $e');
+      AppLogger.d('[EventBuffer] 清除缓存失败: $e');
     }
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart'; // Assuming GetIt for DI
@@ -70,7 +71,7 @@ class ChatRoutes {
               // return const Scaffold(body: Center(child: CircularProgressIndicator())); // Show loading while redirecting
 
               // Option 3: Show a simple error directly (less user-friendly for invalid IDs)
-              print("Error: Invalid or missing chatId: $chatIdString");
+              AppLogger.d("Error: Invalid or missing chatId: $chatIdString");
               return Scaffold(
                   appBar: AppBar(title: const Text("Error")),
                   body: Center(child: Text("Invalid Chat ID '$chatIdString'. Please go back.")));
@@ -92,7 +93,7 @@ class ChatRoutes {
 
                 // 设置WebSocket消息回调以更新本地聊天列表
                 chatMessagesBloc.onNewMessageReceived = (newMessage) {
-                  print('[ChatRoutes] New WebSocket message received, updating local chat list');
+                  AppLogger.d('[ChatRoutes] New WebSocket message received, updating local chat list');
                   try {
                     // 尝试从 GetIt 获取 ChatListBloc
                     if (sl.isRegistered<ChatListBloc>()) {
@@ -101,10 +102,10 @@ class ChatRoutes {
                         chatId: chatId,
                         lastMessage: newMessage,
                       ));
-                      print('[ChatRoutes] Updated chat list with new WebSocket message');
+                      AppLogger.d('[ChatRoutes] Updated chat list with new WebSocket message');
                     }
                   } catch (e) {
-                    print('[ChatRoutes] Error updating chat list with WebSocket message: $e');
+                    AppLogger.d('[ChatRoutes] Error updating chat list with WebSocket message: $e');
                   }
                 };
 
@@ -126,7 +127,7 @@ class ChatRoutes {
 
             // Validate chatId
             if (chatId == null || chatId == 0) {
-              print("Error: Invalid or missing chatId: $chatIdString");
+              AppLogger.d("Error: Invalid or missing chatId: $chatIdString");
               return state.buildSmartPage(
                 Scaffold(
                   appBar: AppBar(title: const Text("Error")),
@@ -141,13 +142,13 @@ class ChatRoutes {
               ChatRoomPageRefactored(
                 chatId: chatId,
                 onMessagesLoaded: () {
-                  print('[ChatRoutes] Messages loaded for chat $chatId');
+                  AppLogger.d('[ChatRoutes] Messages loaded for chat $chatId');
                 },
                 onMessageRevoked: (chatId, newLastMessage) {
-                  print('[ChatRoutes] Message revoked in chat $chatId');
+                  AppLogger.d('[ChatRoutes] Message revoked in chat $chatId');
                 },
                 onMessageSent: () {
-                  print('[ChatRoutes] Message sent in chat $chatId');
+                  AppLogger.d('[ChatRoutes] Message sent in chat $chatId');
                 },
               ),
               name: 'chatRoomRefactored',

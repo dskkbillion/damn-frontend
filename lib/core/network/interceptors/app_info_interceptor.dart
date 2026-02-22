@@ -1,4 +1,5 @@
 import 'dart:io' show Platform; // 需要导入 dart:io 来检测平台
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
@@ -17,7 +18,7 @@ class AppInfoInterceptor extends Interceptor {
     options.headers['client'] = Platform.isAndroid ? 'android' : (Platform.isIOS ? 'ios' : 'unknown'); // 根据平台设置
     options.headers['version'] = '100'; // Use fixed value '100' as per example
 
-    print('[AppInfoInterceptor] Added clienttype, client, and fixed version (100) headers.'); // Update log for clarity
+    AppLogger.d('[AppInfoInterceptor] Added clienttype, client, and fixed version (100) headers.'); // Update log for clarity
     
     // 继续请求流程
     handler.next(options);

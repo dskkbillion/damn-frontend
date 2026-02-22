@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_managed_product.dart';
@@ -87,21 +88,21 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     InitializeProductEdit event,
     Emitter<ProductEditState> emit,
   ) async {
-    print('[ProductEditBloc] InitializeProductEdit called with productId: ${event.productId}');
+    AppLogger.d('[ProductEditBloc] InitializeProductEdit called with productId: ${event.productId}');
     
     // 根据是否有productId判断是创建还是编辑模式
     final bool isCreateMode = event.productId == null;
     
-    print('[ProductEditBloc] isCreateMode: $isCreateMode');
+    AppLogger.d('[ProductEditBloc] isCreateMode: $isCreateMode');
     
     emit(ProductEditState.initial(isCreateMode: isCreateMode));
     
     // 如果是编辑模式，加载商品数据
     if (!isCreateMode) {
-      print('[ProductEditBloc] Loading product data for productId: ${event.productId}');
+      AppLogger.d('[ProductEditBloc] Loading product data for productId: ${event.productId}');
       add(LoadProductData(productId: event.productId!));
     } else {
-      print('[ProductEditBloc] Create mode - not loading existing product data');
+      AppLogger.d('[ProductEditBloc] Create mode - not loading existing product data');
     }
     
     // 加载商品类别数据
@@ -541,7 +542,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
       
       // 判断文件是否存在
       if (!await imageFile.exists()) {
-        print('图片文件不存在: $imagePath');
+        AppLogger.d('图片文件不存在: $imagePath');
         return imagePath; // 如果文件不存在，返回原路径
       }
       
@@ -581,8 +582,8 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
       const int maxWidth = 1920;
       const int maxHeight = 1920;
       
-      print('开始处理图片: $imagePath (${(fileSize / 1024).toStringAsFixed(2)}KB, 格式:$extension)');
-      print('目标路径: $targetPath, 压缩质量: $quality%');
+      AppLogger.d('开始处理图片: $imagePath (${(fileSize / 1024).toStringAsFixed(2)}KB, 格式:$extension)');
+      AppLogger.d('目标路径: $targetPath, 压缩质量: $quality%');
       
       // 使用flutter_image_compress压缩并转换格式
       final result = await FlutterImageCompress.compressAndGetFile(
@@ -596,15 +597,15 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
       
       if (result != null) {
         final int newSize = await File(result.path).length();
-        print('图片处理完成: ${(fileSize / 1024).toStringAsFixed(2)}KB -> ${(newSize / 1024).toStringAsFixed(2)}KB');
-        print('压缩率: ${(newSize * 100 / fileSize).toStringAsFixed(1)}%');
+        AppLogger.d('图片处理完成: ${(fileSize / 1024).toStringAsFixed(2)}KB -> ${(newSize / 1024).toStringAsFixed(2)}KB');
+        AppLogger.d('压缩率: ${(newSize * 100 / fileSize).toStringAsFixed(1)}%');
         return result.path;
       } else {
-        print('图片压缩失败，使用原图');
+        AppLogger.d('图片压缩失败，使用原图');
         return imagePath;
       }
     } catch (e) {
-      print('图片预处理过程中发生错误: $e');
+      AppLogger.d('图片预处理过程中发生错误: $e');
       return imagePath; // 处理失败时返回原路径
     }
   }
@@ -838,9 +839,9 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
             winImageUrls.add(successCase.imageUrl);
           }
         } else if (successCase.uploadStatus == SuccessCaseUploadStatus.uploading) {
-          print('警告：提交表单时发现成功案例正在上传中');
+          AppLogger.d('警告：提交表单时发现成功案例正在上传中');
         } else if (successCase.uploadStatus == SuccessCaseUploadStatus.failed) {
-          print('警告：提交表单时发现成功案例上传失败');
+          AppLogger.d('警告：提交表单时发现成功案例上传失败');
         }
       }
     }
@@ -865,7 +866,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
           statusAudit: 'SUCCESS', // 直接设置为审核通过，跳过审核阶段
         );
         
-        print('[SubmitProductForm] 创建商品 - productType=${productData.productType}, state=${productData.state}, statusAudit=${productData.statusAudit}');
+        AppLogger.d('[SubmitProductForm] 创建商品 - productType=${productData.productType}, state=${productData.state}, statusAudit=${productData.statusAudit}');
         
         // 创建商品
         final result = await _sellerRepository.createProduct(productData);
@@ -973,7 +974,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
       // 只处理尚未上传的本地图片
       // 如果selectedImagePaths不为空，说明有未上传的本地图片
       if (state.selectedImagePaths.isNotEmpty) {
-        print('警告：保存草稿时发现未上传的本地图片，数量：${state.selectedImagePaths.length}');
+        AppLogger.d('警告：保存草稿时发现未上传的本地图片，数量：${state.selectedImagePaths.length}');
         
         // 可以选择：1. 触发上传流程 2. 忽略未上传的图片
         // 这里选择忽略，因为正常流程中图片应该已经上传完成
@@ -982,7 +983,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
       
       // 同样处理详情图
       if (state.selectedDetailImagePaths.isNotEmpty) {
-        print('警告：保存草稿时发现未上传的详情图片，数量：${state.selectedDetailImagePaths.length}');
+        AppLogger.d('警告：保存草稿时发现未上传的详情图片，数量：${state.selectedDetailImagePaths.length}');
       }
       
       // 转换qaList和buyerInfoItems为productMaterials
@@ -1024,11 +1025,11 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
       List<String> winImageUrls = [];
       List<Map<String, dynamic>> updatedSuccessCases = [];
       
-      print('[DEBUG] 保存草稿 - 处理成功案例，数量: ${state.successCases.length}');
+      AppLogger.d('[DEBUG] 保存草稿 - 处理成功案例，数量: ${state.successCases.length}');
       
       if (state.successCases.isNotEmpty) {
         for (final successCase in state.successCases) {
-          print('[DEBUG] 成功案例 ${successCase.id}: status=${successCase.uploadStatus.name}, imageUrl=${successCase.imageUrl}');
+          AppLogger.d('[DEBUG] 成功案例 ${successCase.id}: status=${successCase.uploadStatus.name}, imageUrl=${successCase.imageUrl}');
           
           // 转换为Map用于保存
           final caseMap = successCase.toJson();
@@ -1036,15 +1037,15 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
           
           // 只收集已上传完成的imageUrl
           if (successCase.isCompleted && successCase.imageUrl.isNotEmpty) {
-            print('[DEBUG] 找到有效的imageUrl: ${successCase.imageUrl}');
+            AppLogger.d('[DEBUG] 找到有效的imageUrl: ${successCase.imageUrl}');
             // 避免重复添加相同的URL
             if (!winImageUrls.contains(successCase.imageUrl)) {
               winImageUrls.add(successCase.imageUrl);
             }
           } else if (successCase.uploadStatus == SuccessCaseUploadStatus.uploading) {
-            print('[DEBUG] 成功案例 ${successCase.id} 正在上传中');
+            AppLogger.d('[DEBUG] 成功案例 ${successCase.id} 正在上传中');
           } else if (successCase.uploadStatus == SuccessCaseUploadStatus.failed) {
-            print('[DEBUG] 成功案例 ${successCase.id} 上传失败: ${successCase.errorMessage}');
+            AppLogger.d('[DEBUG] 成功案例 ${successCase.id} 上传失败: ${successCase.errorMessage}');
           }
         }
         
@@ -1059,8 +1060,8 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
       }
       
       // 创建草稿参数 - 使用新的可选参数构造方式
-      print('[DEBUG] 创建SaveProductDraftParams，winImageUrls数量: ${winImageUrls.length}');
-      print('[DEBUG] winImageUrls内容: $winImageUrls');
+      AppLogger.d('[DEBUG] 创建SaveProductDraftParams，winImageUrls数量: ${winImageUrls.length}');
+      AppLogger.d('[DEBUG] winImageUrls内容: $winImageUrls');
       
       final params = SaveProductDraftParams(
         name: state.formData.name,
@@ -1075,7 +1076,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
         productId: state.product?.id,
       );
       
-      print('[DEBUG] 调用保存草稿UseCase...');
+      AppLogger.d('[DEBUG] 调用保存草稿UseCase...');
       final result = await _saveProductDraftUseCase(params);
       
       result.fold(
@@ -1131,7 +1132,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
       // 触发自动保存（防抖处理）
       _scheduleAutoSave();
     } catch (e) {
-      print('[ProductEditBloc] Error adding success case: $e');
+      AppLogger.d('[ProductEditBloc] Error adding success case: $e');
       emit(state.copyWithError('添加成功案例失败: ${e.toString()}'));
     }
   }
@@ -1177,7 +1178,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
       // 触发自动保存
       _scheduleAutoSave();
     } catch (e) {
-      print('[ProductEditBloc] Error updating success case: $e');
+      AppLogger.d('[ProductEditBloc] Error updating success case: $e');
       emit(state.copyWithError('更新成功案例失败: ${e.toString()}'));
     }
   }
@@ -1210,7 +1211,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
         await _uploadSuccessCaseImage(caseToRetry, emit);
       }
     } catch (e) {
-      print('[ProductEditBloc] Error retrying success case upload: $e');
+      AppLogger.d('[ProductEditBloc] Error retrying success case upload: $e');
       emit(state.copyWithError('重试上传失败: ${e.toString()}'));
     }
   }
@@ -1230,7 +1231,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
       // 触发自动保存
       _scheduleAutoSave();
     } catch (e) {
-      print('[ProductEditBloc] Error removing success case: $e');
+      AppLogger.d('[ProductEditBloc] Error removing success case: $e');
       emit(state.copyWithError('移除成功案例失败: ${e.toString()}'));
     }
   }
@@ -1344,7 +1345,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
         },
       );
     } catch (e) {
-      print('[ProductEditBloc] Error uploading success case image: $e');
+      AppLogger.d('[ProductEditBloc] Error uploading success case image: $e');
       add(SuccessCaseUploadFailure(
         caseId: successCase.id,
         errorMessage: e.toString(),

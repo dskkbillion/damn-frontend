@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 
@@ -32,33 +33,33 @@ class OptimizedAllocationUseCase
   Future<Either<Failure, OptimizedAllocationResult>> call(
       OptimizedAllocationParams params) async {
 
-    print('[OptimizedAllocation] 开始执行 - conversationId: ${params.conversationId}, userId: ${params.userId}, merchantId: ${params.merchantId}');
-    print('[OptimizedAllocation] 商品数据: ${params.item}');
+    AppLogger.d('[OptimizedAllocation] 开始执行 - conversationId: ${params.conversationId}, userId: ${params.userId}, merchantId: ${params.merchantId}');
+    AppLogger.d('[OptimizedAllocation] 商品数据: ${params.item}');
 
     try {
       // 第一步：创建聊天室（如果已存在会返回现有聊天室ID）
-      print('[OptimizedAllocation] 第1步: 准备创建聊天室...');
+      AppLogger.d('[OptimizedAllocation] 第1步: 准备创建聊天室...');
       final productId = int.tryParse(params.item['id']?.toString() ?? '');
-      print('[OptimizedAllocation] productId解析结果: $productId (原始值: ${params.item['id']})');
+      AppLogger.d('[OptimizedAllocation] productId解析结果: $productId (原始值: ${params.item['id']})');
 
       final createRoomResult = await _createChatRoom(CreateChatRoomParams(
         participantId: params.merchantId,
         productId: productId,
       ));
 
-      print('[OptimizedAllocation] 创建聊天室结果: ${createRoomResult.isRight() ? "成功" : "失败"}');
+      AppLogger.d('[OptimizedAllocation] 创建聊天室结果: ${createRoomResult.isRight() ? "成功" : "失败"}');
 
       if (createRoomResult.isLeft()) {
         final failure = createRoomResult.fold((l) => l, (r) => throw Exception());
-        print('[OptimizedAllocation] ❌ 创建聊天室失败: $failure');
+        AppLogger.d('[OptimizedAllocation] ❌ 创建聊天室失败: $failure');
         return Left(failure);
       }
 
       final chatRoomId = createRoomResult.fold((l) => throw Exception(), (r) => r);
-      print('[OptimizedAllocation] ✅ 聊天室已创建/获取，chatRoomId: $chatRoomId');
+      AppLogger.d('[OptimizedAllocation] ✅ 聊天室已创建/获取，chatRoomId: $chatRoomId');
 
       // 第二步：进行AI分发
-      print('[OptimizedAllocation] 第2步: 准备调用AI分发API...');
+      AppLogger.d('[OptimizedAllocation] 第2步: 准备调用AI分发API...');
       final allocationResult = await _aiRepository.allocateChatResource(
         conversationId: params.conversationId,
         userId: params.userId,
@@ -66,7 +67,7 @@ class OptimizedAllocationUseCase
         merchantId: params.merchantId,
       );
 
-      print('[OptimizedAllocation] AI分发结果: ${allocationResult.isRight() ? "成功" : "失败"}');
+      AppLogger.d('[OptimizedAllocation] AI分发结果: ${allocationResult.isRight() ? "成功" : "失败"}');
       
       // 第三步：无论AI分发是否成功，都返回聊天室ID
       // 这样用户可以立即进入聊天室

@@ -1,4 +1,5 @@
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/participant.dart'; // Needed for toEntity
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -74,19 +75,19 @@ class ChatMessageDto with _$ChatMessageDto {
             utcTime.microsecond,
           ).toLocal();
           
-          print("[ChatMessageDto] Server time (Beijing): $createTime -> Local time: $parsedCreateTime");
+          AppLogger.d("[ChatMessageDto] Server time (Beijing): $createTime -> Local time: $parsedCreateTime");
         } else {
-          print("[ChatMessageDto] createTime is null or empty, using current time");
+          AppLogger.d("[ChatMessageDto] createTime is null or empty, using current time");
           parsedCreateTime = DateTime.now();
         }
      } catch (e) {
-        print("[ChatMessageDto] Error parsing createTime '$createTime': $e, using current time");
+        AppLogger.d("[ChatMessageDto] Error parsing createTime '$createTime': $e, using current time");
         parsedCreateTime = DateTime.now(); // Fallback to now
      }
 
     // 添加调试信息
-    print("[ChatMessageDto] 转换消息 - ID: $id, memberId: $memberId, doctorId: $doctorId, senderId传入值: $senderId");
-    print("[ChatMessageDto] withdrawFlag: $withdrawFlag, type: $type, context: '$context'");
+    AppLogger.d("[ChatMessageDto] 转换消息 - ID: $id, memberId: $memberId, doctorId: $doctorId, senderId传入值: $senderId");
+    AppLogger.d("[ChatMessageDto] withdrawFlag: $withdrawFlag, type: $type, context: '$context'");
     
     return ChatMessage(
       id: id ?? DateTime.now().millisecondsSinceEpoch, // Generate temporary ID if null

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
@@ -142,10 +143,10 @@ class OrderStatusSection extends StatelessWidget {
     final String pathWithQuery = '$basePath?status=$status';
 
     try {
-      print('Navigating to: $pathWithQuery');
+      AppLogger.d('Navigating to: $pathWithQuery');
       context.go(pathWithQuery);
     } catch (e) {
-      print('Error navigating to $pathWithQuery: $e');
+      AppLogger.d('Error navigating to $pathWithQuery: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(appLocalizations.profile_navigation_error('$e'))),
       );
@@ -159,10 +160,10 @@ class OrderStatusSection extends StatelessWidget {
     const String basePath = '/profile/orders';
 
     try {
-      print('Navigating to all orders: $basePath');
+      AppLogger.d('Navigating to all orders: $basePath');
       context.go(basePath);
     } catch (e) {
-      print('Error navigating to $basePath: $e');
+      AppLogger.d('Error navigating to $basePath: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(appLocalizations.profile_navigation_error('$e'))),
       );

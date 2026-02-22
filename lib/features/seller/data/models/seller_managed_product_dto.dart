@@ -1,4 +1,5 @@
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/enums/product_status.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_managed_product.dart';
 
 /// 商品分类DTO
@@ -222,7 +223,7 @@ class SellerManagedProductDto {
     if (json['mainImage'] != null && json['mainImage'] is String && json['mainImage'].toString().trim().isNotEmpty) {
       imagesString = json['mainImage'].toString().trim();
       if (json['productType'] == 'draft' || json['state'] == 'draft') {
-        print('[SellerManagedProductDto] Draft product ${json['id']} using mainImage: "$imagesString"');
+        AppLogger.d('[SellerManagedProductDto] Draft product ${json['id']} using mainImage: "$imagesString"');
       }
     }
     // 如果没有mainImage，再使用images字段
@@ -242,7 +243,7 @@ class SellerManagedProductDto {
         }
         
         if (json['productType'] == 'draft' || json['state'] == 'draft') {
-          print('[SellerManagedProductDto] Draft product ${json['id']} images: $imageList -> "$imagesString"');
+          AppLogger.d('[SellerManagedProductDto] Draft product ${json['id']} images: $imageList -> "$imagesString"');
         }
       } else if (json['images'] is String) {
         final imgStr = json['images'].toString().trim();
@@ -250,30 +251,30 @@ class SellerManagedProductDto {
           imagesString = imgStr;
         }
         if (json['productType'] == 'draft' || json['state'] == 'draft') {
-          print('[SellerManagedProductDto] Draft product ${json['id']} images string: "$imagesString"');
+          AppLogger.d('[SellerManagedProductDto] Draft product ${json['id']} images string: "$imagesString"');
         }
       }
     }
     
     // 调试日志
     if ((json['productType'] == 'draft' || json['state'] == 'draft') && imagesString == null) {
-      print('[SellerManagedProductDto] Draft product ${json['id']} has no valid images');
+      AppLogger.d('[SellerManagedProductDto] Draft product ${json['id']} has no valid images');
     }
     
     // 添加价格字段调试日志
     double? parsedPrice = _parsePrice(json['sellingPrice'] ?? json['originalPrice'] ?? json['price']);
-    print('[SellerManagedProductDto] Product ${json['id']} price mapping:');
-    print('  - sellingPrice from API: ${json['sellingPrice']}');
-    print('  - originalPrice from API: ${json['originalPrice']}');
-    print('  - price from API: ${json['price']}');
+    AppLogger.d('[SellerManagedProductDto] Product ${json['id']} price mapping:');
+    AppLogger.d('  - sellingPrice from API: ${json['sellingPrice']}');
+    AppLogger.d('  - originalPrice from API: ${json['originalPrice']}');
+    AppLogger.d('  - price from API: ${json['price']}');
     
     // 如果没有主价格，但有variants，使用第一个variant的价格
     if ((parsedPrice == null || parsedPrice == 0) && json['variants'] != null && (json['variants'] as List).isNotEmpty) {
       final firstVariant = (json['variants'] as List).first;
       parsedPrice = _parsePrice(firstVariant['sellingPrice'] ?? firstVariant['price']);
-      print('  - Using first variant price: $parsedPrice');
+      AppLogger.d('  - Using first variant price: $parsedPrice');
     }
-    print('  - Final parsed price: $parsedPrice');
+    AppLogger.d('  - Final parsed price: $parsedPrice');
     
     return SellerManagedProductDto(
       id: json['id'],
@@ -333,9 +334,9 @@ class SellerManagedProductDto {
         // 直接从API数据映射到ProductOptionValue
         // 添加变体价格调试日志
         final variantSellingPrice = _parsePrice(variantMap['sellingPrice']);
-        print('[SellerManagedProductDto] Variant ${variantMap['id']} (${variantMap['name']}) price mapping:');
-        print('  - sellingPrice from API: ${variantMap['sellingPrice']}');
-        print('  - Parsed sellingPrice: $variantSellingPrice');
+        AppLogger.d('[SellerManagedProductDto] Variant ${variantMap['id']} (${variantMap['name']}) price mapping:');
+        AppLogger.d('  - sellingPrice from API: ${variantMap['sellingPrice']}');
+        AppLogger.d('  - Parsed sellingPrice: $variantSellingPrice');
         
         return ProductOptionValue(
           id: variantMap['id'] ?? 0,
@@ -361,11 +362,11 @@ class SellerManagedProductDto {
     // 解析材料问题
     List<ProductMaterial>? materials;
     if (productMaterials != null && productMaterials!.isNotEmpty) {
-      print('[SellerManagedProductDto] Converting ${productMaterials!.length} productMaterials to entities');
+      AppLogger.d('[SellerManagedProductDto] Converting ${productMaterials!.length} productMaterials to entities');
       materials = productMaterials!
           .map((m) {
             final material = ProductMaterialDto.fromJson(m as Map<String, dynamic>).toEntity();
-            print('[SellerManagedProductDto] Material: type=${material.type}, question="${material.question}", answer="${material.answer}"');
+            AppLogger.d('[SellerManagedProductDto] Material: type=${material.type}, question="${material.question}", answer="${material.answer}"');
             return material;
           })
           .toList();

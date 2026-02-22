@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/exceptions.dart';
@@ -30,7 +31,7 @@ class AfterSalesRepositoryImpl implements IAfterSalesRepository {
       return Left(ServerFailure(message: e.message ?? '申请售后时发生服务器错误'));
     } catch (e) {
       // Catch any other unexpected exceptions during the process
-      print('[AfterSalesRepositoryImpl] Unexpected error applying for after sales: ${e.toString()}');
+      AppLogger.d('[AfterSalesRepositoryImpl] Unexpected error applying for after sales: ${e.toString()}');
       return Left(ServerFailure(message: '申请售后时发生未知错误: ${e.toString()}'));
     }
   }
@@ -45,7 +46,7 @@ class AfterSalesRepositoryImpl implements IAfterSalesRepository {
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message ?? '获取售后列表时发生服务器错误'));
     } catch (e) {
-       print('[AfterSalesRepositoryImpl] Unexpected error getting after sales list: ${e.toString()}');
+       AppLogger.d('[AfterSalesRepositoryImpl] Unexpected error getting after sales list: ${e.toString()}');
       return Left(ServerFailure(message: '获取售后列表时发生未知错误: ${e.toString()}'));
     }
   }
@@ -62,7 +63,7 @@ class AfterSalesRepositoryImpl implements IAfterSalesRepository {
       // For now, treat all server exceptions similarly
       return Left(ServerFailure(message: e.message ?? '获取售后详情时发生服务器错误'));
     } catch (e) {
-       print('[AfterSalesRepositoryImpl] Unexpected error getting after sales detail: ${e.toString()}');
+       AppLogger.d('[AfterSalesRepositoryImpl] Unexpected error getting after sales detail: ${e.toString()}');
       return Left(ServerFailure(message: '获取售后详情时发生未知错误: ${e.toString()}'));
     }
   }
@@ -75,7 +76,7 @@ class AfterSalesRepositoryImpl implements IAfterSalesRepository {
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message ?? '取消售后申请时发生服务器错误'));
     } catch (e) {
-       print('[AfterSalesRepositoryImpl] Unexpected error canceling after sales: ${e.toString()}');
+       AppLogger.d('[AfterSalesRepositoryImpl] Unexpected error canceling after sales: ${e.toString()}');
       return Left(ServerFailure(message: '取消售后申请时发生未知错误: ${e.toString()}'));
     }
   }
@@ -88,7 +89,7 @@ class AfterSalesRepositoryImpl implements IAfterSalesRepository {
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message ?? '删除售后记录时发生服务器错误'));
     } catch (e) {
-       print('[AfterSalesRepositoryImpl] Unexpected error deleting after sales: ${e.toString()}');
+       AppLogger.d('[AfterSalesRepositoryImpl] Unexpected error deleting after sales: ${e.toString()}');
       return Left(ServerFailure(message: '删除售后记录时发生未知错误: ${e.toString()}'));
     }
   }
@@ -101,7 +102,7 @@ class AfterSalesRepositoryImpl implements IAfterSalesRepository {
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message ?? '查询售后记录时发生服务器错误'));
     } catch (e) {
-      print('[AfterSalesRepositoryImpl] Unexpected error getting refund ID by order ID: ${e.toString()}');
+      AppLogger.d('[AfterSalesRepositoryImpl] Unexpected error getting refund ID by order ID: ${e.toString()}');
       return Left(ServerFailure(message: '查询售后记录时发生未知错误: ${e.toString()}'));
     }
   }

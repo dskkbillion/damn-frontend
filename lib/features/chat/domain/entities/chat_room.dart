@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 import 'chat_message.dart';
 import 'participant.dart';
@@ -101,7 +102,7 @@ class ChatRoom extends Equatable {
     // This case should ideally not happen if the ChatRoom entity is constructed correctly
     // based on a valid DTO and the current user is indeed a participant.
     // Returning participant1 as a fallback, but consider logging an error.
-    print("Warning: Could not determine opponent in getOpponent. currentUserReferId: $currentUserReferId, p1.referId: ${participant1.referId}, p2.referId: ${participant2.referId}");
+    AppLogger.d("Warning: Could not determine opponent in getOpponent. currentUserReferId: $currentUserReferId, p1.referId: ${participant1.referId}, p2.referId: ${participant2.referId}");
     return participant1; // Fallback, might be wrong
   }
   

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -97,14 +98,14 @@ class _BannerCarouselState extends State<BannerCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    print('BannerCarousel.build: banners=${widget.banners}');
-    print('BannerCarousel.build: banners.length=${widget.banners.length}');
+    AppLogger.d('BannerCarousel.build: banners=${widget.banners}');
+    AppLogger.d('BannerCarousel.build: banners.length=${widget.banners.length}');
     if (widget.banners.isNotEmpty) {
-      print('BannerCarousel.build: first banner imageUrl=${widget.banners.first.imageUrl}');
+      AppLogger.d('BannerCarousel.build: first banner imageUrl=${widget.banners.first.imageUrl}');
     }
     
     if (widget.banners.isEmpty) {
-      print('BannerCarousel.build: banners is empty');
+      AppLogger.d('BannerCarousel.build: banners is empty');
       return SizedBox(height: widget.height);
     }
 

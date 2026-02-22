@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 import 'package:dskk_flutter_refactor/core/error/exceptions.dart';
 import 'package:dskk_flutter_refactor/features/auth/data/datasources/user_info_remote_data_source.dart';
@@ -15,12 +16,12 @@ class UserInfoRemoteDataSourceImpl implements UserInfoRemoteDataSource {
   Future<UserInfoModel> fetchUserInfo(String token) async {
     const String endpoint = '/api/member/info'; // Endpoint from API spec
 
-    print('===== 获取用户信息 =====');
-    print('请求接口: $endpoint');
-    print('请求头: Authorization: Bearer ${token.substring(0, 15)}...(省略)');
+    AppLogger.d('===== 获取用户信息 =====');
+    AppLogger.d('请求接口: $endpoint');
+    AppLogger.d('请求头: Authorization: Bearer ${token.substring(0, 15)}...(省略)');
 
     try {
-      print('开始发送请求...');
+      AppLogger.d('开始发送请求...');
       final response = await dio.get(
         endpoint,
         options: Options(
@@ -30,8 +31,8 @@ class UserInfoRemoteDataSourceImpl implements UserInfoRemoteDataSource {
         ),
       );
 
-      print('收到服务器响应: 状态码 ${response.statusCode}');
-      print('响应数据: ${response.data}');
+      AppLogger.d('收到服务器响应: 状态码 ${response.statusCode}');
+      AppLogger.d('响应数据: ${response.data}');
 
       if (response.statusCode == 200 && response.data != null) {
         try {
@@ -40,11 +41,11 @@ class UserInfoRemoteDataSourceImpl implements UserInfoRemoteDataSource {
               ? response.data['data']
               : response.data;
 
-          print('解析用户数据: $userData');
+          AppLogger.d('解析用户数据: $userData');
 
           // 创建默认的UserInfoModel以防返回为空
           if (userData == null) {
-            print('警告: 用户数据为空，使用默认值');
+            AppLogger.d('警告: 用户数据为空，使用默认值');
             // Provide default values for required fields
             return const UserInfoModel(
               id: 0,
@@ -57,7 +58,7 @@ class UserInfoRemoteDataSourceImpl implements UserInfoRemoteDataSource {
 
           // 确保userData是Map类型
           if (userData is! Map<String, dynamic>) {
-            print('警告: 用户数据不是预期的Map格式: ${userData.runtimeType}');
+            AppLogger.d('警告: 用户数据不是预期的Map格式: ${userData.runtimeType}');
             // Provide default values for required fields
             return const UserInfoModel(
               id: 0,
@@ -70,20 +71,20 @@ class UserInfoRemoteDataSourceImpl implements UserInfoRemoteDataSource {
 
           return UserInfoModel.fromJson(userData);
         } catch (e) {
-          print('错误: 解析用户信息响应失败: $e');
+          AppLogger.d('错误: 解析用户信息响应失败: $e');
           throw ServerException(message: 'Failed to parse user info response: $e');
         }
       } else {
-        print('错误: 获取用户信息API返回状态 ${response.statusCode} 或空数据');
+        AppLogger.d('错误: 获取用户信息API返回状态 ${response.statusCode} 或空数据');
         throw ServerException(
             message: 'Failed to fetch user info. Status: ${response.statusCode}');
       }
     } on DioException catch (e) {
-      print('DIO错误: ${e.message}');
-      print('请求信息: ${e.requestOptions.uri}');
+      AppLogger.d('DIO错误: ${e.message}');
+      AppLogger.d('请求信息: ${e.requestOptions.uri}');
       if (e.response != null) {
-        print('错误响应状态码: ${e.response?.statusCode}');
-        print('错误响应数据: ${e.response?.data}');
+        AppLogger.d('错误响应状态码: ${e.response?.statusCode}');
+        AppLogger.d('错误响应数据: ${e.response?.data}');
       }
 
       if (e.response?.statusCode == 401) {
@@ -91,7 +92,7 @@ class UserInfoRemoteDataSourceImpl implements UserInfoRemoteDataSource {
       }
       throw ServerException(message: 'Fetch user info failed due to network or server error: ${e.message}');
     } catch (e) {
-      print('未知错误: ${e.toString()}');
+      AppLogger.d('未知错误: ${e.toString()}');
       throw ServerException(message: 'An unknown error occurred while fetching user info: ${e.toString()}');
     }
   }

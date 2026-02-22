@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 
@@ -10,7 +11,7 @@ class SellerDynamicContentArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('[SellerDynamicContentArea] Building for state: ${order.state}');
+    AppLogger.d('[SellerDynamicContentArea] Building for state: ${order.state}');
     // Use a switch statement to return different content widgets based on the state
     switch (order.state) {
       case OrderStatus.awaitingStart:
@@ -26,7 +27,7 @@ class SellerDynamicContentArea extends StatelessWidget {
 
       // Add case for orderCompleted
       case OrderStatus.orderCompleted:
-        print('[SellerDynamicContentArea] Matched orderCompleted state.');
+        AppLogger.d('[SellerDynamicContentArea] Matched orderCompleted state.');
         return _buildOrderCompletedContent(context);
 
       // Add case for canceled
@@ -95,7 +96,7 @@ class SellerDynamicContentArea extends StatelessWidget {
 
   /// Builds content for the 'Order Completed' state.
   Widget _buildOrderCompletedContent(BuildContext context) {
-    print('[SellerDynamicContentArea] Executing _buildOrderCompletedContent.');
+    AppLogger.d('[SellerDynamicContentArea] Executing _buildOrderCompletedContent.');
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_managed_product.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/product_edit_models.dart';
 
@@ -435,16 +436,16 @@ class ProductFormData extends Equatable {
   /// 从产品实体创建表单数据
   factory ProductFormData.fromProduct(SellerManagedProduct product) {
     // 调试日志：打印Product实体的关键数据
-    print('[ProductFormData.fromProduct] Creating form data from product:');
-    print('  - Product ID: ${product.id}');
-    print('  - Product name: ${product.name}');
-    print('  - Product price: ${product.price}');
-    print('  - Has variants: ${product.variants != null && product.variants!.isNotEmpty}');
+    AppLogger.d('[ProductFormData.fromProduct] Creating form data from product:');
+    AppLogger.d('  - Product ID: ${product.id}');
+    AppLogger.d('  - Product name: ${product.name}');
+    AppLogger.d('  - Product price: ${product.price}');
+    AppLogger.d('  - Has variants: ${product.variants != null && product.variants!.isNotEmpty}');
     if (product.variants != null && product.variants!.isNotEmpty) {
-      print('  - Variants count: ${product.variants!.length}');
+      AppLogger.d('  - Variants count: ${product.variants!.length}');
       for (int i = 0; i < product.variants!.length && i < 3; i++) {
         final v = product.variants![i];
-        print('    - Variant ${i + 1}: ${v.name} - price: ${v.price}, sellingPrice: ${v.sellingPrice}');
+        AppLogger.d('    - Variant ${i + 1}: ${v.name} - price: ${v.price}, sellingPrice: ${v.sellingPrice}');
       }
     }
     
@@ -453,9 +454,9 @@ class ProductFormData extends Equatable {
     final List<Map<String, dynamic>> buyerInfoItems = [];
     
     if (product.productMaterials != null) {
-      print('[ProductFormData.fromProduct] Processing ${product.productMaterials!.length} productMaterials');
+      AppLogger.d('[ProductFormData.fromProduct] Processing ${product.productMaterials!.length} productMaterials');
       for (final material in product.productMaterials!) {
-        print('[ProductFormData.fromProduct] Material: type=${material.type}, question="${material.question}", answer="${material.answer}"');
+        AppLogger.d('[ProductFormData.fromProduct] Material: type=${material.type}, question="${material.question}", answer="${material.answer}"');
         if (material.type == 'PROBLEM') {
           // 这是QA项
           qaList.add({
@@ -463,7 +464,7 @@ class ProductFormData extends Equatable {
             'question': material.question,
             'answer': material.answer,
           });
-          print('[ProductFormData.fromProduct] Added to qaList');
+          AppLogger.d('[ProductFormData.fromProduct] Added to qaList');
         } else if (material.type == 'TEXT' || material.type == 'ATTACHMENT') {
           // 这是买家需要提供的信息
           String type = 'text';
@@ -476,11 +477,11 @@ class ProductFormData extends Equatable {
             'description': material.answer,
             'isRequired': false,
           });
-          print('[ProductFormData.fromProduct] Added to buyerInfoItems as $type');
+          AppLogger.d('[ProductFormData.fromProduct] Added to buyerInfoItems as $type');
         }
       }
     } else {
-      print('[ProductFormData.fromProduct] No productMaterials found');
+      AppLogger.d('[ProductFormData.fromProduct] No productMaterials found');
     }
     
     // 处理成功案例 - 从winImages恢复
@@ -499,7 +500,7 @@ class ProductFormData extends Equatable {
       }
     }
     
-    print('[ProductFormData.fromProduct] Final counts: qaList=${qaList.length}, buyerInfoItems=${buyerInfoItems.length}');
+    AppLogger.d('[ProductFormData.fromProduct] Final counts: qaList=${qaList.length}, buyerInfoItems=${buyerInfoItems.length}');
     
     // 价格获取逻辑：如果主价格为0且有variants，使用第一个variant的价格
     double finalPrice = product.price;
@@ -507,9 +508,9 @@ class ProductFormData extends Equatable {
       // 尝试使用第一个variant的价格
       final firstVariant = product.variants!.first;
       finalPrice = firstVariant.sellingPrice > 0 ? firstVariant.sellingPrice : firstVariant.price;
-      print('[ProductFormData.fromProduct] Main price is 0, using first variant price: $finalPrice');
+      AppLogger.d('[ProductFormData.fromProduct] Main price is 0, using first variant price: $finalPrice');
     }
-    print('[ProductFormData.fromProduct] Final price: $finalPrice');
+    AppLogger.d('[ProductFormData.fromProduct] Final price: $finalPrice');
     
     return ProductFormData(
       name: product.name,

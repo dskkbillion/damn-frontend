@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_cubit.dart';
@@ -32,10 +33,10 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
     _selectedCountry = CountryCodes.getDefaultCountryCode(locale.languageCode);
     
     // 调试：打印当前语言环境
-    print('Current locale: ${locale.languageCode}');
-    print('S available: ${AppLocalizations.of(context)! != null}');
+    AppLogger.d('Current locale: ${locale.languageCode}');
+    AppLogger.d('S available: ${AppLocalizations.of(context)! != null}');
     if (AppLocalizations.of(context)! != null) {
-      print('auth_phone_number: ${AppLocalizations.of(context)!.auth_phone_number}');
+      AppLogger.d('auth_phone_number: ${AppLocalizations.of(context)!.auth_phone_number}');
     }
   }
 
@@ -108,7 +109,7 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
             } else if (state is SmsLoginSuccess) {
               // 导航将由全局 AuthStatus 监听器处理
               // Navigator.of(context).pushReplacementNamed('/home');
-              print('Login Success! User ID: ${state.user.id}');
+              AppLogger.d('Login Success! User ID: ${state.user.id}');
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('登录成功!')),
               );
@@ -152,7 +153,7 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                             onSendCode: (phone) async {
                                // 发送验证码时包含区号
                                final fullPhone = '${_selectedCountry.dialCode}$phone';
-                               print('Requesting code for $fullPhone');
+                               AppLogger.d('Requesting code for $fullPhone');
                                context.read<SmsLoginCubit>().sendCode(fullPhone);
                             },
                             codeSentState: state is SmsLoginCodeSentSuccess ? CodeButtonState.counting : CodeButtonState.idle,
@@ -182,7 +183,7 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                                if (_formKey.currentState!.validate()) {
                                  // 登录时包含区号
                                  final fullPhone = '${_selectedCountry.dialCode}${_phoneController.text}';
-                                 print('Attempting login with phone: $fullPhone, code: ${_codeController.text}');
+                                 AppLogger.d('Attempting login with phone: $fullPhone, code: ${_codeController.text}');
                                  context.read<SmsLoginCubit>().login(
                                    fullPhone,
                                    _codeController.text,
@@ -214,7 +215,7 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                             ),
                             onPressed: () {
                               // TODO: Navigate to Privacy Policy
-                              print("Navigate to Privacy Policy");
+                              AppLogger.d("Navigate to Privacy Policy");
                             },
                             child: Text(
                               '隐私政策',
@@ -236,7 +237,7 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                             ),
                             onPressed: () {
                               // TODO: Navigate to User Agreement
-                              print("Navigate to User Agreement");
+                              AppLogger.d("Navigate to User Agreement");
                             },
                             child: Text(
                               '用户协议',

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
@@ -35,7 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
       child: BlocListener<ProfileBloc, ProfileState>(
         listener: (context, state) {
           if (state is ProfileAuthStatusLoaded && state.isAuthenticated) {
-            print('[ProfilePage] Auth confirmed, dispatching data load events.');
+            AppLogger.d('[ProfilePage] Auth confirmed, dispatching data load events.');
             context.read<ProfileBloc>().add(const GetUserProfileEvent());
             // context.read<ProfileBloc>().add(GetWalletSummaryEvent());
           } else if (state is ProfileAuthStatusLoaded && !state.isAuthenticated) {
@@ -43,11 +44,11 @@ class _ProfilePageState extends State<ProfilePage> {
             // context.go('/login');
           } else if (state is ProfileLoggedOut) {
             // 处理登出后的逻辑，导航到登录页面
-            print('[ProfilePage] User logged out, redirecting to login page.');
+            AppLogger.d('[ProfilePage] User logged out, redirecting to login page.');
             context.go('/auth/login');
           } else if (state is ProfileUpdated) {
             // 用户信息更新成功，状态已包含最新数据
-            print('[ProfilePage] Profile updated successfully with latest data');
+            AppLogger.d('[ProfilePage] Profile updated successfully with latest data');
             // 不需要重新获取，ProfileUpdated 状态已经包含最新数据
           } else if (state is ProfileAvatarUploadError) {
             // 处理头像上传失败，显示友好的错误提示，便于调试
@@ -66,7 +67,7 @@ class _ProfilePageState extends State<ProfilePage> {
             // 获取国际化资源
             final appLocalizations = AppLocalizations.of(context)!;
             
-            print('[ProfilePage] BlocBuilder received state: ${state.runtimeType}');
+            AppLogger.d('[ProfilePage] BlocBuilder received state: ${state.runtimeType}');
             
             if (state is ProfileInitial || (state is ProfileAuthStatusLoaded && !state.isAuthenticated)) {
               if (state is ProfileAuthStatusLoaded && !state.isAuthenticated) {
@@ -133,7 +134,7 @@ class _ProfilePageState extends State<ProfilePage> {
         child: RefreshIndicator(
           onRefresh: () async {
             // 下拉刷新时强制从服务器获取最新数据
-            print('[ProfilePage] User initiated refresh - fetching fresh data from server');
+            AppLogger.d('[ProfilePage] User initiated refresh - fetching fresh data from server');
 
             // 先清除缓存
             try {
@@ -141,7 +142,7 @@ class _ProfilePageState extends State<ProfilePage> {
               await preloaderService.clearCache(AppMode.buyer);
               await preloaderService.clearCache(AppMode.seller);
             } catch (e) {
-              print('[ProfilePage] Failed to clear cache on refresh: $e');
+              AppLogger.d('[ProfilePage] Failed to clear cache on refresh: $e');
             }
 
             // 重新加载数据，跳过缓存

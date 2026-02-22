@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_chat_local_data_source.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
@@ -33,7 +34,7 @@ class ChatLocalDataSourceImpl implements IChatLocalDataSource {
         await _prefs.setInt('$_lastMessageIdPrefix$chatId', lastId);
       }
     } catch (e) {
-      print('[ChatLocalDataSource] Error caching messages: $e');
+      AppLogger.d('[ChatLocalDataSource] Error caching messages: $e');
     }
   }
   
@@ -48,7 +49,7 @@ class ChatLocalDataSourceImpl implements IChatLocalDataSource {
           .map((json) => ChatMessage.fromJson(json as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('[ChatLocalDataSource] Error getting cached messages: $e');
+      AppLogger.d('[ChatLocalDataSource] Error getting cached messages: $e');
       return null;
     }
   }
@@ -67,7 +68,7 @@ class ChatLocalDataSourceImpl implements IChatLocalDataSource {
         jsonEncode(chatRoom.toJson()),
       );
     } catch (e) {
-      print('[ChatLocalDataSource] Error caching chat room: $e');
+      AppLogger.d('[ChatLocalDataSource] Error caching chat room: $e');
     }
   }
   
@@ -80,7 +81,7 @@ class ChatLocalDataSourceImpl implements IChatLocalDataSource {
       final Map<String, dynamic> roomJson = jsonDecode(cachedData);
       return ChatRoom.fromJson(roomJson);
     } catch (e) {
-      print('[ChatLocalDataSource] Error getting cached chat room: $e');
+      AppLogger.d('[ChatLocalDataSource] Error getting cached chat room: $e');
       return null;
     }
   }
@@ -130,7 +131,7 @@ class ChatLocalDataSourceImpl implements IChatLocalDataSource {
               break;
             }
           } catch (e) {
-            print('[ChatLocalDataSource] Error updating message status: $e');
+            AppLogger.d('[ChatLocalDataSource] Error updating message status: $e');
           }
         }
       }
@@ -158,7 +159,7 @@ class ChatLocalDataSourceImpl implements IChatLocalDataSource {
         await _prefs.setString('$_messagesPrefix$chatId', jsonEncode(messagesJson));
       }
     } catch (e) {
-      print('[ChatLocalDataSource] Error marking messages as read: $e');
+      AppLogger.d('[ChatLocalDataSource] Error marking messages as read: $e');
     }
   }
   
@@ -167,7 +168,7 @@ class ChatLocalDataSourceImpl implements IChatLocalDataSource {
     try {
       await _prefs.setBool('$_paymentPromptPrefix$chatId', sent);
     } catch (e) {
-      print('[ChatLocalDataSource] Error saving payment prompt status: $e');
+      AppLogger.d('[ChatLocalDataSource] Error saving payment prompt status: $e');
     }
   }
   
@@ -176,7 +177,7 @@ class ChatLocalDataSourceImpl implements IChatLocalDataSource {
     try {
       return _prefs.getBool('$_paymentPromptPrefix$chatId') ?? false;
     } catch (e) {
-      print('[ChatLocalDataSource] Error getting payment prompt status: $e');
+      AppLogger.d('[ChatLocalDataSource] Error getting payment prompt status: $e');
       return false;
     }
   }
@@ -200,7 +201,7 @@ class ChatLocalDataSourceImpl implements IChatLocalDataSource {
       
       return 0;
     } catch (e) {
-      print('[ChatLocalDataSource] Error getting payment prompt count: $e');
+      AppLogger.d('[ChatLocalDataSource] Error getting payment prompt count: $e');
       return 0;
     }
   }
@@ -215,7 +216,7 @@ class ChatLocalDataSourceImpl implements IChatLocalDataSource {
         await savePaymentPromptStatus(chatId, true);
       }
     } catch (e) {
-      print('[ChatLocalDataSource] Error saving payment prompt count: $e');
+      AppLogger.d('[ChatLocalDataSource] Error saving payment prompt count: $e');
     }
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:go_router/go_router.dart'; // Import GoRouter
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 
@@ -92,7 +93,7 @@ class SelectAfterSalesTypePage extends StatelessWidget {
           title: '我要重新制作',
           subtitle: '对收到的制作不满意，可与作者协商重做',
           onTap: () {
-             print('Selected: 重新制作 for item $currentItemId');
+             AppLogger.d('Selected: 重新制作 for item $currentItemId');
              // Pass orderItem as extra
              context.push('/afterSalesApply?itemId=$currentItemId&type=REMAKE', extra: orderItem);
           },
@@ -103,7 +104,7 @@ class SelectAfterSalesTypePage extends StatelessWidget {
           title: '我要补充',
           subtitle: '收到的制作不完善，可与作者协商补充',
            onTap: () {
-             print('Selected: 补充 for item $currentItemId');
+             AppLogger.d('Selected: 补充 for item $currentItemId');
              // Pass orderItem as extra
              context.push('/afterSalesApply?itemId=$currentItemId&type=SUPPLEMENT', extra: orderItem);
           },
@@ -114,7 +115,7 @@ class SelectAfterSalesTypePage extends StatelessWidget {
           title: '我要退款',
           subtitle: '协商退款',
            onTap: () {
-             print('Selected: 退款 for item $currentItemId');
+             AppLogger.d('Selected: 退款 for item $currentItemId');
              // Pass orderItem as extra
               context.push('/afterSalesApply?itemId=$currentItemId&type=REFUND', extra: orderItem);
           },

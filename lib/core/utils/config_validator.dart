@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// 配置验证工具类
@@ -111,61 +112,61 @@ class ConfigValidator {
   
   /// 打印配置检查报告
   static void printValidationReport() {
-    print('\n=== 支付配置验证报告 ===');
+    AppLogger.d('\n=== 支付配置验证报告 ===');
     
     final result = validateAllPaymentConfig();
     
     if (result.isValid) {
-      print('✅ 所有配置检查通过！');
+      AppLogger.d('✅ 所有配置检查通过！');
     } else {
-      print('❌ 发现配置问题：');
+      AppLogger.d('❌ 发现配置问题：');
       for (int i = 0; i < result.allIssues.length; i++) {
-        print('  ${i + 1}. ${result.allIssues[i]}');
+        AppLogger.d('  ${i + 1}. ${result.allIssues[i]}');
       }
     }
     
     if (result.allWarnings.isNotEmpty) {
-      print('\n⚠️ 配置警告：');
+      AppLogger.d('\n⚠️ 配置警告：');
       for (int i = 0; i < result.allWarnings.length; i++) {
-        print('  ${i + 1}. ${result.allWarnings[i]}');
+        AppLogger.d('  ${i + 1}. ${result.allWarnings[i]}');
       }
     }
     
-    print('\n=== 配置说明 ===');
-    print('请在项目根目录创建 .env 文件，包含以下内容：');
-    print('');
-    print('# 微信支付配置（必需）');
-    print('WECHAT_APP_ID=wx8647007008f7b74d');
+    AppLogger.d('\n=== 配置说明 ===');
+    AppLogger.d('请在项目根目录创建 .env 文件，包含以下内容：');
+    AppLogger.d('');
+    AppLogger.d('# 微信支付配置（必需）');
+    AppLogger.d('WECHAT_APP_ID=wx8647007008f7b74d');
     
     if (Platform.isIOS) {
-      print('WECHAT_UNIVERSAL_LINK=https://app.duoshaokankan.com/wechat/  # iOS必需');
+      AppLogger.d('WECHAT_UNIVERSAL_LINK=https://app.duoshaokankan.com/wechat/  # iOS必需');
     } else if (Platform.isAndroid) {
-      print('# WECHAT_UNIVERSAL_LINK=https://app.duoshaokankan.com/wechat/  # Android可选');
+      AppLogger.d('# WECHAT_UNIVERSAL_LINK=https://app.duoshaokankan.com/wechat/  # Android可选');
     } else {
-      print('WECHAT_UNIVERSAL_LINK=https://app.duoshaokankan.com/wechat/  # iOS必需，其他平台可选');
+      AppLogger.d('WECHAT_UNIVERSAL_LINK=https://app.duoshaokankan.com/wechat/  # iOS必需，其他平台可选');
     }
     
-    print('');
-    print('# 后端API配置');
-    print('BACKEND_BASE_URL=https://app.duoshaokankan.com/prod-api');
-    print('');
-    print('# 可选配置');
-    print('PAYMENT_ENVIRONMENT=production');
-    print('PAYMENT_MOCK_ENABLED=false');
+    AppLogger.d('');
+    AppLogger.d('# 后端API配置');
+    AppLogger.d('BACKEND_BASE_URL=https://app.duoshaokankan.com/prod-api');
+    AppLogger.d('');
+    AppLogger.d('# 可选配置');
+    AppLogger.d('PAYMENT_ENVIRONMENT=production');
+    AppLogger.d('PAYMENT_MOCK_ENABLED=false');
     
     if (Platform.isAndroid) {
-      print('');
-      print('# Android支付回调说明：');
-      print('# Android使用AndroidManifest.xml中的Intent Filter');
-      print('# 和WXPayEntryActivity处理支付回调，无需Universal Link');
+      AppLogger.d('');
+      AppLogger.d('# Android支付回调说明：');
+      AppLogger.d('# Android使用AndroidManifest.xml中的Intent Filter');
+      AppLogger.d('# 和WXPayEntryActivity处理支付回调，无需Universal Link');
     } else if (Platform.isIOS) {
-      print('');
-      print('# iOS支付回调说明：');
-      print('# iOS必需配置Universal Link用于支付回调');
-      print('# 确保Universal Link在微信开放平台中正确配置');
+      AppLogger.d('');
+      AppLogger.d('# iOS支付回调说明：');
+      AppLogger.d('# iOS必需配置Universal Link用于支付回调');
+      AppLogger.d('# 确保Universal Link在微信开放平台中正确配置');
     }
     
-    print('\n========================\n');
+    AppLogger.d('\n========================\n');
   }
 }
 

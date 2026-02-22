@@ -1,4 +1,5 @@
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_notification.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 /// 通知DTO模型
 class NotificationDto {
@@ -94,7 +95,7 @@ class NotificationDto {
         relatedId: json['relatedId']?.toString(),
       );
     } catch (e) {
-      print('Error parsing NotificationDto: $e for json: $json');
+      AppLogger.d('Error parsing NotificationDto: $e for json: $json');
       // 返回一个有默认值的对象而不是抛出异常
       return NotificationDto(
         id: '0',

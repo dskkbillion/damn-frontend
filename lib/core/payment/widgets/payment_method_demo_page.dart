@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:get_it/get_it.dart';
 
 import '../../config/region_config.dart';
@@ -45,7 +46,7 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
         _infoLoaded = true;
       });
     } catch (e) {
-      print('加载支付信息失败: $e');
+      AppLogger.d('加载支付信息失败: $e');
     }
   }
 

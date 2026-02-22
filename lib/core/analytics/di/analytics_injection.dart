@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -48,14 +49,14 @@ Future<void> initAnalyticsModule() async {
   // 检查是否需要创建一个适配器，将features/auth中的IAuthRepository转换为core/auth中的IAuthRepository
   try {
     if (!getIt.isRegistered<core_auth.IAuthRepository>()) {
-      print('[AnalyticsModule] 创建IAuthRepository适配器...');
+      AppLogger.d('[AnalyticsModule] 创建IAuthRepository适配器...');
       // 创建一个适配器，使用features/auth中的IAuthRepository来实现core/auth中的IAuthRepository
       getIt.registerSingleton<core_auth.IAuthRepository>(
         AuthRepositoryAdapter()
       );
     }
   } catch (e) {
-    print('[AnalyticsModule] 创建IAuthRepository适配器失败: $e');
+    AppLogger.d('[AnalyticsModule] 创建IAuthRepository适配器失败: $e');
   }
   
   // 3. 注册用户识别服务
@@ -91,7 +92,7 @@ Future<void> initAnalyticsModule() async {
     );
   }
   
-  print('[AnalyticsModule] 分析模块初始化完成');
+  AppLogger.d('[AnalyticsModule] 分析模块初始化完成');
 }
 
 /// 适配器类，用于将features/auth中的IAuthRepository转换为core/auth中的IAuthRepository
@@ -109,7 +110,7 @@ class AuthRepositoryAdapter implements core_auth.IAuthRepository {
         return Left(AnalyticsAuthFailure());
       }
     } catch (e) {
-      print('[AuthRepositoryAdapter] 获取用户ID失败: $e');
+      AppLogger.d('[AuthRepositoryAdapter] 获取用户ID失败: $e');
       return Left(AnalyticsAuthFailure(message: e.toString()));
     }
   }

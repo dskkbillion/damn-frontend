@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failures.dart';
@@ -14,7 +15,7 @@ class RemoveFromFavoritesByObjectIdUseCase implements UseCase<void, RemoveFromFa
 
   @override
   Future<Either<Failure, void>> call(RemoveFromFavoritesByObjectIdParams params) async {
-    print('[Debug] 按objectId删除收藏用例: type=${params.type}, objectId=${params.objectId}');
+    AppLogger.d('[Debug] 按objectId删除收藏用例: type=${params.type}, objectId=${params.objectId}');
     
     // 直接调用repository的新方法
     return await repository.removeFromFavoritesByObjectId(params.type, params.objectId);

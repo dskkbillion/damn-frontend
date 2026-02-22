@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
 import 'package:dio_cache_interceptor_hive_store/dio_cache_interceptor_hive_store.dart';
 import 'package:injectable/injectable.dart';
@@ -54,9 +55,9 @@ class CacheInterceptorManager {
       _interceptor = DioCacheInterceptor(options: options);
       _initialized = true;
       
-      print('[CacheInterceptor] 初始化完成，缓存目录：$cacheDir');
+      AppLogger.d('[CacheInterceptor] 初始化完成，缓存目录：$cacheDir');
     } catch (e) {
-      print('[CacheInterceptor] 初始化失败：$e');
+      AppLogger.d('[CacheInterceptor] 初始化失败：$e');
       // 失败时创建一个内存缓存作为降级方案
       _cacheStore = MemCacheStore();
       final options = CacheOptions(
@@ -92,14 +93,14 @@ class CacheInterceptorManager {
   /// 清除所有缓存
   Future<void> clearAll() async {
     await _cacheStore?.clean();
-    print('[CacheInterceptor] 所有缓存已清除');
+    AppLogger.d('[CacheInterceptor] 所有缓存已清除');
   }
   
   /// 清除特定路径的缓存
   Future<void> clearByPath(String path) async {
     // 遍历并删除匹配的缓存
     // 注意：这需要cacheStore支持按键遍历
-    print('[CacheInterceptor] 清除路径缓存：$path');
+    AppLogger.d('[CacheInterceptor] 清除路径缓存：$path');
   }
   
   /// 获取缓存统计信息
@@ -116,7 +117,7 @@ class CacheInterceptorManager {
   Future<void> dispose() async {
     await _cacheStore?.close();
     _initialized = false;
-    print('[CacheInterceptor] 资源已释放');
+    AppLogger.d('[CacheInterceptor] 资源已释放');
   }
 }
 
@@ -154,9 +155,9 @@ class SmartCacheInterceptor extends Interceptor {
       );
       
       _cacheInterceptor = DioCacheInterceptor(options: options);
-      print('[SmartCacheInterceptor] 初始化完成');
+      AppLogger.d('[SmartCacheInterceptor] 初始化完成');
     } catch (e) {
-      print('[SmartCacheInterceptor] 初始化失败：$e');
+      AppLogger.d('[SmartCacheInterceptor] 初始化失败：$e');
       // 失败时创建一个不缓存的拦截器
       _cacheStore = MemCacheStore();
       final options = CacheOptions(

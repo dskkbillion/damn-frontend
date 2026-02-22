@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
 import 'package:dskk_flutter_refactor/app/navigation/app_router.dart'; // 导入 rootNavigatorKey
@@ -37,7 +38,7 @@ class _GlobalMessageNotificationState extends State<GlobalMessageNotification> {
   void _showNotification(ChatMessageEvent event) {
     // 检查 widget 是否还挂载
     if (!mounted) {
-      print('[GlobalMessageNotification] Widget not mounted, skipping notification');
+      AppLogger.d('[GlobalMessageNotification] Widget not mounted, skipping notification');
       return;
     }
 
@@ -55,13 +56,13 @@ class _GlobalMessageNotificationState extends State<GlobalMessageNotification> {
         }
       }
     } catch (e) {
-      print('[GlobalMessageNotification] Error getting current route: $e');
+      AppLogger.d('[GlobalMessageNotification] Error getting current route: $e');
       // 无法获取当前路由，继续显示通知
     }
 
     // 如果当前正在该聊天室内，不显示通知
     if (currentChatId == event.chatId) {
-      print('[GlobalMessageNotification] Skipping notification for current chat room: $currentChatId');
+      AppLogger.d('[GlobalMessageNotification] Skipping notification for current chat room: $currentChatId');
       return;
     }
 
@@ -70,7 +71,7 @@ class _GlobalMessageNotificationState extends State<GlobalMessageNotification> {
       try {
         _overlayEntry!.remove();
       } catch (e) {
-        print('[GlobalMessageNotification] Error removing previous overlay: $e');
+        AppLogger.d('[GlobalMessageNotification] Error removing previous overlay: $e');
       }
       _overlayEntry = null;
     }
@@ -150,7 +151,7 @@ class _GlobalMessageNotificationState extends State<GlobalMessageNotification> {
     
     // 显示通知
     if (!mounted) {
-      print('[GlobalMessageNotification] Widget not mounted when trying to show notification');
+      AppLogger.d('[GlobalMessageNotification] Widget not mounted when trying to show notification');
       _overlayEntry = null;
       return;
     }
@@ -159,13 +160,13 @@ class _GlobalMessageNotificationState extends State<GlobalMessageNotification> {
       // 使用全局 navigator key 直接访问 Overlay，避免 context 问题
       final overlay = rootNavigatorKey.currentState?.overlay;
       if (overlay == null) {
-        print('[GlobalMessageNotification] No Overlay found from navigator key');
+        AppLogger.d('[GlobalMessageNotification] No Overlay found from navigator key');
         _overlayEntry = null;
         return;
       }
 
       overlay.insert(_overlayEntry!);
-      print('[GlobalMessageNotification] ✅ Notification displayed: ${event.content}');
+      AppLogger.d('[GlobalMessageNotification] ✅ Notification displayed: ${event.content}');
 
       // 3秒后自动移除
       Future.delayed(const Duration(seconds: 3), () {
@@ -173,13 +174,13 @@ class _GlobalMessageNotificationState extends State<GlobalMessageNotification> {
           try {
             _overlayEntry!.remove();
           } catch (e) {
-            print('[GlobalMessageNotification] Error auto-removing overlay: $e');
+            AppLogger.d('[GlobalMessageNotification] Error auto-removing overlay: $e');
           }
           _overlayEntry = null;
         }
       });
     } catch (e) {
-      print('[GlobalMessageNotification] Error showing notification: $e');
+      AppLogger.d('[GlobalMessageNotification] Error showing notification: $e');
       _overlayEntry = null;
     }
   }
@@ -196,14 +197,14 @@ class _GlobalMessageNotificationState extends State<GlobalMessageNotification> {
         'chatRoomRefactored',  // 使用重构版路由
         pathParameters: {'chatId': event.chatId},
       );
-      print('[GlobalMessageNotification] Navigating to chat room (refactored): ${event.chatId}');
+      AppLogger.d('[GlobalMessageNotification] Navigating to chat room (refactored): ${event.chatId}');
     } catch (e) {
-      print('[GlobalMessageNotification] Error navigating to chat: $e');
+      AppLogger.d('[GlobalMessageNotification] Error navigating to chat: $e');
       // 备用方案：直接使用路径
       try {
         context.push('/chat/refactored/${event.chatId}');
       } catch (e2) {
-        print('[GlobalMessageNotification] Fallback navigation also failed: $e2');
+        AppLogger.d('[GlobalMessageNotification] Fallback navigation also failed: $e2');
       }
     }
   }
@@ -214,7 +215,7 @@ class _GlobalMessageNotificationState extends State<GlobalMessageNotification> {
       try {
         _overlayEntry!.remove();
       } catch (e) {
-        print('[GlobalMessageNotification] Error removing overlay in dispose: $e');
+        AppLogger.d('[GlobalMessageNotification] Error removing overlay in dispose: $e');
       }
     }
     super.dispose();

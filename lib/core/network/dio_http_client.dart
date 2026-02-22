@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 import 'dart:io'; // For File
 import 'dart:convert'; // For jsonEncode
@@ -23,7 +24,7 @@ class DioHttpClient implements IHttpClient {
     // 先尝试从RegionConfig获取，如果还没初始化则使用环境变量
     try {
       _baseUrl = RegionConfig.modelBaseUrl;
-      print("使用区域配置的模型服务URL: $_baseUrl");
+      AppLogger.d("使用区域配置的模型服务URL: $_baseUrl");
     } catch (e) {
       // 如果RegionConfig还没初始化，回退到环境变量
       final modelUrl = dotenv.env['MODEL_BASE_URL'];
@@ -31,7 +32,7 @@ class DioHttpClient implements IHttpClient {
         throw Exception('MODEL_BASE_URL environment variable is not set. Please configure it in your .env file.');
       }
       _baseUrl = modelUrl;
-      print("使用环境变量的MODEL_BASE_URL: $_baseUrl");
+      AppLogger.d("使用环境变量的MODEL_BASE_URL: $_baseUrl");
     }
     
     final options = BaseOptions(
@@ -59,7 +60,7 @@ class DioHttpClient implements IHttpClient {
   // (Alternatively, manage lifecycle with GetIt dispose method if using injectable)
   void dispose() {
     _httpClientForSse.close();
-    print("DioHttpClient disposed, SSE client closed.");
+    AppLogger.d("DioHttpClient disposed, SSE client closed.");
     // Dio doesn't require explicit close unless using adapters that need it.
   }
 
@@ -68,7 +69,7 @@ class DioHttpClient implements IHttpClient {
     try {
       return await _secureStorage.read(key: 'auth_token');
     } catch (e) {
-      print('Error reading token from secure storage: $e');
+      AppLogger.d('Error reading token from secure storage: $e');
       return null;
     }
   }
@@ -133,7 +134,7 @@ class DioHttpClient implements IHttpClient {
     try {
       final fileName = file.path.split(Platform.pathSeparator).last;
       final fileSize = await file.length();
-      print("正在上传文件: $fileName, 大小: ${fileSize / 1024} KB, 目标: $endpoint");
+      AppLogger.d("正在上传文件: $fileName, 大小: ${fileSize / 1024} KB, 目标: $endpoint");
       
       // --- Prepare FormData --- 
       final formData = FormData.fromMap({
@@ -186,20 +187,20 @@ class DioHttpClient implements IHttpClient {
         onSendProgress: (sent, total) {
           if (total != -1) {
             final progress = (sent / total * 100).toStringAsFixed(2);
-            print('文件上传进度: $progress% ($sent/$total bytes)');
+            AppLogger.d('文件上传进度: $progress% ($sent/$total bytes)');
           }
         }
       );
       
-      print("文件上传完成: 状态码=${response.statusCode}");
+      AppLogger.d("文件上传完成: 状态码=${response.statusCode}");
       return _handleResponse(response);
     } on DioException catch (e) {
-      print("文件上传DioException: 类型=${e.type}, 消息=${e.message}");
-      print("请求信息: ${e.requestOptions.uri}, 方法=${e.requestOptions.method}");
-      print("响应状态: ${e.response?.statusCode}, 数据=${e.response?.data}");
+      AppLogger.d("文件上传DioException: 类型=${e.type}, 消息=${e.message}");
+      AppLogger.d("请求信息: ${e.requestOptions.uri}, 方法=${e.requestOptions.method}");
+      AppLogger.d("响应状态: ${e.response?.statusCode}, 数据=${e.response?.data}");
       throw _handleDioError(e);
     } catch (e) {
-      print("文件上传异常: ${e.runtimeType} - ${e.toString()}");
+      AppLogger.d("文件上传异常: ${e.runtimeType} - ${e.toString()}");
       throw ServerException(message: 'Unexpected error during Multipart POST: ${e.toString()}');
     }
   }
@@ -226,7 +227,7 @@ class DioHttpClient implements IHttpClient {
     }
     
     final url = Uri.parse('$baseUrl/$pathWithoutLeadingSlash');
-    print("[HttpClient - SSE] 完整URL: $url");
+    AppLogger.d("[HttpClient - SSE] 完整URL: $url");
     
     final request = http.Request('POST', url);
 
@@ -241,13 +242,13 @@ class DioHttpClient implements IHttpClient {
       request.body = jsonEncode(body); // Encode body as JSON string
     }
 
-    print("[HttpClient - SSE] Sending POST request to $url");
-    print("[HttpClient - SSE] Body: ${request.body}");
+    AppLogger.d("[HttpClient - SSE] Sending POST request to $url");
+    AppLogger.d("[HttpClient - SSE] Body: ${request.body}");
 
     try {
       final streamedResponse = await _httpClientForSse.send(request);
 
-      print(
+      AppLogger.d(
           "[HttpClient - SSE] Received response status: ${streamedResponse.statusCode}");
 
       if (streamedResponse.statusCode == 200) {
@@ -256,27 +257,27 @@ class DioHttpClient implements IHttpClient {
           try {
             // Assuming UTF8 encoding, adjust if different
             final chunkString = utf8.decode(chunkBytes);
-            print("[HttpClient - SSE] Received chunk: $chunkString");
+            AppLogger.d("[HttpClient - SSE] Received chunk: $chunkString");
             yield chunkString; // Yield the raw SSE chunk string
           } catch (e) {
-            print("[HttpClient - SSE] Error decoding chunk: $e");
+            AppLogger.d("[HttpClient - SSE] Error decoding chunk: $e");
             // Decide how to handle decoding error, maybe yield an error event?
             yield 'event: error\ndata: { "message": "Error decoding stream chunk" }\n\n';
           }
         }
-        print("[HttpClient - SSE] Stream finished.");
+        AppLogger.d("[HttpClient - SSE] Stream finished.");
       } else {
         // Handle non-200 status code for the initial stream request
         final responseBody = await streamedResponse.stream.bytesToString();
-        print("[HttpClient - SSE] Error response body: $responseBody");
+        AppLogger.d("[HttpClient - SSE] Error response body: $responseBody");
         throw ServerException(
           message:
               'Failed to initiate stream (${streamedResponse.statusCode}): ${streamedResponse.reasonPhrase} - $responseBody',
         );
       }
     } catch (e, stacktrace) {
-      print("[HttpClient - SSE] Error sending request or reading stream: $e");
-      print(stacktrace);
+      AppLogger.d("[HttpClient - SSE] Error sending request or reading stream: $e");
+      AppLogger.d(stacktrace);
       throw ServerException(
           message: 'Network error during streaming: ${e.toString()}');
     }
@@ -348,7 +349,7 @@ class DioHttpClient implements IHttpClient {
         }
         break;
     }
-    print(
+    AppLogger.d(
         "[DioError] Path: ${error.requestOptions.path}, Status: $statusCode, Type: ${error.type}, Message: $errorMessage, Data: ${error.response?.data}");
     return ServerException(
         message: '${statusCode != null ? '$statusCode: ' : ''}$errorMessage');

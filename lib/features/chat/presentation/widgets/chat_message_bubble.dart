@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:convert'; // 用于 JSON 解析
 import 'dart:io'; // 添加这个import来支持File类型
 import 'package:flutter/material.dart';
@@ -151,7 +152,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     try {
       if (audioUrl.isEmpty) return;
       
-      print("[Audio] 预加载音频时长: $audioUrl");
+      AppLogger.d("[Audio] 预加载音频时长: $audioUrl");
       
       // 设置音频源但不播放
       await _audioPlayer.setSourceUrl(audioUrl);
@@ -159,11 +160,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       // 获取音频时长
       final duration = await _audioPlayer.getDuration();
       if (mounted && duration != null) {
-        print("[Audio] 获取到时长: ${duration.inSeconds}秒");
+        AppLogger.d("[Audio] 获取到时长: ${duration.inSeconds}秒");
         setState(() => _duration = duration);
       }
     } catch (e) {
-      print("[Audio] 预加载音频时长出错: $e");
+      AppLogger.d("[Audio] 预加载音频时长出错: $e");
     }
   }
 
@@ -280,7 +281,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       }
     } catch (e) {
       // Handle error (e.g., show a snackbar)
-      print("Error playing audio: $e");
+      AppLogger.d("Error playing audio: $e");
        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error playing audio: $e')),
       );
@@ -346,26 +347,26 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   @override
   Widget build(BuildContext context) {
     // 详细的ID映射调试日志
-    print('[ChatMessageBubble] =====消息气泡渲染调试=====');
-    print('[ChatMessageBubble] 消息ID: ${widget.message.id}');
-    print('[ChatMessageBubble] 消息内容: ${widget.message.context?.substring(0, widget.message.context!.length > 30 ? 30 : widget.message.context!.length)}...');
-    print('[ChatMessageBubble] 发送者ID信息:');
-    print('[ChatMessageBubble]   senderId(内部): ${widget.message.senderId}');
-    print('[ChatMessageBubble]   memberId: ${widget.message.memberId}');
-    print('[ChatMessageBubble]   doctorId: ${widget.message.doctorId}');
-    print('[ChatMessageBubble] 当前用户信息:');
-    print('[ChatMessageBubble]   currentUserParticipantId(内部): ${widget.currentUserParticipantId}');
-    print('[ChatMessageBubble] 对手信息:');
-    print('[ChatMessageBubble]   opponent.id(内部): ${widget.opponent?.id}');
-    print('[ChatMessageBubble]   opponent.referId(外部): ${widget.opponent?.referId}');
-    print('[ChatMessageBubble]   opponent.nickName: ${widget.opponent?.nickName}');
+    AppLogger.d('[ChatMessageBubble] =====消息气泡渲染调试=====');
+    AppLogger.d('[ChatMessageBubble] 消息ID: ${widget.message.id}');
+    AppLogger.d('[ChatMessageBubble] 消息内容: ${widget.message.context?.substring(0, widget.message.context!.length > 30 ? 30 : widget.message.context!.length)}...');
+    AppLogger.d('[ChatMessageBubble] 发送者ID信息:');
+    AppLogger.d('[ChatMessageBubble]   senderId(内部): ${widget.message.senderId}');
+    AppLogger.d('[ChatMessageBubble]   memberId: ${widget.message.memberId}');
+    AppLogger.d('[ChatMessageBubble]   doctorId: ${widget.message.doctorId}');
+    AppLogger.d('[ChatMessageBubble] 当前用户信息:');
+    AppLogger.d('[ChatMessageBubble]   currentUserParticipantId(内部): ${widget.currentUserParticipantId}');
+    AppLogger.d('[ChatMessageBubble] 对手信息:');
+    AppLogger.d('[ChatMessageBubble]   opponent.id(内部): ${widget.opponent?.id}');
+    AppLogger.d('[ChatMessageBubble]   opponent.referId(外部): ${widget.opponent?.referId}');
+    AppLogger.d('[ChatMessageBubble]   opponent.nickName: ${widget.opponent?.nickName}');
     
     final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
-    print('[ChatMessageBubble] 判断结果:');
-    print('[ChatMessageBubble]   senderId(${widget.message.senderId}) == currentUserParticipantId(${widget.currentUserParticipantId})?');
-    print('[ChatMessageBubble]   isCurrentUser = $isCurrentUser');
-    print('[ChatMessageBubble]   消息将显示在: ${isCurrentUser ? "右侧(当前用户)" : "左侧(对手)"}');
-    print('[ChatMessageBubble] ========================');
+    AppLogger.d('[ChatMessageBubble] 判断结果:');
+    AppLogger.d('[ChatMessageBubble]   senderId(${widget.message.senderId}) == currentUserParticipantId(${widget.currentUserParticipantId})?');
+    AppLogger.d('[ChatMessageBubble]   isCurrentUser = $isCurrentUser');
+    AppLogger.d('[ChatMessageBubble]   消息将显示在: ${isCurrentUser ? "右侧(当前用户)" : "左侧(对手)"}');
+    AppLogger.d('[ChatMessageBubble] ========================');
     
     // 由于撤回的消息已在BLoC层过滤，这里不再需要检查撤回状态
     final alignment = isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start;
@@ -619,7 +620,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                    ),
                  ),
                errorWidget: (context, url, error) {
-                 print("[Image] 加载错误: $url, 错误: $error");
+                 AppLogger.d("[Image] 加载错误: $url, 错误: $error");
                  // 提供更友好的错误显示并添加重试按钮
                  return Container(
                    width: 150, height: 150,
@@ -877,7 +878,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       // 允许撤回的时间窗口：2分钟（120秒）
       const revokeTimeLimit = Duration(minutes: 2);
       
-      print('[Debug] 消息撤回检查 - 消息时间: $messageTime, 当前时间: $now, 时间差: ${timeDifference.inSeconds}秒');
+      AppLogger.d('[Debug] 消息撤回检查 - 消息时间: $messageTime, 当前时间: $now, 时间差: ${timeDifference.inSeconds}秒');
       
       if (timeDifference <= revokeTimeLimit) {
           final remainingTime = revokeTimeLimit - timeDifference;

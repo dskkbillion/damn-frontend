@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 import 'package:http/http.dart' as http;
 
@@ -38,22 +39,22 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
 
   /// 打印请求信息
   void _logRequest(String method, Uri uri, Map<String, String> headers, [String? body]) {
-    print('===== API请求 =====');
-    print('方法: $method');
-    print('URL: $uri');
-    print('请求头: $headers');
+    AppLogger.d('===== API请求 =====');
+    AppLogger.d('方法: $method');
+    AppLogger.d('URL: $uri');
+    AppLogger.d('请求头: $headers');
     if (body != null) {
-      print('请求体: $body');
+      AppLogger.d('请求体: $body');
     }
-    print('=================');
+    AppLogger.d('=================');
   }
 
   /// 打印响应信息
   void _logResponse(int statusCode, String body) {
-    print('===== API响应 =====');
-    print('状态码: $statusCode');
-    print('响应体: $body');
-    print('=================');
+    AppLogger.d('===== API响应 =====');
+    AppLogger.d('状态码: $statusCode');
+    AppLogger.d('响应体: $body');
+    AppLogger.d('=================');
   }
 
   /// 获取收藏的服务列表
@@ -100,7 +101,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
               final serviceDetail = await _getServiceDetail(favorite.objectId);
               services.add(serviceDetail);
             } catch (e) {
-              print('获取服务详情出错: $e');
+              AppLogger.d('获取服务详情出错: $e');
               // 如果获取详情失败，使用基本信息构造模型
               services.add(FavoriteServiceModel(
                 id: favorite.objectId,
@@ -116,7 +117,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
           return services;
         } else {
           // 返回模拟数据
-          print('使用模拟数据 - 认证失败或数据格式不正确');
+          AppLogger.d('使用模拟数据 - 认证失败或数据格式不正确');
           return [
             FavoriteServiceModel(
               id: 1,
@@ -138,7 +139,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
         }
       } else {
         // 返回模拟数据
-        print('使用模拟数据 - HTTP状态码不是200');
+        AppLogger.d('使用模拟数据 - HTTP状态码不是200');
         return [
           FavoriteServiceModel(
             id: 1,
@@ -159,9 +160,9 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
         ];
       }
     } catch (e) {
-      print('获取收藏服务列表出错: $e');
+      AppLogger.d('获取收藏服务列表出错: $e');
       // 返回模拟数据
-      print('使用模拟数据 - 发生异常');
+      AppLogger.d('使用模拟数据 - 发生异常');
       return [
         FavoriteServiceModel(
           id: 1,
@@ -217,7 +218,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
               }
             }
           } catch (e) {
-            print('解析图片URL失败: $e');
+            AppLogger.d('解析图片URL失败: $e');
           }
         }
         
@@ -274,7 +275,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
         if (jsonResponse['code'] == 200 && jsonResponse['rows'] != null) {
           final List<dynamic> rows = jsonResponse['rows'];
           
-          print('获取到关注记录数: ${rows.length}');
+          AppLogger.d('获取到关注记录数: ${rows.length}');
           
           // 获取关注记录
           final attentionRecords = rows.map((row) => FavoriteModel.fromJson(row)).toList();
@@ -287,11 +288,11 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
               final sellerDetail = await _getSellerDetail(record.objectId);
               sellers.add(sellerDetail);
             } catch (e) {
-              print('获取卖家详情出错: $e');
+              AppLogger.d('获取卖家详情出错: $e');
               
               // 🔥 如果是API返回错误用户信息的异常，跳过这条记录
               if (e.toString().contains('API返回了错误的用户信息')) {
-                print('⚠️ 跳过有问题的关注记录 (objectId: ${record.objectId})');
+                AppLogger.d('⚠️ 跳过有问题的关注记录 (objectId: ${record.objectId})');
                 continue;
               }
               
@@ -306,20 +307,20 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
             }
           }
           
-          print('成功获取关注的卖家数: ${sellers.length}');
+          AppLogger.d('成功获取关注的卖家数: ${sellers.length}');
           return sellers;
         } else {
           // API调用成功但没有数据，返回空列表
-          print('API调用成功但没有关注的卖家数据');
+          AppLogger.d('API调用成功但没有关注的卖家数据');
           return [];
         }
       } else {
         // 如果API调用失败，返回空列表
-        print('获取关注卖家列表API调用失败 - HTTP状态码: ${response.statusCode}');
+        AppLogger.d('获取关注卖家列表API调用失败 - HTTP状态码: ${response.statusCode}');
         return [];
       }
     } catch (e) {
-      print('获取关注卖家列表出错: $e');
+      AppLogger.d('获取关注卖家列表出错: $e');
       // 发生异常时返回空列表
       return [];
     }
@@ -381,8 +382,8 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
 
       final headers = await _getHeaders();
       
-      print('添加收藏API请求URL: $uri');
-      print('添加收藏API请求体: $body');
+      AppLogger.d('添加收藏API请求URL: $uri');
+      AppLogger.d('添加收藏API请求体: $body');
       
       final response = await client.post(
         uri,
@@ -390,8 +391,8 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
         body: body,
       );
       
-      print('添加收藏API响应状态码: ${response.statusCode}');
-      print('添加收藏API响应内容: ${response.body}');
+      AppLogger.d('添加收藏API响应状态码: ${response.statusCode}');
+      AppLogger.d('添加收藏API响应内容: ${response.body}');
 
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
@@ -402,7 +403,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
         throw ServerException(message: 'Failed to add to favorites');
       }
     } catch (e) {
-      print('添加收藏出错: $e');
+      AppLogger.d('添加收藏出错: $e');
       if (e is ServerException) {
         rethrow;
       }
@@ -420,8 +421,8 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
 
       final headers = await _getHeaders();
       
-      print('移除收藏API请求URL: $uri');
-      print('移除收藏API请求体: $body');
+      AppLogger.d('移除收藏API请求URL: $uri');
+      AppLogger.d('移除收藏API请求体: $body');
       
       final response = await client.post(
         uri,
@@ -429,8 +430,8 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
         body: body,
       );
       
-      print('移除收藏API响应状态码: ${response.statusCode}');
-      print('移除收藏API响应内容: ${response.body}');
+      AppLogger.d('移除收藏API响应状态码: ${response.statusCode}');
+      AppLogger.d('移除收藏API响应内容: ${response.body}');
 
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
@@ -441,7 +442,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
         throw ServerException(message: 'Failed to remove from favorites');
       }
     } catch (e) {
-      print('移除收藏出错: $e');
+      AppLogger.d('移除收藏出错: $e');
       if (e is ServerException) {
         rethrow;
       }
@@ -465,8 +466,8 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
 
       final headers = await _getHeaders();
       
-      print('检查收藏API请求URL: $uri');
-      print('检查收藏API请求体: $body');
+      AppLogger.d('检查收藏API请求URL: $uri');
+      AppLogger.d('检查收藏API请求体: $body');
       
       final response = await client.post(
         uri,
@@ -474,8 +475,8 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
         body: body,
       );
       
-      print('检查收藏API响应状态码: ${response.statusCode}');
-      print('检查收藏API响应内容: ${response.body}');
+      AppLogger.d('检查收藏API响应状态码: ${response.statusCode}');
+      AppLogger.d('检查收藏API响应内容: ${response.body}');
 
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
@@ -496,7 +497,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
         throw ServerException(message: 'Failed to check if favorite');
       }
     } catch (e) {
-      print('检查收藏状态出错: $e');
+      AppLogger.d('检查收藏状态出错: $e');
       if (e is ServerException) {
         rethrow;
       }
@@ -524,8 +525,8 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
 
       final headers = await _getHeaders();
       
-      print('关注卖家API请求URL: $uri');
-      print('关注卖家API请求体: $body');
+      AppLogger.d('关注卖家API请求URL: $uri');
+      AppLogger.d('关注卖家API请求体: $body');
       
       final response = await client.post(
         uri,
@@ -533,8 +534,8 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
         body: body,
       );
       
-      print('关注卖家API响应状态码: ${response.statusCode}');
-      print('关注卖家API响应内容: ${response.body}');
+      AppLogger.d('关注卖家API响应状态码: ${response.statusCode}');
+      AppLogger.d('关注卖家API响应内容: ${response.body}');
 
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
@@ -545,7 +546,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
         throw ServerException(message: 'Failed to follow seller');
       }
     } catch (e) {
-      print('关注卖家出错: $e');
+      AppLogger.d('关注卖家出错: $e');
       if (e is ServerException) {
         rethrow;
       }
@@ -558,11 +559,11 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
   Future<void> unfollowSeller(CommonUserModel user) async {
     try {
       // 🔥 统一使用collect接口：先查询收藏记录ID，然后删除
-      print('[UnfollowSeller] 开始取消关注: referId=${user.referId}');
+      AppLogger.d('[UnfollowSeller] 开始取消关注: referId=${user.referId}');
       await removeFromFavoritesByObjectId('attentionMember', user.referId);
-      print('[UnfollowSeller] 取消关注成功');
+      AppLogger.d('[UnfollowSeller] 取消关注成功');
     } catch (e) {
-      print('取消关注卖家出错: $e');
+      AppLogger.d('取消关注卖家出错: $e');
       if (e is ServerException) {
         rethrow;
       }
@@ -574,7 +575,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
   @override
   Future<void> removeFromFavoritesByObjectId(String type, int objectId) async {
     try {
-      print('[Debug] 开始按objectId删除收藏: type=$type, objectId=$objectId');
+      AppLogger.d('[Debug] 开始按objectId删除收藏: type=$type, objectId=$objectId');
       
       // 步骤1: 获取收藏列表以找到收藏记录ID
       final userId = await getUserId();
@@ -591,12 +592,12 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
 
       final headers = await _getHeaders();
       
-      print('[Debug] 查询收藏列表API请求URL: $uri');
+      AppLogger.d('[Debug] 查询收藏列表API请求URL: $uri');
       
       final response = await client.get(uri, headers: headers);
       
-      print('[Debug] 查询收藏列表API响应状态码: ${response.statusCode}');
-      print('[Debug] 查询收藏列表API响应内容: ${response.body}');
+      AppLogger.d('[Debug] 查询收藏列表API响应状态码: ${response.statusCode}');
+      AppLogger.d('[Debug] 查询收藏列表API响应内容: ${response.body}');
 
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
@@ -608,20 +609,20 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
           for (final row in rows) {
             if (row['objectId'] == objectId && row['type'] == type) {
               favoriteRecordId = row['id'];
-              print('[Debug] 找到匹配的收藏记录: recordId=$favoriteRecordId, objectId=$objectId');
+              AppLogger.d('[Debug] 找到匹配的收藏记录: recordId=$favoriteRecordId, objectId=$objectId');
               break;
             }
           }
           
           if (favoriteRecordId == null) {
-            print('[Debug] 未找到匹配的收藏记录，可能已经被删除');
+            AppLogger.d('[Debug] 未找到匹配的收藏记录，可能已经被删除');
             // 不抛出错误，认为删除成功
             return;
           }
           
           // 步骤3: 使用收藏记录ID删除
           await removeFromFavorites([favoriteRecordId]);
-          print('[Debug] 成功删除收藏记录: $favoriteRecordId');
+          AppLogger.d('[Debug] 成功删除收藏记录: $favoriteRecordId');
           
         } else {
           throw ServerException(message: jsonResponse['msg'] ?? 'Failed to get favorites list');
@@ -630,7 +631,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
         throw ServerException(message: 'Failed to get favorites list');
       }
     } catch (e) {
-      print('[Debug] 按objectId删除收藏出错: $e');
+      AppLogger.d('[Debug] 按objectId删除收藏出错: $e');
       if (e is ServerException) {
         rethrow;
       }

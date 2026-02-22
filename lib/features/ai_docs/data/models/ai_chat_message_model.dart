@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:convert'; // Import for jsonDecode
 import '../../domain/entities/ai_chat_message_entity.dart';
 
@@ -31,11 +32,11 @@ List<String> _filesFromJson(dynamic jsonValue) {
       }
     } catch (e) {
       // Log error if decoding fails
-      print("Error decoding 'files' string: $e. Value: $jsonValue");
+      AppLogger.d("Error decoding 'files' string: $e. Value: $jsonValue");
     }
   }
   // Fallback for unexpected types or decoding errors
-  print("Warning: Unexpected type or structure for 'files' field: ${jsonValue.runtimeType}. Value: $jsonValue");
+  AppLogger.d("Warning: Unexpected type or structure for 'files' field: ${jsonValue.runtimeType}. Value: $jsonValue");
   return [];
 }
 // --- End of custom converter ---
@@ -80,7 +81,7 @@ class AiChatMessageModel with _$AiChatMessageModel {
         break;
       default:
         // Handle unexpected role string
-        print('Warning: Unknown message role "$role", defaulting to system.');
+        AppLogger.d('Warning: Unknown message role "$role", defaulting to system.');
         domainSender = MessageSender.system;
     }
 
@@ -90,7 +91,7 @@ class AiChatMessageModel with _$AiChatMessageModel {
       try {
         dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp! * 1000);
       } catch (e) {
-        print('Error parsing timestamp in AiChatMessageModel: $e');
+        AppLogger.d('Error parsing timestamp in AiChatMessageModel: $e');
         // Keep dateTime as null if parsing fails
       }
     }
@@ -154,7 +155,7 @@ class AiChatMessageModel with _$AiChatMessageModel {
     }
 
     // 默认情况：有文件但无法判断类型，当作文本处理
-    print('Warning: Unknown file type for URL: $firstFile, treating as text');
+    AppLogger.d('Warning: Unknown file type for URL: $firstFile, treating as text');
     return MessageType.text;
   }
 } 

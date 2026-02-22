@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -54,7 +55,7 @@ class _ModeFlipTransitionOverlayState extends ConsumerState<ModeFlipTransitionOv
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed && mounted) {
         // 动画完成后立即结束过渡
-        print('[ModeFlip] Animation completed');
+        AppLogger.d('[ModeFlip] Animation completed');
         _completeTransition();
       }
     });
@@ -94,7 +95,7 @@ class _ModeFlipTransitionOverlayState extends ConsumerState<ModeFlipTransitionOv
   void _completeTransition() {
     if (!mounted) return;
     
-    print('[ModeFlip] Completing transition...');
+    AppLogger.d('[ModeFlip] Completing transition...');
     
     // 重置状态
     setState(() {

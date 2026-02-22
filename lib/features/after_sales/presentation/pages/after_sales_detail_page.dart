@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
 
 import '../bloc/after_sales_bloc.dart'; // Import Bloc, Event, State
@@ -40,7 +41,7 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
      //            or this widget itself.
      // We will need to adjust the navigation in OrderListPage to include this.
     // BlocProvider.of<AfterSalesBloc>(context, listen: false).add(LoadAfterSalesDetail(id: widget.id));
-     print('[AfterSalesDetailPage] initState: Triggering LoadAfterSalesDetail for id: ${widget.id}');
+     AppLogger.d('[AfterSalesDetailPage] initState: Triggering LoadAfterSalesDetail for id: ${widget.id}');
      // Deferring the add event slightly to ensure context is fully available might be safer in some cases
      // WidgetsBinding.instance.addPostFrameCallback((_) {
      //   if (mounted) {
@@ -80,7 +81,7 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
         ),
         body: BlocBuilder<AfterSalesBloc, AfterSalesState>(
           builder: (context, state) {
-            print('[AfterSalesDetailPage] BlocBuilder received state: ${state.runtimeType}');
+            AppLogger.d('[AfterSalesDetailPage] BlocBuilder received state: ${state.runtimeType}');
 
             // Show loading indicator only if loading this specific ID
             if (state is AfterSalesDetailLoading && state.loadingId == widget.id) {
@@ -462,7 +463,7 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
       if (application.refundState == 'WAIT_AUDIT' || application.refundState == 'AUDIT_PASS') {
          actionButtons.add(
             OutlinedButton(
-               onPressed: () { /* TODO: Implement cancel */ print('Cancel clicked'); },
+               onPressed: () { /* TODO: Implement cancel */ AppLogger.d('Cancel clicked'); },
                child: const Text('撤销申请'),
                 style: OutlinedButton.styleFrom(
                  side: BorderSide(color: colorScheme.outline),
@@ -476,7 +477,7 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
        if (application.refundState == 'WAIT_AUDIT') { // Can modify only when waiting?
           actionButtons.add(
              ElevatedButton(
-               onPressed: () { /* TODO: Implement modify */ print('Modify clicked'); },
+               onPressed: () { /* TODO: Implement modify */ AppLogger.d('Modify clicked'); },
                child: const Text('修改申请'),
                style: ElevatedButton.styleFrom(
                   backgroundColor: colorScheme.primary,
@@ -490,7 +491,7 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
            // Maybe always show platform intervention?
            actionButtons.add(
              OutlinedButton(
-               onPressed: () { /* TODO: Implement platform intervention */ print('Platform clicked'); },
+               onPressed: () { /* TODO: Implement platform intervention */ AppLogger.d('Platform clicked'); },
                child: const Text('平台介入'),
                style: OutlinedButton.styleFrom(
                  side: BorderSide(color: colorScheme.outline),

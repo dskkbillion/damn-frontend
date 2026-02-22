@@ -1,4 +1,5 @@
 import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart'; // Import injectable
 import 'dart:convert'; // Import jsonDecode
@@ -54,7 +55,7 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
       params['state'] = status.name;  // 使用枚举的name属性获取字符串值
       
       // 添加调试日志
-      print('[OrderRemoteDataSource] Mapping status: ${status.name} -> state: ${params['state']}');
+      AppLogger.d('[OrderRemoteDataSource] Mapping status: ${status.name} -> state: ${params['state']}');
     }
     // Keyword handling remains the same
     if (keyword != null && keyword.isNotEmpty) {
@@ -65,7 +66,7 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
     // if (params.containsKey('states') && params.containsKey('state')) { ... }
 
     // 添加调试日志
-    print('[OrderRemoteDataSource] getOrderList called with params: $params');
+    AppLogger.d('[OrderRemoteDataSource] getOrderList called with params: $params');
 
     try {
       // CHANGED: Use coreDioClient.post
@@ -75,13 +76,13 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
       );
 
       // 添加响应日志
-      print('[OrderRemoteDataSource] Response status: ${response.statusCode}');
-      print('[OrderRemoteDataSource] Response data: ${response.data}');
+      AppLogger.d('[OrderRemoteDataSource] Response status: ${response.statusCode}');
+      AppLogger.d('[OrderRemoteDataSource] Response data: ${response.data}');
 
       if (response.statusCode == 200 && response.data != null) {
         // **DEBUG: Print response.data type and value**
-        print('[OrderRemoteDataSource] DEBUG: response.data Type: ${response.data.runtimeType}');
-        print('[OrderRemoteDataSource] DEBUG: response.data Value: ${response.data}');
+        AppLogger.d('[OrderRemoteDataSource] DEBUG: response.data Type: ${response.data.runtimeType}');
+        AppLogger.d('[OrderRemoteDataSource] DEBUG: response.data Value: ${response.data}');
 
         Map<String, dynamic>? dataMap;
         
@@ -91,9 +92,9 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
         } else if (response.data is String) {
             try {
                 dataMap = jsonDecode(response.data as String) as Map<String, dynamic>?;
-                print('[OrderRemoteDataSource] INFO: response.data was a String, successfully decoded to Map.');
+                AppLogger.d('[OrderRemoteDataSource] INFO: response.data was a String, successfully decoded to Map.');
             } catch (e) {
-                 print('[OrderRemoteDataSource] ERROR: response.data was a String, but failed to decode as JSON Map: $e');
+                 AppLogger.d('[OrderRemoteDataSource] ERROR: response.data was a String, but failed to decode as JSON Map: $e');
             }
         }
 
@@ -106,11 +107,11 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
                   .toList();
             } else {
               // Use double quotes for the outer string to allow inner single quotes
-              print("[OrderRemoteDataSource] Successfully decoded/obtained Map, but 'rows' field is null or not a list. Returning empty list."); 
+              AppLogger.d("[OrderRemoteDataSource] Successfully decoded/obtained Map, but 'rows' field is null or not a list. Returning empty list."); 
               return [];
             }
         } else {
-            print('[OrderRemoteDataSource] ERROR: Could not obtain a valid Map<String, dynamic> from response.data. Returning empty list.');
+            AppLogger.d('[OrderRemoteDataSource] ERROR: Could not obtain a valid Map<String, dynamic> from response.data. Returning empty list.');
             return [];
         }
       } else {
@@ -169,20 +170,20 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
       
       // Check BUSINESS code from response body
       if (response.statusCode == 200 && response.data != null && response.data['code'] == 200) {
-         print('[OrderRemoteDataSourceImpl] cancelOrder successful (Code: ${response.data['code']}).');
+         AppLogger.d('[OrderRemoteDataSourceImpl] cancelOrder successful (Code: ${response.data['code']}).');
          return;
       } else {
         final errorMsg = response.data?['msg'] ?? 'Failed to cancel order (Unknown error)';
         final errorCode = response.data?['code'] ?? response.statusCode;
-        print('[OrderRemoteDataSourceImpl] cancelOrder failed. Code: $errorCode, Msg: $errorMsg');
+        AppLogger.d('[OrderRemoteDataSourceImpl] cancelOrder failed. Code: $errorCode, Msg: $errorMsg');
         throw ServerFailure(message: errorMsg);
       }
     } on DioException catch (e) {
-      print('[OrderRemoteDataSourceImpl] cancelOrder DioException: ${e.toString()}');
+      AppLogger.d('[OrderRemoteDataSourceImpl] cancelOrder DioException: ${e.toString()}');
       throw ServerFailure(
           message: e.response?.data?['msg'] ?? e.message ?? 'Network error');
     } catch (e) {
-      print('[OrderRemoteDataSourceImpl] cancelOrder unexpected error: ${e.toString()}');
+      AppLogger.d('[OrderRemoteDataSourceImpl] cancelOrder unexpected error: ${e.toString()}');
        if (e is ServerFailure) { rethrow; }
       throw ServerFailure(message: 'An unexpected error occurred in cancelOrder: ${e.toString()}');
     }
@@ -200,20 +201,20 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
       
       // Check BUSINESS code from response body
       if (response.statusCode == 200 && response.data != null && response.data['code'] == 200) {
-         print('[OrderRemoteDataSourceImpl] confirmOrderReceipt successful (Code: ${response.data['code']}).');
+         AppLogger.d('[OrderRemoteDataSourceImpl] confirmOrderReceipt successful (Code: ${response.data['code']}).');
          return;
       } else {
         final errorMsg = response.data?['msg'] ?? 'Failed to confirm order receipt (Unknown error)';
         final errorCode = response.data?['code'] ?? response.statusCode;
-        print('[OrderRemoteDataSourceImpl] confirmOrderReceipt failed. Code: $errorCode, Msg: $errorMsg');
+        AppLogger.d('[OrderRemoteDataSourceImpl] confirmOrderReceipt failed. Code: $errorCode, Msg: $errorMsg');
         throw ServerFailure(message: errorMsg);
       }
     } on DioException catch (e) {
-      print('[OrderRemoteDataSourceImpl] confirmOrderReceipt DioException: ${e.toString()}');
+      AppLogger.d('[OrderRemoteDataSourceImpl] confirmOrderReceipt DioException: ${e.toString()}');
       throw ServerFailure(
           message: e.response?.data?['msg'] ?? e.message ?? 'Network error');
     } catch (e) {
-       print('[OrderRemoteDataSourceImpl] confirmOrderReceipt unexpected error: ${e.toString()}');
+       AppLogger.d('[OrderRemoteDataSourceImpl] confirmOrderReceipt unexpected error: ${e.toString()}');
         if (e is ServerFailure) { rethrow; }
       throw ServerFailure(message: 'An unexpected error occurred in confirmOrderReceipt: ${e.toString()}');
     }
@@ -223,7 +224,7 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
   Future<void> deleteOrder(int orderId) async {
     // API Doc says POST, query parameter is 'orderId' (string?)
      const String _deleteEndpoint = '/api/shop/order/delete';
-    print('[OrderRemoteDataSourceImpl] 开始删除订单: $orderId');
+    AppLogger.d('[OrderRemoteDataSourceImpl] 开始删除订单: $orderId');
     
     try {
       final response = await coreDioClient.post(
@@ -232,25 +233,25 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
         data: {}, // Sending empty data as body might be needed for POST
       );
       
-      print('[OrderRemoteDataSourceImpl] 删除订单API响应: statusCode=${response.statusCode}, data=${response.data}');
+      AppLogger.d('[OrderRemoteDataSourceImpl] 删除订单API响应: statusCode=${response.statusCode}, data=${response.data}');
       
       // Check BUSINESS code from response body
       if (response.statusCode == 200 && response.data != null && response.data['code'] == 200) {
-         print('[OrderRemoteDataSourceImpl] deleteOrder successful (Code: ${response.data['code']}).');
+         AppLogger.d('[OrderRemoteDataSourceImpl] deleteOrder successful (Code: ${response.data['code']}).');
          return;
       } else {
         final errorMsg = response.data?['msg'] ?? 'Failed to delete order (Unknown error)';
         final errorCode = response.data?['code'] ?? response.statusCode;
-        print('[OrderRemoteDataSourceImpl] deleteOrder failed. Code: $errorCode, Msg: $errorMsg');
+        AppLogger.d('[OrderRemoteDataSourceImpl] deleteOrder failed. Code: $errorCode, Msg: $errorMsg');
         throw ServerFailure(message: errorMsg);
       }
     } on DioException catch (e) {
-      print('[OrderRemoteDataSourceImpl] deleteOrder DioException: ${e.toString()}');
-      print('[OrderRemoteDataSourceImpl] DioException response: ${e.response?.data}');
+      AppLogger.d('[OrderRemoteDataSourceImpl] deleteOrder DioException: ${e.toString()}');
+      AppLogger.d('[OrderRemoteDataSourceImpl] DioException response: ${e.response?.data}');
        throw ServerFailure(
           message: e.response?.data?['msg'] ?? e.message ?? 'Network error');
     } catch (e) {
-      print('[OrderRemoteDataSourceImpl] deleteOrder unexpected error: ${e.toString()}');
+      AppLogger.d('[OrderRemoteDataSourceImpl] deleteOrder unexpected error: ${e.toString()}');
        if (e is ServerFailure) { rethrow; }
       throw ServerFailure(message: 'An unexpected error occurred in deleteOrder: ${e.toString()}');
     }
@@ -273,11 +274,11 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
       'images': pictures,  // 后端字段名可能是images而不是pictures
     };
 
-    print('[评价API] 请求数据: $requestData');
+    AppLogger.d('[评价API] 请求数据: $requestData');
 
     try {
       final response = await coreDioClient.post(_addEvaluationEndpoint, data: requestData);
-      print('[评价API] 响应: ${response.data}');
+      AppLogger.d('[评价API] 响应: ${response.data}');
       if (response.statusCode != 200 || (response.data != null && response.data['code'] != 200)) {
         throw ServerFailure(message: response.data?['msg'] ?? 'Failed to add evaluation');
       }
@@ -303,9 +304,9 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
         'files': params.attachmentPaths,
       };
 
-      print('[OrderRemoteDataSourceImpl] submitRequirements called:');
-      print('  Endpoint: $_submitRequirementsEndpoint');
-      print('  Data: $data');
+      AppLogger.d('[OrderRemoteDataSourceImpl] submitRequirements called:');
+      AppLogger.d('  Endpoint: $_submitRequirementsEndpoint');
+      AppLogger.d('  Data: $data');
 
       // CHANGED: Use coreDioClient.post
       final response = await coreDioClient.post(
@@ -315,20 +316,20 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
 
       // CORRECTED: Check BUSINESS code from response body
       if (response.statusCode == 200 && response.data != null && response.data['code'] == 200) {
-         print('[OrderRemoteDataSourceImpl] submitRequirements successful (Code: ${response.data['code']}).');
+         AppLogger.d('[OrderRemoteDataSourceImpl] submitRequirements successful (Code: ${response.data['code']}).');
          return;
       } else {
         final errorMsg = response.data?['msg'] ?? 'Failed to submit requirements (Unknown error)';
         final errorCode = response.data?['code'] ?? response.statusCode;
-        print('[OrderRemoteDataSourceImpl] submitRequirements failed. Code: $errorCode, Msg: $errorMsg');
+        AppLogger.d('[OrderRemoteDataSourceImpl] submitRequirements failed. Code: $errorCode, Msg: $errorMsg');
         throw ServerFailure(message: errorMsg);
       }
     } on DioException catch (e) {
-       print('[OrderRemoteDataSourceImpl] submitRequirements failed: ${e.toString()}');
+       AppLogger.d('[OrderRemoteDataSourceImpl] submitRequirements failed: ${e.toString()}');
       throw ServerFailure(
         message: e.response?.data?['msg'] ?? e.message ?? 'Network error');
     } catch (e) {
-       print('[OrderRemoteDataSourceImpl] submitRequirements unexpected error: ${e.toString()}');
+       AppLogger.d('[OrderRemoteDataSourceImpl] submitRequirements unexpected error: ${e.toString()}');
       throw ServerFailure(message: 'An unexpected error occurred in submitRequirements: ${e.toString()}');
     }
   }
@@ -337,7 +338,7 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
   Future<void> saveRequirementDraft(/* DraftParams params */) async {
     // This operation is now intended to be handled locally (e.g., SharedPreferences).
     // No remote API call is defined for saving drafts.
-    print('[OrderRemoteDataSource] WARN: saveRequirementDraft called, but it should be handled locally.');
+    AppLogger.d('[OrderRemoteDataSource] WARN: saveRequirementDraft called, but it should be handled locally.');
     // Optionally throw an error or return success immediately if no action needed here
     // throw UnsupportedError('Saving requirement drafts is handled locally.');
     return Future.value(); // Or return normally if the interface expects a Future<void>
@@ -452,20 +453,20 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
       
       // Check BUSINESS code from response body
       if (response.statusCode == 200 && response.data != null && response.data['code'] == 200) {
-         print('[OrderRemoteDataSourceImpl] inviteEvaluation successful (Code: ${response.data['code']}).');
+         AppLogger.d('[OrderRemoteDataSourceImpl] inviteEvaluation successful (Code: ${response.data['code']}).');
          return;
       } else {
         final errorMsg = response.data?['msg'] ?? 'Failed to invite evaluation (Unknown error)';
         final errorCode = response.data?['code'] ?? response.statusCode;
-        print('[OrderRemoteDataSourceImpl] inviteEvaluation failed. Code: $errorCode, Msg: $errorMsg');
+        AppLogger.d('[OrderRemoteDataSourceImpl] inviteEvaluation failed. Code: $errorCode, Msg: $errorMsg');
         throw ServerFailure(message: errorMsg);
       }
     } on DioException catch (e) {
-      print('[OrderRemoteDataSourceImpl] inviteEvaluation DioException: ${e.toString()}');
+      AppLogger.d('[OrderRemoteDataSourceImpl] inviteEvaluation DioException: ${e.toString()}');
       throw ServerFailure(
           message: e.response?.data?['msg'] ?? e.message ?? 'Network error inviting evaluation');
     } catch (e) {
-      print('[OrderRemoteDataSourceImpl] inviteEvaluation unexpected error: ${e.toString()}');
+      AppLogger.d('[OrderRemoteDataSourceImpl] inviteEvaluation unexpected error: ${e.toString()}');
       if (e is ServerFailure) { rethrow; }
       throw ServerFailure(message: 'An unexpected error occurred inviting evaluation: ${e.toString()}');
     }

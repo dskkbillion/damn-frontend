@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart'; // Import getIt
@@ -29,7 +30,7 @@ class _DevMenuPageState extends State<DevMenuPage> {
       _userId = await storage.read(key: 'user_id');
       _token = await storage.read(key: 'user_token');
     } catch (e) {
-      print('[DevMenuPage] Error reading credentials: $e');
+      AppLogger.d('[DevMenuPage] Error reading credentials: $e');
       // Handle error, maybe set default values or show error message
       _userId = 'Error loading ID';
       _token = 'Error loading token';

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -51,7 +52,7 @@ class NotificationListPage extends ConsumerWidget {
       try {
         networkInfo = getIt<NetworkInfo>();
       } catch (e) {
-        print('NetworkInfo not found in GetIt, using mock');
+        AppLogger.d('NetworkInfo not found in GetIt, using mock');
         networkInfo = mock.MockNetworkInfo();
       }
       
@@ -90,7 +91,7 @@ class NotificationListPage extends ConsumerWidget {
         ),
       );
     } catch (e) {
-      print('Error creating NotificationListBloc: $e');
+      AppLogger.d('Error creating NotificationListBloc: $e');
       return Scaffold(
         appBar: AppBar(
           title: Text(AppLocalizations.of(context)!?.notification_center_title ?? 'Notification Center'),
@@ -397,21 +398,21 @@ class _NotificationListContentState extends State<NotificationListContent> with 
   
   /// 根据通知类型导航到相关页面
   void _navigateToRelatedPage(BuildContext context, SellerNotification notification) {
-    print('_navigateToRelatedPage called with notification:');
-    print('  type: ${notification.type}');
-    print('  relatedEntityId: ${notification.relatedEntityId}');
-    print('  title: ${notification.title}');
+    AppLogger.d('_navigateToRelatedPage called with notification:');
+    AppLogger.d('  type: ${notification.type}');
+    AppLogger.d('  relatedEntityId: ${notification.relatedEntityId}');
+    AppLogger.d('  title: ${notification.title}');
     
     // 使用统一的通知导航服务处理跳转
     // 通过当前路由判断用户模式，支持买家和卖家共用此页面
     final currentRoute = GoRouterState.of(context).matchedLocation;
     final isSeller = currentRoute.startsWith('/seller');
     
-    print('  currentRoute: $currentRoute');
-    print('  isSeller: $isSeller (determined by route)');
+    AppLogger.d('  currentRoute: $currentRoute');
+    AppLogger.d('  isSeller: $isSeller (determined by route)');
     
     final typeString = notification.type.toString().split('.').last;
-    print('  typeString for navigation: $typeString');
+    AppLogger.d('  typeString for navigation: $typeString');
     
     NotificationNavigationService.handleNotificationNavigation(
       context: context,

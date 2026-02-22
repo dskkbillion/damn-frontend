@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/services.dart'; // For Clipboard
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -45,7 +46,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
   
   @override
   void dispose() {
-    print('[OrderConfirmPage] dispose() called');
+    AppLogger.d('[OrderConfirmPage] dispose() called');
     // 如果有对话框显示，确保关闭它
     if (_isLoadingDialogShowing && mounted) {
       Navigator.of(context, rootNavigator: true).pop();
@@ -56,13 +57,13 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
   @override
   void initState() {
     super.initState();
-    print('[OrderConfirmPage] initState() called');
-    print('[OrderConfirmPage] productId: ${widget.productId}');
-    print('[OrderConfirmPage] variantId: ${widget.variantId}');
-    print('[OrderConfirmPage] quantity: ${widget.quantity}');
-    print('[OrderConfirmPage] sellerId: ${widget.sellerId}');
-    print('[OrderConfirmPage] price: ${widget.price}');
-    print('[OrderConfirmPage] productName: ${widget.productName}');
+    AppLogger.d('[OrderConfirmPage] initState() called');
+    AppLogger.d('[OrderConfirmPage] productId: ${widget.productId}');
+    AppLogger.d('[OrderConfirmPage] variantId: ${widget.variantId}');
+    AppLogger.d('[OrderConfirmPage] quantity: ${widget.quantity}');
+    AppLogger.d('[OrderConfirmPage] sellerId: ${widget.sellerId}');
+    AppLogger.d('[OrderConfirmPage] price: ${widget.price}');
+    AppLogger.d('[OrderConfirmPage] productName: ${widget.productName}');
     
     // 根据区域配置获取可用的支付方式
     _availablePaymentMethods = RegionConfig.supportedPaymentMethods;
@@ -123,7 +124,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
           });
           _dismissLoadingDialog(); // 关闭加载对话框
           
-          print('[OrderConfirmPage] 收到ExternalPaymentProcessingState, URL: ${state.paymentUrl}');
+          AppLogger.d('[OrderConfirmPage] 收到ExternalPaymentProcessingState, URL: ${state.paymentUrl}');
           
           // 显示支付链接对话框
           showDialog(
@@ -188,7 +189,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                         final uri = Uri.parse(state.paymentUrl);
                         await launchUrl(uri, mode: LaunchMode.externalApplication);
                       } catch (e) {
-                        print('[OrderConfirmPage] 手动打开URL失败: $e');
+                        AppLogger.d('[OrderConfirmPage] 手动打开URL失败: $e');
                       }
                       Navigator.of(dialogContext).pop();
                     },
@@ -608,11 +609,11 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
   void _confirmOrder() {
     // 防重复点击检查
     if (_isProcessing) {
-      print('[OrderConfirmPage] 正在处理中，忽略重复点击');
+      AppLogger.d('[OrderConfirmPage] 正在处理中，忽略重复点击');
       return;
     }
 
-    print('[OrderConfirmPage] 开始创建订单并支付 - 商品: ${widget.productName}, 支付方式: $_selectedPaymentMethod');
+    AppLogger.d('[OrderConfirmPage] 开始创建订单并支付 - 商品: ${widget.productName}, 支付方式: $_selectedPaymentMethod');
 
     // 设置BuildContext给PaymentBloc，用于Stripe支付的WebView
     context.read<PaymentBloc>().setContext(context);

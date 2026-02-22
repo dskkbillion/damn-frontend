@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart'; // For navigation
@@ -59,17 +60,17 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
     // 首先，从URL参数获取状态
     if (widget.initialStatus != null) {
       initialStatus = OrderStatus.fromString(widget.initialStatus);
-      print('[SellerOrderListPage] Using initialStatus from URL: ${widget.initialStatus}, parsed: $initialStatus');
+      AppLogger.d('[SellerOrderListPage] Using initialStatus from URL: ${widget.initialStatus}, parsed: $initialStatus');
     } 
     // 其次，尝试从Bloc状态获取
     else if (context.read<SellerOrderListBloc>().state is SellerOrderListSuccess) {
       initialStatus = (context.read<SellerOrderListBloc>().state as SellerOrderListSuccess).currentStatusFilter;
-      print('[SellerOrderListPage] Using initialStatus from Bloc state: $initialStatus');
+      AppLogger.d('[SellerOrderListPage] Using initialStatus from Bloc state: $initialStatus');
     }
     
     // 计算初始Tab索引
     final initialIndex = _findIndexForStatus(initialStatus);
-    print('[SellerOrderListPage] Setting initial tab index: $initialIndex for status: $initialStatus');
+    AppLogger.d('[SellerOrderListPage] Setting initial tab index: $initialIndex for status: $initialStatus');
     
     _tabController = TabController(
       length: _tabs.length, 
@@ -319,7 +320,7 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
                           onTap: () {
                             // Navigate to the seller detail page using push instead of go
                             context.push('/seller/orders/${order.id}'); 
-                             print('[SellerOrderListPage] Pushing to seller detail for order ${order.id}');
+                             AppLogger.d('[SellerOrderListPage] Pushing to seller detail for order ${order.id}');
                           },
                         );
                           },

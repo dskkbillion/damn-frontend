@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_credentials.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_status.dart';
@@ -29,7 +30,7 @@ class MockAuthRepository implements IAuthRepository {
       final userId = int.tryParse(commonUserIdStr);
       if (userId != null) {
         _cachedUserId = userId;
-        print('[MockAuthRepository] 使用common_user_id: $_cachedUserId');
+        AppLogger.d('[MockAuthRepository] 使用common_user_id: $_cachedUserId');
         return userId;
       }
     }
@@ -40,13 +41,13 @@ class MockAuthRepository implements IAuthRepository {
       final userId = int.tryParse(userIdStr);
       if (userId != null) {
         _cachedUserId = userId;
-        print('[MockAuthRepository] 使用user_id: $_cachedUserId');
+        AppLogger.d('[MockAuthRepository] 使用user_id: $_cachedUserId');
         return userId;
       }
     }
     
     // 如果无法获取有效用户ID，直接抛出异常
-    print('[MockAuthRepository] 无法获取有效的用户ID');
+    AppLogger.d('[MockAuthRepository] 无法获取有效的用户ID');
     throw Exception('无法获取有效的用户ID。请确保已登录并设置了common_user_id或user_id');
   }
   
@@ -58,7 +59,7 @@ class MockAuthRepository implements IAuthRepository {
     final token = await _secureStorage.read(key: 'auth_token');
     if (token != null && token.isNotEmpty) {
       _cachedToken = token;
-      print('[MockAuthRepository] 使用auth_token');
+      AppLogger.d('[MockAuthRepository] 使用auth_token');
       return token;
     }
     
@@ -66,12 +67,12 @@ class MockAuthRepository implements IAuthRepository {
     final userToken = await _secureStorage.read(key: 'user_token');
     if (userToken != null && userToken.isNotEmpty) {
       _cachedToken = userToken;
-      print('[MockAuthRepository] 使用user_token');
+      AppLogger.d('[MockAuthRepository] 使用user_token');
       return userToken;
     }
     
     // 如果无法获取有效token，直接抛出异常
-    print('[MockAuthRepository] 无法获取有效的token');
+    AppLogger.d('[MockAuthRepository] 无法获取有效的token');
     throw Exception('无法获取有效的token。请确保已登录并设置了auth_token或user_token');
   }
 
@@ -84,14 +85,14 @@ class MockAuthRepository implements IAuthRepository {
       yield Authenticated(AuthenticatedUser(id: userId, token: token));
     } catch (e) {
       yield Unauthenticated();
-      print('[MockAuthRepository] authStatus生成Unauthenticated: $e');
+      AppLogger.d('[MockAuthRepository] authStatus生成Unauthenticated: $e');
     }
   }
 
   // Return the user from SecureStorage synchronously (as sync as possible)
   @override
   Either<Failure, AuthenticatedUser?> getLoggedInUserSync() {
-    print('[MockAuthRepository] getLoggedInUserSync called');
+    AppLogger.d('[MockAuthRepository] getLoggedInUserSync called');
     
     // 如果有缓存，直接使用
     if (_cachedUserId != null && _cachedToken != null) {
@@ -110,12 +111,12 @@ class MockAuthRepository implements IAuthRepository {
     try {
       _cachedUserId = await _getUserId();
       _cachedToken = await _getToken();
-      print('[MockAuthRepository] 缓存更新成功: userId=$_cachedUserId');
+      AppLogger.d('[MockAuthRepository] 缓存更新成功: userId=$_cachedUserId');
     } catch (e) {
       // 清除可能的部分缓存
       _cachedUserId = null;
       _cachedToken = null;
-      print('[MockAuthRepository] 缓存更新失败: $e');
+      AppLogger.d('[MockAuthRepository] 缓存更新失败: $e');
     }
   }
 
@@ -123,7 +124,7 @@ class MockAuthRepository implements IAuthRepository {
   @override
   Future<Either<Failure, AuthenticatedUser>> loginWithVerificationCode(
       VerificationCodeCredentials credentials) async {
-    print('[MockAuthRepository] loginWithVerificationCode called');
+    AppLogger.d('[MockAuthRepository] loginWithVerificationCode called');
     try {
       // 获取真实用户ID和token
       final userId = await _getUserId();
@@ -137,7 +138,7 @@ class MockAuthRepository implements IAuthRepository {
   // Simulate logout, clearing cached values
   @override
   Future<Either<Failure, void>> logout() async {
-    print('[MockAuthRepository] logout called - 正在清除用户认证信息');
+    AppLogger.d('[MockAuthRepository] logout called - 正在清除用户认证信息');
     
     // 清除缓存
     _cachedUserId = null;
@@ -149,9 +150,9 @@ class MockAuthRepository implements IAuthRepository {
       await _secureStorage.delete(key: 'auth_token');
       await _secureStorage.delete(key: 'common_user_id');
       await _secureStorage.delete(key: 'user_token');
-      print('[MockAuthRepository] 成功清除secure storage中的认证信息');
+      AppLogger.d('[MockAuthRepository] 成功清除secure storage中的认证信息');
     } catch (e) {
-      print('[MockAuthRepository] 清除secure storage数据失败: $e');
+      AppLogger.d('[MockAuthRepository] 清除secure storage数据失败: $e');
       return Left(CacheFailure(message: '清除认证信息失败: $e'));
     }
     
@@ -161,7 +162,7 @@ class MockAuthRepository implements IAuthRepository {
   // Simulate successful code sending
   @override
   Future<Either<Failure, void>> sendVerificationCode({required String phone}) async {
-    print('[MockAuthRepository] sendVerificationCode called for $phone (simulated success).');
+    AppLogger.d('[MockAuthRepository] sendVerificationCode called for $phone (simulated success).');
     return const Right(null);
   }
 
@@ -170,10 +171,10 @@ class MockAuthRepository implements IAuthRepository {
   Future<Either<Failure, String>> getCurrentUserId() async {
     try {
       final userId = await _getUserId();
-      print('[MockAuthRepository] getCurrentUserId: 返回用户ID $userId');
+      AppLogger.d('[MockAuthRepository] getCurrentUserId: 返回用户ID $userId');
       return Right(userId.toString());
     } catch (e) {
-      print('[MockAuthRepository] getCurrentUserId 失败: $e');
+      AppLogger.d('[MockAuthRepository] getCurrentUserId 失败: $e');
       return Left(AuthFailure(message: '获取用户ID失败: ${e.toString()}'));
     }
   }

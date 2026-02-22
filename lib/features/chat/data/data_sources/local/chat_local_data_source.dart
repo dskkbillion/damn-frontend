@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 import 'package:drift/drift.dart' show Value;
 import 'package:dskk_flutter_refactor/core/database/app_database.dart';
@@ -236,7 +237,7 @@ class ChatLocalDataSourceImpl implements IChatLocalDataSource {
         productPrice: productInfo?['productPrice'] as double?,
       );
     } catch (e) {
-      print('Error converting ChatRoomCache to ChatRoom: $e');
+      AppLogger.d('Error converting ChatRoomCache to ChatRoom: $e');
       return null;
     }
   }

@@ -1,4 +1,5 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/currency/domain/entities/currency.dart';
 import 'package:dskk_flutter_refactor/core/payment/models/payment_models.dart';
 
@@ -20,7 +21,7 @@ class RegionConfig {
   /// 设置当前区域
   static void setRegion(RegionType region) {
     _currentRegion = region;
-    print('[RegionConfig] Region set to: ${region.displayName}');
+    AppLogger.d('[RegionConfig] Region set to: ${region.displayName}');
   }
   
   /// 获取当前区域

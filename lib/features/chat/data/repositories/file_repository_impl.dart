@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 import 'package:dartz/dartz.dart';
 import 'package:dskk_flutter_refactor/core/error/exceptions.dart';
@@ -32,7 +33,7 @@ class FileRepositoryImpl implements IFileRepository {
       return Left(ServerFailure(message: e.message ?? 'Server error', code: e.statusCode.toString())); // Pass statusCode as string code
     } catch (e) {
       // FIX: Use correct GeneralFailure constructor (no message)
-      print("Unexpected error in uploadFile Repository: $e");
+      AppLogger.d("Unexpected error in uploadFile Repository: $e");
       return Left(GeneralFailure(message: '上传文件失败'));
     }
   }

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
@@ -69,7 +70,7 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 4) {
           // Add performance indexes in version 4
-          print('[Database Migration] Adding performance indexes...');
+          AppLogger.d('[Database Migration] Adding performance indexes...');
 
           // Chat messages indexes
           await customStatement(
@@ -98,11 +99,11 @@ class AppDatabase extends _$AppDatabase {
             "CREATE INDEX IF NOT EXISTS idx_message_queue_pending ON message_queue(status, created_at) WHERE status = 'pending'"
           );
 
-          print('[Database Migration] Performance indexes added successfully');
+          AppLogger.d('[Database Migration] Performance indexes added successfully');
         }
         if (from < 5) {
           // Version 5: Fix table constraints - recreate tables without index statements in constraints
-          print('[Database Migration] Fixing table constraints...');
+          AppLogger.d('[Database Migration] Fixing table constraints...');
 
           // Recreate all chat tables with correct constraints
           await customStatement('DROP TABLE IF EXISTS message_queue');
@@ -136,11 +137,11 @@ class AppDatabase extends _$AppDatabase {
             "CREATE INDEX IF NOT EXISTS idx_message_queue_pending ON message_queue(status, created_at) WHERE status = 'pending'"
           );
 
-          print('[Database Migration] Table constraints fixed successfully');
+          AppLogger.d('[Database Migration] Table constraints fixed successfully');
         }
         if (from < 6) {
           // Version 6: Fix SQL syntax for partial index - use single quotes for string literals
-          print('[Database Migration] Fixing partial index SQL syntax...');
+          AppLogger.d('[Database Migration] Fixing partial index SQL syntax...');
 
           // Drop and recreate the problematic index with correct syntax
           await customStatement('DROP INDEX IF EXISTS idx_message_queue_pending');
@@ -148,18 +149,18 @@ class AppDatabase extends _$AppDatabase {
             "CREATE INDEX IF NOT EXISTS idx_message_queue_pending ON message_queue(status, created_at) WHERE status = 'pending'"
           );
 
-          print('[Database Migration] Partial index SQL syntax fixed successfully');
+          AppLogger.d('[Database Migration] Partial index SQL syntax fixed successfully');
         }
         if (from < 7) {
           // Version 7: Final fix for partial index syntax - ensure it uses single quotes
-          print('[Database Migration] Final fix for partial index SQL syntax...');
+          AppLogger.d('[Database Migration] Final fix for partial index SQL syntax...');
 
           await customStatement('DROP INDEX IF EXISTS idx_message_queue_pending');
           await customStatement(
             "CREATE INDEX IF NOT EXISTS idx_message_queue_pending ON message_queue(status, created_at) WHERE status = 'pending'"
           );
 
-          print('[Database Migration] Final partial index fix completed');
+          AppLogger.d('[Database Migration] Final partial index fix completed');
         }
       },
     );
@@ -229,7 +230,7 @@ class AppDatabase extends _$AppDatabase {
         .get()
         .then((result) {
           stopwatch.stop();
-          print('[Database] getChatMessages for chatId=$chatId took ${stopwatch.elapsedMilliseconds}ms (${result.length} messages)');
+          AppLogger.d('[Database] getChatMessages for chatId=$chatId took ${stopwatch.elapsedMilliseconds}ms (${result.length} messages)');
           return result;
         });
   }
@@ -253,7 +254,7 @@ class AppDatabase extends _$AppDatabase {
       batch.insertAll(chatMessages, messages, mode: InsertMode.insertOrReplace);
     });
     stopwatch.stop();
-    print('[Database] Batch inserted ${messages.length} messages in ${stopwatch.elapsedMilliseconds}ms');
+    AppLogger.d('[Database] Batch inserted ${messages.length} messages in ${stopwatch.elapsedMilliseconds}ms');
   }
   
   Future<int> updateMessageStatus(int messageId, String status) {
@@ -286,7 +287,7 @@ class AppDatabase extends _$AppDatabase {
       }
     });
     stopwatch.stop();
-    print('[Database] Batch marked ${messageIds.length} messages as read in ${stopwatch.elapsedMilliseconds}ms');
+    AppLogger.d('[Database] Batch marked ${messageIds.length} messages as read in ${stopwatch.elapsedMilliseconds}ms');
   }
   
   // Chat Rooms
@@ -297,7 +298,7 @@ class AppDatabase extends _$AppDatabase {
         .get()
         .then((result) {
           stopwatch.stop();
-          print('[Database] getChatRooms took ${stopwatch.elapsedMilliseconds}ms (${result.length} rooms)');
+          AppLogger.d('[Database] getChatRooms took ${stopwatch.elapsedMilliseconds}ms (${result.length} rooms)');
           return result;
         });
   }
@@ -391,7 +392,7 @@ LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'app_db.sqlite'));
-    print('[AppDatabase] Database file path: ${file.path}');
+    AppLogger.d('[AppDatabase] Database file path: ${file.path}');
     return NativeDatabase.createInBackground(file);
   });
 } 

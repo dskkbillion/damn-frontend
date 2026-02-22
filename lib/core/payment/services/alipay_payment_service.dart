@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 // import 'package:tobias/tobias.dart'; // 暂时禁用支付宝SDK
 import 'package:injectable/injectable.dart';
 import 'package:dartz/dartz.dart';
@@ -58,7 +59,7 @@ class AlipayPaymentService implements IPaymentService {
       return _parsePayResult(payResult, request.orderId);
       
     } catch (e) {
-      print('支付异常: $e');
+      AppLogger.d('支付异常: $e');
       return models.PaymentResponse.failure(
         message: _getErrorMessage(e),
         orderId: request.orderId,
@@ -105,7 +106,7 @@ class AlipayPaymentService implements IPaymentService {
       });
       return response.data['success'] == true;
     } catch (e) {
-      print('取消支付失败: $e');
+      AppLogger.d('取消支付失败: $e');
       return false;
     }
   }
@@ -116,9 +117,9 @@ class AlipayPaymentService implements IPaymentService {
       // 加载配置
       await _ensureConfigLoaded();
       
-      print('支付宝支付服务初始化成功（服务端托管模式）');
+      AppLogger.d('支付宝支付服务初始化成功（服务端托管模式）');
     } catch (e) {
-      print('支付宝支付服务初始化失败: $e');
+      AppLogger.d('支付宝支付服务初始化失败: $e');
     }
   }
 
@@ -339,7 +340,7 @@ class AlipayPaymentService implements IPaymentService {
           subject = '订单支付 - ${orderData['orderSn'] ?? orderId}';
         }
       } catch (e) {
-        print('获取订单信息失败，使用默认金额: $e');
+        AppLogger.d('获取订单信息失败，使用默认金额: $e');
       }
       
       final request = models.PaymentRequest(
@@ -415,7 +416,7 @@ class AlipayPaymentService implements IPaymentService {
     } catch (e) {
       // 在开发/测试环境下，使用Mock订单信息
       if (orderData.containsKey('orderId') && orderData['orderId'].toString().startsWith('ORDER-')) {
-        print('使用Mock订单信息进行支付测试');
+        AppLogger.d('使用Mock订单信息进行支付测试');
         return 'mock_order_info_for_testing';
       }
       

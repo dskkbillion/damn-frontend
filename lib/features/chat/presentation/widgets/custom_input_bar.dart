@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -129,16 +130,16 @@ class _CustomInputBarState extends State<CustomInputBar> {
     // ✅ 使用与AI Chat相同的权限检查方式，更可靠
     // 先用 AudioRecorder 的原生方法检查权限
     if (!await _audioRecorder.hasPermission()) {
-        print('[CustomInputBar] AudioRecorder.hasPermission() returned false, requesting permission...');
+        AppLogger.d('[CustomInputBar] AudioRecorder.hasPermission() returned false, requesting permission...');
 
         // 使用 permission_handler 请求权限
         final status = await Permission.microphone.request();
-        print('[CustomInputBar] Permission.microphone.request() result: $status');
+        AppLogger.d('[CustomInputBar] Permission.microphone.request() result: $status');
 
         if (!status.isGranted) {
             // 检查是否永久拒绝
             if (status.isPermanentlyDenied) {
-                print("[CustomInputBar] Permission permanently denied.");
+                AppLogger.d("[CustomInputBar] Permission permanently denied.");
                 showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
@@ -218,7 +219,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
       if (path != null && mounted) {
         final recordingFile = File(path);
         if (await recordingFile.exists() && _recordingDuration > 0) {
-          print('[CustomInputBar] Sending audio file: $path');
+          AppLogger.d('[CustomInputBar] Sending audio file: $path');
           // Use MessageListCubit to handle audio with file upload
           context.read<MessageListCubit>().sendFileMessage(
             filePath: path,

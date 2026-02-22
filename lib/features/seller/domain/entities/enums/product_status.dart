@@ -31,12 +31,12 @@ enum ProductStatus {
 
   /// 从API值获取枚举
   static ProductStatus fromValue(String value) {
-    print('ProductStatus.fromValue: 尝试解析状态值 "$value"');
+    AppLogger.d('ProductStatus.fromValue: 尝试解析状态值 "$value"');
     
     // 首先尝试精确匹配
     for (final status in ProductStatus.values) {
       if (status.value == value) {
-        print('ProductStatus.fromValue: 找到精确匹配 "$value" -> ${status.name}');
+        AppLogger.d('ProductStatus.fromValue: 找到精确匹配 "$value" -> ${status.name}');
         return status;
       }
     }
@@ -45,7 +45,7 @@ enum ProductStatus {
     final normalizedValue = value.toUpperCase();
     for (final status in ProductStatus.values) {
       if (status.value.toUpperCase() == normalizedValue) {
-        print('ProductStatus.fromValue: 找到大小写不敏感匹配 "$value" -> ${status.name}');
+        AppLogger.d('ProductStatus.fromValue: 找到大小写不敏感匹配 "$value" -> ${status.name}');
         return status;
       }
     }
@@ -55,25 +55,25 @@ enum ProductStatus {
       case 'NORMAL':
       case 'ON_SALE':
       case 'PUBLISHED':
-        print('ProductStatus.fromValue: 映射 "$value" -> normal');
+        AppLogger.d('ProductStatus.fromValue: 映射 "$value" -> normal');
         return ProductStatus.normal;
       case 'DISABLED':
       case 'OFF_SALE':
       case 'OFFLINE':
-        print('ProductStatus.fromValue: 映射 "$value" -> disabled');
+        AppLogger.d('ProductStatus.fromValue: 映射 "$value" -> disabled');
         return ProductStatus.disabled;
       case 'DRAFT':
       case 'UNPUBLISHED':
-        print('ProductStatus.fromValue: 映射 "$value" -> draft');
+        AppLogger.d('ProductStatus.fromValue: 映射 "$value" -> draft');
         return ProductStatus.draft;
       case 'UNKNOWN':
       case '':
-        print('ProductStatus.fromValue: 映射 "$value" -> unknown');
+        AppLogger.d('ProductStatus.fromValue: 映射 "$value" -> unknown');
         return ProductStatus.unknown;
     }
     
     // 如果都没有匹配，默认返回draft而不是normal，避免误判为上架状态
-    print('ProductStatus.fromValue: 警告！未知状态值 "$value"，默认返回 draft');
+    AppLogger.d('ProductStatus.fromValue: 警告！未知状态值 "$value"，默认返回 draft');
     return ProductStatus.draft;
   }
   

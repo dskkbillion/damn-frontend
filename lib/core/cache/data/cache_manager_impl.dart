@@ -1,4 +1,5 @@
 import '../domain/interfaces/i_cache_manager.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import '../domain/interfaces/i_memory_cache.dart';
 import '../domain/entities/cache_config.dart';
 import '../domain/entities/cache_stats.dart';
@@ -35,7 +36,7 @@ class CacheManagerImpl implements ICacheManager {
     _initialized = true;
     
     if (_config.enableLogging) {
-      print('[CacheManager] 初始化完成');
+      AppLogger.d('[CacheManager] 初始化完成');
     }
   }
 
@@ -141,7 +142,7 @@ class CacheManagerImpl implements ICacheManager {
     // 未来清空持久化缓存
     
     if (_config.enableLogging) {
-      print('[CacheManager] 清空缓存组: $group');
+      AppLogger.d('[CacheManager] 清空缓存组: $group');
     }
   }
 
@@ -153,7 +154,7 @@ class CacheManagerImpl implements ICacheManager {
     // 未来清空所有持久化缓存
     
     if (_config.enableLogging) {
-      print('[CacheManager] 清空所有缓存');
+      AppLogger.d('[CacheManager] 清空所有缓存');
     }
   }
 
@@ -173,7 +174,7 @@ class CacheManagerImpl implements ICacheManager {
     }
     
     if (_config.enableLogging) {
-      print('[CacheManager] 清理用户相关缓存完成');
+      AppLogger.d('[CacheManager] 清理用户相关缓存完成');
     }
   }
 
@@ -231,7 +232,7 @@ class CacheManagerImpl implements ICacheManager {
     // 例如重新设置清理定时器等
     
     if (_config.enableLogging) {
-      print('[CacheManager] 配置已更新');
+      AppLogger.d('[CacheManager] 配置已更新');
     }
   }
 

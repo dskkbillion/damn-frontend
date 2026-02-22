@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/material.dart' hide CarouselController;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -59,7 +60,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
       final currentProductId = int.tryParse(widget.productId) ?? 0;
       // 只有当前商品的评价才刷新
       if (event.productId == currentProductId) {
-        print('[ProductDetailPage] 收到评价提交事件，刷新商品详情 productId: ${event.productId}');
+        AppLogger.d('[ProductDetailPage] 收到评价提交事件，刷新商品详情 productId: ${event.productId}');
         // 需要从 context 中获取 cubit，但 initState 中没有 context
         // 使用 addPostFrameCallback 延迟执行
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -616,10 +617,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
       height: 50,
       child: ElevatedButton(
         onPressed: () {
-          print('[ProductDetailPage] 一键购买按钮被点击');
-          print('[ProductDetailPage] Product ID: ${product.id}');
-          print('[ProductDetailPage] Variant ID: ${variant.id}');
-          print('[ProductDetailPage] Price: ${variant.sellingPrice}');
+          AppLogger.d('[ProductDetailPage] 一键购买按钮被点击');
+          AppLogger.d('[ProductDetailPage] Product ID: ${product.id}');
+          AppLogger.d('[ProductDetailPage] Variant ID: ${variant.id}');
+          AppLogger.d('[ProductDetailPage] Price: ${variant.sellingPrice}');
           
           // 导航到订单确认页面
           context.push(

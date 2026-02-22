@@ -1,4 +1,5 @@
 import '../../domain/entities/member.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 /// Member的数据传输对象，用于与API交互
 class MemberModel {
@@ -17,7 +18,7 @@ class MemberModel {
   });
   
   factory MemberModel.fromJson(Map<String, dynamic> json) {
-    print('[MemberModel] Parsing member from JSON: $json');
+    AppLogger.d('[MemberModel] Parsing member from JSON: $json');
     final model = MemberModel(
       id: json['id'] ?? 0,
       nickname: json['nickName'] as String?, // API返回的是nickName
@@ -25,7 +26,7 @@ class MemberModel {
       shopName: json['shopName'] as String?,
       mobile: json['mobile'] as String?,
     );
-    print('[MemberModel] Parsed member - id: ${model.id}, nickname: ${model.nickname}');
+    AppLogger.d('[MemberModel] Parsed member - id: ${model.id}, nickname: ${model.nickname}');
     return model;
   }
   

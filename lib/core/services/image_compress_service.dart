@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:typed_data';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
@@ -67,17 +68,17 @@ class ImageCompressService {
     try {
       // 检查文件是否存在
       if (!await imageFile.exists()) {
-        print('[ImageCompressService] 图片文件不存在: ${imageFile.path}');
+        AppLogger.d('[ImageCompressService] 图片文件不存在: ${imageFile.path}');
         return null;
       }
 
       // 获取文件信息
       final fileSize = await imageFile.length();
-      print('[ImageCompressService] 原图片大小: ${_formatFileSize(fileSize)}');
+      AppLogger.d('[ImageCompressService] 原图片大小: ${_formatFileSize(fileSize)}');
 
       // 如果文件很小且是JPEG格式，可能不需要压缩
       if (fileSize < 500 * 1024 && _isJpeg(imageFile)) {
-        print('[ImageCompressService] 图片已经很小，跳过压缩');
+        AppLogger.d('[ImageCompressService] 图片已经很小，跳过压缩');
         return imageFile;
       }
 
@@ -99,7 +100,7 @@ class ImageCompressService {
       );
 
       if (compressedXFile == null) {
-        print('[ImageCompressService] 图片压缩失败');
+        AppLogger.d('[ImageCompressService] 图片压缩失败');
         return null;
       }
 
@@ -110,14 +111,14 @@ class ImageCompressService {
       final compressedSize = await compressedFile.length();
       final compressionRatio = ((fileSize - compressedSize) / fileSize * 100).toStringAsFixed(1);
       
-      print('[ImageCompressService] 压缩完成:');
-      print('  - 压缩后大小: ${_formatFileSize(compressedSize)}');
-      print('  - 压缩比例: $compressionRatio%');
-      print('  - 输出路径: ${compressedFile.path}');
+      AppLogger.d('[ImageCompressService] 压缩完成:');
+      AppLogger.d('  - 压缩后大小: ${_formatFileSize(compressedSize)}');
+      AppLogger.d('  - 压缩比例: $compressionRatio%');
+      AppLogger.d('  - 输出路径: ${compressedFile.path}');
 
       return compressedFile;
     } catch (e) {
-      print('[ImageCompressService] 图片压缩出错: $e');
+      AppLogger.d('[ImageCompressService] 图片压缩出错: $e');
       return null;
     }
   }
@@ -166,18 +167,18 @@ class ImageCompressService {
         
         final size = await result.length();
         if (size <= maxSizeBytes) {
-          print('[ImageCompressService] 压缩到目标大小: ${_formatFileSize(size)}');
+          AppLogger.d('[ImageCompressService] 压缩到目标大小: ${_formatFileSize(size)}');
           return result;
         }
         
         currentQuality -= 10;
-        print('[ImageCompressService] 继续压缩，质量: $currentQuality');
+        AppLogger.d('[ImageCompressService] 继续压缩，质量: $currentQuality');
       }
       
-      print('[ImageCompressService] 无法压缩到目标大小');
+      AppLogger.d('[ImageCompressService] 无法压缩到目标大小');
       return result;
     } catch (e) {
-      print('[ImageCompressService] 压缩到指定大小失败: $e');
+      AppLogger.d('[ImageCompressService] 压缩到指定大小失败: $e');
       return null;
     }
   }

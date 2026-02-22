@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart' hide Order;
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dio/dio.dart'; // Import DioException if needed for error handling
 import 'package:injectable/injectable.dart' hide Order;
 
@@ -115,7 +116,7 @@ class OrderRepositoryImpl implements IOrderRepository {
 
     // 如果强制刷新，直接从网络获取
     if (forceRefresh) {
-      print('[OrderRepository] Force refresh requested, skipping cache for $stateKey page $page.');
+      AppLogger.d('[OrderRepository] Force refresh requested, skipping cache for $stateKey page $page.');
       return _fetchFromNetwork(status, keyword, page, limit, stateKey, userRole);
     }
 
@@ -130,16 +131,16 @@ class OrderRepositoryImpl implements IOrderRepository {
 
     cachedResult.fold(
       (cacheFailure) {
-        print('[OrderRepository] Cache miss or error for $stateKey page $page: $cacheFailure');
+        AppLogger.d('[OrderRepository] Cache miss or error for $stateKey page $page: $cacheFailure');
         // Don't return error yet, proceed to network fetch
       },
       (cachedOrders) {
         if (cachedOrders.isNotEmpty) {
-           print('[OrderRepository] Cache hit for $stateKey page $page. Returning ${cachedOrders.length} orders from cache.');
+           AppLogger.d('[OrderRepository] Cache hit for $stateKey page $page. Returning ${cachedOrders.length} orders from cache.');
            resultToReturn = Right(cachedOrders);
            returnedCache = true;
         } else {
-          print('[OrderRepository] Cache hit for $stateKey page $page, but cache is empty.');
+          AppLogger.d('[OrderRepository] Cache hit for $stateKey page $page, but cache is empty.');
         }
       },
     );
@@ -154,9 +155,9 @@ class OrderRepositoryImpl implements IOrderRepository {
     }
 
     // 2. If cache missed, empty, or failed, fetch from network
-    print('[OrderRepository] Fetching $stateKey page $page from network...');
+    AppLogger.d('[OrderRepository] Fetching $stateKey page $page from network...');
     try {
-        print('[OrderRepository] Fetching order list from remote. Page: $page, Limit: $limit, Status: $status, Keyword: $keyword, Role: $userRole');
+        AppLogger.d('[OrderRepository] Fetching order list from remote. Page: $page, Limit: $limit, Status: $status, Keyword: $keyword, Role: $userRole');
         final remoteOrders = await remoteDataSource.getOrderList(
           status: status,
           keyword: keyword,
@@ -165,11 +166,11 @@ class OrderRepositoryImpl implements IOrderRepository {
           userRole: userRole,
         );
         final networkOrders = remoteOrders.map((model) => model.toEntity()).toList();
-        print('[OrderRepository] Fetched ${networkOrders.length} orders from network for $stateKey page $page.');
+        AppLogger.d('[OrderRepository] Fetched ${networkOrders.length} orders from network for $stateKey page $page.');
 
         // 【数据防护】验证和过滤订单列表，确保只返回属于当前用户的订单
         final filteredOrders = await _filterOrdersByUserRole(networkOrders, userRole);
-        print('[OrderRepository] Filtered to ${filteredOrders.length} orders after validation.');
+        AppLogger.d('[OrderRepository] Filtered to ${filteredOrders.length} orders after validation.');
 
         // 3. Cache the filtered response
         // We might want to clear cache for this state before inserting new page?
@@ -180,21 +181,21 @@ class OrderRepositoryImpl implements IOrderRepository {
         return Right(filteredOrders);
 
     } on ServerFailure catch (e) {
-        print('[OrderRepository] Network fetch failed for $stateKey page $page: $e');
+        AppLogger.d('[OrderRepository] Network fetch failed for $stateKey page $page: $e');
         // If network fails AND we didn't return cache earlier, return the failure
         if (!returnedCache) {
            return Left(e);
         } else {
            // Network failed, but we already returned cache. Log error, but return the cached result.
-           print('[OrderRepository] Network fetch failed, but cache was already returned. Suppressing network error.');
+           AppLogger.d('[OrderRepository] Network fetch failed, but cache was already returned. Suppressing network error.');
            return resultToReturn!; // Should not be null if returnedCache is true
         }
     } catch (e) {
-        print('[OrderRepository] Unexpected error during network fetch for $stateKey page $page: $e');
+        AppLogger.d('[OrderRepository] Unexpected error during network fetch for $stateKey page $page: $e');
          if (!returnedCache) {
             return Left(ServerFailure(message: 'Unexpected error: ${e.toString()}'));
          } else {
-            print('[OrderRepository] Network fetch failed (unexpected), but cache was already returned. Suppressing error.');
+            AppLogger.d('[OrderRepository] Network fetch failed (unexpected), but cache was already returned. Suppressing error.');
             return resultToReturn!; 
          }
     }
@@ -210,7 +211,7 @@ class OrderRepositoryImpl implements IOrderRepository {
     String userRole,
   ) async {
     try {
-      print('[OrderRepository] Fetching order list from remote. Page: $page, Limit: $limit, Status: $status, Keyword: $keyword, Role: $userRole');
+      AppLogger.d('[OrderRepository] Fetching order list from remote. Page: $page, Limit: $limit, Status: $status, Keyword: $keyword, Role: $userRole');
       final remoteOrders = await remoteDataSource.getOrderList(
         status: status,
         keyword: keyword,
@@ -219,21 +220,21 @@ class OrderRepositoryImpl implements IOrderRepository {
         userRole: userRole,
       );
       final networkOrders = remoteOrders.map((model) => model.toEntity()).toList();
-      print('[OrderRepository] Fetched ${networkOrders.length} orders from network for $stateKey page $page.');
+      AppLogger.d('[OrderRepository] Fetched ${networkOrders.length} orders from network for $stateKey page $page.');
 
       // 【数据防护】验证和过滤订单列表
       final filteredOrders = await _filterOrdersByUserRole(networkOrders, userRole);
-      print('[OrderRepository] Filtered to ${filteredOrders.length} orders after validation.');
+      AppLogger.d('[OrderRepository] Filtered to ${filteredOrders.length} orders after validation.');
 
       // Cache the filtered response
       await localDataSource.cacheOrders(filteredOrders);
 
       return Right(filteredOrders);
     } on ServerFailure catch (e) {
-      print('[OrderRepository] Network fetch failed for $stateKey page $page: $e');
+      AppLogger.d('[OrderRepository] Network fetch failed for $stateKey page $page: $e');
       return Left(e);
     } catch (e) {
-      print('[OrderRepository] Unexpected error during network fetch for $stateKey page $page: $e');
+      AppLogger.d('[OrderRepository] Unexpected error during network fetch for $stateKey page $page: $e');
       return Left(ServerFailure(message: 'Unexpected error: ${e.toString()}'));
     }
   }
@@ -242,9 +243,9 @@ class OrderRepositoryImpl implements IOrderRepository {
   // This is called when cache is hit and returned immediately
   Future<void> _fetchAndUpdateCache(
       OrderStatus? status, String? keyword, int page, int limit, String stateKey, String userRole) async {
-     print('[OrderRepository] Background fetch starting for $stateKey page $page...');
+     AppLogger.d('[OrderRepository] Background fetch starting for $stateKey page $page...');
       try {
-        print('[OrderRepository] Fetching order list from remote. Page: $page, Limit: $limit, Status: $status, Keyword: $keyword, Role: $userRole');
+        AppLogger.d('[OrderRepository] Fetching order list from remote. Page: $page, Limit: $limit, Status: $status, Keyword: $keyword, Role: $userRole');
         final remoteOrders = await remoteDataSource.getOrderList(
           status: status,
           keyword: keyword,
@@ -256,12 +257,12 @@ class OrderRepositoryImpl implements IOrderRepository {
 
         // 【数据防护】验证和过滤订单列表
         final filteredOrders = await _filterOrdersByUserRole(networkOrders, userRole);
-        print('[OrderRepository] Background fetch filtered to ${filteredOrders.length} orders after validation.');
+        AppLogger.d('[OrderRepository] Background fetch filtered to ${filteredOrders.length} orders after validation.');
 
         await localDataSource.cacheOrders(filteredOrders);
-        print('[OrderRepository] Background fetch and cache update successful for $stateKey page $page.');
+        AppLogger.d('[OrderRepository] Background fetch and cache update successful for $stateKey page $page.');
       } catch (e) {
-         print('[OrderRepository] Background fetch failed for $stateKey page $page: $e');
+         AppLogger.d('[OrderRepository] Background fetch failed for $stateKey page $page: $e');
          // Log error, maybe implement retry or other strategy later
       }
   }
@@ -275,7 +276,7 @@ class OrderRepositoryImpl implements IOrderRepository {
     try {
       final currentUserId = await secureStorage.getUserId();
       if (currentUserId == null) {
-        print('[OrderRepository] Warning: Current user ID is null, returning empty list');
+        AppLogger.d('[OrderRepository] Warning: Current user ID is null, returning empty list');
         return [];
       }
 
@@ -284,45 +285,45 @@ class OrderRepositoryImpl implements IOrderRepository {
           // 买家视角：只保留 buyerId 匹配的订单
           final matches = order.buyer?.id == currentUserId;
           if (!matches) {
-            print('[OrderRepository] Filtered out order ${order.id}: buyerId=${order.buyer?.id} != currentUserId=$currentUserId');
+            AppLogger.d('[OrderRepository] Filtered out order ${order.id}: buyerId=${order.buyer?.id} != currentUserId=$currentUserId');
           }
           return matches;
         } else if (userRole == 'seller') {
           // 卖家视角：只保留 tenantId 匹配的订单
           final matches = order.tenant?.id == currentUserId;
           if (!matches) {
-            print('[OrderRepository] Filtered out order ${order.id}: tenantId=${order.tenant?.id} != currentUserId=$currentUserId');
+            AppLogger.d('[OrderRepository] Filtered out order ${order.id}: tenantId=${order.tenant?.id} != currentUserId=$currentUserId');
           }
           return matches;
         }
         return false;
       }).toList();
     } catch (e) {
-      print('[OrderRepository] Error filtering orders: $e');
+      AppLogger.d('[OrderRepository] Error filtering orders: $e');
       return []; // 出错时返回空列表，确保安全
     }
   }
 
   @override
   Future<Either<Failure, Order>> getOrderDetail(int orderId) async {
-     print('[OrderRepository] getOrderDetail called for orderId: $orderId, useMockData: ${AppConfig.useMockData}');
+     AppLogger.d('[OrderRepository] getOrderDetail called for orderId: $orderId, useMockData: ${AppConfig.useMockData}');
      // 如果启用了模拟数据模式，从模拟数据中查找
      if (AppConfig.useMockData) {
-       print('[OrderRepository] Using mock data for order detail');
+       AppLogger.d('[OrderRepository] Using mock data for order detail');
        try {
          final allMockOrders = SimpleMockOrderDataSource.getAllMockOrders();
-         print('[OrderRepository] Available mock order IDs: ${allMockOrders.map((o) => o.id).toList()}');
+         AppLogger.d('[OrderRepository] Available mock order IDs: ${allMockOrders.map((o) => o.id).toList()}');
          final order = allMockOrders.firstWhere(
            (o) => o.id == orderId,
            orElse: () => throw Exception('未找到订单 ID: $orderId (可用ID: ${allMockOrders.map((o) => o.id).toList()})'),
          );
-         print('[OrderRepository] Found mock order: ${order.id} - ${order.orderSn}');
-         print('[OrderRepository] Order items: ${order.items.length}');
-         print('[OrderRepository] Order status: ${order.state}');
-         print('[OrderRepository] Order price: ${order.priceSummary.payPrice}');
+         AppLogger.d('[OrderRepository] Found mock order: ${order.id} - ${order.orderSn}');
+         AppLogger.d('[OrderRepository] Order items: ${order.items.length}');
+         AppLogger.d('[OrderRepository] Order status: ${order.state}');
+         AppLogger.d('[OrderRepository] Order price: ${order.priceSummary.payPrice}');
          return Right(order);
        } catch (e) {
-         print('[OrderRepository] Mock order not found: $e');
+         AppLogger.d('[OrderRepository] Mock order not found: $e');
          return Left(ServerFailure(message: '获取模拟订单详情失败: ${e.toString()}'));
        }
      }
@@ -355,9 +356,9 @@ class OrderRepositoryImpl implements IOrderRepository {
       try {
         // 清理所有订单缓存，因为不知道删除的订单属于哪个状态
         await localDataSource.clearAllOrders();
-        print('[OrderRepository] 删除订单成功，已清理所有本地缓存');
+        AppLogger.d('[OrderRepository] 删除订单成功，已清理所有本地缓存');
       } catch (e) {
-        print('[OrderRepository] 清理缓存失败: $e');
+        AppLogger.d('[OrderRepository] 清理缓存失败: $e');
         // 即使缓存清理失败，删除操作本身已经成功，所以不影响返回结果
       }
     }
@@ -401,20 +402,20 @@ class OrderRepositoryImpl implements IOrderRepository {
       List<String> uploadedFileUrls = [];
       
       if (params.attachmentPaths.isNotEmpty) {
-        print('[OrderRepositoryImpl] Uploading ${params.attachmentPaths.length} files...');
+        AppLogger.d('[OrderRepositoryImpl] Uploading ${params.attachmentPaths.length} files...');
         
         // 上传所有文件
         final uploadResult = await fileUploadService.uploadFiles(params.attachmentPaths);
         
         return uploadResult.fold(
           (failure) {
-            print('[OrderRepositoryImpl] File upload failed: $failure');
+            AppLogger.d('[OrderRepositoryImpl] File upload failed: $failure');
             return Left(failure);
           },
           (uploadResults) async {
             // 提取上传后的文件URL
             uploadedFileUrls = uploadResults.map((result) => result.url).toList();
-            print('[OrderRepositoryImpl] Files uploaded successfully: $uploadedFileUrls');
+            AppLogger.d('[OrderRepositoryImpl] Files uploaded successfully: $uploadedFileUrls');
             
             // 2. 调用远程数据源提交材料（包含上传后的文件URL）
             final updatedParams = SubmitRequirementsParams(
@@ -429,11 +430,11 @@ class OrderRepositoryImpl implements IOrderRepository {
         );
       } else {
         // 没有附件，直接提交
-        print('[OrderRepositoryImpl] No files to upload, submitting requirements directly');
+        AppLogger.d('[OrderRepositoryImpl] No files to upload, submitting requirements directly');
         return _handleApiCall(() => remoteDataSource.submitRequirements(params));
       }
     } catch (e) {
-      print('[OrderRepositoryImpl] submitRequirements error: $e');
+      AppLogger.d('[OrderRepositoryImpl] submitRequirements error: $e');
       return Left(UnknownFailure(message: '提交材料失败: $e'));
     }
   }
@@ -445,7 +446,7 @@ class OrderRepositoryImpl implements IOrderRepository {
     // but for now, as it's a local-only action, we can return success directly.
     // If a local data source for drafts exists, call it here.
     // Example: return _handleLocalCall(() => localDraftDataSource.saveDraft(params));
-    print('[OrderRepositoryImpl] saveRequirementDraft called. Returning success as it\'s local.');
+    AppLogger.d('[OrderRepositoryImpl] saveRequirementDraft called. Returning success as it\'s local.');
     return const Right(null); // Indicate success
   }
 

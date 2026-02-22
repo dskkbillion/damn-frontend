@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -73,7 +74,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
           });
         }
       } catch (e) {
-        print('[SellerOrderDetailActions] Error parsing invitation status: $e');
+        AppLogger.d('[SellerOrderDetailActions] Error parsing invitation status: $e');
       }
     }
     

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:collection/collection.dart';
 
 import '../domain/interfaces/i_memory_cache.dart';
@@ -58,7 +59,7 @@ class MemoryCacheImpl implements IMemoryCache {
       return entry as CacheEntry<T>;
     } catch (e) {
       if (config.enableLogging) {
-        print('[MemoryCache] 类型转换错误: $e');
+        AppLogger.d('[MemoryCache] 类型转换错误: $e');
       }
       removeEntry(key, group);
       return null;
@@ -223,7 +224,7 @@ class MemoryCacheImpl implements IMemoryCache {
     }
     
     if (config.enableLogging) {
-      print('[MemoryCache] 清理过期缓存完成');
+      AppLogger.d('[MemoryCache] 清理过期缓存完成');
     }
   }
 
@@ -284,7 +285,7 @@ class MemoryCacheImpl implements IMemoryCache {
       _groupStats[group]?.recordEviction();
       
       if (config.enableLogging) {
-        print('[MemoryCache] LRU淘汰: $group:$lruKey');
+        AppLogger.d('[MemoryCache] LRU淘汰: $group:$lruKey');
       }
     }
   }
@@ -376,7 +377,7 @@ class MemoryCacheImpl implements IMemoryCache {
       _groupStats[targetGroup]?.recordEviction();
       
       if (config.enableLogging) {
-        print('[MemoryCache] 全局淘汰: $targetGroup:$targetKey');
+        AppLogger.d('[MemoryCache] 全局淘汰: $targetGroup:$targetKey');
       }
     }
   }

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/exceptions.dart';
@@ -36,10 +37,10 @@ class OrderMaterialsRemoteDataSourceImpl implements IOrderMaterialsRemoteDataSou
         throw ServerException(message: '获取订单材料失败');
       }
     } on DioException catch (e) {
-      print('获取订单材料失败: ${e.message}');
+      AppLogger.d('获取订单材料失败: ${e.message}');
       throw ServerException(message: e.message ?? '网络错误');
     } catch (e) {
-      print('获取订单材料出错: $e');
+      AppLogger.d('获取订单材料出错: $e');
       throw ServerException(message: '获取订单材料出错: $e');
     }
   }
@@ -68,10 +69,10 @@ class OrderMaterialsRemoteDataSourceImpl implements IOrderMaterialsRemoteDataSou
         throw ServerException(message: '获取订单交付失败');
       }
     } on DioException catch (e) {
-      print('获取订单交付失败: ${e.message}');
+      AppLogger.d('获取订单交付失败: ${e.message}');
       throw ServerException(message: e.message ?? '网络错误');
     } catch (e) {
-      print('获取订单交付出错: $e');
+      AppLogger.d('获取订单交付出错: $e');
       throw ServerException(message: '获取订单交付出错: $e');
     }
   }
@@ -92,10 +93,10 @@ class OrderMaterialsRemoteDataSourceImpl implements IOrderMaterialsRemoteDataSou
         throw ServerException(message: '获取材料详情失败');
       }
     } on DioException catch (e) {
-      print('获取材料详情失败: ${e.message}');
+      AppLogger.d('获取材料详情失败: ${e.message}');
       throw ServerException(message: e.message ?? '网络错误');
     } catch (e) {
-      print('获取材料详情出错: $e');
+      AppLogger.d('获取材料详情出错: $e');
       throw ServerException(message: '获取材料详情出错: $e');
     }
   }
@@ -116,10 +117,10 @@ class OrderMaterialsRemoteDataSourceImpl implements IOrderMaterialsRemoteDataSou
         throw ServerException(message: '获取交付详情失败');
       }
     } on DioException catch (e) {
-      print('获取交付详情失败: ${e.message}');
+      AppLogger.d('获取交付详情失败: ${e.message}');
       throw ServerException(message: e.message ?? '网络错误');
     } catch (e) {
-      print('获取交付详情出错: $e');
+      AppLogger.d('获取交付详情出错: $e');
       throw ServerException(message: '获取交付详情出错: $e');
     }
   }

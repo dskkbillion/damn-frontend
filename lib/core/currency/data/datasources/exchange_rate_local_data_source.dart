@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/entities/exchange_rate.dart';
 
@@ -57,7 +58,7 @@ class ExchangeRateLocalDataSource implements IExchangeRateLocalDataSource {
       await _addCacheKey(key);
     } catch (e) {
       // 缓存失败不应该影响主要功能
-      print('Failed to cache exchange rate: $e');
+      AppLogger.d('Failed to cache exchange rate: $e');
     }
   }
   
@@ -92,7 +93,7 @@ class ExchangeRateLocalDataSource implements IExchangeRateLocalDataSource {
         await _removeCacheKey(key);
       }
     } catch (e) {
-      print('Failed to clear expired rates: $e');
+      AppLogger.d('Failed to clear expired rates: $e');
     }
   }
   
@@ -107,7 +108,7 @@ class ExchangeRateLocalDataSource implements IExchangeRateLocalDataSource {
       
       await _prefs.remove(_cacheKeysKey);
     } catch (e) {
-      print('Failed to clear all rates: $e');
+      AppLogger.d('Failed to clear all rates: $e');
     }
   }
   

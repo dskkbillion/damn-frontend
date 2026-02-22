@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dartz/dartz.dart' hide Order;
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart' hide Order;
@@ -72,7 +73,7 @@ class SellerOrderDetailBloc extends Bloc<SellerOrderDetailEvent, SellerOrderDeta
         List<OrderMaterials>? materials;
         final materialsResult = await _orderRepository.getOrderMaterials(event.orderId);
         materialsResult.fold(
-          (failure) => print('Failed to load materials: ${_mapFailureToMessage(failure)}'),
+          (failure) => AppLogger.d('Failed to load materials: ${_mapFailureToMessage(failure)}'),
           (data) => materials = data,
         );
         
@@ -80,7 +81,7 @@ class SellerOrderDetailBloc extends Bloc<SellerOrderDetailEvent, SellerOrderDeta
         List<OrderDelivery>? deliveries;
         final deliveriesResult = await _orderRepository.getOrderDeliveries(event.orderId);
         deliveriesResult.fold(
-          (failure) => print('Failed to load deliveries: ${_mapFailureToMessage(failure)}'),
+          (failure) => AppLogger.d('Failed to load deliveries: ${_mapFailureToMessage(failure)}'),
           (data) => deliveries = data,
         );
         
@@ -174,7 +175,7 @@ class SellerOrderDetailBloc extends Bloc<SellerOrderDetailEvent, SellerOrderDeta
   ) async {
     Order? currentOrder = _getCurrentOrderFromState();
     if (currentOrder == null) {
-      print('[SellerOrderDetailBloc] Cannot perform action: No order data available in state.');
+      AppLogger.d('[SellerOrderDetailBloc] Cannot perform action: No order data available in state.');
       // Optionally emit a specific error state if needed
       return;
     }
@@ -185,14 +186,14 @@ class SellerOrderDetailBloc extends Bloc<SellerOrderDetailEvent, SellerOrderDeta
 
     result.fold(
       (failure) {
-         print('[SellerOrderDetailBloc] Action failed for order $orderId: $failure');
+         AppLogger.d('[SellerOrderDetailBloc] Action failed for order $orderId: $failure');
          emit(SellerOrderDetailActionFailure(
             order: currentOrder, // Show original order on failure
             message: '操作失败: ${_mapFailureToMessage(failure)}'
           ));
       },
       (_) {
-         print('[SellerOrderDetailBloc] Action succeeded for order $orderId.');
+         AppLogger.d('[SellerOrderDetailBloc] Action succeeded for order $orderId.');
          if (reloadOnSuccess) {
             // Reload the order detail to reflect changes
             add(LoadSellerOrderDetail(orderId: orderId));
@@ -223,7 +224,7 @@ class SellerOrderDetailBloc extends Bloc<SellerOrderDetailEvent, SellerOrderDeta
   /// Maps Failure objects to user-friendly error messages.
   String _mapFailureToMessage(Failure failure) {
     // TODO: Implement more specific error mapping based on Failure types
-    print('[Bloc Error Mapping] Encountered failure: ${failure.runtimeType}');
+    AppLogger.d('[Bloc Error Mapping] Encountered failure: ${failure.runtimeType}');
     if (failure is ServerFailure) {
       return failure.message ?? '服务器通信错误，请稍后重试';
     } else if (failure is CacheFailure) {

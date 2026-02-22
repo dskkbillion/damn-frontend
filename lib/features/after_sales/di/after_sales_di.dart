@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import '../presentation/bloc/after_sales_bloc.dart';
 import '../domain/usecases/get_after_sales_list_use_case.dart';
 import '../domain/usecases/get_after_sales_detail_use_case.dart';
@@ -63,6 +64,6 @@ class AfterSalesDI {
       ),
     );
 
-    print('[AfterSalesDI] 售后模块依赖注入配置完成');
+    AppLogger.d('[AfterSalesDI] 售后模块依赖注入配置完成');
   }
 }

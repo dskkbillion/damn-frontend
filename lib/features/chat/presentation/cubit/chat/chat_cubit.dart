@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -87,7 +88,7 @@ class ChatCubit extends Cubit<ChatState> {
   void _listenToMessages() {
     _messageSubscription?.cancel();
     _messageSubscription = _webSocketDataSource.messageStream.listen((dto) {
-      print('[ChatCubit] Received message from WebSocket: type=${dto.type}, id=${dto.id}, chatId=${dto.chatId}');
+      AppLogger.d('[ChatCubit] Received message from WebSocket: type=${dto.type}, id=${dto.id}, chatId=${dto.chatId}');
       final currentState = state;
       if (currentState is _Ready) {
         // Convert DTO to entity with required parameters
@@ -95,7 +96,7 @@ class ChatCubit extends Cubit<ChatState> {
           currentUserId: 0, // Should come from auth context
           senderId: dto.memberId ?? dto.doctorId ?? 0,
         );
-        print('[ChatCubit] Converted to entity: type=${message.type}, id=${message.id}');
+        AppLogger.d('[ChatCubit] Converted to entity: type=${message.type}, id=${message.id}');
         // Emit new message received event
         emit(currentState.copyWith(
           lastReceivedMessage: message,

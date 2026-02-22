@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart'; // Assuming you use GetIt for DI
 import 'package:intl/intl.dart';
@@ -35,7 +36,7 @@ class SellerOrderDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('💰💰💰 [卖家OrderDetailPage] 正在构建页面，订单ID: $orderId 💰💰💰');
+    AppLogger.d('💰💰💰 [卖家OrderDetailPage] 正在构建页面，订单ID: $orderId 💰💰💰');
     
     return BlocProvider(
       create: (context) => GetIt.instance<SellerOrderDetailBloc>()

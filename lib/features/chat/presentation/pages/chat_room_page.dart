@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart'; // Import intl for date formatting
@@ -61,7 +62,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     // 触发加载聊天消息事件
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        print('[ChatRoomPage] 触发LoadChatMessages事件，chatId: ${widget.chatId}');
+        AppLogger.d('[ChatRoomPage] 触发LoadChatMessages事件，chatId: ${widget.chatId}');
         context.read<ChatMessagesBloc>().add(LoadChatMessages(widget.chatId));
       }
       
@@ -123,7 +124,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       _isLoadingMore = true;
     });
     
-    print('[ChatRoomPage] Loading more messages, pageNum: ${_pageNum + 1}');
+    AppLogger.d('[ChatRoomPage] Loading more messages, pageNum: ${_pageNum + 1}');
     
     // 调用bloc加载更多消息
     context.read<ChatMessagesBloc>().add(
@@ -156,14 +157,14 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         // 在reverse模式下，如果当前不在底部（位置0），使用直接跳转，避免卡顿
         if (currentScroll > 10) { // 允许10像素的误差
           _scrollController.jumpTo(0); // 在reverse模式下，底部是位置0
-          print("[ChatRoom] Scrolled to bottom (position 0)");
+          AppLogger.d("[ChatRoom] Scrolled to bottom (position 0)");
         }
       } catch (e) {
         // 处理可能的异常，避免因滚动问题导致应用崩溃
-        print("[ChatRoom] Error scrolling to bottom: $e");
+        AppLogger.d("[ChatRoom] Error scrolling to bottom: $e");
       }
     } else if (!_scrollController.hasClients) {
-      print("[ChatRoom] ScrollController has no clients yet");
+      AppLogger.d("[ChatRoom] ScrollController has no clients yet");
     }
   }
 
@@ -295,11 +296,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             onProductTap: () {
                               // 导航到商品详情页
                               if (chatRoom.productId != null) {
-                                print('导航到商品详情页: ${chatRoom.productName}, ID: ${chatRoom.productId}');
+                                AppLogger.d('导航到商品详情页: ${chatRoom.productName}, ID: ${chatRoom.productId}');
                                 // Navigate to product detail using GoRouter with push to preserve navigation stack
                                 context.push('/home/product/${chatRoom.productId}');
                               } else {
-                                print('商品ID为空，无法导航到商品详情页');
+                                AppLogger.d('商品ID为空，无法导航到商品详情页');
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('商品信息不完整，无法查看详情')),
                                 );
@@ -308,7 +309,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             onActionTap: () {
                               // 处理操作按钮点击（如立即购买）
                               if (chatRoom.productId != null) {
-                                print('点击操作按钮: ${chatRoom.productName}');
+                                AppLogger.d('点击操作按钮: ${chatRoom.productName}');
                                 // 也可以导航到商品详情页，或者实现其他操作
                                 // Navigate to product detail using GoRouter with push to preserve navigation stack
                                 context.push('/home/product/${chatRoom.productId}');
@@ -330,13 +331,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                      if (state is ChatMessagesLoaded) {
                         // 当消息首次加载成功时，触发回调通知聊天列表更新未读数量
                         if (state.isInitialLoad) {
-                          print('[ChatRoomPage] Messages loaded successfully, triggering onMessagesLoaded callback');
+                          AppLogger.d('[ChatRoomPage] Messages loaded successfully, triggering onMessagesLoaded callback');
                           widget.onMessagesLoaded?.call();
                         }
                         
                         // 检查是否有消息被撤回
                         if (state.hasMessageRevoked) {
-                          print('[ChatRoomPage] Message revoked detected, triggering onMessageRevoked callback');
+                          AppLogger.d('[ChatRoomPage] Message revoked detected, triggering onMessageRevoked callback');
                           // 获取新的最后一条消息
                           final newLastMessage = state.messages.isNotEmpty ? state.messages.last : null;
                           widget.onMessageRevoked?.call(widget.chatId, newLastMessage);
@@ -351,7 +352,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         
                         // 检查是否有消息发送成功
                         if (state.hasMessageSent) {
-                          print('[ChatRoomPage] Message sent detected, triggering onMessageSent callback');
+                          AppLogger.d('[ChatRoomPage] Message sent detected, triggering onMessageSent callback');
                           widget.onMessageSent?.call();
                           
                           // 重置发送标志
@@ -438,7 +439,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               final bool isFirstInList = messageIndex == 0;
 
                               if (currentMessage.createTime == null) {
-                                print('Error: Message ID ${currentMessage.id} has null createTime.');
+                                AppLogger.d('Error: Message ID ${currentMessage.id} has null createTime.');
                                 return ChatMessageBubble(
                                   key: ValueKey(currentMessage.id), 
                                   message: currentMessage,

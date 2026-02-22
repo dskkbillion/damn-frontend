@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
@@ -42,11 +43,11 @@ class FileUploadRepositoryImpl implements IFileUploadRepository {
       // Corrected: Add message
       return Left(CacheFailure(message: '文件上传缓存错误')); 
     } on DataSourceException catch (e) { // Assuming DataSourceException exists in core
-      print('DataSourceException in FileUploadRepository: ${e.message}');
+      AppLogger.d('DataSourceException in FileUploadRepository: ${e.message}');
       // Corrected: Use GeneralFailure
       return Left(GeneralFailure(message: 'File upload data source error: ${e.message}')); 
     } catch (e, stacktrace) {
-      print('Unexpected error in FileUploadRepository: $e\n$stacktrace');
+      AppLogger.d('Unexpected error in FileUploadRepository: $e\n$stacktrace');
       // Corrected: Use GeneralFailure
       return Left(GeneralFailure(message: 'An unexpected error occurred during file upload: ${e.toString()}')); 
     }

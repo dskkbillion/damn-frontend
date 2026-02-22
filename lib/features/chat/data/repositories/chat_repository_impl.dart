@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/error/exceptions.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_repository.dart'; // Needed for currentUserId
@@ -46,7 +47,7 @@ class ChatRepositoryImpl implements IChatRepository {
         );
       } catch (e) {
         // Catch unexpected errors during user fetch or API call
-        print("Unexpected error in getChatRooms Repository: $e");
+        AppLogger.d("Unexpected error in getChatRooms Repository: $e");
         return Left(GeneralFailure(message: '读取聊天室列表失败'));
       }
     // } else {
@@ -76,15 +77,15 @@ class ChatRepositoryImpl implements IChatRepository {
                // ChatMessage中：memberId = 发送者的外部ID，doctorId = 接收者的外部ID
                // 所以判断逻辑很简单：memberId == 当前用户ID 就是我发的
                
-               print("[Repository] 消息${dto.id} 判断逻辑:");
-               print("[Repository]   消息数据 - memberId: ${dto.memberId}, doctorId: ${dto.doctorId}");
-               print("[Repository]   当前用户common_user_id: ${user.id}");
+               AppLogger.d("[Repository] 消息${dto.id} 判断逻辑:");
+               AppLogger.d("[Repository]   消息数据 - memberId: ${dto.memberId}, doctorId: ${dto.doctorId}");
+               AppLogger.d("[Repository]   当前用户common_user_id: ${user.id}");
                
                // 极简判断：memberId是发送者
                int senderId;
                if (dto.memberId != null) {
                  senderId = dto.memberId!;
-                 print("[Repository]   判定：senderId = memberId = ${senderId}");
+                 AppLogger.d("[Repository]   判定：senderId = memberId = ${senderId}");
                } else {
                  throw Exception("[Repository] 错误：消息没有memberId！messageId=${dto.id}");
                }
@@ -98,7 +99,7 @@ class ChatRepositoryImpl implements IChatRepository {
          },
        );
     } catch (e) {
-       print("Unexpected error in getMessages Repository: $e");
+       AppLogger.d("Unexpected error in getMessages Repository: $e");
        return Left(GeneralFailure(message: '读取聊天消息失败'));
     }
   }
@@ -120,7 +121,7 @@ class ChatRepositoryImpl implements IChatRepository {
          },
        );
     } catch (e) {
-       print("Unexpected error in getRoomDetails Repository: $e");
+       AppLogger.d("Unexpected error in getRoomDetails Repository: $e");
        return Left(GeneralFailure(message: '读取聊天室详情失败'));
     }
   }
@@ -146,10 +147,10 @@ class ChatRepositoryImpl implements IChatRepository {
             // 所以发送消息时，senderId应该总是使用participant1.id（当前用户）
             int senderParticipantId = room.participant1.id; // participant1总是当前用户
 
-            print("[Repository] 发送的消息: 当前用户发送，senderId=${senderParticipantId}");
-            print("[Repository] 调试信息: participant1.id=${room.participant1.id} (当前用户), participant2.id=${room.participant2.id} (对方)");
-            print("[Repository] 调试信息: user.id=${user.id}, user.type=${user.type}");
-            print("[Repository] 调试信息: memberId=${sentMessageDto.memberId}, doctorId=${sentMessageDto.doctorId}");
+            AppLogger.d("[Repository] 发送的消息: 当前用户发送，senderId=${senderParticipantId}");
+            AppLogger.d("[Repository] 调试信息: participant1.id=${room.participant1.id} (当前用户), participant2.id=${room.participant2.id} (对方)");
+            AppLogger.d("[Repository] 调试信息: user.id=${user.id}, user.type=${user.type}");
+            AppLogger.d("[Repository] 调试信息: memberId=${sentMessageDto.memberId}, doctorId=${sentMessageDto.doctorId}");
  
              
              final sentMessageEntity = sentMessageDto.toEntity(
@@ -164,7 +165,7 @@ class ChatRepositoryImpl implements IChatRepository {
          }
        );
     } catch (e) {
-       print("Unexpected error in sendMessage Repository: $e");
+       AppLogger.d("Unexpected error in sendMessage Repository: $e");
        // FIX: Use correct GeneralFailure constructor (no message)
        return Left(GeneralFailure(message: '发送消息失败'));
     }
@@ -175,7 +176,7 @@ class ChatRepositoryImpl implements IChatRepository {
     int participantId, {
     int? productId, // 新增可选的商品ID参数
   }) async {
-     print("[Repository] Creating room with participantId: $participantId, productId: $productId");
+     AppLogger.d("[Repository] Creating room with participantId: $participantId, productId: $productId");
      // TODO: Check network connection if needed
      try {
        final chatId = await remoteDataSource.createRoom(
@@ -186,7 +187,7 @@ class ChatRepositoryImpl implements IChatRepository {
      } on ServerException catch (e) {
        return Left(ServerFailure(message: e.message ?? 'Server error', code: e.statusCode?.toString()));
      } catch (e) {
-       print("[Repository] Unexpected error creating room: $e");
+       AppLogger.d("[Repository] Unexpected error creating room: $e");
        return Left(GeneralFailure(message: '创建聊天室失败'));
      }
   }
@@ -199,7 +200,7 @@ class ChatRepositoryImpl implements IChatRepository {
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message ?? '撤回消息失败', code: e.statusCode?.toString()));
     } catch (e) {
-      print("Unexpected error in revokeMessage Repository: $e");
+      AppLogger.d("Unexpected error in revokeMessage Repository: $e");
       return Left(GeneralFailure(message: '撤回消息失败: ${e.toString()}'));
     }
   }
@@ -218,7 +219,7 @@ class ChatRepositoryImpl implements IChatRepository {
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message ?? '删除聊天室失败', code: e.statusCode?.toString()));
     } catch (e) {
-      print("Unexpected error in deleteChatRooms Repository: $e");
+      AppLogger.d("Unexpected error in deleteChatRooms Repository: $e");
       return Left(GeneralFailure(message: '删除聊天室失败: ${e.toString()}'));
     }
   }

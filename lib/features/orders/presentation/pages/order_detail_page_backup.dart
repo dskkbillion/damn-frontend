@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -79,14 +80,14 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       if (currentState is OrderDetailLoaded) {
         // 如果订单状态已经不是待付款，说明支付成功了
         if (currentState.order.state != OrderStatus.awaitingPayment) {
-          print('[OrderDetailPage] 订单状态已更新: ${currentState.order.state}');
+          AppLogger.d('[OrderDetailPage] 订单状态已更新: ${currentState.order.state}');
           timer.cancel();
           return;
         }
       }
       
       if (_pollingAttempts >= 10) {
-        print('[OrderDetailPage] 轮询超时，停止查询');
+        AppLogger.d('[OrderDetailPage] 轮询超时，停止查询');
         timer.cancel();
         // 显示提示
         if (mounted) {
@@ -101,7 +102,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       }
       
       // 继续查询
-      print('[OrderDetailPage] 轮询订单状态，第 $_pollingAttempts 次');
+      AppLogger.d('[OrderDetailPage] 轮询订单状态，第 $_pollingAttempts 次');
       context.read<OrderDetailBloc>().add(LoadOrderDetail(orderId: _orderIdInt!));
     });
   }
@@ -133,7 +134,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('🔥🔥🔥 [买家OrderDetailPage] 正在构建页面，订单ID: ${widget.orderId} 🔥🔥🔥');
+    AppLogger.d('🔥🔥🔥 [买家OrderDetailPage] 正在构建页面，订单ID: ${widget.orderId} 🔥🔥🔥');
     
     // If ID was invalid, show an empty scaffold or error placeholder
     if (_orderIdInt == null) {
@@ -222,11 +223,11 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             // --- Handle Initial Loading and Error States ---
             if (state is OrderDetailInitial || (state is OrderDetailLoading && _extractOrder(state) == null)) {
               // Show full screen loading only during initial load
-              print('📱📱📱 [买家OrderDetailPage] 显示加载中状态 📱📱📱');
+              AppLogger.d('📱📱📱 [买家OrderDetailPage] 显示加载中状态 📱📱📱');
               return const Center(child: CircularProgressIndicator());
             } else if (state is OrderDetailError) {
               // Show error with retry button
-              print('❌❌❌ [买家OrderDetailPage] 显示错误状态: ${state.message} ❌❌❌');
+              AppLogger.d('❌❌❌ [买家OrderDetailPage] 显示错误状态: ${state.message} ❌❌❌');
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -254,7 +255,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
              // --- Extract Order Data for Content Building ---
             final order = _extractOrder(state);
-            print('🎯🎯🎯 [买家OrderDetailPage] 当前状态: ${state.runtimeType}, 提取到的订单: ${order?.id} 🎯🎯🎯');
+            AppLogger.d('🎯🎯🎯 [买家OrderDetailPage] 当前状态: ${state.runtimeType}, 提取到的订单: ${order?.id} 🎯🎯🎯');
 
             // If order is somehow still null (edge case, should not happen after above checks)
             if (order == null) {
@@ -388,7 +389,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   // This method builds the scrollable content part
   Widget _buildOrderDetailContent(BuildContext context, Order order) {
-    print('🎨🎨🎨 [买家OrderDetailPage] _buildOrderDetailContent 被调用，订单ID: ${order.id}, 状态: ${order.state} 🎨🎨🎨');
+    AppLogger.d('🎨🎨🎨 [买家OrderDetailPage] _buildOrderDetailContent 被调用，订单ID: ${order.id}, 状态: ${order.state} 🎨🎨🎨');
     
     try {
       return SingleChildScrollView(
@@ -399,11 +400,11 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             // 订单状态时间线头部
             Builder(
               builder: (context) {
-                print('🔍 正在构建 OrderStatusTimelineHeader');
+                AppLogger.d('🔍 正在构建 OrderStatusTimelineHeader');
                 try {
                   return OrderStatusTimelineHeader(order: order);
                 } catch (e) {
-                  print('❌ OrderStatusTimelineHeader 出错: $e');
+                  AppLogger.d('❌ OrderStatusTimelineHeader 出错: $e');
                   return Container(
                     padding: const EdgeInsets.all(16),
                     color: Colors.red.withOpacity(0.3),
@@ -416,11 +417,11 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             // 支付状态警告（如果需要）
             Builder(
               builder: (context) {
-                print('🔍 正在构建 PaymentStatusWarning');
+                AppLogger.d('🔍 正在构建 PaymentStatusWarning');
                 try {
                   return _buildPaymentStatusWarning(context, order);
                 } catch (e) {
-                  print('❌ PaymentStatusWarning 出错: $e');
+                  AppLogger.d('❌ PaymentStatusWarning 出错: $e');
                   return const SizedBox.shrink();
                 }
               },
@@ -431,11 +432,11 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             // 商品信息部分
             Builder(
               builder: (context) {
-                print('🔍 正在构建 OrderItemsSection');
+                AppLogger.d('🔍 正在构建 OrderItemsSection');
                 try {
                   return _buildOrderItemsSection(context, order);
                 } catch (e) {
-                  print('❌ OrderItemsSection 出错: $e');
+                  AppLogger.d('❌ OrderItemsSection 出错: $e');
                   return Container(
                     padding: const EdgeInsets.all(16),
                     color: Colors.red.withOpacity(0.3),
@@ -450,11 +451,11 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             // 订单信息部分
             Builder(
               builder: (context) {
-                print('🔍 正在构建 OrderInfoSection');
+                AppLogger.d('🔍 正在构建 OrderInfoSection');
                 try {
                   return _buildOrderInfoSection(context, order);
                 } catch (e) {
-                  print('❌ OrderInfoSection 出错: $e');
+                  AppLogger.d('❌ OrderInfoSection 出错: $e');
                   return Container(
                     padding: const EdgeInsets.all(16),
                     color: Colors.red.withOpacity(0.3),
@@ -476,7 +477,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   try {
                     return _buildMaterialsSection(context, order);
                   } catch (e) {
-                    print('❌ MaterialsSection 出错: $e');
+                    AppLogger.d('❌ MaterialsSection 出错: $e');
                     return const SizedBox.shrink();
                   }
                 }
@@ -489,11 +490,11 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             // 价格明细部分
             Builder(
               builder: (context) {
-                print('🔍 正在构建 PriceDetailsSection');
+                AppLogger.d('🔍 正在构建 PriceDetailsSection');
                 try {
                   return _buildPriceDetailsSection(context, order);
                 } catch (e) {
-                  print('❌ PriceDetailsSection 出错: $e');
+                  AppLogger.d('❌ PriceDetailsSection 出错: $e');
                   return Container(
                     padding: const EdgeInsets.all(16),
                     color: Colors.red.withOpacity(0.3),
@@ -508,8 +509,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         ),
       );
     } catch (e, stack) {
-      print('❌❌❌ _buildOrderDetailContent 整体出错: $e');
-      print('Stack trace: $stack');
+      AppLogger.d('❌❌❌ _buildOrderDetailContent 整体出错: $e');
+      AppLogger.d('Stack trace: $stack');
       return Container(
         padding: const EdgeInsets.all(32),
         child: Column(
@@ -537,7 +538,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   // Helper to build simple info rows
   // Restore original implementation
   Widget _buildInfoRow(BuildContext context, String label, String value) {
-    // print('Building info row: $label - Value: "$value"'); // Remove print
+    // AppLogger.d('Building info row: $label - Value: "$value"'); // Remove print
     final textTheme = Theme.of(context).textTheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -637,10 +638,10 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   
   // 构建商品信息部分
   Widget _buildOrderItemsSection(BuildContext context, Order order) {
-    print('🔍 OrderItemsSection: 商品数量 ${order.items.length}');
+    AppLogger.d('🔍 OrderItemsSection: 商品数量 ${order.items.length}');
     final items = order.items;
     if (items.isEmpty) {
-      print('⚠️ OrderItemsSection: 商品列表为空');
+      AppLogger.d('⚠️ OrderItemsSection: 商品列表为空');
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.all(16),

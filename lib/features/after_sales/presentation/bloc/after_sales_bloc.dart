@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart'; // For throttle/debounce if needed
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
@@ -133,27 +134,27 @@ class AfterSalesBloc extends Bloc<AfterSalesEvent, AfterSalesState> {
     LoadAfterSalesDetailByOrderId event,
     Emitter<AfterSalesState> emit,
   ) async {
-    print('[AfterSalesBloc] Loading after-sales detail by order ID: ${event.orderId}');
+    AppLogger.d('[AfterSalesBloc] Loading after-sales detail by order ID: ${event.orderId}');
     emit(AfterSalesDetailLoading(event.orderId.toString()));
     
     try {
       // First, get the refund ID by order ID
       final refundIdParams = GetRefundIdByOrderIdParams(orderId: event.orderId);
-      print('[AfterSalesBloc] Calling getRefundIdByOrderIdUseCase with orderId: ${event.orderId}');
+      AppLogger.d('[AfterSalesBloc] Calling getRefundIdByOrderIdUseCase with orderId: ${event.orderId}');
       final refundIdResult = await _getRefundIdByOrderIdUseCase(refundIdParams);
 
       await refundIdResult.fold(
         (failure) async {
-          print('[AfterSalesBloc] Failed to get refund ID: ${_mapFailureToMessage(failure)}');
+          AppLogger.d('[AfterSalesBloc] Failed to get refund ID: ${_mapFailureToMessage(failure)}');
           emit(AfterSalesDetailError(
             id: event.orderId.toString(), 
             message: _mapFailureToMessage(failure)
           ));
         },
         (refundId) async {
-          print('[AfterSalesBloc] Got refund ID: $refundId for order ID: ${event.orderId}');
+          AppLogger.d('[AfterSalesBloc] Got refund ID: $refundId for order ID: ${event.orderId}');
           if (refundId == null) {
-            print('[AfterSalesBloc] No refund record found for order ID: ${event.orderId}');
+            AppLogger.d('[AfterSalesBloc] No refund record found for order ID: ${event.orderId}');
             emit(AfterSalesDetailError(
               id: event.orderId.toString(), 
               message: '该订单没有对应的售后记录'
@@ -162,27 +163,27 @@ class AfterSalesBloc extends Bloc<AfterSalesEvent, AfterSalesState> {
           }
 
           // Now load the after-sales detail using the refund ID
-          print('[AfterSalesBloc] Loading after-sales detail with refund ID: $refundId');
+          AppLogger.d('[AfterSalesBloc] Loading after-sales detail with refund ID: $refundId');
           final detailParams = GetAfterSalesDetailParams(id: refundId.toString());
           final detailResult = await _getAfterSalesDetailUseCase(detailParams);
 
           detailResult.fold(
             (failure) {
-              print('[AfterSalesBloc] Failed to load after-sales detail: ${_mapFailureToMessage(failure)}');
+              AppLogger.d('[AfterSalesBloc] Failed to load after-sales detail: ${_mapFailureToMessage(failure)}');
               emit(AfterSalesDetailError(
                 id: event.orderId.toString(), 
                 message: _mapFailureToMessage(failure)
               ));
             },
             (application) {
-              print('[AfterSalesBloc] Successfully loaded after-sales detail: ${application.id}');
+              AppLogger.d('[AfterSalesBloc] Successfully loaded after-sales detail: ${application.id}');
               emit(AfterSalesDetailLoaded(application));
             },
           );
         },
       );
     } catch (e) {
-      print('[AfterSalesBloc] Unexpected error in _onLoadAfterSalesDetailByOrderId: $e');
+      AppLogger.d('[AfterSalesBloc] Unexpected error in _onLoadAfterSalesDetailByOrderId: $e');
       emit(AfterSalesDetailError(
         id: event.orderId.toString(), 
         message: '加载售后详情时发生未知错误: $e'

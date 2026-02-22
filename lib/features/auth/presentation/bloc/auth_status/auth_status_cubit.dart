@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_status.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/usecases/get_auth_status_stream.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/usecases/logout.dart';
@@ -21,7 +22,7 @@ class AuthStatusCubit extends Cubit<AuthStatus> {
     _authStatusSubscription = getAuthStatusStreamUseCase().listen(
       (status) => emit(status), // 当 Repository 状态变化时，更新 Cubit 状态
       onError: (error) {
-        print('Error in auth status stream: $error');
+        AppLogger.d('Error in auth status stream: $error');
         emit(const Unauthenticated()); // 出错时视为未认证
       },
     );
@@ -34,10 +35,10 @@ class AuthStatusCubit extends Cubit<AuthStatus> {
     result.fold(
       (failure) {
         // 登出失败通常也需要在 UI 上提示，但状态仍应是 Unauthenticated
-        print('Logout failed: $failure');
+        AppLogger.d('Logout failed: $failure');
         // 可以在这里 emit 一个特定的登出失败状态，或者让 UI 处理通用错误
       },
-      (_) => print('Logout successful'),
+      (_) => AppLogger.d('Logout successful'),
     );
     // 即使 UseCase 调用失败，Repository 层通常也会将 Stream 更新为 Unauthenticated
     // 所以这里一般不需要手动 emit(Unauthenticated())

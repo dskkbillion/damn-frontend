@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
@@ -21,22 +22,22 @@ class SendMessageImpl implements SendMessage {
   Future<Either<Failure, ChatMessage>> call(SendMessageParams params) async {
     ChatMessage messageToSend = params.message;
 
-    print('[SendMessage] Type: ${messageToSend.type}, File provided: ${params.file != null}, Context: ${messageToSend.context}');
+    AppLogger.d('[SendMessage] Type: ${messageToSend.type}, File provided: ${params.file != null}, Context: ${messageToSend.context}');
 
     // If it's an image or audio message with a file, upload the file first
     if ((messageToSend.type == 'image' || messageToSend.type == 'audio') && params.file != null) {
-      print('[SendMessage] Uploading file for ${messageToSend.type} message: ${params.file!.path}');
+      AppLogger.d('[SendMessage] Uploading file for ${messageToSend.type} message: ${params.file!.path}');
       final uploadResult = await fileRepository.uploadFile(params.file!);
 
       // Handle upload failure
       if (uploadResult.isLeft()) {
-        print('[SendMessage] File upload failed');
+        AppLogger.d('[SendMessage] File upload failed');
         return uploadResult.fold((failure) => Left(failure), (_) => throw Exception('Unreachable')); // Should not happen
       }
 
       // Update message context with the uploaded file URL
       final fileUrl = uploadResult.getOrElse(() => ''); // Should always have a value if isRight()
-      print('[SendMessage] File uploaded successfully. URL: $fileUrl');
+      AppLogger.d('[SendMessage] File uploaded successfully. URL: $fileUrl');
       if (fileUrl.isEmpty) {
         return Left(GeneralFailure(message: '发送消息失败，参数无效'));
       }
@@ -45,14 +46,14 @@ class SendMessageImpl implements SendMessage {
     } else if ((messageToSend.type == 'image' || messageToSend.type == 'audio' || messageToSend.type == 'file') && params.file == null) {
       // 如果是文件类型（包括图片、音频、文档）且没有提供文件，检查 context 是否已包含 URL 或 JSON
       // 如果 context 已经包含 URL 或 JSON（说明文件已经上传），则继续发送
-      print('[SendMessage] File type message without file. Context: ${messageToSend.context}');
+      AppLogger.d('[SendMessage] File type message without file. Context: ${messageToSend.context}');
       if (messageToSend.context == null || messageToSend.context!.isEmpty) {
         return Left(GeneralFailure(message: '发送消息失败，参数无效'));
       }
       // 如果 context 有内容（URL 或 JSON），继续发送
     }
 
-    print('[SendMessage] Sending message with context: ${messageToSend.context}');
+    AppLogger.d('[SendMessage] Sending message with context: ${messageToSend.context}');
     // Send the message (text or file URL as context)
     return await chatRepository.sendMessage(messageToSend);
   }

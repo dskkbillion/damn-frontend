@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:collection';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -33,7 +34,7 @@ class ChatPreloadService {
   void _initConnectivityListener() {
     Connectivity().onConnectivityChanged.listen((result) {
       _currentConnectivity = result.first;
-      print('[ChatPreload] Connectivity changed: $_currentConnectivity');
+      AppLogger.d('[ChatPreload] Connectivity changed: $_currentConnectivity');
       
       // Pause preloading on cellular to save data
       if (_currentConnectivity == ConnectivityResult.mobile) {
@@ -68,13 +69,13 @@ class ChatPreloadService {
       _lastMemoryPressure = currentSize / maxSize;
       
       if (_lastMemoryPressure > _maxMemoryPressure) {
-        print('[ChatPreload] High memory pressure detected: ${(_lastMemoryPressure * 100).toStringAsFixed(1)}%');
+        AppLogger.d('[ChatPreload] High memory pressure detected: ${(_lastMemoryPressure * 100).toStringAsFixed(1)}%');
         _pausePreloading();
         
         // Clear some cached images if pressure is too high
         if (_lastMemoryPressure > 0.9) {
           imageCache.clear();
-          print('[ChatPreload] Evicted image cache due to high memory pressure');
+          AppLogger.d('[ChatPreload] Evicted image cache due to high memory pressure');
         }
       }
     }
@@ -87,7 +88,7 @@ class ChatPreloadService {
   ) async {
     if (!_shouldPreload()) return;
     
-    print('[ChatPreload] Starting to preload ${chatRooms.length} chat room avatars');
+    AppLogger.d('[ChatPreload] Starting to preload ${chatRooms.length} chat room avatars');
     
     final avatarUrls = <String>[];
     
@@ -130,7 +131,7 @@ class ChatPreloadService {
     }
     
     if (imageUrls.isNotEmpty) {
-      print('[ChatPreload] Queuing ${imageUrls.length} message images for preload');
+      AppLogger.d('[ChatPreload] Queuing ${imageUrls.length} message images for preload');
       await _preloadImages(context, imageUrls);
     }
   }
@@ -199,7 +200,7 @@ class ChatPreloadService {
     
     if (futures.isNotEmpty) {
       await Future.wait(futures, eagerError: false);
-      print('[ChatPreload] Preloaded batch of ${futures.length} images');
+      AppLogger.d('[ChatPreload] Preloaded batch of ${futures.length} images');
     }
   }
   
@@ -222,13 +223,13 @@ class ChatPreloadService {
         imageProvider,
         context,
         onError: (exception, stackTrace) {
-          print('[ChatPreload] Failed to preload image: $url');
+          AppLogger.d('[ChatPreload] Failed to preload image: $url');
         },
       );
       
       _preloadedUrls.add(url);
     } catch (e) {
-      print('[ChatPreload] Error preloading image $url: $e');
+      AppLogger.d('[ChatPreload] Error preloading image $url: $e');
     }
   }
   
@@ -252,13 +253,13 @@ class ChatPreloadService {
   
   /// Pause preloading
   void _pausePreloading() {
-    print('[ChatPreload] Pausing preload');
+    AppLogger.d('[ChatPreload] Pausing preload');
     _stopPreloading();
   }
   
   /// Resume preloading
   void _resumePreloading() {
-    print('[ChatPreload] Resuming preload');
+    AppLogger.d('[ChatPreload] Resuming preload');
     // Preloading will resume when new images are added to queue
   }
   
@@ -274,7 +275,7 @@ class ChatPreloadService {
     _preloadedUrls.clear();
     _preloadQueue.clear();
     _stopPreloading();
-    print('[ChatPreload] Cache cleared');
+    AppLogger.d('[ChatPreload] Cache cleared');
   }
   
   /// Dispose of resources

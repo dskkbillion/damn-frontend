@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,28 +31,28 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
   @override
   void initState() {
     super.initState();
-    print('[SellerHomePage] initState called');
+    AppLogger.d('[SellerHomePage] initState called');
     
     // 延迟检查状态，避免在build之前访问context
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final bloc = context.read<SellerHomeBloc>();
       final currentState = bloc.state;
       
-      print('[SellerHomePage] Current state: ${currentState.runtimeType}');
+      AppLogger.d('[SellerHomePage] Current state: ${currentState.runtimeType}');
       
       // 只有在没有数据时才加载
       if (currentState.dashboardData == null && !currentState.isLoading) {
-        print('[SellerHomePage] No data found, dispatching LoadDashboardData');
+        AppLogger.d('[SellerHomePage] No data found, dispatching LoadDashboardData');
         bloc.add(const LoadDashboardData());
       } else {
-        print('[SellerHomePage] Data already exists or loading, skipping LoadDashboardData');
+        AppLogger.d('[SellerHomePage] Data already exists or loading, skipping LoadDashboardData');
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    print('[SellerHomePage] Build method called');
+    AppLogger.d('[SellerHomePage] Build method called');
     return Scaffold(
       backgroundColor: Colors.transparent,
       extendBodyBehindAppBar: true,
@@ -60,13 +61,13 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
         bottom: false,
         child: RefreshIndicator(
           onRefresh: () async {
-            print('[SellerHomePage] Refresh triggered: Dispatching RefreshDashboardData');
+            AppLogger.d('[SellerHomePage] Refresh triggered: Dispatching RefreshDashboardData');
             context.read<SellerHomeBloc>().add(RefreshDashboardData());
             return Future.delayed(const Duration(milliseconds: 500));
           },
           child: BlocBuilder<SellerHomeBloc, SellerHomeState>(
             builder: (context, state) {
-              print('[SellerHomePage] BlocBuilder received state: ${state.runtimeType}');
+              AppLogger.d('[SellerHomePage] BlocBuilder received state: ${state.runtimeType}');
               if (state.isLoading) {
                 return LoadingState.list();
               }
@@ -172,8 +173,8 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                     // 店铺logo - 点击跳转到店铺公开页面
                     GestureDetector(
                       onTap: () {
-                        print('[SellerHomePage] Store logo tapped');
-                        print('[SellerHomePage] storeId: ${profile.storeId}');
+                        AppLogger.d('[SellerHomePage] Store logo tapped');
+                        AppLogger.d('[SellerHomePage] storeId: ${profile.storeId}');
                         // 使用 storeId 作为 sellerId 跳转
                         context.go('/seller-profile/${profile.storeId}');
                       },

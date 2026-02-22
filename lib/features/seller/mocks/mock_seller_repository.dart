@@ -1,4 +1,5 @@
 import 'package:mockito/mockito.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dartz/dartz.dart';
 // 导入 ISellerRepository 接口
@@ -27,7 +28,7 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/enums/refu
 class MockSellerRepository implements ISellerRepository {
   @override
   Future<Either<Failure, SellerStoreProfile>> getStoreProfile() async {
-    print('MockSellerRepository: getStoreProfile called');
+    AppLogger.d('MockSellerRepository: getStoreProfile called');
     return Future.value(Right(SellerStoreProfile(
       storeId: 'mock_store_123',
       storeName: '模拟卖家店铺',
@@ -42,43 +43,43 @@ class MockSellerRepository implements ISellerRepository {
 
   @override
   Future<Either<Failure, bool>> updateStoreProfile(dynamic profileData) async {
-    print('MockSellerRepository: updateStoreProfile called with $profileData');
+    AppLogger.d('MockSellerRepository: updateStoreProfile called with $profileData');
     return Future.value(const Right(true));
   }
 
   @override
   Future<Either<Failure, bool>> updateOnlineStatus(bool isOnline) async {
-    print('MockSellerRepository: updateOnlineStatus called with $isOnline');
+    AppLogger.d('MockSellerRepository: updateOnlineStatus called with $isOnline');
     return Future.value(const Right(true));
   }
 
   @override
   Future<Either<Failure, AutoReplySettings>> getAutoReplySettings() async {
-    print('MockSellerRepository: getAutoReplySettings called');
+    AppLogger.d('MockSellerRepository: getAutoReplySettings called');
     return Future.value(const Right(AutoReplySettings(isEnabled: true, content: '你好，现在暂时无法回复，稍后联系您。')));
   }
 
   @override
   Future<Either<Failure, bool>> setAutoReplySettings(AutoReplySettings settings) async {
-    print('MockSellerRepository: setAutoReplySettings called with $settings');
+    AppLogger.d('MockSellerRepository: setAutoReplySettings called with $settings');
     return Future.value(const Right(true));
   }
 
   @override
   Future<Either<Failure, TimeSettings>> getTimeSettings() async {
-    print('MockSellerRepository: getTimeSettings called');
+    AppLogger.d('MockSellerRepository: getTimeSettings called');
     return Future.value(const Right(TimeSettings(isOnline: true)));
   }
 
   @override
   Future<Either<Failure, bool>> updateTimeSettings(dynamic settings) async {
-    print('MockSellerRepository: updateTimeSettings called with $settings');
+    AppLogger.d('MockSellerRepository: updateTimeSettings called with $settings');
     return Future.value(const Right(true));
   }
 
   @override
   Future<Either<Failure, List<SellerAuthenticationInfo>>> getAuthenticationStatus() async {
-    print('MockSellerRepository: getAuthenticationStatus called');
+    AppLogger.d('MockSellerRepository: getAuthenticationStatus called');
     final now = DateTime.now();
     return Future.value(Right([
       SellerAuthenticationInfo(
@@ -129,7 +130,7 @@ class MockSellerRepository implements ISellerRepository {
   
   @override
   Future<Either<Failure, SellerDashboardData>> getDashboardData() async {
-    print('MockSellerRepository: getDashboardData called');
+    AppLogger.d('MockSellerRepository: getDashboardData called');
     // 模拟数据 - 确保创建了正确的实体对象
     final incomeData = SellerIncomeData(
       total: 10000.0,
@@ -172,7 +173,7 @@ class MockSellerRepository implements ISellerRepository {
     required int pageSize,
     String? state,
   }) async {
-    print('MockSellerRepository: getSellerProductList called');
+    AppLogger.d('MockSellerRepository: getSellerProductList called');
     final items = List.generate(pageSize, (index) => SellerManagedProduct(
       id: 2000 + (pageNum - 1) * pageSize + index,
       name: '测试商品 ${state ?? "在售"} ${(pageNum - 1) * pageSize + index + 1}',
@@ -195,7 +196,7 @@ class MockSellerRepository implements ISellerRepository {
     required int pageNum,
     required int pageSize,
   }) async {
-    print('MockSellerRepository: getSellerDraftList called');
+    AppLogger.d('MockSellerRepository: getSellerDraftList called');
     final items = List.generate(pageSize, (index) => SellerManagedProduct(
       id: 3000 + (pageNum - 1) * pageSize + index,
       name: '草稿商品 ${(pageNum - 1) * pageSize + index + 1}',
@@ -212,25 +213,25 @@ class MockSellerRepository implements ISellerRepository {
   
   @override
   Future<Either<Failure, bool>> createProduct(dynamic productData) async {
-    print('MockSellerRepository: createProduct called with $productData');
+    AppLogger.d('MockSellerRepository: createProduct called with $productData');
     return Future.value(const Right(true));
   }
   
   @override
   Future<Either<Failure, bool>> updateProduct(dynamic productData) async {
-    print('MockSellerRepository: updateProduct called with $productData');
+    AppLogger.d('MockSellerRepository: updateProduct called with $productData');
     return Future.value(const Right(true));
   }
   
   @override
   Future<Either<Failure, bool>> deleteProduct(List<int> productIds) async {
-    print('MockSellerRepository: deleteProduct called with $productIds');
+    AppLogger.d('MockSellerRepository: deleteProduct called with $productIds');
     return Future.value(const Right(true));
   }
   
   @override
   Future<Either<Failure, List<SellerNotification>>> getNotificationList({String? messageType}) async {
-    print('MockSellerRepository: getNotificationList called with type: $messageType');
+    AppLogger.d('MockSellerRepository: getNotificationList called with type: $messageType');
     final now = DateTime.now();
     return Future.value(Right([
       SellerNotification(notificationId: '1', type: NotificationType.order, title: '新订单', content: '您有新的订单需要处理', isRead: false, createdAt: now.subtract(Duration(hours: 1))),
@@ -240,25 +241,25 @@ class MockSellerRepository implements ISellerRepository {
   
   @override
   Future<Either<Failure, bool>> markNotificationAsRead(String notificationId) async {
-    print('MockSellerRepository: markNotificationAsRead called with $notificationId');
+    AppLogger.d('MockSellerRepository: markNotificationAsRead called with $notificationId');
     return Future.value(const Right(true));
   }
   
   @override
   Future<Either<Failure, bool>> markAllNotificationsAsRead({String? messageTypes}) async {
-    print('MockSellerRepository: markAllNotificationsAsRead called with types: $messageTypes');
+    AppLogger.d('MockSellerRepository: markAllNotificationsAsRead called with types: $messageTypes');
     return Future.value(const Right(true));
   }
   
   @override
   Future<Either<Failure, int>> getUnreadNotificationCount() async {
-    print('MockSellerRepository: getUnreadNotificationCount called');
+    AppLogger.d('MockSellerRepository: getUnreadNotificationCount called');
     return Future.value(const Right(3));
   }
   
   @override
   Future<Either<Failure, bool>> submitAuthenticationApplication(dynamic applicationData) async {
-    print('MockSellerRepository: submitAuthenticationApplication called with $applicationData');
+    AppLogger.d('MockSellerRepository: submitAuthenticationApplication called with $applicationData');
     return Future.value(const Right(true));
   }
 
@@ -267,7 +268,7 @@ class MockSellerRepository implements ISellerRepository {
     required int pageNum,
     required int pageSize,
   }) async {
-    print('MockSellerRepository: getTenantAuditList called (page: $pageNum)');
+    AppLogger.d('MockSellerRepository: getTenantAuditList called (page: $pageNum)');
     final items = List.generate(pageSize, (index) => OrderRefund(
       id: 4000 + (pageNum - 1) * pageSize + index,
       orderId: 1000 + index,
@@ -292,13 +293,13 @@ class MockSellerRepository implements ISellerRepository {
     required String refundState, // ISellerRepository 定义的是 String
     String? auditRemark,
   }) async {
-    print('MockSellerRepository: auditRefund called for $id with state $refundState');
+    AppLogger.d('MockSellerRepository: auditRefund called for $id with state $refundState');
     return Future.value(const Right(true));
   }
   
   @override
   Future<Either<Failure, OrderRefund>> getRefundDetail(int refundId) async {
-    print('MockSellerRepository: getRefundDetail called for $refundId');
+    AppLogger.d('MockSellerRepository: getRefundDetail called for $refundId');
     return Future.value(Right(OrderRefund(
       id: refundId,
       orderId: 1001,
@@ -322,13 +323,13 @@ class MockSellerRepository implements ISellerRepository {
     required String content,
     required List<String> files,
   }) async {
-    print('MockSellerRepository: addOrderDelivery called for order $orderId');
+    AppLogger.d('MockSellerRepository: addOrderDelivery called for order $orderId');
     return Future.value(const Right(true));
   }
 
   @override
   Future<Either<Failure, SellerManagedProduct>> getProductDetail(int productId) async {
-    print('MockSellerRepository: getProductDetail called for $productId');
+    AppLogger.d('MockSellerRepository: getProductDetail called for $productId');
     return Future.value(Right(SellerManagedProduct(
       id: productId,
       name: '测试商品详情 $productId',
@@ -353,7 +354,7 @@ class MockSellerRepository implements ISellerRepository {
   
   @override
   Future<Either<Failure, bool>> updateProductStatus(int productId, String state) async {
-     print('MockSellerRepository: updateProductStatus called for $productId to state $state');
+     AppLogger.d('MockSellerRepository: updateProductStatus called for $productId to state $state');
     return Future.value(const Right(true));
   }
 } 

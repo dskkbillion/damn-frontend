@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -78,15 +79,15 @@ class _ChatPageState extends State<ChatPage> {
           
           if (userId != null) {
             bloc.add(FetchRateLimitStatus(userId: userId));
-            print("[ChatPage] Dispatched FetchRateLimitStatus with userId: $userId");
+            AppLogger.d("[ChatPage] Dispatched FetchRateLimitStatus with userId: $userId");
           } else {
-            print("[ChatPage] Warning: Could not get valid user ID for rate limit status");
+            AppLogger.d("[ChatPage] Warning: Could not get valid user ID for rate limit status");
           }
         } catch (e) {
-          print("[ChatPage] Error getting user ID: $e");
+          AppLogger.d("[ChatPage] Error getting user ID: $e");
         }
         
-        print("[ChatPage] Dispatched LoadConversations event.");
+        AppLogger.d("[ChatPage] Dispatched LoadConversations event.");
       }
     });
   }
@@ -201,7 +202,7 @@ class _ChatPageState extends State<ChatPage> {
                    setState(() {
                      _isRateLimitWarningDismissed = true;
                    });
-                   print("[ChatPage] 推荐次数提示框已关闭");
+                   AppLogger.d("[ChatPage] 推荐次数提示框已关闭");
                  },
                );
              },
@@ -233,7 +234,7 @@ class _ChatPageState extends State<ChatPage> {
       // 检查是否已选择对话，如果没有选择，先创建新对话
       if (currentState.selectedConversationId == null) {
         // 先创建新对话，再发送消息
-        print("[ChatPage] ${appLocalizations.ai_docs_auto_create_text}");
+        AppLogger.d("[ChatPage] ${appLocalizations.ai_docs_auto_create_text}");
         aiChatBloc.add(CreateNewConversationAndSendMessage(message: message.trim()));
       } else {
         // 已有对话，直接发送消息
@@ -245,7 +246,7 @@ class _ChatPageState extends State<ChatPage> {
       _textController.clear();
     } else {
       // 消息为空，显示提示
-      print("Send button pressed, but message text is empty. Not sending.");
+      AppLogger.d("Send button pressed, but message text is empty. Not sending.");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(appLocalizations.ai_docs_please_enter_message)), // 使用国际化文本
       );
@@ -385,19 +386,19 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                        return ServiceGridItem(
                        service: service,
                        onTap: () {
-                          print('[点击分发] ==========');
-                          print('[点击分发] 服务名称: ${service.title}');
-                          print('[点击分发] 服务ID: ${service.id}');
-                          print('[点击分发] 商家ID(tenantId): ${service.tenantId}');
-                          print('[点击分发] 价格: ${service.price}');
+                          AppLogger.d('[点击分发] ==========');
+                          AppLogger.d('[点击分发] 服务名称: ${service.title}');
+                          AppLogger.d('[点击分发] 服务ID: ${service.id}');
+                          AppLogger.d('[点击分发] 商家ID(tenantId): ${service.tenantId}');
+                          AppLogger.d('[点击分发] 价格: ${service.price}');
 
                           final itemData = {
                             'id': service.id.toString(), // 转换为字符串类型
                             'name': service.title,
                             'description': '推荐服务: ${service.title}，价格: ￥${service.price}',
                           };
-                          print('[点击分发] 构造的itemData: $itemData');
-                          print('[点击分发] 准备触发TriggerOptimizedAllocation事件...');
+                          AppLogger.d('[点击分发] 构造的itemData: $itemData');
+                          AppLogger.d('[点击分发] 准备触发TriggerOptimizedAllocation事件...');
 
                           context.read<AiChatBloc>().add(TriggerOptimizedAllocation(
                              item: itemData,
@@ -405,8 +406,8 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                                serviceId: service.id, // 添加服务ID用于状态追踪
                           ));
 
-                          print('[点击分发] TriggerOptimizedAllocation事件已触发');
-                          print('[点击分发] ==========');
+                          AppLogger.d('[点击分发] TriggerOptimizedAllocation事件已触发');
+                          AppLogger.d('[点击分发] ==========');
                             // 移除Navigator.pop，让底部弹窗保持打开状态，用户可以看到按钮状态变化
                             // Navigator.pop(context);
                        },
@@ -415,16 +416,16 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                          try {
                            final bloc = context.read<AiChatBloc>();
                            final chatRoomId = bloc.state.createdChatRoomId;
-                           print('尝试进入聊天室，chatRoomId: $chatRoomId');
+                           AppLogger.d('尝试进入聊天室，chatRoomId: $chatRoomId');
                            
                            if (chatRoomId != null) {
-                             print('开始导航到聊天室: $chatRoomId');
+                             AppLogger.d('开始导航到聊天室: $chatRoomId');
                              Navigator.pop(context); // 关闭底部弹窗
                              
                              // 尝试创建ChatMessagesBloc
                              try {
                                final chatMessagesBloc = getIt<ChatMessagesBloc>(param1: chatRoomId);
-                               print('成功创建ChatMessagesBloc: $chatMessagesBloc');
+                               AppLogger.d('成功创建ChatMessagesBloc: $chatMessagesBloc');
                                
                                // 导航到聊天室页面
                                Navigator.push(
@@ -436,25 +437,25 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                                    ),
                                  ),
                                ).then((result) {
-                                 print('聊天室页面返回结果: $result');
+                                 AppLogger.d('聊天室页面返回结果: $result');
                                }).catchError((error) {
-                                 print('导航到聊天室页面时发生错误: $error');
+                                 AppLogger.d('导航到聊天室页面时发生错误: $error');
                                });
                              } catch (e) {
-                               print('创建ChatMessagesBloc时发生错误: $e');
+                               AppLogger.d('创建ChatMessagesBloc时发生错误: $e');
                                // 显示错误提示
                                ScaffoldMessenger.of(context).showSnackBar(
                                  SnackBar(content: Text('无法创建聊天会话: $e')),
                                );
                              }
                            } else {
-                             print('聊天室ID为空，无法进入聊天');
+                             AppLogger.d('聊天室ID为空，无法进入聊天');
                              ScaffoldMessenger.of(context).showSnackBar(
                                const SnackBar(content: Text('聊天室ID为空，无法进入聊天')),
                              );
                            }
                          } catch (e) {
-                           print('进入聊天时发生未知错误: $e');
+                           AppLogger.d('进入聊天时发生未知错误: $e');
                            ScaffoldMessenger.of(context).showSnackBar(
                              SnackBar(content: Text('进入聊天时发生错误: $e')),
                            );

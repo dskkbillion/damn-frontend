@@ -1,4 +1,5 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 /// Configuration validator for required environment variables
 /// This validator ensures all necessary configuration is present before app starts
@@ -61,9 +62,9 @@ class ConfigValidator {
       // Check for optional variables and log warnings
       final warnings = validateOptional();
       if (warnings.isNotEmpty) {
-        print('Configuration warnings:');
+        AppLogger.d('Configuration warnings:');
         for (final warning in warnings) {
-          print('  - $warning');
+          AppLogger.d('  - $warning');
         }
       }
       
@@ -72,7 +73,7 @@ class ConfigValidator {
       if (throwOnError) {
         rethrow;
       }
-      print('Configuration validation failed: $e');
+      AppLogger.d('Configuration validation failed: $e');
       return false;
     }
   }
@@ -100,24 +101,24 @@ class ConfigValidator {
 
   /// Prints a helpful message about required configuration
   static void printConfigurationHelp() {
-    print('\n===== Configuration Requirements =====');
-    print('\nRequired environment variables:');
+    AppLogger.d('\n===== Configuration Requirements =====');
+    AppLogger.d('\nRequired environment variables:');
     for (final variable in requiredVariables) {
-      print('  - $variable');
+      AppLogger.d('  - $variable');
     }
     
-    print('\nOptional environment variables:');
+    AppLogger.d('\nOptional environment variables:');
     optionalVariables.forEach((variable, description) {
-      print('  - $variable: $description');
+      AppLogger.d('  - $variable: $description');
     });
     
-    print('\nExample .env file:');
-    print('---');
-    print('BACKEND_BASE_URL=https://your-api-server.com/api');
-    print('MODEL_BASE_URL=http://your-model-server.com:5107');
-    print('WECHAT_APP_ID=your_wechat_app_id');
-    print('WECHAT_UNIVERSAL_LINK=https://your-domain.com/wechat/');
-    print('---\n');
+    AppLogger.d('\nExample .env file:');
+    AppLogger.d('---');
+    AppLogger.d('BACKEND_BASE_URL=https://your-api-server.com/api');
+    AppLogger.d('MODEL_BASE_URL=http://your-model-server.com:5107');
+    AppLogger.d('WECHAT_APP_ID=your_wechat_app_id');
+    AppLogger.d('WECHAT_UNIVERSAL_LINK=https://your-domain.com/wechat/');
+    AppLogger.d('---\n');
   }
 }
 

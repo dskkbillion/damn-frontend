@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_status.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/cubit/websocket/websocket_cubit.dart';
@@ -30,11 +31,11 @@ class GlobalWebSocketManager {
   /// 初始化管理器，开始监听认证状态
   void initialize() {
     if (_isInitialized) {
-      print('[GlobalWebSocketManager] Already initialized, skipping');
+      AppLogger.d('[GlobalWebSocketManager] Already initialized, skipping');
       return;
     }
 
-    print('[GlobalWebSocketManager] Initializing...');
+    AppLogger.d('[GlobalWebSocketManager] Initializing...');
 
     // 监听认证状态变化
     _authStatusSubscription = _authRepository.authStatus.listen((authStatus) {
@@ -45,7 +46,7 @@ class GlobalWebSocketManager {
     _checkCurrentAuthStatus();
 
     _isInitialized = true;
-    print('[GlobalWebSocketManager] Initialization complete');
+    AppLogger.d('[GlobalWebSocketManager] Initialization complete');
   }
 
   /// 检查当前认证状态
@@ -54,31 +55,31 @@ class GlobalWebSocketManager {
       final result = _authRepository.getLoggedInUserSync();
       result.fold(
         (failure) {
-          print('[GlobalWebSocketManager] Not authenticated: $failure');
+          AppLogger.d('[GlobalWebSocketManager] Not authenticated: $failure');
         },
         (user) {
           if (user != null) {
-            print('[GlobalWebSocketManager] User already logged in, connecting WebSocket');
+            AppLogger.d('[GlobalWebSocketManager] User already logged in, connecting WebSocket');
             _connectWebSocket();
           } else {
-            print('[GlobalWebSocketManager] No user logged in');
+            AppLogger.d('[GlobalWebSocketManager] No user logged in');
           }
         },
       );
     } catch (e) {
-      print('[GlobalWebSocketManager] Error checking auth status: $e');
+      AppLogger.d('[GlobalWebSocketManager] Error checking auth status: $e');
     }
   }
 
   /// 处理认证状态变化
   void _handleAuthStatusChange(AuthStatus authStatus) {
-    print('[GlobalWebSocketManager] Auth status changed: $authStatus');
+    AppLogger.d('[GlobalWebSocketManager] Auth status changed: $authStatus');
 
     if (authStatus is Authenticated) {
-      print('[GlobalWebSocketManager] User authenticated, connecting WebSocket');
+      AppLogger.d('[GlobalWebSocketManager] User authenticated, connecting WebSocket');
       _connectWebSocket();
     } else if (authStatus is Unauthenticated) {
-      print('[GlobalWebSocketManager] User logged out, disconnecting WebSocket');
+      AppLogger.d('[GlobalWebSocketManager] User logged out, disconnecting WebSocket');
       _disconnectWebSocket();
     }
   }
@@ -91,11 +92,11 @@ class GlobalWebSocketManager {
       final token = await _storage.getToken();
 
       if (commonUserId == null || token == null) {
-        print('[GlobalWebSocketManager] Missing credentials, cannot connect');
+        AppLogger.d('[GlobalWebSocketManager] Missing credentials, cannot connect');
         return;
       }
 
-      print('[GlobalWebSocketManager] Connecting with userId: $commonUserId');
+      AppLogger.d('[GlobalWebSocketManager] Connecting with userId: $commonUserId');
 
       // 连接 WebSocket
       await _webSocketCubit.connect(
@@ -103,29 +104,29 @@ class GlobalWebSocketManager {
         token: token,
       );
 
-      print('[GlobalWebSocketManager] ✅ WebSocket connected successfully');
+      AppLogger.d('[GlobalWebSocketManager] ✅ WebSocket connected successfully');
     } catch (e) {
-      print('[GlobalWebSocketManager] ❌ Failed to connect WebSocket: $e');
+      AppLogger.d('[GlobalWebSocketManager] ❌ Failed to connect WebSocket: $e');
     }
   }
 
   /// 断开 WebSocket
   void _disconnectWebSocket() {
     try {
-      print('[GlobalWebSocketManager] Disconnecting WebSocket...');
+      AppLogger.d('[GlobalWebSocketManager] Disconnecting WebSocket...');
       _webSocketCubit.disconnect();
-      print('[GlobalWebSocketManager] ✅ WebSocket disconnected');
+      AppLogger.d('[GlobalWebSocketManager] ✅ WebSocket disconnected');
     } catch (e) {
-      print('[GlobalWebSocketManager] ❌ Failed to disconnect WebSocket: $e');
+      AppLogger.d('[GlobalWebSocketManager] ❌ Failed to disconnect WebSocket: $e');
     }
   }
 
   /// 释放资源
   void dispose() {
-    print('[GlobalWebSocketManager] Disposing...');
+    AppLogger.d('[GlobalWebSocketManager] Disposing...');
     _authStatusSubscription?.cancel();
     _authStatusSubscription = null;
     _isInitialized = false;
-    print('[GlobalWebSocketManager] Disposed');
+    AppLogger.d('[GlobalWebSocketManager] Disposed');
   }
 }

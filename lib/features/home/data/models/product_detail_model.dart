@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/product_detail.dart';
 
@@ -121,7 +122,7 @@ class ProductDetailModel extends Equatable {
                   result.add(parsedJson);
                 }
               } catch (e) {
-                print('解析嵌套JSON图片URL失败: $e，使用替代方法');
+                AppLogger.d('解析嵌套JSON图片URL失败: $e，使用替代方法');
                 // 如果JSON解析失败，尝试简单地清理字符串
                 final String cleaned = item
                     .replaceAll(r'\"', '"')  // 替换转义的引号
@@ -157,7 +158,7 @@ class ProductDetailModel extends Equatable {
               }
             }
           } catch (e) {
-            print('解析JSON字符串失败: $e');
+            AppLogger.d('解析JSON字符串失败: $e');
             // 失败后，尝试作为单个URL添加
             result.add(imagesJson);
           }
@@ -166,10 +167,10 @@ class ProductDetailModel extends Equatable {
         }
       }
     } catch (e) {
-      print('处理图片URL时发生异常: $e');
+      AppLogger.d('处理图片URL时发生异常: $e');
     }
     
-    print('解析后的图片URLs: $result');
+    AppLogger.d('解析后的图片URLs: $result');
     return result;
   }
 

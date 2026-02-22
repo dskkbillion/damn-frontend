@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:get_it/get_it.dart';
@@ -108,7 +109,7 @@ class ImageUploadHelper {
       return await _processImages(pickedFiles, type);
     } catch (e) {
       if (kDebugMode) {
-        print('[ImageUploadHelper] 选择图片出错: $e');
+        AppLogger.d('[ImageUploadHelper] 选择图片出错: $e');
       }
       return [];
     }
@@ -130,7 +131,7 @@ class ImageUploadHelper {
       return results.isNotEmpty ? results.first : null;
     } catch (e) {
       if (kDebugMode) {
-        print('[ImageUploadHelper] 拍照出错: $e');
+        AppLogger.d('[ImageUploadHelper] 拍照出错: $e');
       }
       return null;
     }
@@ -197,7 +198,7 @@ class ImageUploadHelper {
         ));
       } catch (e) {
         if (kDebugMode) {
-          print('[ImageUploadHelper] 压缩图片失败: $e');
+          AppLogger.d('[ImageUploadHelper] 压缩图片失败: $e');
         }
         
         results.add(ImageProcessResult(

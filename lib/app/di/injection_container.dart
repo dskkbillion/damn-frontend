@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dskk_flutter_refactor/core/navigation/services/mocks/mock_navigation_service.dart';
 import 'package:dskk_flutter_refactor/core/navigation/services/i_navigation_service.dart';
@@ -74,9 +75,9 @@ Future<void> registerProfilePreloaderService() async {
       orderRepository: getIt<IOrderRepository>(),
       sellerRepository: getIt<ISellerRepository>(),
     ));
-    print('[DI] Registered ProfilePreloaderService');
+    AppLogger.d('[DI] Registered ProfilePreloaderService');
   } else {
-    print('[DI] ProfilePreloaderService already registered, skipping registration');
+    AppLogger.d('[DI] ProfilePreloaderService already registered, skipping registration');
   }
 }
 
@@ -87,122 +88,122 @@ Future<void> registerAuthDependencies() async {
     getIt.registerLazySingleton<IUserRepository>(() => ChatUserRepositoryImpl(
       getIt<FlutterSecureStorage>()
     ));
-    print('[DI] Registered IUserRepository (ChatUserRepositoryImpl)');
+    AppLogger.d('[DI] Registered IUserRepository (ChatUserRepositoryImpl)');
   } else {
-    print('[DI] IUserRepository already registered, skipping registration');
+    AppLogger.d('[DI] IUserRepository already registered, skipping registration');
   }
 }
 
 Future<void> configureDependencies({required String backendBaseUrl}) async {
   // Register backendBaseUrl as named instance 
   getIt.registerSingleton<String>(backendBaseUrl, instanceName: 'backendBaseUrl');
-  print('[DI] Registered backendBaseUrl: $backendBaseUrl');
+  AppLogger.d('[DI] Registered backendBaseUrl: $backendBaseUrl');
 
   // 手动初始化配置，代替generated文件
   await registerCoreDependencies();
-  print('[DI] Core dependencies initialization complete.');
+  AppLogger.d('[DI] Core dependencies initialization complete.');
   
   // 注册用户仓库依赖 - 这一步要在其他模块之前
   await registerAuthDependencies();
-  print('[DI] Auth dependencies initialization complete.');
+  AppLogger.d('[DI] Auth dependencies initialization complete.');
   
   // 初始化Home模块依赖 - 必须在Chat模块之前，因为Chat依赖Home的IHomeRepository
   try {
-    print('[DI] Starting Home module initialization...');
+    AppLogger.d('[DI] Starting Home module initialization...');
     await initHomeDi();
-    print('[DI] Home module dependencies initialization complete.');
+    AppLogger.d('[DI] Home module dependencies initialization complete.');
   } catch (e) {
-    print('[DI] Failed to initialize Home module: $e');
+    AppLogger.d('[DI] Failed to initialize Home module: $e');
     // 不抛出异常，允许应用继续启动，但记录错误信息
   }
 
   // 初始化Chat模块依赖
   try {
-    print('[DI] Starting Chat module initialization...');
+    AppLogger.d('[DI] Starting Chat module initialization...');
     await ChatDI.init(getIt);
-    print('[DI] Chat module dependencies initialization complete.');
+    AppLogger.d('[DI] Chat module dependencies initialization complete.');
   } catch (e) {
-    print('[DI] Failed to initialize Chat module: $e');
+    AppLogger.d('[DI] Failed to initialize Chat module: $e');
     // 不抛出异常，允许应用继续启动，但记录错误信息
   }
   
   // 初始化Auth模块依赖
   try {
-    print('[DI] Starting Auth module initialization...');
+    AppLogger.d('[DI] Starting Auth module initialization...');
     await AuthDI.init(getIt);
-    print('[DI] Auth module dependencies initialization complete.');
+    AppLogger.d('[DI] Auth module dependencies initialization complete.');
   } catch (e) {
-    print('[DI] Failed to initialize Auth module: $e');
+    AppLogger.d('[DI] Failed to initialize Auth module: $e');
     // 不抛出异常，允许应用继续启动，但记录错误信息
   }
   
   // 注册支付模块依赖
   try {
-    print('[DI] Starting Payment module initialization...');
+    AppLogger.d('[DI] Starting Payment module initialization...');
     await PaymentDI.init(getIt);
-    print('[DI] Payment module dependencies initialization complete.');
+    AppLogger.d('[DI] Payment module dependencies initialization complete.');
   } catch (e) {
-    print('[DI] Failed to initialize Payment module: $e');
+    AppLogger.d('[DI] Failed to initialize Payment module: $e');
     // 不抛出异常，允许应用继续启动，但记录错误信息
   }
   
   // 注册卖家模块依赖
   try {
-    print('[DI] Starting Seller module initialization...');
+    AppLogger.d('[DI] Starting Seller module initialization...');
     await SellerDI.init(getIt);
-    print('[DI] Seller module dependencies initialization complete.');
+    AppLogger.d('[DI] Seller module dependencies initialization complete.');
   } catch (e) {
-    print('[DI] Failed to initialize Seller module: $e');
+    AppLogger.d('[DI] Failed to initialize Seller module: $e');
     // 不抛出异常，允许应用继续启动，但记录错误信息
   }
   
   // 初始化Analytics模块依赖
   try {
-    print('[DI] Starting Analytics module initialization...');
+    AppLogger.d('[DI] Starting Analytics module initialization...');
     await initAnalyticsModule();
-    print('[DI] Analytics module dependencies initialization complete.');
+    AppLogger.d('[DI] Analytics module dependencies initialization complete.');
   } catch (e) {
-    print('[DI] Failed to initialize Analytics module: $e');
+    AppLogger.d('[DI] Failed to initialize Analytics module: $e');
     // 不抛出异常，允许应用继续启动，但记录错误信息
   }
   
   // 初始化AI文档模块依赖
   try {
-    print('[DI] Starting AI Docs module initialization...');
+    AppLogger.d('[DI] Starting AI Docs module initialization...');
     await AiDocsDI.init(getIt);
-    print('[DI] AI Docs module dependencies initialization complete.');
+    AppLogger.d('[DI] AI Docs module dependencies initialization complete.');
   } catch (e) {
-    print('[DI] Failed to initialize AI Docs module: $e');
+    AppLogger.d('[DI] Failed to initialize AI Docs module: $e');
     // 不抛出异常，允许应用继续启动，但记录错误信息
   }
   
   // 初始化订单模块依赖
   try {
-    print('[DI] Starting Orders module initialization...');
+    AppLogger.d('[DI] Starting Orders module initialization...');
     await OrdersDI.init(getIt);
-    print('[DI] Orders module dependencies initialization complete.');
+    AppLogger.d('[DI] Orders module dependencies initialization complete.');
   } catch (e) {
-    print('[DI] Failed to initialize Orders module: $e');
+    AppLogger.d('[DI] Failed to initialize Orders module: $e');
     // 不抛出异常，允许应用继续启动，但记录错误信息
   }
   
   // 初始化售后模块依赖
   try {
-    print('[DI] Starting After Sales module initialization...');
+    AppLogger.d('[DI] Starting After Sales module initialization...');
     await AfterSalesDI.init(getIt);
-    print('[DI] After Sales module dependencies initialization complete.');
+    AppLogger.d('[DI] After Sales module dependencies initialization complete.');
   } catch (e) {
-    print('[DI] Failed to initialize After Sales module: $e');
+    AppLogger.d('[DI] Failed to initialize After Sales module: $e');
     // 不抛出异常，允许应用继续启动，但记录错误信息
   }
   
   // 注册ProfilePreloader服务
   try {
-    print('[DI] Registering ProfilePreloader service...');
+    AppLogger.d('[DI] Registering ProfilePreloader service...');
     await registerProfilePreloaderService();
-    print('[DI] ProfilePreloader service registration complete.');
+    AppLogger.d('[DI] ProfilePreloader service registration complete.');
   } catch (e) {
-    print('[DI] Failed to register ProfilePreloader service: $e');
+    AppLogger.d('[DI] Failed to register ProfilePreloader service: $e');
     // 不抛出异常，允许应用继续启动，但记录错误信息
   }
 }
@@ -226,16 +227,16 @@ Future<void> registerCoreDependencies() async {
   
   // 注册ImageCompressService
   getIt.registerLazySingleton<ImageCompressService>(() => ImageCompressService());
-  print('[DI] Registered ImageCompressService');
+  AppLogger.d('[DI] Registered ImageCompressService');
   
   // 注册缓存系统
   CacheInjection.init(getIt);
-  print('[DI] Registered Cache System');
+  AppLogger.d('[DI] Registered Cache System');
   
   // 注册HTTP缓存管理器
   getIt.registerLazySingleton(() => CacheInterceptorManager());
   getIt.registerFactory<SmartCacheInterceptor>(() => SmartCacheInterceptor());
-  print('[DI] Registered HTTP Cache Manager');
+  AppLogger.d('[DI] Registered HTTP Cache Manager');
   
   // 注册AppDatabase
   getIt.registerLazySingleton<AppDatabase>(() => AppDatabase());
@@ -247,7 +248,7 @@ Future<void> registerCoreDependencies() async {
   getIt.registerLazySingleton<Dio>(() {
     final dio = Dio();
     dio.options.baseUrl = getIt<String>(instanceName: 'backendBaseUrl');
-    print('Dio configured with Base URL: ${dio.options.baseUrl}');
+    AppLogger.d('Dio configured with Base URL: ${dio.options.baseUrl}');
     dio.options.connectTimeout = const Duration(seconds: 15);
     dio.options.receiveTimeout = const Duration(seconds: 15);
     dio.options.contentType = 'application/json';
@@ -267,16 +268,16 @@ Future<void> registerCoreDependencies() async {
         if (path.contains('/api/chat/list') ||
             path.contains('/api/chat/messages')) {
           // 只记录基本信息，不记录响应体
-          print('[HTTP] ${response.requestOptions.method} ${path} - Status: ${response.statusCode}');
+          AppLogger.d('[HTTP] ${response.requestOptions.method} ${path} - Status: ${response.statusCode}');
         } else {
           // 对其他请求使用PrettyDioLogger
           // 这里无法直接调用PrettyDioLogger，所以只记录简单日志
           if (response.statusCode != 200 && response.statusCode != 201) {
-            print('[HTTP] ${response.requestOptions.method} ${path} - Status: ${response.statusCode}');
+            AppLogger.d('[HTTP] ${response.requestOptions.method} ${path} - Status: ${response.statusCode}');
             if (response.data != null) {
               final dataStr = response.data.toString();
               if (dataStr.length < 1000) {
-                print('[HTTP] Response: $dataStr');
+                AppLogger.d('[HTTP] Response: $dataStr');
               }
             }
           }
@@ -284,12 +285,12 @@ Future<void> registerCoreDependencies() async {
         handler.next(response);
       },
       onRequest: (request, handler) {
-        print('[HTTP] ${request.method} ${request.path}');
+        AppLogger.d('[HTTP] ${request.method} ${request.path}');
         handler.next(request);
       },
       onError: (error, handler) {
-        print('[HTTP ERROR] ${error.requestOptions.method} ${error.requestOptions.path}');
-        print('[HTTP ERROR] ${error.message}');
+        AppLogger.d('[HTTP ERROR] ${error.requestOptions.method} ${error.requestOptions.path}');
+        AppLogger.d('[HTTP ERROR] ${error.message}');
         handler.next(error);
       },
     ));
@@ -299,7 +300,7 @@ Future<void> registerCoreDependencies() async {
   
   // 添加：注册IHttpClient实现
   getIt.registerLazySingleton<IHttpClient>(() => DioHttpClient());
-  print('[DI] Registered IHttpClient (DioHttpClient)');
+  AppLogger.d('[DI] Registered IHttpClient (DioHttpClient)');
   
   // 注册CoreDioClient（默认不带缓存）
   getIt.registerFactory<CoreDioClient>(() => CoreDioClient(
@@ -337,7 +338,7 @@ Future<void> registerCoreDependencies() async {
   
   // 注册FileUploadService
   getIt.registerLazySingleton<IFileUploadService>(() => FileUploadService(getIt<Dio>()));
-  print('[DI] Registered FileUploadService');
+  AppLogger.d('[DI] Registered FileUploadService');
 
   // 注册AlipayPaymentService (使用实际实现替代Mock)
   getIt.registerLazySingleton<IPaymentService>(() => AlipayPaymentService(
@@ -354,26 +355,26 @@ class AuthInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     // 记录进入拦截器前的Headers状态
-    print('[AuthInterceptor] 进入拦截器，当前path: ${options.path}, headers: ${options.headers}');
+    AppLogger.d('[AuthInterceptor] 进入拦截器，当前path: ${options.path}, headers: ${options.headers}');
     
     // Skip adding token for auth endpoints
     if (options.path.contains('/api/auth/login') || 
         options.path.contains('/api/auth/register') ||
         options.path.contains('/api/auth/sms')) {
-      print('[AuthInterceptor] Skipping token for auth path: ${options.path}');
+      AppLogger.d('[AuthInterceptor] Skipping token for auth path: ${options.path}');
       return handler.next(options);
     }
 
     String? token = await _getAuthToken();
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = token; // 直接使用token，不添加Bearer前缀
-      print('[AuthInterceptor] Added token to Authorization header: ${token.substring(0, 15)}...');
+      AppLogger.d('[AuthInterceptor] Added token to Authorization header: ${token.substring(0, 15)}...');
     } else {
-       print('[AuthInterceptor] No token found. Request proceeding without Authorization header.');
+       AppLogger.d('[AuthInterceptor] No token found. Request proceeding without Authorization header.');
     }
     
     // 记录最终的Headers状态
-    print('[AuthInterceptor] 最终headers: ${options.headers}');
+    AppLogger.d('[AuthInterceptor] 最终headers: ${options.headers}');
     
     handler.next(options); 
   }
@@ -383,13 +384,13 @@ class AuthInterceptor extends Interceptor {
       const storageKey = 'auth_token';
       final token = await _storage.read(key: storageKey);
       if (token != null) {
-        print('[AuthInterceptor] Token retrieved from secure storage.');
+        AppLogger.d('[AuthInterceptor] Token retrieved from secure storage.');
       } else {
-        print('[AuthInterceptor] Token not found in secure storage (key: $storageKey).');
+        AppLogger.d('[AuthInterceptor] Token not found in secure storage (key: $storageKey).');
       }
       return token;
     } catch (e) {
-      print('[AuthInterceptor] Error reading token from secure storage: $e');
+      AppLogger.d('[AuthInterceptor] Error reading token from secure storage: $e');
       return null;
     }
   }

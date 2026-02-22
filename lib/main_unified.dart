@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,9 +41,9 @@ import 'package:dskk_flutter_refactor/app/navigation/app_router.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  print('========================================');
-  print('DSKK Flutter Unified Entry - Production');
-  print('========================================');
+  AppLogger.d('========================================');
+  AppLogger.d('DSKK Flutter Unified Entry - Production');
+  AppLogger.d('========================================');
   
   // Configure global image cache limits
   _configureImageCache();
@@ -50,9 +51,9 @@ Future<void> main() async {
   // 先加载.env文件
   try {
     await dotenv.load(fileName: ".env");
-    print('.env file loaded successfully.');
+    AppLogger.d('.env file loaded successfully.');
   } catch (e) {
-    print('No .env file found, using default configuration.');
+    AppLogger.d('No .env file found, using default configuration.');
   }
   
   // 配置统一服设置
@@ -67,13 +68,13 @@ Future<void> main() async {
     throw Exception('BACKEND_BASE_URL environment variable is not set. Please configure it in your .env file.');
   }
   
-  print('[Unified Production] Using API: $backendBaseUrl');
-  print('[Unified Production] Model API: ${RegionConfig.modelBaseUrl}');
-  print('[Unified Production] Currency: ${RegionConfig.defaultCurrency.code} (${RegionConfig.currencySymbol})');
-  print('[Unified Production] Payment methods: ${RegionConfig.supportedPaymentMethods.map((m) => m.displayName).join(', ')}');
-  print('[Unified Production] Features enabled:');
+  AppLogger.d('[Unified Production] Using API: $backendBaseUrl');
+  AppLogger.d('[Unified Production] Model API: ${RegionConfig.modelBaseUrl}');
+  AppLogger.d('[Unified Production] Currency: ${RegionConfig.defaultCurrency.code} (${RegionConfig.currencySymbol})');
+  AppLogger.d('[Unified Production] Payment methods: ${RegionConfig.supportedPaymentMethods.map((m) => m.displayName).join(', ')}');
+  AppLogger.d('[Unified Production] Features enabled:');
   RegionConfig.features.forEach((key, value) {
-    if (value) print('  ✓ $key');
+    if (value) AppLogger.d('  ✓ $key');
   });
 
   // 验证支付相关配置
@@ -84,44 +85,44 @@ Future<void> main() async {
 
   // 初始化依赖注入
   await configureDependencies(backendBaseUrl: backendBaseUrl);
-  print('[Unified Production] Core dependencies configured.');
+  AppLogger.d('[Unified Production] Core dependencies configured.');
   
 
   await initHomeDi();
-  print('[Unified Production] Home module initialized.');
+  AppLogger.d('[Unified Production] Home module initialized.');
   
   await FavoritesDI.init(getIt);
-  print('[Unified Production] Favorites module initialized.');
+  AppLogger.d('[Unified Production] Favorites module initialized.');
   
   await AiDocsDI.init(getIt);
-  print('[Unified Production] AI Docs module initialized.');
+  AppLogger.d('[Unified Production] AI Docs module initialized.');
   
   await ChatDI.init(getIt);
-  print('[Unified Production] Chat module initialized.');
+  AppLogger.d('[Unified Production] Chat module initialized.');
 
   await ProfileDI.init(getIt);
-  print('[Unified Production] Profile module initialized.');
+  AppLogger.d('[Unified Production] Profile module initialized.');
 
   // 初始化全局 WebSocket 管理器（必须在 AuthDI 和 ChatDI 之后）
   ChatDI.initGlobalWebSocketManager(getIt);
-  print('[Unified Production] Global WebSocket manager initialized.');
+  AppLogger.d('[Unified Production] Global WebSocket manager initialized.');
   
   SellerStatisticsDI.init(getIt);
-  print('[Unified Production] Seller Statistics module initialized.');
+  AppLogger.d('[Unified Production] Seller Statistics module initialized.');
   
   await SellerDI.init(getIt);
-  print('[Unified Production] Seller module initialized.');
+  AppLogger.d('[Unified Production] Seller module initialized.');
   
   await PaymentDI.init(getIt);
-  print('[Unified Production] Payment module initialized.');
+  AppLogger.d('[Unified Production] Payment module initialized.');
 
   // 初始化分析模块
   await initAnalyticsModule();
-  print('[Unified Production] Analytics module initialized.');
+  AppLogger.d('[Unified Production] Analytics module initialized.');
 
   // 配置BLoC观察者
   Bloc.observer = AnalyticsBlocObserver();
-  print('[Unified Production] Analytics BLoC observer configured.');
+  AppLogger.d('[Unified Production] Analytics BLoC observer configured.');
 
   // 触发预加载
   _triggerPreloadingAfterDelay();
@@ -141,9 +142,9 @@ Future<void> main() async {
               
               // 注册真实的导航服务
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                print('[Unified Production] Registering navigation service...');
+                AppLogger.d('[Unified Production] Registering navigation service...');
                 HomeNavigationDI.registerRealNavigationService(getIt, router);
-                print('[Unified Production] Navigation service registered successfully.');
+                AppLogger.d('[Unified Production] Navigation service registered successfully.');
               });
               
               return const MyApp();
@@ -161,16 +162,16 @@ void _triggerPreloadingAfterDelay() {
   Future.delayed(const Duration(seconds: 3), () async {
     try {
       final preloaderService = getIt<ProfilePreloaderService>();
-      print('[Preloader] Starting preloading process...');
+      AppLogger.d('[Preloader] Starting preloading process...');
       
       await preloaderService.preloadBothModes(
         priorityMode: AppMode.buyer,
         delayBetweenModes: const Duration(seconds: 3),
       );
       
-      print('[Preloader] Preloading process completed successfully');
+      AppLogger.d('[Preloader] Preloading process completed successfully');
     } catch (e) {
-      print('[Preloader] Failed to preload data: $e');
+      AppLogger.d('[Preloader] Failed to preload data: $e');
     }
   });
 }
@@ -186,7 +187,7 @@ void _configureImageCache() {
   // 50MB = 50 * 1024 * 1024 bytes
   binding.imageCache.maximumSizeBytes = 50 * 1024 * 1024; // 限制为50MB
   
-  print('[Image Cache] Configured:');
-  print('  Max images: ${binding.imageCache.maximumSize}');
-  print('  Max memory: ${binding.imageCache.maximumSizeBytes ~/ (1024 * 1024)}MB');
+  AppLogger.d('[Image Cache] Configured:');
+  AppLogger.d('  Max images: ${binding.imageCache.maximumSize}');
+  AppLogger.d('  Max memory: ${binding.imageCache.maximumSizeBytes ~/ (1024 * 1024)}MB');
 }

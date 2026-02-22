@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_notification.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_notification_list_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/mark_notification_as_read_usecase.dart';
@@ -172,7 +173,7 @@ class NotificationListBloc extends Bloc<NotificationListEvent, NotificationListS
         (failure) {
           // 记录错误，但继续加载其他类型
           errorMessage = failure.message;
-          print('加载[$messageType]类型通知失败: ${failure.message}');
+          AppLogger.d('加载[$messageType]类型通知失败: ${failure.message}');
         },
         (notifications) {
           // 添加到合并列表

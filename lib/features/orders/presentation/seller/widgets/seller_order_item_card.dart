@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:go_router/go_router.dart'; // Import GoRouter
 
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
@@ -22,9 +23,9 @@ class SellerOrderItemCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     
     // 调试日志
-    print('[SellerOrderItemCard] Building card for order ${order.id}');
-    print('[SellerOrderItemCard] Buyer info - id: ${order.buyer?.id}, nickname: ${order.buyer?.nickname}');
-    print('[SellerOrderItemCard] Tenant info - id: ${order.tenant?.id}, nickname: ${order.tenant?.nickname}');
+    AppLogger.d('[SellerOrderItemCard] Building card for order ${order.id}');
+    AppLogger.d('[SellerOrderItemCard] Buyer info - id: ${order.buyer?.id}, nickname: ${order.buyer?.nickname}');
+    AppLogger.d('[SellerOrderItemCard] Tenant info - id: ${order.tenant?.id}, nickname: ${order.tenant?.nickname}');
 
     // 假设 order.items 非空，并且我们显示第一个 item 的信息作为预览
     final firstItem = order.items.isNotEmpty ? order.items.first : null;
@@ -36,7 +37,7 @@ class SellerOrderItemCard extends StatelessWidget {
       } else {
          // TODO: Define seller detail route and navigate
          // context.go('/seller/orders/${order.id}');
-         print('[SellerOrderItemCard] Navigate to seller detail for order ${order.id}');
+         AppLogger.d('[SellerOrderItemCard] Navigate to seller detail for order ${order.id}');
       }
     };
 

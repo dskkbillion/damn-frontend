@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart'; // Import dotenv
 
@@ -39,7 +40,7 @@ class FileUploadDataSourceImpl implements IFileUploadDataSource {
 
     // Construct the full URL
     final String fullUrl = backendBaseUrl + uploadPath;
-    print("Uploading file to: $fullUrl"); // Log the full URL
+    AppLogger.d("Uploading file to: $fullUrl"); // Log the full URL
     
     try {
       // Call postMultipart WITHOUT the fields parameter
@@ -49,7 +50,7 @@ class FileUploadDataSourceImpl implements IFileUploadDataSource {
       );
 
       // 打印响应内容，便于调试
-      print("File upload response: $response");
+      AppLogger.d("File upload response: $response");
 
       // 处理响应
       final int code = response['code'] ?? 500;
@@ -77,7 +78,7 @@ class FileUploadDataSourceImpl implements IFileUploadDataSource {
             }
             
             // 打印所有字段，帮助调试
-            print("Unable to find URL in data, available fields: ${data.keys.toList()}");
+            AppLogger.d("Unable to find URL in data, available fields: ${data.keys.toList()}");
             throw ds_exceptions.ServerException(
               message: "File upload succeeded but couldn't locate URL in response",
               statusCode: code
@@ -95,16 +96,16 @@ class FileUploadDataSourceImpl implements IFileUploadDataSource {
         statusCode: code
       );
     } on ds_exceptions.NetworkException catch (e) {
-      print("NetworkException during file upload to $fullUrl: $e");
+      AppLogger.d("NetworkException during file upload to $fullUrl: $e");
       throw ds_exceptions.NetworkException(message: "Network error during file upload: ${e.message}");
     } on ds_exceptions.ServerException catch (e) {
-      print("ServerException during file upload to $fullUrl: $e");
+      AppLogger.d("ServerException during file upload to $fullUrl: $e");
       throw ds_exceptions.ServerException(
         message: "Server error during file upload: ${e.message}", 
         statusCode: e.statusCode
       );
     } catch (e) {
-      print("Unexpected error during file upload to $fullUrl: $e");
+      AppLogger.d("Unexpected error during file upload to $fullUrl: $e");
       throw ds_exceptions.DataSourceException(message: "Unexpected error during file upload: ${e.toString()}");
     }
   }

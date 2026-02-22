@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
@@ -40,16 +41,16 @@ class AiDocsFileUploadRepositoryImpl implements IFileUploadRepository {
     } on CacheException {
       return Left(CacheFailure(message: '文件上传缓存错误')); 
     } on ds_exceptions.ServerException catch (e) {
-      print('[AiDocs] 服务器异常: ${e.message}');
+      AppLogger.d('[AiDocs] 服务器异常: ${e.message}');
       return Left(ServerFailure(message: e.message ?? '文件上传服务器错误', code: e.statusCode?.toString())); 
     } on ds_exceptions.NetworkException catch (e) {
-      print('[AiDocs] 网络异常: ${e.message}');
+      AppLogger.d('[AiDocs] 网络异常: ${e.message}');
       return Left(NetworkFailure(message: e.message ?? '网络连接失败，无法上传文件')); 
     } on ds_exceptions.DataSourceException catch (e) { 
-      print('[AiDocs] 数据源异常: ${e.message}');
+      AppLogger.d('[AiDocs] 数据源异常: ${e.message}');
       return Left(GeneralFailure(message: '文件上传数据源错误: ${e.message}')); 
     } catch (e, stacktrace) {
-      print('[AiDocs] 未预期异常: $e\n$stacktrace');
+      AppLogger.d('[AiDocs] 未预期异常: $e\n$stacktrace');
       return Left(GeneralFailure(message: '文件上传过程中发生未预期错误: ${e.toString()}')); 
     }
   }
@@ -67,7 +68,7 @@ class AiDocsFileUploadRepositoryImpl implements IFileUploadRepository {
       return Left(GeneralFailure(message: '文件大小超过限制: ${fileSize / (1024 * 1024)}MB，最大允许10MB')); 
     }
     
-    print('[AiDocs] 开始上传文件: ${file.path}, 大小: ${fileSize / 1024}KB');
+    AppLogger.d('[AiDocs] 开始上传文件: ${file.path}, 大小: ${fileSize / 1024}KB');
     
     return _tryCatch<String>(() async {
       return await _dataSource.uploadFile(file);

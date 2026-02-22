@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 
 /// 验证码按钮的状态
@@ -101,7 +102,7 @@ class _VerificationCodeButtonState extends State<VerificationCodeButton> {
       onPressed: canSend
           ? () {
               final account = widget.phoneController.text;
-              print('尝试发送验证码到: $account');
+              AppLogger.d('尝试发送验证码到: $account');
               
               // 不在这里验证，让调用方处理验证逻辑
               if (account.isNotEmpty) {

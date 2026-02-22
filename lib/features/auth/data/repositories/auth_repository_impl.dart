@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:async';
 import 'package:injectable/injectable.dart'; // Import injectable
 
@@ -54,42 +55,42 @@ class AuthRepositoryImpl implements IAuthRepository {
 
       if (id != null && token != null) {
         // 验证Token有效性
-        print('Found existing token and id in secure storage. Validating token...');
+        AppLogger.d('Found existing token and id in secure storage. Validating token...');
         final validationResult = await tokenValidator.validateToken(token);
 
         switch (validationResult) {
           case TokenValidationResult.valid:
-            print('Token is valid. User is authenticated.');
+            AppLogger.d('Token is valid. User is authenticated.');
             _currentUser = AuthenticatedUser(id: id, token: token);
             _statusController.add(Authenticated(_currentUser!));
             break;
 
           case TokenValidationResult.expired:
-            print('Token has expired. Clearing local auth data.');
+            AppLogger.d('Token has expired. Clearing local auth data.');
             await _clearLocalAuthData();
             _statusController.add(const Unauthenticated());
             break;
 
           case TokenValidationResult.invalid:
-            print('Token is invalid. Clearing local auth data.');
+            AppLogger.d('Token is invalid. Clearing local auth data.');
             await _clearLocalAuthData();
             _statusController.add(const Unauthenticated());
             break;
 
           case TokenValidationResult.error:
             // 出错时暂时假定Token可能有效
-            print('Error validating token. Assuming token is valid for now.');
+            AppLogger.d('Error validating token. Assuming token is valid for now.');
             _currentUser = AuthenticatedUser(id: id, token: token);
             _statusController.add(Authenticated(_currentUser!));
             break;
         }
       } else {
-        print('No existing token/id found, or only partial data found.');
+        AppLogger.d('No existing token/id found, or only partial data found.');
         await _clearLocalAuthData(); // 清理本地数据
         _statusController.add(const Unauthenticated());
       }
     } catch (e) {
-      print('Error initializing auth status: $e. Clearing storage.');
+      AppLogger.d('Error initializing auth status: $e. Clearing storage.');
       await _clearLocalAuthData();
       _statusController.add(const Unauthenticated());
     }
@@ -107,7 +108,7 @@ class AuthRepositoryImpl implements IAuthRepository {
         return Right(result);
       } on ServerException catch (e) {
         // TODO: 可以根据 e 的具体错误信息返回更具体的 Failure
-        print('ServerException in repository: ${e.message}');
+        AppLogger.d('ServerException in repository: ${e.message}');
         // Check for unauthenticated errors specifically if needed
         if (e is UnauthenticatedException) {
             await _handleLogoutLocally(); // Ensure local state is cleared on auth errors
@@ -115,10 +116,10 @@ class AuthRepositoryImpl implements IAuthRepository {
         }
         return Left(ServerFailure(message: e.message ?? 'Unknown server error'));
       } on CacheException catch (e) { // 假设 SecureStorage 可能抛出
-        print('CacheException in repository: ${e.message}');
+        AppLogger.d('CacheException in repository: ${e.message}');
         return Left(CacheFailure(message: e.message ?? 'Storage error'));
       } catch (e) {
-        print('Unknown exception in repository: ${e.toString()}');
+        AppLogger.d('Unknown exception in repository: ${e.toString()}');
         return Left(UnknownFailure(message: 'An unknown error occurred'));
       }
     } else {
@@ -142,7 +143,7 @@ class AuthRepositoryImpl implements IAuthRepository {
 
         return userFetchResult.fold(
           (failure) {
-             print('Failed to fetch user info after successful token acquisition: $failure');
+             AppLogger.d('Failed to fetch user info after successful token acquisition: $failure');
              // 不清除 token，让 core 的 token 校验逻辑来处理
              return Left(failure);
           },
@@ -159,18 +160,18 @@ class AuthRepositoryImpl implements IAuthRepository {
                 await secureStorage.saveCommonUserId(userInfo.commonUserId!);
                 // 同时保存为 refer_id，供聊天模块使用
                 await secureStorage.saveString('refer_id', userInfo.commonUserId.toString());
-                print('Saved commonUserId: ${userInfo.commonUserId}');
-                print('Saved refer_id: ${userInfo.commonUserId} for chat module');
+                AppLogger.d('Saved commonUserId: ${userInfo.commonUserId}');
+                AppLogger.d('Saved refer_id: ${userInfo.commonUserId} for chat module');
               } else {
-                print('commonUserId from UserInfo is null. Key will not be saved/updated in secure storage.');
+                AppLogger.d('commonUserId from UserInfo is null. Key will not be saved/updated in secure storage.');
               }
 
               _currentUser = authenticatedUser;
               _statusController.add(Authenticated(authenticatedUser));
-              print('Login successful. UserID: ${userInfo.id}, Token: ${authenticatedUserModel.token}');
+              AppLogger.d('Login successful. UserID: ${userInfo.id}, Token: ${authenticatedUserModel.token}');
               return Right(authenticatedUser);
             } on CacheException catch (e) {
-              print('Failed to save credentials after login: ${e.message}');
+              AppLogger.d('Failed to save credentials after login: ${e.message}');
               // 即使存储失败，也更新内存状态，但返回错误
               _currentUser = authenticatedUser;
               _statusController.add(Authenticated(authenticatedUser));
@@ -190,9 +191,9 @@ class AuthRepositoryImpl implements IAuthRepository {
        await secureStorage.delete('auth_token');
        await secureStorage.delete('common_user_id'); // 同时清理commonUserId
        await secureStorage.delete('refer_id'); // 清理refer_id（用于聊天模块）
-       print('Cleared local auth data (id, token, commonUserId, refer_id).');
+       AppLogger.d('Cleared local auth data (id, token, commonUserId, refer_id).');
     } catch (e) {
-        print('Error clearing local auth data: $e');
+        AppLogger.d('Error clearing local auth data: $e');
     }
   }
 
@@ -230,7 +231,7 @@ class AuthRepositoryImpl implements IAuthRepository {
       return Right(_currentUser);
     } catch (e) {
       // 理论上这里不应出错，除非 currentUser 状态管理有问题
-      print('Error getting logged in user sync: $e');
+      AppLogger.d('Error getting logged in user sync: $e');
       return Left(UnknownFailure(message: 'Failed to get current user status'));
     }
   }

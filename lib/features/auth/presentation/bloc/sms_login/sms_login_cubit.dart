@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_credentials.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/usecases/login_with_verification_code.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/usecases/send_verification_code.dart';
@@ -28,7 +29,7 @@ class SmsLoginCubit extends Cubit<SmsLoginState> {
         emit(SmsLoginCodeSentSuccess());
         Future.delayed(const Duration(seconds: _countdownSeconds), () {
           if (state is SmsLoginCodeSentSuccess) {
-            print('Countdown finished, resetting SMS login state.');
+            AppLogger.d('Countdown finished, resetting SMS login state.');
             emit(SmsLoginInitial());
           }
         });

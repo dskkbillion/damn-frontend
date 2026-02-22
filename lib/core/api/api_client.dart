@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:io';
 
@@ -94,12 +95,12 @@ class ApiClient {
           
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = token; // 直接使用token，不添加Bearer前缀
-            print('[ApiClient AuthInterceptor] Added token to request');
+            AppLogger.d('[ApiClient AuthInterceptor] Added token to request');
           } else {
-            print('[ApiClient AuthInterceptor] No token found in secure storage');
+            AppLogger.d('[ApiClient AuthInterceptor] No token found in secure storage');
           }
         } catch (e) {
-          print('[ApiClient AuthInterceptor] Error reading token: $e');
+          AppLogger.d('[ApiClient AuthInterceptor] Error reading token: $e');
         }
         
         handler.next(options);

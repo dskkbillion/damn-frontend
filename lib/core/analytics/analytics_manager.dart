@@ -1,4 +1,5 @@
 import 'entities/analytics_event.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'services/analytics_api_service.dart';
 import 'services/device_info_service.dart';
 import 'services/user_identification_service.dart';
@@ -28,7 +29,7 @@ class AnalyticsManager {
     int? interval,
   }) async {
     try {
-      print('[AnalyticsManager] 开始记录事件: $businessType, 路径: $path, ID: $businessId');
+      AppLogger.d('[AnalyticsManager] 开始记录事件: $businessType, 路径: $path, ID: $businessId');
       
       final event = AnalyticsEvent(
         path: path,
@@ -40,11 +41,11 @@ class AnalyticsManager {
         interval: interval,
       );
 
-      print('[AnalyticsManager] 事件创建成功: ${event.toJson()}');
+      AppLogger.d('[AnalyticsManager] 事件创建成功: ${event.toJson()}');
       _eventBuffer.addEvent(event);
-      print('[AnalyticsManager] 事件已添加到缓冲区');
+      AppLogger.d('[AnalyticsManager] 事件已添加到缓冲区');
     } catch (e) {
-      print('[AnalyticsManager] 记录事件失败: $e');
+      AppLogger.d('[AnalyticsManager] 记录事件失败: $e');
       // 不抛出异常，避免影响正常业务流程
     }
   }
@@ -58,7 +59,7 @@ class AnalyticsManager {
     int? stayDuration,
     Map<String, dynamic>? additionalData,
   }) async {
-    print('[AnalyticsManager] 记录页面浏览事件: $path, 类型: $pageType, 来源: $source');
+    AppLogger.d('[AnalyticsManager] 记录页面浏览事件: $path, 类型: $pageType, 来源: $source');
     
     final feature = <String, dynamic>{
       'page_type': pageType ?? 'unknown',
@@ -85,7 +86,7 @@ class AnalyticsManager {
     String? source,
     Map<String, dynamic>? additionalData,
   }) async {
-    print('[AnalyticsManager] 记录点击事件: $path, 目标ID: $targetId, 类型: $clickType');
+    AppLogger.d('[AnalyticsManager] 记录点击事件: $path, 目标ID: $targetId, 类型: $clickType');
     
     final feature = <String, dynamic>{
       'click_type': clickType,

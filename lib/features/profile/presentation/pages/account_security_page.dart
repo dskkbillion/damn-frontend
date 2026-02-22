@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:io';
@@ -39,7 +40,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             listener: (context, state) {
               if (state is ProfileLoggedOut) {
                 // 登出成功后导航到登录页面，并清除导航栈
-                print('【退出登录】用户已成功登出，正在重定向到登录页面...');
+                AppLogger.d('【退出登录】用户已成功登出，正在重定向到登录页面...');
                 context.go('/auth/login');
               }
             },
@@ -48,7 +49,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             listenWhen: (previous, current) => current is ProfileLoggingOut,
             listener: (context, state) {
               if (state is ProfileLoggingOut) {
-                print('【退出登录】正在处理登出请求...');
+                AppLogger.d('【退出登录】正在处理登出请求...');
               }
             },
           ),
@@ -58,7 +59,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
               (previous is ProfileLoggingOut || previous is LogoutEvent),
             listener: (context, state) {
               if (state is ProfileError) {
-                print('【退出登录】发生错误: ${state.message}');
+                AppLogger.d('【退出登录】发生错误: ${state.message}');
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('退出登录时发生错误: ${state.message}')),
                 );
@@ -74,7 +75,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             listener: (context, state) {
               if (state is ProfileAvatarUploaded) {
                 // 上传成功后，立即更新用户资料
-                print('[AccountSecurityPage] Avatar uploaded successfully, updating profile with URL: ${state.avatarUrl}');
+                AppLogger.d('[AccountSecurityPage] Avatar uploaded successfully, updating profile with URL: ${state.avatarUrl}');
                 _profileBloc.add(UpdateUserProfileEvent(avatar: state.avatarUrl));
 
                 setState(() {
@@ -121,7 +122,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
               (previous is ProfileUpdating || previous is ProfileAvatarUploaded),
             listener: (context, state) {
               if (state is ProfileUpdated) {
-                print('[AccountSecurityPage] Profile updated successfully');
+                AppLogger.d('[AccountSecurityPage] Profile updated successfully');
                 // 不再显示重复的提示，因为头像更新已经有自己的提示
                 if (!(state is ProfileUpdated && context.read<ProfileBloc>().state is ProfileAvatarUploaded)) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -153,8 +154,8 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
               profile = state.profile;
             }
             
-            print('[AccountSecurityPage] Current state: ${state.runtimeType}');
-            print('[AccountSecurityPage] Profile: ${profile?.nickName}');
+            AppLogger.d('[AccountSecurityPage] Current state: ${state.runtimeType}');
+            AppLogger.d('[AccountSecurityPage] Profile: ${profile?.nickName}');
             
             return Scaffold(
               appBar: AppBar(
@@ -452,7 +453,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
               onPressed: () {
                 context.pop(); // 关闭对话框
                 
-                print('【退出登录】用户确认退出登录，即将发送LogoutEvent...');
+                AppLogger.d('【退出登录】用户确认退出登录，即将发送LogoutEvent...');
                 // 直接使用_profileBloc实例触发登出事件
                 _profileBloc.add(LogoutEvent());
               },
@@ -579,12 +580,12 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
     final shouldEnable = !_isLoading && validationError == null;
     
     // 调试信息
-    print('[EditNickname] 输入文本: "$inputText"');
-    print('[EditNickname] 处理后昵称: "$newNickname"');
-    print('[EditNickname] 当前昵称: "$currentNickname"');
-    print('[EditNickname] 验证错误: $validationError');
-    print('[EditNickname] 按钮应该可用: $shouldEnable');
-    print('[EditNickname] 当前按钮状态: $_isButtonEnabled');
+    AppLogger.d('[EditNickname] 输入文本: "$inputText"');
+    AppLogger.d('[EditNickname] 处理后昵称: "$newNickname"');
+    AppLogger.d('[EditNickname] 当前昵称: "$currentNickname"');
+    AppLogger.d('[EditNickname] 验证错误: $validationError');
+    AppLogger.d('[EditNickname] 按钮应该可用: $shouldEnable');
+    AppLogger.d('[EditNickname] 当前按钮状态: $_isButtonEnabled');
     
     // 只有在状态发生变化时才更新UI
     if (shouldEnable != _isButtonEnabled || validationError != _validationError) {
@@ -592,7 +593,7 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
         _isButtonEnabled = shouldEnable;
         _validationError = validationError;
       });
-      print('[EditNickname] 状态已更新 - 按钮可用: $_isButtonEnabled');
+      AppLogger.d('[EditNickname] 状态已更新 - 按钮可用: $_isButtonEnabled');
     }
   }
 

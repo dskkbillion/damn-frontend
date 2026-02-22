@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -55,7 +56,7 @@ class InvitationStatusUseCase {
           );
         }
       } catch (e) {
-        print('[InvitationStatusUseCase] Error parsing saved data: $e');
+        AppLogger.d('[InvitationStatusUseCase] Error parsing saved data: $e');
       }
     }
     

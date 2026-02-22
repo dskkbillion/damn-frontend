@@ -1,4 +1,5 @@
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 
 /// Widget displaying the delivered content and actions for awaiting confirmation state.
@@ -105,7 +106,7 @@ class DeliveryConfirmationArea extends StatelessWidget {
           child: OutlinedButton(
             onPressed: () {
               // TODO: Show bottom sheet with options: 我要补充, 我要重新制作, 我要退款
-              print('Show delivery issue options');
+              AppLogger.d('Show delivery issue options');
                _showDeliveryIssueOptions(context);
             },
             child: const Text('对交付不满意？'),
@@ -150,7 +151,7 @@ class DeliveryConfirmationArea extends StatelessWidget {
           const SizedBox(width: 12),
           // TODO: Implement download/preview action
           InkWell(
-            onTap: () => print('Download/Preview $fileName'),
+            onTap: () => AppLogger.d('Download/Preview $fileName'),
             child: Icon(Icons.download_outlined, size: 20, color: colorScheme.primary),
           ),
         ],
@@ -206,7 +207,7 @@ class DeliveryConfirmationArea extends StatelessWidget {
                     onPressed: () {
                        // TODO: Navigate or trigger 'request revision' flow
                        Navigator.pop(context);
-                       print('Request Revision');
+                       AppLogger.d('Request Revision');
                     }
                   ),
                    ElevatedButton(
@@ -214,7 +215,7 @@ class DeliveryConfirmationArea extends StatelessWidget {
                      onPressed: () {
                        // TODO: Navigate or trigger 'request remake' flow
                         Navigator.pop(context);
-                        print('Request Remake');
+                        AppLogger.d('Request Remake');
                     }
                   ),
                    ElevatedButton(
@@ -223,7 +224,7 @@ class DeliveryConfirmationArea extends StatelessWidget {
                      onPressed: () {
                         // TODO: Navigate to AfterSale application or trigger refund flow
                          Navigator.pop(context);
-                         print('Request Refund');
+                         AppLogger.d('Request Refund');
                     }
                   ),
                 ],

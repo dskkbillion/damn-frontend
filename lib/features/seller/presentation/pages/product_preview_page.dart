@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dskk_flutter_refactor/features/home/domain/entities/product_detail.dart';
@@ -73,7 +74,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
       
       userResult.fold(
         (failure) {
-          print('[PreviewPage] Failed to get logged in user: $failure');
+          AppLogger.d('[PreviewPage] Failed to get logged in user: $failure');
         },
         (authUser) async {
           if (authUser != null) {
@@ -83,7 +84,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
             
             userInfoResult.fold(
               (failure) {
-                print('[PreviewPage] Failed to get user info: $failure');
+                AppLogger.d('[PreviewPage] Failed to get user info: $failure');
               },
               (userInfo) {
                 if (mounted) {
@@ -92,7 +93,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
                     _currentUserName = userInfo.nickName ?? 
                         (localizations?.product_preview_seller_user ?? 'Seller User');
                   });
-                  print('[PreviewPage] Got user name: $_currentUserName');
+                  AppLogger.d('[PreviewPage] Got user name: $_currentUserName');
                 }
               },
             );
@@ -100,7 +101,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
         },
       );
     } catch (e) {
-      print('[PreviewPage] Error getting user info: $e');
+      AppLogger.d('[PreviewPage] Error getting user info: $e');
     }
   }
 
@@ -112,14 +113,14 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
 
   /// 将表单数据转换为商品详情数据
   ProductDetail _convertFormDataToProductDetail(ExtendedProductFormData formData) {
-    print('[PreviewPage] Converting form data:');
-    print('  - Name: "${formData.name}"');
-    print('  - Description: "${formData.description}"');
-    print('  - Price: ${formData.price}');
-    print('  - Variants count: ${formData.variants.length}');
-    print('  - Images count: ${formData.images.length}');
-    print('  - QA count: ${formData.qaList.length}');
-    print('  - Buyer info items count: ${formData.buyerInfoItems.length}');
+    AppLogger.d('[PreviewPage] Converting form data:');
+    AppLogger.d('  - Name: "${formData.name}"');
+    AppLogger.d('  - Description: "${formData.description}"');
+    AppLogger.d('  - Price: ${formData.price}');
+    AppLogger.d('  - Variants count: ${formData.variants.length}');
+    AppLogger.d('  - Images count: ${formData.images.length}');
+    AppLogger.d('  - QA count: ${formData.qaList.length}');
+    AppLogger.d('  - Buyer info items count: ${formData.buyerInfoItems.length}');
     
     // 转换买家需求信息为材料信息（ATTACHMENT或TEXT类型）
     final buyerMaterials = formData.buyerInfoItems.asMap().entries.map((entry) {
@@ -140,7 +141,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
     
     // 转换服务档位为商品变体
     final variants = formData.variants.map((tier) {
-      print('  - Converting tier: ${tier.name} - Price: ${tier.sellingPrice}');
+      AppLogger.d('  - Converting tier: ${tier.name} - Price: ${tier.sellingPrice}');
       return ProductVariant(
         id: tier.id,
         name: tier.name,
@@ -167,9 +168,9 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
       );
     }).toList();
     
-    print('  - Converted variants count: ${variants.length}');
+    AppLogger.d('  - Converted variants count: ${variants.length}');
     if (variants.isNotEmpty) {
-      print('  - First variant price: ${variants.first.sellingPrice}');
+      AppLogger.d('  - First variant price: ${variants.first.sellingPrice}');
     }
 
     // 转换QA为材料信息（PROBLEM类型）
@@ -183,7 +184,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
     // 合并所有材料信息
     final materials = [...qaMaterials, ...buyerMaterials];
     
-    print('  - Converted materials count: ${materials.length}');
+    AppLogger.d('  - Converted materials count: ${materials.length}');
 
     final convertedProduct = ProductDetail(
       id: formData.productId ?? 0,
@@ -215,11 +216,11 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
       score: '5.0',
     );
     
-    print('[PreviewPage] Form data conversion completed:');
-    print('  - Final product name: "${convertedProduct.name}"');
-    print('  - Final product price: ${convertedProduct.sellingPrice}');
-    print('  - Final variants count: ${convertedProduct.variants?.length ?? 0}');
-    print('  - Final images count: ${convertedProduct.images.length}');
+    AppLogger.d('[PreviewPage] Form data conversion completed:');
+    AppLogger.d('  - Final product name: "${convertedProduct.name}"');
+    AppLogger.d('  - Final product price: ${convertedProduct.sellingPrice}');
+    AppLogger.d('  - Final variants count: ${convertedProduct.variants?.length ?? 0}');
+    AppLogger.d('  - Final images count: ${convertedProduct.images.length}');
     
     return convertedProduct;
   }
@@ -300,33 +301,33 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
 
   /// 将ManagedProduct转换为ProductDetail
   ProductDetail _convertManagedProductToDetail(dynamic product) {
-    print('[PreviewPage] Converting SellerManagedProduct to ProductDetail:');
-    print('  - Product ID: ${product.id}');
-    print('  - Product Name: "${product.name}"');
-    print('  - Product Description: "${product.description}"');
-    print('  - Product Price: ${product.price}');
-    print('  - Product Images: "${product.images}"');
-    print('  - Product Images Type: ${product.images.runtimeType}');
-    print('  - Product Status: ${product.status}');
-    print('  - Product Category: ${product.category}');
+    AppLogger.d('[PreviewPage] Converting SellerManagedProduct to ProductDetail:');
+    AppLogger.d('  - Product ID: ${product.id}');
+    AppLogger.d('  - Product Name: "${product.name}"');
+    AppLogger.d('  - Product Description: "${product.description}"');
+    AppLogger.d('  - Product Price: ${product.price}');
+    AppLogger.d('  - Product Images: "${product.images}"');
+    AppLogger.d('  - Product Images Type: ${product.images.runtimeType}');
+    AppLogger.d('  - Product Status: ${product.status}');
+    AppLogger.d('  - Product Category: ${product.category}');
     
     // 详细检查变体数据
-    print('  - Product Variants Raw: ${product.variants}');
-    print('  - Product Variants Type: ${product.variants.runtimeType}');
-    print('  - Product Variants Length: ${product.variants?.length ?? 'null'}');
+    AppLogger.d('  - Product Variants Raw: ${product.variants}');
+    AppLogger.d('  - Product Variants Type: ${product.variants.runtimeType}');
+    AppLogger.d('  - Product Variants Length: ${product.variants?.length ?? 'null'}');
     
     if (product.variants != null && product.variants.isNotEmpty) {
-      print('  - First Variant: ${product.variants[0]}');
-      print('  - First Variant Type: ${product.variants[0].runtimeType}');
-      print('  - First Variant Fields: name=${product.variants[0].name}, price=${product.variants[0].price}, sellingPrice=${product.variants[0].sellingPrice}');
+      AppLogger.d('  - First Variant: ${product.variants[0]}');
+      AppLogger.d('  - First Variant Type: ${product.variants[0].runtimeType}');
+      AppLogger.d('  - First Variant Fields: name=${product.variants[0].name}, price=${product.variants[0].price}, sellingPrice=${product.variants[0].sellingPrice}');
     }
     
-    print('  - Product Materials Raw: ${product.productMaterials}');
-    print('  - Product Materials Length: ${product.productMaterials?.length ?? 'null'}');
+    AppLogger.d('  - Product Materials Raw: ${product.productMaterials}');
+    AppLogger.d('  - Product Materials Length: ${product.productMaterials?.length ?? 'null'}');
     
     // 转换商品变体
     final variants = (product.variants as List<dynamic>?)?.map<ProductVariant>((variant) {
-      print('  - Converting variant: ${variant.name} - Price: ${variant.sellingPrice} - DeliveryDay: ${variant.deliveryDay}');
+      AppLogger.d('  - Converting variant: ${variant.name} - Price: ${variant.sellingPrice} - DeliveryDay: ${variant.deliveryDay}');
       return ProductVariant(
         id: variant.id,
         name: variant.name.isNotEmpty ? variant.name : variant.optionValue,
@@ -353,7 +354,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
       );
     }).toList() ?? [];
     
-    print('  - Converted variants count: ${variants.length}');
+    AppLogger.d('  - Converted variants count: ${variants.length}');
     
     // 转换商品材料
     final materials = (product.productMaterials as List<dynamic>?)?.map<ProductMaterial>((material) {
@@ -365,7 +366,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
       );
     }).toList() ?? [];
     
-    print('  - Converted materials count: ${materials.length}');
+    AppLogger.d('  - Converted materials count: ${materials.length}');
     
     // 处理图片 - images字段是逗号分隔的字符串（已经在DTO中处理过）
     List<String> imageList = <String>[];
@@ -410,11 +411,11 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
       score: '5.0', // SellerManagedProduct 没有score字段
     );
     
-    print('[PreviewPage] Conversion completed:');
-    print('  - Final product name: "${convertedProduct.name}"');
-    print('  - Final product price: ${convertedProduct.sellingPrice}');
-    print('  - Final variants count: ${convertedProduct.variants?.length ?? 0}');
-    print('  - Final images count: ${convertedProduct.images.length}');
+    AppLogger.d('[PreviewPage] Conversion completed:');
+    AppLogger.d('  - Final product name: "${convertedProduct.name}"');
+    AppLogger.d('  - Final product price: ${convertedProduct.sellingPrice}');
+    AppLogger.d('  - Final variants count: ${convertedProduct.variants?.length ?? 0}');
+    AppLogger.d('  - Final images count: ${convertedProduct.images.length}');
     
     return convertedProduct;
   }

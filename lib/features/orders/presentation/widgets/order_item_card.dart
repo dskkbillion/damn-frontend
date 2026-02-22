@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart'; // Import GoRouter
@@ -61,7 +62,7 @@ class OrderItemCard extends StatelessWidget {
     try {
       final orderDetailBloc = getIt<OrderDetailBloc>();
 
-      print('[OrderItemCard] 准备取消订单: ${order.id}');
+      AppLogger.d('[OrderItemCard] 准备取消订单: ${order.id}');
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('正在取消订单...')),
@@ -71,17 +72,17 @@ class OrderItemCard extends StatelessWidget {
       bool orderLoaded = false;
 
       streamSubscription = orderDetailBloc.stream.listen((state) {
-        print('[OrderItemCard] 取消订单 - 收到BLoC状态变化: ${state.runtimeType}');
+        AppLogger.d('[OrderItemCard] 取消订单 - 收到BLoC状态变化: ${state.runtimeType}');
 
         if (state is OrderDetailLoaded && !orderLoaded) {
-          print('[OrderItemCard] 订单详情加载完成，执行取消操作');
+          AppLogger.d('[OrderItemCard] 订单详情加载完成，执行取消操作');
           orderLoaded = true;
           orderDetailBloc.add(OrderActionRequested(
             action: OrderAction.cancel,
             orderId: order.id.toString(),
           ));
         } else if (state is OrderDetailActionSuccess) {
-          print('[OrderItemCard] 取消成功');
+          AppLogger.d('[OrderItemCard] 取消成功');
           streamSubscription.cancel();
 
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -98,7 +99,7 @@ class OrderItemCard extends StatelessWidget {
             orderListBloc.add(LoadOrders(status: orderListBloc.currentStatus, forceRefresh: true));
           }
         } else if (state is OrderDetailActionFailure) {
-          print('[OrderItemCard] 取消失败: ${state.message}');
+          AppLogger.d('[OrderItemCard] 取消失败: ${state.message}');
           streamSubscription.cancel();
 
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -109,7 +110,7 @@ class OrderItemCard extends StatelessWidget {
             ),
           );
         } else if (state is OrderDetailError) {
-          print('[OrderItemCard] 加载订单详情失败: ${state.message}');
+          AppLogger.d('[OrderItemCard] 加载订单详情失败: ${state.message}');
           streamSubscription.cancel();
 
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -123,11 +124,11 @@ class OrderItemCard extends StatelessWidget {
       });
 
       // 先加载订单详情
-      print('[OrderItemCard] 先加载订单详情');
+      AppLogger.d('[OrderItemCard] 先加载订单详情');
       orderDetailBloc.add(LoadOrderDetail(orderId: order.id));
 
     } catch (e) {
-      print('[OrderItemCard] 取消操作异常: $e');
+      AppLogger.d('[OrderItemCard] 取消操作异常: $e');
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -179,7 +180,7 @@ class OrderItemCard extends StatelessWidget {
       // 创建一个临时的 OrderDetailBloc 来处理删除操作
       final orderDetailBloc = getIt<OrderDetailBloc>();
       
-      print('[OrderItemCard] 准备删除订单: ${order.id}, 当前状态: ${order.state}');
+      AppLogger.d('[OrderItemCard] 准备删除订单: ${order.id}, 当前状态: ${order.state}');
       
       // 显示加载状态
       ScaffoldMessenger.of(context).showSnackBar(
@@ -191,18 +192,18 @@ class OrderItemCard extends StatelessWidget {
       bool orderLoaded = false;
       
       streamSubscription = orderDetailBloc.stream.listen((state) {
-        print('[OrderItemCard] 收到BLoC状态变化: ${state.runtimeType}');
+        AppLogger.d('[OrderItemCard] 收到BLoC状态变化: ${state.runtimeType}');
         
         if (state is OrderDetailLoaded && !orderLoaded) {
           // 订单详情加载完成，现在可以执行删除操作
-          print('[OrderItemCard] 订单详情加载完成，执行删除操作');
+          AppLogger.d('[OrderItemCard] 订单详情加载完成，执行删除操作');
           orderLoaded = true;
           orderDetailBloc.add(OrderActionRequested(
             action: OrderAction.delete,
             orderId: order.id.toString(),
           ));
         } else if (state is OrderDetailActionSuccess) {
-          print('[OrderItemCard] 删除成功');
+          AppLogger.d('[OrderItemCard] 删除成功');
           // 取消订阅
           streamSubscription.cancel();
           
@@ -222,7 +223,7 @@ class OrderItemCard extends StatelessWidget {
             context.read<OrderListBloc>().add(LoadOrders(status: orderListBloc.currentStatus));
           }
         } else if (state is OrderDetailActionFailure) {
-          print('[OrderItemCard] 删除失败: ${state.message}');
+          AppLogger.d('[OrderItemCard] 删除失败: ${state.message}');
           // 取消订阅
           streamSubscription.cancel();
           
@@ -235,7 +236,7 @@ class OrderItemCard extends StatelessWidget {
             ),
           );
         } else if (state is OrderDetailError) {
-          print('[OrderItemCard] 加载订单详情失败: ${state.message}');
+          AppLogger.d('[OrderItemCard] 加载订单详情失败: ${state.message}');
           // 取消订阅
           streamSubscription.cancel();
           
@@ -251,11 +252,11 @@ class OrderItemCard extends StatelessWidget {
       });
 
       // 先加载订单详情
-      print('[OrderItemCard] 先加载订单详情');
+      AppLogger.d('[OrderItemCard] 先加载订单详情');
       orderDetailBloc.add(LoadOrderDetail(orderId: order.id));
       
     } catch (e) {
-      print('[OrderItemCard] 删除操作异常: $e');
+      AppLogger.d('[OrderItemCard] 删除操作异常: $e');
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -272,9 +273,9 @@ class OrderItemCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     
     // 调试日志
-    print('[OrderItemCard] Building card for order ${order.id}');
-    print('[OrderItemCard] Tenant info - id: ${order.tenant?.id}, nickname: ${order.tenant?.nickname}, shopName: ${order.tenant?.shopName}');
-    print('[OrderItemCard] Buyer info - id: ${order.buyer?.id}, nickname: ${order.buyer?.nickname}');
+    AppLogger.d('[OrderItemCard] Building card for order ${order.id}');
+    AppLogger.d('[OrderItemCard] Tenant info - id: ${order.tenant?.id}, nickname: ${order.tenant?.nickname}, shopName: ${order.tenant?.shopName}');
+    AppLogger.d('[OrderItemCard] Buyer info - id: ${order.buyer?.id}, nickname: ${order.buyer?.nickname}');
 
     // 假设 order.items 非空，并且我们显示第一个 item 的信息作为预览
     final firstItem = order.items.isNotEmpty ? order.items.first : null;
@@ -484,45 +485,45 @@ class OrderItemCard extends StatelessWidget {
                    order: order,
                    // 支付：直接导航到订单详情页
                    onPay: () {
-                     print('[OrderItemCard] Pay order: ${order.id}');
+                     AppLogger.d('[OrderItemCard] Pay order: ${order.id}');
                      context.push('/orderDetail/${order.id}');
                    },
                    onViewLogistics: () {
-                     print('[OrderItemCard] View logistics: ${order.id}');
+                     AppLogger.d('[OrderItemCard] View logistics: ${order.id}');
                      context.push('/orderDetail/${order.id}');
                    },
                    onEvaluate: () async {
                      // 导航到评价页面，并等待结果
-                     print('[OrderItemCard] Navigating to evaluation for order ${order.id}');
+                     AppLogger.d('[OrderItemCard] Navigating to evaluation for order ${order.id}');
                      final result = await context.push<bool>('/evaluation/${order.id}', extra: order);
-                     print('[OrderItemCard] Evaluation returned with result: $result, context.mounted: ${context.mounted}');
+                     AppLogger.d('[OrderItemCard] Evaluation returned with result: $result, context.mounted: ${context.mounted}');
                      // 如果评价成功，强制刷新订单列表（绕过缓存）
                      if (result == true && context.mounted) {
-                       print('[OrderItemCard] Triggering force refresh...');
+                       AppLogger.d('[OrderItemCard] Triggering force refresh...');
                        final orderListBloc = context.read<OrderListBloc>();
-                       print('[OrderItemCard] Current status: ${orderListBloc.currentStatus}');
+                       AppLogger.d('[OrderItemCard] Current status: ${orderListBloc.currentStatus}');
                        orderListBloc.add(LoadOrders(status: orderListBloc.currentStatus, forceRefresh: true));
-                       print('[OrderItemCard] LoadOrders event sent with forceRefresh: true');
+                       AppLogger.d('[OrderItemCard] LoadOrders event sent with forceRefresh: true');
                      } else {
-                       print('[OrderItemCard] Not refreshing. result=$result, mounted=${context.mounted}');
+                       AppLogger.d('[OrderItemCard] Not refreshing. result=$result, mounted=${context.mounted}');
                      }
                    },
                    onApplyAfterSale: () {
-                     print('[OrderItemCard] Apply after sale: ${order.id}');
+                     AppLogger.d('[OrderItemCard] Apply after sale: ${order.id}');
                      context.push('/orderDetail/${order.id}');
                    },
                    onViewDetails: () {
-                     print('[OrderItemCard] View details: ${order.id}');
+                     AppLogger.d('[OrderItemCard] View details: ${order.id}');
                      context.push('/orderDetail/${order.id}');
                    },
                    // 取消订单：显示确认对话框
                    onCancel: () {
-                     print('[OrderItemCard] Cancel order: ${order.id}');
+                     AppLogger.d('[OrderItemCard] Cancel order: ${order.id}');
                      _showCancelConfirmationDialog(context, order);
                    },
                    // 确认收货
                    onConfirmReceipt: () {
-                     print('[OrderItemCard] Confirm receipt: ${order.id}');
+                     AppLogger.d('[OrderItemCard] Confirm receipt: ${order.id}');
                      context.push('/orderDetail/${order.id}');
                    },
                    onRemindDelivery: () {
@@ -530,7 +531,7 @@ class OrderItemCard extends StatelessWidget {
                      ScaffoldMessenger.of(context).showSnackBar(
                        const SnackBar(content: Text('已提醒卖家发货'), duration: Duration(seconds: 2)),
                      );
-                     print('[OrderItemCard] Remind delivery: ${order.id}');
+                     AppLogger.d('[OrderItemCard] Remind delivery: ${order.id}');
                    },
                    onDelete: () {
                      _showDeleteConfirmationDialog(context, order);

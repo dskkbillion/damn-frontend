@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
@@ -144,7 +145,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('🔥🔥🔥 [买家OrderDetailPage] 正在构建页面，订单ID: ${widget.orderId} 🔥🔥🔥');
+    AppLogger.d('🔥🔥🔥 [买家OrderDetailPage] 正在构建页面，订单ID: ${widget.orderId} 🔥🔥🔥');
     
     if (_orderIdInt == null) {
       return Scaffold(
@@ -189,7 +190,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   void _handleBlocStateChanges(BuildContext context, OrderDetailState state) {
     if (state is OrderDetailNavigateToPaymentSelection) {
       // 导航到支付方式选择页面
-      print('[OrderDetailPage] 导航到支付方式选择页面，订单ID: ${state.order.id}');
+      AppLogger.d('[OrderDetailPage] 导航到支付方式选择页面，订单ID: ${state.order.id}');
       context.pushNamed(
         'orderPaymentMethodSelection',
         pathParameters: {'orderId': state.order.id.toString()},
@@ -333,7 +334,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   /// 构建订单详情内容
   Widget _buildOrderDetailContent(BuildContext context, Order order) {
-    print('🎨🎨🎨 [买家OrderDetailPage] _buildOrderDetailContent 被调用，订单ID: ${order.id}, 状态: ${order.state} 🎨🎨🎨');
+    AppLogger.d('🎨🎨🎨 [买家OrderDetailPage] _buildOrderDetailContent 被调用，订单ID: ${order.id}, 状态: ${order.state} 🎨🎨🎨');
     
     return Column(
       children: [

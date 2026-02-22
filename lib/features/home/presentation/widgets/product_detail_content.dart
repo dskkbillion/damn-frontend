@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/features/home/domain/entities/product_detail.dart';
 import 'package:dskk_flutter_refactor/features/home/presentation/widgets/product_images_carousel.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
@@ -56,15 +57,15 @@ class _ProductDetailContentState extends State<ProductDetailContent>
 
   @override
   Widget build(BuildContext context) {
-    print('[ProductDetailContent] Building with product:');
-    print('  - Product ID: ${widget.product.id}');
-    print('  - Product Name: "${widget.product.name}"');
-    print('  - Product Variants: ${widget.product.variants?.length ?? 'null'}');
-    print('  - Product Materials: ${widget.product.materials?.length ?? 'null'}');
-    print('  - Is Preview Mode: ${widget.isPreviewMode}');
+    AppLogger.d('[ProductDetailContent] Building with product:');
+    AppLogger.d('  - Product ID: ${widget.product.id}');
+    AppLogger.d('  - Product Name: "${widget.product.name}"');
+    AppLogger.d('  - Product Variants: ${widget.product.variants?.length ?? 'null'}');
+    AppLogger.d('  - Product Materials: ${widget.product.materials?.length ?? 'null'}');
+    AppLogger.d('  - Is Preview Mode: ${widget.isPreviewMode}');
     
     if (widget.product.variants != null && widget.product.variants!.isNotEmpty) {
-      print('  - First Variant: ${widget.product.variants![0].name} - Price: ${widget.product.variants![0].sellingPrice}');
+      AppLogger.d('  - First Variant: ${widget.product.variants![0].name} - Price: ${widget.product.variants![0].sellingPrice}');
     }
     
     return SingleChildScrollView(
@@ -409,13 +410,13 @@ class _ProductDetailContentState extends State<ProductDetailContent>
   }
 
   Widget _buildVariantTabs() {
-    print('[ProductDetailContent] Building variant tabs:');
-    print('  - Variants count: ${widget.product.variants?.length ?? 'null'}');
+    AppLogger.d('[ProductDetailContent] Building variant tabs:');
+    AppLogger.d('  - Variants count: ${widget.product.variants?.length ?? 'null'}');
     
     if (widget.product.variants != null) {
       for (int i = 0; i < widget.product.variants!.length; i++) {
         final variant = widget.product.variants![i];
-        print('  - Variant $i: ${variant.name} - ${PriceFormatter.format(variant.sellingPrice)}');
+        AppLogger.d('  - Variant $i: ${variant.name} - ${PriceFormatter.format(variant.sellingPrice)}');
       }
     }
     
@@ -499,9 +500,9 @@ class _ProductDetailContentState extends State<ProductDetailContent>
     final displayPrice = variant?.sellingPrice ?? widget.product.sellingPrice;
     
     if (variant == null && widget.product.sellingPrice <= 0) {
-      print('[ProductDetailContent] No buy button: variant is null and sellingPrice <= 0');
-      print('  - Variants: ${widget.product.variants?.length ?? 0}');
-      print('  - SellingPrice: ${widget.product.sellingPrice}');
+      AppLogger.d('[ProductDetailContent] No buy button: variant is null and sellingPrice <= 0');
+      AppLogger.d('  - Variants: ${widget.product.variants?.length ?? 0}');
+      AppLogger.d('  - SellingPrice: ${widget.product.sellingPrice}');
       return const SizedBox.shrink();
     }
     

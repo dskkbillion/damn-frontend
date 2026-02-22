@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:go_router/go_router.dart';
 
 // Import After Sales pages
@@ -39,11 +40,11 @@ class AfterSalesRoutes {
       builder: (BuildContext context, GoRouterState state) {
         final OrderItem? orderItem = state.extra as OrderItem?;
         if (orderItem == null) {
-          print('Error: OrderItem not passed correctly to /selectAfterSalesType');
+          AppLogger.d('Error: OrderItem not passed correctly to /selectAfterSalesType');
           // Consider navigating to an error page or showing a dialog
           return Scaffold(body: Center(child: Text('Error: Missing order item data.')));
         }
-        print('Navigated to /selectAfterSalesType, received item: ${orderItem.productName}');
+        AppLogger.d('Navigated to /selectAfterSalesType, received item: ${orderItem.productName}');
         return SelectAfterSalesTypePage(orderItem: orderItem);
       },
     ),
@@ -60,11 +61,11 @@ class AfterSalesRoutes {
 
           // Validate parameters
           if (itemId == null || type == null || type.isEmpty || orderItem == null) {
-             print('Error: Invalid parameters for /afterSalesApply. ItemId: $itemIdStr, Type: $type, Item: ${orderItem == null ? 'null' : 'provided'}');
+             AppLogger.d('Error: Invalid parameters for /afterSalesApply. ItemId: $itemIdStr, Type: $type, Item: ${orderItem == null ? 'null' : 'provided'}');
              return Scaffold(body: Center(child: Text('Error: Invalid apply parameters.')));
           }
 
-          print('Navigating to /afterSalesApply with itemId: $itemId, type: $type, item: ${orderItem.productName}');
+          AppLogger.d('Navigating to /afterSalesApply with itemId: $itemId, type: $type, item: ${orderItem.productName}');
           // Pass parameters to the page constructor
           return AfterSalesApplyPage(orderItemId: itemId, afterSalesType: type, orderItem: orderItem);
         },

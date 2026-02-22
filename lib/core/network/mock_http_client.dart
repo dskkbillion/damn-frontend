@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 import 'i_http_client.dart';
 import 'package:dartz/dartz.dart';
@@ -13,7 +14,7 @@ class MockHttpClient implements IHttpClient {
 
   @override
   Future<Map<String, dynamic>> get(String path, {Map<String, dynamic>? queryParameters}) async {
-    print('[MockHttpClient] GET: $path, Params: $queryParameters');
+    AppLogger.d('[MockHttpClient] GET: $path, Params: $queryParameters');
     await Future.delayed(const Duration(milliseconds: 400)); // Slightly longer delay for recommendations
 
     if (path == '/model/chat/list') { 
@@ -30,7 +31,7 @@ class MockHttpClient implements IHttpClient {
       };
     } else if (path == '/model/chat/messages') {
         final convId = int.tryParse(queryParameters?['conversation_id'] ?? '1') ?? 1;
-        print('[MockHttpClient] GET history for conv: $convId');
+        AppLogger.d('[MockHttpClient] GET history for conv: $convId');
         return {
            'code': 200,
            'message': 'Success',
@@ -78,14 +79,14 @@ class MockHttpClient implements IHttpClient {
 
   @override
   Future<Map<String, dynamic>> post(String path, {Map<String, dynamic>? data}) async {
-    print('[MockHttpClient] POST: $path, Data: $data');
+    AppLogger.d('[MockHttpClient] POST: $path, Data: $data');
     await Future.delayed(const Duration(milliseconds: 500));
 
     // Match the expected path from the data source exactly
     if (path == '/model/chat/create') { 
         final newId = DateTime.now().millisecondsSinceEpoch % 1000; // Simple mock ID
         final title = data?['title'] ?? 'New Mock Conversation $newId';
-        print('[MockHttpClient] Creating conversation: $title');
+        AppLogger.d('[MockHttpClient] Creating conversation: $title');
         // Ensure the response includes code, message, and data with expected fields
         return {
           'code': 200, 
@@ -102,12 +103,12 @@ class MockHttpClient implements IHttpClient {
        // Ensure delete also has code/message for consistency if needed by handleResponse
        return {'code': 200, 'message': 'Deleted', 'data': {'success': true}};
     } else if (path.contains('transcribe') || path == '/model/chat/audio') { 
-        print('[MockHttpClient] Transcribing audio...');
+        AppLogger.d('[MockHttpClient] Transcribing audio...');
         // Ensure transcription response matches _handleResponse expectations
         return {'code': 200, 'message': 'Transcribed', 'data': {'content': 'This is the mock transcription result.'}};
     } else if (path.contains('/model/chat/messages')) { // Assuming history might be POST (though GET is better)
         final convId = data?['conversation_id'] ?? 1; 
-         print('[MockHttpClient] Fetching history via POST for conv: $convId');
+         AppLogger.d('[MockHttpClient] Fetching history via POST for conv: $convId');
         // Return structure matching the GET version
         return {
            'code': 200,
@@ -121,7 +122,7 @@ class MockHttpClient implements IHttpClient {
          };
     // Removed /recsys/conversation/recommend POST mock data - using real API now
     } else if (path.contains('chat/allocate')) {
-      print('[MockHttpClient] Simulating allocation action...');
+      AppLogger.d('[MockHttpClient] Simulating allocation action...');
       return {
         'code': 200,
         'message': 'Allocation successful',
@@ -133,7 +134,7 @@ class MockHttpClient implements IHttpClient {
     }
 
     // Fallback for unhandled POST requests
-    print('[MockHttpClient] POST $path - Unhandled, returning default success');
+    AppLogger.d('[MockHttpClient] POST $path - Unhandled, returning default success');
     return {'code': 200, 'message': 'Success (Unhandled Mock)', 'data': {}};
   }
 
@@ -144,7 +145,7 @@ class MockHttpClient implements IHttpClient {
    {String fileField = 'file', 
     Map<String, String>? fields}
   ) async {
-     print('[MockHttpClient] POST Multipart: $path, File: ${file.path}, Field: $fileField, Fields: $fields');
+     AppLogger.d('[MockHttpClient] POST Multipart: $path, File: ${file.path}, Field: $fileField, Fields: $fields');
      await Future.delayed(const Duration(milliseconds: 800));
 
      // Simulate successful file upload
@@ -158,7 +159,7 @@ class MockHttpClient implements IHttpClient {
      } 
 
      // Default success for other multipart requests in mock
-     print('[MockHttpClient] POST Multipart $path - Unhandled, returning default success');
+     AppLogger.d('[MockHttpClient] POST Multipart $path - Unhandled, returning default success');
      return {
        'code': 200,
        'message': 'Mock multipart success (Unhandled)',
@@ -171,7 +172,7 @@ class MockHttpClient implements IHttpClient {
     // Corrected signature to match IHttpClient
     // Removed CancelToken as it's not in the interface signature defined earlier?
     // Removed queryParameters as it might not be in the interface either
-    print('[MockHttpClient] postAndStream called for $path - Returning error stream');
+    AppLogger.d('[MockHttpClient] postAndStream called for $path - Returning error stream');
     // Return a stream that emits an error, matching the interface return type
     return Stream.error(NetworkFailure(message: 'MockHttpClient.postAndStream not implemented'));
   }

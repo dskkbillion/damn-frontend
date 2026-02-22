@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -42,13 +43,13 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
   ) async {
     // 防重复处理检查
     if (_isProcessing) {
-      print('[PaymentBloc] 正在处理支付请求，忽略重复事件');
+      AppLogger.d('[PaymentBloc] 正在处理支付请求，忽略重复事件');
       return;
     }
     
     try {
       _isProcessing = true; // 设置处理标志
-      print('[PaymentBloc] 开始处理订单创建和支付 - 商品: ${event.productName}, 支付方式: ${event.paymentMethod}');
+      AppLogger.d('[PaymentBloc] 开始处理订单创建和支付 - 商品: ${event.productName}, 支付方式: ${event.paymentMethod}');
       
       // 显示创建订单中状态
       emit(CreatingOrderState());
@@ -72,7 +73,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
           String errorMessage = failure.message;
           if (errorMessage.contains('不允许重复提交') || errorMessage.contains('重复提交')) {
             errorMessage = '请勿频繁操作，稍等片刻后再试';
-            print('[PaymentBloc] 检测到重复提交错误，显示用户友好提示');
+            AppLogger.d('[PaymentBloc] 检测到重复提交错误，显示用户友好提示');
           }
           
           Fluttertoast.showToast(msg: errorMessage);
@@ -106,7 +107,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
               // 支付处理中（如Stripe跳转）
               _isProcessing = false; // 重置处理标志
               // emit外部支付处理中状态
-              print('[PaymentBloc] 支付链接已打开，等待用户完成支付');
+              AppLogger.d('[PaymentBloc] 支付链接已打开，等待用户完成支付');
               emit(ExternalPaymentProcessingState(
                 orderId: creationResult.orderId,
                 paymentUrl: paymentResult.data ?? '',
@@ -129,7 +130,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     } catch (e) {
       // 捕获未处理异常
       _isProcessing = false; // 重置处理标志
-      print('[PaymentBloc] 支付过程中发生异常: $e');
+      AppLogger.d('[PaymentBloc] 支付过程中发生异常: $e');
       emit(PaymentFailedState(errorMessage: '支付过程中发生异常: $e'));
     }
   }
@@ -141,13 +142,13 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
   ) async {
     // 防重复处理检查
     if (_isProcessing) {
-      print('[PaymentBloc] 正在处理支付请求，忽略重复直接支付事件');
+      AppLogger.d('[PaymentBloc] 正在处理支付请求，忽略重复直接支付事件');
       return;
     }
     
     try {
       _isProcessing = true; // 设置处理标志
-      print('[PaymentBloc] 开始处理直接支付 - 订单: ${event.orderId}, 支付方式: ${event.paymentMethod}');
+      AppLogger.d('[PaymentBloc] 开始处理直接支付 - 订单: ${event.orderId}, 支付方式: ${event.paymentMethod}');
       
       // 显示支付中状态
       emit(PayingState(orderId: event.orderId));
@@ -184,7 +185,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     } catch (e) {
       // 捕获未处理异常
       _isProcessing = false; // 重置处理标志
-      print('[PaymentBloc] 直接支付过程中发生异常: $e');
+      AppLogger.d('[PaymentBloc] 直接支付过程中发生异常: $e');
       emit(PaymentFailedState(errorMessage: '支付过程中发生异常: $e'));
     }
   }

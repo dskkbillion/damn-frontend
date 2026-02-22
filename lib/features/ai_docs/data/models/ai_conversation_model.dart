@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 import '../../domain/entities/ai_conversation_entity.dart';
 
@@ -49,7 +50,7 @@ class AiConversationModel with _$AiConversationModel {
       }
     } catch (e) {
       // Log or handle parsing error if necessary
-      print('Error parsing date string in AiConversationModel: $e');
+      AppLogger.d('Error parsing date string in AiConversationModel: $e');
       // Keep dates as null if parsing fails
     }
 

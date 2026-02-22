@@ -1,4 +1,5 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/currency/domain/entities/currency.dart';
 import 'package:dskk_flutter_refactor/core/payment/models/payment_models.dart';
 
@@ -68,14 +69,14 @@ class UnifiedRegionConfig {
     
     _isInitialized = true;
     
-    print('[UnifiedRegionConfig] Initialized');
-    print('  Mode: ${_mode.value}');
-    print('  Primary API: ${_endpoints.primary}');
-    print('  Secondary API: ${_endpoints.secondary ?? "Not configured"}');
-    print('  Model Service: ${_endpoints.modelService}');
-    print('  Currency: USD (universal)');
-    print('  Payment Methods: All enabled');
-    print('  Login Methods: All enabled');
+    AppLogger.d('[UnifiedRegionConfig] Initialized');
+    AppLogger.d('  Mode: ${_mode.value}');
+    AppLogger.d('  Primary API: ${_endpoints.primary}');
+    AppLogger.d('  Secondary API: ${_endpoints.secondary ?? "Not configured"}');
+    AppLogger.d('  Model Service: ${_endpoints.modelService}');
+    AppLogger.d('  Currency: USD (universal)');
+    AppLogger.d('  Payment Methods: All enabled');
+    AppLogger.d('  Login Methods: All enabled');
   }
   
   /// Get current configuration mode
@@ -189,7 +190,7 @@ class UnifiedRegionConfig {
     if (url == _endpoints.primary || url == _endpoints.secondary) {
       // This would require updating the DI container with new URL
       // Implementation depends on how the HTTP client is configured
-      print('[UnifiedRegionConfig] Switching to API: $url');
+      AppLogger.d('[UnifiedRegionConfig] Switching to API: $url');
     }
   }
 }

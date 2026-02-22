@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import secure storage
 // import 'package:pretty_dio_logger/pretty_dio_logger.dart'; // 暂时不使用，避免大量日志输出
@@ -23,7 +24,7 @@ class CoreDioClient {
     this._appInfoInterceptor, // Inject AppInfoInterceptor
     @factoryParam this._cacheInterceptor, // Optional cache interceptor
   ) {
-    print('[CoreDioClient] Initializing with baseUrl: $baseUrl');
+    AppLogger.d('[CoreDioClient] Initializing with baseUrl: $baseUrl');
     try {
       if (baseUrl.isEmpty) {
         throw Exception('[CoreDioClient] BACKEND_BASE_URL is null or empty. Cannot initialize Dio.');
@@ -60,7 +61,7 @@ class CoreDioClient {
             if (!logStr.contains('/api/chat/list') &&
                 !logStr.contains('chatMessageNewVo') &&
                 !logStr.contains('productVo')) {
-              print(logStr);
+              AppLogger.d(logStr);
             }
           }
       );
@@ -70,16 +71,16 @@ class CoreDioClient {
       // 添加缓存拦截器（如果提供了）
       if (_cacheInterceptor != null) {
         dio.interceptors.add(_cacheInterceptor);
-        print('[CoreDioClient] Cache interceptor added');
+        AppLogger.d('[CoreDioClient] Cache interceptor added');
       }
 
       dio.interceptors.add(authInterceptor);
       // dio.interceptors.add(logInterceptor); // Keep commented out
       dio.interceptors.add(basicLogInterceptor); // Add the built-in logger
       
-      print('[CoreDioClient] Dio initialized successfully.');
+      AppLogger.d('[CoreDioClient] Dio initialized successfully.');
     } catch (e) {
-      print('[CoreDioClient] Error initializing Dio: $e');
+      AppLogger.d('[CoreDioClient] Error initializing Dio: $e');
       throw Exception('[CoreDioClient] Failed to initialize Dio due to error: $e'); 
     }
   }
@@ -193,7 +194,7 @@ class AuthInterceptor extends Interceptor {
     if (options.path.contains('/api/auth/login') || 
         options.path.contains('/api/auth/register') ||
         options.path.contains('/api/auth/sms')) {
-      print('[AuthInterceptor] Skipping token for auth path: ${options.path}');
+      AppLogger.d('[AuthInterceptor] Skipping token for auth path: ${options.path}');
       return handler.next(options);
     }
 
@@ -202,9 +203,9 @@ class AuthInterceptor extends Interceptor {
     if (token != null && token.isNotEmpty) {
       // Add Bearer prefix and use correct key
       options.headers['Authorization'] = 'Bearer $token'; 
-      print('[AuthInterceptor] Added Bearer token to Authorization header.'); // Updated log
+      AppLogger.d('[AuthInterceptor] Added Bearer token to Authorization header.'); // Updated log
     } else {
-       print('[AuthInterceptor] No token found. Request proceeding without Authorization header.');
+       AppLogger.d('[AuthInterceptor] No token found. Request proceeding without Authorization header.');
     }
     // --- End restore ---
     
@@ -217,13 +218,13 @@ class AuthInterceptor extends Interceptor {
       const storageKey = 'auth_token'; // CORRECT KEY
       final token = await _storage.read(key: storageKey);
       if (token != null) {
-        print('[AuthInterceptor] Token retrieved from secure storage.');
+        AppLogger.d('[AuthInterceptor] Token retrieved from secure storage.');
       } else {
-        print('[AuthInterceptor] Token not found in secure storage (key: $storageKey).');
+        AppLogger.d('[AuthInterceptor] Token not found in secure storage (key: $storageKey).');
       }
       return token;
     } catch (e) {
-      print('[AuthInterceptor] Error reading token from secure storage: $e');
+      AppLogger.d('[AuthInterceptor] Error reading token from secure storage: $e');
       return null; // Return null on error
     }
   }

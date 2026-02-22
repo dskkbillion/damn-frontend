@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/exceptions.dart';
@@ -91,7 +92,7 @@ class AfterSalesRemoteDataSource implements IAfterSalesRemoteDataSource {
        // API doc says GET for detail
       final response = await _dioClient.get(_detailEndpoint, queryParameters: queryParameters);
       
-      print('[AfterSalesRemoteDataSource] getAfterSalesDetail response: ${response.data}');
+      AppLogger.d('[AfterSalesRemoteDataSource] getAfterSalesDetail response: ${response.data}');
       
       // Check if response has data field
       if (response.data != null && response.data['code'] == 200) {
@@ -179,7 +180,7 @@ class AfterSalesRemoteDataSource implements IAfterSalesRemoteDataSource {
 
       final response = await _dioClient.post(_listEndpoint, data: queryParameters);
       
-      print('[AfterSalesRemoteDataSource] getRefundIdByOrderId response: ${response.data}');
+      AppLogger.d('[AfterSalesRemoteDataSource] getRefundIdByOrderId response: ${response.data}');
       
       if (response.data != null && response.data['code'] == 200) {
         // Check if 'rows' exists directly in response.data (not nested under 'data')
@@ -190,20 +191,20 @@ class AfterSalesRemoteDataSource implements IAfterSalesRemoteDataSource {
           results = response.data['data']['rows'];
         }
         
-        print('[AfterSalesRemoteDataSource] Found ${results.length} refund records');
+        AppLogger.d('[AfterSalesRemoteDataSource] Found ${results.length} refund records');
         
         // Find the refund record that matches the order ID
         for (final json in results) {
           final refundData = json as Map<String, dynamic>;
-          print('[AfterSalesRemoteDataSource] Checking refund record: orderId=${refundData['orderId']}, looking for=$orderId');
+          AppLogger.d('[AfterSalesRemoteDataSource] Checking refund record: orderId=${refundData['orderId']}, looking for=$orderId');
           if (refundData['orderId'] == orderId) {
             final refundId = refundData['id'] as int?;
-            print('[AfterSalesRemoteDataSource] Found matching refund ID: $refundId for order ID: $orderId');
+            AppLogger.d('[AfterSalesRemoteDataSource] Found matching refund ID: $refundId for order ID: $orderId');
             return refundId;
           }
         }
         
-        print('[AfterSalesRemoteDataSource] No matching refund found for order ID: $orderId');
+        AppLogger.d('[AfterSalesRemoteDataSource] No matching refund found for order ID: $orderId');
         // No matching refund found for this order ID
         return null;
       } else {

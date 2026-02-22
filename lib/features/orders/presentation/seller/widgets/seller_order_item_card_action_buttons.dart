@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -104,7 +105,7 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
           // 等待评价，可以提醒
           buttons.add(OutlinedButton(
             onPressed: () {
-              print('[SellerButtons] Invite evaluation ${order.id}');
+              AppLogger.d('[SellerButtons] Invite evaluation ${order.id}');
             }, 
             style: outlineStyle, 
             child: const Text('邀请评价')
@@ -178,7 +179,7 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
             );
              // If confirmed, trigger the event
             if (confirmed == true) {
-              print('[SellerButtons] Reject order ${order.id}'); 
+              AppLogger.d('[SellerButtons] Reject order ${order.id}'); 
               BlocProvider.of<SellerOrderListBloc>(context).add(RejectOrderRequested(orderId: order.id));
             }
           }, 
@@ -209,7 +210,7 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
             );
             // If confirmed, trigger the event
             if (confirmed == true) {
-               print('[SellerButtons] Confirm acceptance ${order.id}'); 
+               AppLogger.d('[SellerButtons] Confirm acceptance ${order.id}'); 
                BlocProvider.of<SellerOrderListBloc>(context).add(ConfirmAcceptanceRequested(orderId: order.id));
             }
            }, 
@@ -239,8 +240,8 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
         break;
       case OrderStatus.awaitingConfirmation:
         // Seller has delivered, waiting for buyer confirmation
-         buttons.add(OutlinedButton(onPressed: () { print('[SellerButtons] View delivery ${order.id}'); /* TODO: Navigate/Show delivery details */ }, style: outlineStyle, child: const Text('查看交付')));
-         buttons.add(ElevatedButton(onPressed: () { print('[SellerButtons] Remind confirmation ${order.id}'); /* TODO: Show reminder confirmation? */ }, style: filledStyle, child: const Text('提醒确认')));
+         buttons.add(OutlinedButton(onPressed: () { AppLogger.d('[SellerButtons] View delivery ${order.id}'); /* TODO: Navigate/Show delivery details */ }, style: outlineStyle, child: const Text('查看交付')));
+         buttons.add(ElevatedButton(onPressed: () { AppLogger.d('[SellerButtons] Remind confirmation ${order.id}'); /* TODO: Show reminder confirmation? */ }, style: filledStyle, child: const Text('提醒确认')));
         break;
       case OrderStatus.orderCompleted:
         // Order finished, can invite evaluation or delete record
@@ -268,7 +269,7 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
             );
             // If confirmed, trigger the event
             if (confirmed == true) {
-              print('[SellerButtons] Delete record ${order.id}'); 
+              AppLogger.d('[SellerButtons] Delete record ${order.id}'); 
               BlocProvider.of<SellerOrderListBloc>(context).add(DeleteSellerRecordRequested(orderId: order.id));
             }
           }, 
@@ -302,7 +303,7 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
             );
              // If confirmed, trigger the event
             if (confirmed == true) {
-               print('[SellerButtons] Delete cancelled record ${order.id}'); 
+               AppLogger.d('[SellerButtons] Delete cancelled record ${order.id}'); 
                BlocProvider.of<SellerOrderListBloc>(context).add(DeleteSellerRecordRequested(orderId: order.id));
              }
            }, 
@@ -313,7 +314,7 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
       // TODO: Add cases for other relevant seller statuses (e.g., afterSale, sellerSupplementaryMaterials)
       default:
         // Default or other states might just show details or specific actions
-        buttons.add(OutlinedButton(onPressed: () { print('[SellerButtons] View details ${order.id}'); /* TODO: Navigate */ }, style: outlineStyle, child: const Text('查看详情')));
+        buttons.add(OutlinedButton(onPressed: () { AppLogger.d('[SellerButtons] View details ${order.id}'); /* TODO: Navigate */ }, style: outlineStyle, child: const Text('查看详情')));
         break;
       }
     }

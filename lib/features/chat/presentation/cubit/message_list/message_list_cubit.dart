@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:io';
 import 'dart:math';
 
@@ -89,7 +90,7 @@ class MessageListCubit extends Cubit<MessageListState> {
   }) {
     _isSeller = isSeller;
     _isLightConsultation = isLightConsultation;
-    print('[MessageListCubit] Set seller mode: $_isSeller, light consultation: $_isLightConsultation');
+    AppLogger.d('[MessageListCubit] Set seller mode: $_isSeller, light consultation: $_isLightConsultation');
 
     // 如果已经加载了消息，触发状态更新以刷新按钮显示
     if (state is _Loaded) {
@@ -434,16 +435,16 @@ class MessageListCubit extends Cubit<MessageListState> {
   
   /// Add received message from WebSocket
   void addReceivedMessage(ChatMessage message) {
-    print('[MessageListCubit] addReceivedMessage called: type=${message.type}, id=${message.id}, chatId=${message.chatId}, currentChatId=$_currentChatId');
+    AppLogger.d('[MessageListCubit] addReceivedMessage called: type=${message.type}, id=${message.id}, chatId=${message.chatId}, currentChatId=$_currentChatId');
     // 检查消息是否属于当前聊天室
     if (_currentChatId != null && message.chatId == _currentChatId) {
       // 检查消息是否已存在（防止重复）
       final exists = _allMessages.any((m) => m.id == message.id);
-      print('[MessageListCubit] Message exists: $exists');
+      AppLogger.d('[MessageListCubit] Message exists: $exists');
       if (!exists) {
         // 添加到消息列表开头（最新消息）
         _allMessages.insert(0, message);
-        print('[MessageListCubit] Message added to list. Total messages: ${_allMessages.length}');
+        AppLogger.d('[MessageListCubit] Message added to list. Total messages: ${_allMessages.length}');
         
         // 更新UI
         _emitLoadedState();
@@ -480,7 +481,7 @@ class MessageListCubit extends Cubit<MessageListState> {
         lastMessage: message.context,
         lastMessageTime: message.createTime,
       ));
-      print('[MessageListCubit] Fired ChatListUpdateEvent for chatId: $_currentChatId');
+      AppLogger.d('[MessageListCubit] Fired ChatListUpdateEvent for chatId: $_currentChatId');
     }
   }
   
@@ -497,7 +498,7 @@ class MessageListCubit extends Cubit<MessageListState> {
         GetChatRoomDetailsParams(chatId: _currentChatId!),
       );
       await roomResult.fold(
-        (failure) async => print('[MessageListCubit] Failed to get chat room detail: $failure'),
+        (failure) async => AppLogger.d('[MessageListCubit] Failed to get chat room detail: $failure'),
         (room) async {
           _currentChatRoom = room;
 
@@ -506,25 +507,25 @@ class MessageListCubit extends Cubit<MessageListState> {
             try {
               final productResult = await _homeRepository.getProductDetail(room.productId!);
               productResult.fold(
-                (failure) => print('[MessageListCubit] Failed to get product detail: $failure'),
+                (failure) => AppLogger.d('[MessageListCubit] Failed to get product detail: $failure'),
                 (product) {
                   _productDetail = product;
-                  print('[MessageListCubit] Got product detail with ${product.variants?.length ?? 0} variants');
+                  AppLogger.d('[MessageListCubit] Got product detail with ${product.variants?.length ?? 0} variants');
 
                   // 重新发出状态更新，让UI刷新按钮状态
                   if (_isSeller && _isLightConsultation) {
-                    print('[MessageListCubit] Emitting state update after loading product details');
+                    AppLogger.d('[MessageListCubit] Emitting state update after loading product details');
                     _emitLoadedState();
                   }
                 },
               );
             } catch (e) {
-              print('[MessageListCubit] Error getting product detail: $e');
+              AppLogger.d('[MessageListCubit] Error getting product detail: $e');
             }
           } else {
             // 即使没有商品ID，也要发出状态更新（可能只是检查轮次）
             if (_isSeller && _isLightConsultation) {
-              print('[MessageListCubit] Emitting state update even without product');
+              AppLogger.d('[MessageListCubit] Emitting state update even without product');
               _emitLoadedState();
             }
           }
@@ -540,7 +541,7 @@ class MessageListCubit extends Cubit<MessageListState> {
       return;
     }
 
-    print('[RoundCount] Starting calculation - isSeller: $_isSeller, currentUserParticipantId: $_currentUserParticipantId');
+    AppLogger.d('[RoundCount] Starting calculation - isSeller: $_isSeller, currentUserParticipantId: $_currentUserParticipantId');
 
     // 按时间排序（旧到新）
     final sortedMessages = List<ChatMessage>.from(messages)
@@ -565,7 +566,7 @@ class MessageListCubit extends Cubit<MessageListState> {
       }
     }
 
-    print('[RoundCount] Detected real seller ID: $realSellerId');
+    AppLogger.d('[RoundCount] Detected real seller ID: $realSellerId');
 
     for (final msg in sortedMessages) {
       // 跳过系统消息和付费提示
@@ -578,28 +579,28 @@ class MessageListCubit extends Cubit<MessageListState> {
         // 当前用户是卖家，统计当前用户的消息
         if (msg.senderId == _currentUserParticipantId) {
           sellerMessageCount++;
-          print('[RoundCount] Seller message found (current user): msgId=${msg.id}, senderId=${msg.senderId}');
+          AppLogger.d('[RoundCount] Seller message found (current user): msgId=${msg.id}, senderId=${msg.senderId}');
         }
       } else {
         // 当前用户是买家，统计对方（卖家）的消息
         if (msg.senderId != _currentUserParticipantId) {
           sellerMessageCount++;
-          print('[RoundCount] Seller message found (opponent): msgId=${msg.id}, senderId=${msg.senderId}');
+          AppLogger.d('[RoundCount] Seller message found (opponent): msgId=${msg.id}, senderId=${msg.senderId}');
         }
       }
     }
 
     // 对话轮次 = 卖家消息数（更主动的计算方式）
     _roundCount = sellerMessageCount;
-    print('[RoundCount] Result - seller messages: $sellerMessageCount, rounds: $_roundCount');
+    AppLogger.d('[RoundCount] Result - seller messages: $sellerMessageCount, rounds: $_roundCount');
   }
   
   /// 判断是否应该显示发送付费提示按钮（给卖家）
   bool get shouldShowPaymentPromptButton {
-    print('[PaymentPrompt] Checking button visibility - _isLightConsultation: $_isLightConsultation, _isSeller: $_isSeller, _currentChatId: $_currentChatId, _roundCount: $_roundCount');
+    AppLogger.d('[PaymentPrompt] Checking button visibility - _isLightConsultation: $_isLightConsultation, _isSeller: $_isSeller, _currentChatId: $_currentChatId, _roundCount: $_roundCount');
 
     if (!_isLightConsultation || !_isSeller || _currentChatId == null) {
-      print('[PaymentPrompt] Button hidden - conditions not met');
+      AppLogger.d('[PaymentPrompt] Button hidden - conditions not met');
       return false;
     }
 
@@ -638,26 +639,26 @@ class MessageListCubit extends Cubit<MessageListState> {
     }
 
     // 判断是否达到新的提示轮次
-    print('[PaymentPrompt] lastPromptRound: $lastPromptRound, checking against round milestones');
+    AppLogger.d('[PaymentPrompt] lastPromptRound: $lastPromptRound, checking against round milestones');
 
     if (_roundCount >= 20 && lastPromptRound < 20) {
-      print('[PaymentPrompt] Should show button - reached round 20');
+      AppLogger.d('[PaymentPrompt] Should show button - reached round 20');
       return true;
     }
     if (_roundCount >= 10 && lastPromptRound < 10) {
-      print('[PaymentPrompt] Should show button - reached round 10');
+      AppLogger.d('[PaymentPrompt] Should show button - reached round 10');
       return true;
     }
     if (_roundCount >= 5 && lastPromptRound < 5) {
-      print('[PaymentPrompt] Should show button - reached round 5');
+      AppLogger.d('[PaymentPrompt] Should show button - reached round 5');
       return true;
     }
     if (_roundCount >= 1 && lastPromptRound < 1) {
-      print('[PaymentPrompt] Should show button - reached round 1');
+      AppLogger.d('[PaymentPrompt] Should show button - reached round 1');
       return true;
     }
 
-    print('[PaymentPrompt] Button hidden - no new milestone reached');
+    AppLogger.d('[PaymentPrompt] Button hidden - no new milestone reached');
     return false;
   }
 
@@ -669,17 +670,17 @@ class MessageListCubit extends Cubit<MessageListState> {
   Future<void> sendPaymentPromptMessage({bool showPopup = false}) async {
     if (_currentChatId == null || !_isSeller) return;
 
-    print('[PaymentPrompt] Seller sending payment prompt at round $_roundCount');
+    AppLogger.d('[PaymentPrompt] Seller sending payment prompt at round $_roundCount');
 
     // 检查是否有商品信息
     if (_currentChatRoom?.productId == null) {
-      print('[PaymentPrompt] ERROR: No product associated with this chat room');
+      AppLogger.d('[PaymentPrompt] ERROR: No product associated with this chat room');
       throw Exception('无法发送付费提示：聊天室未关联商品');
     }
 
     // 检查是否成功获取商品详情
     if (_productDetail == null || _productDetail!.variants == null || _productDetail!.variants!.isEmpty) {
-      print('[PaymentPrompt] ERROR: Product detail or variants not available');
+      AppLogger.d('[PaymentPrompt] ERROR: Product detail or variants not available');
       throw Exception('无法发送付费提示：商品信息获取失败，请稍后重试');
     }
 
@@ -689,7 +690,7 @@ class MessageListCubit extends Cubit<MessageListState> {
       'price': v.sellingPrice,
       'name': v.name,
     }).toList();
-    print('[PaymentPrompt] Using real product variants: ${variants.length} items');
+    AppLogger.d('[PaymentPrompt] Using real product variants: ${variants.length} items');
 
     // 创建付费提示消息内容
     final random = Random();
@@ -718,7 +719,7 @@ class MessageListCubit extends Cubit<MessageListState> {
 
     // 获取显示次数
     final count = await _localDataSource?.getPaymentPromptCount(_currentChatId!) ?? 0;
-    print('[PaymentPrompt] Current display count: $count');
+    AppLogger.d('[PaymentPrompt] Current display count: $count');
     
     // 已显示4次，不再提醒（1-5-10-20共4次）
     if (count >= 4) return;
@@ -811,7 +812,7 @@ class MessageListCubit extends Cubit<MessageListState> {
     if (_isSeller) {
       // 卖家发送消息，轮次+1
       _roundCount++;
-      print('[RoundCount] Seller sent message, rounds incremented to: $_roundCount');
+      AppLogger.d('[RoundCount] Seller sent message, rounds incremented to: $_roundCount');
     }
     
     emit(MessageListState.loaded(

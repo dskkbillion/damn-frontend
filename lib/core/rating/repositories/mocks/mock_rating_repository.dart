@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/core/rating/repositories/i_rating_repository.dart';
 
@@ -35,15 +36,15 @@ class MockRatingRepository implements IRatingRepository {
 
   @override
   Future<Either<Failure, bool>> canEvaluateOrder(String orderId) async {
-    print('[MockRatingRepository] Checking if order $orderId can be evaluated.');
+    AppLogger.d('[MockRatingRepository] Checking if order $orderId can be evaluated.');
     await Future.delayed(const Duration(milliseconds: 50)); // 模拟延迟
 
     if (_shouldFail) {
-      print('[MockRatingRepository] Returning Failure: $_failureToReturn');
+      AppLogger.d('[MockRatingRepository] Returning Failure: $_failureToReturn');
       return Left(_failureToReturn);
     } else {
       final canEvaluate = _canEvaluateFlags[orderId] ?? _defaultCanEvaluate;
-      print('[MockRatingRepository] Returning canEvaluate: $canEvaluate');
+      AppLogger.d('[MockRatingRepository] Returning canEvaluate: $canEvaluate');
       return Right(canEvaluate);
     }
   }

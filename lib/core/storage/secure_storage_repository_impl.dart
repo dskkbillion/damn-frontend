@@ -1,4 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 
 // Import the interface and exception type
@@ -24,7 +25,7 @@ class SecureStorageRepositoryImpl implements ISecureStorageRepository {
     try {
       return await action();
     } catch (e) {
-      print('SecureStorage Error during $operation: $e');
+      AppLogger.d('SecureStorage Error during $operation: $e');
       // Wrap the error in a CacheException
       throw CacheException(message: 'Failed to $operation secure storage.');
     }
@@ -117,7 +118,7 @@ class SecureStorageRepositoryImpl implements ISecureStorageRepository {
     await deleteToken();
     await deleteUserId();
     await deleteCommonUserId();
-    print('Cleared all auth data from secure storage.'); // Added print statement from 'ours'
+    AppLogger.d('Cleared all auth data from secure storage.'); // Added print statement from 'ours'
   }
 }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:get_it/get_it.dart';
 import '../analytics_manager.dart';
 
@@ -13,14 +14,14 @@ class RouterAnalyticsObserver extends NavigatorObserver {
   @override
   void didPush(Route route, Route? previousRoute) {
     super.didPush(route, previousRoute);
-    print('[RouterAnalyticsObserver] 页面被推入: ${route.settings.name} (从 ${previousRoute?.settings.name ?? "无"})');
+    AppLogger.d('[RouterAnalyticsObserver] 页面被推入: ${route.settings.name} (从 ${previousRoute?.settings.name ?? "无"})');
     _handleRouteEnter(route);
   }
 
   @override
   void didReplace({Route? newRoute, Route? oldRoute}) {
     super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
-    print('[RouterAnalyticsObserver] 页面被替换: ${oldRoute?.settings.name ?? "无"} -> ${newRoute?.settings.name ?? "无"}');
+    AppLogger.d('[RouterAnalyticsObserver] 页面被替换: ${oldRoute?.settings.name ?? "无"} -> ${newRoute?.settings.name ?? "无"}');
     if (oldRoute != null) {
       _handleRouteLeave(oldRoute);
     }
@@ -32,14 +33,14 @@ class RouterAnalyticsObserver extends NavigatorObserver {
   @override
   void didPop(Route route, Route? previousRoute) {
     super.didPop(route, previousRoute);
-    print('[RouterAnalyticsObserver] 页面被弹出: ${route.settings.name} (返回到 ${previousRoute?.settings.name ?? "无"})');
+    AppLogger.d('[RouterAnalyticsObserver] 页面被弹出: ${route.settings.name} (返回到 ${previousRoute?.settings.name ?? "无"})');
     _handleRouteLeave(route);
   }
 
   @override
   void didRemove(Route route, Route? previousRoute) {
     super.didRemove(route, previousRoute);
-    print('[RouterAnalyticsObserver] 页面被移除: ${route.settings.name}');
+    AppLogger.d('[RouterAnalyticsObserver] 页面被移除: ${route.settings.name}');
     _handleRouteLeave(route);
   }
 
@@ -49,12 +50,12 @@ class RouterAnalyticsObserver extends NavigatorObserver {
     
     final routeName = route.settings.name;
     if (routeName != null && routeName.isNotEmpty) {
-      print('[RouterAnalyticsObserver] 记录页面进入埋点: $routeName');
+      AppLogger.d('[RouterAnalyticsObserver] 记录页面进入埋点: $routeName');
       
       final pageType = _getPageType(routeName);
       final businessId = _extractBusinessId(routeName);
       
-      print('[RouterAnalyticsObserver] 页面类型: $pageType, 业务ID: $businessId');
+      AppLogger.d('[RouterAnalyticsObserver] 页面类型: $pageType, 业务ID: $businessId');
       
       _analytics.trackPageView(
         path: routeName,
@@ -66,7 +67,7 @@ class RouterAnalyticsObserver extends NavigatorObserver {
         },
       );
     } else {
-      print('[RouterAnalyticsObserver] 跳过记录页面进入埋点: 路由名称为空 (${route.runtimeType})');
+      AppLogger.d('[RouterAnalyticsObserver] 跳过记录页面进入埋点: 路由名称为空 (${route.runtimeType})');
     }
   }
 
@@ -79,12 +80,12 @@ class RouterAnalyticsObserver extends NavigatorObserver {
       
       // 只记录停留时间大于1秒的页面
       if (routeName != null && routeName.isNotEmpty && stayDuration > 1) {
-        print('[RouterAnalyticsObserver] 记录页面离开埋点: $routeName, 停留时长: ${stayDuration}秒');
+        AppLogger.d('[RouterAnalyticsObserver] 记录页面离开埋点: $routeName, 停留时长: ${stayDuration}秒');
         
         final pageType = _getPageType(routeName);
         final businessId = _extractBusinessId(routeName);
         
-        print('[RouterAnalyticsObserver] 页面类型: $pageType, 业务ID: $businessId');
+        AppLogger.d('[RouterAnalyticsObserver] 页面类型: $pageType, 业务ID: $businessId');
         
         _analytics.trackPageView(
           path: routeName,
@@ -97,10 +98,10 @@ class RouterAnalyticsObserver extends NavigatorObserver {
           },
         );
       } else {
-        print('[RouterAnalyticsObserver] 跳过记录页面离开埋点: ${routeName ?? "无名称"}, 停留时长: ${stayDuration}秒 (小于阈值)');
+        AppLogger.d('[RouterAnalyticsObserver] 跳过记录页面离开埋点: ${routeName ?? "无名称"}, 停留时长: ${stayDuration}秒 (小于阈值)');
       }
     } else {
-      print('[RouterAnalyticsObserver] 跳过记录页面离开埋点: 未找到进入时间记录 (${route.settings.name})');
+      AppLogger.d('[RouterAnalyticsObserver] 跳过记录页面离开埋点: 未找到进入时间记录 (${route.settings.name})');
     }
   }
 

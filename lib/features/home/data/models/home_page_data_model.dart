@@ -1,4 +1,5 @@
 import '../../domain/entities/home_page_data.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'banner_model.dart';
 import 'home_category_model.dart';
 import 'home_feed_item_model.dart';
@@ -17,7 +18,7 @@ class HomePageDataModel extends HomePageData {
 
   /// 从 JSON 创建 HomePageDataModel 实例
   factory HomePageDataModel.fromJson(Map<String, dynamic> json) {
-    print('Parsing HomePageDataModel from JSON: $json');
+    AppLogger.d('Parsing HomePageDataModel from JSON: $json');
     
     // 处理 banners
     List<BannerModel> bannersList = [];

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -50,7 +51,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
       final index = _tabStatuses.indexWhere((s) => s == statusEnum);
       return index != -1 ? index : 0; // Return found index or default to 0
     } catch (e) {
-      print("Error finding index for status '$statusString': $e");
+      AppLogger.d("Error finding index for status '$statusString': $e");
       return 0; // Default to '全部' on error
     }
   }
@@ -61,7 +62,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
 
     // Calculate initial index based on widget.initialStatus
     final initialIndex = _findIndexForStatus(widget.initialStatus);
-    print('[OrderListPage initState] Received initialStatus: ${widget.initialStatus}, setting initialIndex: $initialIndex');
+    AppLogger.d('[OrderListPage initState] Received initialStatus: ${widget.initialStatus}, setting initialIndex: $initialIndex');
 
     // Initialize TabController with the calculated initial index
     _tabController = TabController(
@@ -85,7 +86,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
     // Check if the controller index matches the animation target
     if (!_tabController.indexIsChanging && _tabController.previousIndex != _tabController.index) {
         final selectedStatus = _tabStatuses[_tabController.index];
-        print('[OrderListPage _onTabChanged] Loading orders for tab index: ${_tabController.index}, status: $selectedStatus');
+        AppLogger.d('[OrderListPage _onTabChanged] Loading orders for tab index: ${_tabController.index}, status: $selectedStatus');
         _loadOrdersForStatus(selectedStatus);
     }
   }

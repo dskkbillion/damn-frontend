@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import '../../domain/entities/order.dart';
 import 'order_detail_item_tile.dart';
 
@@ -13,10 +14,10 @@ class OrderItemsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('🔍 OrderItemsSection: 商品数量 ${order.items.length}');
+    AppLogger.d('🔍 OrderItemsSection: 商品数量 ${order.items.length}');
     final items = order.items;
     if (items.isEmpty) {
-      print('⚠️ OrderItemsSection: 商品列表为空');
+      AppLogger.d('⚠️ OrderItemsSection: 商品列表为空');
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.all(16),

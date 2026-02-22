@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart' hide Order; // Hide Order from injectable
@@ -126,7 +127,7 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
           final errorMessage = (failure is ServerFailure) 
             ? (failure.message ?? 'Unknown server error loading more') // Handle null message
             : 'An unknown error occurred loading more';
-          print('Error loading more seller orders: $errorMessage');
+          AppLogger.d('Error loading more seller orders: $errorMessage');
            // Restore page number on failure?
            _currentPage--;
         },
@@ -157,7 +158,7 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     ConfirmAcceptanceRequested event,
     Emitter<SellerOrderListState> emit,
   ) async {
-    print('[SellerOrderListBloc] Received ConfirmAcceptanceRequested for order ${event.orderId}');
+    AppLogger.d('[SellerOrderListBloc] Received ConfirmAcceptanceRequested for order ${event.orderId}');
     // Ensure we have a previous success state to pass
     final currentState = state;
     if (currentState is SellerOrderListSuccess) {
@@ -166,14 +167,14 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     } else {
       // Handle cases where action is triggered from a non-success state (e.g., initial, error)
       // Maybe just log or prevent action? For now, let it proceed but log.
-      print('[SellerOrderListBloc] Warning: ConfirmAcceptance requested from non-success state: ${currentState.runtimeType}');
+      AppLogger.d('[SellerOrderListBloc] Warning: ConfirmAcceptance requested from non-success state: ${currentState.runtimeType}');
     }
 
     final result = await _confirmOrderAcceptanceUseCase(event.orderId);
 
     result.fold(
       (failure) {
-        print('[SellerOrderListBloc] Failed to confirm acceptance for order ${event.orderId}: $failure');
+        AppLogger.d('[SellerOrderListBloc] Failed to confirm acceptance for order ${event.orderId}: $failure');
         // Emit Failure state, passing the previous state if available
         if (currentState is SellerOrderListSuccess) {
            emit(SellerOrderListActionFailure(
@@ -183,11 +184,11 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
         } else {
           // If no previous success state, maybe revert to initial or a general error state?
           // For now, just log, as the list might not be visible anyway.
-           print('[SellerOrderListBloc] Error occurred from non-success state, cannot show previous list.');
+           AppLogger.d('[SellerOrderListBloc] Error occurred from non-success state, cannot show previous list.');
         }
       },
       (_) {
-        print('[SellerOrderListBloc] Successfully confirmed acceptance for order ${event.orderId}.');
+        AppLogger.d('[SellerOrderListBloc] Successfully confirmed acceptance for order ${event.orderId}.');
         // Refresh the list to show the updated order status
         add(LoadSellerOrdersRequested(
           statusFilter: _currentStatusFilter,
@@ -201,12 +202,12 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     RejectOrderRequested event,
     Emitter<SellerOrderListState> emit,
   ) async {
-    print('[SellerOrderListBloc] Received RejectOrderRequested for order ${event.orderId}');
+    AppLogger.d('[SellerOrderListBloc] Received RejectOrderRequested for order ${event.orderId}');
     final currentState = state;
     if (currentState is SellerOrderListSuccess) {
       emit(SellerOrderListActionInProgress(previousState: currentState));
     } else {
-      print('[SellerOrderListBloc] Warning: RejectOrder requested from non-success state: ${currentState.runtimeType}');
+      AppLogger.d('[SellerOrderListBloc] Warning: RejectOrder requested from non-success state: ${currentState.runtimeType}');
     }
 
     // Construct AddOrderDemandParams for refusal here
@@ -222,18 +223,18 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     final result = await _rejectOrderUseCase(params); // Pass the params object
     result.fold(
       (failure) {
-        print('[SellerOrderListBloc] Failed to reject order ${event.orderId}: $failure');
+        AppLogger.d('[SellerOrderListBloc] Failed to reject order ${event.orderId}: $failure');
         if (currentState is SellerOrderListSuccess) {
           emit(SellerOrderListActionFailure(
             previousState: currentState,
             message: '拒绝订单失败: ${failure.toString()}'
             ));
         } else {
-           print('[SellerOrderListBloc] Error occurred from non-success state.');
+           AppLogger.d('[SellerOrderListBloc] Error occurred from non-success state.');
         }
       },
       (_) {
-        print('[SellerOrderListBloc] Successfully rejected order ${event.orderId}.');
+        AppLogger.d('[SellerOrderListBloc] Successfully rejected order ${event.orderId}.');
         add(LoadSellerOrdersRequested(statusFilter: _currentStatusFilter, refresh: true));
       },
     );
@@ -243,12 +244,12 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     DeliverOrderRequested event,
     Emitter<SellerOrderListState> emit,
   ) async {
-    print('[SellerOrderListBloc] Received DeliverOrderRequested for order ${event.orderId}');
+    AppLogger.d('[SellerOrderListBloc] Received DeliverOrderRequested for order ${event.orderId}');
     final currentState = state;
     if (currentState is SellerOrderListSuccess) {
       emit(SellerOrderListActionInProgress(previousState: currentState));
     } else {
-       print('[SellerOrderListBloc] Warning: DeliverOrder requested from non-success state: ${currentState.runtimeType}');
+       AppLogger.d('[SellerOrderListBloc] Warning: DeliverOrder requested from non-success state: ${currentState.runtimeType}');
     }
 
     // TODO: Construct DeliverOrderParams properly. This needs UI interaction (files, content).
@@ -257,18 +258,18 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     final result = await _deliverOrderUseCase(params);
     result.fold(
       (failure) {
-        print('[SellerOrderListBloc] Failed to deliver order ${event.orderId}: $failure');
+        AppLogger.d('[SellerOrderListBloc] Failed to deliver order ${event.orderId}: $failure');
          if (currentState is SellerOrderListSuccess) {
           emit(SellerOrderListActionFailure(
             previousState: currentState,
             message: '确认发货失败: ${failure.toString()}'
             ));
         } else {
-            print('[SellerOrderListBloc] Error occurred from non-success state.');
+            AppLogger.d('[SellerOrderListBloc] Error occurred from non-success state.');
         }
       },
       (_) {
-        print('[SellerOrderListBloc] Successfully delivered order ${event.orderId}.');
+        AppLogger.d('[SellerOrderListBloc] Successfully delivered order ${event.orderId}.');
         add(LoadSellerOrdersRequested(statusFilter: _currentStatusFilter, refresh: true));
       },
     );
@@ -278,29 +279,29 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     InviteEvaluationRequested event,
     Emitter<SellerOrderListState> emit,
   ) async {
-    print('[SellerOrderListBloc] Received InviteEvaluationRequested for order ${event.orderId}');
+    AppLogger.d('[SellerOrderListBloc] Received InviteEvaluationRequested for order ${event.orderId}');
      final currentState = state;
     if (currentState is SellerOrderListSuccess) {
       emit(SellerOrderListActionInProgress(previousState: currentState));
     } else {
-       print('[SellerOrderListBloc] Warning: InviteEvaluation requested from non-success state: ${currentState.runtimeType}');
+       AppLogger.d('[SellerOrderListBloc] Warning: InviteEvaluation requested from non-success state: ${currentState.runtimeType}');
     }
 
     final result = await _inviteEvaluationUseCase(event.orderId);
     result.fold(
       (failure) {
-        print('[SellerOrderListBloc] Failed to invite evaluation for order ${event.orderId}: $failure');
+        AppLogger.d('[SellerOrderListBloc] Failed to invite evaluation for order ${event.orderId}: $failure');
         if (currentState is SellerOrderListSuccess) {
           emit(SellerOrderListActionFailure(
             previousState: currentState,
             message: '邀请评价失败: ${failure.toString()}'
             ));
         } else {
-           print('[SellerOrderListBloc] Error occurred from non-success state.');
+           AppLogger.d('[SellerOrderListBloc] Error occurred from non-success state.');
         }
       },
       (_) {
-        print('[SellerOrderListBloc] Successfully invited evaluation for order ${event.orderId}.');
+        AppLogger.d('[SellerOrderListBloc] Successfully invited evaluation for order ${event.orderId}.');
         // For non-list-modifying actions, revert to previous success state 
         // Or potentially emit a specific ActionSuccess state for SnackBar
         if (currentState is SellerOrderListSuccess) {
@@ -321,29 +322,29 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     DeleteSellerRecordRequested event,
     Emitter<SellerOrderListState> emit,
   ) async {
-    print('[SellerOrderListBloc] Received DeleteSellerRecordRequested for order ${event.orderId}');
+    AppLogger.d('[SellerOrderListBloc] Received DeleteSellerRecordRequested for order ${event.orderId}');
     final currentState = state;
      if (currentState is SellerOrderListSuccess) {
       emit(SellerOrderListActionInProgress(previousState: currentState));
     } else {
-       print('[SellerOrderListBloc] Warning: DeleteRecord requested from non-success state: ${currentState.runtimeType}');
+       AppLogger.d('[SellerOrderListBloc] Warning: DeleteRecord requested from non-success state: ${currentState.runtimeType}');
     }
 
     final result = await _deleteSellerRecordUseCase(event.orderId);
     result.fold(
       (failure) {
-        print('[SellerOrderListBloc] Failed to delete seller record for order ${event.orderId}: $failure');
+        AppLogger.d('[SellerOrderListBloc] Failed to delete seller record for order ${event.orderId}: $failure');
          if (currentState is SellerOrderListSuccess) {
           emit(SellerOrderListActionFailure(
             previousState: currentState,
             message: '删除记录失败: ${failure.toString()}'
             ));
         } else {
-            print('[SellerOrderListBloc] Error occurred from non-success state.');
+            AppLogger.d('[SellerOrderListBloc] Error occurred from non-success state.');
         }
       },
       (_) {
-        print('[SellerOrderListBloc] Successfully deleted seller record for order ${event.orderId}.');
+        AppLogger.d('[SellerOrderListBloc] Successfully deleted seller record for order ${event.orderId}.');
         // Refresh the list to remove the deleted order
         add(LoadSellerOrdersRequested(statusFilter: _currentStatusFilter, refresh: true));
       },

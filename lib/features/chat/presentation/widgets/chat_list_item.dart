@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:intl/date_symbol_data_local.dart'; // Import for initializing locale data
@@ -69,7 +70,7 @@ class _ChatListItemState extends State<ChatListItem> {
     if (message == null) return '';
 
     // Debug: 打印消息类型
-    print('[ChatListItem] Message type: ${message.type}, context: ${message.context.substring(0, message.context.length > 20 ? 20 : message.context.length)}');
+    AppLogger.d('[ChatListItem] Message type: ${message.type}, context: ${message.context.substring(0, message.context.length > 20 ? 20 : message.context.length)}');
 
     switch (message.type) {
       case 'text':
