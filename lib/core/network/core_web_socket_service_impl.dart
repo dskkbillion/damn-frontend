@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:convert';
 import 'dart:io'; // For Platform check
 
@@ -21,6 +22,9 @@ class CoreWebSocketServiceImpl implements ICoreWebSocketService {
   int _reconnectAttempts = 0;
   final int _maxReconnectAttempts = 5;
   final Duration _reconnectDelay = const Duration(seconds: 5);
+
+  // 显式状态枚举，替代 _channel != null 的不精确判断
+  CoreConnectionStatus _connectionState = CoreConnectionStatus.disconnected;
   
   // Use broadcast controllers to allow multiple listeners (e.g., different Blocs)
   final StreamController<ChatMessageDto?> _messageStreamController = StreamController.broadcast();
@@ -36,44 +40,39 @@ class CoreWebSocketServiceImpl implements ICoreWebSocketService {
 
   @override
   Future<void> connect(String commonUserId, String token) async {
-    if (getCurrentStatus() == CoreConnectionStatus.connected ||
-        getCurrentStatus() == CoreConnectionStatus.connecting) {
-      print("[CoreWebSocket] Already connected or connecting. Ignoring connect call.");
+    if (_connectionState == CoreConnectionStatus.connected ||
+        _connectionState == CoreConnectionStatus.connecting) {
+      AppLogger.d("[CoreWebSocket] Already connected or connecting. Ignoring connect call.");
       return;
     }
-    print("[CoreWebSocket] connect called with userId: $commonUserId");
+    AppLogger.d("[CoreWebSocket] connect called with userId: $commonUserId");
     _commonUserId = commonUserId;
     _token = token;
-    _reconnectAttempts = 0; // Reset attempts on new connect call
-    _connectionStatusController.add(CoreConnectionStatus.connecting);
+    _reconnectAttempts = 0;
+    _setConnectionState(CoreConnectionStatus.connecting);
     await _establishConnection();
   }
 
   @override
   Future<void> disconnect() async {
-    print("[CoreWebSocket] Disconnecting explicitly...");
+    AppLogger.d("[CoreWebSocket] Disconnecting explicitly...");
     _reconnectAttempts = _maxReconnectAttempts; // Prevent auto-reconnect after explicit disconnect
-    _heartbeatTimer?.cancel();
-    _channelSubscription?.cancel();
-    await _channel?.sink.close();
-    _channel = null;
-    if (!_connectionStatusController.isClosed) {
-       _connectionStatusController.add(CoreConnectionStatus.disconnected);
-    }
-    print("[CoreWebSocket] Disconnected explicitly.");
+    await _cleanupConnectionResources();
+    _setConnectionState(CoreConnectionStatus.disconnected);
+    AppLogger.d("[CoreWebSocket] Disconnected explicitly.");
     // Do NOT close stream controllers here, as the service might be long-lived
     // They should be closed when the service itself is disposed (e.g., app termination or user logout)
   }
 
-  // 添加getCurrentStatus方法实现
   @override
-  CoreConnectionStatus getCurrentStatus() {
-    // 如果连接对象存在且连接正常，返回已连接状态
-    if (_channel != null) {
-      return CoreConnectionStatus.connected;
+  CoreConnectionStatus getCurrentStatus() => _connectionState;
+
+  /// 统一更新连接状态，避免直接操作 controller
+  void _setConnectionState(CoreConnectionStatus status) {
+    _connectionState = status;
+    if (!_connectionStatusController.isClosed) {
+      _connectionStatusController.add(status);
     }
-    // 否则返回断开状态
-    return CoreConnectionStatus.disconnected;
   }
 
   // --- Internal Logic (Migrated from ChatWebSocketDataSourceImpl) ---
@@ -83,10 +82,8 @@ class CoreWebSocketServiceImpl implements ICoreWebSocketService {
     await _cleanupConnectionResources(); 
 
     if (_commonUserId == null || _token == null) {
-      print("[CoreWebSocket] Error: Cannot connect without commonUserId and token.");
-       if (!_connectionStatusController.isClosed) {
-         _connectionStatusController.add(CoreConnectionStatus.error);
-       }
+      AppLogger.d("[CoreWebSocket] Error: Cannot connect without commonUserId and token.");
+      _setConnectionState(CoreConnectionStatus.error);
       return;
     }
 
@@ -107,57 +104,51 @@ class CoreWebSocketServiceImpl implements ICoreWebSocketService {
     }
     
     final url = '$wsBaseUrl/websocket/message/$_commonUserId/member';
-    print("[CoreWebSocket] Connecting to: $url");
+    AppLogger.d("[CoreWebSocket] Connecting to: $url");
 
     try {
       // Choose channel based on platform
       _channel = _createWebSocketChannel(url);
 
-      if (_channel == null) { // Unsupported platform case from _createWebSocketChannel
-         if (!_connectionStatusController.isClosed) {
-           _connectionStatusController.add(CoreConnectionStatus.error);
-         }
-         return; 
+      if (_channel == null) {
+        _setConnectionState(CoreConnectionStatus.error);
+        return;
       }
-      
-      if (!_connectionStatusController.isClosed) {
-         _connectionStatusController.add(CoreConnectionStatus.connected);
-      }
-      print("[CoreWebSocket] Connected successfully.");
-      _reconnectAttempts = 0; // Reset attempts on successful connection
+
+      _setConnectionState(CoreConnectionStatus.connected);
+      AppLogger.d("[CoreWebSocket] Connected successfully.");
+      _reconnectAttempts = 0;
 
       _sendAuthMessage();
       _listenToMessages();
       _startHeartbeat();
 
     } catch (e) {
-      print("[CoreWebSocket] Connection error: $e");
-       if (!_connectionStatusController.isClosed) {
-         _connectionStatusController.add(CoreConnectionStatus.error);
-       }
-      _handleReconnect(); 
+      AppLogger.d("[CoreWebSocket] Connection error: $e");
+      _setConnectionState(CoreConnectionStatus.error);
+      await _handleReconnect();
     }
   }
 
   WebSocketChannel? _createWebSocketChannel(String url) {
      try {
         if (kIsWeb) {
-          print("[CoreWebSocket] Using Web Channel.");
+          AppLogger.d("[CoreWebSocket] Using Web Channel.");
           // Consider adding connection timeout logic for web if possible/needed
           return WebSocketChannel.connect(Uri.parse(url));
         } else if (Platform.isAndroid || Platform.isIOS || Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
-          print("[CoreWebSocket] Using IO Channel.");
+          AppLogger.d("[CoreWebSocket] Using IO Channel.");
           // IOWebSocketChannel allows setting connectTimeout
           return IOWebSocketChannel.connect(
               url, 
               connectTimeout: const Duration(seconds: 10), // Example timeout
           );
         } else {
-          print("[CoreWebSocket] Error: Unsupported platform for WebSocket.");
+          AppLogger.d("[CoreWebSocket] Error: Unsupported platform for WebSocket.");
           return null;
         }
      } catch (e) {
-        print("[CoreWebSocket] Error creating WebSocket channel for url $url: $e");
+        AppLogger.d("[CoreWebSocket] Error creating WebSocket channel for url $url: $e");
         return null;
      }
   }
@@ -167,7 +158,7 @@ class CoreWebSocketServiceImpl implements ICoreWebSocketService {
     _channelSubscription?.cancel(); 
     _channelSubscription = _channel?.stream.listen(
       (message) {
-        print("[CoreWebSocket] Received raw: $message");
+        AppLogger.d("[CoreWebSocket] Received raw: $message");
         try {
           final decodedMessage = jsonDecode(message);
           if (decodedMessage is Map<String, dynamic>) {
@@ -179,57 +170,53 @@ class CoreWebSocketServiceImpl implements ICoreWebSocketService {
                    if (!_messageStreamController.isClosed) {
                        _messageStreamController.add(chatMessageDto);
                    }
-                   print("[CoreWebSocket] Parsed and added ChatMessageDto: ${chatMessageDto.id}");
+                   AppLogger.d("[CoreWebSocket] Parsed and added ChatMessageDto: ${chatMessageDto.id}");
                  } else {
-                   print("[CoreWebSocket] Error: Unexpected format for 'data' field: ${messageData.runtimeType}");
+                   AppLogger.d("[CoreWebSocket] Error: Unexpected format for 'data' field: ${messageData.runtimeType}");
                  }
                } catch (e) {
-                 print("[CoreWebSocket] Error parsing message data: $e");
+                 AppLogger.d("[CoreWebSocket] Error parsing message data: $e");
                  // Optionally add null to stream to indicate parsing error?
                  // if (!_messageStreamController.isClosed) { _messageStreamController.add(null); }
                }
             } else if (decodedMessage['action'] == 'PONG') {
-               print("[CoreWebSocket] Received Pong (Heartbeat ACK)");
+               AppLogger.d("[CoreWebSocket] Received Pong (Heartbeat ACK)");
                // Handle Pong if needed (e.g., reset a timeout waiting for pong)
             } else {
-              print("[CoreWebSocket] Received non-CHAT/PONG message action: ${decodedMessage['action']}");
+              AppLogger.d("[CoreWebSocket] Received non-CHAT/PONG message action: ${decodedMessage['action']}");
             }
           } else {
-             print("[CoreWebSocket] Received non-map message: $message");
+             AppLogger.d("[CoreWebSocket] Received non-map message: $message");
           }
         } catch (e) {
-          print("[CoreWebSocket] Error decoding message: $e, Raw message: $message");
+          AppLogger.d("[CoreWebSocket] Error decoding message: $e, Raw message: $message");
           // Optionally add null to stream to indicate decoding error?
           // if (!_messageStreamController.isClosed) { _messageStreamController.add(null); }
         }
       },
       onDone: () {
-        print("[CoreWebSocket] Channel closed by server.");
-        if (!_connectionStatusController.isClosed) {
-           _connectionStatusController.add(CoreConnectionStatus.disconnected);
-        }
+        AppLogger.d("[CoreWebSocket] Channel closed by server.");
+        _setConnectionState(CoreConnectionStatus.disconnected);
         _handleReconnect();
       },
       onError: (error) {
-        print("[CoreWebSocket] Channel error: $error");
-         if (!_connectionStatusController.isClosed) {
-           _connectionStatusController.add(CoreConnectionStatus.error);
-         }
-        _handleReconnect(); 
+        AppLogger.d("[CoreWebSocket] Channel error: $error");
+        _setConnectionState(CoreConnectionStatus.error);
+        _handleReconnect();
       },
       cancelOnError: false, // Keep listening after an error to allow reconnection attempts
     );
-     print("[CoreWebSocket] Listening for messages.");
+     AppLogger.d("[CoreWebSocket] Listening for messages.");
   }
 
   void _sendAuthMessage() {
     if (_channel != null && _token != null) {
       try {
         final authMessage = jsonEncode({'type': 'auth', 'token': _token});
-        print("[CoreWebSocket] Sending Auth: $authMessage");
+        AppLogger.d("[CoreWebSocket] Sending Auth message (token omitted)");
         _channel!.sink.add(authMessage);
       } catch (e) {
-         print("[CoreWebSocket] Error sending auth message: $e");
+        AppLogger.d("[CoreWebSocket] Error sending auth message: $e");
       }
     }
   }
@@ -237,22 +224,22 @@ class CoreWebSocketServiceImpl implements ICoreWebSocketService {
   void _startHeartbeat() {
     _heartbeatTimer?.cancel(); 
     _heartbeatTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
-      if (_channel != null && getCurrentStatus() == CoreConnectionStatus.connected) {
+      if (_channel != null && _connectionState == CoreConnectionStatus.connected) {
          try {
             final pingMessage = jsonEncode({'type': 'ping'});
-            print("[CoreWebSocket] Sending Ping (Heartbeat)");
+            AppLogger.d("[CoreWebSocket] Sending Ping (Heartbeat)");
             _channel!.sink.add(pingMessage);
          } catch (e) {
-            print("[CoreWebSocket] Error sending ping: $e");
+            AppLogger.d("[CoreWebSocket] Error sending ping: $e");
             // Consider attempting reconnect if ping fails?
          }
       } else {
-         print("[CoreWebSocket] Heartbeat skipped (not connected)");
+         AppLogger.d("[CoreWebSocket] Heartbeat skipped (not connected)");
          // Stop timer if not connected to avoid unnecessary checks
          timer.cancel(); 
       }
     });
-     print("[CoreWebSocket] Heartbeat started.");
+     AppLogger.d("[CoreWebSocket] Heartbeat started.");
   }
   
   Future<void> _cleanupConnectionResources() async {
@@ -262,50 +249,45 @@ class CoreWebSocketServiceImpl implements ICoreWebSocketService {
      try {
        await _channel?.sink.close();
      } catch (e) {
-       print("[CoreWebSocket] Error closing previous channel sink: $e");
+       AppLogger.d("[CoreWebSocket] Error closing previous channel sink: $e");
      }
      _channel = null;
      _channelSubscription = null; 
      _heartbeatTimer = null;
   }
 
-  void _handleReconnect() {
-     print("[CoreWebSocket] Handling reconnect...");
-    _cleanupConnectionResources(); // Clean up before attempting reconnect
+  Future<void> _handleReconnect() async {
+    AppLogger.d("[CoreWebSocket] Handling reconnect...");
+    // 必须 await，确保旧连接完全清理后再重连（修复竞态条件）
+    await _cleanupConnectionResources();
 
     if (_reconnectAttempts < _maxReconnectAttempts) {
       _reconnectAttempts++;
-      print("[CoreWebSocket] Reconnect attempt $_reconnectAttempts/$_maxReconnectAttempts in ${_reconnectDelay.inSeconds} seconds...");
-      Future.delayed(_reconnectDelay, () {
-         if (_commonUserId != null && _token != null) {
-             if (!_connectionStatusController.isClosed) {
-                 _connectionStatusController.add(CoreConnectionStatus.connecting);
-             }
-            _establishConnection();
-         } else {
-             print("[CoreWebSocket] Cannot reconnect: User credentials lost.");
-             if (!_connectionStatusController.isClosed) {
-                 _connectionStatusController.add(CoreConnectionStatus.disconnected);
-             }
-         }
+      AppLogger.d("[CoreWebSocket] Reconnect attempt $_reconnectAttempts/$_maxReconnectAttempts in ${_reconnectDelay.inSeconds} seconds...");
+      Future.delayed(_reconnectDelay, () async {
+        if (_commonUserId != null && _token != null) {
+          _setConnectionState(CoreConnectionStatus.connecting);
+          await _establishConnection();
+        } else {
+          AppLogger.d("[CoreWebSocket] Cannot reconnect: User credentials lost.");
+          _setConnectionState(CoreConnectionStatus.disconnected);
+        }
       });
     } else {
-      print("[CoreWebSocket] Max reconnect attempts reached. Giving up.");
-       if (!_connectionStatusController.isClosed) {
-          _connectionStatusController.add(CoreConnectionStatus.disconnected);
-       }
+      AppLogger.d("[CoreWebSocket] Max reconnect attempts reached. Giving up.");
+      _setConnectionState(CoreConnectionStatus.disconnected);
     }
   }
 
   // Optional: Add a dispose method if the service needs cleanup when DI removes it
   @disposeMethod // Import dispose_method from injectable if using this
   void dispose() {
-    print("[CoreWebSocket] Disposing service...");
+    AppLogger.d("[CoreWebSocket] Disposing service...");
     _heartbeatTimer?.cancel();
     _channelSubscription?.cancel();
     _channel?.sink.close();
     _messageStreamController.close();
     _connectionStatusController.close();
-    print("[CoreWebSocket] Service disposed.");
+    AppLogger.d("[CoreWebSocket] Service disposed.");
   }
 } 

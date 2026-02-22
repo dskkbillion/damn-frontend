@@ -29,7 +29,8 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
   String? _localPath;
   double _downloadProgress = 0.0;
   String? _errorMessage;
-  
+  final Dio _dio = Dio();
+
   // PDF相关
   int _totalPages = 0;
   int _currentPage = 0;
@@ -39,6 +40,12 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
   void initState() {
     super.initState();
     _downloadAndPreview();
+  }
+
+  @override
+  void dispose() {
+    _dio.close();
+    super.dispose();
   }
 
   Future<void> _downloadAndPreview() async {
@@ -58,8 +65,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
       }
       
       // 下载文件
-      final dio = Dio();
-      await dio.download(
+      await _dio.download(
         widget.fileUrl,
         filePath,
         onReceiveProgress: (received, total) {

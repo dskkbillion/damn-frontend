@@ -13,7 +13,7 @@ import '../bloc/chat_list/chat_list_bloc.dart';
 import 'chat_list_item.dart';
 
 /// 按卖家分组的聊天列表组件
-class GroupedChatList extends StatelessWidget {
+class GroupedChatList extends StatefulWidget {
   final Function(ChatRoom) onChatTap;
   final int currentUserId;
 
@@ -24,15 +24,31 @@ class GroupedChatList extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<GroupedChatList> createState() => _GroupedChatListState();
+}
+
+class _GroupedChatListState extends State<GroupedChatList> {
+  List<ChatRoom>? _cachedChatRooms;
+  List<SellerChatGroup> _cachedGroups = [];
+
+  List<SellerChatGroup> _getGroupedChats(List<ChatRoom> chatRooms) {
+    if (!identical(_cachedChatRooms, chatRooms)) {
+      _cachedChatRooms = chatRooms;
+      _cachedGroups = _groupChatsBySeller(chatRooms);
+    }
+    return _cachedGroups;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final appLocalizations = AppLocalizations.of(context)!;
-    
+
     return BlocBuilder<ChatListBloc, ChatListState>(
       builder: (context, state) {
         if (state.status == ChatListStatus.loading) {
           return const Center(child: CircularProgressIndicator());
         }
-        
+
         if (state.chatRooms.isEmpty) {
           return Center(
             child: Column(
@@ -48,28 +64,28 @@ class GroupedChatList extends StatelessWidget {
             ),
           );
         }
-        
-        // 按卖家分组
-        final groupedChats = _groupChatsBySeller(state.chatRooms);
-        
+
+        // 按卖家分组（带缓存，仅在 chatRooms 引用变化时重新计算）
+        final groupedChats = _getGroupedChats(state.chatRooms);
+
         return ListView.builder(
           itemCount: groupedChats.length,
           itemBuilder: (context, index) {
             final group = groupedChats[index];
-            
+
             if (group.chatRooms.length == 1) {
               // 单个聊天室，直接显示
               return ChatListItem(
                 chatRoom: group.chatRooms.first,
-                currentUserId: currentUserId,
-                onTap: () => onChatTap(group.chatRooms.first),
+                currentUserId: widget.currentUserId,
+                onTap: () => widget.onChatTap(group.chatRooms.first),
               );
             } else {
               // 多个聊天室，显示分组
               return SellerGroupItem(
                 group: group,
-                currentUserId: currentUserId,
-                onTap: onChatTap,
+                currentUserId: widget.currentUserId,
+                onTap: widget.onChatTap,
               );
             }
           },
@@ -77,7 +93,7 @@ class GroupedChatList extends StatelessWidget {
       },
     );
   }
-  
+
   /// 按卖家分组聊天室
   List<SellerChatGroup> _groupChatsBySeller(List<ChatRoom> chatRooms) {
     final Map<int, List<ChatRoom>> grouped = {};
@@ -88,7 +104,7 @@ class GroupedChatList extends StatelessWidget {
       int sellerId;
       
       // 判断当前用户的类型
-      if (chatRoom.participant1.referId == currentUserId) {
+      if (chatRoom.participant1.referId == widget.currentUserId) {
         // 当前用户是participant1
         if (chatRoom.participant1.type == 'MEMBER') {
           // 当前用户是买家，对方是卖家
@@ -123,7 +139,7 @@ class GroupedChatList extends StatelessWidget {
       Participant seller;
       
       // 重新确定卖家信息（与上面逻辑一致）
-      if (firstRoom.participant1.referId == currentUserId) {
+      if (firstRoom.participant1.referId == widget.currentUserId) {
         if (firstRoom.participant1.type == 'MEMBER') {
           seller = firstRoom.participant2;
         } else {

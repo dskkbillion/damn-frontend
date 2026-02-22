@@ -32,6 +32,7 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
   bool _isDownloading = false;
   String? _localPath;
   CancelToken? _cancelToken;
+  final Dio _dio = Dio();
 
   @override
   void initState() {
@@ -42,6 +43,7 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
   @override
   void dispose() {
     _cancelToken?.cancel();
+    _dio.close();
     super.dispose();
   }
 
@@ -176,7 +178,7 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
       
       _cancelToken = CancelToken();
       
-      await Dio().download(
+      await _dio.download(
         widget.fileUrl,
         filePath,
         cancelToken: _cancelToken,
