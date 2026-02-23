@@ -1,3 +1,5 @@
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
+
 class SellerProduct {
   final int id;
   final int tenantId;

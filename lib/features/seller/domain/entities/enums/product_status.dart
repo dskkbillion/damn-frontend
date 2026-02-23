@@ -1,3 +1,5 @@
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
+
 /// 商品状态枚举
 enum ProductStatus {
   /// 正常/已上架
