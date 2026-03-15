@@ -28,6 +28,8 @@ import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/features/home/presentation/navigation/home_navigation_di.dart';
 import 'package:dskk_flutter_refactor/app/navigation/app_router.dart';
 
+const String _envFile = String.fromEnvironment('ENV_FILE', defaultValue: '.env');
+
 /// 统一入口【生产版】 - 支持所有支付方式和登录方式，使用美元作为统一货币
 /// 
 /// 使用方法：
@@ -50,10 +52,10 @@ Future<void> main() async {
 
   // 先加载.env文件
   try {
-    await dotenv.load(fileName: ".env");
-    AppLogger.d('.env file loaded successfully.');
+    await dotenv.load(fileName: _envFile);
+    AppLogger.d('Environment file loaded successfully: $_envFile');
   } catch (e) {
-    AppLogger.d('No .env file found, using default configuration.');
+    AppLogger.d('Failed to load environment file $_envFile: $e');
   }
   
   // 配置统一服设置
@@ -65,7 +67,9 @@ Future<void> main() async {
   // 使用环境变量配置的API地址
   String? backendBaseUrl = dotenv.env['BACKEND_BASE_URL'];
   if (backendBaseUrl == null || backendBaseUrl.isEmpty) {
-    throw Exception('BACKEND_BASE_URL environment variable is not set. Please configure it in your .env file.');
+    throw Exception(
+      'BACKEND_BASE_URL environment variable is not set. Please configure it in $_envFile.',
+    );
   }
   
   AppLogger.d('[Unified Production] Using API: $backendBaseUrl');
@@ -82,6 +86,9 @@ Future<void> main() async {
 
   // 初始化SharedPreferences
   final prefs = await SharedPreferences.getInstance();
+  if (!getIt.isRegistered<SharedPreferences>()) {
+    getIt.registerSingleton<SharedPreferences>(prefs);
+  }
 
   // 初始化依赖注入
   await configureDependencies(backendBaseUrl: backendBaseUrl);

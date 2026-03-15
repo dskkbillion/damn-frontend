@@ -3,6 +3,8 @@ import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/currency/domain/entities/currency.dart';
 import 'package:dskk_flutter_refactor/core/payment/models/payment_models.dart';
 
+const String _envFile = String.fromEnvironment('ENV_FILE', defaultValue: '.env');
+
 /// Configuration mode for the application
 enum ConfigMode {
   /// Production mode - uses production APIs and no test credentials
@@ -45,7 +47,7 @@ class UnifiedRegionConfig {
     if (_isInitialized) return;
     
     // Load environment variables
-    await dotenv.load(fileName: ".env");
+    await dotenv.load(fileName: _envFile);
     
     // Set mode from parameter or environment
     _mode = mode ?? ConfigMode.fromString(
@@ -60,11 +62,11 @@ class UnifiedRegionConfig {
     );
     
     if (_endpoints.primary.isEmpty) {
-      throw Exception('BACKEND_BASE_URL is required in .env file');
+      throw Exception('BACKEND_BASE_URL is required in $_envFile');
     }
     
     if (_endpoints.modelService.isEmpty) {
-      throw Exception('MODEL_BASE_URL is required in .env file');
+      throw Exception('MODEL_BASE_URL is required in $_envFile');
     }
     
     _isInitialized = true;
