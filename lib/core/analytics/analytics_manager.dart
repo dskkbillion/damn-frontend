@@ -5,6 +5,12 @@ import 'services/device_info_service.dart';
 import 'services/user_identification_service.dart';
 import 'services/event_buffer.dart';
 
+const String _analyticsEnvFile = String.fromEnvironment(
+  'ENV_FILE',
+  defaultValue: '.env',
+);
+const bool _forceFlushAnalytics = _analyticsEnvFile == '.env.local-debug';
+
 /// 分析管理器
 /// 埋点系统的核心接口，提供统一的事件记录方法
 class AnalyticsManager {
@@ -43,6 +49,10 @@ class AnalyticsManager {
 
       AppLogger.d('[AnalyticsManager] 事件创建成功: ${event.toJson()}');
       _eventBuffer.addEvent(event);
+      if (_forceFlushAnalytics) {
+        AppLogger.d('[AnalyticsManager] 本地调试环境，立即触发埋点 flush');
+        await _eventBuffer.flush();
+      }
       AppLogger.d('[AnalyticsManager] 事件已添加到缓冲区');
     } catch (e) {
       AppLogger.d('[AnalyticsManager] 记录事件失败: $e');
