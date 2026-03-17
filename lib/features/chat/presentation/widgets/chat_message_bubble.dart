@@ -957,6 +957,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         isSeller: isSeller,
         productId: productId,
         sellerId: sellerId,
+        chatRoomId: context.read<ChatMessagesBloc>().currentRoom?.id,
         variants: variants,
         content: content,
       );
@@ -966,6 +967,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         isSeller: isSeller,
         productId: null,
         sellerId: null,
+        chatRoomId: context.read<ChatMessagesBloc>().currentRoom?.id,
         variants: null,
         content: '根据平台规则，您已完成5轮免费咨询。继续咨询请选择服务套餐：',
       );

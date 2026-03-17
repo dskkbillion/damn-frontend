@@ -488,6 +488,7 @@ class OrderRepositoryImpl implements IOrderRepository {
     required int quantity,
     required int sellerId,
     required double price,
+    int? chatRoomId,
   }) async {
     if (!await networkInfo.isConnected) {
       return Left(NetworkFailure(message: '网络未连接'));
@@ -500,6 +501,7 @@ class OrderRepositoryImpl implements IOrderRepository {
         quantity: quantity,
         sellerId: sellerId,
         price: price,
+        chatRoomId: chatRoomId,
       );
       
       return Right(result);

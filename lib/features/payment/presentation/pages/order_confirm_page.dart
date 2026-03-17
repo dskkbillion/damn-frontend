@@ -20,6 +20,7 @@ class OrderConfirmPage extends StatefulWidget {
   final int quantity;
   final int sellerId;
   final double price;
+  final int? chatRoomId;
   final String productName;
   final String? imageUrl;
 
@@ -30,6 +31,7 @@ class OrderConfirmPage extends StatefulWidget {
     required this.quantity,
     required this.sellerId,
     required this.price,
+    this.chatRoomId,
     required this.productName,
     this.imageUrl,
   }) : super(key: key);
@@ -63,6 +65,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
     AppLogger.d('[OrderConfirmPage] quantity: ${widget.quantity}');
     AppLogger.d('[OrderConfirmPage] sellerId: ${widget.sellerId}');
     AppLogger.d('[OrderConfirmPage] price: ${widget.price}');
+    AppLogger.d('[OrderConfirmPage] chatRoomId: ${widget.chatRoomId}');
     AppLogger.d('[OrderConfirmPage] productName: ${widget.productName}');
     
     // 根据区域配置获取可用的支付方式
@@ -626,6 +629,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
         quantity: widget.quantity,
         sellerId: widget.sellerId,
         price: widget.price,
+        chatRoomId: widget.chatRoomId,
         productName: widget.productName,
         imageUrl: widget.imageUrl,
         paymentMethod: _selectedPaymentMethod.code, // 传递选择的支付方式代码

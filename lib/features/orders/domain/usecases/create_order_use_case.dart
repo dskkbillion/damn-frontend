@@ -27,6 +27,7 @@ class CreateOrderUseCase {
     required int quantity,
     required int sellerId,
     required double price,
+    int? chatRoomId,
   }) {
     return repository.createOrder(
       productId: productId,
@@ -34,6 +35,7 @@ class CreateOrderUseCase {
       quantity: quantity,
       sellerId: sellerId,
       price: price,
+      chatRoomId: chatRoomId,
     );
   }
-} 
+}

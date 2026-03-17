@@ -418,6 +418,7 @@ class MockSellerOrderRepository implements IOrderRepository {
     required int quantity,
     required int sellerId,
     required double price,
+    int? chatRoomId,
   }) async {
     AppLogger.d('[MockSellerOrderRepository] Creating order for product: $productId, variant: $variantId, quantity: $quantity');
     await Future.delayed(const Duration(milliseconds: 300)); // 模拟网络延迟

@@ -479,6 +479,7 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
     required int quantity,
     required int sellerId,
     required double price,
+    int? chatRoomId,
   }) async {
     try {
       final token = await secureStorage.read(key: 'auth_token');
@@ -490,6 +491,7 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
           'tenantId': sellerId, // 添加卖家ID（tenantId）
           'couponId': null, // 优惠券ID，可为null
           'remark': '通过应用下单',
+          if (chatRoomId != null) 'chatRoomId': chatRoomId,
           'items': [
             {
               'productId': productId,

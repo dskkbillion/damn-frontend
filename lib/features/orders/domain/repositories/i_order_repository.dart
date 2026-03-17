@@ -143,6 +143,7 @@ abstract class IOrderRepository {
     required int quantity,
     required int sellerId,
     required double price,
+    int? chatRoomId,
   });
 
   /// 获取订单的材料信息

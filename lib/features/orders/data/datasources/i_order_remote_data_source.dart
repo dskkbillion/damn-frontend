@@ -101,6 +101,7 @@ abstract class IOrderRemoteDataSource {
     required int quantity,
     required int sellerId,
     required double price,
+    int? chatRoomId,
   });
 
   // TODO: Add other seller API call signatures as needed

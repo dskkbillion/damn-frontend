@@ -15,6 +15,7 @@ class CreateOrderAndPayEvent extends PaymentEvent {
   final int quantity;
   final int sellerId;
   final double price;
+  final int? chatRoomId;
   final String productName;
   final String? imageUrl;
   final String paymentMethod;
@@ -25,6 +26,7 @@ class CreateOrderAndPayEvent extends PaymentEvent {
     required this.quantity,
     required this.sellerId,
     required this.price,
+    this.chatRoomId,
     required this.productName,
     this.imageUrl,
     this.paymentMethod = 'alipay',
@@ -37,6 +39,7 @@ class CreateOrderAndPayEvent extends PaymentEvent {
     quantity,
     sellerId,
     price,
+    chatRoomId,
     productName,
     imageUrl,
     paymentMethod,

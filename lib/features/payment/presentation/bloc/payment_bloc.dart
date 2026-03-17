@@ -61,6 +61,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
         quantity: event.quantity,
         sellerId: event.sellerId,
         price: event.price,
+        chatRoomId: event.chatRoomId,
       );
 
       // 处理结果

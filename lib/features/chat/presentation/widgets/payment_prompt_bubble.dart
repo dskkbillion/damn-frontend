@@ -8,6 +8,7 @@ class PaymentPromptBubble extends StatelessWidget {
   final bool isSeller;
   final String? productId;
   final int? sellerId;
+  final int? chatRoomId;
   final List<Map<String, dynamic>>? variants;
   final String content;
 
@@ -16,6 +17,7 @@ class PaymentPromptBubble extends StatelessWidget {
     required this.isSeller,
     this.productId,
     this.sellerId,
+    this.chatRoomId,
     this.variants,
     required this.content,
   });
@@ -151,6 +153,7 @@ class PaymentPromptBubble extends StatelessWidget {
                       'quantity': 1,
                       'price': variant['price'],
                       'sellerId': sellerId,
+                      'chatRoomId': chatRoomId,
                       'productName': variant['name'] ?? '咨询服务',
                     },
                   );
