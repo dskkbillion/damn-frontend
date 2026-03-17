@@ -8,6 +8,7 @@ import '../../domain/entities/order_price_summary.dart';
 import '../../domain/entities/order_shipping_info.dart';
 import '../../domain/entities/order_status.dart';
 import 'member_model.dart';
+import 'order_evaluation_detail_model.dart';
 import 'order_item_model.dart';
 
 /// Data Transfer Object (DTO) for an Order, matching the API structure.
@@ -49,6 +50,7 @@ class OrderModel {
   final DateTime? deliveryTimestamp;
   // 是否已评价
   final bool? evaluate;
+  final OrderEvaluationDetailModel? evaluateDetail;
 
   const OrderModel({
     required this.id,
@@ -79,6 +81,7 @@ class OrderModel {
     this.autoOrderReceivinTime,
     this.deliveryTimestamp,
     this.evaluate,
+    this.evaluateDetail,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -137,6 +140,13 @@ class OrderModel {
       }
     }
 
+    OrderEvaluationDetailModel? parsedEvaluateDetail;
+    if (json['evaluateDetail'] != null && json['evaluateDetail'] is Map<String, dynamic>) {
+      parsedEvaluateDetail = OrderEvaluationDetailModel.fromJson(
+        json['evaluateDetail'] as Map<String, dynamic>,
+      );
+    }
+
     return OrderModel(
       id: json['id'] as int? ?? 0,
       orderSn: json['orderSn'] as String? ?? '', // Use 'orderSn' key from API
@@ -166,6 +176,7 @@ class OrderModel {
       autoOrderReceivinTime: parseOptionalDateTime(json['autoOrderReceivinTime']?.toString()),
       deliveryTimestamp: parseOptionalDateTime(json['deliveryTimestamp']?.toString()),
       evaluate: json['evaluate'] as bool?,
+      evaluateDetail: parsedEvaluateDetail,
     );
   }
 
@@ -216,6 +227,7 @@ class OrderModel {
       autoOrderReceivinTime: autoOrderReceivinTime,
       deliveryTimestamp: deliveryTimestamp,
       evaluate: evaluate,
+      evaluateDetail: evaluateDetail?.toEntity(),
     );
   }
 

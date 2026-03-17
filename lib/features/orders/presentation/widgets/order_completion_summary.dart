@@ -28,6 +28,7 @@ class OrderCompletionSummary extends StatelessWidget {
     final title = isCompleted ? '订单已完成' : '订单已取消';
     final time = isCompleted ? order.completeTime : order.cancelTime;
     final timeLabel = isCompleted ? '完成时间:' : '取消时间:';
+    final evaluation = order.evaluateDetail;
 
     return Card(
       // 使用统一Card主题
@@ -62,6 +63,76 @@ class OrderCompletionSummary extends StatelessWidget {
                 ),
               ],
             ),
+            if (isCompleted && evaluation != null) ...[
+              const SizedBox(height: 16),
+              const Divider(height: 1, thickness: 0.5),
+              const SizedBox(height: 16),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '评价内容',
+                          style: textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: List.generate(5, (index) {
+                            final filled = index < (evaluation.score ?? 0);
+                            return Icon(
+                              filled ? Icons.star_rounded : Icons.star_border_rounded,
+                              size: 18,
+                              color: filled ? Colors.amber : colorScheme.outline,
+                            );
+                          }),
+                        ),
+                        if ((evaluation.remark ?? '').trim().isNotEmpty) ...[
+                          const SizedBox(height: 10),
+                          Text(
+                            evaluation.remark!.trim(),
+                            style: textTheme.bodyMedium,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              if (evaluation.images.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 72,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: evaluation.images.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    itemBuilder: (context, index) {
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          evaluation.images[index],
+                          width: 72,
+                          height: 72,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            width: 72,
+                            height: 72,
+                            color: colorScheme.surfaceContainerHighest,
+                            alignment: Alignment.center,
+                            child: const Icon(Icons.broken_image_outlined),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ],
             // TODO: Re-add cancel reason display if Order entity is updated with `cancelReason` field.
             // TODO: Potentially add a link to evaluation if completed and not evaluated yet,
             // though the primary evaluation trigger might be elsewhere.

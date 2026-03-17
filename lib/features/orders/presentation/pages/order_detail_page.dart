@@ -12,6 +12,7 @@ import 'package:dskk_flutter_refactor/features/chat/domain/repositories/i_chat_r
 
 // 新的组件导入
 import '../widgets/order_action_buttons.dart';
+import '../widgets/order_completion_summary.dart';
 import '../widgets/order_payment_status_warning.dart';
 import '../widgets/order_items_section.dart';
 import '../widgets/order_info_section.dart';
@@ -358,6 +359,12 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 // 订单信息
                 OrderInfoSection(order: order),
                 const SizedBox(height: 16),
+
+                if (order.state == OrderStatus.orderCompleted ||
+                    order.state == OrderStatus.canceled) ...[
+                  OrderCompletionSummary(order: order),
+                  const SizedBox(height: 16),
+                ],
                 
                 // 轻咨询模式：隐藏材料上传部分
                 // if (!OrderStatusMapper.isLightConsultationOrder(order)) ...[

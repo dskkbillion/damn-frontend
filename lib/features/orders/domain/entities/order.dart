@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'address.dart';
 import 'member.dart';
 import 'order_item.dart';
+import 'order_evaluation_detail.dart';
 import 'order_payment_info.dart';
 import 'order_price_summary.dart';
 import 'order_shipping_info.dart';
@@ -72,6 +73,9 @@ class Order extends Equatable {
   
   /// 是否已评价
   final bool? evaluate;
+  
+  /// 评价详情
+  final OrderEvaluationDetail? evaluateDetail;
 
   // 注意：不包含 actions 字段，因为允许的操作应由 Presentation 层
   // 根据当前 state 和业务规则动态推断。
@@ -99,6 +103,7 @@ class Order extends Equatable {
     this.autoOrderReceivinTime,
     this.deliveryTimestamp,
     this.evaluate,
+    this.evaluateDetail,
   });
 
   Order copyWith({
@@ -123,6 +128,7 @@ class Order extends Equatable {
     DateTime? autoOrderReceivinTime,
     DateTime? deliveryTimestamp,
     bool? evaluate,
+    OrderEvaluationDetail? evaluateDetail,
   }) {
     return Order(
       id: id ?? this.id,
@@ -146,6 +152,7 @@ class Order extends Equatable {
       autoOrderReceivinTime: autoOrderReceivinTime ?? this.autoOrderReceivinTime,
       deliveryTimestamp: deliveryTimestamp ?? this.deliveryTimestamp,
       evaluate: evaluate ?? this.evaluate,
+      evaluateDetail: evaluateDetail ?? this.evaluateDetail,
     );
   }
 
@@ -172,5 +179,6 @@ class Order extends Equatable {
         autoOrderReceivinTime,
         deliveryTimestamp,
         evaluate,
+        evaluateDetail,
       ];
 } 
