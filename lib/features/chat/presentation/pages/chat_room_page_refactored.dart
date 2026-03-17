@@ -14,6 +14,7 @@ import 'package:dskk_flutter_refactor/features/chat/presentation/cubit/message_q
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/custom_chat_list.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/custom_input_bar.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/product_chat_header.dart';
+import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/chat_order_status_bar.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart' as domain;
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/participant.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_list/chat_list_bloc.dart';
@@ -370,19 +371,31 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                     return state.maybeWhen(
                       ready: (chatRoom, lastReceivedMessage, hasNewMessage) {
                         if (chatRoom.hasProduct) {
-                          return ProductChatHeader(
-                            chatRoom: chatRoom,
-                            actionText: '查看详情',
-                            onProductTap: () {
-                              if (chatRoom.productId != null) {
-                                context.push('/home/product/${chatRoom.productId}');
-                              }
-                            },
-                            onActionTap: () {
-                              if (chatRoom.productId != null) {
-                                context.push('/home/product/${chatRoom.productId}');
-                              }
-                            },
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ProductChatHeader(
+                                chatRoom: chatRoom,
+                                actionText: '查看详情',
+                                onProductTap: () {
+                                  if (chatRoom.productId != null) {
+                                    context.push(
+                                      '/home/product/${chatRoom.productId}',
+                                      extra: {'chatRoomId': chatRoom.id},
+                                    );
+                                  }
+                                },
+                                onActionTap: () {
+                                  if (chatRoom.productId != null) {
+                                    context.push(
+                                      '/home/product/${chatRoom.productId}',
+                                      extra: {'chatRoomId': chatRoom.id},
+                                    );
+                                  }
+                                },
+                              ),
+                              ChatOrderStatusBar(chatRoom: chatRoom),
+                            ],
                           );
                         }
                         return const SizedBox.shrink();
