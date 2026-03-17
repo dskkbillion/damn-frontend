@@ -36,7 +36,12 @@ class ApiEndpoints {
   });
 }
 
-/// Unified region configuration that supports all features
+/// Unified region configuration for the current international mode.
+///
+/// Current product decision:
+/// - display currency: USD only
+/// - settlement/payment method: Stripe only
+/// - multi-currency remains a future feature
 class UnifiedRegionConfig {
   static ConfigMode _mode = ConfigMode.production;
   static late ApiEndpoints _endpoints;
@@ -76,8 +81,8 @@ class UnifiedRegionConfig {
     AppLogger.d('  Primary API: ${_endpoints.primary}');
     AppLogger.d('  Secondary API: ${_endpoints.secondary ?? "Not configured"}');
     AppLogger.d('  Model Service: ${_endpoints.modelService}');
-    AppLogger.d('  Currency: USD (universal)');
-    AppLogger.d('  Payment Methods: All enabled');
+    AppLogger.d('  Currency: USD only');
+    AppLogger.d('  Payment Methods: Stripe only');
     AppLogger.d('  Login Methods: All enabled');
   }
   
@@ -102,15 +107,15 @@ class UnifiedRegionConfig {
   /// Get supported currencies - USD as universal currency
   static List<Currency> get supportedCurrencies => [Currency.usd];
   
-  /// Get all available payment methods
+  /// Get available payment methods for the current unified mode.
   static List<PaymentMethod> get supportedPaymentMethods => [
-    PaymentMethod.alipay,
-    PaymentMethod.wechat,
     PaymentMethod.stripe,
   ];
   
-  /// Check if a payment method is available (all are in unified mode)
-  static bool isPaymentMethodSupported(PaymentMethod method) => true;
+  /// Check if a payment method is available in unified mode.
+  static bool isPaymentMethodSupported(PaymentMethod method) {
+    return method == PaymentMethod.stripe;
+  }
   
   /// Check if a currency is supported
   static bool isCurrencySupported(Currency currency) {
@@ -123,14 +128,14 @@ class UnifiedRegionConfig {
   /// Format price display with USD
   static String formatPrice(double amount) {
     final formatted = amount.toStringAsFixed(Currency.usd.decimalDigits);
-    return '\$${formatted}';
+    return '\$$formatted';
   }
   
-  /// Get all features enabled (unified version has everything)
+  /// Get unified-mode feature flags.
   static Map<String, bool> get features => {
     // Payment features
-    'enableWechatPay': true,
-    'enableAlipay': true,
+    'enableWechatPay': false,
+    'enableAlipay': false,
     'enableStripe': true,
     
     // Login features

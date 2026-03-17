@@ -37,10 +37,10 @@ class RegionConfigCompat {
   /// Get supported currencies
   List<Currency> get supportedCurrencies => UnifiedRegionConfig.supportedCurrencies;
   
-  /// Get supported payment methods (all methods in unified)
+  /// Get supported payment methods in unified mode.
   List<PaymentMethod> get supportedPaymentMethods => UnifiedRegionConfig.supportedPaymentMethods;
   
-  /// Check if payment method is supported (always true in unified)
+  /// Check if payment method is supported in unified mode.
   bool isPaymentMethodSupported(PaymentMethod method) => 
     UnifiedRegionConfig.isPaymentMethodSupported(method);
   
