@@ -47,12 +47,32 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
         (e) => e.toString().split('.').last == statusString,
         orElse: () => OrderStatus.unknown // Or some default/fallback if string doesn't match
       );
+      final normalizedStatus = _normalizeStatusForTab(statusEnum);
       // Find the index in our tab list
-      final index = _tabStatuses.indexWhere((s) => s == statusEnum);
+      final index = _tabStatuses.indexWhere((s) => s == normalizedStatus);
       return index != -1 ? index : 0; // Return found index or default to 0
     } catch (e) {
       AppLogger.d("Error finding index for status '$statusString': $e");
       return 0; // Default to '全部' on error
+    }
+  }
+
+  OrderStatus? _normalizeStatusForTab(OrderStatus? status) {
+    switch (status) {
+      case OrderStatus.awaitingSubmission:
+      case OrderStatus.buyAwaitingSubmission:
+      case OrderStatus.awaitingStart:
+      case OrderStatus.awaitingDelivery:
+      case OrderStatus.awaitingConfirmation:
+        return OrderStatus.awaitingConfirmation;
+      case OrderStatus.afterSale:
+      case OrderStatus.AfterSaleRejection:
+      case OrderStatus.sellerSupplementaryMaterials:
+      case OrderStatus.applyForRefuse:
+      case OrderStatus.applyingForMediation:
+        return OrderStatus.applyingForMediation;
+      default:
+        return status;
     }
   }
 
@@ -93,7 +113,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
    // Renamed function for clarity
    void _loadOrdersForStatus(OrderStatus? status) {
       context.read<OrderListBloc>().add(
-            LoadOrders(status: status),
+            LoadOrders(status: _normalizeStatusForTab(status)),
           );
    }
 
