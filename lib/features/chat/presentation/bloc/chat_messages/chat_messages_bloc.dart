@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
+import 'dart:io';
 import 'dart:math';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart'; 
@@ -23,6 +24,7 @@ import 'package:dskk_flutter_refactor/features/auth/domain/entities/user.dart'; 
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_repository.dart'; // Corrected import
 // Data Layer Dependencies (for WebSocket)
 import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_chat_web_socket_data_source.dart'; // Import WS DataSource Interface
+import 'package:dskk_flutter_refactor/features/chat/data/datasources/chat_web_socket_data_source.impl.dart'; // For ConnectionStatus enum
 import 'package:dskk_flutter_refactor/features/chat/data/models/chat_message_dto.dart'; // For ChatMessageDto used in event
 // Core Dependencies (Required by Bloc logic/Error handling)
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
