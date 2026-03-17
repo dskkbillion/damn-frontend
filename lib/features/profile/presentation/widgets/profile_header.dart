@@ -256,13 +256,13 @@ class ProfileHeader extends ConsumerWidget {
               profileBloc.add(
                 UpdateUserProfileEvent(nickName: newNickname)
               );
-              Navigator.of(context).pop(); // 使用原始 context，兼容 GoRouter
+              Navigator.of(dialogContext).pop();
             }
           },
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(), // 使用原始 context，兼容 GoRouter
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(appLocalizations.profile_cancel),
           ),
           TextButton(
@@ -283,7 +283,7 @@ class ProfileHeader extends ConsumerWidget {
               profileBloc.add(
                 UpdateUserProfileEvent(nickName: newNickname)
               );
-              Navigator.of(context).pop(); // 使用原始 context，兼容 GoRouter
+              Navigator.of(dialogContext).pop();
             },
             child: Text(appLocalizations.profile_save),
           ),
