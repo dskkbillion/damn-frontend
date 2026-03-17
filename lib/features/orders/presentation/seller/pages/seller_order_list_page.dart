@@ -303,6 +303,7 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
                       Expanded(
                         child: ListView.builder(
                           controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
                           padding: const EdgeInsets.all(16.0),
                     itemCount: ordersToShow.length + (isLoading ? 1 : 0), // Add space for loading indicator
                     itemBuilder: (context, index) {
@@ -440,5 +441,4 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
     return order.buyerRemark != null && order.buyerRemark!.isNotEmpty;
   }
 }
-
 

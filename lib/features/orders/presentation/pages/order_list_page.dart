@@ -219,37 +219,31 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                // Use the correct state names: OrderListLoaded, OrderListError, OrderListLoading, OrderListInitial
                if (state is OrderListLoaded) { // Correct success state name
                    if (state.orders.isEmpty) {
-                     return Center(
-                       child: Padding(
+                     return RefreshIndicator(
+                       onRefresh: _refreshCurrentTab,
+                       child: ListView(
+                         physics: const AlwaysScrollableScrollPhysics(),
                          padding: const EdgeInsets.all(32.0),
-                         child: Card(
-                           elevation: 0,
-                           shape: RoundedRectangleBorder(
-                             borderRadius: BorderRadius.circular(12.0),
-                             side: BorderSide(
-                               color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                         children: [
+                           Card(
+                             elevation: 0,
+                             shape: RoundedRectangleBorder(
+                               borderRadius: BorderRadius.circular(12.0),
+                               side: BorderSide(
+                                 color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                               ),
+                             ),
+                             child: Padding(
+                               padding: const EdgeInsets.all(48.0),
+                               child: Text('暂无相关订单', style: Theme.of(context).textTheme.bodyLarge),
                              ),
                            ),
-                                                        child: Padding(
-                               padding: const EdgeInsets.all(48.0),
-                              child: Text('暂无相关订单', style: Theme.of(context).textTheme.bodyLarge),
-                             ),
-                         ),
+                         ],
                        ),
                      );
                    }
                    return RefreshIndicator(
-                     onRefresh: () async {
-                       // 触觉反馈
-                       HapticFeedback.mediumImpact();
-                       // 重新加载当前标签的数据
-                       context.read<OrderListBloc>().add(
-                         LoadOrders(
-                           status: _tabStatuses[_tabController.index],
-                           forceRefresh: true,
-                         ),
-                       );
-                     },
+                     onRefresh: _refreshCurrentTab,
                      child: ListView.builder(
                       controller: _scrollController,
                       physics: const AlwaysScrollableScrollPhysics(),
@@ -335,6 +329,16 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
            },
         ),
       );
+  }
+
+  Future<void> _refreshCurrentTab() async {
+    HapticFeedback.mediumImpact();
+    context.read<OrderListBloc>().add(
+      LoadOrders(
+        status: _tabStatuses[_tabController.index],
+        forceRefresh: true,
+      ),
+    );
   }
   
   /// 构建Tab标签，包含数量角标
