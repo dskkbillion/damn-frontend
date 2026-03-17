@@ -106,6 +106,9 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
       host: parsedUrl.host,
       port: parsedUrl.hasPort ? parsedUrl.port : null,
       path: '${parsedUrl.path}/websocket/message/$_commonUserId/member',
+      queryParameters: {
+        'token': _token!,
+      },
     );
     
     final url = wsUri.toString();
