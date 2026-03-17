@@ -38,6 +38,7 @@ class OrderModel {
   final DateTime? cancelTime;
   // 其他字段
   final String? buyerRemark;
+  final dynamic feature;
   // 买家和卖家信息
   final MemberModel? buyer;
   final MemberModel? tenant;
@@ -70,6 +71,7 @@ class OrderModel {
     this.completeTime,
     this.cancelTime,
     this.buyerRemark,
+    this.feature,
     this.buyer,
     this.tenant,
     this.autoCancelTime,
@@ -156,6 +158,7 @@ class OrderModel {
       completeTime: parseOptionalDateTime(json['completeTime']?.toString()),
       cancelTime: parseOptionalDateTime(json['cancelTime']?.toString()),
       buyerRemark: json['buyerRemark'] as String?,
+      feature: json['feature'],
       buyer: parsedBuyer,
       tenant: parsedTenant,
       autoCancelTime: parseOptionalDateTime(json['autoCancelTime']?.toString()),
@@ -205,6 +208,7 @@ class OrderModel {
       completeTime: completeTime,
       cancelTime: cancelTime,
       buyerRemark: buyerRemark,
+      feature: feature,
       buyer: buyer?.toEntity(),
       tenant: tenant?.toEntity(),
       autoCancelTime: autoCancelTime,

@@ -48,6 +48,9 @@ class Order extends Equatable {
 
   /// 买家备注 (可选)。
   final String? buyerRemark;
+
+  /// 后端附加业务字段，用于承载聊天室关联等扩展信息。
+  final dynamic feature;
   
   /// 买家信息
   final Member? buyer;
@@ -88,6 +91,7 @@ class Order extends Equatable {
     this.completeTime,
     this.cancelTime,
     this.buyerRemark,
+    this.feature,
     this.buyer,
     this.tenant,
     this.autoCancelTime,
@@ -111,6 +115,7 @@ class Order extends Equatable {
     DateTime? completeTime,
     DateTime? cancelTime,
     String? buyerRemark,
+    dynamic feature,
     Member? buyer,
     Member? tenant,
     DateTime? autoCancelTime,
@@ -133,6 +138,7 @@ class Order extends Equatable {
       completeTime: completeTime ?? this.completeTime,
       cancelTime: cancelTime ?? this.cancelTime,
       buyerRemark: buyerRemark ?? this.buyerRemark,
+      feature: feature ?? this.feature,
       buyer: buyer ?? this.buyer,
       tenant: tenant ?? this.tenant,
       autoCancelTime: autoCancelTime ?? this.autoCancelTime,
@@ -158,6 +164,7 @@ class Order extends Equatable {
         completeTime,
         cancelTime,
         buyerRemark,
+        feature,
         buyer,
         tenant,
         autoCancelTime,

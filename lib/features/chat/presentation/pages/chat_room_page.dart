@@ -8,6 +8,7 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导�
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_messages/chat_messages_bloc.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/chat_message_bubble.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/message_input_bar.dart';
+import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/chat_order_status_bar.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/product_chat_header.dart'; // 导入商品头部组件
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart'; // For MessageStatus
 import '../utils/debounce_throttle.dart'; // 导入防抖节流工具
@@ -290,31 +291,37 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         final chatRoom = bloc.currentRoom;
                         
                         if (chatRoom != null && chatRoom.hasProduct) {
-                          return ProductChatHeader(
-                            chatRoom: chatRoom,
-                            actionText: '查看详情',
-                            onProductTap: () {
-                              // 导航到商品详情页
-                              if (chatRoom.productId != null) {
-                                AppLogger.d('导航到商品详情页: ${chatRoom.productName}, ID: ${chatRoom.productId}');
-                                // Navigate to product detail using GoRouter with push to preserve navigation stack
-                                context.push('/home/product/${chatRoom.productId}');
-                              } else {
-                                AppLogger.d('商品ID为空，无法导航到商品详情页');
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('商品信息不完整，无法查看详情')),
-                                );
-                              }
-                            },
-                            onActionTap: () {
-                              // 处理操作按钮点击（如立即购买）
-                              if (chatRoom.productId != null) {
-                                AppLogger.d('点击操作按钮: ${chatRoom.productName}');
-                                // 也可以导航到商品详情页，或者实现其他操作
-                                // Navigate to product detail using GoRouter with push to preserve navigation stack
-                                context.push('/home/product/${chatRoom.productId}');
-                              }
-                            },
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ProductChatHeader(
+                                chatRoom: chatRoom,
+                                actionText: '查看详情',
+                                onProductTap: () {
+                                  // 导航到商品详情页
+                                  if (chatRoom.productId != null) {
+                                    AppLogger.d('导航到商品详情页: ${chatRoom.productName}, ID: ${chatRoom.productId}');
+                                    // Navigate to product detail using GoRouter with push to preserve navigation stack
+                                    context.push('/home/product/${chatRoom.productId}');
+                                  } else {
+                                    AppLogger.d('商品ID为空，无法导航到商品详情页');
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('商品信息不完整，无法查看详情')),
+                                    );
+                                  }
+                                },
+                                onActionTap: () {
+                                  // 处理操作按钮点击（如立即购买）
+                                  if (chatRoom.productId != null) {
+                                    AppLogger.d('点击操作按钮: ${chatRoom.productName}');
+                                    // 也可以导航到商品详情页，或者实现其他操作
+                                    // Navigate to product detail using GoRouter with push to preserve navigation stack
+                                    context.push('/home/product/${chatRoom.productId}');
+                                  }
+                                },
+                              ),
+                              ChatOrderStatusBar(chatRoom: chatRoom),
+                            ],
                           );
                         }
                       }

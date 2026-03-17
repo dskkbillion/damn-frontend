@@ -197,6 +197,7 @@ class MockOrderRepository implements IOrderRepository {
   Future<Either<Failure, List<Order>>> getOrderList({
     OrderStatus? status,
     String? keyword,
+    int? productId,
     required int page,
     required int limit,
     required String userRole,
@@ -209,6 +210,9 @@ class MockOrderRepository implements IOrderRepository {
     List<Order> results = _mockOrders;
     if (status != null && status != OrderStatus.unknown) { // Handle 'All' case
       results = _mockOrders.where((order) => order.state == status).toList();
+    }
+    if (productId != null) {
+      results = results.where((order) => order.items.any((item) => item.productId == productId)).toList();
     }
     // Simulate keyword search (simple)
     if (keyword != null && keyword.isNotEmpty) {

@@ -29,6 +29,7 @@ class GetOrderListUseCase implements UseCase<List<Order>, GetOrderListParams> {
     return await repository.getOrderList(
       status: params.status,
       keyword: params.keyword,
+      productId: params.productId,
       page: params.page,
       limit: params.limit,
       userRole: params.userRole,
@@ -41,6 +42,7 @@ class GetOrderListUseCase implements UseCase<List<Order>, GetOrderListParams> {
 class GetOrderListParams extends Equatable { // 继承 Equatable
   final OrderStatus? status;
   final String? keyword;
+  final int? productId;
   final int page;
   final int limit;
   final String userRole; // Ensure it's final String, not String?
@@ -49,6 +51,7 @@ class GetOrderListParams extends Equatable { // 继承 Equatable
   const GetOrderListParams({
     this.status,
     this.keyword,
+    this.productId,
     required this.page,
     required this.limit,
     required this.userRole, // Ensure it's required
@@ -56,5 +59,5 @@ class GetOrderListParams extends Equatable { // 继承 Equatable
   });
 
   @override
-  List<Object?> get props => [status, keyword, page, limit, userRole, forceRefresh];
-} 
+  List<Object?> get props => [status, keyword, productId, page, limit, userRole, forceRefresh];
+}

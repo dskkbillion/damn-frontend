@@ -66,6 +66,7 @@ class OrderRepositoryImpl implements IOrderRepository {
   Future<Either<Failure, List<Order>>> getOrderList({
     OrderStatus? status,
     String? keyword,
+    int? productId,
     required int page,
     required int limit,
     required String userRole,
@@ -86,6 +87,11 @@ class OrderRepositoryImpl implements IOrderRepository {
           filteredOrders = filteredOrders.where((order) =>
             order.orderSn.contains(keyword) ||
             order.items.any((item) => item.productName.contains(keyword))
+          ).toList();
+        }
+        if (productId != null) {
+          filteredOrders = filteredOrders.where((order) =>
+            order.items.any((item) => item.productId == productId)
           ).toList();
         }
         
@@ -112,12 +118,19 @@ class OrderRepositoryImpl implements IOrderRepository {
     // 原有的真实数据获取逻辑
     final int offset = (page - 1) * limit;
     final bool isFetchingAll = status == null;
-    final String stateKey = status?.toJsonString() ?? 'all'; // Still useful for logging
+    final String stateKey = productId != null
+        ? '${status?.toJsonString() ?? 'all'}-product-$productId'
+        : (status?.toJsonString() ?? 'all'); // Still useful for logging
+
+    if (productId != null) {
+      AppLogger.d('[OrderRepository] Product scoped query detected, bypassing cache for productId=$productId.');
+      return _fetchFromNetwork(status, keyword, productId, page, limit, stateKey, userRole);
+    }
 
     // 如果强制刷新，直接从网络获取
     if (forceRefresh) {
       AppLogger.d('[OrderRepository] Force refresh requested, skipping cache for $stateKey page $page.');
-      return _fetchFromNetwork(status, keyword, page, limit, stateKey, userRole);
+      return _fetchFromNetwork(status, keyword, productId, page, limit, stateKey, userRole);
     }
 
     // 1. Try fetching from cache first
@@ -150,7 +163,7 @@ class OrderRepositoryImpl implements IOrderRepository {
     // Note: This simple implementation doesn't notify the UI about the network update.
     if (returnedCache && resultToReturn != null) {
         // Intentionally start network fetch *after* returning cache
-        _fetchAndUpdateCache(status, keyword, page, limit, stateKey, userRole);
+        _fetchAndUpdateCache(status, keyword, productId, page, limit, stateKey, userRole);
         return resultToReturn!;
     }
 
@@ -161,6 +174,7 @@ class OrderRepositoryImpl implements IOrderRepository {
         final remoteOrders = await remoteDataSource.getOrderList(
           status: status,
           keyword: keyword,
+          productId: productId,
           page: page,
           limit: limit,
           userRole: userRole,
@@ -205,6 +219,7 @@ class OrderRepositoryImpl implements IOrderRepository {
   Future<Either<Failure, List<Order>>> _fetchFromNetwork(
     OrderStatus? status,
     String? keyword,
+    int? productId,
     int page,
     int limit,
     String stateKey,
@@ -215,6 +230,7 @@ class OrderRepositoryImpl implements IOrderRepository {
       final remoteOrders = await remoteDataSource.getOrderList(
         status: status,
         keyword: keyword,
+        productId: productId,
         page: page,
         limit: limit,
         userRole: userRole,
@@ -242,13 +258,14 @@ class OrderRepositoryImpl implements IOrderRepository {
   // Helper function to fetch from network and update cache in the background
   // This is called when cache is hit and returned immediately
   Future<void> _fetchAndUpdateCache(
-      OrderStatus? status, String? keyword, int page, int limit, String stateKey, String userRole) async {
+      OrderStatus? status, String? keyword, int? productId, int page, int limit, String stateKey, String userRole) async {
      AppLogger.d('[OrderRepository] Background fetch starting for $stateKey page $page...');
       try {
         AppLogger.d('[OrderRepository] Fetching order list from remote. Page: $page, Limit: $limit, Status: $status, Keyword: $keyword, Role: $userRole');
         final remoteOrders = await remoteDataSource.getOrderList(
           status: status,
           keyword: keyword,
+          productId: productId,
           page: page,
           limit: limit,
           userRole: userRole,

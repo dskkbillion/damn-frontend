@@ -223,6 +223,7 @@ class MockSellerOrderRepository implements IOrderRepository {
   Future<Either<Failure, List<Order>>> getOrderList({
     OrderStatus? status,
     String? keyword,
+    int? productId,
     required int page,
     required int limit,
     required String userRole,
@@ -244,6 +245,12 @@ class MockSellerOrderRepository implements IOrderRepository {
         final orderSnMatch = order.orderSn?.toLowerCase().contains(keyword.toLowerCase()) ?? false;
         final itemNameMatch = order.items?.any((item) => item.productName.toLowerCase().contains(keyword.toLowerCase())) ?? false;
         return orderSnMatch || itemNameMatch;
+      }).toList();
+    }
+
+    if (productId != null) {
+      filteredOrders = filteredOrders.where((order) {
+        return order.items.any((item) => item.productId == productId);
       }).toList();
     }
 

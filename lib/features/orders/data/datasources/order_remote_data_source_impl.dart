@@ -39,6 +39,7 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
   Future<List<OrderModel>> getOrderList({
     OrderStatus? status,
     String? keyword,
+    int? productId,
     required int page,
     required int limit,
     required String userRole,
@@ -60,6 +61,9 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
     // Keyword handling remains the same
     if (keyword != null && keyword.isNotEmpty) {
       params['keyword'] = keyword;
+    }
+    if (productId != null) {
+      params['productId'] = productId;
     }
     
     // REMOVED check for conflicting state/states as we now only use states
