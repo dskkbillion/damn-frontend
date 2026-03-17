@@ -32,6 +32,7 @@ class OrderEvaluationDetailModel {
       remark: json['remark'] as String?,
       images: (json['images'] as List<dynamic>? ?? const [])
           .map((item) => item.toString())
+          .where((item) => item.trim().isNotEmpty)
           .toList(),
       anonymityFlag: json['anonymityFlag'] as bool?,
       buyer: json['buyer'] is Map<String, dynamic>

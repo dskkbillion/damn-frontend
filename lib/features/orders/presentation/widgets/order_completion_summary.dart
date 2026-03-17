@@ -29,6 +29,15 @@ class OrderCompletionSummary extends StatelessWidget {
     final time = isCompleted ? order.completeTime : order.cancelTime;
     final timeLabel = isCompleted ? '完成时间:' : '取消时间:';
     final evaluation = order.evaluateDetail;
+    final reviewerName = (evaluation?.anonymityFlag ?? false)
+        ? '匿名评价'
+        : ((evaluation?.buyer?.nickname ?? '').trim().isNotEmpty
+            ? evaluation!.buyer!.nickname!.trim()
+            : '买家评价');
+    final imageUrls = evaluation?.images
+            .where((item) => item.trim().isNotEmpty)
+            .toList() ??
+        const <String>[];
 
     return Card(
       // 使用统一Card主题
@@ -67,55 +76,66 @@ class OrderCompletionSummary extends StatelessWidget {
               const SizedBox(height: 16),
               const Divider(height: 1, thickness: 0.5),
               const SizedBox(height: 16),
+              Text(
+                '评价内容',
+                style: textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '评价内容',
-                          style: textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: List.generate(5, (index) {
-                            final filled = index < (evaluation.score ?? 0);
-                            return Icon(
-                              filled ? Icons.star_rounded : Icons.star_border_rounded,
-                              size: 18,
-                              color: filled ? Colors.amber : colorScheme.outline,
-                            );
-                          }),
-                        ),
-                        if ((evaluation.remark ?? '').trim().isNotEmpty) ...[
-                          const SizedBox(height: 10),
-                          Text(
-                            evaluation.remark!.trim(),
-                            style: textTheme.bodyMedium,
-                          ),
-                        ],
-                      ],
+                    child: Row(
+                      children: List.generate(5, (index) {
+                        final filled = index < (evaluation.score ?? 0);
+                        return Icon(
+                          filled ? Icons.star_rounded : Icons.star_border_rounded,
+                          size: 18,
+                          color: filled ? Colors.amber : colorScheme.outline,
+                        );
+                      }),
+                    ),
+                  ),
+                  Text(
+                    reviewerName,
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
               ),
-              if (evaluation.images.isNotEmpty) ...[
+              if (evaluation.createTime != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  _formatDateTime(evaluation.createTime),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+              if ((evaluation.remark ?? '').trim().isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Text(
+                  evaluation.remark!.trim(),
+                  style: textTheme.bodyMedium?.copyWith(height: 1.5),
+                ),
+              ],
+              if (imageUrls.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 SizedBox(
                   height: 72,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
-                    itemCount: evaluation.images.length,
+                    itemCount: imageUrls.length,
                     separatorBuilder: (_, __) => const SizedBox(width: 8),
                     itemBuilder: (context, index) {
                       return ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: Image.network(
-                          evaluation.images[index],
+                          imageUrls[index],
                           width: 72,
                           height: 72,
                           fit: BoxFit.cover,
