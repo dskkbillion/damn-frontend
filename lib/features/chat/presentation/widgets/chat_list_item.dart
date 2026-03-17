@@ -68,13 +68,12 @@ class _ChatListItemState extends State<ChatListItem> {
     final appLocalizations = AppLocalizations.of(context)!;
 
     if (message == null) return '';
+    if (message.withdrawFlag || message.type == 'revoke') return '消息已撤回';
 
     // Debug: 打印消息类型
     AppLogger.d('[ChatListItem] Message type: ${message.type}, context: ${message.context.substring(0, message.context.length > 20 ? 20 : message.context.length)}');
 
     switch (message.type) {
-      case 'revoke':
-        return '消息已撤回';
       case 'text':
         // Limit preview length for text messages
         const maxLength = 30;
@@ -93,9 +92,6 @@ class _ChatListItemState extends State<ChatListItem> {
       case 'payment_prompt':
         return appLocalizations.chat_payment_prompt_message;
       default:
-        if (message.withdrawFlag) {
-          return '消息已撤回';
-        }
         // Show context for unknown types if not empty, otherwise indicate unknown
         const maxLength = 30;
         String contextPreview = message.context.length > maxLength

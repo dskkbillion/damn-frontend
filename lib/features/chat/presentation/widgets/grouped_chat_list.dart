@@ -502,6 +502,7 @@ class ProductChatItem extends StatelessWidget {
   
   String _getMessagePreview(ChatMessage? message) {
     if (message == null) return '';
+    if (message.withdrawFlag || message.type == 'revoke') return '消息已撤回';
     
     switch (message.type) {
       case 'text':
@@ -1047,6 +1048,7 @@ class BuyerChatItem extends StatelessWidget {
   
   String _getMessagePreview(ChatMessage? message) {
     if (message == null) return '';
+    if (message.withdrawFlag || message.type == 'revoke') return '消息已撤回';
     
     switch (message.type) {
       case 'text':
