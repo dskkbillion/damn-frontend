@@ -56,6 +56,7 @@ class HomeFeedList extends StatefulWidget {
 
 class _HomeFeedListState extends State<HomeFeedList> {
   final ScrollController _scrollController = ScrollController();
+  bool _reachedBottomOnce = false;
 
   @override
   void initState() {
@@ -71,6 +72,12 @@ class _HomeFeedListState extends State<HomeFeedList> {
   }
 
   void _onScroll() {
+    if (_isBottom && !_reachedBottomOnce) {
+      setState(() {
+        _reachedBottomOnce = true;
+      });
+    }
+
     if (_isBottom && widget.hasMore && !widget.isLoadingMore && widget.onLoadMore != null) {
       widget.onLoadMore!();
     }
@@ -133,7 +140,7 @@ class _HomeFeedListState extends State<HomeFeedList> {
               child: CircularProgressIndicator(),
             ),
           ),
-        if (!widget.hasMore)
+        if (!widget.hasMore && _reachedBottomOnce)
           const Padding(
             padding: EdgeInsets.all(16.0),
             child: Center(

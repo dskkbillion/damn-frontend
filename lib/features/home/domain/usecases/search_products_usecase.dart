@@ -6,6 +6,7 @@ import '../entities/home_feed_item.dart';
 import '../repositories/home_repository.dart';
 
 class SearchProductsParams {
+  static const int defaultPageSize = 10;
   final String keyword;
   final int page;
   final int pageSize;
@@ -13,7 +14,7 @@ class SearchProductsParams {
   SearchProductsParams({
     required this.keyword, 
     this.page = 1, 
-    this.pageSize = 20,
+    this.pageSize = defaultPageSize,
   });
 }
 

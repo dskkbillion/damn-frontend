@@ -28,7 +28,7 @@ class SearchCubit extends Cubit<SearchState> {
       (products) => emit(SearchLoaded(
         products: products,
         currentPage: 1,
-        hasMore: products.length == 20,
+        hasMore: products.length == SearchProductsParams.defaultPageSize,
         isLoadingMore: false,
       )),
     );
@@ -69,7 +69,7 @@ class SearchCubit extends Cubit<SearchState> {
             emit(SearchLoaded(
               products: [...currentState.products, ...newProducts],
               currentPage: currentState.currentPage + 1,
-              hasMore: newProducts.length == 20,
+              hasMore: newProducts.length == SearchProductsParams.defaultPageSize,
               isLoadingMore: false,
             ));
           }
