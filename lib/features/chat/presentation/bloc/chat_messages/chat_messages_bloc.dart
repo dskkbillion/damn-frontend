@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
-import 'dart:io';
 import 'dart:math';
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart'; 
 import 'package:dartz/dartz.dart'; 
@@ -25,7 +23,6 @@ import 'package:dskk_flutter_refactor/features/auth/domain/entities/user.dart'; 
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_repository.dart'; // Corrected import
 // Data Layer Dependencies (for WebSocket)
 import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_chat_web_socket_data_source.dart'; // Import WS DataSource Interface
-import 'package:dskk_flutter_refactor/features/chat/data/datasources/chat_web_socket_data_source.impl.dart'; // For ConnectionStatus enum
 import 'package:dskk_flutter_refactor/features/chat/data/models/chat_message_dto.dart'; // For ChatMessageDto used in event
 // Core Dependencies (Required by Bloc logic/Error handling)
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
@@ -50,7 +47,6 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
   User? _currentUser;
   Participant? _opponent;
   ChatRoom? _currentRoom;
-  String? _token;
   StreamSubscription? _messageSubscription;
 
   // 添加公共getter来访问当前聊天室信息
@@ -210,19 +206,9 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
             hasMore: messages.length >= 20 // 假设默认页大小为20
           ));
 
-          // 4. Connect to WebSocket using the INTERNAL participant ID
-          // TODO: Fetch token dynamically
-          _token = 'eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjA5NjhhMDNkLTM1NzYtNDkzZi1iMjA5LTc2YWEzMzMwYzYzMCJ9.AJ_IIJypohoKS_5EJa7bpE5erREM9qqbFXNoeaTaD0tpGSDhaqcdeccjU2y4z3Y_MuXWyzBCoq24HPna6itjJQ';
-          final String commonUserIdForWS = currentUserParticipantId!.toString(); // Use internal ID
-
-          if (_token == null) {
-            AppLogger.d("[ChatMessagesBloc] Error: Token is null, cannot connect WebSocket.");
-             emit(ChatMessagesError("Authentication token not available."));
-            return;
-          }
-
-          AppLogger.d("[ChatMessagesBloc] Connecting to WebSocket with commonUserIdForWS: $commonUserIdForWS (Internal Participant ID)");
-          _connectAndSubscribeWebSocket(commonUserIdForWS, _token!); 
+          // WebSocket 连接由 GlobalWebSocketManager 统一维护。
+          // 这里仅订阅全局消息流，避免旧聊天室页重复建立/断开连接。
+          _subscribeWebSocketStream();
         },
       );
 
@@ -626,16 +612,10 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     }
   }
 
-  void _connectAndSubscribeWebSocket(String commonUserIdForWS, String token) {
-     AppLogger.d("[WebSocket] Attempting to connect for user $commonUserIdForWS");
+  void _subscribeWebSocketStream() {
+     AppLogger.d("[WebSocket] Subscribing to shared message stream");
      // Cancel previous subscription before connecting/subscribing again
      _messageSubscription?.cancel();
-     
-     // Connect and then subscribe
-     // Assuming connect is async or returns a future that completes on connection
-     // or status stream indicates connection.
-     // For simplicity, calling subscribe immediately after connect request.
-     webSocketDataSource.connect(commonUserIdForWS, token); 
 
      // Subscribe to the messages stream
      _messageSubscription = webSocketDataSource.messageStream.listen(

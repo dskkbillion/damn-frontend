@@ -6,7 +6,7 @@ import 'package:get_it/get_it.dart'; // Import GetIt
 import 'package:go_router/go_router.dart'; // 添加导入
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // 添加SharedPreferences导入
-import 'dart:async'; // 添加Completer和StreamSubscription导入
+import 'dart:async';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/app/app_mode.dart'; // 导入应用模式
 
@@ -14,7 +14,6 @@ import '../bloc/chat_list/chat_list_bloc.dart';
 import '../widgets/chat_list_item.dart';
 import '../widgets/grouped_chat_list.dart'; // 导入分组组件
 import '../services/chat_preload_service.dart'; // 导入预加载服务
-import '../../data/datasources/i_chat_web_socket_data_source.dart'; // 导入 WebSocket 数据源
 // Import domain entities needed for fake ChatRoom
 import '../../domain/entities/chat_room.dart';
 import '../../domain/entities/participant.dart';
@@ -41,10 +40,6 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
 
   // 添加混合模式状态
   bool _isMixedMode = false; // 默认不混合，根据买家/卖家模式分开显示 - 改为默认开启分类模式
-
-  // WebSocket 数据源
-  IChatWebSocketDataSource? _webSocketDataSource;
-  StreamSubscription? _webSocketMessageSubscription;
   
   @override
   void initState() {
@@ -55,8 +50,6 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     _preloadService = ChatPreloadService();
     // 从本地存储读取混合模式设置
     _loadMixedModeSetting();
-    // 初始化全局 WebSocket 连接
-    _initializeWebSocket();
   }
   
   // 加载混合模式设置
@@ -82,58 +75,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     }
   }
   
-  // 初始化全局 WebSocket 连接
-  Future<void> _initializeWebSocket() async {
-    AppLogger.d('[ChatListPage] 🔌 _initializeWebSocket() called');
-    try {
-      final secureStorage = sl<FlutterSecureStorage>();
-      AppLogger.d('[ChatListPage] 🔌 Got secureStorage instance');
-
-      // 获取用户凭证
-      final commonUserIdStr = await secureStorage.read(key: 'common_user_id');
-      final token = await secureStorage.read(key: 'auth_token');
-
-      AppLogger.d('[ChatListPage] 🔌 Credentials check:');
-      AppLogger.d('[ChatListPage] 🔌   commonUserId: ${commonUserIdStr != null ? commonUserIdStr : "NULL"}');
-      AppLogger.d('[ChatListPage] 🔌   token: ${token != null ? "EXISTS (${token.length} chars)" : "NULL"}');
-
-      if (commonUserIdStr != null && token != null) {
-        AppLogger.d('[ChatListPage] 🔌 Initializing global WebSocket connection for userId: $commonUserIdStr');
-
-        // 获取 WebSocket 数据源
-        _webSocketDataSource = sl<IChatWebSocketDataSource>();
-
-        // 建立连接
-        await _webSocketDataSource!.connect(commonUserIdStr, token);
-
-        // 订阅消息流 - 这里只是确保连接，实际消息处理由 EventBus 完成
-        _webSocketMessageSubscription = _webSocketDataSource!.messageStream.listen(
-          (messageDto) {
-            AppLogger.d('[ChatListPage] WebSocket message received in chat list page: ${messageDto.id}');
-            // 消息会通过 EventBus 自动分发到 ChatListBloc，无需手动处理
-          },
-          onError: (error) {
-            AppLogger.d('[ChatListPage] WebSocket error: $error');
-          },
-        );
-
-        AppLogger.d('[ChatListPage] 🔌 ✅ Global WebSocket connection established successfully');
-      } else {
-        AppLogger.d('[ChatListPage] 🔌 ❌ Cannot establish WebSocket: missing credentials');
-        AppLogger.d('[ChatListPage] 🔌 ❌ commonUserId is null: ${commonUserIdStr == null}');
-        AppLogger.d('[ChatListPage] 🔌 ❌ token is null: ${token == null}');
-      }
-    } catch (e, stackTrace) {
-      AppLogger.d('[ChatListPage] 🔌 ❌ Error initializing WebSocket: $e');
-      AppLogger.d('[ChatListPage] 🔌 ❌ Stack trace: $stackTrace');
-    }
-  }
-
   @override
   void dispose() {
-    // 清理 WebSocket
-    _webSocketMessageSubscription?.cancel();
-    _webSocketDataSource?.disconnect();
     // 清理预加载服务
     _preloadService.dispose();
     super.dispose();
