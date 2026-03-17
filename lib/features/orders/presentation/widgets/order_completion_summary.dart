@@ -39,126 +39,155 @@ class OrderCompletionSummary extends StatelessWidget {
             .toList() ??
         const <String>[];
 
-    return Card(
-      // 使用统一Card主题
-      child: Padding(
-        padding: const EdgeInsets.all(16.0), // 使用标准间距
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-             Row(
-               children: [
-                 Icon(statusIconData, color: statusIconColor, size: 22), // Add status icon
-                 const SizedBox(width: 8),
-                 Text(
-                   title,
-                   style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold), // Keep title prominent
-                 ),
-               ],
-             ),
-            const SizedBox(height: 16),
-             const Divider(height: 1, thickness: 0.5), // Add a divider
-             const SizedBox(height: 16),
-            Row(
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Theme.of(context).dividerColor.withOpacity(0.1),
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Row(
               children: [
-                Text(
-                    timeLabel,
-                    style: textTheme.bodyMedium?.copyWith(color: Colors.grey[700]) // Slightly darker grey label
+                Icon(
+                  statusIconData,
+                  color: statusIconColor,
+                  size: 20,
                 ),
                 const SizedBox(width: 8),
                 Text(
-                   _formatDateTime(time),
-                   style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500) // Make time slightly bolder
+                  title,
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
-            if (isCompleted && evaluation != null) ...[
-              const SizedBox(height: 16),
-              const Divider(height: 1, thickness: 0.5),
-              const SizedBox(height: 16),
-              Text(
-                '评价内容',
-                style: textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Row(
-                      children: List.generate(5, (index) {
-                        final filled = index < (evaluation.score ?? 0);
-                        return Icon(
-                          filled ? Icons.star_rounded : Icons.star_border_rounded,
-                          size: 18,
-                          color: filled ? Colors.amber : colorScheme.outline,
-                        );
-                      }),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      timeLabel,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[600],
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _formatDateTime(time),
+                      style: textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                if (isCompleted && evaluation != null) ...[
+                  const Divider(height: 24, thickness: 1),
                   Text(
-                    reviewerName,
-                    style: textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w500,
+                    '评价内容',
+                    style: textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                ],
-              ),
-              if (evaluation.createTime != null) ...[
-                const SizedBox(height: 6),
-                Text(
-                  _formatDateTime(evaluation.createTime),
-                  style: textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-              if ((evaluation.remark ?? '').trim().isNotEmpty) ...[
-                const SizedBox(height: 10),
-                Text(
-                  evaluation.remark!.trim(),
-                  style: textTheme.bodyMedium?.copyWith(height: 1.5),
-                ),
-              ],
-              if (imageUrls.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                SizedBox(
-                  height: 72,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: imageUrls.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
-                    itemBuilder: (context, index) {
-                      return ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          imageUrls[index],
-                          width: 72,
-                          height: 72,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
-                            width: 72,
-                            height: 72,
-                            color: colorScheme.surfaceContainerHighest,
-                            alignment: Alignment.center,
-                            child: const Icon(Icons.broken_image_outlined),
-                          ),
+                  const SizedBox(height: 10),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: List.generate(5, (index) {
+                            final filled = index < (evaluation.score ?? 0);
+                            return Icon(
+                              filled ? Icons.star_rounded : Icons.star_border_rounded,
+                              size: 18,
+                              color: filled ? Colors.amber : colorScheme.outline,
+                            );
+                          }),
                         ),
-                      );
-                    },
+                      ),
+                      Text(
+                        reviewerName,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
+                  if (evaluation.createTime != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      _formatDateTime(evaluation.createTime),
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                  if ((evaluation.remark ?? '').trim().isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      evaluation.remark!.trim(),
+                      style: textTheme.bodyMedium?.copyWith(height: 1.5),
+                    ),
+                  ],
+                  if (imageUrls.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 72,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: imageUrls.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        itemBuilder: (context, index) {
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(
+                              imageUrls[index],
+                              width: 72,
+                              height: 72,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
+                                width: 72,
+                                height: 72,
+                                color: colorScheme.surfaceContainerHighest,
+                                alignment: Alignment.center,
+                                child: const Icon(Icons.broken_image_outlined),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ],
               ],
-            ],
-            // TODO: Re-add cancel reason display if Order entity is updated with `cancelReason` field.
-            // TODO: Potentially add a link to evaluation if completed and not evaluated yet,
-            // though the primary evaluation trigger might be elsewhere.
-          ],
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }
-} 
+}
