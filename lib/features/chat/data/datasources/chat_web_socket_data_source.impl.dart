@@ -159,36 +159,38 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
         try {
           final decodedMessage = jsonDecode(message);
           if (decodedMessage is Map<String, dynamic>) {
-            final action = decodedMessage['action'];
+            final action = decodedMessage['action']?.toString();
             final hasData = decodedMessage['data'] != null;
             AppLogger.d("[WebSocket] 🔍 Decoded action: $action (type: ${action.runtimeType}), hasData: $hasData");
 
-            // 处理所有包含 data 字段的消息（只要不是明确的错误消息）
-            // 支持多种 action 格式：字符串 'CHAT'、数字 0/3、或其他表示聊天消息的值
-            final isLoginMessage = action == 'LOGIN_SUCCESS' || action == 'LOGIN_FAIL';
-            final isChatMessage = hasData && !isLoginMessage;
-
-            if (isChatMessage) {
-              // Assuming 'data' contains the ChatMessageDto structure
-               try {
-                 final messageData = decodedMessage['data'];
-                 // Explicitly cast to Map<String, dynamic> before passing to fromJson
-                 if (messageData is Map<String, dynamic>) {
-                   final chatMessageDto = ChatMessageDto.fromJson(messageData);
-                   _messageStreamController.add(chatMessageDto);
-                   AppLogger.d("[WebSocket] Parsed ChatMessageDto: id=${chatMessageDto.id}, type=${chatMessageDto.type}, context=${chatMessageDto.context.length > 100 ? chatMessageDto.context.substring(0, 100) + '...' : chatMessageDto.context}");
-                   
-                   // 触发全局消息通知事件
-                   _triggerChatNotification(chatMessageDto);
-                 } else {
-                     AppLogger.d("[WebSocket] Error: Unexpected format for 'data' field: ${messageData.runtimeType}");
-                 }
-               } catch (e) {
-                   AppLogger.d("[WebSocket] Error parsing message data: $e");
-               }
-            } else {
-              // Handle other message types if necessary
-              AppLogger.d("[WebSocket] Received unhandled message action: ${decodedMessage['action']}");
+            switch (action) {
+              case 'LOGIN_SUCCESS':
+                AppLogger.d("[WebSocket] Login acknowledged by server.");
+                break;
+              case 'LOGIN_FAIL':
+                AppLogger.d("[WebSocket] Login rejected by server: ${decodedMessage['msg']}");
+                _isConnected = false;
+                _connectionStatusController.add(ConnectionStatus.error);
+                break;
+              case 'NOTIFICATION':
+                AppLogger.d("[WebSocket] Received notification action: ${decodedMessage['msg']}");
+                break;
+              case 'CHAT':
+                _handleChatMessage(decodedMessage, incrementUnread: true);
+                break;
+              case 'CHAT_WITHDRAW':
+                _handleChatMessage(decodedMessage, incrementUnread: false);
+                break;
+              case 'PONG':
+                AppLogger.d("[WebSocket] Received PONG.");
+                break;
+              default:
+                if (hasData) {
+                  AppLogger.d("[WebSocket] Falling back to chat payload parsing for action: $action");
+                  _handleChatMessage(decodedMessage, incrementUnread: true);
+                } else {
+                  AppLogger.d("[WebSocket] Received unhandled message action: ${decodedMessage['action']}");
+                }
             }
           } else {
              AppLogger.d("[WebSocket] Received non-map message: $message");
@@ -213,9 +215,41 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
     );
      AppLogger.d("[WebSocket] Listening for messages.");
   }
+
+  void _handleChatMessage(
+    Map<String, dynamic> decodedMessage, {
+    required bool incrementUnread,
+  }) {
+    try {
+      final messageData = decodedMessage['data'];
+      if (messageData is! Map<String, dynamic>) {
+        AppLogger.d("[WebSocket] Error: Unexpected format for 'data' field: ${messageData.runtimeType}");
+        return;
+      }
+
+      final chatMessageDto = ChatMessageDto.fromJson(messageData);
+      _messageStreamController.add(chatMessageDto);
+      final preview = chatMessageDto.context.length > 100
+          ? '${chatMessageDto.context.substring(0, 100)}...'
+          : chatMessageDto.context;
+      AppLogger.d(
+        "[WebSocket] Parsed ChatMessageDto: id=${chatMessageDto.id}, action=${decodedMessage['action']}, type=${chatMessageDto.type}, context=$preview",
+      );
+
+      _triggerChatNotification(
+        chatMessageDto,
+        incrementUnread: incrementUnread,
+      );
+    } catch (e) {
+      AppLogger.d("[WebSocket] Error parsing message data: $e");
+    }
+  }
   
   // 触发聊天消息全局通知
-  void _triggerChatNotification(ChatMessageDto messageDto) {
+  void _triggerChatNotification(
+    ChatMessageDto messageDto, {
+    required bool incrementUnread,
+  }) {
     try {
       final currentUserId = int.tryParse(_commonUserId ?? '0') ?? 0;
 
@@ -259,7 +293,7 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
           lastMessageTime: messageDto.createTime != null
               ? DateTime.tryParse(messageDto.createTime!)
               : DateTime.now(),
-          unreadCountDelta: 1, // 收到新消息，未读数+1
+          unreadCountDelta: incrementUnread ? 1 : 0,
         );
 
         EventBus().fireChatListUpdateEvent(chatListUpdateEvent);
@@ -282,13 +316,12 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
     _heartbeatTimer?.cancel(); // Cancel existing timer
     _heartbeatTimer = Timer.periodic(const Duration(seconds: 30), (timer) { // 30秒发送一次心跳保活
       if (_channel != null) {
-        final heartbeatMessage = jsonEncode({'type': 'heartbeat'});
-        AppLogger.d("[WebSocket] Sending Heartbeat (keep-alive only, no response expected)");
-        _channel!.sink.add(heartbeatMessage);
-        // ✅ 不再期待 PONG 响应，只是保持连接活跃
+        final pingMessage = jsonEncode({'type': 'ping'});
+        AppLogger.d("[WebSocket] Sending Ping (keep-alive)");
+        _channel!.sink.add(pingMessage);
       }
     });
-    AppLogger.d("[WebSocket] Heartbeat started (30s interval, keep-alive mode).");
+    AppLogger.d("[WebSocket] Heartbeat started (30s interval, ping mode).");
   }
 
   void _handleReconnect() {
