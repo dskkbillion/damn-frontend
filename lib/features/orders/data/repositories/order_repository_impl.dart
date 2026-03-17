@@ -116,103 +116,17 @@ class OrderRepositoryImpl implements IOrderRepository {
     }
     
     // 原有的真实数据获取逻辑
-    final int offset = (page - 1) * limit;
-    final bool isFetchingAll = status == null;
     final String stateKey = productId != null
-        ? '${status?.toJsonString() ?? 'all'}-product-$productId'
-        : (status?.toJsonString() ?? 'all'); // Still useful for logging
+        ? '$userRole-${status?.toJsonString() ?? 'all'}-product-$productId'
+        : '$userRole-${status?.toJsonString() ?? 'all'}';
 
     if (productId != null) {
       AppLogger.d('[OrderRepository] Product scoped query detected, bypassing cache for productId=$productId.');
       return _fetchFromNetwork(status, keyword, productId, page, limit, stateKey, userRole);
     }
 
-    // 如果强制刷新，直接从网络获取
-    if (forceRefresh) {
-      AppLogger.d('[OrderRepository] Force refresh requested, skipping cache for $stateKey page $page.');
-      return _fetchFromNetwork(status, keyword, productId, page, limit, stateKey, userRole);
-    }
-
-    // 1. Try fetching from cache first
-    final Either<Failure, List<Order>> cachedResult = isFetchingAll
-        ? await localDataSource.getAllOrders(limit: limit, offset: offset)
-        : await localDataSource.getOrdersByState(state: stateKey, limit: limit, offset: offset);
-    
-    // Use a flag to know if we returned cache
-    bool returnedCache = false;
-    Either<Failure, List<Order>>? resultToReturn;
-
-    cachedResult.fold(
-      (cacheFailure) {
-        AppLogger.d('[OrderRepository] Cache miss or error for $stateKey page $page: $cacheFailure');
-        // Don't return error yet, proceed to network fetch
-      },
-      (cachedOrders) {
-        if (cachedOrders.isNotEmpty) {
-           AppLogger.d('[OrderRepository] Cache hit for $stateKey page $page. Returning ${cachedOrders.length} orders from cache.');
-           resultToReturn = Right(cachedOrders);
-           returnedCache = true;
-        } else {
-          AppLogger.d('[OrderRepository] Cache hit for $stateKey page $page, but cache is empty.');
-        }
-      },
-    );
-
-    // If we have valid cache data, return it immediately (for faster UI response)
-    // We will still fetch from network in the background to update cache.
-    // Note: This simple implementation doesn't notify the UI about the network update.
-    if (returnedCache && resultToReturn != null) {
-        // Intentionally start network fetch *after* returning cache
-        _fetchAndUpdateCache(status, keyword, productId, page, limit, stateKey, userRole);
-        return resultToReturn!;
-    }
-
-    // 2. If cache missed, empty, or failed, fetch from network
-    AppLogger.d('[OrderRepository] Fetching $stateKey page $page from network...');
-    try {
-        AppLogger.d('[OrderRepository] Fetching order list from remote. Page: $page, Limit: $limit, Status: $status, Keyword: $keyword, Role: $userRole');
-        final remoteOrders = await remoteDataSource.getOrderList(
-          status: status,
-          keyword: keyword,
-          productId: productId,
-          page: page,
-          limit: limit,
-          userRole: userRole,
-        );
-        final networkOrders = remoteOrders.map((model) => model.toEntity()).toList();
-        AppLogger.d('[OrderRepository] Fetched ${networkOrders.length} orders from network for $stateKey page $page.');
-
-        // 【数据防护】验证和过滤订单列表，确保只返回属于当前用户的订单
-        final filteredOrders = await _filterOrdersByUserRole(networkOrders, userRole);
-        AppLogger.d('[OrderRepository] Filtered to ${filteredOrders.length} orders after validation.');
-
-        // 3. Cache the filtered response
-        // We might want to clear cache for this state before inserting new page?
-        // Or handle potential duplicates with insertOrReplace
-        // For now, just insert/replace
-        await localDataSource.cacheOrders(filteredOrders);
-
-        return Right(filteredOrders);
-
-    } on ServerFailure catch (e) {
-        AppLogger.d('[OrderRepository] Network fetch failed for $stateKey page $page: $e');
-        // If network fails AND we didn't return cache earlier, return the failure
-        if (!returnedCache) {
-           return Left(e);
-        } else {
-           // Network failed, but we already returned cache. Log error, but return the cached result.
-           AppLogger.d('[OrderRepository] Network fetch failed, but cache was already returned. Suppressing network error.');
-           return resultToReturn!; // Should not be null if returnedCache is true
-        }
-    } catch (e) {
-        AppLogger.d('[OrderRepository] Unexpected error during network fetch for $stateKey page $page: $e');
-         if (!returnedCache) {
-            return Left(ServerFailure(message: 'Unexpected error: ${e.toString()}'));
-         } else {
-            AppLogger.d('[OrderRepository] Network fetch failed (unexpected), but cache was already returned. Suppressing error.');
-            return resultToReturn!; 
-         }
-    }
+    AppLogger.d('[OrderRepository] Bypassing order list cache for $stateKey page $page to avoid buyer/seller cache pollution.');
+    return _fetchFromNetwork(status, keyword, productId, page, limit, stateKey, userRole);
   }
 
   // Helper function to fetch from network (used for force refresh)
@@ -242,9 +156,6 @@ class OrderRepositoryImpl implements IOrderRepository {
       final filteredOrders = await _filterOrdersByUserRole(networkOrders, userRole);
       AppLogger.d('[OrderRepository] Filtered to ${filteredOrders.length} orders after validation.');
 
-      // Cache the filtered response
-      await localDataSource.cacheOrders(filteredOrders);
-
       return Right(filteredOrders);
     } on ServerFailure catch (e) {
       AppLogger.d('[OrderRepository] Network fetch failed for $stateKey page $page: $e');
@@ -253,35 +164,6 @@ class OrderRepositoryImpl implements IOrderRepository {
       AppLogger.d('[OrderRepository] Unexpected error during network fetch for $stateKey page $page: $e');
       return Left(ServerFailure(message: 'Unexpected error: ${e.toString()}'));
     }
-  }
-
-  // Helper function to fetch from network and update cache in the background
-  // This is called when cache is hit and returned immediately
-  Future<void> _fetchAndUpdateCache(
-      OrderStatus? status, String? keyword, int? productId, int page, int limit, String stateKey, String userRole) async {
-     AppLogger.d('[OrderRepository] Background fetch starting for $stateKey page $page...');
-      try {
-        AppLogger.d('[OrderRepository] Fetching order list from remote. Page: $page, Limit: $limit, Status: $status, Keyword: $keyword, Role: $userRole');
-        final remoteOrders = await remoteDataSource.getOrderList(
-          status: status,
-          keyword: keyword,
-          productId: productId,
-          page: page,
-          limit: limit,
-          userRole: userRole,
-        );
-        final networkOrders = remoteOrders.map((model) => model.toEntity()).toList();
-
-        // 【数据防护】验证和过滤订单列表
-        final filteredOrders = await _filterOrdersByUserRole(networkOrders, userRole);
-        AppLogger.d('[OrderRepository] Background fetch filtered to ${filteredOrders.length} orders after validation.');
-
-        await localDataSource.cacheOrders(filteredOrders);
-        AppLogger.d('[OrderRepository] Background fetch and cache update successful for $stateKey page $page.');
-      } catch (e) {
-         AppLogger.d('[OrderRepository] Background fetch failed for $stateKey page $page: $e');
-         // Log error, maybe implement retry or other strategy later
-      }
   }
 
   /// 根据用户角色过滤订单列表，确保数据安全性
