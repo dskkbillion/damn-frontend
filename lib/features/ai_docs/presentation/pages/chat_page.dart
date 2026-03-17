@@ -70,18 +70,17 @@ class _ChatPageState extends State<ChatPage> {
         final bloc = context.read<AiChatBloc>();
         bloc.add(LoadConversations());
         
-        // 获取真实用户ID并加载频率限制状态
+        // 频率限制接口使用 member.id，不是 common_user_id
         try {
-          // 从存储中获取用户ID
           final storage = const FlutterSecureStorage();
-          final commonUserIdString = await storage.read(key: 'common_user_id');
-          final userId = int.tryParse(commonUserIdString ?? '');
+          final memberUserIdString = await storage.read(key: 'user_id');
+          final userId = int.tryParse(memberUserIdString ?? '');
           
           if (userId != null) {
             bloc.add(FetchRateLimitStatus(userId: userId));
             AppLogger.d("[ChatPage] Dispatched FetchRateLimitStatus with userId: $userId");
           } else {
-            AppLogger.d("[ChatPage] Warning: Could not get valid user ID for rate limit status");
+            AppLogger.d("[ChatPage] Warning: Could not get valid member user ID for rate limit status");
           }
         } catch (e) {
           AppLogger.d("[ChatPage] Error getting user ID: $e");

@@ -1985,8 +1985,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     emit(state.copyWith(rateLimitStatus: RateLimitStatus.loading));
     
     try {
-      final userId = await _getCurrentUserId();
-      if (userId == null) {
+      if (event.userId <= 0) {
         emit(state.copyWith(
           rateLimitStatus: RateLimitStatus.error,
           rateLimitErrorMessage: 'User not authenticated or invalid ID format',
@@ -1995,10 +1994,10 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       }
 
       final result = await _remoteDataSource.getRateLimitStatus(
-        userId: userId,
+        userId: event.userId,
       );
       
-      AppLogger.d('[AiChatBloc] Rate limit API result: $result');
+      AppLogger.d('[AiChatBloc] Rate limit API result for userId=${event.userId}: $result');
       
       // result已经是API响应的data部分，不需要再访问result['data']
       final conversationData = result['conversation'] as Map<String, dynamic>?;
@@ -2031,8 +2030,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     Emitter<AiChatState> emit,
   ) async {
     try {
-      final userId = await _getCurrentUserId();
-      if (userId == null) {
+      if (event.userId <= 0) {
         emit(state.copyWith(
           rateLimitStatus: RateLimitStatus.error,
           rateLimitErrorMessage: 'User not authenticated or invalid ID format',
@@ -2041,13 +2039,13 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       }
 
       await _remoteDataSource.resetUserRateLimit(
-        userId: userId,
+        userId: event.userId,
         serviceType: event.serviceType,
         ruleName: event.ruleName,
       );
       
       // 重置成功后，重新获取状态
-      add(FetchRateLimitStatus(userId: userId));
+      add(FetchRateLimitStatus(userId: event.userId));
       
     } catch (e) {
       AppLogger.d('[AiChatBloc] Failed to reset rate limit: $e');
