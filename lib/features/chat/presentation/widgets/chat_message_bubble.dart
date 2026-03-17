@@ -14,6 +14,7 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导�
 
 import '../../domain/entities/chat_message.dart';
 import '../bloc/chat_messages/chat_messages_bloc.dart'; // Import ChatMessagesBloc
+import '../cubit/message_list/message_list_cubit.dart';
 import '../../domain/entities/participant.dart'; // Import Participant
 import 'allocate_message_bubble.dart'; // 导入新创建的allocate消息气泡组件
 import '../utils/markdown_style_helper.dart'; // 导入Markdown样式助手
@@ -109,6 +110,28 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   StreamSubscription? _positionSubscription;
   StreamSubscription? _playerCompleteSubscription;
   StreamSubscription? _playerStateChangeSubscription;
+
+  void _requestRevokeMessage() {
+    try {
+      final messageListCubit = context.read<MessageListCubit>();
+      messageListCubit.revokeMessage(widget.message.id);
+      return;
+    } catch (_) {
+      // Ignore and try legacy bloc below.
+    }
+
+    try {
+      final chatMessagesBloc = context.read<ChatMessagesBloc>();
+      chatMessagesBloc.add(RevokeMessageRequested(widget.message.id));
+      return;
+    } catch (_) {
+      // Ignore and show fallback message below.
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('当前页面未接入消息撤回能力，请稍后重试')),
+    );
+  }
 
   bool get _isPlaying => _playerState == PlayerState.playing;
   bool get _isPaused => _playerState == PlayerState.paused;
@@ -512,6 +535,26 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
        // allocate类型消息已经在build方法中直接返回特定组件，这里不应该被调用
        // 但为了安全，还是提供一个处理
        return Text(messageContext, style: TextStyle(color: textColor, fontSize: 15));
+     } else if (widget.message.type == 'revoke' || widget.message.withdrawFlag) {
+       return Row(
+         mainAxisSize: MainAxisSize.min,
+         children: [
+           Icon(
+             Icons.block,
+             size: 14,
+             color: Colors.grey[600],
+           ),
+           const SizedBox(width: 6),
+           Text(
+             messageContext.isNotEmpty ? messageContext : '消息已撤回',
+             style: TextStyle(
+               color: Colors.grey[600],
+               fontSize: 13,
+               fontStyle: FontStyle.italic,
+             ),
+           ),
+         ],
+       );
      } else {
        // Keep handling for unsupported types
        return Text('[${AppLocalizations.of(context)!.chat_unknown_message}: ${widget.message.type}]', style: TextStyle(color: Colors.red));
@@ -555,15 +598,22 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
              const SizedBox(height: 8),
              const Text('上传失败', style: TextStyle(fontSize: 12)),
              const SizedBox(height: 8),
-             ElevatedButton(
+            ElevatedButton(
                onPressed: () {
                  // 重新发送消息
-                 context.read<ChatMessagesBloc>().add(
-                   SendMessageRequested(
-                     type: 'image', 
-                     file: File(widget.message.context), // 需要保存原始文件路径
-                   ),
-                 );
+                 try {
+                   final chatMessagesBloc = context.read<ChatMessagesBloc>();
+                   chatMessagesBloc.add(
+                     SendMessageRequested(
+                       type: 'image',
+                       file: File(widget.message.context), // 需要保存原始文件路径
+                     ),
+                   );
+                 } catch (_) {
+                   ScaffoldMessenger.of(context).showSnackBar(
+                     const SnackBar(content: Text('当前页面不支持图片重试发送')),
+                   );
+                 }
                },
                style: ElevatedButton.styleFrom(
                  minimumSize: const Size(60, 24),
@@ -848,7 +898,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 // 再次检查是否可以撤回（防止时间差问题）
                 final revokeResult = _checkRevokeStatus();
                 if (revokeResult.canRevoke) {
-                context.read<ChatMessagesBloc>().add(RevokeMessageRequested(widget.message.id));
+                _requestRevokeMessage();
                 } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -957,7 +1007,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         isSeller: isSeller,
         productId: productId,
         sellerId: sellerId,
-        chatRoomId: context.read<ChatMessagesBloc>().currentRoom?.id ?? widget.message.chatId,
+        chatRoomId: widget.message.chatId,
         variants: variants,
         content: content,
       );
@@ -967,7 +1017,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         isSeller: isSeller,
         productId: null,
         sellerId: null,
-        chatRoomId: context.read<ChatMessagesBloc>().currentRoom?.id ?? widget.message.chatId,
+        chatRoomId: widget.message.chatId,
         variants: null,
         content: '根据平台规则，您已完成5轮免费咨询。继续咨询请选择服务套餐：',
       );
