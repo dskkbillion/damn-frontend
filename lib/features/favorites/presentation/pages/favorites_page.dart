@@ -253,7 +253,18 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
     }
 
     if (state.services.isEmpty) {
-      return EmptyFavorites(tabIndex: 0);
+      return RefreshIndicator(
+        onRefresh: () async {
+          context.read<FavoritesBloc>().add(const LoadFavoriteServicesEvent(refresh: true));
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: const [
+            SizedBox(height: 160),
+            EmptyFavorites(tabIndex: 0),
+          ],
+        ),
+      );
     }
 
     return RefreshIndicator(
@@ -262,6 +273,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
       },
       child: ListView.builder(
         controller: _servicesScrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.only(top: 8, bottom: 80), // 增加底部padding为底部导航栏留空间
         itemCount: state.services.length + (state.isServicesLoading ? 1 : 0),
         itemBuilder: (context, index) {
@@ -278,11 +290,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
           return FavoriteServiceItem(
             service: service,
             onTap: () {
-              // 跳转到服务详情页
-              // 这里需要通过导航服务实现
-              // ScaffoldMessenger.of(context).showSnackBar(
-              //   SnackBar(content: Text('查看服务详情: ${service.title}')),
-              // );
+              context.push('/home/product/${service.id}');
             },
             onRemove: () {
               // 使用正确的事件类型，通过服务ID删除收藏
@@ -306,7 +314,18 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
     }
 
     if (state.sellers.isEmpty) {
-      return EmptyFavorites(tabIndex: 1);
+      return RefreshIndicator(
+        onRefresh: () async {
+          context.read<FavoritesBloc>().add(const LoadFavoriteSellersEvent(refresh: true));
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: const [
+            SizedBox(height: 160),
+            EmptyFavorites(tabIndex: 1),
+          ],
+        ),
+      );
     }
 
     return RefreshIndicator(
@@ -315,6 +334,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
       },
       child: ListView.builder(
         controller: _sellersScrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.only(top: 8, bottom: 80), // 增加底部padding为底部导航栏留空间
         itemCount: state.sellers.length + (state.isSellersLoading ? 1 : 0),
         itemBuilder: (context, index) {
