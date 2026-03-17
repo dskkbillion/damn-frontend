@@ -244,12 +244,16 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                        // 触觉反馈
                        HapticFeedback.mediumImpact();
                        // 重新加载当前标签的数据
-                       _loadOrdersForStatus(_tabStatuses[_tabController.index]);
-                       // 等待加载完成
-                       await Future.delayed(const Duration(milliseconds: 500));
+                       context.read<OrderListBloc>().add(
+                         LoadOrders(
+                           status: _tabStatuses[_tabController.index],
+                           forceRefresh: true,
+                         ),
+                       );
                      },
                      child: ListView.builder(
                       controller: _scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.all(16.0),
                       itemCount: state.hasReachedMax ? state.orders.length : state.orders.length + 1,
                       itemBuilder: (context, index) {

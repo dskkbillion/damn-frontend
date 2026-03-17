@@ -32,15 +32,17 @@ class HomeRefreshing extends HomeState {
   
   /// 信息流列表
   final List<HomeFeedItem> feedItems;
+  final bool hasReachedMax;
 
   const HomeRefreshing({
     required this.banners,
     required this.categories,
     required this.feedItems,
+    required this.hasReachedMax,
   });
 
   @override
-  List<Object> get props => [banners, categories, feedItems];
+  List<Object> get props => [banners, categories, feedItems, hasReachedMax];
 }
 
 
@@ -54,26 +56,34 @@ class HomeLoaded extends HomeState {
   
   /// 信息流列表
   final List<HomeFeedItem> feedItems;
+  final bool hasReachedMax;
+  final bool isLoadingMore;
 
   const HomeLoaded({
     required this.banners,
     required this.categories,
     required this.feedItems,
+    this.hasReachedMax = false,
+    this.isLoadingMore = false,
   });
 
   @override
-  List<Object> get props => [banners, categories, feedItems];
+  List<Object> get props => [banners, categories, feedItems, hasReachedMax, isLoadingMore];
 
   /// 创建一个新的 HomeLoaded 实例，并替换指定的属性
   HomeLoaded copyWith({
     List<home_banner.Banner>? banners,
     List<HomeCategory>? categories,
     List<HomeFeedItem>? feedItems,
+    bool? hasReachedMax,
+    bool? isLoadingMore,
   }) {
     return HomeLoaded(
       banners: banners ?? this.banners,
       categories: categories ?? this.categories,
       feedItems: feedItems ?? this.feedItems,
+      hasReachedMax: hasReachedMax ?? this.hasReachedMax,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
     );
   }
 }
@@ -88,4 +98,3 @@ class HomeError extends HomeState {
   @override
   List<Object> get props => [message];
 }
-

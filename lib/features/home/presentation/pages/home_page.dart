@@ -44,12 +44,22 @@ class _HomeViewState extends State<HomeView> {
     super.initState();
     // 加载首页数据
     context.read<HomeBloc>().add(const LoadHomeData());
+    _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 240) {
+      context.read<HomeBloc>().add(const LoadMoreHomeData());
+    }
   }
 
   @override
@@ -211,6 +221,18 @@ class _HomeViewState extends State<HomeView> {
                                 )
                               : Column(
                                   children: [
+                                    if (state is HomeLoaded && state.isLoadingMore) ...[
+                                      const CircularProgressIndicator(),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        '正在加载更多...',
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                    ],
                                     Container(
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,

@@ -88,9 +88,14 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   Future<HomePageDataModel> getHomePageData() async {
     // 获取轮播图数据
     final bannerResponse = await _getBanners();
-    
-    // 获取推荐商品列表
-    final productsResponse = await _getRecommendProducts();
+
+    // 首页首屏和后续分页统一走同一套商品列表接口，避免出现“加载更多重复”的体感。
+    var productsResponse = await getHomeFeed(1, 10);
+
+    // 商品列表为空时，再退回到推荐接口，保留新用户兜底体验。
+    if (productsResponse.isEmpty) {
+      productsResponse = await _getRecommendProducts();
+    }
     
     // 构建 HomePageDataModel
     return HomePageDataModel(
@@ -102,8 +107,45 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
 
   @override
   Future<List<HomeFeedItemModel>> getHomeFeed(int page, int limit) async {
-    // 只使用推荐系统获取个性化推荐，不支持翻页
-    return getRecommendedProducts(limit);
+    final url = Uri.parse('$baseUrl/api/shop/product/list');
+
+    try {
+      final headers = await _getHeaders();
+      final response = await client.post(
+        url,
+        headers: headers,
+        body: json.encode({
+          'statusAudit': 'SUCCESS',
+          'pageNum': page,
+          'pageSize': limit,
+        }),
+      );
+
+      AppLogger.d('首页商品列表API请求URL: $url');
+      AppLogger.d('首页商品列表API请求页码: page=$page, limit=$limit');
+      AppLogger.d('首页商品列表API响应状态码: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final responseBody = utf8.decode(response.bodyBytes);
+        final jsonData = json.decode(responseBody);
+        if (jsonData['code'] == 200 && jsonData['rows'] is List) {
+          final List<dynamic> productList = jsonData['rows'] as List<dynamic>;
+          return productList
+              .whereType<Map<String, dynamic>>()
+              .map(HomeFeedItemModel.fromJson)
+              .toList();
+        }
+        throw ServerException(message: jsonData['msg'] ?? '首页商品列表加载失败');
+      }
+
+      throw ServerException(message: 'Failed to load home feed');
+    } catch (e) {
+      AppLogger.d('获取首页分页商品出错: $e');
+      if (e is ServerException) {
+        rethrow;
+      }
+      throw ServerException(message: e.toString());
+    }
   }
 
 

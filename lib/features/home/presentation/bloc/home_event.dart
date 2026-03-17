@@ -18,6 +18,11 @@ class RefreshHomeData extends HomeEvent {
   const RefreshHomeData();
 }
 
+/// 首页触底加载更多
+class LoadMoreHomeData extends HomeEvent {
+  const LoadMoreHomeData();
+}
+
 /// 点击轮播图事件
 class BannerClicked extends HomeEvent {
   /// 轮播图ID

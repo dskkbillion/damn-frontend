@@ -83,14 +83,7 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
           listener: (context, state) {
             // 处理副作用，如显示 SnackBar, 导航等
             if (state is SmsLoginFailure) {
-              String errorMessage = state.failure.message;
-              if (errorMessage.contains('验证码') || 
-                  errorMessage.contains('code') || 
-                  errorMessage.contains('Code')) {
-                errorMessage = '验证码已过期';
-              } else {
-                errorMessage = '登录失败: $errorMessage';
-              }
+              final errorMessage = '登录失败: ${state.failure.message}';
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(errorMessage)),
               );

@@ -57,11 +57,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         return AuthenticatedUserModel.fromJson(response.data);
       } else {
         AppLogger.d('登录失败: HTTP状态码 ${response.statusCode}, 业务状态码 ${response.data['code']}, 响应消息: ${response.data['msg']}');
-        String errorMsg = response.data['msg'] ?? '登录失败';
-        // 统一验证码相关错误信息
-        if (errorMsg.contains('验证码') || errorMsg.contains('code') || errorMsg.contains('Code')) {
-          errorMsg = '验证码已过期';
-        }
+        final String errorMsg = response.data['msg'] ?? '登录失败';
         throw ServerException(message: errorMsg);
       }
     } on DioException catch (e) {
@@ -73,11 +69,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         AppLogger.d('错误响应数据: ${e.response?.data}');
         // 检查响应中是否有具体的错误信息
         if (e.response?.data is Map && e.response?.data['msg'] != null) {
-          String errorMsg = e.response?.data['msg'];
-          // 统一验证码相关错误信息
-          if (errorMsg.contains('验证码') || errorMsg.contains('code') || errorMsg.contains('Code')) {
-            errorMsg = '验证码已过期';
-          }
+          final String errorMsg = e.response?.data['msg'];
           throw ServerException(message: errorMsg);
         }
       }

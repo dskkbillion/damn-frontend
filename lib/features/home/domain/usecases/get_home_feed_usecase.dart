@@ -37,6 +37,16 @@ class HomeFeedParams extends Equatable {
     required this.limit,
   });
 
+  HomeFeedParams copyWith({
+    int? page,
+    int? limit,
+  }) {
+    return HomeFeedParams(
+      page: page ?? this.page,
+      limit: limit ?? this.limit,
+    );
+  }
+
   @override
   List<Object?> get props => [page, limit];
 }

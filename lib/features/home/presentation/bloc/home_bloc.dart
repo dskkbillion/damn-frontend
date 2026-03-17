@@ -17,6 +17,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   /// 默认每页数量
   static const int defaultLimit = 10;
+  int _currentPage = 1;
 
   HomeBloc({
     required this.getHomePageData,
@@ -25,6 +26,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }) : super(const HomeInitial()) {
     on<LoadHomeData>(_onLoadHomeData);
     on<RefreshHomeData>(_onRefreshHomeData);
+    on<LoadMoreHomeData>(_onLoadMoreHomeData);
     on<BannerClicked>(_onBannerClicked);
     on<CategoryClicked>(_onCategoryClicked);
     on<ProductCardClicked>(_onProductCardClicked);
@@ -42,11 +44,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     
     result.fold(
       (failure) => emit(HomeError(message: _mapFailureToMessage(failure))),
-      (homePageData) => emit(HomeLoaded(
-        banners: homePageData.banners,
-        categories: homePageData.categories,
-        feedItems: homePageData.feedItems,
-      )),
+      (homePageData) {
+        _currentPage = 1;
+        emit(HomeLoaded(
+          banners: homePageData.banners,
+          categories: homePageData.categories,
+          feedItems: homePageData.feedItems,
+          hasReachedMax: homePageData.feedItems.length < defaultLimit,
+        ));
+      },
     );
   }
 
@@ -62,21 +68,60 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         banners: currentState.banners,
         categories: currentState.categories,
         feedItems: currentState.feedItems,
+        hasReachedMax: currentState.hasReachedMax,
       ));
       
       final result = await getHomePageData(NoParams());
       
       result.fold(
         (failure) => emit(HomeError(message: _mapFailureToMessage(failure))),
-        (homePageData) => emit(HomeLoaded(
-          banners: homePageData.banners,
-          categories: homePageData.categories,
-          feedItems: homePageData.feedItems,
-        )),
+        (homePageData) {
+          _currentPage = 1;
+          emit(HomeLoaded(
+            banners: homePageData.banners,
+            categories: homePageData.categories,
+            feedItems: homePageData.feedItems,
+            hasReachedMax: homePageData.feedItems.length < defaultLimit,
+          ));
+        },
       );
     } else {
       add(const LoadHomeData());
     }
+  }
+
+  Future<void> _onLoadMoreHomeData(
+    LoadMoreHomeData event,
+    Emitter<HomeState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is! HomeLoaded ||
+        currentState.hasReachedMax ||
+        currentState.isLoadingMore) {
+      return;
+    }
+
+    emit(currentState.copyWith(isLoadingMore: true));
+    final nextPage = _currentPage + 1;
+    final result = await getHomeFeed(
+      HomeFeedParams(page: nextPage, limit: defaultLimit),
+    );
+
+    result.fold(
+      (failure) => emit(currentState.copyWith(isLoadingMore: false)),
+      (feedItems) {
+        final existingIds = currentState.feedItems.map((item) => item.id).toSet();
+        final appendedItems = feedItems.where((item) => !existingIds.contains(item.id)).toList();
+        _currentPage = nextPage;
+        emit(
+          currentState.copyWith(
+            feedItems: List<HomeFeedItem>.of(currentState.feedItems)..addAll(appendedItems),
+            hasReachedMax: feedItems.length < defaultLimit || appendedItems.isEmpty,
+            isLoadingMore: false,
+          ),
+        );
+      },
+    );
   }
 
 
