@@ -28,10 +28,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 /// 商品详情页面
 class ProductDetailPage extends StatefulWidget {
   final String productId;
+  final int? chatRoomId;
 
   const ProductDetailPage({
     super.key,
     required this.productId,
+    this.chatRoomId,
   });
 
   @override
@@ -621,6 +623,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           AppLogger.d('[ProductDetailPage] Product ID: ${product.id}');
           AppLogger.d('[ProductDetailPage] Variant ID: ${variant.id}');
           AppLogger.d('[ProductDetailPage] Price: ${variant.sellingPrice}');
+          AppLogger.d('[ProductDetailPage] Chat Room ID: ${widget.chatRoomId}');
           
           // 导航到订单确认页面
           context.push(
@@ -633,6 +636,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
               'productName': product.name,
               'price': variant.sellingPrice,
               'imageUrl': product.images.isNotEmpty ? product.images.first : null,
+              'chatRoomId': widget.chatRoomId,
             },
           );
         },

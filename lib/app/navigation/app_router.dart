@@ -602,10 +602,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                      name: 'productDetail',
                      pageBuilder: (context, state) {
                        final productId = state.pathParameters['productId'] ?? '';
+                       final extra = state.extra as Map<String, dynamic>?;
                        return state.buildSmartPage(
                          BlocProvider(
                            create: (context) => getIt<ProductDetailCubit>(),
-                           child: ProductDetailPage(productId: productId),
+                           child: ProductDetailPage(
+                             productId: productId,
+                             chatRoomId: extra?['chatRoomId'],
+                           ),
                          ),
                         name: 'productDetail',
                         source: 'buyer_shell_home',

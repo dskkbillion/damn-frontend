@@ -302,7 +302,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                   if (chatRoom.productId != null) {
                                     AppLogger.d('导航到商品详情页: ${chatRoom.productName}, ID: ${chatRoom.productId}');
                                     // Navigate to product detail using GoRouter with push to preserve navigation stack
-                                    context.push('/home/product/${chatRoom.productId}');
+                                    context.push(
+                                      '/home/product/${chatRoom.productId}',
+                                      extra: {'chatRoomId': chatRoom.id},
+                                    );
                                   } else {
                                     AppLogger.d('商品ID为空，无法导航到商品详情页');
                                     ScaffoldMessenger.of(context).showSnackBar(
@@ -316,7 +319,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                     AppLogger.d('点击操作按钮: ${chatRoom.productName}');
                                     // 也可以导航到商品详情页，或者实现其他操作
                                     // Navigate to product detail using GoRouter with push to preserve navigation stack
-                                    context.push('/home/product/${chatRoom.productId}');
+                                    context.push(
+                                      '/home/product/${chatRoom.productId}',
+                                      extra: {'chatRoomId': chatRoom.id},
+                                    );
                                   }
                                 },
                               ),
