@@ -38,6 +38,7 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   final ScrollController _scrollController = ScrollController();
+  DateTime? _lastLoadMoreTriggeredAt;
 
   @override
   void initState() {
@@ -57,9 +58,24 @@ class _HomeViewState extends State<HomeView> {
   void _onScroll() {
     if (!_scrollController.hasClients) return;
     final position = _scrollController.position;
-    if (position.pixels >= position.maxScrollExtent - 240) {
-      context.read<HomeBloc>().add(const LoadMoreHomeData());
+    if (position.pixels < position.maxScrollExtent - 240) return;
+
+    final homeState = context.read<HomeBloc>().state;
+    if (homeState is! HomeLoaded ||
+        homeState.hasReachedMax ||
+        homeState.isLoadingMore) {
+      return;
     }
+
+    final now = DateTime.now();
+    if (_lastLoadMoreTriggeredAt != null &&
+        now.difference(_lastLoadMoreTriggeredAt!) <
+            const Duration(milliseconds: 500)) {
+      return;
+    }
+
+    _lastLoadMoreTriggeredAt = now;
+    context.read<HomeBloc>().add(const LoadMoreHomeData());
   }
 
   @override
