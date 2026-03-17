@@ -53,8 +53,8 @@ class AnalyticsEvent extends Equatable {
     if (deviceInfo != null) {
       json['deviceInfo'] = jsonEncode(deviceInfo);
     }
-    if (userSign != null) json['userSign'] = userSign;
-    if (interval != null) json['interval'] = interval;
+    if (userSign != null) json['userSign'] = userSign.toString();
+    if (interval != null) json['intervals'] = interval;
 
     return json;
   }
@@ -68,7 +68,7 @@ class AnalyticsEvent extends Equatable {
       feature: json['feature'] as Map<String, dynamic>?,
       deviceInfo: json['deviceInfo'] as Map<String, dynamic>?,
       userSign: json['userSign'],
-      interval: json['interval'] as int?,
+      interval: (json['interval'] ?? json['intervals']) as int?,
       timestamp: json['timestamp'] != null 
           ? DateTime.fromMillisecondsSinceEpoch(json['timestamp'] as int)
           : DateTime.now(),
