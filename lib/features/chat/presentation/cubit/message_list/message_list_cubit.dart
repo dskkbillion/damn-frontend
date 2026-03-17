@@ -374,15 +374,21 @@ class MessageListCubit extends Cubit<MessageListState> {
         // Update message to show as revoked
         final index = _allMessages.indexWhere((m) => m.id == messageId);
         if (index != -1) {
-          _allMessages[index] = _allMessages[index].copyWith(
+          final revokedMessage = _allMessages[index].copyWith(
             withdrawFlag: true,
             type: 'revoke',
             context: '消息已撤回',
           );
+          _allMessages[index] = revokedMessage;
           emit(MessageListState.loaded(
             messages: List.from(_allMessages),
             hasMore: _hasMore,
           ));
+
+          // Only update the chat-list preview when the revoked message is the latest one.
+          if (index == 0) {
+            _updateChatListLastMessage(revokedMessage);
+          }
         }
       },
     );

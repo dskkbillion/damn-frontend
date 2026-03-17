@@ -73,6 +73,8 @@ class _ChatListItemState extends State<ChatListItem> {
     AppLogger.d('[ChatListItem] Message type: ${message.type}, context: ${message.context.substring(0, message.context.length > 20 ? 20 : message.context.length)}');
 
     switch (message.type) {
+      case 'revoke':
+        return '消息已撤回';
       case 'text':
         // Limit preview length for text messages
         const maxLength = 30;
@@ -90,8 +92,10 @@ class _ChatListItemState extends State<ChatListItem> {
         return appLocalizations.chat_allocate_message;
       case 'payment_prompt':
         return appLocalizations.chat_payment_prompt_message;
-      // 移除 'revoke' 类型处理，因为撤回消息已在BLoC层过滤
       default:
+        if (message.withdrawFlag) {
+          return '消息已撤回';
+        }
         // Show context for unknown types if not empty, otherwise indicate unknown
         const maxLength = 30;
         String contextPreview = message.context.length > maxLength
