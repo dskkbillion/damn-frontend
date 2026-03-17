@@ -85,7 +85,7 @@ class _ChatOrderStatusBarState extends State<ChatOrderStatusBar> {
       (orders) {
         final sortedOrders = [...orders]
           ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-        final exactMatches = sortedOrders.where(_matchesCurrentChatRoom).toList();
+        final exactMatches = sortedOrders.where(_matchesCurrentConversation).toList();
 
         setState(() {
           _isLoading = false;
@@ -97,21 +97,38 @@ class _ChatOrderStatusBarState extends State<ChatOrderStatusBar> {
     );
   }
 
-  bool _matchesCurrentChatRoom(Order order) {
-    final feature = order.feature;
-    if (feature is Map) {
-      final chatRoomId = _toInt(feature['chatRoomId']);
-      return chatRoomId == widget.chatRoom.id;
+  bool _matchesCurrentConversation(Order order) {
+    final productId = int.tryParse(widget.chatRoom.productId ?? '');
+    final buyerReferId = _buyerReferId;
+    final sellerReferId = _sellerReferId;
+
+    if (productId == null || buyerReferId == null || sellerReferId == null) {
+      return false;
     }
-    return false;
+
+    final hasMatchedProduct = order.items.any((item) => item.productId == productId);
+    final hasMatchedBuyer = order.buyer?.id == buyerReferId;
+    final hasMatchedSeller = order.tenant?.id == sellerReferId;
+
+    return hasMatchedProduct && hasMatchedBuyer && hasMatchedSeller;
   }
 
-  int? _toInt(dynamic value) {
-    if (value is int) {
-      return value;
+  int? get _buyerReferId {
+    if (widget.chatRoom.participant1.id == widget.chatRoom.memberId) {
+      return widget.chatRoom.participant1.referId;
     }
-    if (value is String) {
-      return int.tryParse(value);
+    if (widget.chatRoom.participant2.id == widget.chatRoom.memberId) {
+      return widget.chatRoom.participant2.referId;
+    }
+    return null;
+  }
+
+  int? get _sellerReferId {
+    if (widget.chatRoom.participant1.id == widget.chatRoom.doctorId) {
+      return widget.chatRoom.participant1.referId;
+    }
+    if (widget.chatRoom.participant2.id == widget.chatRoom.doctorId) {
+      return widget.chatRoom.participant2.referId;
     }
     return null;
   }
