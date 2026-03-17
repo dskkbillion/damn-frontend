@@ -74,11 +74,10 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
     _tabController.addListener(_onTabChanged);
     _scrollController.addListener(_onScroll);
 
-    // Initial load for the determined tab
-    // No need to call _loadOrdersForCurrentTab here explicitly, 
-    // as the TabController listener might fire initially, or we can load based on initialIndex.
-    // Let's be explicit to ensure it loads:
-    _loadOrdersForStatus(_tabStatuses[initialIndex]);
+    // Only trigger an initial load if the route/provider has not already done so.
+    if (context.read<OrderListBloc>().state is OrderListInitial) {
+      _loadOrdersForStatus(_tabStatuses[initialIndex]);
+    }
   }
 
   void _onTabChanged() {

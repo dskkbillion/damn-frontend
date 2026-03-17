@@ -34,7 +34,10 @@ class OrderListBloc extends Bloc<OrderListEvent, OrderListState> {
   OrderListBloc({required GetOrderListUseCase getOrderListUseCase})
       : _getOrderListUseCase = getOrderListUseCase,
         super(OrderListInitial()) { // Initial state
-    on<LoadOrders>(_onLoadOrders);
+    on<LoadOrders>(
+      _onLoadOrders,
+      transformer: restartable(),
+    );
     // Use throttleDroppable to prevent spamming load more requests
     on<OrderListLoadMore>(
       _onOrderListLoadMore,
