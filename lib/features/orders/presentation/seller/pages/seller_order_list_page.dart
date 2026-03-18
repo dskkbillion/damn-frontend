@@ -107,6 +107,56 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
     return currentScroll >= (maxScroll * 0.9);
   }
 
+  Widget _buildEmptyState(String message) {
+    final theme = Theme.of(context);
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18.0),
+        side: BorderSide(
+          color: theme.colorScheme.outline.withValues(alpha: 0.22),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 36.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(
+                Icons.inventory_2_outlined,
+                color: theme.colorScheme.primary,
+                size: 28,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '暂时没有需要处理的订单',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
 
   @override
   void dispose() {
@@ -219,24 +269,10 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
             
             // Display the list (potentially with loading/action indicators)
             if (ordersToShow.isEmpty && !isLoading && !isActionInProgress) {
-               // Use the current filter from successState if available
-               final statusText = successState?.currentStatusFilter?.toString().split('.').last ?? '当前';
                return Center(
                  child: Padding(
                    padding: const EdgeInsets.all(32.0),
-                   child: Card(
-                     elevation: 0,
-                     shape: RoundedRectangleBorder(
-                       borderRadius: BorderRadius.circular(12.0),
-                       side: BorderSide(
-                         color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                       ),
-                     ),
-                     child: Padding(
-                       padding: const EdgeInsets.all(48.0),
-                       child: Text('暂无此状态订单', style: Theme.of(context).textTheme.bodyLarge),
-                     ),
-                   ),
+                   child: _buildEmptyState('暂无此状态订单'),
                  ),
                );
             }
@@ -441,4 +477,3 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
     return order.buyerRemark != null && order.buyerRemark!.isNotEmpty;
   }
 }
-

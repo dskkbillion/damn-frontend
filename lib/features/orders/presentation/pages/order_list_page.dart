@@ -143,6 +143,56 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
     return currentScroll >= (maxScroll * 0.8);
   }
 
+  Widget _buildEmptyState(String message) {
+    final theme = Theme.of(context);
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18.0),
+        side: BorderSide(
+          color: theme.colorScheme.outline.withValues(alpha: 0.22),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 36.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(
+                Icons.receipt_long_outlined,
+                color: theme.colorScheme.primary,
+                size: 28,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '下拉刷新或切换分类后再看看',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -245,19 +295,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                          physics: const AlwaysScrollableScrollPhysics(),
                          padding: const EdgeInsets.all(32.0),
                          children: [
-                           Card(
-                             elevation: 0,
-                             shape: RoundedRectangleBorder(
-                               borderRadius: BorderRadius.circular(12.0),
-                               side: BorderSide(
-                                 color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                               ),
-                             ),
-                             child: Padding(
-                               padding: const EdgeInsets.all(48.0),
-                               child: Text('暂无相关订单', style: Theme.of(context).textTheme.bodyLarge),
-                             ),
-                           ),
+                           _buildEmptyState('暂无相关订单'),
                          ],
                        ),
                      );
