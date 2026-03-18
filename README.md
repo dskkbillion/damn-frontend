@@ -17,6 +17,14 @@ DSKK 客户端 Flutter 工程。
 - Xcode 和 iOS 模拟器
 - `tmux`
 
+### 脚本速查
+
+```bash
+./scripts/run-ios-unified-local.sh
+./scripts/tail-ios-unified-local.sh
+./scripts/stop-ios-unified-local.sh
+```
+
 ### 配置文件
 
 先准备本地联调环境文件：
@@ -29,6 +37,11 @@ cp .env.local-debug.example .env.local-debug
 
 - 模板文件：`.env.local-debug.example`
 - 本地实际文件：`.env.local-debug`
+
+### 日志路径
+
+- 当前日志：`.logs/flutter-ios-unified.latest.log`
+- 上一轮日志：`.logs/flutter-ios-unified.previous.log`
 
 ### 安装依赖
 
