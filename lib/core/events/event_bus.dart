@@ -50,6 +50,12 @@ class ChatListUpdateEvent {
   /// 最新消息内容
   final String? lastMessage;
 
+  /// 最新消息类型
+  final String? lastMessageType;
+
+  /// 最新消息是否已撤回
+  final bool? lastMessageWithdrawFlag;
+
   /// 最新消息时间
   final DateTime? lastMessageTime;
 
@@ -63,6 +69,8 @@ class ChatListUpdateEvent {
   ChatListUpdateEvent({
     required this.chatId,
     this.lastMessage,
+    this.lastMessageType,
+    this.lastMessageWithdrawFlag,
     this.lastMessageTime,
     this.unreadCountDelta,
     this.resetUnread = false,

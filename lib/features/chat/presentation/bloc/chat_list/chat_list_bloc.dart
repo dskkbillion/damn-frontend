@@ -216,8 +216,8 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
           senderId: 0, // 临时senderId
           chatId: updateEvent.chatId,
           createTime: updateEvent.lastMessageTime ?? DateTime.now(),
-          withdrawFlag: false,
-          type: 'text', // 默认文本类型
+          withdrawFlag: updateEvent.lastMessageWithdrawFlag ?? false,
+          type: updateEvent.lastMessageType ?? 'text',
         ),
       );
     }

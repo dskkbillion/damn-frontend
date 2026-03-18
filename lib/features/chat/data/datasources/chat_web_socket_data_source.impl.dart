@@ -293,6 +293,8 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
         final chatListUpdateEvent = ChatListUpdateEvent(
           chatId: messageDto.chatId,
           lastMessage: content,
+          lastMessageType: messageDto.type,
+          lastMessageWithdrawFlag: messageDto.withdrawFlag,
           lastMessageTime: messageDto.createTime != null
               ? DateTime.tryParse(messageDto.createTime!)
               : DateTime.now(),

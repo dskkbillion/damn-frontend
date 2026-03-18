@@ -527,6 +527,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
            // 处理图片点击（预览）
            _handleImageMessageTap(context, widget.message);
          },
+         onLongPressStart: (details) {
+           _showActionMenu(context, details.globalPosition, isCurrentUser);
+         },
        );
      } else if (widget.message.type == 'audio') {
        // Pass textColor and isCurrentUser to audio content

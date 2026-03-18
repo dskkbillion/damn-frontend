@@ -387,6 +387,8 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
         EventBus().fireChatListUpdateEvent(ChatListUpdateEvent(
           chatId: chatId,
           lastMessage: sentMessage.context ?? '',
+          lastMessageType: sentMessage.type,
+          lastMessageWithdrawFlag: sentMessage.withdrawFlag,
           lastMessageTime: sentMessage.createTime,
           // 发送消息不改变未读数，因为是自己发的
         ));
@@ -472,6 +474,8 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
                EventBus().fireChatListUpdateEvent(ChatListUpdateEvent(
                  chatId: chatId,
                  lastMessage: newMessage.context ?? '',
+                 lastMessageType: newMessage.type,
+                 lastMessageWithdrawFlag: newMessage.withdrawFlag,
                  lastMessageTime: newMessage.createTime,
                  unreadCountDelta: 1, // 收到别人的新消息，未读数+1
                ));

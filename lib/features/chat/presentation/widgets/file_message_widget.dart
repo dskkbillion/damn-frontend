@@ -226,12 +226,14 @@ class ImageMessageWidget extends StatelessWidget {
   final ChatMessage message;
   final bool isMe;
   final VoidCallback? onTap;
+  final GestureLongPressStartCallback? onLongPressStart;
 
   const ImageMessageWidget({
     super.key,
     required this.message,
     required this.isMe,
     this.onTap,
+    this.onLongPressStart,
   });
 
   /// 解析图片信息
@@ -277,6 +279,7 @@ class ImageMessageWidget extends StatelessWidget {
     
     return GestureDetector(
       onTap: onTap,
+      onLongPressStart: onLongPressStart,
       child: Container(
         constraints: const BoxConstraints(
           maxWidth: 250,

@@ -60,6 +60,8 @@ class _HandleChatListUpdate extends ChatListEvent {
   List<Object?> get props => [
     updateEvent.chatId,
     updateEvent.lastMessage,
+    updateEvent.lastMessageType,
+    updateEvent.lastMessageWithdrawFlag,
     updateEvent.lastMessageTime,
     updateEvent.unreadCountDelta,
     updateEvent.resetUnread,

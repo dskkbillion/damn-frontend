@@ -485,6 +485,8 @@ class MessageListCubit extends Cubit<MessageListState> {
       EventBus().fireChatListUpdateEvent(ChatListUpdateEvent(
         chatId: _currentChatId!,
         lastMessage: message.context,
+        lastMessageType: message.type,
+        lastMessageWithdrawFlag: message.withdrawFlag,
         lastMessageTime: message.createTime,
       ));
       AppLogger.d('[MessageListCubit] Fired ChatListUpdateEvent for chatId: $_currentChatId');
