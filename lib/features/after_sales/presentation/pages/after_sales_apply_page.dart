@@ -151,7 +151,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
           );
           final newId = state.newId;
           if (newId != null && newId.isNotEmpty) {
-            context.go('/afterSalesDetail/$newId?mode=refund');
+            context.pushReplacement('/afterSalesDetail/$newId?mode=refund');
           } else {
             context.pop();
           }

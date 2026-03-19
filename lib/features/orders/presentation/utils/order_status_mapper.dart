@@ -3,12 +3,13 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_stat
 
 /// 订单状态映射器 - 用于轻咨询模式的状态简化
 /// 
-/// 将14个详细状态映射到6个简化状态：
+/// 将详细状态映射到当前轻咨询展示状态：
 /// - 待付款 (awaitingPayment)
 /// - 待交付 (awaitingDelivery) 
 /// - 评价 (awaitingEvaluation)
 /// - 完成 (orderCompleted)
-/// - 平台介入 (applyingForMediation)
+/// - 售后中 (afterSale)
+/// - 平台介入中 (applyingForMediation)
 /// - 已取消 (canceled)
 class OrderStatusMapper {
   /// 获取简化后的状态文本
@@ -22,7 +23,7 @@ class OrderStatusMapper {
       return _getOriginalStatusText(status, isSellerView);
     }
 
-    // 轻咨询模式：14个状态映射到6个显示状态
+    // 轻咨询模式：核心交易状态 + 售后状态铺开显示
     switch (status) {
       case OrderStatus.awaitingPayment:
         return '待付款';
@@ -41,13 +42,15 @@ class OrderStatusMapper {
       case OrderStatus.orderCompleted:
         return '完成';
 
-      // 售后相关状态都映射到"平台介入"
-      case OrderStatus.applyingForMediation:
+      // 售后相关状态显示为"售后中"
       case OrderStatus.afterSale:
       case OrderStatus.AfterSaleRejection:
       case OrderStatus.sellerSupplementaryMaterials:
       case OrderStatus.applyForRefuse:
-        return '平台介入';
+        return '售后中';
+
+      case OrderStatus.applyingForMediation:
+        return '平台介入中';
 
       case OrderStatus.canceled:
         return '已取消';
@@ -88,11 +91,13 @@ class OrderStatusMapper {
       case OrderStatus.orderCompleted:
         return colorScheme.secondary; // 次要色 - 已完成
 
-      case OrderStatus.applyingForMediation:
       case OrderStatus.afterSale:
       case OrderStatus.AfterSaleRejection:
       case OrderStatus.sellerSupplementaryMaterials:
       case OrderStatus.applyForRefuse:
+        return Colors.deepOrange; // 橙红色 - 售后处理中
+
+      case OrderStatus.applyingForMediation:
         return Colors.blueGrey; // 蓝灰色 - 平台介入
 
       case OrderStatus.canceled:
@@ -174,7 +179,7 @@ class OrderStatusMapper {
       case OrderStatus.AfterSaleRejection:
         return '售后拒绝';
       case OrderStatus.applyingForMediation:
-        return '平台介入';
+        return '平台介入中';
       case OrderStatus.unknown:
       default:
         return '未知状态';
@@ -205,6 +210,7 @@ class OrderStatusMapper {
         return Colors.grey;
       case OrderStatus.afterSale:
       case OrderStatus.AfterSaleRejection:
+        return Colors.deepOrange;
       case OrderStatus.applyingForMediation:
         return Colors.blueGrey;
       case OrderStatus.sellerSupplementaryMaterials:

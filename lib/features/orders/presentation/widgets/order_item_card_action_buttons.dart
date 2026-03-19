@@ -58,10 +58,12 @@ class OrderItemCardActionButtons extends StatelessWidget {
           break;
           
         case OrderStatus.awaitingEvaluation:
+          if (onApplyAfterSale != null) buttons.add(_buildButton(context, '申请售后', onApplyAfterSale!));
           if (onEvaluate != null) buttons.add(_buildButton(context, '评价', onEvaluate!, isPrimary: true));
           break;
           
         case OrderStatus.orderCompleted:
+          if (onApplyAfterSale != null) buttons.add(_buildButton(context, '申请售后', onApplyAfterSale!));
           if (onViewDetails != null) buttons.add(_buildButton(context, '查看', onViewDetails!));
           break;
           

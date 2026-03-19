@@ -70,10 +70,19 @@ class AfterSalesRemoteDataSource implements IAfterSalesRemoteDataSource {
     try {
       // API doc says POST for list, confirm this is correct
       final response = await _dioClient.post(_listEndpoint, data: queryParameters);
-      // Assuming response is like: { "code": 200, "msg": "...", "data": { "rows": [...] } } or similar (e.g. TableDataInfo)
-      // Adjust parsing based on actual API response
-      if (response.data != null && response.data['code'] == 200 && response.data['data']?['rows'] is List) {
-         final List<dynamic> results = response.data['data']['rows'];
+      if (response.data != null && response.data['code'] == 200) {
+         final List<dynamic> results;
+         if (response.data['rows'] is List) {
+           results = response.data['rows'] as List<dynamic>;
+         } else if (response.data['data']?['rows'] is List) {
+           results = response.data['data']['rows'] as List<dynamic>;
+         } else {
+           throw ServerException(
+             message: response.data?['msg'] ?? '售后列表返回格式错误',
+             statusCode: response.statusCode,
+           );
+         }
+
          return results
              .map((json) => AfterSalesApplicationModel.fromJson(json as Map<String, dynamic>))
              .toList();
@@ -132,19 +141,13 @@ class AfterSalesRemoteDataSource implements IAfterSalesRemoteDataSource {
 
   @override
   Future<void> cancelAfterSales(int refundId) async {
-     // RN code used POST, API doc says GET with query param. Let's follow API doc.
-     // If POST is needed, change _dioClient.get to _dioClient.post and adjust params
      final queryParameters = {'refundId': refundId};
 
     try {
-      // API Doc shows GET for cancel? This seems odd. Assuming POST based on RN/convention.
-      // final response = await _dioClient.get(_cancelEndpoint, queryParameters: queryParameters);
-       final response = await _dioClient.post(_cancelEndpoint, data: queryParameters); // Using POST as likely correct
-      // Assuming response is like: { "code": 200, "msg": "..." }
+      final response = await _dioClient.get(_cancelEndpoint, queryParameters: queryParameters);
       if (response.data == null || response.data['code'] != 200) {
          throw ServerException(message: response.data?['msg'] ?? 'Failed to cancel refund', statusCode: response.statusCode);
       }
-      // No data to return on success
     } on DioException catch (e) {
       throw ServerException(message: e.message, statusCode: e.response?.statusCode);
     } catch (e) {

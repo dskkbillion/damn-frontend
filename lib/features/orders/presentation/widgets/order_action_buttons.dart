@@ -437,12 +437,18 @@ class OrderDetailActionButtons extends StatelessWidget {
         
       case OrderStatus.awaitingEvaluation:
         // 待评价：评价
+        buttons.add(_buildButton(context, '申请售后', () {
+          _navigateToAfterSales(context);
+        }));
         primaryButton = _buildButton(context, '评价', () {
           _navigateToEvaluation(context);
         }, isPrimary: true);
         break;
         
       case OrderStatus.orderCompleted:
+        buttons.add(_buildButton(context, '申请售后', () {
+          _navigateToAfterSales(context);
+        }));
         // 已完成：再次咨询（进入与卖家的聊天室）
         primaryButton = _buildButton(
           context,

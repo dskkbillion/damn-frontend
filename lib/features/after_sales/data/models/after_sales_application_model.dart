@@ -32,11 +32,15 @@ class AfterSalesApplicationModel extends AfterSalesApplication {
     super.auditType,
     super.refundStateText,
     super.refundTypeText,
+    super.orderState,
     super.createTime,
     super.updateTime,
   });
 
   factory AfterSalesApplicationModel.fromJson(Map<String, dynamic> json) {
+    final orderVo = json['orderVo'] is Map<String, dynamic>
+        ? json['orderVo'] as Map<String, dynamic>
+        : null;
     return AfterSalesApplicationModel(
       id: DataMapper.toInt(json['id']), 
       buyerId: DataMapper.toIntN(json['buyerId']),
@@ -67,6 +71,7 @@ class AfterSalesApplicationModel extends AfterSalesApplication {
       auditType: DataMapper.toStringN(json['auditType']),
       refundStateText: DataMapper.toStringN(json['refundStateText']),
       refundTypeText: DataMapper.toStringN(json['refundTypeText']),
+      orderState: DataMapper.toStringN(orderVo?['state']),
       createTime: DataMapper.toDateTimeN(json['createTime']),
       updateTime: DataMapper.toDateTimeN(json['updateTime']),
     );

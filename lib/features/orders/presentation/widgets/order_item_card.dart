@@ -510,7 +510,14 @@ class OrderItemCard extends StatelessWidget {
                    },
                    onApplyAfterSale: () {
                      AppLogger.d('[OrderItemCard] Apply after sale: ${order.id}');
-                     context.push('/orderDetail/${order.id}');
+                     if (order.items.isEmpty) {
+                       ScaffoldMessenger.of(context).showSnackBar(
+                         const SnackBar(content: Text('错误：该订单没有可申请售后的商品')),
+                       );
+                       return;
+                     }
+                     final firstItem = order.items.first;
+                     context.push('/selectAfterSalesType/${firstItem.id}', extra: firstItem);
                    },
                    onViewDetails: () {
                      AppLogger.d('[OrderItemCard] View details: ${order.id}');

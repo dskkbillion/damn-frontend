@@ -263,7 +263,7 @@ class AfterSalesBloc extends Bloc<AfterSalesEvent, AfterSalesState> {
 
      result.fold(
       (failure) => emit(AfterSalesActionError(_mapFailureToMessage(failure))), // Placeholder
-      (_) => emit(AfterSalesActionSuccess()), // Placeholder
+      (_) => emit(const AfterSalesActionSuccess(message: '售后申请已撤销')),
     );
   }
 

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/features/after_sales/presentation/bloc/after_sales_bloc.dart';
+import 'package:dskk_flutter_refactor/features/after_sales/domain/entities/after_sales_application.dart';
 
 // Use correct package name for imports and point to bloc/
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_list_bloc.dart';
@@ -35,7 +38,8 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
     OrderStatus.awaitingConfirmation, // Index 2: 待交付 (映射到awaitingConfirmation)
     OrderStatus.awaitingEvaluation, // Index 3: 评价
     OrderStatus.orderCompleted, // Index 4: 完成
-    OrderStatus.applyingForMediation, // Index 5: 平台介入
+    OrderStatus.afterSale, // Index 5: 售后中
+    OrderStatus.applyingForMediation, // Index 6: 平台介入中
   ];
 
   // Helper to find index for a given status string
@@ -69,6 +73,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
       case OrderStatus.AfterSaleRejection:
       case OrderStatus.sellerSupplementaryMaterials:
       case OrderStatus.applyForRefuse:
+        return OrderStatus.afterSale;
       case OrderStatus.applyingForMediation:
         return OrderStatus.applyingForMediation;
       default:
@@ -111,11 +116,15 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
   }
 
    // Renamed function for clarity
-   void _loadOrdersForStatus(OrderStatus? status) {
+  void _loadOrdersForStatus(OrderStatus? status) {
       context.read<OrderListBloc>().add(
             LoadOrders(status: _normalizeStatusForTab(status)),
           );
    }
+
+  bool _isAfterSalesTab(OrderStatus? status) {
+    return status == OrderStatus.afterSale || status == OrderStatus.applyingForMediation;
+  }
 
   @override
   void dispose() {
@@ -286,6 +295,11 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
              }
            },
            builder: (context, state) {
+               final currentTabStatus = _tabStatuses[_tabController.index];
+               if (_isAfterSalesTab(currentTabStatus)) {
+                 return _buildAfterSalesTabBody(currentTabStatus!);
+               }
+
                // Use the correct state names: OrderListLoaded, OrderListError, OrderListLoading, OrderListInitial
                if (state is OrderListLoaded) { // Correct success state name
                    if (state.orders.isEmpty) {
@@ -391,9 +405,13 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
 
   Future<void> _refreshCurrentTab() async {
     HapticFeedback.mediumImpact();
+    final currentTabStatus = _tabStatuses[_tabController.index];
+    if (_isAfterSalesTab(currentTabStatus)) {
+      return;
+    }
     context.read<OrderListBloc>().add(
       LoadOrders(
-        status: _tabStatuses[_tabController.index],
+        status: currentTabStatus,
         forceRefresh: true,
       ),
     );
@@ -409,7 +427,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
     }
     
     // 轻咨询模式的Tab标签名称
-    final tabLabels = ['全部', '待付款', '待交付', '评价', '完成', '平台介入'];
+    final tabLabels = ['全部', '待付款', '待交付', '评价', '完成', '售后中', '平台介入中'];
     
     return List.generate(_tabStatuses.length, (index) {
       final status = _tabStatuses[index];
@@ -458,4 +476,322 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
   void _performSearch(String query) {
     context.read<OrderListBloc>().add(SearchOrders(query: query));
   }
+
+  Widget _buildAfterSalesTabBody(OrderStatus status) {
+    return BlocProvider(
+      key: ValueKey('after-sales-${status.name}'),
+      create: (_) => getIt<AfterSalesBloc>()
+        ..add(const LoadAfterSalesListRequested(pageSize: 50)),
+      child: BlocConsumer<AfterSalesBloc, AfterSalesState>(
+        listener: (context, state) {
+          if (state is AfterSalesActionError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.errorMessage ?? '操作失败')),
+            );
+          } else if (state is AfterSalesActionSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.actionSuccessMessage ?? '操作成功')),
+            );
+            context.read<AfterSalesBloc>().add(const LoadAfterSalesListRequested(pageSize: 50));
+          }
+        },
+        builder: (context, state) {
+          if (state is AfterSalesListLoading || state is AfterSalesInitial) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state is AfterSalesListError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.error_outline, size: 48),
+                    const SizedBox(height: 12),
+                    Text(state.errorMessage ?? '加载失败'),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<AfterSalesBloc>().add(const LoadAfterSalesListRequested(pageSize: 50));
+                      },
+                      child: const Text('重试'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          if (state is AfterSalesListLoaded) {
+            final applications = state.applications.where((application) {
+              final orderState = _normalizeStatus(application.orderState ?? '');
+              if (status == OrderStatus.applyingForMediation) {
+                return orderState == 'applyingformediation';
+              }
+              return orderState != 'applyingformediation';
+            }).toList();
+
+            if (applications.isEmpty) {
+              return RefreshIndicator(
+                onRefresh: () async {
+                  context.read<AfterSalesBloc>().add(const LoadAfterSalesListRequested(pageSize: 50));
+                },
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(32.0),
+                  children: [
+                    _buildEmptyState(status == OrderStatus.applyingForMediation ? '暂无平台介入记录' : '暂无售后记录'),
+                  ],
+                ),
+              );
+            }
+
+            return RefreshIndicator(
+              onRefresh: () async {
+                context.read<AfterSalesBloc>().add(const LoadAfterSalesListRequested(pageSize: 50));
+              },
+              child: ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16.0),
+                itemCount: applications.length,
+                itemBuilder: (context, index) {
+                  return _buildAfterSalesApplicationCard(context, applications[index]);
+                },
+              ),
+            );
+          }
+
+          return const SizedBox.shrink();
+        },
+      ),
+    );
+  }
+
+  Widget _buildAfterSalesApplicationCard(BuildContext context, AfterSalesApplication application) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final statusText = _getAfterSalesStatusText(application);
+    final statusColor = _getAfterSalesStatusColor(application);
+    final canApplyMediation = _canApplyMediation(application);
+    final canCancel = _canCancelAfterSales(application);
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(
+          color: colorScheme.outline.withValues(alpha: 0.18),
+        ),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: () => context.push('/afterSalesDetail/${application.id}?mode=refund'),
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      width: 72,
+                      height: 72,
+                      color: colorScheme.surfaceContainerHighest,
+                      child: application.productImage != null && application.productImage!.isNotEmpty
+                          ? Image.network(
+                              application.productImage!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Icon(Icons.image_not_supported, color: Colors.grey[400]),
+                            )
+                          : Icon(Icons.image, color: Colors.grey[400]),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                application.productName ?? '商品名称未知',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.25,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: statusColor.withValues(alpha: 0.10),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                statusText,
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  color: statusColor,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        if (application.variantName != null && application.variantName!.isNotEmpty)
+                          Text(
+                            '规格：${application.variantName}',
+                            style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                          ),
+                        const SizedBox(height: 10),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: colorScheme.surfaceContainerLowest,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildMetaRow(
+                                theme,
+                                '售后原因',
+                                application.refundReason ?? '未填写',
+                              ),
+                              const SizedBox(height: 8),
+                              _buildMetaRow(
+                                theme,
+                                '退款金额',
+                                '￥${application.refundPrice?.toStringAsFixed(2) ?? '--'}',
+                                valueColor: colorScheme.primary,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => context.push('/afterSalesDetail/${application.id}?mode=refund'),
+                      child: const Text('查看售后'),
+                    ),
+                  ),
+                  if (canCancel || canApplyMediation) ...[
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: canApplyMediation
+                          ? ElevatedButton(
+                              onPressed: () {
+                                context.read<AfterSalesBloc>().add(ApplyMediationRequested(application.id));
+                              },
+                              child: const Text('申请介入'),
+                            )
+                          : OutlinedButton(
+                              onPressed: () {
+                                context.read<AfterSalesBloc>().add(CancelAfterSalesRequested(application.id));
+                              },
+                              child: const Text('撤销申请'),
+                            ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMetaRow(
+    ThemeData theme,
+    String label,
+    String value, {
+    Color? valueColor,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 64,
+          child: Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: valueColor,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _getAfterSalesStatusText(AfterSalesApplication application) {
+    final orderState = _normalizeStatus(application.orderState ?? '');
+    final refundState = _normalizeStatus(application.refundState);
+    final finalState = _normalizeStatus(application.finalState ?? '');
+
+    if (orderState == 'applyingformediation') return '平台介入中';
+    if (finalState == 'pass') return '已退款';
+    if (refundState == 'auditrefused') return '售后被拒';
+    if (refundState == 'waitaudit') return '售后中';
+    return application.refundStateText ?? '售后中';
+  }
+
+  Color _getAfterSalesStatusColor(AfterSalesApplication application) {
+    final orderState = _normalizeStatus(application.orderState ?? '');
+    final refundState = _normalizeStatus(application.refundState);
+    final finalState = _normalizeStatus(application.finalState ?? '');
+
+    if (orderState == 'applyingformediation') return Colors.blueGrey;
+    if (finalState == 'pass') return Colors.green;
+    if (refundState == 'auditrefused') return Colors.redAccent;
+    return Colors.deepOrange;
+  }
+
+  bool _canApplyMediation(AfterSalesApplication application) {
+    final orderState = _normalizeStatus(application.orderState ?? '');
+    final refundState = _normalizeStatus(application.refundState);
+    final finalState = _normalizeStatus(application.finalState ?? '');
+    if (orderState == 'applyingformediation') return false;
+    if (finalState == 'pass' || finalState == 'cancel') return false;
+    return refundState == 'auditrefused';
+  }
+
+  bool _canCancelAfterSales(AfterSalesApplication application) {
+    final orderState = _normalizeStatus(application.orderState ?? '');
+    final refundState = _normalizeStatus(application.refundState);
+    final finalState = _normalizeStatus(application.finalState ?? '');
+    if (orderState == 'applyingformediation') return false;
+    if (finalState == 'pass' || finalState == 'cancel') return false;
+    return refundState == 'waitaudit';
+  }
+
+  String _normalizeStatus(String status) => status.toLowerCase().replaceAll('_', '');
 }

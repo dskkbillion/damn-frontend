@@ -101,10 +101,12 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
               SnackBar(content: Text(state.actionSuccessMessage ?? '操作成功')),
             );
             final isMediationSuccess = state.actionSuccessMessage?.contains('平台介入') == true;
-            if (_loadedApplication != null && isMediationSuccess) {
-              setState(() {
-                _mediationRequested = true;
-              });
+            if (_loadedApplication != null) {
+              if (isMediationSuccess) {
+                setState(() {
+                  _mediationRequested = true;
+                });
+              }
               _reloadDetail(context);
             }
           } else if (state is AfterSalesActionError) {
@@ -545,7 +547,11 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
       if (application.refundState.toLowerCase() == 'wait_audit' || application.refundState.toLowerCase() == 'audit_pass') {
         actionButtons.add(
           OutlinedButton(
-            onPressed: isActionLoading ? null : () { /* TODO: Implement cancel */ AppLogger.d('Cancel clicked'); },
+            onPressed: isActionLoading
+                ? null
+                : () {
+                    context.read<AfterSalesBloc>().add(CancelAfterSalesRequested(application.id));
+                  },
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: colorScheme.outline),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -555,21 +561,6 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
           ),
         );
         actionButtons.add(const SizedBox(width: 8));
-      }
-
-      if (application.refundState.toLowerCase() == 'wait_audit') {
-        actionButtons.add(
-          ElevatedButton(
-            onPressed: isActionLoading ? null : () { /* TODO: Implement modify */ AppLogger.d('Modify clicked'); },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colorScheme.primary,
-              foregroundColor: colorScheme.onPrimary,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              textStyle: Theme.of(context).textTheme.labelMedium,
-            ),
-            child: const Text('修改申请'),
-          ),
-        );
       }
 
       if (_canApplyMediation(application) && !_mediationRequested) {

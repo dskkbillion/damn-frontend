@@ -32,6 +32,7 @@ class AfterSalesApplication extends Equatable {
   final String? auditType; // "platform" or "seller"
   final String? refundStateText; // Display text for state
   final String? refundTypeText; // Display text for type
+  final String? orderState;
   final DateTime? createTime;
   final DateTime? updateTime;
   // TODO: Potentially add associated Order or OrderItem objects if needed later
@@ -66,6 +67,7 @@ class AfterSalesApplication extends Equatable {
     this.auditType,
     this.refundStateText,
     this.refundTypeText,
+    this.orderState,
     this.createTime,
     this.updateTime,
   });
@@ -108,6 +110,7 @@ class AfterSalesApplication extends Equatable {
         auditType,
         refundStateText,
         refundTypeText,
+        orderState,
         createTime,
         updateTime,
       ];

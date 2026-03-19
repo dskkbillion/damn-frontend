@@ -17,4 +17,4 @@ class CancelAfterSalesUseCase implements UseCase<void, int> {
     // Parameter validation could be added here.
     return await repository.cancelAfterSales(refundId);
   }
-} 
+}
