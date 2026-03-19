@@ -12,10 +12,12 @@ import '../../../../app/di/injection_container.dart';
 class AfterSalesDetailPage extends StatefulWidget { // Changed to StatefulWidget
   /// 预期接收售后申请 ID 或订单 ID
   final String id;
+  final bool resolveByOrderId;
 
   const AfterSalesDetailPage({
     super.key,
     required this.id, // 接收 ID
+    this.resolveByOrderId = false,
   });
 
   @override
@@ -23,6 +25,8 @@ class AfterSalesDetailPage extends StatefulWidget { // Changed to StatefulWidget
 }
 
 class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
+  AfterSalesApplication? _loadedApplication;
+  bool _mediationRequested = false;
 
   @override
   void initState() {
@@ -64,85 +68,134 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
     return BlocProvider<AfterSalesBloc>(
       create: (context) {
         final bloc = getIt<AfterSalesBloc>();
-        // Try to parse the ID as an integer (order ID)
-        final orderId = int.tryParse(widget.id);
-        if (orderId != null) {
-          // Use the new event that handles order ID to refund ID conversion
-          bloc.add(LoadAfterSalesDetailByOrderId(orderId: orderId));
+        if (widget.resolveByOrderId) {
+          final orderId = int.tryParse(widget.id);
+          if (orderId != null) {
+            bloc.add(LoadAfterSalesDetailByOrderId(orderId: orderId));
+          } else {
+            bloc.add(LoadAfterSalesDetail(id: widget.id));
+          }
         } else {
-          // Fall back to the original event if it's not a valid integer
           bloc.add(LoadAfterSalesDetail(id: widget.id));
         }
         return bloc;
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('售后详情'),
-        ),
-        body: BlocBuilder<AfterSalesBloc, AfterSalesState>(
-          builder: (context, state) {
-            AppLogger.d('[AfterSalesDetailPage] BlocBuilder received state: ${state.runtimeType}');
-
-            // Show loading indicator only if loading this specific ID
-            if (state is AfterSalesDetailLoading && state.loadingId == widget.id) {
-              return const Center(child: CircularProgressIndicator());
+      child: BlocConsumer<AfterSalesBloc, AfterSalesState>(
+        listener: (context, state) {
+          if (state is AfterSalesDetailLoaded) {
+            final normalizedStatus = _normalizeStatus(state.application.refundState);
+            final normalizedFinalState = _normalizeStatus(state.application.finalState ?? '');
+            final normalizedOrderState = _normalizeStatus(state.application.orderState ?? '');
+            setState(() {
+              _loadedApplication = state.application;
+              if (normalizedStatus == 'applyingformediation' ||
+                  normalizedFinalState == 'applyingformediation' ||
+                  normalizedOrderState == 'applyingformediation') {
+                _mediationRequested = true;
+              } else if (!_mediationRequested) {
+                _mediationRequested = false;
+              }
+            });
+          } else if (state is AfterSalesActionSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.actionSuccessMessage ?? '操作成功')),
+            );
+            final isMediationSuccess = state.actionSuccessMessage?.contains('平台介入') == true;
+            if (_loadedApplication != null && isMediationSuccess) {
+              setState(() {
+                _mediationRequested = true;
+              });
+              _reloadDetail(context);
             }
-            // Show error specific to this ID if loading failed
-            if (state is AfterSalesDetailError && state.id == widget.id) {
-              return Center(
+          } else if (state is AfterSalesActionError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.errorMessage ?? '操作失败')),
+            );
+          }
+        },
+        builder: (context, state) {
+          AppLogger.d('[AfterSalesDetailPage] BlocBuilder received state: ${state.runtimeType}');
+
+          final application = _currentApplication(state);
+          if (state is AfterSalesDetailLoading && state.loadingId == widget.id && application == null) {
+            return Scaffold(
+              appBar: AppBar(
+                title: Text('售后详情'),
+              ),
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          if (state is AfterSalesDetailError && state.id == widget.id && application == null) {
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text('售后详情'),
+              ),
+              body: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('加载失败: ${state.errorMessage}'), // Use errorMessage
+                    Text('加载失败: ${state.errorMessage}'),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () {
-                        final orderId = int.tryParse(widget.id);
-                        if (orderId != null) {
-                          context.read<AfterSalesBloc>().add(LoadAfterSalesDetailByOrderId(orderId: orderId));
-                        } else {
-                          context.read<AfterSalesBloc>().add(LoadAfterSalesDetail(id: widget.id));
-                        }
-                      },
+                      onPressed: () => _reloadDetail(context),
                       child: const Text('重试'),
                     )
                   ],
                 ),
-              );
-            }
+              ),
+            );
+          }
 
-            // Handle Loaded state
-            if (state is AfterSalesDetailLoaded) {
-              final application = state.application;
-              return SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _buildStatusHeader(context, application),
-                    const SizedBox(height: 8),
-                    _buildRefundInfoCard(context, colorScheme, textTheme, application),
-                    const SizedBox(height: 8),
-                    _buildRefundDetailsCard(context, application),
-                    const SizedBox(height: 100), // 为底部按钮留出空间
-                  ],
-                ),
-              );
-            }
+          if (application == null) {
+            return Scaffold(
+              appBar: AppBar(
+                title: Text('售后详情'),
+              ),
+              body: Center(child: Text('正在初始化...')),
+            );
+          }
 
-            // Default/Initial state or unexpected state
-            return const Center(child: Text('正在初始化...'));
-          },
-        ),
-        bottomNavigationBar: BlocBuilder<AfterSalesBloc, AfterSalesState>(
-          builder: (context, state) {
-            if (state is AfterSalesDetailLoaded) {
-              return _buildBottomActionBar(context, colorScheme, state.application);
-            }
-            return const SizedBox.shrink();
-          },
-        ),
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('售后详情'),
+            ),
+            body: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildStatusHeader(context, application),
+                  const SizedBox(height: 8),
+                  _buildRefundInfoCard(context, colorScheme, textTheme, application),
+                  const SizedBox(height: 8),
+                  _buildRefundDetailsCard(context, application),
+                  const SizedBox(height: 100),
+                ],
+              ),
+            ),
+            bottomNavigationBar: _buildBottomActionBar(context, colorScheme, application, state),
+          );
+        },
       ),
     );
+  }
+
+  AfterSalesApplication? _currentApplication(AfterSalesState state) {
+    if (state is AfterSalesDetailLoaded) {
+      return state.application;
+    }
+    return _loadedApplication;
+  }
+
+  void _reloadDetail(BuildContext context) {
+    if (widget.resolveByOrderId) {
+      final orderId = int.tryParse(widget.id);
+      if (orderId != null) {
+        context.read<AfterSalesBloc>().add(LoadAfterSalesDetailByOrderId(orderId: orderId));
+        return;
+      }
+    }
+    context.read<AfterSalesBloc>().add(LoadAfterSalesDetail(id: widget.id));
   }
 
   // Status Header - matching order detail page style
@@ -151,10 +204,10 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
     
-    String statusTitle = _getStatusTitle(application.refundState);
-    String? statusSubtitle = _getStatusSubtitle(application.refundState);
+    String statusTitle = _getStatusTitle(application);
+    String? statusSubtitle = _getStatusSubtitle(application);
     IconData statusIcon = _getStatusIcon(application.refundState);
-    Color statusColor = _getStatusColor(application.refundState, colorScheme);
+    Color statusColor = _getStatusColor(application, colorScheme);
     
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0).copyWith(top: 16),
@@ -211,34 +264,44 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
     );
   }
 
-  String _getStatusTitle(String status) {
-    switch (status) {
-      case 'wait_audit':
+  String _getStatusTitle(AfterSalesApplication application) {
+    final normalized = _normalizeStatus(application.refundState);
+    final normalizedOrderState = _normalizeStatus(application.orderState ?? '');
+    if (_mediationRequested || normalized == 'applyingformediation' || normalizedOrderState == 'applyingformediation') {
+      return '平台介入中';
+    }
+    switch (normalized) {
+      case 'waitaudit':
         return '等待卖家审核';
-      case 'audit_pass':
+      case 'auditpass':
         return '售后申请已通过';
-      case 'audit_reject':
+      case 'auditrefused':
         return '售后申请已拒绝';
-      case 'refund_success':
+      case 'refundsuccess':
         return '退款成功';
-      case 'canceled':
+      case 'cancel':
         return '售后已取消';
       default:
         return '售后处理中';
     }
   }
 
-  String? _getStatusSubtitle(String status) {
-    switch (status) {
-      case 'wait_audit':
+  String? _getStatusSubtitle(AfterSalesApplication application) {
+    final normalized = _normalizeStatus(application.refundState);
+    final normalizedOrderState = _normalizeStatus(application.orderState ?? '');
+    if (_mediationRequested || normalized == 'applyingformediation' || normalizedOrderState == 'applyingformediation') {
+      return '卖家已收到平台介入申请，请耐心等待处理';
+    }
+    switch (normalized) {
+      case 'waitaudit':
         return '卖家会在48小时内处理您的申请';
-      case 'audit_pass':
+      case 'auditpass':
         return '退款将在1-3个工作日内到账';
-      case 'audit_reject':
+      case 'auditrefused':
         return '如有异议，可申请平台介入';
-      case 'refund_success':
+      case 'refundsuccess':
         return '退款已完成，请查收';
-      case 'canceled':
+      case 'cancel':
         return '您已取消售后申请';
       default:
         return '请耐心等待处理结果';
@@ -346,33 +409,54 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
   }
 
   IconData _getStatusIcon(String status) {
-    switch (status) {
-      case 'wait_audit':
+    final normalized = _normalizeStatus(status);
+    if (_mediationRequested || normalized == 'applyingformediation') {
+      return Icons.gavel_outlined;
+    }
+    switch (normalized) {
+      case 'waitaudit':
         return Icons.pending_outlined;
-      case 'audit_pass':
+      case 'auditpass':
         return Icons.check_circle_outline;
-      case 'audit_reject':
+      case 'auditrefused':
         return Icons.cancel_outlined;
-      case 'refund_success':
+      case 'refundsuccess':
         return Icons.done_all;
       default:
         return Icons.info_outline;
     }
   }
 
-  Color _getStatusColor(String status, ColorScheme colorScheme) {
-    switch (status) {
-      case 'wait_audit':
+  Color _getStatusColor(AfterSalesApplication application, ColorScheme colorScheme) {
+    final normalized = _normalizeStatus(application.refundState);
+    final normalizedOrderState = _normalizeStatus(application.orderState ?? '');
+    if (_mediationRequested || normalized == 'applyingformediation' || normalizedOrderState == 'applyingformediation') {
+      return colorScheme.secondary;
+    }
+    switch (normalized) {
+      case 'waitaudit':
         return colorScheme.primary;
-      case 'audit_pass':
+      case 'auditpass':
         return Colors.green;
-      case 'audit_reject':
+      case 'auditrefused':
         return colorScheme.error;
-      case 'refund_success':
+      case 'refundsuccess':
         return Colors.green;
       default:
         return colorScheme.onSurfaceVariant;
     }
+  }
+
+  String _normalizeStatus(String status) => status.toLowerCase().replaceAll('_', '');
+
+  bool _canApplyMediation(AfterSalesApplication application) {
+    final status = application.refundState.toLowerCase();
+    final finalState = (application.finalState ?? '').toLowerCase();
+    final orderState = _normalizeStatus(application.orderState ?? '');
+    if (orderState == 'applyingformediation') {
+      return false;
+    }
+    return _normalizeStatus(status) == 'auditrefused' || _normalizeStatus(finalState) == 'refused';
   }
 
   // Product Information Card - matching order detail page style
@@ -454,56 +538,61 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
   }
 
    // Placeholder for Bottom Action Bar - Modify to accept data
-  Widget _buildBottomActionBar(BuildContext context, ColorScheme colorScheme, AfterSalesApplication application) {
-     // ... (implementation using application data to show/hide buttons)
-      List<Widget> actionButtons = [];
+  Widget _buildBottomActionBar(BuildContext context, ColorScheme colorScheme, AfterSalesApplication application, AfterSalesState state) {
+      final actionButtons = <Widget>[];
+      final isActionLoading = state is AfterSalesActionLoading;
 
-      // Example logic: Determine buttons based on state
-      // This needs refinement based on actual state strings and business logic
-      if (application.refundState == 'WAIT_AUDIT' || application.refundState == 'AUDIT_PASS') {
-         actionButtons.add(
-            OutlinedButton(
-               onPressed: () { /* TODO: Implement cancel */ AppLogger.d('Cancel clicked'); },
-               child: const Text('撤销申请'),
-                style: OutlinedButton.styleFrom(
-                 side: BorderSide(color: colorScheme.outline),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                 textStyle: Theme.of(context).textTheme.labelMedium,
-               ),
+      if (application.refundState.toLowerCase() == 'wait_audit' || application.refundState.toLowerCase() == 'audit_pass') {
+        actionButtons.add(
+          OutlinedButton(
+            onPressed: isActionLoading ? null : () { /* TODO: Implement cancel */ AppLogger.d('Cancel clicked'); },
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: colorScheme.outline),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              textStyle: Theme.of(context).textTheme.labelMedium,
             ),
-         );
-         actionButtons.add(const SizedBox(width: 8));
+            child: const Text('撤销申请'),
+          ),
+        );
+        actionButtons.add(const SizedBox(width: 8));
       }
-       if (application.refundState == 'WAIT_AUDIT') { // Can modify only when waiting?
-          actionButtons.add(
-             ElevatedButton(
-               onPressed: () { /* TODO: Implement modify */ AppLogger.d('Modify clicked'); },
-               child: const Text('修改申请'),
-               style: ElevatedButton.styleFrom(
-                  backgroundColor: colorScheme.primary,
-                  foregroundColor: colorScheme.onPrimary,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  textStyle: Theme.of(context).textTheme.labelMedium,
-               ),
+
+      if (application.refundState.toLowerCase() == 'wait_audit') {
+        actionButtons.add(
+          ElevatedButton(
+            onPressed: isActionLoading ? null : () { /* TODO: Implement modify */ AppLogger.d('Modify clicked'); },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colorScheme.primary,
+              foregroundColor: colorScheme.onPrimary,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              textStyle: Theme.of(context).textTheme.labelMedium,
             ),
-          );
-       } else {
-           // Maybe always show platform intervention?
-           actionButtons.add(
-             OutlinedButton(
-               onPressed: () { /* TODO: Implement platform intervention */ AppLogger.d('Platform clicked'); },
-               child: const Text('平台介入'),
-               style: OutlinedButton.styleFrom(
-                 side: BorderSide(color: colorScheme.outline),
-                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                 textStyle: Theme.of(context).textTheme.labelMedium,
-               ),
-             ),
-           );
-       }
+            child: const Text('修改申请'),
+          ),
+        );
+      }
 
+      if (_canApplyMediation(application) && !_mediationRequested) {
+        actionButtons.add(const SizedBox(width: 8));
+        actionButtons.add(
+          OutlinedButton(
+            onPressed: isActionLoading
+                ? null
+                : () {
+                    context.read<AfterSalesBloc>().add(ApplyMediationRequested(application.id));
+                  },
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: colorScheme.secondary),
+              foregroundColor: colorScheme.secondary,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              textStyle: Theme.of(context).textTheme.labelMedium,
+            ),
+            child: Text(isActionLoading ? '处理中...' : '申请平台介入'),
+          ),
+        );
+      }
 
-     return Container(
+      return Container(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         decoration: BoxDecoration(
            color: Theme.of(context).scaffoldBackgroundColor,

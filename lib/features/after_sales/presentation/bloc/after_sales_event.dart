@@ -73,6 +73,16 @@ class DeleteAfterSalesRequested extends AfterSalesEvent {
   List<Object?> get props => [refundIds];
 }
 
+// Event to request platform mediation for an existing after-sales application
+class ApplyMediationRequested extends AfterSalesEvent {
+  final int refundId;
+
+  const ApplyMediationRequested(this.refundId);
+
+  @override
+  List<Object?> get props => [refundId];
+}
+
 // Event to load the details of a specific after-sales application
 class LoadAfterSalesDetail extends AfterSalesEvent {
   final String id; // ID passed from the page (likely orderId or refundId as string)

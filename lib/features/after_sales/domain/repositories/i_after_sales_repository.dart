@@ -65,6 +65,10 @@ abstract class IAfterSalesRepository {
   /// Corresponds to POST /api/shop/order-refund/cancel (assuming POST based on RN)
   Future<Either<Failure, void>> cancelAfterSales(int refundId);
 
+  /// Applies for platform mediation on an existing after-sales application.
+  /// Corresponds to POST /api/shop/order-refund/apply-mediation
+  Future<Either<Failure, void>> applyMediation(int refundId);
+
   /// Deletes an after-sales application record (buyer side).
   /// Corresponds to POST /api/shop/order-refund/delete
   Future<Either<Failure, void>> deleteAfterSales(List<int> refundIds);

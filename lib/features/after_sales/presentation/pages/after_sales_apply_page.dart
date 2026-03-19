@@ -4,6 +4,7 @@ import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_item.dart';
 import 'dart:io'; // Import dart:io for File
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
+import 'package:go_router/go_router.dart';
 import '../bloc/after_sales_bloc.dart'; // Import Bloc/Event
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
@@ -142,20 +143,38 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
     // Determine max refundable amount (example: item price)
     final maxRefundAmount = widget.orderItem.price;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        // Wrap content in a Form
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildOrderItemInfo(context, widget.orderItem),
-              const SizedBox(height: 24.0),
+    return BlocListener<AfterSalesBloc, AfterSalesState>(
+      listener: (context, state) {
+        if (state is AfterSalesActionSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.actionSuccessMessage ?? '售后申请提交成功')),
+          );
+          final newId = state.newId;
+          if (newId != null && newId.isNotEmpty) {
+            context.go('/afterSalesDetail/$newId?mode=refund');
+          } else {
+            context.pop();
+          }
+        } else if (state is AfterSalesActionError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.errorMessage ?? '售后申请提交失败')),
+          );
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(title),
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          // Wrap content in a Form
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildOrderItemInfo(context, widget.orderItem),
+                const SizedBox(height: 24.0),
 
               // --- Reason Selection Dropdown ---
               DropdownButtonFormField<String>(
@@ -240,37 +259,41 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
               // --------------------------
 
               const SizedBox(height: 24),
-              ElevatedButton(
-                 onPressed: () {
-                   if (_formKey.currentState!.validate()) {
-                     // Form is valid
-                     AppLogger.d('Form is valid. Submitting...');
+                BlocBuilder<AfterSalesBloc, AfterSalesState>(
+                  builder: (context, state) {
+                    final isSubmitting = state is AfterSalesActionLoading;
+                    return ElevatedButton(
+                      onPressed: isSubmitting
+                          ? null
+                          : () {
+                              if (_formKey.currentState!.validate()) {
+                                AppLogger.d('Form is valid. Submitting...');
 
-                     // Collect amount if applicable
-                     double? refundAmount;
-                     if (widget.afterSalesType == 'REFUND') {
-                       refundAmount = double.tryParse(_amountController.text);
-                     }
+                                double? refundAmount;
+                                if (widget.afterSalesType == 'REFUND') {
+                                  refundAmount = double.tryParse(_amountController.text);
+                                }
 
-                     // Create and add the event
-                     final submitEvent = ApplyForAfterSalesSubmitted(
-                       orderItemId: widget.orderItemId,
-                       refundType: widget.afterSalesType, // Use the type passed to the page
-                       refundReason: _selectedReason!, // Not null due to validation
-                       refundExplain: _descriptionController.text,
-                       imagePaths: _selectedImages.map((result) => result.finalFile.path).toList(),
-                       refundAmount: refundAmount,
-                     );
-                     AppLogger.d('Adding event: $submitEvent with amount $refundAmount');
-                     context.read<AfterSalesBloc>().add(submitEvent);
-
-                     // TODO: Optionally show loading indicator or navigate back after submission
-                     // Consider listening to Bloc state for success/failure feedback
-                   }
-                 },
-                child: const Text('提交申请'),
-              )
-            ],
+                                final submitEvent = ApplyForAfterSalesSubmitted(
+                                  orderItemId: widget.orderItemId,
+                                  refundType: widget.afterSalesType,
+                                  refundReason: _selectedReason!,
+                                  refundExplain: _descriptionController.text,
+                                  imagePaths: _selectedImages
+                                      .map((result) => result.finalFile.path)
+                                      .toList(),
+                                  refundAmount: refundAmount,
+                                );
+                                AppLogger.d('Adding event: $submitEvent with amount $refundAmount');
+                                context.read<AfterSalesBloc>().add(submitEvent);
+                              }
+                            },
+                      child: Text(isSubmitting ? '提交中...' : '提交申请'),
+                    );
+                  },
+                )
+              ],
+            ),
           ),
         ),
       ),

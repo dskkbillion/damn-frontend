@@ -27,6 +27,11 @@ abstract class IAfterSalesRemoteDataSource {
   /// Throws a [ServerException] for all error codes.
   Future<void> cancelAfterSales(int refundId);
 
+  /// Calls the POST /api/shop/order-refund/apply-mediation endpoint.
+  ///
+  /// Throws a [ServerException] for all error codes.
+  Future<void> applyMediation(int refundId);
+
    /// Calls the POST /api/shop/order-refund/delete endpoint.
   ///
   /// Throws a [ServerException] for all error codes.

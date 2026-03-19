@@ -4,6 +4,7 @@ import '../presentation/bloc/after_sales_bloc.dart';
 import '../domain/usecases/get_after_sales_list_use_case.dart';
 import '../domain/usecases/get_after_sales_detail_use_case.dart';
 import '../domain/usecases/apply_for_after_sales_use_case.dart';
+import '../domain/usecases/apply_mediation_use_case.dart';
 import '../domain/usecases/cancel_after_sales_use_case.dart';
 import '../domain/usecases/delete_after_sales_use_case.dart';
 import '../domain/usecases/get_refund_id_by_order_id_use_case.dart';
@@ -40,6 +41,10 @@ class AfterSalesDI {
       () => ApplyForAfterSalesUseCase(getIt()),
     );
 
+    getIt.registerLazySingleton<ApplyMediationUseCase>(
+      () => ApplyMediationUseCase(getIt()),
+    );
+
     getIt.registerLazySingleton<CancelAfterSalesUseCase>(
       () => CancelAfterSalesUseCase(getIt()),
     );
@@ -58,6 +63,7 @@ class AfterSalesDI {
         getIt<GetAfterSalesListUseCase>(),
         getIt<GetAfterSalesDetailUseCase>(),
         getIt<ApplyForAfterSalesUseCase>(),
+        getIt<ApplyMediationUseCase>(),
         getIt<CancelAfterSalesUseCase>(),
         getIt<DeleteAfterSalesUseCase>(),
         getIt<GetRefundIdByOrderIdUseCase>(),

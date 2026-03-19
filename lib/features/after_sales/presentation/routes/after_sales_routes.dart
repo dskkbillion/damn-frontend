@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 
 // Import After Sales pages
 import '../pages/after_sales_list_page.dart';
 import '../pages/after_sales_detail_page.dart';
 import '../pages/select_after_sales_type_page.dart';
 import '../pages/after_sales_apply_page.dart';
+import '../bloc/after_sales_bloc.dart';
 
 // Import necessary entities or models used in route parameters/extra
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_item.dart'; // Needed for extra
@@ -31,7 +34,11 @@ class AfterSalesRoutes {
       name: 'afterSalesDetail',
       builder: (BuildContext context, GoRouterState state) {
         final String id = state.pathParameters['id'] ?? 'invalid';
-        return AfterSalesDetailPage(id: id);
+        final resolveByOrderId = state.uri.queryParameters['mode'] == 'order';
+        return AfterSalesDetailPage(
+          id: id,
+          resolveByOrderId: resolveByOrderId,
+        );
       },
     ),
     GoRoute(
@@ -67,7 +74,14 @@ class AfterSalesRoutes {
 
           AppLogger.d('Navigating to /afterSalesApply with itemId: $itemId, type: $type, item: ${orderItem.productName}');
           // Pass parameters to the page constructor
-          return AfterSalesApplyPage(orderItemId: itemId, afterSalesType: type, orderItem: orderItem);
+          return BlocProvider(
+            create: (_) => getIt<AfterSalesBloc>(),
+            child: AfterSalesApplyPage(
+              orderItemId: itemId,
+              afterSalesType: type,
+              orderItem: orderItem,
+            ),
+          );
         },
     ),
     // Add other after-sales specific routes here if needed

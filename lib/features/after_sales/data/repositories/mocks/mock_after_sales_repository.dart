@@ -1,6 +1,5 @@
 import 'package:dartz/dartz.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
-import 'package:injectable/injectable.dart';
 
 import '../../../../../core/error/failures.dart';
 import '../../../domain/entities/after_sales_application.dart';
@@ -179,6 +178,38 @@ class MockAfterSalesRepository implements IAfterSalesRepository {
   }
 
   @override
+  Future<Either<Failure, void>> applyMediation(int refundId) async {
+    AppLogger.d('[MockAfterSalesRepository] applyMediation called for refundId: $refundId');
+    await Future.delayed(const Duration(milliseconds: 150));
+
+    final index = _mockApplications.indexWhere((app) => app.id == refundId);
+    if (index == -1) {
+      return Left(ServerFailure(message: 'Mock Error: Refund application not found.'));
+    }
+
+    final current = _mockApplications[index];
+    if (current.refundState != 'AUDIT_REFUSED') {
+      return Left(ServerFailure(message: 'Mock Error: Current refund state does not allow mediation.'));
+    }
+
+    _mockApplications[index] = _createMockApplication(
+      id: current.id,
+      orderId: current.orderId,
+      orderItemId: current.orderItemId,
+      refundType: current.refundType,
+      refundState: current.refundState,
+      refundReason: current.refundReason,
+      refundExplain: current.refundExplain,
+      refundImage: current.refundImage,
+      refundPrice: current.refundPrice ?? 0,
+      refundAddress: current.refundAddress,
+      auditRemark: '已申请平台介入',
+    );
+
+    return const Right(null);
+  }
+
+  @override
   Future<Either<Failure, void>> deleteAfterSales(List<int> refundIds) async {
      AppLogger.d('[MockAfterSalesRepository] deleteAfterSales called for refundIds: $refundIds');
      await Future.delayed(const Duration(milliseconds: 100));
@@ -190,5 +221,18 @@ class MockAfterSalesRepository implements IAfterSalesRepository {
 
      // Simulate failure example:
      // return Left(ServerFailure(message: 'Mock Error: Failed to delete records.'));
+  }
+
+  @override
+  Future<Either<Failure, int?>> getRefundIdByOrderId(int orderId) async {
+    AppLogger.d('[MockAfterSalesRepository] getRefundIdByOrderId called for orderId: $orderId');
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    try {
+      final application = _mockApplications.firstWhere((app) => app.orderId == orderId);
+      return Right(application.id);
+    } catch (e) {
+      return const Right(null);
+    }
   }
 } 

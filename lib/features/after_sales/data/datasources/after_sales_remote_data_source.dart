@@ -18,6 +18,7 @@ class AfterSalesRemoteDataSource implements IAfterSalesRemoteDataSource {
   final String _listEndpoint = '/api/shop/order-refund/list';
   final String _detailEndpoint = '/api/shop/order-refund/detail'; // Base path
   final String _cancelEndpoint = '/api/shop/order-refund/cancel';
+  final String _applyMediationEndpoint = '/api/shop/order-refund/apply-mediation';
   final String _deleteEndpoint = '/api/shop/order-refund/delete';
 
   AfterSalesRemoteDataSource(this._dioClient);
@@ -38,10 +39,12 @@ class AfterSalesRemoteDataSource implements IAfterSalesRemoteDataSource {
 
     try {
       final response = await _dioClient.post(_applyEndpoint, data: requestData);
-      // Assuming successful response structure is like: { "code": 200, "msg": "...", "data": <refund_id> }
-      // Adjust parsing based on actual API response structure for AjaxResult
       if (response.data != null && response.data['code'] == 200 && response.data['data'] != null) {
-         return DataMapper.toInt(response.data['data']); // Extract the ID
+         final data = response.data['data'];
+         if (data is Map<String, dynamic>) {
+           return DataMapper.toInt(data['id']);
+         }
+         return DataMapper.toInt(data);
       } else {
          throw ServerException(message: response.data?['msg'] ?? 'Failed to apply for refund', statusCode: response.statusCode);
       }
@@ -149,6 +152,26 @@ class AfterSalesRemoteDataSource implements IAfterSalesRemoteDataSource {
     }
   }
 
+  @override
+  Future<void> applyMediation(int refundId) async {
+    try {
+      final response = await _dioClient.post(
+        _applyMediationEndpoint,
+        data: {'refundId': refundId},
+      );
+      if (response.data == null || response.data['code'] != 200) {
+        throw ServerException(
+          message: response.data?['msg'] ?? 'Failed to apply mediation',
+          statusCode: response.statusCode,
+        );
+      }
+    } on DioException catch (e) {
+      throw ServerException(message: e.message, statusCode: e.response?.statusCode);
+    } catch (e) {
+      throw ServerException(message: 'An unexpected error occurred: ${e.toString()}');
+    }
+  }
+
    @override
   Future<void> deleteAfterSales(List<int> refundIds) async {
       // API doc shows body is array of integers
@@ -217,11 +240,4 @@ class AfterSalesRemoteDataSource implements IAfterSalesRemoteDataSource {
     }
   }
 
-  ServerException _createServerException(Response response, String defaultMessage) {
-    if (response.data != null && response.data['msg'] != null && response.data['msg'].isNotEmpty) {
-      return ServerException(message: response.data['msg'], statusCode: response.statusCode);
-    } else {
-      return ServerException(message: defaultMessage, statusCode: response.statusCode);
-    }
-  }
 } 

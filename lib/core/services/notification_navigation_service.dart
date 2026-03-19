@@ -101,7 +101,7 @@ class NotificationNavigationService {
   /// 跳转到售后详情
   static void _navigateToAfterSales(BuildContext context, String afterSalesId) {
     try {
-      context.push('/afterSalesDetail/$afterSalesId');
+      context.push('/afterSalesDetail/$afterSalesId?mode=refund');
     } catch (e) {
       debugPrint('Failed to navigate to after-sales: $e');
       _showNavigationError(context, '无法打开售后详情');

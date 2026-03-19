@@ -82,6 +82,19 @@ class AfterSalesRepositoryImpl implements IAfterSalesRepository {
   }
 
   @override
+  Future<Either<Failure, void>> applyMediation(int refundId) async {
+    try {
+      await remoteDataSource.applyMediation(refundId);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message ?? '申请平台介入时发生服务器错误'));
+    } catch (e) {
+      AppLogger.d('[AfterSalesRepositoryImpl] Unexpected error applying mediation: ${e.toString()}');
+      return Left(ServerFailure(message: '申请平台介入时发生未知错误: ${e.toString()}'));
+    }
+  }
+
+  @override
   Future<Either<Failure, void>> deleteAfterSales(List<int> refundIds) async {
      try {
       await remoteDataSource.deleteAfterSales(refundIds);

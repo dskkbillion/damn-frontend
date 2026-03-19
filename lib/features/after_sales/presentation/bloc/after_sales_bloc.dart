@@ -9,6 +9,7 @@ import '../../../../core/error/failures.dart';
 import '../../domain/entities/after_sales_application.dart';
 import '../../domain/repositories/i_after_sales_repository.dart'; // For Params classes
 import '../../domain/usecases/apply_for_after_sales_use_case.dart';
+import '../../domain/usecases/apply_mediation_use_case.dart';
 import '../../domain/usecases/cancel_after_sales_use_case.dart';
 import '../../domain/usecases/delete_after_sales_use_case.dart';
 import '../../domain/usecases/get_after_sales_detail_use_case.dart';
@@ -34,6 +35,7 @@ class AfterSalesBloc extends Bloc<AfterSalesEvent, AfterSalesState> {
   final GetAfterSalesListUseCase _getAfterSalesListUseCase;
   final GetAfterSalesDetailUseCase _getAfterSalesDetailUseCase;
   final ApplyForAfterSalesUseCase _applyForAfterSalesUseCase;
+  final ApplyMediationUseCase _applyMediationUseCase;
   final CancelAfterSalesUseCase _cancelAfterSalesUseCase;
   final DeleteAfterSalesUseCase _deleteAfterSalesUseCase;
   final GetRefundIdByOrderIdUseCase _getRefundIdByOrderIdUseCase;
@@ -47,6 +49,7 @@ class AfterSalesBloc extends Bloc<AfterSalesEvent, AfterSalesState> {
     this._getAfterSalesListUseCase,
     this._getAfterSalesDetailUseCase,
     this._applyForAfterSalesUseCase,
+    this._applyMediationUseCase,
     this._cancelAfterSalesUseCase,
     this._deleteAfterSalesUseCase,
     this._getRefundIdByOrderIdUseCase,
@@ -59,6 +62,7 @@ class AfterSalesBloc extends Bloc<AfterSalesEvent, AfterSalesState> {
     on<LoadAfterSalesDetail>(_onLoadAfterSalesDetail);
     on<LoadAfterSalesDetailByOrderId>(_onLoadAfterSalesDetailByOrderId);
     on<ApplyForAfterSalesSubmitted>(_onApplyForAfterSalesSubmitted);
+    on<ApplyMediationRequested>(_onApplyMediationRequested);
     on<CancelAfterSalesRequested>(_onCancelAfterSalesRequested);
     on<DeleteAfterSalesRequested>(_onDeleteAfterSalesRequested);
     // TODO: Add handler for image upload event
@@ -229,6 +233,20 @@ class AfterSalesBloc extends Bloc<AfterSalesEvent, AfterSalesState> {
          // Maybe also reload the after-sales list or detail page?
          // For now, just emit success.
       }
+    );
+  }
+
+  Future<void> _onApplyMediationRequested(
+    ApplyMediationRequested event,
+    Emitter<AfterSalesState> emit,
+  ) async {
+    emit(AfterSalesActionLoading());
+
+    final result = await _applyMediationUseCase(event.refundId);
+
+    result.fold(
+      (failure) => emit(AfterSalesActionError(_mapFailureToMessage(failure))),
+      (_) => emit(const AfterSalesActionSuccess(message: '平台介入申请已提交')),
     );
   }
 

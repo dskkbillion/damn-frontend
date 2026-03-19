@@ -332,7 +332,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                             // TODO: Refactor this navigation logic to use context.go() from go_router for better practice.
                             if (isAfterSalesOrder) {
                               // Navigate to AfterSalesDetailPage using GoRouter
-                              context.push('/afterSalesDetail/${order.id}');
+                              context.push('/afterSalesDetail/${order.id}?mode=order');
                             } else {
                               // Navigate to OrderDetailPage using GoRouter and wait for result
                               final shouldRefresh = await context.push<bool>('/orderDetail/${order.id}');
