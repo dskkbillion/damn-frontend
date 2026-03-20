@@ -11,6 +11,8 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_stat
 import 'package:dskk_flutter_refactor/features/orders/domain/repositories/i_order_repository.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/repositories/i_chat_repository.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_room.dart';
+import 'package:dskk_flutter_refactor/features/after_sales/domain/usecases/get_refund_id_by_order_id_use_case.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/audit_refund_usecase.dart';
 import '../bloc/seller_order_detail_bloc.dart'; // Import Detail Bloc
 
 // 移除邀请评价状态类
@@ -26,13 +28,183 @@ class SellerOrderDetailActions extends StatefulWidget {
 }
 
 class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
+  int? _refundId;
+  bool _isResolvingRefund = false;
+  bool _isAuditingRefund = false;
   // 移除邀请评价相关状态
   // InvitationStatus? _invitationStatus;
 
   @override
   void initState() {
     super.initState();
+    _loadRefundIdIfNeeded();
     // 不再加载邀请状态
+  }
+
+  @override
+  void didUpdateWidget(covariant SellerOrderDetailActions oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.order.id != widget.order.id || oldWidget.order.state != widget.order.state) {
+      _loadRefundIdIfNeeded();
+    }
+  }
+
+  bool get _needsRefundActions {
+    switch (widget.order.state) {
+      case OrderStatus.afterSale:
+      case OrderStatus.AfterSaleRejection:
+      case OrderStatus.sellerSupplementaryMaterials:
+      case OrderStatus.applyForRefuse:
+      case OrderStatus.applyingForMediation:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  Future<void> _loadRefundIdIfNeeded() async {
+    if (!_needsRefundActions) {
+      if (mounted) {
+        setState(() {
+          _refundId = null;
+          _isResolvingRefund = false;
+        });
+      }
+      return;
+    }
+
+    if (widget.order.refundId != null) {
+      setState(() {
+        _refundId = widget.order.refundId;
+        _isResolvingRefund = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isResolvingRefund = true;
+    });
+
+    final useCase = GetIt.instance<GetRefundIdByOrderIdUseCase>();
+    final result = await useCase(GetRefundIdByOrderIdParams(orderId: widget.order.id));
+
+    if (!mounted) return;
+
+    result.fold(
+      (failure) {
+        AppLogger.d('[SellerOrderDetailActions] Failed to resolve refundId for order ${widget.order.id}: ${failure.message}');
+        setState(() {
+          _refundId = null;
+          _isResolvingRefund = false;
+        });
+      },
+      (refundId) {
+        setState(() {
+          _refundId = refundId;
+          _isResolvingRefund = false;
+        });
+      },
+    );
+  }
+
+  Future<void> _auditRefund(BuildContext context, {required bool approved}) async {
+    if (_refundId == null || _isAuditingRefund) return;
+
+    String? refusalReason;
+    if (!approved) {
+      refusalReason = await _showRefusalReasonDialog(context);
+      if (refusalReason == null || refusalReason.trim().isEmpty) {
+        return;
+      }
+    }
+
+    setState(() {
+      _isAuditingRefund = true;
+    });
+
+    final useCase = GetIt.instance<AuditRefundUseCase>();
+    final result = await useCase(
+      AuditRefundParams(
+        id: _refundId!,
+        state: approved ? RefundAuditState.pass : RefundAuditState.reject,
+        auditRemark: refusalReason?.trim(),
+      ),
+    );
+
+    if (!mounted) return;
+
+    result.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(failure.message),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      },
+      (_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(approved ? '已同意退款' : '已拒绝售后'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        BlocProvider.of<SellerOrderDetailBloc>(context).add(
+          LoadSellerOrderDetail(orderId: widget.order.id),
+        );
+      },
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _isAuditingRefund = false;
+    });
+  }
+
+  Future<void> _openSellerChat(BuildContext context) async {
+    final buyerId = widget.order.buyer?.id;
+    final sellerId = widget.order.tenant?.id;
+    final productId = widget.order.items.isNotEmpty ? widget.order.items.first.productId : null;
+
+    if (buyerId == null || sellerId == null || productId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('缺少订单关联信息，无法定位聊天室')),
+      );
+      return;
+    }
+
+    final chatRepository = GetIt.instance<IChatRepository>();
+    final result = await chatRepository.getChatRooms();
+    if (!mounted) return;
+
+    result.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('打开聊天室失败: ${failure.message}')),
+        );
+      },
+      (chatRooms) {
+        final room = chatRooms.cast<ChatRoom?>().firstWhere(
+          (room) =>
+              room != null &&
+              ((room.participant1.referId == buyerId && room.participant2.referId == sellerId) ||
+               (room.participant1.referId == sellerId && room.participant2.referId == buyerId)) &&
+              room.productId == productId.toString(),
+          orElse: () => null,
+        );
+
+        if (room == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('未找到该订单对应聊天室，请在卖家聊天列表中查找“${widget.order.items.first.productName}”'),
+            ),
+          );
+          return;
+        }
+
+        context.go('/chat/refactored/${room.id}');
+      },
+    );
   }
 
   // 移除邀请状态加载方法
@@ -349,6 +521,43 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
           ));
         // 移除邀请评价按钮
         break;
+      case OrderStatus.afterSale:
+      case OrderStatus.AfterSaleRejection:
+      case OrderStatus.applyingForMediation:
+      case OrderStatus.sellerSupplementaryMaterials:
+      case OrderStatus.applyForRefuse:
+        if (widget.order.state != OrderStatus.applyingForMediation) {
+          if (_isResolvingRefund || _isAuditingRefund) {
+            buttons.add(
+              OutlinedButton(
+                onPressed: null,
+                style: outlineStyle,
+                child: Text(_isResolvingRefund ? '加载售后中...' : '处理中...'),
+              ),
+            );
+          } else if (_refundId != null) {
+            buttons.add(
+              OutlinedButton(
+                onPressed: () => _auditRefund(context, approved: false),
+                style: outlineStyle,
+                child: const Text('拒绝售后'),
+              ),
+            );
+            buttons.add(
+              ElevatedButton(
+                onPressed: () => _auditRefund(context, approved: true),
+                style: filledStyle,
+                child: const Text('同意退款'),
+              ),
+            );
+          }
+        }
+        buttons.add(OutlinedButton(
+          onPressed: () => _openSellerChat(context),
+          style: outlineStyle,
+          child: const Text('去聊天室沟通'),
+        ));
+        break;
       case OrderStatus.canceled:
           buttons.add(OutlinedButton(
            onPressed: () async {
@@ -368,6 +577,54 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
     }
 
     return buttons;
+  }
+
+  Future<String?> _showRefusalReasonDialog(BuildContext context) {
+    final controller = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    return showDialog<String?>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('拒绝售后'),
+          content: Form(
+            key: formKey,
+            child: TextFormField(
+              controller: controller,
+              autofocus: true,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                labelText: '拒绝原因 *',
+                hintText: '请输入拒绝售后的原因',
+                alignLabelWithHint: true,
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return '请输入拒绝原因';
+                }
+                return null;
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(null),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  Navigator.of(dialogContext).pop(controller.text.trim());
+                }
+              },
+              child: const Text('确认拒绝'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   // Helper to show a dialog for entering rejection reason and remarks
@@ -615,4 +872,3 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
   }
   
 }
-

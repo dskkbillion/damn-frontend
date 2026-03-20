@@ -11,7 +11,7 @@ enum RefundAuditState {
   pass('AUDIT_PASS', '通过'),
   
   /// 审核拒绝
-  reject('AUDIT_REJECT', '拒绝');
+  reject('AUDIT_REFUSED', '拒绝');
 
   /// API值
   final String value;

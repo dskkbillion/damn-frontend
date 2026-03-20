@@ -29,7 +29,8 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
     Tab(text: '待交付'),      // 待交付（映射到awaitingConfirmation）
     Tab(text: '待评价'),      // 待评价
     Tab(text: '完成'),        // 已完成
-    Tab(text: '平台介入'),    // 平台介入
+    Tab(text: '售后中'),      // 售后中
+    Tab(text: '平台介入中'),  // 平台介入中
     Tab(text: '已取消'),      // 已取消
   ];
 
@@ -38,7 +39,8 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
     OrderStatus.awaitingConfirmation, // 待交付（使用awaitingConfirmation）
     OrderStatus.awaitingEvaluation,   // 待评价
     OrderStatus.orderCompleted,       // 完成
-    OrderStatus.applyingForMediation, // 平台介入
+    OrderStatus.afterSale,            // 售后中
+    OrderStatus.applyingForMediation, // 平台介入中
     OrderStatus.canceled,             // 已取消
   ];
 

@@ -383,13 +383,16 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
       case OrderStatus.canceled: 
         return '已取消';
         
-      // 平台介入相关状态
-      case OrderStatus.applyingForMediation:
       case OrderStatus.afterSale:
+        return '售后处理中';
       case OrderStatus.AfterSaleRejection:
+        return '售后申请已拒绝';
+      case OrderStatus.applyingForMediation:
+        return '平台介入中';
       case OrderStatus.sellerSupplementaryMaterials:
+        return '待补充材料';
       case OrderStatus.applyForRefuse:
-        return '平台处理中';
+        return '申请平台介入';
         
       default: 
         return '状态更新中';
@@ -419,13 +422,16 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
       case OrderStatus.canceled:
         return '订单已关闭';
         
-      // 平台介入相关状态
-      case OrderStatus.applyingForMediation:
       case OrderStatus.afterSale:
+        return '售后申请正在处理中';
       case OrderStatus.AfterSaleRejection:
+        return '当前售后申请已被拒绝';
+      case OrderStatus.applyingForMediation:
+        return '平台正在协调处理您的问题';
       case OrderStatus.sellerSupplementaryMaterials:
+        return '请及时补充售后所需材料';
       case OrderStatus.applyForRefuse:
-        return '平台正在协调处理';
+        return '您的平台介入申请正在等待处理';
         
       default: 
         return null;

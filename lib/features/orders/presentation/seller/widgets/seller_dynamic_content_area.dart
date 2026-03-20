@@ -38,9 +38,11 @@ class SellerDynamicContentArea extends StatelessWidget {
       case OrderStatus.applyForRefuse:
          return _buildApplyForRefuseContent(context);
 
-      // TODO: Implement cases for other relevant seller states
-      // case OrderStatus.afterSale: // Or more specific after-sales states
-      //   return _buildAfterSaleContent(context);
+      case OrderStatus.afterSale:
+      case OrderStatus.AfterSaleRejection:
+      case OrderStatus.applyingForMediation:
+      case OrderStatus.sellerSupplementaryMaterials:
+        return _buildAfterSaleContent(context);
 
       default:
         // Default case, return empty if no specific content for the state
@@ -202,7 +204,60 @@ class SellerDynamicContentArea extends StatelessWidget {
     );
   }
 
+  Widget _buildAfterSaleContent(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    final bool mediation = order.state == OrderStatus.applyingForMediation;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+        side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3)),
+      ),
+      color: mediation
+          ? colorScheme.primaryContainer.withOpacity(0.28)
+          : colorScheme.surfaceVariant.withOpacity(0.35),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              mediation ? Icons.gavel_outlined : Icons.support_agent_outlined,
+              size: 20,
+              color: mediation ? colorScheme.primary : colorScheme.secondary,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    mediation ? '平台介入中' : '售后处理中',
+                    style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    mediation
+                        ? '平台已介入当前售后流程。请继续在聊天室与买家沟通补充说明，平台会结合聊天记录继续处理。'
+                        : '当前订单已进入售后流程。请在聊天室继续与买家沟通，订单详情页仅保留流程状态与操作入口。',
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      height: 1.35,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // TODO: Implement builder methods for other states
   // Widget _buildAfterSaleContent(BuildContext context) { ... }
 }
-

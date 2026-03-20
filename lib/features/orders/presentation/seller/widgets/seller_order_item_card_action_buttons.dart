@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:dskk_flutter_refactor/features/chat/domain/repositories/i_chat_repository.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_room.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/seller/bloc/seller_order_list_bloc.dart';
@@ -41,6 +44,51 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
       runSpacing: 4.0, // Vertical space if buttons wrap
       alignment: WrapAlignment.end, // Align buttons to the right
       children: buttons,
+    );
+  }
+
+  Future<void> _openSellerChat(BuildContext context) async {
+    final buyerId = order.buyer?.id;
+    final sellerId = order.tenant?.id;
+    final productId = order.items.isNotEmpty ? order.items.first.productId : null;
+
+    if (buyerId == null || sellerId == null || productId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('缺少订单关联信息，无法定位聊天室')),
+      );
+      return;
+    }
+
+    final chatRepository = GetIt.instance<IChatRepository>();
+    final result = await chatRepository.getChatRooms();
+
+    result.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('打开聊天室失败: ${failure.message}')),
+        );
+      },
+      (chatRooms) {
+        final room = chatRooms.cast<ChatRoom?>().firstWhere(
+          (room) =>
+              room != null &&
+              ((room.participant1.referId == buyerId && room.participant2.referId == sellerId) ||
+               (room.participant1.referId == sellerId && room.participant2.referId == buyerId)) &&
+              room.productId == productId.toString(),
+          orElse: () => null,
+        );
+
+        if (room == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('未找到该订单对应聊天室，请在卖家聊天列表中查找“${order.items.first.productName}”'),
+            ),
+          );
+          return;
+        }
+
+        context.go('/chat/refactored/${room.id}');
+      },
     );
   }
 
@@ -129,13 +177,17 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
         case OrderStatus.AfterSaleRejection:
         case OrderStatus.sellerSupplementaryMaterials:
         case OrderStatus.applyForRefuse:
-          // 平台介入
           buttons.add(OutlinedButton(
             onPressed: () {
               context.push('/seller/orders/${order.id}');
             }, 
             style: outlineStyle, 
-            child: const Text('查看')
+            child: const Text('查看订单')
+          ));
+          buttons.add(OutlinedButton(
+            onPressed: () => _openSellerChat(context), 
+            style: outlineStyle, 
+            child: const Text('去聊天室沟通')
           ));
           break;
           

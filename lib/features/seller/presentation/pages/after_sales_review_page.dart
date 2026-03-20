@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:intl/intl.dart';
 
@@ -143,9 +144,15 @@ class _AfterSalesReviewBodyState extends State<_AfterSalesReviewBody> {
       child: ListView.builder(
         controller: _scrollController,
         padding: const EdgeInsets.all(16.0),
-        itemCount: state.refunds.length + (isLoadingMore || state.hasMore ? 1 : 0),
+        itemCount: state.refunds.length + (isLoadingMore || state.hasMore ? 1 : 0) + 1,
         itemBuilder: (context, index) {
-          if (index == state.refunds.length) {
+          if (index == 0) {
+            return _buildCommunicationHint(context);
+          }
+
+          final refundIndex = index - 1;
+
+          if (refundIndex == state.refunds.length) {
             // 最后一项显示加载更多指示器
             return const Padding(
               padding: EdgeInsets.symmetric(vertical: 16.0),
@@ -153,12 +160,57 @@ class _AfterSalesReviewBodyState extends State<_AfterSalesReviewBody> {
             );
           }
           
-          final refund = state.refunds[index];
+          final refund = state.refunds[refundIndex];
           return _RefundCard(
             refund: refund,
             isProcessing: isAuditing && (state as AfterSalesReviewAuditing).auditingId == refund.id,
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildCommunicationHint(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16.0),
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(16.0),
+        border: Border.all(
+          color: colorScheme.outline.withValues(alpha: 0.18),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.forum_outlined, color: colorScheme.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '交付与协商统一在聊天室处理',
+                  style: textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '此页面仅保留售后审核动作。如需继续沟通、补充说明或确认处理方案，请回到卖家聊天列表。',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -267,26 +319,34 @@ class _RefundCard extends StatelessWidget {
             const Divider(height: 24),
             
             // 操作按钮
-            if (refund.state == OrderRefundState.waitAudit && !isProcessing)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+            if (!isProcessing)
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                alignment: WrapAlignment.end,
                 children: [
-                  OutlinedButton(
-                    onPressed: () => _showRejectDialog(context),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: colorScheme.error,
-                    ),
-                    child: Text(AppLocalizations.of(context)!?.after_sales_reject ?? 'Reject'),
+                  OutlinedButton.icon(
+                    onPressed: () => _openSellerChat(context),
+                    icon: const Icon(Icons.forum_outlined, size: 18),
+                    label: const Text('去聊天室沟通'),
                   ),
-                  const SizedBox(width: 16),
-                  ElevatedButton(
-                    onPressed: () => _showConfirmDialog(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colorScheme.primary,
-                      foregroundColor: Colors.white,
+                  if (refund.state == OrderRefundState.waitAudit)
+                    OutlinedButton(
+                      onPressed: () => _showRejectDialog(context),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: colorScheme.error,
+                      ),
+                      child: Text(AppLocalizations.of(context)!?.after_sales_reject ?? 'Reject'),
                     ),
-                    child: Text(AppLocalizations.of(context)!?.after_sales_agree ?? 'Approve'),
-                  ),
+                  if (refund.state == OrderRefundState.waitAudit)
+                    ElevatedButton(
+                      onPressed: () => _showConfirmDialog(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: Text(AppLocalizations.of(context)!?.after_sales_agree ?? 'Approve'),
+                    ),
                 ],
               )
             else if (isProcessing)
@@ -300,6 +360,17 @@ class _RefundCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _openSellerChat(BuildContext context) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text('请在卖家聊天列表中继续处理订单 ${refund.orderSn} 的售后沟通'),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+    context.push('/seller/chat');
   }
   
   // 构建信息行

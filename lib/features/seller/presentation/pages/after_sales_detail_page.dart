@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
@@ -95,6 +96,8 @@ class AfterSalesDetailPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _buildCommunicationHint(context),
+          const SizedBox(height: 16),
           // 头部卡片
           Card(
             elevation: 2,
@@ -208,11 +211,18 @@ class AfterSalesDetailPage extends StatelessWidget {
           const SizedBox(height: 24),
           
           // 操作按钮
-          if (refund.state == OrderRefundState.waitAudit && !isAuditing)
-            Row(
+          if (!isAuditing)
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
               children: [
-                Expanded(
-                  child: OutlinedButton(
+                OutlinedButton.icon(
+                  onPressed: () => _openSellerChat(context, refund),
+                  icon: const Icon(Icons.forum_outlined, size: 18),
+                  label: const Text('去聊天室沟通'),
+                ),
+                if (refund.state == OrderRefundState.waitAudit)
+                  OutlinedButton(
                     onPressed: () => _showRejectDialog(context, refund.id!),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: colorScheme.error,
@@ -220,10 +230,8 @@ class AfterSalesDetailPage extends StatelessWidget {
                     ),
                     child: Text(AppLocalizations.of(context)!?.after_sales_reject_application ?? 'Reject Request'),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
+                if (refund.state == OrderRefundState.waitAudit)
+                  ElevatedButton(
                     onPressed: () => _showConfirmDialog(context, refund.id!),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colorScheme.primary,
@@ -232,7 +240,6 @@ class AfterSalesDetailPage extends StatelessWidget {
                     ),
                     child: Text(AppLocalizations.of(context)!?.after_sales_agree_application ?? 'Approve Request'),
                   ),
-                ),
               ],
             )
           else if (isAuditing)
@@ -245,6 +252,61 @@ class AfterSalesDetailPage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildCommunicationHint(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(16.0),
+        border: Border.all(
+          color: colorScheme.outline.withValues(alpha: 0.18),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.forum_outlined, color: colorScheme.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '交付与协商统一在聊天室处理',
+                  style: textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '当前页面只保留售后审核动作。如需继续沟通、补充说明或确认处理方案，请回到卖家聊天列表。',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openSellerChat(BuildContext context, OrderRefund refund) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text('请在卖家聊天列表中继续处理订单 ${refund.orderSn} 的售后沟通'),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+    context.push('/seller/chat');
   }
   
   Widget _buildInfoItem(BuildContext context, String label, String value) {

@@ -10,8 +10,6 @@ import '../bloc/seller_order_detail_bloc.dart';
 import '../../../domain/entities/order.dart';
 // Import the timeline header widget
 import '../../widgets/order_status_timeline_header.dart';
-// Import the status widget
-import '../../widgets/order_status_widget.dart';
 // Import the item tile widget
 import '../../widgets/order_detail_item_tile.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
@@ -23,7 +21,7 @@ import '../widgets/seller_dynamic_content_area.dart';
 import '../widgets/seller_order_materials_section.dart';
 // Import entities
 import '../../../domain/entities/order_materials.dart';
-// import '../../../domain/entities/order_delivery.dart'; // 轻咨询模式：隐藏交付功能
+import '../../../domain/entities/order_delivery.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/utils/order_status_mapper.dart';
 
 class SellerOrderDetailPage extends StatelessWidget {
@@ -175,7 +173,7 @@ class SellerOrderDetailPage extends StatelessWidget {
   }
 
   // --- Helper Widget Builder for Success/Action States ---
-  Widget _buildSuccessUI(BuildContext context, Order order, {bool isLoadingAction = false, List<OrderMaterials>? materials, List<dynamic>? deliveries}) {
+  Widget _buildSuccessUI(BuildContext context, Order order, {bool isLoadingAction = false, List<OrderMaterials>? materials, List<OrderDelivery>? deliveries}) {
      return Stack(
       children: [
         SingleChildScrollView(
@@ -262,19 +260,15 @@ class SellerOrderDetailPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16), // Spacing after time card
                 
-              // 轻咨询模式：隐藏材料和交付部分
-              // if (!OrderStatusMapper.isLightConsultationOrder(order)) ...[
-              //   // 6. Buyer Materials Section (显示买家提供的材料)
-              //   SellerOrderMaterialsSection(
-              //     order: order,
-              //     materials: materials,
-              //     deliveries: deliveries,
-              //   ),
-              //   // 7. Dynamic Content Area (based on order state)
-              //   SellerDynamicContentArea(order: order),
-              // ],
-              // Spacer before bottom padding (which is for the action bar)
-              // const SizedBox(height: 16),
+              SellerDynamicContentArea(order: order),
+
+              if (!OrderStatusMapper.isLightConsultationOrder(order)) ...[
+                SellerOrderMaterialsSection(
+                  order: order,
+                  materials: materials,
+                  deliveries: deliveries,
+                ),
+              ],
 
               const SizedBox(height: 80), // Add padding at the bottom for the action bar
             ],

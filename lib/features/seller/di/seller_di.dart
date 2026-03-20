@@ -52,6 +52,8 @@ import 'package:dskk_flutter_refactor/features/seller/domain/usecases/update_tim
 // 用例 - 自动回复
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_auto_reply_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/set_auto_reply_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_tenant_audit_list_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/audit_refund_usecase.dart';
 
 // Bloc - 卖家主页和产品管理
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_home/seller_home_bloc.dart';
@@ -231,6 +233,21 @@ class SellerDI {
           () => SetAutoReplyUseCase(sl<ISellerRepository>())
         );
         AppLogger.d('[SellerDI] 已注册 SetAutoReplyUseCase');
+      }
+
+      // 用例 - 卖家售后审核
+      if (!sl.isRegistered<GetTenantAuditListUseCase>()) {
+        sl.registerLazySingleton<GetTenantAuditListUseCase>(
+          () => GetTenantAuditListUseCase(sl<ISellerRepository>())
+        );
+        AppLogger.d('[SellerDI] 已注册 GetTenantAuditListUseCase');
+      }
+
+      if (!sl.isRegistered<AuditRefundUseCase>()) {
+        sl.registerLazySingleton<AuditRefundUseCase>(
+          () => AuditRefundUseCase(sl<ISellerRepository>())
+        );
+        AppLogger.d('[SellerDI] 已注册 AuditRefundUseCase');
       }
 
       // 注册文件上传仓库（如果尚未注册）

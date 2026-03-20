@@ -51,6 +51,7 @@ class OrderModel {
   // 是否已评价
   final bool? evaluate;
   final OrderEvaluationDetailModel? evaluateDetail;
+  final int? refundId;
 
   const OrderModel({
     required this.id,
@@ -82,6 +83,7 @@ class OrderModel {
     this.deliveryTimestamp,
     this.evaluate,
     this.evaluateDetail,
+    this.refundId,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -177,6 +179,7 @@ class OrderModel {
       deliveryTimestamp: parseOptionalDateTime(json['deliveryTimestamp']?.toString()),
       evaluate: json['evaluate'] as bool?,
       evaluateDetail: parsedEvaluateDetail,
+      refundId: json['refundId'] as int?,
     );
   }
 
@@ -228,6 +231,7 @@ class OrderModel {
       deliveryTimestamp: deliveryTimestamp,
       evaluate: evaluate,
       evaluateDetail: evaluateDetail?.toEntity(),
+      refundId: refundId,
     );
   }
 

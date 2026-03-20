@@ -77,6 +77,9 @@ class Order extends Equatable {
   /// 评价详情
   final OrderEvaluationDetail? evaluateDetail;
 
+  /// 关联的售后单 ID（如果存在）
+  final int? refundId;
+
   // 注意：不包含 actions 字段，因为允许的操作应由 Presentation 层
   // 根据当前 state 和业务规则动态推断。
 
@@ -104,6 +107,7 @@ class Order extends Equatable {
     this.deliveryTimestamp,
     this.evaluate,
     this.evaluateDetail,
+    this.refundId,
   });
 
   Order copyWith({
@@ -129,6 +133,7 @@ class Order extends Equatable {
     DateTime? deliveryTimestamp,
     bool? evaluate,
     OrderEvaluationDetail? evaluateDetail,
+    int? refundId,
   }) {
     return Order(
       id: id ?? this.id,
@@ -153,6 +158,7 @@ class Order extends Equatable {
       deliveryTimestamp: deliveryTimestamp ?? this.deliveryTimestamp,
       evaluate: evaluate ?? this.evaluate,
       evaluateDetail: evaluateDetail ?? this.evaluateDetail,
+      refundId: refundId ?? this.refundId,
     );
   }
 
@@ -180,5 +186,6 @@ class Order extends Equatable {
         deliveryTimestamp,
         evaluate,
         evaluateDetail,
+        refundId,
       ];
-} 
+}

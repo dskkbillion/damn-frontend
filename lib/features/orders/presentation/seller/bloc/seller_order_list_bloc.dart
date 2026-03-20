@@ -40,6 +40,7 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
 
   int _currentPage = 1;
   bool _hasReachedMax = false;
+  int _latestRequestId = 0;
   // Track the current status filter
   OrderStatus? _currentStatusFilter;
   // Store the current keyword for loading more
@@ -70,6 +71,7 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     LoadSellerOrdersRequested event,
     Emitter<SellerOrderListState> emit,
   ) async {
+    final requestId = ++_latestRequestId;
     _currentPage = 1; // Reset page number
     _currentStatusFilter = event.statusFilter;
     _currentKeyword = event.keyword;
@@ -86,6 +88,7 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
 
     result.fold(
       (failure) {
+        if (requestId != _latestRequestId) return;
          // Assume failure is ServerFailure or similar with a message
          final errorMessage = (failure is ServerFailure) 
            ? (failure.message ?? 'Unknown server error') // Handle null message in ServerFailure
@@ -93,6 +96,7 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
          emit(SellerOrderListFailure(message: errorMessage));
       },
       (orders) {
+        if (requestId != _latestRequestId) return;
         final hasReachedMax = orders.length < 10; // Assuming limit is 10
         emit(SellerOrderListSuccess(
           orders: orders,
@@ -146,12 +150,39 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     SellerOrderStatusFilterChanged event,
     Emitter<SellerOrderListState> emit,
   ) async {
-    // Update the tracked filter and reset pagination
+    final requestId = ++_latestRequestId;
+    // 切换 tab 时立即按目标状态重新拉取，避免页面先短暂显示上一 tab 的列表。
     _currentStatusFilter = event.newStatusFilter;
     _currentPage = 1;
     _hasReachedMax = false;
-    // Keep the current keyword if any
-    add(LoadSellerOrdersRequested(statusFilter: event.newStatusFilter, keyword: _currentKeyword));
+    emit(const SellerOrderListLoading());
+
+    final result = await _getOrderListUseCase(GetOrderListParams(
+      page: _currentPage,
+      limit: 10,
+      status: _currentStatusFilter == OrderStatus.unknown ? null : _currentStatusFilter,
+      keyword: _currentKeyword,
+      userRole: 'seller',
+    ));
+
+    result.fold(
+      (failure) {
+        if (requestId != _latestRequestId) return;
+        final errorMessage = (failure is ServerFailure)
+            ? (failure.message ?? 'Unknown server error')
+            : 'An unknown error occurred';
+        emit(SellerOrderListFailure(message: errorMessage));
+      },
+      (orders) {
+        if (requestId != _latestRequestId) return;
+        final hasReachedMax = orders.length < 10;
+        emit(SellerOrderListSuccess(
+          orders: orders,
+          currentStatusFilter: _currentStatusFilter,
+          hasReachedMax: hasReachedMax,
+        ));
+      },
+    );
   }
 
   Future<void> _onConfirmAcceptanceRequested(
@@ -351,5 +382,3 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     );
   }
 }
-
-

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
+import 'package:go_router/go_router.dart';
 
 import '../bloc/after_sales_bloc.dart'; // Import Bloc, Event, State
 import '../../domain/entities/after_sales_application.dart'; // Import Entity
 // Correct import path for DI container if using getIt directly (less common in UI)
 import '../../../../app/di/injection_container.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/repositories/i_chat_repository.dart';
 
 
 /// 售后详情页面
@@ -27,6 +29,8 @@ class AfterSalesDetailPage extends StatefulWidget { // Changed to StatefulWidget
 class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
   AfterSalesApplication? _loadedApplication;
   bool _mediationRequested = false;
+  bool _isOpeningChat = false;
+  late final IChatRepository _chatRepository = getIt<IChatRepository>();
 
   @override
   void initState() {
@@ -198,6 +202,64 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
       }
     }
     context.read<AfterSalesBloc>().add(LoadAfterSalesDetail(id: widget.id));
+  }
+
+  Future<void> _openChat(BuildContext context, AfterSalesApplication application) async {
+    if (_isOpeningChat) return;
+    final tenantId = application.tenantId;
+    if (tenantId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('无法获取卖家信息')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isOpeningChat = true;
+    });
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final result = await _chatRepository.createRoom(
+        tenantId,
+        productId: application.productId,
+      );
+
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+
+      result.fold(
+        (failure) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('创建聊天失败: ${failure.message}')),
+          );
+        },
+        (chatId) {
+          if (!mounted) return;
+          GoRouter.of(context).go('/chat/refactored/$chatId');
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('打开聊天室失败: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isOpeningChat = false;
+        });
+      }
+    }
   }
 
   // Status Header - matching order detail page style
@@ -461,6 +523,11 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
     return _normalizeStatus(status) == 'auditrefused' || _normalizeStatus(finalState) == 'refused';
   }
 
+  bool _canCancelApplication(AfterSalesApplication application) {
+    final status = _normalizeStatus(application.refundState);
+    return status == 'waitaudit' || status == 'auditpass';
+  }
+
   // Product Information Card - matching order detail page style
   Widget _buildRefundInfoCard(BuildContext context, ColorScheme colorScheme, TextTheme textTheme, AfterSalesApplication application) {
     return Container(
@@ -544,7 +611,27 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
       final actionButtons = <Widget>[];
       final isActionLoading = state is AfterSalesActionLoading;
 
-      if (application.refundState.toLowerCase() == 'wait_audit' || application.refundState.toLowerCase() == 'audit_pass') {
+      if (application.tenantId != null) {
+        actionButtons.add(
+          OutlinedButton(
+            onPressed: isActionLoading || _isOpeningChat
+                ? null
+                : () => _openChat(context, application),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: colorScheme.primary),
+              foregroundColor: colorScheme.primary,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              textStyle: Theme.of(context).textTheme.labelMedium,
+            ),
+            child: Text(_isOpeningChat ? '打开中...' : '去聊天室沟通'),
+          ),
+        );
+      }
+
+      if (_canCancelApplication(application)) {
+        if (actionButtons.isNotEmpty) {
+          actionButtons.add(const SizedBox(width: 8));
+        }
         actionButtons.add(
           OutlinedButton(
             onPressed: isActionLoading
@@ -564,7 +651,9 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
       }
 
       if (_canApplyMediation(application) && !_mediationRequested) {
-        actionButtons.add(const SizedBox(width: 8));
+        if (actionButtons.isNotEmpty) {
+          actionButtons.add(const SizedBox(width: 8));
+        }
         actionButtons.add(
           OutlinedButton(
             onPressed: isActionLoading
@@ -583,14 +672,20 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
         );
       }
 
+      if (actionButtons.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         decoration: BoxDecoration(
            color: Theme.of(context).scaffoldBackgroundColor,
            border: Border(top: BorderSide(color: Colors.grey[300]!, width: 0.5)),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
+        child: Wrap(
+          alignment: WrapAlignment.end,
+          spacing: 8,
+          runSpacing: 8,
           children: actionButtons, // Use the dynamically generated list
         ),
      );

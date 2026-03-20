@@ -72,9 +72,11 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_aut
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/time_management_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/auto_reply_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/after_sales_detail_page.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/pages/after_sales_review_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/order_delivery_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/seller_statistics_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_statistics/seller_statistics_bloc.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/after_sales_review/after_sales_review_bloc.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/pages/chat_list_page.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_list/chat_list_bloc.dart';
 
@@ -776,6 +778,19 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             source: 'app_navigation_seller',
           );
         },
+      ),
+      GoRoute(
+        path: '/seller/after-sales',
+        name: 'sellerAfterSalesReview',
+        pageBuilder: (context, state) => state.buildSmartPage(
+          BlocProvider(
+            create: (_) => GetIt.instance<AfterSalesReviewBloc>()
+              ..add(LoadAfterSalesList()),
+            child: const AfterSalesReviewPage(),
+          ),
+          name: 'sellerAfterSalesReview',
+          source: 'app_navigation_seller',
+        ),
       ),
 
       // Mock预览路由 - 用于测试各种订单状态
