@@ -14,6 +14,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dskk_flutter_refactor/core/network/interceptors/app_info_interceptor.dart';
 import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
 import 'package:dskk_flutter_refactor/core/network/header_interceptor.dart';
+import 'package:dskk_flutter_refactor/core/network/interceptors/unauthorized_logout_handler.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:dskk_flutter_refactor/core/services/image_compress_service.dart';
 
@@ -268,12 +269,12 @@ Future<void> registerCoreDependencies() async {
         if (path.contains('/api/chat/list') ||
             path.contains('/api/chat/messages')) {
           // 只记录基本信息，不记录响应体
-          AppLogger.d('[HTTP] ${response.requestOptions.method} ${path} - Status: ${response.statusCode}');
+          AppLogger.d('[HTTP] ${response.requestOptions.method} $path - Status: ${response.statusCode}');
         } else {
           // 对其他请求使用PrettyDioLogger
           // 这里无法直接调用PrettyDioLogger，所以只记录简单日志
           if (response.statusCode != 200 && response.statusCode != 201) {
-            AppLogger.d('[HTTP] ${response.requestOptions.method} ${path} - Status: ${response.statusCode}');
+            AppLogger.d('[HTTP] ${response.requestOptions.method} $path - Status: ${response.statusCode}');
             if (response.data != null) {
               final dataStr = response.data.toString();
               if (dataStr.length < 1000) {
@@ -393,5 +394,11 @@ class AuthInterceptor extends Interceptor {
       AppLogger.d('[AuthInterceptor] Error reading token from secure storage: $e');
       return null;
     }
+  }
+
+  @override
+  Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
+    await UnauthorizedLogoutHandler.handle(err);
+    handler.next(err);
   }
 }

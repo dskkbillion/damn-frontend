@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:io';
+import 'package:dskk_flutter_refactor/core/network/interceptors/unauthorized_logout_handler.dart';
 
 class ApiClient {
   final Dio _dio;
@@ -104,6 +105,10 @@ class ApiClient {
         }
         
         handler.next(options);
+      },
+      onError: (err, handler) async {
+        await UnauthorizedLogoutHandler.handle(err);
+        handler.next(err);
       },
     );
   }

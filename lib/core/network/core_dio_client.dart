@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import s
 // import 'package:pretty_dio_logger/pretty_dio_logger.dart'; // 暂时不使用，避免大量日志输出
 import 'interceptors/app_info_interceptor.dart'; // Import the new interceptor
 import 'interceptors/cache_interceptor.dart'; // Import cache interceptor
+import 'interceptors/unauthorized_logout_handler.dart';
 
 // import 'interceptors/auth_interceptor.dart';
 // import 'interceptors/pretty_log_interceptor.dart';
@@ -228,4 +229,10 @@ class AuthInterceptor extends Interceptor {
       return null; // Return null on error
     }
   }
-} 
+
+  @override
+  Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
+    await UnauthorizedLogoutHandler.handle(err);
+    handler.next(err);
+  }
+}
