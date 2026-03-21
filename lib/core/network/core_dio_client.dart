@@ -16,8 +16,10 @@ import 'interceptors/unauthorized_logout_handler.dart';
 class CoreDioClient {
   late final Dio dio;
   final FlutterSecureStorage _secureStorage;
-  final AppInfoInterceptor _appInfoInterceptor; // Add AppInfoInterceptor dependency
-  final SmartCacheInterceptor? _cacheInterceptor; // Cache interceptor (optional)
+  final AppInfoInterceptor
+      _appInfoInterceptor; // Add AppInfoInterceptor dependency
+  final SmartCacheInterceptor?
+      _cacheInterceptor; // Cache interceptor (optional)
 
   CoreDioClient(
     @Named('baseUrl') String baseUrl,
@@ -28,9 +30,10 @@ class CoreDioClient {
     AppLogger.d('[CoreDioClient] Initializing with baseUrl: $baseUrl');
     try {
       if (baseUrl.isEmpty) {
-        throw Exception('[CoreDioClient] BACKEND_BASE_URL is null or empty. Cannot initialize Dio.');
+        throw Exception(
+            '[CoreDioClient] BACKEND_BASE_URL is null or empty. Cannot initialize Dio.');
       }
-      
+
       final options = BaseOptions(
         baseUrl: baseUrl,
         connectTimeout: const Duration(seconds: 15),
@@ -40,7 +43,7 @@ class CoreDioClient {
 
       // Add interceptors
       // Pass the injected storage to AuthInterceptor
-      final authInterceptor = AuthInterceptor(_secureStorage); 
+      final authInterceptor = AuthInterceptor(_secureStorage);
       // Comment out PrettyLogInterceptor due to persistent Linter issues
       // final logInterceptor = PrettyLogInterceptor(
       //     requestHeader: true,
@@ -50,7 +53,7 @@ class CoreDioClient {
       //     error: true,
       //     compact: true,
       //     maxWidth: 90);
-      
+
       // Add custom LogInterceptor with conditional response body logging
       final basicLogInterceptor = LogInterceptor(
           requestBody: true,
@@ -64,10 +67,10 @@ class CoreDioClient {
                 !logStr.contains('productVo')) {
               AppLogger.d(logStr);
             }
-          }
-      );
+          });
 
-      dio.interceptors.add(_appInfoInterceptor); // Add AppInfoInterceptor FIRST (or adjust order as needed)
+      dio.interceptors.add(
+          _appInfoInterceptor); // Add AppInfoInterceptor FIRST (or adjust order as needed)
 
       // 添加缓存拦截器（如果提供了）
       if (_cacheInterceptor != null) {
@@ -78,11 +81,12 @@ class CoreDioClient {
       dio.interceptors.add(authInterceptor);
       // dio.interceptors.add(logInterceptor); // Keep commented out
       dio.interceptors.add(basicLogInterceptor); // Add the built-in logger
-      
+
       AppLogger.d('[CoreDioClient] Dio initialized successfully.');
     } catch (e) {
       AppLogger.d('[CoreDioClient] Error initializing Dio: $e');
-      throw Exception('[CoreDioClient] Failed to initialize Dio due to error: $e'); 
+      throw Exception(
+          '[CoreDioClient] Failed to initialize Dio due to error: $e');
     }
   }
 
@@ -104,7 +108,7 @@ class CoreDioClient {
     );
   }
 
-   Future<Response<T>> post<T>(
+  Future<Response<T>> post<T>(
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
@@ -113,7 +117,7 @@ class CoreDioClient {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) {
-     return dio.post(
+    return dio.post(
       path,
       data: data,
       queryParameters: queryParameters,
@@ -122,9 +126,9 @@ class CoreDioClient {
       onSendProgress: onSendProgress,
       onReceiveProgress: onReceiveProgress,
     );
-   }
+  }
 
-    Future<Response<T>> put<T>(
+  Future<Response<T>> put<T>(
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
@@ -133,7 +137,7 @@ class CoreDioClient {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) {
-     return dio.put(
+    return dio.put(
       path,
       data: data,
       queryParameters: queryParameters,
@@ -142,44 +146,45 @@ class CoreDioClient {
       onSendProgress: onSendProgress,
       onReceiveProgress: onReceiveProgress,
     );
-   }
+  }
 
-    Future<Response<T>> delete<T>(
+  Future<Response<T>> delete<T>(
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
   }) {
-     return dio.delete(
+    return dio.delete(
       path,
       data: data,
       queryParameters: queryParameters,
       options: options,
       cancelToken: cancelToken,
     );
-   }
+  }
 
-   // Method for file uploads
-   Future<Response<T>> postMultipart<T>(
-     String path, {
-     required FormData formData,
-     Map<String, dynamic>? queryParameters,
-     Options? options,
-     CancelToken? cancelToken,
-     ProgressCallback? onSendProgress,
-     ProgressCallback? onReceiveProgress,
-   }) {
-      return dio.post(
-        path,
-        data: formData,
-        queryParameters: queryParameters,
-        options: options ?? Options(contentType: 'multipart/form-data'), // Ensure content type
-        cancelToken: cancelToken,
-        onSendProgress: onSendProgress,
-        onReceiveProgress: onReceiveProgress,
-      );
-   }
+  // Method for file uploads
+  Future<Response<T>> postMultipart<T>(
+    String path, {
+    required FormData formData,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) {
+    return dio.post(
+      path,
+      data: formData,
+      queryParameters: queryParameters,
+      options: options ??
+          Options(contentType: 'multipart/form-data'), // Ensure content type
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+  }
 }
 
 // Auth Interceptor using FlutterSecureStorage
@@ -190,27 +195,31 @@ class AuthInterceptor extends Interceptor {
   AuthInterceptor(this._storage); // Constructor to receive storage
 
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+  void onRequest(
+      RequestOptions options, RequestInterceptorHandler handler) async {
     // Skip adding token for auth endpoints
-    if (options.path.contains('/api/auth/login') || 
+    if (options.path.contains('/api/auth/login') ||
         options.path.contains('/api/auth/register') ||
         options.path.contains('/api/auth/sms')) {
-      AppLogger.d('[AuthInterceptor] Skipping token for auth path: ${options.path}');
+      AppLogger.d(
+          '[AuthInterceptor] Skipping token for auth path: ${options.path}');
       return handler.next(options);
     }
 
-    // --- Restore async logic --- 
+    // --- Restore async logic ---
     String? token = await _getAuthToken();
     if (token != null && token.isNotEmpty) {
       // Add Bearer prefix and use correct key
-      options.headers['Authorization'] = 'Bearer $token'; 
-      AppLogger.d('[AuthInterceptor] Added Bearer token to Authorization header.'); // Updated log
+      options.headers['Authorization'] = 'Bearer $token';
+      AppLogger.d(
+          '[AuthInterceptor] Added Bearer token to Authorization header.'); // Updated log
     } else {
-       AppLogger.d('[AuthInterceptor] No token found. Request proceeding without Authorization header.');
+      AppLogger.d(
+          '[AuthInterceptor] No token found. Request proceeding without Authorization header.');
     }
     // --- End restore ---
-    
-    handler.next(options); 
+
+    handler.next(options);
   }
 
   Future<String?> _getAuthToken() async {
@@ -221,18 +230,28 @@ class AuthInterceptor extends Interceptor {
       if (token != null) {
         AppLogger.d('[AuthInterceptor] Token retrieved from secure storage.');
       } else {
-        AppLogger.d('[AuthInterceptor] Token not found in secure storage (key: $storageKey).');
+        AppLogger.d(
+            '[AuthInterceptor] Token not found in secure storage (key: $storageKey).');
       }
       return token;
     } catch (e) {
-      AppLogger.d('[AuthInterceptor] Error reading token from secure storage: $e');
+      AppLogger.d(
+          '[AuthInterceptor] Error reading token from secure storage: $e');
       return null; // Return null on error
     }
   }
 
   @override
-  Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
+  Future<void> onError(
+      DioException err, ErrorInterceptorHandler handler) async {
     await UnauthorizedLogoutHandler.handle(err);
     handler.next(err);
+  }
+
+  @override
+  Future<void> onResponse(
+      Response response, ResponseInterceptorHandler handler) async {
+    await UnauthorizedLogoutHandler.handleResponse(response);
+    handler.next(response);
   }
 }

@@ -31,7 +31,7 @@ class ApiClient {
             'Content-Type': 'application/json',
             // 移除重复的Header设置，让AppInfoInterceptor负责设置:
             // - client
-            // - version  
+            // - version
             // - clienttype
             // 移除静态token，让AuthInterceptor动态获取
           },
@@ -43,10 +43,10 @@ class ApiClient {
     if (!_instance!._dio.interceptors.any((i) => i is LogInterceptor)) {
       // 添加AppInfo拦截器
       _instance!._dio.interceptors.add(_createAppInfoInterceptor());
-      
+
       // 添加Auth拦截器（动态获取Token）
       _instance!._dio.interceptors.add(_createAuthInterceptor());
-      
+
       // 添加日志拦截器
       _instance!._dio.interceptors.add(
         LogInterceptor(
@@ -69,9 +69,11 @@ class ApiClient {
       onRequest: (options, handler) {
         // 添加后端期望的头信息
         options.headers['clienttype'] = '1'; // 固定值
-        options.headers['client'] = Platform.isAndroid ? 'android' : (Platform.isIOS ? 'ios' : 'unknown');
+        options.headers['client'] = Platform.isAndroid
+            ? 'android'
+            : (Platform.isIOS ? 'ios' : 'unknown');
         options.headers['version'] = '100'; // 使用固定值100
-        
+
         handler.next(options);
       },
     );
@@ -82,7 +84,7 @@ class ApiClient {
     return InterceptorsWrapper(
       onRequest: (options, handler) async {
         // 跳过认证端点
-        if (options.path.contains('/api/auth/login') || 
+        if (options.path.contains('/api/auth/login') ||
             options.path.contains('/api/auth/register') ||
             options.path.contains('/api/auth/sms')) {
           return handler.next(options);
@@ -93,22 +95,27 @@ class ApiClient {
           const storage = FlutterSecureStorage();
           const storageKey = 'auth_token';
           final token = await storage.read(key: storageKey);
-          
+
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = token; // 直接使用token，不添加Bearer前缀
             AppLogger.d('[ApiClient AuthInterceptor] Added token to request');
           } else {
-            AppLogger.d('[ApiClient AuthInterceptor] No token found in secure storage');
+            AppLogger.d(
+                '[ApiClient AuthInterceptor] No token found in secure storage');
           }
         } catch (e) {
           AppLogger.d('[ApiClient AuthInterceptor] Error reading token: $e');
         }
-        
+
         handler.next(options);
       },
       onError: (err, handler) async {
         await UnauthorizedLogoutHandler.handle(err);
         handler.next(err);
+      },
+      onResponse: (response, handler) async {
+        await UnauthorizedLogoutHandler.handleResponse(response);
+        handler.next(response);
       },
     );
   }
