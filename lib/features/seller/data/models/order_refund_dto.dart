@@ -10,37 +10,49 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/order_refu
 class OrderRefundDto {
   /// 退款ID
   final int? id;
-  
+
   /// 申请人ID
   final int? creatorId;
-  
+
   /// 退款状态
   final String? refundState;
-  
+
   /// 退款类型
   final String? refundType;
-  
+
   /// 退款原因
   final String? refundReason;
-  
+
+  final String? refundExplain;
+
+  final String? refundSn;
+
   /// 退款备注
   final String? refundRemarks;
-  
+
   /// 退款金额
   final double? refundAmount;
-  
+
+  final double? refundPrice;
+
   /// 审核备注
   final String? auditRemark;
-  
+
   /// 创建时间
   final String? createTime;
-  
+
+  final String? auditTime;
+
+  final String? finishTime;
+
   /// 图片列表
   final List<String>? images;
-  
+
   /// 订单信息
   final Map<String, dynamic>? order;
-  
+
+  final Map<String, dynamic>? orderVo;
+
   /// 订单商品项
   final Map<String, dynamic>? orderProductItem;
 
@@ -51,12 +63,18 @@ class OrderRefundDto {
     this.refundState,
     this.refundType,
     this.refundReason,
+    this.refundExplain,
+    this.refundSn,
     this.refundRemarks,
     this.refundAmount,
+    this.refundPrice,
     this.auditRemark,
     this.createTime,
+    this.auditTime,
+    this.finishTime,
     this.images,
     this.order,
+    this.orderVo,
     this.orderProductItem,
   });
 
@@ -68,53 +86,66 @@ class OrderRefundDto {
       refundState: json['refundState'] as String?,
       refundType: json['refundType'] as String?,
       refundReason: json['refundReason'] as String?,
+      refundExplain: json['refundExplain'] as String?,
+      refundSn: json['refundSn'] as String?,
       refundRemarks: json['refundRemarks'] as String?,
       refundAmount: (json['refundAmount'] as num?)?.toDouble(),
+      refundPrice: (json['refundPrice'] as num?)?.toDouble(),
       auditRemark: json['auditRemark'] as String?,
       createTime: json['createTime'] as String?,
-      images: (json['images'] as List<dynamic>?)?.map((e) => e as String).toList(),
+      auditTime: json['auditTime'] as String?,
+      finishTime: json['finishTime'] as String?,
+      images: ((json['images'] ?? json['credentials']) as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
       order: json['order'] as Map<String, dynamic>?,
+      orderVo: json['orderVo'] as Map<String, dynamic>?,
       orderProductItem: json['orderProductItem'] as Map<String, dynamic>?,
     );
   }
 
   /// 转换为领域实体
   OrderRefund toEntity() {
-    DateTime? parsedCreateTime;
-    
-    try {
-      if (createTime != null && createTime!.isNotEmpty) {
-        parsedCreateTime = DateTime.parse(createTime!);
-      }
-    } catch (_) {
-      // 如果解析失败，使用当前时间
-      parsedCreateTime = DateTime.now();
-    }
-
-    // // 解析商品项数据 (暂时不需要，OrderRefund 实体没有直接包含这些)
-    // OrderProductItemDto? productItemDto;
-    // if (orderProductItem != null) {
-    //   productItemDto = OrderProductItemDto.fromJson(orderProductItem!);
-    // }
+    final orderData = orderVo ?? order;
+    final parsedCreateTime = _parseDateTime(createTime) ?? DateTime.now();
+    final parsedAuditTime = _parseDateTime(auditTime);
+    final parsedFinishTime = _parseDateTime(finishTime);
+    final resolvedRefundPrice = refundPrice ?? refundAmount ?? 0.0;
 
     return OrderRefund(
       id: id ?? 0,
-      orderId: order?['id'] as int? ?? 0,
-      orderSn: order?['orderSn'] as String? ?? '',
-      refundSn: id?.toString() ?? 'unknown', // 使用 id 作为占位符
-      refundPrice: ((refundAmount ?? 0.0) * 100).toInt(), // 转换为分
-      reason: refundReason ?? '',
-      credentials: images ?? [], // 使用 images 填充 credentials
+      orderId: (orderData?['id'] as int?) ?? 0,
+      orderSn: (jsonString(orderData?['orderSn']) ??
+          jsonString(orderData?['orderNo']) ??
+          jsonString(orderData?['sn']) ??
+          ''),
+      refundSn: refundSn ?? id?.toString() ?? 'unknown',
+      refundPrice: (resolvedRefundPrice * 100).toInt(),
+      reason: refundReason ?? refundExplain ?? '',
+      credentials: images ?? [],
       state: OrderRefundState.fromValue(refundState ?? ''),
       type: RefundType.fromValue(refundType ?? ''),
-      applyTime: parsedCreateTime ?? DateTime.now(), // 使用 createTime
-      // 可选参数可以保持默认 null
-      // auditTime: ..., 
-      // finishTime: ..., 
-      // refuseReason: ..., 
-      // receiveAddress: ..., 
-      // ...
+      applyTime: parsedCreateTime,
+      auditTime: parsedAuditTime,
+      finishTime: parsedFinishTime,
+      refuseReason: auditRemark,
     );
+  }
+
+  DateTime? _parseDateTime(String? value) {
+    if (value == null || value.isEmpty) {
+      return null;
+    }
+    try {
+      return DateTime.parse(value.replaceFirst(' ', 'T'));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String? jsonString(dynamic value) {
+    if (value == null) return null;
+    return value.toString();
   }
 
   /// 转换为JSON
@@ -125,12 +156,18 @@ class OrderRefundDto {
       if (refundState != null) 'refundState': refundState,
       if (refundType != null) 'refundType': refundType,
       if (refundReason != null) 'refundReason': refundReason,
+      if (refundExplain != null) 'refundExplain': refundExplain,
+      if (refundSn != null) 'refundSn': refundSn,
       if (refundRemarks != null) 'refundRemarks': refundRemarks,
       if (refundAmount != null) 'refundAmount': refundAmount,
+      if (refundPrice != null) 'refundPrice': refundPrice,
       if (auditRemark != null) 'auditRemark': auditRemark,
       if (createTime != null) 'createTime': createTime,
+      if (auditTime != null) 'auditTime': auditTime,
+      if (finishTime != null) 'finishTime': finishTime,
       if (images != null) 'images': images,
       if (order != null) 'order': order,
+      if (orderVo != null) 'orderVo': orderVo,
       if (orderProductItem != null) 'orderProductItem': orderProductItem,
     };
   }
@@ -140,7 +177,7 @@ class OrderRefundDto {
 class PaginatedListDto<T> {
   /// 总记录数
   final int total;
-  
+
   /// 记录列表
   final List<T> records;
 
@@ -151,12 +188,12 @@ class PaginatedListDto<T> {
 
   /// 从JSON创建分页列表DTO
   factory PaginatedListDto.fromJson(
-      Map<String, dynamic> json,
-      T Function(Map<String, dynamic>) fromJson,
-      ) {
+    Map<String, dynamic> json,
+    T Function(Map<String, dynamic>) fromJson,
+  ) {
     // 优先尝试解析 'rows' 字段 (根据API日志)，如果不存在则回退到 'records'
     final listData = json['rows'] ?? json['records'];
-    
+
     return PaginatedListDto<T>(
       total: json['total'] as int? ?? 0,
       records: (listData as List<dynamic>?)
@@ -165,4 +202,4 @@ class PaginatedListDto<T> {
           [],
     );
   }
-} 
+}
