@@ -17,6 +17,7 @@ class AfterSalesRemoteDataSource implements IAfterSalesRemoteDataSource {
   final String _applyEndpoint = '/api/shop/order-refund/apply';
   final String _listEndpoint = '/api/shop/order-refund/list';
   final String _detailEndpoint = '/api/shop/order-refund/detail'; // Base path
+  final String _caseDetailEndpoint = '/api/shop/order-refund/case-detail';
   final String _cancelEndpoint = '/api/shop/order-refund/cancel';
   final String _applyMediationEndpoint = '/api/shop/order-refund/apply-mediation';
   final String _deleteEndpoint = '/api/shop/order-refund/delete';
@@ -98,11 +99,10 @@ class AfterSalesRemoteDataSource implements IAfterSalesRemoteDataSource {
 
   @override
   Future<AfterSalesApplicationModel> getAfterSalesDetail(int refundId) async {
-     final queryParameters = {'id': refundId}; // API doc uses 'id' query param
+     final queryParameters = {'refundId': refundId};
 
     try {
-       // API doc says GET for detail
-      final response = await _dioClient.get(_detailEndpoint, queryParameters: queryParameters);
+      final response = await _dioClient.get(_caseDetailEndpoint, queryParameters: queryParameters);
       
       AppLogger.d('[AfterSalesRemoteDataSource] getAfterSalesDetail response: ${response.data}');
       
@@ -119,7 +119,9 @@ class AfterSalesRemoteDataSource implements IAfterSalesRemoteDataSource {
         }
         
         if (responseData is Map) {
-          return AfterSalesApplicationModel.fromJson(responseData as Map<String, dynamic>);
+          return AfterSalesApplicationModel.fromCaseDetailJson(
+            responseData as Map<String, dynamic>,
+          );
         } else {
           throw ServerException(
             message: '服务器返回数据格式错误', 
@@ -133,6 +135,19 @@ class AfterSalesRemoteDataSource implements IAfterSalesRemoteDataSource {
         );
       }
     } on DioException catch (e) {
+      if (e.response?.statusCode == 404 || e.response?.statusCode == 500) {
+        AppLogger.d('[AfterSalesRemoteDataSource] case-detail failed, fallback to legacy detail: ${e.message}');
+        final fallbackResponse = await _dioClient.get(
+          _detailEndpoint,
+          queryParameters: {'id': refundId},
+        );
+        if (fallbackResponse.data != null && fallbackResponse.data['code'] == 200) {
+          final responseData = fallbackResponse.data['data'];
+          if (responseData is Map<String, dynamic>) {
+            return AfterSalesApplicationModel.fromJson(responseData);
+          }
+        }
+      }
       throw ServerException(message: e.message, statusCode: e.response?.statusCode);
     } catch (e) {
        throw ServerException(message: 'An unexpected error occurred: ${e.toString()}');

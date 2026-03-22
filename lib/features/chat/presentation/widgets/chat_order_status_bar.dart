@@ -7,6 +7,7 @@ import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_room.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/repositories/i_order_repository.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/utils/order_status_mapper.dart';
 
@@ -85,7 +86,8 @@ class _ChatOrderStatusBarState extends State<ChatOrderStatusBar> {
       (orders) {
         final sortedOrders = [...orders]
           ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-        final exactMatches = sortedOrders.where(_matchesCurrentConversation).toList();
+        final exactMatches =
+            sortedOrders.where(_matchesCurrentConversation).toList();
 
         setState(() {
           _isLoading = false;
@@ -106,7 +108,8 @@ class _ChatOrderStatusBarState extends State<ChatOrderStatusBar> {
       return false;
     }
 
-    final hasMatchedProduct = order.items.any((item) => item.productId == productId);
+    final hasMatchedProduct =
+        order.items.any((item) => item.productId == productId);
     final hasMatchedBuyer = order.buyer?.id == buyerReferId;
     final hasMatchedSeller = order.tenant?.id == sellerReferId;
 
@@ -142,8 +145,38 @@ class _ChatOrderStatusBarState extends State<ChatOrderStatusBar> {
 
   void _openOrder(Order order) {
     final isSellerView = widget.chatRoom.participant1.type == 'DOCTOR';
-    final route = isSellerView ? '/seller/orders/${order.id}' : '/orderDetail/${order.id}';
+    final route = _resolveTargetRoute(order, isSellerView: isSellerView);
     context.push(route);
+  }
+
+  String _resolveTargetRoute(Order order, {required bool isSellerView}) {
+    if (_shouldOpenAfterSalesDetail(order)) {
+      if (!isSellerView) {
+        if (order.refundId != null) {
+          return '/afterSalesDetail/${order.refundId}?mode=refund';
+        }
+        return '/afterSalesDetail/${order.id}?mode=order';
+      }
+
+      if (order.refundId != null) {
+        return '/seller/after-sales/${order.refundId}';
+      }
+    }
+
+    return isSellerView
+        ? '/seller/orders/${order.id}'
+        : '/orderDetail/${order.id}';
+  }
+
+  bool _shouldOpenAfterSalesDetail(Order order) {
+    switch (order.state) {
+      case OrderStatus.afterSale:
+      case OrderStatus.AfterSaleRejection:
+      case OrderStatus.applyingForMediation:
+        return true;
+      default:
+        return false;
+    }
   }
 
   @override
@@ -226,7 +259,8 @@ class _ChatOrderStatusBarState extends State<ChatOrderStatusBar> {
                       color: statusColor.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(Icons.receipt_long, size: 18, color: statusColor),
+                    child:
+                        Icon(Icons.receipt_long, size: 18, color: statusColor),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -236,7 +270,9 @@ class _ChatOrderStatusBarState extends State<ChatOrderStatusBar> {
                         Row(
                           children: [
                             Text(
-                              multipleOrders ? '共${_orders.length}笔相关订单' : '当前关联订单',
+                              multipleOrders
+                                  ? '共${_orders.length}笔相关订单'
+                                  : '当前关联订单',
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -244,7 +280,8 @@ class _ChatOrderStatusBarState extends State<ChatOrderStatusBar> {
                             ),
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
                                 color: statusColor.withOpacity(0.12),
                                 borderRadius: BorderRadius.circular(999),
@@ -342,7 +379,8 @@ class _OrderListTile extends StatelessWidget {
       order.state,
       isSellerView: isSellerView,
     );
-    final statusColor = OrderStatusMapper.getSimplifiedStatusColor(order.state, context);
+    final statusColor =
+        OrderStatusMapper.getSimplifiedStatusColor(order.state, context);
 
     return InkWell(
       onTap: onTap,

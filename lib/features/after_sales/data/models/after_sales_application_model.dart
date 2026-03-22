@@ -1,6 +1,24 @@
 import '../../../../core/utils/data_mapper.dart'; // Assuming you have helper for safe parsing
 import '../../domain/entities/after_sales_application.dart';
 
+class AfterSalesTimelineItemModel extends AfterSalesTimelineItem {
+  const AfterSalesTimelineItemModel({
+    required super.id,
+    super.remark,
+    super.reason,
+    super.createTime,
+  });
+
+  factory AfterSalesTimelineItemModel.fromJson(Map<String, dynamic> json) {
+    return AfterSalesTimelineItemModel(
+      id: DataMapper.toInt(json['id']),
+      remark: DataMapper.toStringN(json['remark']),
+      reason: DataMapper.toStringN(json['reason']),
+      createTime: DataMapper.toDateTimeN(json['createTime']),
+    );
+  }
+}
+
 class AfterSalesApplicationModel extends AfterSalesApplication {
   const AfterSalesApplicationModel({
     required super.id,
@@ -35,6 +53,9 @@ class AfterSalesApplicationModel extends AfterSalesApplication {
     super.orderState,
     super.createTime,
     super.updateTime,
+    super.chatRoomId,
+    super.mediationEligible,
+    super.timeline,
   });
 
   factory AfterSalesApplicationModel.fromJson(Map<String, dynamic> json) {
@@ -74,7 +95,32 @@ class AfterSalesApplicationModel extends AfterSalesApplication {
       orderState: DataMapper.toStringN(orderVo?['state']),
       createTime: DataMapper.toDateTimeN(json['createTime']),
       updateTime: DataMapper.toDateTimeN(json['updateTime']),
+      chatRoomId: DataMapper.toIntN(json['chatRoomId']),
+      mediationEligible: json['mediationEligible'] == null
+          ? null
+          : DataMapper.toBool(json['mediationEligible']),
+      timeline: (json['timeline'] as List?)
+          ?.whereType<Map<String, dynamic>>()
+          .map(AfterSalesTimelineItemModel.fromJson)
+          .toList(),
     );
+  }
+
+  factory AfterSalesApplicationModel.fromCaseDetailJson(Map<String, dynamic> json) {
+    final refund = json['refund'] is Map<String, dynamic>
+        ? json['refund'] as Map<String, dynamic>
+        : <String, dynamic>{};
+    final order = json['order'] is Map<String, dynamic>
+        ? json['order'] as Map<String, dynamic>
+        : <String, dynamic>{};
+
+    return AfterSalesApplicationModel.fromJson({
+      ...refund,
+      'orderVo': order,
+      'chatRoomId': json['chatRoomId'],
+      'mediationEligible': json['mediationEligible'],
+      'timeline': json['timeline'],
+    });
   }
 
   // toJson might be needed if you ever need to send the full object back,

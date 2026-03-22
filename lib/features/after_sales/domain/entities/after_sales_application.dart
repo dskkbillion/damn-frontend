@@ -1,5 +1,22 @@
 import 'package:equatable/equatable.dart';
 
+class AfterSalesTimelineItem extends Equatable {
+  final int id;
+  final String? remark;
+  final String? reason;
+  final DateTime? createTime;
+
+  const AfterSalesTimelineItem({
+    required this.id,
+    this.remark,
+    this.reason,
+    this.createTime,
+  });
+
+  @override
+  List<Object?> get props => [id, remark, reason, createTime];
+}
+
 /// Represents the core data of an after-sales (refund) application.
 /// Maps to the `OrderRefund` object from the backend API.
 class AfterSalesApplication extends Equatable {
@@ -35,6 +52,9 @@ class AfterSalesApplication extends Equatable {
   final String? orderState;
   final DateTime? createTime;
   final DateTime? updateTime;
+  final int? chatRoomId;
+  final bool? mediationEligible;
+  final List<AfterSalesTimelineItem>? timeline;
   // TODO: Potentially add associated Order or OrderItem objects if needed later
 
   const AfterSalesApplication({
@@ -70,6 +90,9 @@ class AfterSalesApplication extends Equatable {
     this.orderState,
     this.createTime,
     this.updateTime,
+    this.chatRoomId,
+    this.mediationEligible,
+    this.timeline,
   });
 
   // Helper factory for creating from JSON (implementation will be in data layer)
@@ -113,5 +136,8 @@ class AfterSalesApplication extends Equatable {
         orderState,
         createTime,
         updateTime,
+        chatRoomId,
+        mediationEligible,
+        timeline,
       ];
 } 
