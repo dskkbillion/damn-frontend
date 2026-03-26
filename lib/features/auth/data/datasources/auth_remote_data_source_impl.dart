@@ -32,10 +32,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<AuthenticatedUserModel> loginWithVerificationCode(
       VerificationCodeCredentials credentials) async {
     const String endpoint = '/api/auth/login';
+    final bool isEmail = credentials.phone.contains('@');
     final Map<String, dynamic> data = {
       'mobile': credentials.phone,
       'code': credentials.code,
-      'scene': 'sms_code_login',
+      'scene': isEmail ? 'email_code_login' : 'sms_code_login',
     };
 
     AppLogger.d('===== 登录 =====');

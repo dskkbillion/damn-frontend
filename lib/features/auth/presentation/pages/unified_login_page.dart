@@ -24,7 +24,7 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
   final TextEditingController _codeController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late CountryCode _selectedCountry;
-  LoginMode _loginMode = LoginMode.phone;
+  LoginMode _loginMode = LoginMode.email;
   
 
   @override
@@ -150,9 +150,9 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                           children: [
                             Expanded(
                               child: _buildModeButton(
-                                mode: LoginMode.phone,
-                                icon: Icons.phone,
-                                label: '手机号',
+                                mode: LoginMode.email,
+                                icon: Icons.email,
+                                label: '邮箱',
                               ),
                             ),
                             Container(
@@ -162,9 +162,9 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                             ),
                             Expanded(
                               child: _buildModeButton(
-                                mode: LoginMode.email,
-                                icon: Icons.email,
-                                label: '邮箱',
+                                mode: LoginMode.phone,
+                                icon: Icons.phone,
+                                label: '手机号',
                               ),
                             ),
                           ],
