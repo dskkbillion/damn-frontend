@@ -22,6 +22,7 @@ UserInfoModel _$UserInfoModelFromJson(Map<String, dynamic> json) {
 mixin _$UserInfoModel {
   int get id => throw _privateConstructorUsedError;
   String? get mobile => throw _privateConstructorUsedError;
+  String? get email => throw _privateConstructorUsedError;
   String? get nickName => throw _privateConstructorUsedError;
   String? get avatar => throw _privateConstructorUsedError;
   int? get commonUserId => throw _privateConstructorUsedError;
@@ -45,6 +46,7 @@ abstract class $UserInfoModelCopyWith<$Res> {
   $Res call(
       {int id,
       String? mobile,
+      String? email,
       String? nickName,
       String? avatar,
       int? commonUserId});
@@ -67,6 +69,7 @@ class _$UserInfoModelCopyWithImpl<$Res, $Val extends UserInfoModel>
   $Res call({
     Object? id = null,
     Object? mobile = freezed,
+    Object? email = freezed,
     Object? nickName = freezed,
     Object? avatar = freezed,
     Object? commonUserId = freezed,
@@ -79,6 +82,10 @@ class _$UserInfoModelCopyWithImpl<$Res, $Val extends UserInfoModel>
       mobile: freezed == mobile
           ? _value.mobile
           : mobile // ignore: cast_nullable_to_non_nullable
+              as String?,
+      email: freezed == email
+          ? _value.email
+          : email // ignore: cast_nullable_to_non_nullable
               as String?,
       nickName: freezed == nickName
           ? _value.nickName
@@ -107,6 +114,7 @@ abstract class _$$UserInfoModelImplCopyWith<$Res>
   $Res call(
       {int id,
       String? mobile,
+      String? email,
       String? nickName,
       String? avatar,
       int? commonUserId});
@@ -127,6 +135,7 @@ class __$$UserInfoModelImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? mobile = freezed,
+    Object? email = freezed,
     Object? nickName = freezed,
     Object? avatar = freezed,
     Object? commonUserId = freezed,
@@ -139,6 +148,10 @@ class __$$UserInfoModelImplCopyWithImpl<$Res>
       mobile: freezed == mobile
           ? _value.mobile
           : mobile // ignore: cast_nullable_to_non_nullable
+              as String?,
+      email: freezed == email
+          ? _value.email
+          : email // ignore: cast_nullable_to_non_nullable
               as String?,
       nickName: freezed == nickName
           ? _value.nickName
@@ -162,6 +175,7 @@ class _$UserInfoModelImpl extends _UserInfoModel {
   const _$UserInfoModelImpl(
       {required this.id,
       this.mobile,
+      this.email,
       this.nickName,
       this.avatar,
       this.commonUserId})
@@ -174,6 +188,8 @@ class _$UserInfoModelImpl extends _UserInfoModel {
   final int id;
   @override
   final String? mobile;
+  @override
+  final String? email;
   @override
   final String? nickName;
   @override
@@ -201,6 +217,7 @@ abstract class _UserInfoModel extends UserInfoModel implements UserInfo {
   const factory _UserInfoModel(
       {required final int id,
       final String? mobile,
+      final String? email,
       final String? nickName,
       final String? avatar,
       final int? commonUserId}) = _$UserInfoModelImpl;
@@ -213,6 +230,8 @@ abstract class _UserInfoModel extends UserInfoModel implements UserInfo {
   int get id;
   @override
   String? get mobile;
+  @override
+  String? get email;
   @override
   String? get nickName;
   @override

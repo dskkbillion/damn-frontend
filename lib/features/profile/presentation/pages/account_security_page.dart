@@ -9,6 +9,9 @@ import '../../domain/entities/user_profile.dart';
 import 'package:get_it/get_it.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
+import 'package:dio/dio.dart';
+import 'bind_contact_page.dart';
+import '../bloc/bind_contact_cubit.dart';
 
 class AccountSecurityPage extends StatefulWidget {
   const AccountSecurityPage({Key? key}) : super(key: key);
@@ -340,7 +343,8 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
   Widget _buildMenuItems(UserProfile? profile) {
     final String nickname = profile?.nickName ?? '用户';
     final String phoneNumber = profile?.mobile ?? '';
-    
+    final String emailAddress = profile?.email ?? '';
+
     return Container(
       color: Colors.white,
       child: Column(
@@ -358,15 +362,61 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
           ),
           Divider(height: 1, color: Colors.grey.shade200),
           _buildMenuItem(
-            '已绑定手机号',
-            trailing: Text(
-              phoneNumber.isNotEmpty ? _maskPhoneNumber(phoneNumber) : '未绑定',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-              ),
+            '手机号',
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  phoneNumber.isNotEmpty ? _maskPhoneNumber(phoneNumber) : '未绑定',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                if (phoneNumber.isEmpty) ...[
+                  const SizedBox(width: 4),
+                  const Text(
+                    '绑定',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFFB66D0E),
+                    ),
+                  ),
+                ],
+              ],
             ),
-            onTap: () => _showFeatureNotImplemented('更换手机号'),
+            onTap: phoneNumber.isEmpty
+                ? () => _navigateToBindContact(BindContactType.phone)
+                : null,
+          ),
+          Divider(height: 1, color: Colors.grey.shade200),
+          _buildMenuItem(
+            '邮箱',
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  emailAddress.isNotEmpty ? _maskEmail(emailAddress) : '未绑定',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                if (emailAddress.isEmpty) ...[
+                  const SizedBox(width: 4),
+                  const Text(
+                    '绑定',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFFB66D0E),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            onTap: emailAddress.isEmpty
+                ? () => _navigateToBindContact(BindContactType.email)
+                : null,
           ),
           Divider(height: 1, color: Colors.grey.shade200),
           _buildMenuItem(
@@ -429,6 +479,32 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
     if (result == true) {
       _profileBloc.add(GetUserProfileEvent());
     }
+  }
+
+  void _navigateToBindContact(BindContactType contactType) async {
+    final dio = GetIt.instance<Dio>();
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BlocProvider(
+          create: (_) => BindContactCubit(dio: dio),
+          child: BindContactPage(contactType: contactType),
+        ),
+      ),
+    );
+
+    // 绑定成功后刷新用户资料
+    if (result == true) {
+      _profileBloc.add(GetUserProfileEvent(skipCache: true));
+    }
+  }
+
+  String _maskEmail(String email) {
+    final atIndex = email.indexOf('@');
+    if (atIndex <= 1) return email;
+    final prefix = email.substring(0, 1);
+    final domain = email.substring(atIndex);
+    return '$prefix****$domain';
   }
 
   void _showFeatureNotImplemented(String feature) {
