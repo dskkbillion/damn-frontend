@@ -21,7 +21,7 @@ UserInfoModel _$UserInfoModelFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$UserInfoModel {
   int get id => throw _privateConstructorUsedError;
-  String get mobile => throw _privateConstructorUsedError;
+  String? get mobile => throw _privateConstructorUsedError;
   String? get nickName => throw _privateConstructorUsedError;
   String? get avatar => throw _privateConstructorUsedError;
   int? get commonUserId => throw _privateConstructorUsedError;
@@ -44,7 +44,7 @@ abstract class $UserInfoModelCopyWith<$Res> {
   @useResult
   $Res call(
       {int id,
-      String mobile,
+      String? mobile,
       String? nickName,
       String? avatar,
       int? commonUserId});
@@ -66,7 +66,7 @@ class _$UserInfoModelCopyWithImpl<$Res, $Val extends UserInfoModel>
   @override
   $Res call({
     Object? id = null,
-    Object? mobile = null,
+    Object? mobile = freezed,
     Object? nickName = freezed,
     Object? avatar = freezed,
     Object? commonUserId = freezed,
@@ -76,10 +76,10 @@ class _$UserInfoModelCopyWithImpl<$Res, $Val extends UserInfoModel>
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as int,
-      mobile: null == mobile
+      mobile: freezed == mobile
           ? _value.mobile
           : mobile // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       nickName: freezed == nickName
           ? _value.nickName
           : nickName // ignore: cast_nullable_to_non_nullable
@@ -106,7 +106,7 @@ abstract class _$$UserInfoModelImplCopyWith<$Res>
   @useResult
   $Res call(
       {int id,
-      String mobile,
+      String? mobile,
       String? nickName,
       String? avatar,
       int? commonUserId});
@@ -126,7 +126,7 @@ class __$$UserInfoModelImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = null,
-    Object? mobile = null,
+    Object? mobile = freezed,
     Object? nickName = freezed,
     Object? avatar = freezed,
     Object? commonUserId = freezed,
@@ -136,10 +136,10 @@ class __$$UserInfoModelImplCopyWithImpl<$Res>
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as int,
-      mobile: null == mobile
+      mobile: freezed == mobile
           ? _value.mobile
           : mobile // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       nickName: freezed == nickName
           ? _value.nickName
           : nickName // ignore: cast_nullable_to_non_nullable
@@ -161,7 +161,7 @@ class __$$UserInfoModelImplCopyWithImpl<$Res>
 class _$UserInfoModelImpl extends _UserInfoModel {
   const _$UserInfoModelImpl(
       {required this.id,
-      required this.mobile,
+      this.mobile,
       this.nickName,
       this.avatar,
       this.commonUserId})
@@ -173,7 +173,7 @@ class _$UserInfoModelImpl extends _UserInfoModel {
   @override
   final int id;
   @override
-  final String mobile;
+  final String? mobile;
   @override
   final String? nickName;
   @override
@@ -200,7 +200,7 @@ class _$UserInfoModelImpl extends _UserInfoModel {
 abstract class _UserInfoModel extends UserInfoModel implements UserInfo {
   const factory _UserInfoModel(
       {required final int id,
-      required final String mobile,
+      final String? mobile,
       final String? nickName,
       final String? avatar,
       final int? commonUserId}) = _$UserInfoModelImpl;
@@ -212,7 +212,7 @@ abstract class _UserInfoModel extends UserInfoModel implements UserInfo {
   @override
   int get id;
   @override
-  String get mobile;
+  String? get mobile;
   @override
   String? get nickName;
   @override

@@ -9,7 +9,7 @@ part of 'user_info_model.dart';
 _$UserInfoModelImpl _$$UserInfoModelImplFromJson(Map<String, dynamic> json) =>
     _$UserInfoModelImpl(
       id: (json['id'] as num).toInt(),
-      mobile: json['mobile'] as String,
+      mobile: json['mobile'] as String?,
       nickName: json['nickName'] as String?,
       avatar: json['avatar'] as String?,
       commonUserId: (json['commonUserId'] as num?)?.toInt(),

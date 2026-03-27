@@ -9,7 +9,7 @@ class UserInfoModel with _$UserInfoModel implements UserInfo {
   @Implements<UserInfo>() // Let freezed handle Equatable via the UserInfo entity
   const factory UserInfoModel({
     required int id,
-    required String mobile,
+    String? mobile,
     String? nickName,
     String? avatar,
     int? commonUserId,
