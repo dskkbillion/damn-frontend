@@ -69,7 +69,9 @@ class _BindContactPageState extends State<BindContactPage> {
   }
 
   Future<void> _onSendCode(String contact) async {
-    if (_formKey.currentState?.validate() ?? false) {
+    // 只校验联系方式，不校验验证码字段
+    final contactError = _validateContact(contact);
+    if (contactError == null) {
       await context.read<BindContactCubit>().sendCode(contact);
     }
   }
