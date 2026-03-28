@@ -470,6 +470,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
              }
 
              // 如果不是自己发送的消息，触发聊天列表更新事件
+             // 注意：unreadCountDelta 由 WebSocket 层统一处理（感知当前活跃聊天室），此处不重复计数
              if (senderParticipantId != currentState.currentUserParticipantId) {
                EventBus().fireChatListUpdateEvent(ChatListUpdateEvent(
                  chatId: chatId,
@@ -477,7 +478,6 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
                  lastMessageType: newMessage.type,
                  lastMessageWithdrawFlag: newMessage.withdrawFlag,
                  lastMessageTime: newMessage.createTime,
-                 unreadCountDelta: 1, // 收到别人的新消息，未读数+1
                ));
                AppLogger.d("[Bloc] Triggered chat list update for received message from other user");
              }

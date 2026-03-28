@@ -421,7 +421,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
           Divider(height: 1, color: Colors.grey.shade200),
           _buildMenuItem(
             '账号注销',
-            onTap: () => _showFeatureNotImplemented('账号注销'),
+            onTap: () => _showDeactivateAccountDialog(profile),
           ),
         ],
       ),
@@ -507,10 +507,90 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
     return '$prefix****$domain';
   }
 
-  void _showFeatureNotImplemented(String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$feature功能尚未实现')),
+  void _showDeactivateAccountDialog(UserProfile? profile) {
+    const confirmText = '确认注销';
+    final controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final confirmed = controller.text == confirmText;
+            return AlertDialog(
+              title: const Text('注销账号'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '注销后，您的账号数据（包括订单记录、个人信息、收藏等）将被永久清除且无法恢复。',
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '请输入"$confirmText"以继续',
+                    style: const TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: controller,
+                    onChanged: (_) => setDialogState(() {}),
+                    decoration: InputDecoration(
+                      hintText: confirmText,
+                      border: const OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    controller.dispose();
+                    Navigator.pop(dialogContext);
+                  },
+                  child: const Text('取消'),
+                ),
+                TextButton(
+                  onPressed: confirmed
+                      ? () {
+                          controller.dispose();
+                          Navigator.pop(dialogContext);
+                          _submitDeactivateAccount(profile);
+                        }
+                      : null,
+                  style: TextButton.styleFrom(foregroundColor: Colors.red),
+                  child: const Text('确认注销'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
+  }
+
+  Future<void> _submitDeactivateAccount(UserProfile? profile) async {
+    final dio = GetIt.instance<Dio>();
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    try {
+      await dio.post(
+        '/api/project/logout/edit',
+        data: {'memberId': profile?.userId},
+      );
+      if (mounted) {
+        scaffoldMessenger.showSnackBar(
+          const SnackBar(content: Text('注销申请已提交，请等待审核')),
+        );
+        _profileBloc.add(LogoutEvent());
+      }
+    } on DioException catch (e) {
+      if (mounted) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text('注销申请失败：${e.message}')),
+        );
+      }
+    }
   }
 
   void _showLogoutConfirmation(BuildContext context) {

@@ -19,6 +19,8 @@ abstract class IChatWebSocketDataSource {
   /// Disconnects from the WebSocket server.
   Future<void> disconnect();
 
-  // Optional: Add dispose method if needed for resource cleanup
-  // void dispose();
+  /// Sets the currently active chat room ID.
+  /// When a message arrives for this chat, unread count will not be incremented.
+  /// Pass null when leaving the chat room.
+  void setActiveChatId(int? chatId);
 } 

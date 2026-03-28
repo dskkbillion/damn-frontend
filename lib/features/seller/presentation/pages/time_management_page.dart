@@ -63,18 +63,19 @@ class TimeManagementBody extends StatelessWidget {
   Widget build(BuildContext context) {
     // BlocConsumer now uses the context provided by the BlocProvider in TimeManagementPage.build
     return BlocConsumer<TimeManagementBloc, TimeManagementState>(
+      listenWhen: (previous, current) =>
+          (current is TimeManagementError) ||
+          (previous is TimeManagementUpdating && current is TimeManagementLoaded),
       listener: (context, state) {
         if (state is TimeManagementError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),
           );
+        } else if (state is TimeManagementLoaded) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(AppLocalizations.of(context)!?.time_management_settings_saved ?? '设置已保存')),
+          );
         }
-        // Optional: Add listener for success state if needed
-        // if (state is TimeManagementLoaded && state.justUpdated) {
-        //   ScaffoldMessenger.of(context).showSnackBar(
-        //     const SnackBar(content: Text('设置已保存')),
-        //   );
-        // }
       },
       builder: (context, state) {
         if (state is TimeManagementInitial || state is TimeManagementLoading) { // Handle Initial state
@@ -133,10 +134,6 @@ class TimeManagementBody extends StatelessWidget {
           // 状态说明
           _buildStatusDescription(context, settings.isOnline),
           
-          const SizedBox(height: 32),
-
-          // 保存按钮 - Needs context for Bloc access
-          _buildSaveButton(context, isUpdating),
         ],
       ),
     );
@@ -228,33 +225,4 @@ class TimeManagementBody extends StatelessWidget {
     );
   }
   
-  /// 构建保存按钮
-  Widget _buildSaveButton(BuildContext context, bool isUpdating) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        // Disable button if isUpdating
-        onPressed: isUpdating ? null : () {
-          // Dispatch Save event using the context with Bloc access
-          // 显示保存成功提示
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!?.time_management_settings_saved ?? 'Settings Saved')),
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          backgroundColor: Colors.deepPurple, // Or your theme's primary color
-          foregroundColor: Colors.white,
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        child: isUpdating
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-              )
-            : Text(AppLocalizations.of(context)!?.time_management_save_settings ?? 'Save Settings'),
-      ),
-    );
-  }
 } 

@@ -78,10 +78,14 @@ class AutoReplyBloc extends Bloc<AutoReplyEvent, AutoReplyState> {
     final result = await _setAutoReplyUseCase(params);
 
     result.fold(
-      (failure) => emit(AutoReplyError(failure.message)),
+      (failure) => emit(AutoReplyError(failure.message, previousSettings: currentSettings)),
       (success) {
-        // 更新成功后重新获取自动回复设置
-        add(LoadAutoReplySettings());
+        final savedSettings = AutoReplySettings(
+          isEnabled: event.isEnabled,
+          content: currentSettings.content,
+        );
+        emit(AutoReplySaveSuccess(savedSettings));
+        emit(AutoReplyLoaded(savedSettings));
       },
     );
   }
@@ -91,13 +95,15 @@ class AutoReplyBloc extends Bloc<AutoReplyEvent, AutoReplyState> {
     UpdateAutoReplyContent event,
     Emitter<AutoReplyState> emit,
   ) async {
-    // 确保当前状态为已加载状态
-    if (state is! AutoReplyLoaded) {
+    // 确保当前状态为已加载状态或错误状态（带有 previousSettings）
+    AutoReplySettings? currentSettings;
+    if (state is AutoReplyLoaded) {
+      currentSettings = (state as AutoReplyLoaded).settings;
+    } else if (state is AutoReplyError && (state as AutoReplyError).previousSettings != null) {
+      currentSettings = (state as AutoReplyError).previousSettings;
+    } else {
       return;
     }
-
-    final currentState = state as AutoReplyLoaded;
-    final currentSettings = currentState.settings;
 
     // 显示更新中状态
     emit(AutoReplyUpdating(
@@ -119,10 +125,14 @@ class AutoReplyBloc extends Bloc<AutoReplyEvent, AutoReplyState> {
     final result = await _setAutoReplyUseCase(params);
 
     result.fold(
-      (failure) => emit(AutoReplyError(failure.message)),
+      (failure) => emit(AutoReplyError(failure.message, previousSettings: currentSettings)),
       (success) {
-        // 更新成功后重新获取自动回复设置
-        add(LoadAutoReplySettings());
+        final savedSettings = AutoReplySettings(
+          isEnabled: currentSettings!.isEnabled,
+          content: event.content,
+        );
+        emit(AutoReplySaveSuccess(savedSettings));
+        emit(AutoReplyLoaded(savedSettings));
       },
     );
   }

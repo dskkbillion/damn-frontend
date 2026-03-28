@@ -46,7 +46,6 @@ class AutoReplyBody extends StatefulWidget {
 class _AutoReplyBodyState extends State<AutoReplyBody> {
   final TextEditingController _contentController = TextEditingController();
   bool _isContentDirty = false;
-  String? _lastLoadedContent; // 记录最后一次加载的内容
 
   @override
   void initState() {
@@ -71,18 +70,14 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
           setState(() {
             _isContentDirty = true;
           });
+        } else if (state is AutoReplySaveSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(AppLocalizations.of(context)!?.auto_reply_settings_saved ?? 'Settings Saved')),
+          );
         } else if (state is AutoReplyLoaded) {
-          // 保存成功的提示
-          if (_lastLoadedContent != null && _lastLoadedContent != state.settings.content) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(AppLocalizations.of(context)!?.auto_reply_settings_saved ?? 'Settings Saved')),
-            );
-          }
-          
           // 更新文本控制器和状态
-          _lastLoadedContent = state.settings.content;
           _contentController.text = state.settings.content ?? '';
-          
+
           // 重置dirty状态
           setState(() {
             _isContentDirty = false;
@@ -95,13 +90,17 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
         }
 
         if (state is AutoReplyLoaded || state is AutoReplyUpdating) {
-          final settings = state is AutoReplyLoaded 
+          final settings = state is AutoReplyLoaded
               ? state.settings
               : (state as AutoReplyUpdating).settings;
-          
+
           final isUpdating = state is AutoReplyUpdating;
-          
+
           return _buildContent(context, settings, isUpdating);
+        }
+
+        if (state is AutoReplyError && state.previousSettings != null) {
+          return _buildContent(context, state.previousSettings!, false);
         }
 
         return Center(child: Text(AppLocalizations.of(context)!?.auto_reply_load_failed ?? 'Load failed, please try again'));

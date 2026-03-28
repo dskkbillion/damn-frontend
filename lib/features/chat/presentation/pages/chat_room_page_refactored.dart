@@ -17,6 +17,7 @@ import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/product
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/chat_order_status_bar.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart' as domain;
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/participant.dart';
+import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_chat_web_socket_data_source.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_list/chat_list_bloc.dart';
 
 class ChatRoomPageRefactored extends StatefulWidget {
@@ -94,6 +95,9 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
 
     // Enter the chat room
     await _chatCubit.enterChatRoom(widget.chatId);
+
+    // 通知 WebSocket 层当前活跃聊天室，收到该房间消息时不增加未读数
+    getIt<IChatWebSocketDataSource>().setActiveChatId(widget.chatId);
 
     // 进入聊天室时，重置该聊天室的未读数
     EventBus().fireChatListUpdateEvent(ChatListUpdateEvent(
@@ -197,6 +201,13 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
   
   @override
   void dispose() {
+    // 退出聊天室时，清零未读数，并通知 WebSocket 层不再有活跃聊天室
+    EventBus().fireChatListUpdateEvent(ChatListUpdateEvent(
+      chatId: widget.chatId,
+      resetUnread: true,
+    ));
+    getIt<IChatWebSocketDataSource>().setActiveChatId(null);
+
     // Leave chat room
     _chatCubit.leaveChatRoom();
 
