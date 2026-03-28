@@ -1673,16 +1673,6 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     // 构建所有属性的列表（包括系统属性和自定义属性）
     final List<Widget> attributeItems = [];
 
-    // 轻咨询模式下，隐藏交付期和次数字段，使用默认值
-    // deliveryDay 默认为 1（即时）
-    // editNum 默认为 1（一次性服务）
-    if (tierConfig.deliveryDay != 1) {
-      tierConfig.updateDeliveryDay(1);
-    }
-    if (tierConfig.editNum != 1) {
-      tierConfig.updateEditNum(1);
-    }
-
     // 添加自定义属性
     final customAttributes = _serviceTiers.getAttributesForTier(_selectedTier);
     for (int i = 0; i < customAttributes.length; i++) {
@@ -2291,6 +2281,16 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
         placeholder: placeholder,
       );
       _serviceTiers.addAttributeTemplate(template);
+      // 确保新属性的默认值
+      for (final tier in ServiceTier.values) {
+        final config = _serviceTiers.getTierConfig(tier);
+        if (config.deliveryDay != 1) {
+          config.deliveryDay = 1;
+        }
+        if (config.editNum != 1) {
+          config.editNum = 1;
+        }
+      }
       // 为当前选中档位设置值
       _serviceTiers.getTierConfig(_selectedTier).updateAttributeValue(template.id, value);
     });

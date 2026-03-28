@@ -110,13 +110,10 @@ class _ProductManagementPageState extends State<ProductManagementPage>
           hasMore = state.hasMoreOnSaleProducts;
           break;
         case 1:
-          hasMore = state.hasMoreDraftProducts;
-          break;
-        case 2:
           hasMore = state.hasMoreOffShelfProducts;
           break;
       }
-      
+
       AppLogger.d('[ProductManagementPage] _onScrollEnd: tabIndex=$tabIndex, hasMore=$hasMore, isLoading=${state.isLoading}');
       
       if (hasMore && !state.isLoading) {
@@ -417,9 +414,6 @@ class _ProductManagementPageState extends State<ProductManagementPage>
                         hasMore = state.hasMoreOnSaleProducts;
                         break;
                       case 1:
-                        hasMore = state.hasMoreDraftProducts;
-                        break;
-                      case 2:
                         hasMore = state.hasMoreOffShelfProducts;
                         break;
                     }

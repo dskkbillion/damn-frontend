@@ -94,8 +94,6 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
       case 0:
         return ProductStatus.normal;
       case 1:
-        return ProductStatus.draft;
-      case 2:
         return ProductStatus.disabled;
       default:
         return ProductStatus.normal;
@@ -288,13 +286,9 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
         shouldClearRefreshFlag = state.needRefreshOnSale;
         AppLogger.d('[ProductManagementBloc] Tab 0 (在售): onSaleProducts null? ${state.onSaleProducts == null}, needRefreshOnSale: ${state.needRefreshOnSale}, needLoad: $needLoad');
         break;
-      case 1: // 草稿
-        needLoad = state.draftProducts == null;
-        AppLogger.d('[ProductManagementBloc] Tab 1 (草稿): draftProducts null? ${state.draftProducts == null}, length: ${state.draftProducts?.length}, needLoad: $needLoad');
-        break;
-      case 2: // 已下架
+      case 1: // 已下架
         needLoad = state.offShelfProducts == null;
-        AppLogger.d('[ProductManagementBloc] Tab 2 (已下架): offShelfProducts null? ${state.offShelfProducts == null}, needLoad: $needLoad');
+        AppLogger.d('[ProductManagementBloc] Tab 1 (已下架): offShelfProducts null? ${state.offShelfProducts == null}, needLoad: $needLoad');
         break;
     }
 
@@ -411,12 +405,7 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
             ?.where((p) => p.id == event.productId)
             .firstOrNull;
         break;
-      case 1: // 草稿箱
-        productToDelete = state.draftProducts
-            ?.where((p) => p.id == event.productId)
-            .firstOrNull;
-        break;
-      case 2: // 已下架
+      case 1: // 已下架
         productToDelete = state.offShelfProducts
             ?.where((p) => p.id == event.productId)
             .firstOrNull;
@@ -566,9 +555,9 @@ class ProductManagementBloc extends Bloc<ProductManagementEvent, ProductManageme
       case ProductStatus.rejected:
         return 0; // 在售Tab
       case ProductStatus.draft:
-        return 1; // 草稿Tab
+        return 0; // 在售Tab (draft maps to tab 0)
       case ProductStatus.disabled:
-        return 2; // 已下架Tab
+        return 1; // 已下架Tab
       default:
         return 0;
     }

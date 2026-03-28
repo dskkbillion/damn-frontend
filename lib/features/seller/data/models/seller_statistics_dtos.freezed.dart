@@ -179,12 +179,12 @@ class __$$SellerUpgradeStatisticsDtoImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$SellerUpgradeStatisticsDtoImpl implements _SellerUpgradeStatisticsDto {
   const _$SellerUpgradeStatisticsDtoImpl(
-      {required this.days,
-      required this.orderNum,
-      required this.orderPrice,
-      required this.totalDays,
-      required this.totalOrderNum,
-      required this.totalOrderPrice});
+      {this.days = 0,
+      this.orderNum = 0,
+      this.orderPrice = 0.0,
+      this.totalDays = 0,
+      this.totalOrderNum = 0,
+      this.totalOrderPrice = 0.0});
 
   factory _$SellerUpgradeStatisticsDtoImpl.fromJson(
           Map<String, dynamic> json) =>
@@ -256,12 +256,12 @@ class _$SellerUpgradeStatisticsDtoImpl implements _SellerUpgradeStatisticsDto {
 abstract class _SellerUpgradeStatisticsDto
     implements SellerUpgradeStatisticsDto {
   const factory _SellerUpgradeStatisticsDto(
-          {required final int days,
-          required final int orderNum,
-          required final double orderPrice,
-          required final int totalDays,
-          required final int totalOrderNum,
-          required final double totalOrderPrice}) =
+          {final int days,
+          final int orderNum,
+          final double orderPrice,
+          final int totalDays,
+          final int totalOrderNum,
+          final double totalOrderPrice}) =
       _$SellerUpgradeStatisticsDtoImpl;
 
   factory _SellerUpgradeStatisticsDto.fromJson(Map<String, dynamic> json) =
@@ -479,14 +479,14 @@ class __$$SellerIndexStatisticsDtoImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$SellerIndexStatisticsDtoImpl implements _SellerIndexStatisticsDto {
   const _$SellerIndexStatisticsDtoImpl(
-      {required this.totalEarnings,
-      required this.thisMonthTotalEarnings,
-      required this.totalOrderNum,
-      required this.activeOrderNum,
-      required this.pendingOrderNum,
-      required this.receiptOrderNum,
-      required this.earlyTime,
-      required this.latenessTime});
+      {this.totalEarnings = 0.0,
+      this.thisMonthTotalEarnings = 0.0,
+      this.totalOrderNum = 0,
+      this.activeOrderNum = 0,
+      this.pendingOrderNum = 0,
+      this.receiptOrderNum = 0,
+      this.earlyTime = 0,
+      this.latenessTime = 0});
 
   factory _$SellerIndexStatisticsDtoImpl.fromJson(Map<String, dynamic> json) =>
       _$$SellerIndexStatisticsDtoImplFromJson(json);
@@ -575,14 +575,14 @@ class _$SellerIndexStatisticsDtoImpl implements _SellerIndexStatisticsDto {
 
 abstract class _SellerIndexStatisticsDto implements SellerIndexStatisticsDto {
   const factory _SellerIndexStatisticsDto(
-      {required final double totalEarnings,
-      required final double thisMonthTotalEarnings,
-      required final int totalOrderNum,
-      required final int activeOrderNum,
-      required final int pendingOrderNum,
-      required final int receiptOrderNum,
-      required final int earlyTime,
-      required final int latenessTime}) = _$SellerIndexStatisticsDtoImpl;
+      {final double totalEarnings,
+      final double thisMonthTotalEarnings,
+      final int totalOrderNum,
+      final int activeOrderNum,
+      final int pendingOrderNum,
+      final int receiptOrderNum,
+      final int earlyTime,
+      final int latenessTime}) = _$SellerIndexStatisticsDtoImpl;
 
   factory _SellerIndexStatisticsDto.fromJson(Map<String, dynamic> json) =
       _$SellerIndexStatisticsDtoImpl.fromJson;
@@ -751,10 +751,10 @@ class __$$SellerPercentStatisticsDtoImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$SellerPercentStatisticsDtoImpl implements _SellerPercentStatisticsDto {
   const _$SellerPercentStatisticsDtoImpl(
-      {required this.heatPercent,
-      required this.recoverPercent,
-      required this.completePercent,
-      required this.goodPercent});
+      {this.heatPercent = 0.0,
+      this.recoverPercent = 0.0,
+      this.completePercent = 0.0,
+      this.goodPercent = 0.0});
 
   factory _$SellerPercentStatisticsDtoImpl.fromJson(
           Map<String, dynamic> json) =>
@@ -817,10 +817,10 @@ class _$SellerPercentStatisticsDtoImpl implements _SellerPercentStatisticsDto {
 abstract class _SellerPercentStatisticsDto
     implements SellerPercentStatisticsDto {
   const factory _SellerPercentStatisticsDto(
-      {required final double heatPercent,
-      required final double recoverPercent,
-      required final double completePercent,
-      required final double goodPercent}) = _$SellerPercentStatisticsDtoImpl;
+      {final double heatPercent,
+      final double recoverPercent,
+      final double completePercent,
+      final double goodPercent}) = _$SellerPercentStatisticsDtoImpl;
 
   factory _SellerPercentStatisticsDto.fromJson(Map<String, dynamic> json) =
       _$SellerPercentStatisticsDtoImpl.fromJson;

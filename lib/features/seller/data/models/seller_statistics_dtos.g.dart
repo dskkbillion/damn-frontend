@@ -9,12 +9,12 @@ part of 'seller_statistics_dtos.dart';
 _$SellerUpgradeStatisticsDtoImpl _$$SellerUpgradeStatisticsDtoImplFromJson(
         Map<String, dynamic> json) =>
     _$SellerUpgradeStatisticsDtoImpl(
-      days: (json['days'] as num).toInt(),
-      orderNum: (json['orderNum'] as num).toInt(),
-      orderPrice: (json['orderPrice'] as num).toDouble(),
-      totalDays: (json['totalDays'] as num).toInt(),
-      totalOrderNum: (json['totalOrderNum'] as num).toInt(),
-      totalOrderPrice: (json['totalOrderPrice'] as num).toDouble(),
+      days: (json['days'] as num?)?.toInt() ?? 0,
+      orderNum: (json['orderNum'] as num?)?.toInt() ?? 0,
+      orderPrice: (json['orderPrice'] as num?)?.toDouble() ?? 0.0,
+      totalDays: (json['totalDays'] as num?)?.toInt() ?? 0,
+      totalOrderNum: (json['totalOrderNum'] as num?)?.toInt() ?? 0,
+      totalOrderPrice: (json['totalOrderPrice'] as num?)?.toDouble() ?? 0.0,
     );
 
 Map<String, dynamic> _$$SellerUpgradeStatisticsDtoImplToJson(
@@ -31,15 +31,15 @@ Map<String, dynamic> _$$SellerUpgradeStatisticsDtoImplToJson(
 _$SellerIndexStatisticsDtoImpl _$$SellerIndexStatisticsDtoImplFromJson(
         Map<String, dynamic> json) =>
     _$SellerIndexStatisticsDtoImpl(
-      totalEarnings: (json['totalEarnings'] as num).toDouble(),
+      totalEarnings: (json['totalEarnings'] as num?)?.toDouble() ?? 0.0,
       thisMonthTotalEarnings:
-          (json['thisMonthTotalEarnings'] as num).toDouble(),
-      totalOrderNum: (json['totalOrderNum'] as num).toInt(),
-      activeOrderNum: (json['activeOrderNum'] as num).toInt(),
-      pendingOrderNum: (json['pendingOrderNum'] as num).toInt(),
-      receiptOrderNum: (json['receiptOrderNum'] as num).toInt(),
-      earlyTime: (json['earlyTime'] as num).toInt(),
-      latenessTime: (json['latenessTime'] as num).toInt(),
+          (json['thisMonthTotalEarnings'] as num?)?.toDouble() ?? 0.0,
+      totalOrderNum: (json['totalOrderNum'] as num?)?.toInt() ?? 0,
+      activeOrderNum: (json['activeOrderNum'] as num?)?.toInt() ?? 0,
+      pendingOrderNum: (json['pendingOrderNum'] as num?)?.toInt() ?? 0,
+      receiptOrderNum: (json['receiptOrderNum'] as num?)?.toInt() ?? 0,
+      earlyTime: (json['earlyTime'] as num?)?.toInt() ?? 0,
+      latenessTime: (json['latenessTime'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$$SellerIndexStatisticsDtoImplToJson(
@@ -58,10 +58,10 @@ Map<String, dynamic> _$$SellerIndexStatisticsDtoImplToJson(
 _$SellerPercentStatisticsDtoImpl _$$SellerPercentStatisticsDtoImplFromJson(
         Map<String, dynamic> json) =>
     _$SellerPercentStatisticsDtoImpl(
-      heatPercent: (json['heatPercent'] as num).toDouble(),
-      recoverPercent: (json['recoverPercent'] as num).toDouble(),
-      completePercent: (json['completePercent'] as num).toDouble(),
-      goodPercent: (json['goodPercent'] as num).toDouble(),
+      heatPercent: (json['heatPercent'] as num?)?.toDouble() ?? 0.0,
+      recoverPercent: (json['recoverPercent'] as num?)?.toDouble() ?? 0.0,
+      completePercent: (json['completePercent'] as num?)?.toDouble() ?? 0.0,
+      goodPercent: (json['goodPercent'] as num?)?.toDouble() ?? 0.0,
     );
 
 Map<String, dynamic> _$$SellerPercentStatisticsDtoImplToJson(

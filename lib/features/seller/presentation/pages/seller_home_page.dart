@@ -451,7 +451,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                   icon: Icons.access_time,
                   label: AppLocalizations.of(context)!.seller_home_orders_pending,
                   count: dashboardData.orders.pending.toString(),
-                  onTap: () => context.push('/seller/orders?status=awaitingStart'),
+                  onTap: () => context.push('/seller/orders'),
                 ),
                 _buildOrderStatusItem(
                   context,

@@ -173,7 +173,12 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
               case 'LOGIN_FAIL':
                 AppLogger.d("[WebSocket] Login rejected by server: ${decodedMessage['msg']}");
                 _isConnected = false;
+                _reconnectAttempts = _maxReconnectAttempts; // 阻止重连
                 _connectionStatusController.add(ConnectionStatus.error);
+                // 主动关闭连接
+                _channelSubscription?.cancel();
+                _channel?.sink.close();
+                _channel = null;
                 break;
               case 'NOTIFICATION':
                 AppLogger.d("[WebSocket] Received notification action: ${decodedMessage['msg']}");

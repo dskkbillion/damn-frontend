@@ -163,7 +163,10 @@ class AuthRepositoryImpl implements IAuthRepository {
                 AppLogger.d('Saved commonUserId: ${userInfo.commonUserId}');
                 AppLogger.d('Saved refer_id: ${userInfo.commonUserId} for chat module');
               } else {
-                AppLogger.d('commonUserId from UserInfo is null. Key will not be saved/updated in secure storage.');
+                // 显式清除旧值，防止残留
+                await secureStorage.deleteCommonUserId();
+                await secureStorage.delete('refer_id');
+                AppLogger.d('commonUserId from UserInfo is null. Cleared stale common_user_id and refer_id from secure storage.');
               }
 
               _currentUser = authenticatedUser;
