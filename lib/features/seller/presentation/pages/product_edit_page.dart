@@ -1158,6 +1158,30 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
         body: BlocProvider<ProductEditBloc>(
           create: (context) => _bloc,
           child: BlocConsumer<ProductEditBloc, ProductEditState>(
+            buildWhen: (previous, current) {
+              // 只在真正影响UI渲染的字段变化时才rebuild
+              if (previous.isLoading != current.isLoading) return true;
+              if (previous.product != current.product) return true;
+              if (previous.selectedImagePaths != current.selectedImagePaths) return true;
+              if (previous.selectedDetailImagePaths != current.selectedDetailImagePaths) return true;
+              if (previous.uploadedImageUrls != current.uploadedImageUrls) return true;
+              if (previous.uploadedDetailImageUrls != current.uploadedDetailImageUrls) return true;
+              if (previous.uploadStatus != current.uploadStatus) return true;
+              if (previous.uploadedCount != current.uploadedCount) return true;
+              if (previous.totalUploadCount != current.totalUploadCount) return true;
+              if (previous.formData.name != current.formData.name) return true;
+              if (previous.formData.description != current.formData.description) return true;
+              if (previous.formData.categoryId != current.formData.categoryId) return true;
+              if (previous.formData.price != current.formData.price) return true;
+              if (previous.categories != current.categories) return true;
+              if (previous.successCases != current.successCases) return true;
+              if (previous.hasError != current.hasError) return true;
+              if (previous.errorMessage != current.errorMessage) return true;
+              // hasUnsavedChanges / isSavingDraft / isDraftSaveSuccess / isSubmitting / isSubmitSuccess
+              // / initialFormData / lastAutoSaveTime / formData.qaList / formData.buyerInfoItems
+              // 变化不需要rebuild表单主体
+              return false;
+            },
             listener: (context, state) {
               if (state.hasError) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -1645,19 +1669,17 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
         }),
       ],
       onChanged: (value) {
-        setState(() {
-          final price = double.tryParse(value) ?? 0;
-          tierConfig.updatePrice(price);
-          
-          // 验证价格
-          if (price > ValidationConstants.maxPrice) {
-            _formErrors['price_${_selectedTier.name}'] = '价格不能超过${ValidationConstants.maxPrice}';
-          } else if (price > 0 && price < 0.01) {
-            _formErrors['price_${_selectedTier.name}'] = '价格最小值为0.01';
-          } else {
-            _formErrors.remove('price_${_selectedTier.name}');
-          }
-        });
+        final price = double.tryParse(value) ?? 0;
+        tierConfig.updatePrice(price);
+
+        // 验证价格 —— 直接更新错误 map，不触发 setState 避免全树 rebuild
+        if (price > ValidationConstants.maxPrice) {
+          _formErrors['price_${_selectedTier.name}'] = '价格不能超过${ValidationConstants.maxPrice}';
+        } else if (price > 0 && price < 0.01) {
+          _formErrors['price_${_selectedTier.name}'] = '价格最小值为0.01';
+        } else {
+          _formErrors.remove('price_${_selectedTier.name}');
+        }
         _onFormFieldChanged();
       },
           ),
@@ -1698,26 +1720,8 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
         );
       }
 
-      // 为每个属性添加进入动画
       attributeItems.add(
-        TweenAnimationBuilder<double>(
-          key: ValueKey('attr_${attr.id}_$_selectedTier'),
-          tween: Tween(begin: 0.0, end: 1.0),
-          duration: Duration(milliseconds: 300 + (i * 50)),
-          curve: Curves.easeOutBack,
-          builder: (context, value, child) {
-            return Transform.translate(
-              offset: Offset(0, 10 * (1 - value)),
-              child: Opacity(
-                opacity: value,
-                child: Transform.scale(
-                  scale: 0.95 + (0.05 * value),
-                  child: attributeWidget,
-                ),
-              ),
-            );
-          },
-        ),
+        attributeWidget,
       );
     }
 
@@ -1883,26 +1887,13 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
       ];
     }
     
-    return AnimatedBuilder(
-      animation: _flashAnimation,
-      builder: (context, child) {
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.white.withOpacity(_flashAnimation.value * 0.6),
-                blurRadius: 15 * _flashAnimation.value,
-                spreadRadius: 3 * _flashAnimation.value,
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              // 主要的输入框
-              Expanded(
-                child: TextField(
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          // 主要的输入框
+          Expanded(
+            child: TextField(
               controller: controller,
               keyboardType: keyboardType,
               readOnly: widget.isPreviewMode,
@@ -1971,7 +1962,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
               },
             ),
           ),
-          
+
           // 删除按钮（仅对自定义属性显示）
           if (!isSystem && attributeId != null) ...[
             const SizedBox(width: 8),
@@ -1991,8 +1982,6 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
           ],
         ],
       ),
-        );
-      },
     );
   }
 
@@ -2000,21 +1989,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
   Widget _buildBooleanAttribute(ProductAttribute attribute) {
     final isTrue = attribute.value == 'true';
 
-    return AnimatedBuilder(
-      animation: _flashAnimation,
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.white.withOpacity(_flashAnimation.value * 0.6),
-                blurRadius: 15 * _flashAnimation.value,
-                spreadRadius: 3 * _flashAnimation.value,
-              ),
-            ],
-          ),
-          child: Container(
+    return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
@@ -2133,9 +2108,6 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
           ),
         ],
       ),
-    ),
-        );
-      },
     );
   }
 
@@ -2160,17 +2132,8 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     if (!controllerMap.containsKey(key)) {
       controllerMap[key] = TextEditingController(text: initialValue);
     } else {
-      // 更新现有控制器的值（如果不同）
-      final controller = controllerMap[key]!;
-      if (controller.text != initialValue) {
-        // 保存当前光标位置
-        final selection = controller.selection;
-        controller.text = initialValue;
-        // 恢复光标位置（如果合理）
-        if (selection.isValid && selection.end <= initialValue.length) {
-          controller.selection = selection;
-        }
-      }
+      // Controller 已存在，不覆盖 text —— controller 是输入的 source of truth
+      // initialValue 可能因 debounce 而过时，强制覆盖会导致红色报错闪烁
     }
     
     return controllerMap[key]!;
@@ -2281,14 +2244,14 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
         placeholder: placeholder,
       );
       _serviceTiers.addAttributeTemplate(template);
-      // 确保新属性的默认值
+      // 确保新属性的默认值 —— 使用 update 方法同步 controller
       for (final tier in ServiceTier.values) {
         final config = _serviceTiers.getTierConfig(tier);
         if (config.deliveryDay != 1) {
-          config.deliveryDay = 1;
+          config.updateDeliveryDay(1);
         }
         if (config.editNum != 1) {
-          config.editNum = 1;
+          config.updateEditNum(1);
         }
       }
       // 为当前选中档位设置值
@@ -2312,18 +2275,9 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     if (!_attributeControllers.containsKey(attributeId)) {
       _attributeControllers[attributeId] = TextEditingController(text: initialValue);
     }
-    // 如果初始值发生变化，更新控制器的文本（但不移动光标）
-    final controller = _attributeControllers[attributeId]!;
-    if (controller.text != initialValue) {
-      // 保存当前的光标位置
-      final selection = controller.selection;
-      controller.text = initialValue;
-      // 恢复光标位置，确保不超出新文本的长度
-      if (selection.isValid && selection.end <= initialValue.length) {
-        controller.selection = selection;
-      }
-    }
-    return controller;
+    // Controller 已存在时不覆盖 text —— controller 是输入的 source of truth
+    // initialValue 可能因 debounce 而过时，强制覆盖会导致红色报错闪烁
+    return _attributeControllers[attributeId]!;
   }
 
   /// 更新属性值
