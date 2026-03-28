@@ -12,6 +12,8 @@ import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dio/dio.dart';
 import 'package:dskk_flutter_refactor/core/network/interceptors/unauthorized_logout_handler.dart';
 import 'bind_contact_page.dart';
+import 'change_contact_page.dart';
+import 'unbind_contact_page.dart';
 import '../bloc/bind_contact_cubit.dart';
 
 class AccountSecurityPage extends StatefulWidget {
@@ -394,7 +396,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             ),
             onTap: phoneNumber.isEmpty
                 ? () => _navigateToBindContact(BindContactType.phone)
-                : null,
+                : () => _showBoundContactActions('phone', phoneNumber),
           ),
           Divider(height: 1, color: Colors.grey.shade200),
           _buildMenuItem(
@@ -423,7 +425,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             ),
             onTap: emailAddress.isEmpty
                 ? () => _navigateToBindContact(BindContactType.email)
-                : null,
+                : () => _showBoundContactActions('email', emailAddress),
           ),
           Divider(height: 1, color: Colors.grey.shade200),
           _buildMenuItem(
@@ -501,6 +503,78 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
     );
 
     // 绑定成功后刷新用户资料
+    if (result == true) {
+      _profileBloc.add(GetUserProfileEvent(skipCache: true));
+    }
+  }
+
+  void _showBoundContactActions(String contactType, String currentContact) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (BuildContext sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.swap_horiz),
+                title: const Text('换绑'),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _navigateToChangeContact(contactType, currentContact);
+                },
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.link_off, color: Colors.red),
+                title: const Text('解绑', style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _navigateToUnbindContact(contactType, currentContact);
+                },
+              ),
+              const Divider(height: 1),
+              ListTile(
+                title: const Text('取消', textAlign: TextAlign.center),
+                onTap: () => Navigator.pop(sheetContext),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _navigateToChangeContact(String contactType, String currentContact) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChangeContactPage(
+          contactType: contactType,
+          currentContact: currentContact,
+        ),
+      ),
+    );
+
+    if (result == true) {
+      _profileBloc.add(GetUserProfileEvent(skipCache: true));
+    }
+  }
+
+  void _navigateToUnbindContact(String contactType, String currentContact) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => UnbindContactPage(
+          contactType: contactType,
+          currentContact: currentContact,
+        ),
+      ),
+    );
+
     if (result == true) {
       _profileBloc.add(GetUserProfileEvent(skipCache: true));
     }
