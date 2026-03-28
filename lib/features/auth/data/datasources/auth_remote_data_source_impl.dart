@@ -80,7 +80,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw ServerException(message: '登录响应解析失败');
     } catch (e) {
       AppLogger.d('未知错误: ${e.toString()}');
-      throw ServerException(message: '登录过程中发生未知错误: ${e.toString()}');
+      throw ServerException(message: '登录失败，请稍后重试');
     }
   }
 
@@ -131,10 +131,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         AppLogger.d('错误响应状态码: ${e.response?.statusCode}');
         AppLogger.d('错误响应数据: ${e.response?.data}');
       }
-      throw ServerException(message: 'Send code failed due to network or server error: ${e.message}');
+      throw ServerException(message: '验证码发送失败，网络或服务器错误');
     } catch (e) {
       AppLogger.d('未知错误: ${e.toString()}');
-      throw ServerException(message: 'An unknown error occurred while sending the code: ${e.toString()}');
+      throw ServerException(message: '验证码发送失败，请稍后重试');
     }
   }
 

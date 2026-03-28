@@ -1,3 +1,4 @@
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:equatable/equatable.dart';
 
 import '../../domain/entities/order_item.dart';
@@ -44,10 +45,13 @@ class OrderItemModel extends Equatable {
                 ?? json['imageUrl'] as String?         // Alternative field
                 ?? '';                                  // Default empty string
 
+    final productId = json['productId'] as int? ?? 0;
+    AppLogger.d('[OrderItemModel] fromJson productId=${json['productId']}, mapped=$productId');
+
     return OrderItemModel(
       id: json['id'] as int? ?? 0,
       orderId: json['orderId'] as int? ?? 0,
-      productId: json['productId'] as int? ?? 0,
+      productId: productId,
       productName: json['productName'] as String? ?? 'Unknown Product',
       variantId: json['variantId'] as int? ?? 0,
       variantName: json['variantName'] as String?,
@@ -96,4 +100,4 @@ class OrderItemModel extends Equatable {
         deliveryDay,
         editNum,
       ];
-} 
+}

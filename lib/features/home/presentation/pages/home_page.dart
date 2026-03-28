@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -100,8 +102,15 @@ class _HomeViewState extends State<HomeView> {
             final feedItems = _getFeedItems(state);
 
             return RefreshIndicator(
-              onRefresh: () async {
+              onRefresh: () {
+                final completer = Completer<void>();
+                final subscription = context.read<HomeBloc>().stream.listen((state) {
+                  if (state is! HomeRefreshing && !completer.isCompleted) {
+                    completer.complete();
+                  }
+                });
                 context.read<HomeBloc>().add(const RefreshHomeData());
+                return completer.future.whenComplete(() => subscription.cancel());
               },
               child: CustomScrollView(
                 key: const PageStorageKey<String>('buyer_home_scroll'),

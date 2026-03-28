@@ -26,7 +26,6 @@ class _ProductManagementPageState extends State<ProductManagementPage>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late TabController _tabController;
   final ScrollController _onSaleScrollController = ScrollController();
-  final ScrollController _draftScrollController = ScrollController();
   final ScrollController _offShelfScrollController = ScrollController();
 
   // Track if we're currently changing tabs to prevent scroll events
@@ -123,9 +122,6 @@ class _ProductManagementPageState extends State<ProductManagementPage>
             status = ProductStatus.normal;
             break;
           case 1:
-            status = ProductStatus.draft;
-            break;
-          case 2:
             status = ProductStatus.disabled;
             break;
           default:
@@ -147,7 +143,6 @@ class _ProductManagementPageState extends State<ProductManagementPage>
     WidgetsBinding.instance.removeObserver(this);
     _tabController.dispose();
     _onSaleScrollController.dispose();
-    _draftScrollController.dispose();
     _offShelfScrollController.dispose();
     super.dispose();
   }
@@ -556,7 +551,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
     }
     
     // 所有状态的商品都可以编辑（除了审核中的）
-    if (product.status != ProductStatus.reviewing) {
+    if (product.status != ProductStatus.reviewing && product.status != ProductStatus.disabled) {
       actions.add(
         _buildActionButton(
           context,

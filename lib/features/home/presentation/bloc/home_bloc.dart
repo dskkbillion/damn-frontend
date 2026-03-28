@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/error/failures.dart';
 import '../../../../../core/usecases/usecase.dart';
+import '../../../../../core/utils/app_logger.dart';
 import '../../domain/entities/home_feed_item.dart';
 import '../../domain/usecases/get_home_feed_usecase.dart';
 import '../../domain/usecases/get_home_page_data_usecase.dart';
@@ -112,11 +113,16 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       (feedItems) {
         final existingIds = currentState.feedItems.map((item) => item.id).toSet();
         final appendedItems = feedItems.where((item) => !existingIds.contains(item.id)).toList();
+        final hasReachedMax = feedItems.length < defaultLimit;
         _currentPage = nextPage;
+        AppLogger.d(
+          'HomeBloc loadMore: page=$nextPage, apiReturned=${feedItems.length}, '
+          'afterDedup=${appendedItems.length}, hasReachedMax=$hasReachedMax',
+        );
         emit(
           currentState.copyWith(
             feedItems: List<HomeFeedItem>.of(currentState.feedItems)..addAll(appendedItems),
-            hasReachedMax: feedItems.length < defaultLimit || appendedItems.isEmpty,
+            hasReachedMax: hasReachedMax,
             isLoadingMore: false,
           ),
         );
