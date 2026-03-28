@@ -105,10 +105,12 @@ class AutoReplyBloc extends Bloc<AutoReplyEvent, AutoReplyState> {
       return;
     }
 
+    final settings = currentSettings!;
+
     // 显示更新中状态
     emit(AutoReplyUpdating(
       AutoReplySettings(
-        isEnabled: currentSettings.isEnabled,
+        isEnabled: settings.isEnabled,
         content: event.content,
       ),
     ));
@@ -116,7 +118,7 @@ class AutoReplyBloc extends Bloc<AutoReplyEvent, AutoReplyState> {
     // 构建更新参数
     final params = SetAutoReplyParams(
       settings: AutoReplySettings(
-        isEnabled: currentSettings.isEnabled,
+        isEnabled: settings.isEnabled,
         content: event.content,
       ),
     );
@@ -125,10 +127,10 @@ class AutoReplyBloc extends Bloc<AutoReplyEvent, AutoReplyState> {
     final result = await _setAutoReplyUseCase(params);
 
     result.fold(
-      (failure) => emit(AutoReplyError(failure.message, previousSettings: currentSettings)),
+      (failure) => emit(AutoReplyError(failure.message, previousSettings: settings)),
       (success) {
         final savedSettings = AutoReplySettings(
-          isEnabled: currentSettings!.isEnabled,
+          isEnabled: settings.isEnabled,
           content: event.content,
         );
         emit(AutoReplySaveSuccess(savedSettings));
