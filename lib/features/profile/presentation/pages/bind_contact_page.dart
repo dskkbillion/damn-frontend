@@ -5,14 +5,16 @@ import 'package:go_router/go_router.dart';
 import '../bloc/bind_contact_cubit.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_button.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_input_field.dart';
+import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/phone_input_field.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/entities/country_code.dart';
 
 class BindContactPage extends StatefulWidget {
   final BindContactType contactType;
 
   const BindContactPage({
-    Key? key,
+    super.key,
     required this.contactType,
-  }) : super(key: key);
+  });
 
   @override
   State<BindContactPage> createState() => _BindContactPageState();
@@ -23,20 +25,44 @@ class _BindContactPageState extends State<BindContactPage> {
   final TextEditingController _codeController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
+  late CountryCode _selectedCountry;
+
   bool get _isEmail => widget.contactType == BindContactType.email;
 
   String get _title => _isEmail ? '绑定邮箱' : '绑定手机号';
-  String get _contactLabel => _isEmail ? '邮箱地址' : '手机号';
-  String get _contactHint => _isEmail ? '请输入邮箱地址' : '请输入手机号';
 
   static const Color primaryColor = Color(0xFFB66D0E);
   static const Color buttonBackgroundColor = Color(0xFFC58C4A);
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedCountry = CountryCodes.commonCountries[0]; // 默认中国
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 根据系统语言设置默认国家码
+    final locale = Localizations.localeOf(context);
+    _selectedCountry = CountryCodes.getDefaultCountryCode(locale.languageCode);
+  }
 
   @override
   void dispose() {
     _contactController.dispose();
     _codeController.dispose();
     super.dispose();
+  }
+
+  /// 获取完整手机号
+  /// 国内号码（+86）不带区号前缀，兼容老用户数据
+  /// 国际号码带区号前缀（如 +1xxxxx）
+  String get _fullPhoneNumber {
+    final phone = _contactController.text.trim();
+    if (_isEmail) return phone;
+    if (_selectedCountry.dialCode == '+86') return phone;
+    return '${_selectedCountry.dialCode}$phone';
   }
 
   CodeButtonState _mapToCodeButtonState(BindContactState state) {
@@ -50,35 +76,32 @@ class _BindContactPageState extends State<BindContactPage> {
     return state is BindContactSendingCode;
   }
 
-  String? _validateContact(String? value) {
+  String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
-      return '请输入$_contactLabel';
+      return '请输入邮箱地址';
     }
-    if (_isEmail) {
-      final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-      if (!emailRegex.hasMatch(value)) {
-        return '请输入有效的邮箱地址';
-      }
-    } else {
-      final phoneRegex = RegExp(r'^\d{7,15}$');
-      if (!phoneRegex.hasMatch(value)) {
-        return '请输入有效的手机号';
-      }
+    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+    if (!emailRegex.hasMatch(value)) {
+      return '请输入有效的邮箱地址';
     }
     return null;
   }
 
   Future<void> _onSendCode(String contact) async {
-    // 只校验联系方式，不校验验证码字段
-    final contactError = _validateContact(contact);
-    if (contactError == null) {
+    if (_isEmail) {
+      final error = _validateEmail(contact);
+      if (error != null) return;
       await context.read<BindContactCubit>().sendCode(contact);
+    } else {
+      // 手机号校验由 PhoneInputField 的 validator 处理
+      if (_contactController.text.trim().isEmpty) return;
+      await context.read<BindContactCubit>().sendCode(_fullPhoneNumber);
     }
   }
 
   void _onBind() {
     if (_formKey.currentState?.validate() ?? false) {
-      final contact = _contactController.text.trim();
+      final contact = _isEmail ? _contactController.text.trim() : _fullPhoneNumber;
       final code = _codeController.text.trim();
       if (code.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -155,21 +178,28 @@ class _BindContactPageState extends State<BindContactPage> {
                 children: [
                   const SizedBox(height: 16),
                   // 联系方式输入框
-                  TextFormField(
-                    controller: _contactController,
-                    keyboardType: _isEmail
-                        ? TextInputType.emailAddress
-                        : TextInputType.phone,
-                    decoration: InputDecoration(
-                      labelText: _contactLabel,
-                      hintText: _contactHint,
-                      prefixIcon: Icon(
-                        _isEmail ? Icons.email_outlined : Icons.phone_outlined,
+                  if (_isEmail)
+                    TextFormField(
+                      controller: _contactController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(
+                        labelText: '邮箱地址',
+                        hintText: '请输入邮箱地址',
+                        prefixIcon: Icon(Icons.email_outlined),
+                        border: OutlineInputBorder(),
                       ),
-                      border: const OutlineInputBorder(),
+                      validator: _validateEmail,
+                    )
+                  else
+                    PhoneInputField(
+                      controller: _contactController,
+                      selectedCountry: _selectedCountry,
+                      onCountryChanged: (country) {
+                        setState(() {
+                          _selectedCountry = country;
+                        });
+                      },
                     ),
-                    validator: _validateContact,
-                  ),
                   const SizedBox(height: 16),
                   // 验证码输入框 + 发送按钮
                   Row(
@@ -206,7 +236,7 @@ class _BindContactPageState extends State<BindContactPage> {
                             backgroundColor: buttonBackgroundColor,
                             foregroundColor: Colors.white,
                             disabledBackgroundColor:
-                                buttonBackgroundColor.withOpacity(0.7),
+                                buttonBackgroundColor.withValues(alpha: 0.7),
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),

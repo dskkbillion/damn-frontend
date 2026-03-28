@@ -542,6 +542,17 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
   }
 
   String _maskPhoneNumber(String phone) {
+    // 处理带区号的号码（如 +8613800000001）
+    if (phone.startsWith('+')) {
+      // 找到区号结束位置（1-3位数字在+后面）
+      final digits = phone.substring(1);
+      // 保留区号+前3位本地号码，中间隐藏，露出后4位
+      if (digits.length > 8) {
+        return '+${digits.substring(0, 4)}****${digits.substring(digits.length - 4)}';
+      }
+      return phone;
+    }
+    // 纯国内号码（如 13800000001）
     if (phone.length > 8) {
       return '${phone.substring(0, 3)}****${phone.substring(phone.length - 4)}';
     }
