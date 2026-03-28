@@ -10,6 +10,7 @@ import 'package:get_it/get_it.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dio/dio.dart';
+import 'package:dskk_flutter_refactor/core/network/interceptors/unauthorized_logout_handler.dart';
 import 'bind_contact_page.dart';
 import '../bloc/bind_contact_cubit.dart';
 
@@ -57,9 +58,8 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             },
           ),
           BlocListener<ProfileBloc, ProfileState>(
-            listenWhen: (previous, current) => 
-              current is ProfileError && 
-              (previous is ProfileLoggingOut || previous is LogoutEvent),
+            listenWhen: (previous, current) =>
+              current is ProfileError && previous is ProfileLoggingOut,
             listener: (context, state) {
               if (state is ProfileError) {
                 AppLogger.d('【退出登录】发生错误: ${state.message}');
@@ -159,7 +159,14 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             
             AppLogger.d('[AccountSecurityPage] Current state: ${state.runtimeType}');
             AppLogger.d('[AccountSecurityPage] Profile: ${profile?.nickName}');
-            
+
+            // 登出过程中不渲染页面内容，避免全屏红色错误
+            if (state is ProfileLoggingOut || state is ProfileLoggedOut) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+
             return Scaffold(
               appBar: AppBar(
                 title: const Text('账号与安全'),
@@ -524,7 +531,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    '注销后，您的账号数据（包括订单记录、个人信息、收藏等）将被永久清除且无法恢复。',
+                    '注销后，您的账号将被禁用且无法登录。历史数据将被保留，但绑定的手机号和邮箱将被释放。',
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -553,9 +560,11 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                 ),
                 TextButton(
                   onPressed: confirmed
-                      ? () {
+                      ? () async {
                           controller.dispose();
                           Navigator.pop(dialogContext);
+                          // 等 dialog 动画完全结束，避免 _dependents.isEmpty 断言错误
+                          await Future.delayed(const Duration(milliseconds: 300));
                           _submitDeactivateAccount(profile);
                         }
                       : null,
@@ -573,21 +582,20 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
   Future<void> _submitDeactivateAccount(UserProfile? profile) async {
     final dio = GetIt.instance<Dio>();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
+    // 在请求前就标记主动登出，因为后端处理 deactivate 时 token 立即失效，
+    // 并发请求会先收到 401，必须提前抑制
+    UnauthorizedLogoutHandler.isVoluntaryLogout = true;
     try {
-      await dio.post(
-        '/api/project/logout/edit',
-        data: {'memberId': profile?.userId},
-      );
+      await dio.post('/api/member/deactivate');
       if (mounted) {
-        scaffoldMessenger.showSnackBar(
-          const SnackBar(content: Text('注销申请已提交，请等待审核')),
-        );
         _profileBloc.add(LogoutEvent());
       }
     } on DioException catch (e) {
+      // 请求失败，恢复标记
+      UnauthorizedLogoutHandler.isVoluntaryLogout = false;
       if (mounted) {
         scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text('注销申请失败：${e.message}')),
+          SnackBar(content: Text('账号注销失败：${e.message}')),
         );
       }
     }

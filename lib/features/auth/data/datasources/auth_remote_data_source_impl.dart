@@ -94,9 +94,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }) async {
     // 使用登录验证码接口，因为我们的登录注册是合一的
     const String endpoint = '/api/common/send-code/login';
+    final bool isEmail = phone.contains('@');
     final Map<String, dynamic> data = {
       'mobile': phone,
-      // 移除所有额外参数，只保留手机号
+      'scene': isEmail ? 'email_code_login' : 'sms_code_login',
     };
 
     AppLogger.d('===== 发送验证码 =====');
