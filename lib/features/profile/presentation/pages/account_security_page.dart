@@ -12,8 +12,6 @@ import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dio/dio.dart';
 import 'package:dskk_flutter_refactor/core/network/interceptors/unauthorized_logout_handler.dart';
 import 'bind_contact_page.dart';
-import 'change_contact_page.dart';
-import 'unbind_contact_page.dart';
 import '../bloc/bind_contact_cubit.dart';
 
 class AccountSecurityPage extends StatefulWidget {
@@ -481,6 +479,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
   }
 
   void _navigateToEditNickname(UserProfile? profile) async {
+    // TODO(Step1.4): 待路由注册后迁移到 GoRouter (EditNicknamePage 未在 ProfileRoutes 注册)
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -489,7 +488,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
         ),
       ),
     );
-    
+
     // 如果编辑成功，刷新当前页面数据
     if (result == true) {
       _profileBloc.add(GetUserProfileEvent());
@@ -497,6 +496,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
   }
 
   void _navigateToBindContact(BindContactType contactType) async {
+    // TODO(Step1.4): 待路由注册后迁移到 GoRouter (BindContactPage 需要 BlocProvider 注入，未在 ProfileRoutes 注册)
     final dio = GetIt.instance<Dio>();
     final result = await Navigator.push(
       context,
@@ -557,14 +557,14 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
   }
 
   void _navigateToChangeContact(String contactType, String currentContact) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ChangeContactPage(
-          contactType: contactType,
-          currentContact: currentContact,
-        ),
-      ),
+    final result = await context.push<bool>(
+      Uri(
+        path: '/profile/change-contact',
+        queryParameters: {
+          'contactType': contactType,
+          'currentContact': currentContact,
+        },
+      ).toString(),
     );
 
     if (result == true) {
@@ -573,14 +573,14 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
   }
 
   void _navigateToUnbindContact(String contactType, String currentContact) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => UnbindContactPage(
-          contactType: contactType,
-          currentContact: currentContact,
-        ),
-      ),
+    final result = await context.push<bool>(
+      Uri(
+        path: '/profile/unbind-contact',
+        queryParameters: {
+          'contactType': contactType,
+          'currentContact': currentContact,
+        },
+      ).toString(),
     );
 
     if (result == true) {

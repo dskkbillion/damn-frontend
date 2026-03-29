@@ -426,6 +426,7 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                                final chatMessagesBloc = getIt<ChatMessagesBloc>(param1: chatRoomId);
                                AppLogger.d('成功创建ChatMessagesBloc: $chatMessagesBloc');
                                
+                               // TODO(Step1.4): 待路由注册后迁移到 GoRouter (ChatRoomPage 使用 BlocProvider.value 传入已有 bloc 实例，GoRouter 路由 /chat/:id 自行创建 bloc，需要先支持外部 bloc 注入才能迁移)
                                // 导航到聊天室页面
                                Navigator.push(
                                  context,
