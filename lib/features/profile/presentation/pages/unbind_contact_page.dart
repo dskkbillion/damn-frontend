@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_button.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_input_field.dart';
 import 'package:dskk_flutter_refactor/features/profile/presentation/bloc/profile_bloc.dart';
@@ -29,7 +31,6 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
 
   bool get _isEmail => widget.contactType == 'email';
 
-  static const Color primaryColor = Color(0xFFB66D0E);
 
   @override
   void dispose() {
@@ -82,7 +83,7 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
             _isSendingCode = false;
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('验证码已发送'), backgroundColor: Colors.green),
+            const SnackBar(content: Text('验证码已发送'), backgroundColor: AppColors.success),
           );
           Future.delayed(const Duration(seconds: 60), () {
             if (mounted && _codeState == CodeButtonState.counting) {
@@ -95,7 +96,7 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
         if (mounted) {
           setState(() => _isSendingCode = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
+            SnackBar(content: Text(errorMsg), backgroundColor: AppColors.error),
           );
         }
       }
@@ -106,7 +107,7 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
             ? e.response?.data['msg']
             : '发送验证码失败，请检查网络连接';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: Colors.red),
+          SnackBar(content: Text(msg), backgroundColor: AppColors.error),
         );
       }
     }
@@ -137,7 +138,7 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
           // Refresh profile
           GetIt.instance<ProfileBloc>().add(const GetUserProfileEvent(skipCache: true));
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('解绑成功'), backgroundColor: Colors.green),
+            const SnackBar(content: Text('解绑成功'), backgroundColor: AppColors.success),
           );
           context.pop(true);
         }
@@ -146,7 +147,7 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
         if (mounted) {
           setState(() => _isSubmitting = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
+            SnackBar(content: Text(errorMsg), backgroundColor: AppColors.error),
           );
         }
       }
@@ -157,7 +158,7 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
             ? e.response?.data['msg']
             : '解绑失败，请检查网络连接';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: Colors.red),
+          SnackBar(content: Text(msg), backgroundColor: AppColors.error),
         );
       }
     }
@@ -168,18 +169,8 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
     final dummyController = TextEditingController(text: widget.currentContact);
     final contactLabel = _isEmail ? '邮箱' : '手机号';
 
-    return Theme(
-      data: Theme.of(context).copyWith(
-        colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: primaryColor,
-              secondary: primaryColor,
-            ),
-        textButtonTheme: TextButtonThemeData(
-          style: TextButton.styleFrom(foregroundColor: primaryColor),
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF5F5F5),
+    return Scaffold(
+        backgroundColor: AppColors.backgroundSecondary,
         appBar: AppBar(
           title: Text('解绑$contactLabel'),
           leading: IconButton(
@@ -197,18 +188,18 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF8F0),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFF0DCC0)),
+                  color: AppColors.warning.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+                  border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.warning_amber_rounded, color: Color(0xFFB66D0E), size: 24),
+                    Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 24),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         '解绑后，您将无法使用该$contactLabel登录',
-                        style: const TextStyle(fontSize: 14, color: Color(0xFF8B6914)),
+                        style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
                       ),
                     ),
                   ],
@@ -220,8 +211,8 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.backgroundCard,
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha:0.04),
@@ -235,19 +226,19 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
                   children: [
                     Text(
                       '当前$contactLabel',
-                      style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                      style: const TextStyle(fontSize: 13, color: AppColors.textTertiary),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       _maskContact(widget.currentContact),
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFF333333)),
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
                     ),
                     const SizedBox(height: 20),
                     const Divider(height: 1),
                     const SizedBox(height: 20),
                     Text(
                       '验证身份',
-                      style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                      style: const TextStyle(fontSize: 13, color: AppColors.textTertiary),
                     ),
                     const SizedBox(height: 12),
                     Row(
@@ -275,11 +266,11 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
                 child: ElevatedButton(
                   onPressed: _isSubmitting ? null : _onUnbind,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD9534F),
+                    backgroundColor: AppColors.error,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: const Color(0xFFD9534F).withValues(alpha:0.5),
+                    disabledBackgroundColor: AppColors.error.withValues(alpha: 0.5),
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusMd)),
                     elevation: 0,
                   ),
                   child: _isSubmitting
@@ -298,7 +289,7 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
               Center(
                 child: Text(
                   '解绑操作不可撤销',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
+                  style: const TextStyle(fontSize: 12, color: AppColors.textTertiary),
                 ),
               ),
             ],

@@ -4,6 +4,8 @@ import 'package:get_it/get_it.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:io';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 import '../bloc/profile_bloc.dart';
 
@@ -292,7 +294,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey[700],
+              color: AppColors.textSecondary,
             ),
           ),
         ],

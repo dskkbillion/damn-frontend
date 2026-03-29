@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 class OrderStatusSection extends StatelessWidget {
   const OrderStatusSection({Key? key}) : super(key: key);
@@ -15,11 +17,11 @@ class OrderStatusSection extends StatelessWidget {
       margin: const EdgeInsets.only(top: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.backgroundCard,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.borderSecondary,
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),
@@ -47,14 +49,14 @@ class OrderStatusSection extends StatelessWidget {
                       '全部',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.grey[600],
+                        color: AppColors.textSecondary,
                       ),
                     ),
                     const SizedBox(width: 4),
                     Icon(
                       Icons.chevron_right,
                       size: 16,
-                      color: Colors.grey[600],
+                      color: AppColors.textSecondary,
                     ),
                   ],
                 ),
@@ -104,7 +106,7 @@ class OrderStatusSection extends StatelessWidget {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -126,7 +128,7 @@ class OrderStatusSection extends StatelessWidget {
               text,
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey[700],
+                color: AppColors.textSecondary,
               ),
             ),
           ],

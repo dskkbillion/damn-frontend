@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
@@ -56,7 +58,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(appLocalizations.profile_avatar_upload_failed),
-                backgroundColor: Colors.red,
+                backgroundColor: AppColors.error,
                 duration: const Duration(seconds: 3),
               ),
             );
@@ -108,9 +110,9 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             Text(
               appLocalizations.profile_login_prompt,
-              style: const TextStyle(fontSize: 18),
+              style: Theme.of(context).textTheme.titleMedium,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppDimensions.spacingXxl),
             ElevatedButton(
               onPressed: () {
                 // 导航到登录页面

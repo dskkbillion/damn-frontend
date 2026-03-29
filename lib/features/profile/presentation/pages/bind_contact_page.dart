@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 import '../bloc/bind_contact_cubit.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_button.dart';
@@ -31,8 +33,6 @@ class _BindContactPageState extends State<BindContactPage> {
 
   String get _title => _isEmail ? '绑定邮箱' : '绑定手机号';
 
-  static const Color primaryColor = Color(0xFFB66D0E);
-  static const Color buttonBackgroundColor = Color(0xFFC58C4A);
 
   @override
   void initState() {
@@ -115,19 +115,7 @@ class _BindContactPageState extends State<BindContactPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
-      data: Theme.of(context).copyWith(
-        colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: primaryColor,
-              secondary: primaryColor,
-            ),
-        textButtonTheme: TextButtonThemeData(
-          style: TextButton.styleFrom(
-            foregroundColor: primaryColor,
-          ),
-        ),
-      ),
-      child: Scaffold(
+    return Scaffold(
         appBar: AppBar(
           title: Text(_title),
           leading: IconButton(
@@ -141,21 +129,21 @@ class _BindContactPageState extends State<BindContactPage> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('验证码已发送'),
-                  backgroundColor: Colors.green,
+                  backgroundColor: AppColors.success,
                 ),
               );
             } else if (state is BindContactCodeSendFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.message),
-                  backgroundColor: Colors.red,
+                  backgroundColor: AppColors.error,
                 ),
               );
             } else if (state is BindContactSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('绑定成功'),
-                  backgroundColor: Colors.green,
+                  backgroundColor: AppColors.success,
                 ),
               );
               // 返回上一页并传递成功标记
@@ -164,7 +152,7 @@ class _BindContactPageState extends State<BindContactPage> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.message),
-                  backgroundColor: Colors.red,
+                  backgroundColor: AppColors.error,
                 ),
               );
             }
@@ -233,13 +221,13 @@ class _BindContactPageState extends State<BindContactPage> {
                         return ElevatedButton(
                           onPressed: isBinding ? null : _onBind,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: buttonBackgroundColor,
+                            backgroundColor: Theme.of(context).colorScheme.primary,
                             foregroundColor: Colors.white,
                             disabledBackgroundColor:
-                                buttonBackgroundColor.withValues(alpha: 0.7),
+                                Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
                             ),
                           ),
                           child: isBinding
@@ -268,7 +256,6 @@ class _BindContactPageState extends State<BindContactPage> {
             ),
           ),
         ),
-      ),
     );
   }
 }

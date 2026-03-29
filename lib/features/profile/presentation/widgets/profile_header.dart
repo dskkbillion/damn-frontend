@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -57,7 +59,7 @@ class ProfileHeader extends ConsumerWidget {
           margin: const EdgeInsets.all(12.0),
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12.0),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -68,7 +70,7 @@ class ProfileHeader extends ConsumerWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: AppColors.borderSecondary,
                 blurRadius: 5,
                 offset: const Offset(0, 2),
               ),
@@ -126,7 +128,7 @@ class ProfileHeader extends ConsumerWidget {
             Positioned.fill(
               child: Container(
                 decoration: const BoxDecoration(
-                  color: Colors.black54,
+                  color: AppColors.textSecondary,
                   shape: BoxShape.circle,
                 ),
                 child: const Center(
@@ -171,12 +173,12 @@ class ProfileHeader extends ConsumerWidget {
                 width: 8,
                 height: 8,
                 decoration: BoxDecoration(
-                  color: profile?.onlineFlag == true ? Colors.greenAccent : Colors.grey,
+                  color: profile?.onlineFlag == true ? AppColors.success : AppColors.textTertiary,
                   shape: BoxShape.circle,
                   boxShadow: [
                      if (profile?.onlineFlag == true)
                        BoxShadow(
-                         color: Colors.greenAccent.withOpacity(0.5),
+                         color: AppColors.success.withOpacity(0.5),
                          blurRadius: 4,
                        ),
                   ]
@@ -221,7 +223,7 @@ class ProfileHeader extends ConsumerWidget {
           foregroundColor: Theme.of(context).primaryColor,
           backgroundColor: Colors.white.withOpacity(0.9),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
           ),
           padding: const EdgeInsets.symmetric(vertical: 10),
         ),
