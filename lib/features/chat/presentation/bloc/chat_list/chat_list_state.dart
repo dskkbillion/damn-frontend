@@ -9,13 +9,16 @@ class ChatListState extends Equatable {
   final List<ChatRoom> chatRooms;
   final String? errorMessage;
   // Add field to trigger navigation
-  final int? navigateToChatId; 
+  final int? navigateToChatId;
+  /// True when showing stale cached data while a remote refresh is in progress
+  final bool isRefreshing;
 
   const ChatListState({
     this.status = ChatListStatus.initial,
     this.chatRooms = const <ChatRoom>[],
     this.errorMessage,
-    this.navigateToChatId, // Initialize
+    this.navigateToChatId,
+    this.isRefreshing = false,
   });
 
   ChatListState copyWith({
@@ -24,6 +27,7 @@ class ChatListState extends Equatable {
     String? errorMessage,
     int? navigateToChatId,
     bool clearNavigateToChatId = false, // Flag to clear navigation trigger
+    bool? isRefreshing,
   }) {
     return ChatListState(
       status: status ?? this.status,
@@ -31,9 +35,10 @@ class ChatListState extends Equatable {
       errorMessage: errorMessage ?? this.errorMessage,
       // If clearNavigateToChatId is true, set to null, otherwise update or keep existing
       navigateToChatId: clearNavigateToChatId ? null : (navigateToChatId ?? this.navigateToChatId),
+      isRefreshing: isRefreshing ?? this.isRefreshing,
     );
   }
 
   @override
-  List<Object?> get props => [status, chatRooms, errorMessage, navigateToChatId];
+  List<Object?> get props => [status, chatRooms, errorMessage, navigateToChatId, isRefreshing];
 } 
