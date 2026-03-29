@@ -46,6 +46,7 @@ class ChatRoutes {
           getChatRoomList: sl(),
           createChatRoom: sl(),
           deleteChatRoom: sl(),
+          localDataSource: sl(),
         )..add(LoadChatRoomList()), // Create Bloc and load initial data
         child: const ChatListPage(),
       ),

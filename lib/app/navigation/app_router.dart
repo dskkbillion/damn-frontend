@@ -305,6 +305,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             getChatRoomList: getIt(),
             createChatRoom: getIt(),
             deleteChatRoom: getIt(),
+            localDataSource: getIt(),
           )..add(LoadChatRoomList());
         },
         child: const ChatListPage(), // 使用ChatListPage
