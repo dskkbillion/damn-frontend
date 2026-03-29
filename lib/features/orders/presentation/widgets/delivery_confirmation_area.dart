@@ -1,6 +1,8 @@
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// Widget displaying the delivered content and actions for awaiting confirmation state.
 class DeliveryConfirmationArea extends StatelessWidget {
@@ -51,7 +53,7 @@ class DeliveryConfirmationArea extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(delivery['title'], style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
-                        Text(delivery['timestamp'], style: textTheme.bodySmall?.copyWith(color: Colors.grey[600])),
+                        Text(delivery['timestamp'], style: textTheme.bodySmall?.copyWith(color: AppColors.textSecondary)),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -67,7 +69,7 @@ class DeliveryConfirmationArea extends StatelessWidget {
                          padding: const EdgeInsets.all(12.0),
                          decoration: BoxDecoration(
                             color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(8)
+                            borderRadius: BorderRadius.circular(AppDimensions.radiusSm)
                          ),
                          child: Builder( // Use Builder to access context if needed inside calculation
                            builder: (context) {
@@ -116,7 +118,7 @@ class DeliveryConfirmationArea extends StatelessWidget {
         Center(
           child: Text(
             '当前交付次数不足时，请先与卖家沟通是否同意再次交付', // From prototype
-             style: textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+             style: textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
              textAlign: TextAlign.center,
           ),
         ),
@@ -144,7 +146,7 @@ class DeliveryConfirmationArea extends StatelessWidget {
               children: [
                 Text(fileName, style: textTheme.bodyMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
                 if (fileSize != null)
-                  Text(fileSize, style: textTheme.bodySmall?.copyWith(color: Colors.grey[600])),
+                  Text(fileSize, style: textTheme.bodySmall?.copyWith(color: AppColors.textSecondary)),
               ],
             ),
           ),

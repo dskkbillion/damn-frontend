@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart'; // Import GoRouter
@@ -89,7 +91,7 @@ class OrderItemCard extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('订单已取消'),
-              backgroundColor: Colors.green,
+              backgroundColor: AppColors.success,
             ),
           );
 
@@ -106,7 +108,7 @@ class OrderItemCard extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('取消失败：${state.message}'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.error,
             ),
           );
         } else if (state is OrderDetailError) {
@@ -117,7 +119,7 @@ class OrderItemCard extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('加载订单详情失败：${state.message}'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.error,
             ),
           );
         }
@@ -212,10 +214,10 @@ class OrderItemCard extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('订单已删除'),
-              backgroundColor: Colors.green,
+              backgroundColor: AppColors.success,
             ),
           );
-          
+
           // 刷新订单列表，保持当前的筛选状态
           if (context.mounted) {
             final orderListBloc = context.read<OrderListBloc>();
@@ -226,26 +228,26 @@ class OrderItemCard extends StatelessWidget {
           AppLogger.d('[OrderItemCard] 删除失败: ${state.message}');
           // 取消订阅
           streamSubscription.cancel();
-          
+
           // 删除失败
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('删除失败：${state.message}'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.error,
             ),
           );
         } else if (state is OrderDetailError) {
           AppLogger.d('[OrderItemCard] 加载订单详情失败: ${state.message}');
           // 取消订阅
           streamSubscription.cancel();
-          
+
           // 加载失败
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('加载订单详情失败：${state.message}'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.error,
             ),
           );
         }
@@ -254,14 +256,14 @@ class OrderItemCard extends StatelessWidget {
       // 先加载订单详情
       AppLogger.d('[OrderItemCard] 先加载订单详情');
       orderDetailBloc.add(LoadOrderDetail(orderId: order.id));
-      
+
     } catch (e) {
       AppLogger.d('[OrderItemCard] 删除操作异常: $e');
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('删除失败：$e'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
     }
@@ -282,19 +284,19 @@ class OrderItemCard extends StatelessWidget {
 
     return Card(
       // 使用 Card 来获得圆角、阴影和白色背景，符合原型风格
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      margin: const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
       elevation: 0, // 无阴影，更简洁
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         side: BorderSide(
-          color: colorScheme.outline.withOpacity(0.3), // 淡边框
+          color: colorScheme.outline.withValues(alpha: 0.3), // 淡边框
         ),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(AppDimensions.spacingLg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -382,22 +384,22 @@ class OrderItemCard extends StatelessWidget {
                            if (loadingProgress == null) return child;
                            return Container(
                              width: 80, height: 80,
-                             color: Colors.grey[200],
+                             color: AppColors.backgroundSecondary,
                              child: const Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
                            );
                         },
                         errorBuilder: (context, error, stackTrace) => Container(
                           width: 80, height: 80,
-                          color: Colors.grey[200],
-                          child: Icon(Icons.broken_image, color: Colors.grey[400]),
+                          color: AppColors.backgroundSecondary,
+                          child: Icon(Icons.broken_image, color: AppColors.textTertiary),
                         ),
                       ),
                     )
                   else // 如果没有图片URL，显示占位符
                      Container(
                           width: 80, height: 80,
-                          color: Colors.grey[200],
-                          child: Icon(Icons.image, color: Colors.grey[400]),
+                          color: AppColors.backgroundSecondary,
+                          child: Icon(Icons.image, color: AppColors.textTertiary),
                         ),
                   const SizedBox(width: 12.0),
                   // 商品详情
@@ -463,7 +465,7 @@ class OrderItemCard extends StatelessWidget {
                     ],
                   ),
                 ),
-              Divider(height: 1, color: Colors.grey[200]), // 分隔线
+              Divider(height: 1, color: AppColors.borderPrimary), // 分隔线
               const SizedBox(height: 8.0), // Reduced spacing slightly
               // 时间戳单独一行，靠左
               Align(

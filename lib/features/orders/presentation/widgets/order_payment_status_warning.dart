@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import '../../domain/entities/order.dart';
 import '../../domain/entities/order_status.dart';
 
@@ -22,39 +24,37 @@ class OrderPaymentStatusWarning extends StatelessWidget {
     final now = DateTime.now();
     final orderCreatedAt = order.createdAt;
     final timeDifference = now.difference(orderCreatedAt).inMinutes;
-    
+
     // 如果订单创建超过30分钟且仍为待付款状态，显示警告
     if (timeDifference > 30) {
       return Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.only(bottom: AppDimensions.spacingLg),
+        padding: const EdgeInsets.all(AppDimensions.spacingMd),
         decoration: BoxDecoration(
-          color: Colors.orange[50],
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.orange[200]!),
+          color: AppColors.warning.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
-            Icon(Icons.warning_amber, color: Colors.orange[700], size: 20),
-            const SizedBox(width: 8),
+            Icon(Icons.warning_amber, color: AppColors.warning, size: 20),
+            const SizedBox(width: AppDimensions.spacingSm),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     '支付状态提醒',
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Colors.orange[800],
+                      color: AppColors.warning,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppDimensions.spacingXs),
                   Text(
                     '如果您已经完成支付但订单仍显示"待付款"，可能是系统延迟所致。请稍后刷新页面查看。',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.orange[700],
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.warning,
                     ),
                   ),
                 ],

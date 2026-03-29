@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import '../../domain/entities/order.dart';
 
 /// 订单信息组件
@@ -14,13 +16,13 @@ class OrderInfoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.backgroundCard,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: AppColors.borderSecondary,
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -31,11 +33,11 @@ class OrderInfoSection extends StatelessWidget {
         children: [
           // 标题部分
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppDimensions.spacingLg),
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: Theme.of(context).dividerColor.withOpacity(0.1),
+                  color: AppColors.borderPrimary,
                   width: 1,
                 ),
               ),
@@ -45,9 +47,9 @@ class OrderInfoSection extends StatelessWidget {
                 Icon(
                   Icons.receipt_outlined,
                   size: 20,
-                  color: Theme.of(context).primaryColor,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppDimensions.spacingSm),
                 Text(
                   '订单信息',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -59,7 +61,7 @@ class OrderInfoSection extends StatelessWidget {
           ),
           // 内容部分
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppDimensions.spacingLg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -83,12 +85,12 @@ class OrderInfoSection extends StatelessWidget {
   Widget _buildInfoRow(BuildContext context, String label, String value) {
     final textTheme = Theme.of(context).textTheme;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingXs),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: textTheme.bodyMedium?.copyWith(color: Colors.grey[600])),
-          const SizedBox(width: 8),
+          Text(label, style: textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary)),
+          const SizedBox(width: AppDimensions.spacingSm),
           Expanded(child: Text(value, style: textTheme.bodyMedium)),
         ],
       ),

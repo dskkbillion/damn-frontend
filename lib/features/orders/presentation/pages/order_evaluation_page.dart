@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 import '../bloc/order_detail_bloc.dart';
 import '../widgets/order_evaluation_form.dart';
@@ -42,7 +44,7 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(state.message),
-                    backgroundColor: Colors.green,
+                    backgroundColor: AppColors.success,
                   ),
                 );
                 // 延迟返回，让用户看到成功消息
@@ -56,7 +58,7 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(state.message),
-                    backgroundColor: Colors.red,
+                    backgroundColor: AppColors.error,
                   ),
                 );
               }
@@ -65,15 +67,15 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppDimensions.spacingLg),
                   // 商品信息卡片
                   if (widget.order != null && widget.order!.items.isNotEmpty)
                     _buildOrderItemCard(),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppDimensions.spacingLg),
 
                   // 评价表单
                   _buildEvaluationForm(),
-                  const SizedBox(height: 32), // 底部留白
+                  const SizedBox(height: AppDimensions.spacingXxxl), // 底部留白
                 ],
               ),
             ),
@@ -86,15 +88,16 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
   /// 构建订单商品信息卡片
   Widget _buildOrderItemCard() {
     final item = widget.order!.items.first;
+    final textTheme = Theme.of(context).textTheme;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.backgroundCard,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: AppColors.borderSecondary,
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -105,11 +108,11 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
         children: [
           // 标题部分
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppDimensions.spacingLg),
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: Theme.of(context).dividerColor.withOpacity(0.1),
+                  color: Theme.of(context).dividerColor,
                   width: 1,
                 ),
               ),
@@ -119,12 +122,12 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
                 Icon(
                   Icons.shopping_bag_outlined,
                   size: 20,
-                  color: Theme.of(context).primaryColor,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppDimensions.spacingSm),
                 Text(
                   '商品信息',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -133,7 +136,7 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
           ),
           // 商品内容
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(AppDimensions.spacingLg),
             child: Row(
               children: [
                 // 商品图片
@@ -141,17 +144,17 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                    color: AppColors.backgroundSecondary,
                   ),
                   child: item.imageUrl.isNotEmpty
                       ? ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                           child: Image.network(
                             item.imageUrl,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) =>
-                                Icon(Icons.broken_image, color: Colors.grey[500]),
+                                Icon(Icons.broken_image, color: AppColors.textTertiary),
                             loadingBuilder: (context, child, progress) =>
                                 progress == null
                                     ? child
@@ -160,9 +163,9 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
                                       ),
                           ),
                         )
-                      : Icon(Icons.image, color: Colors.grey[500], size: 40),
+                      : Icon(Icons.image, color: AppColors.textTertiary, size: 40),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: AppDimensions.spacingLg),
 
                 // 商品信息
                 Expanded(
@@ -171,29 +174,26 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
                     children: [
                       Text(
                         item.productName,
-                        style: const TextStyle(
+                        style: textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppDimensions.spacingXs),
                       if (item.skuName != null && item.skuName!.isNotEmpty)
                         Text(
                           item.skuName!,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
+                          style: textTheme.bodySmall?.copyWith(
+                            color: AppColors.textSecondary,
                           ),
                         ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppDimensions.spacingSm),
                       Text(
                         '¥${item.price.toStringAsFixed(2)}',
-                        style: TextStyle(
+                        style: textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).colorScheme.error,
-                          fontSize: 16,
                         ),
                       ),
                     ],
@@ -215,15 +215,15 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
     } else {
       // 如果没有传入订单对象，显示错误提示
       return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
+        padding: const EdgeInsets.all(AppDimensions.spacingLg),
         decoration: BoxDecoration(
-          color: Colors.red[50],
-          borderRadius: BorderRadius.circular(12),
+          color: AppColors.error.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         ),
-        child: const Text(
+        child: Text(
           '无法加载订单信息，请返回重试',
-          style: TextStyle(color: Colors.red),
+          style: TextStyle(color: AppColors.error),
         ),
       );
     }
