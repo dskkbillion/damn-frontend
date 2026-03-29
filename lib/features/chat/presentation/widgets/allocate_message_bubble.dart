@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart'; // 添加日期格式化导入
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import '../utils/markdown_style_helper.dart';
 import '../../domain/entities/chat_message.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
@@ -50,8 +52,8 @@ class _AllocateMessageBubbleState extends State<AllocateMessageBubble> {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       decoration: BoxDecoration(
-        color: const Color(0xFFF6F6F6), // 浅灰背景
-        borderRadius: BorderRadius.circular(12.0),
+        color: AppColors.backgroundSecondary,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,7 +89,7 @@ class _AllocateMessageBubbleState extends State<AllocateMessageBubble> {
                   Text(
                     DateFormat('HH:mm').format(widget.message.createTime!),
                     style: TextStyle(
-                      color: Colors.grey[500],
+                      color: AppColors.textTertiary,
                       fontSize: 12.0,
                     ),
                   ),

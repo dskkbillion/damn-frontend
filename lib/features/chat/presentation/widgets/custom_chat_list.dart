@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:intl/intl.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart' as domain;
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/participant.dart';
@@ -95,13 +97,13 @@ class _CustomChatListState extends State<CustomChatList> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
           decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(12.0),
+            color: AppColors.borderPrimary,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
           ),
           child: Text(
             displayString,
             style: TextStyle(
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
               fontSize: 12.0,
             ),
           ),
@@ -116,7 +118,7 @@ class _CustomChatListState extends State<CustomChatList> {
       return Center(
         child: Text(
           '暂无消息',
-          style: TextStyle(color: Colors.grey[500]),
+          style: TextStyle(color: AppColors.textTertiary),
         ),
       );
     }

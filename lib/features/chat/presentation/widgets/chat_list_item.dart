@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:intl/date_symbol_data_local.dart'; // Import for initializing locale data
@@ -127,7 +129,7 @@ class _ChatListItemState extends State<ChatListItem> {
         backgroundImage: (opponent.avatar != null && opponent.avatar!.isNotEmpty)
             ? CachedNetworkImageProvider(opponent.avatar!)
             : null, // Use provider for CircleAvatar
-        backgroundColor: Colors.grey[200], // Placeholder background
+        backgroundColor: AppColors.borderPrimary, // Placeholder background
         child: (opponent.avatar == null || opponent.avatar!.isEmpty)
             ? Text(
                 opponent.nickName?.isNotEmpty == true
@@ -152,9 +154,9 @@ class _ChatListItemState extends State<ChatListItem> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.blue[50],
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue[200]!),
+                color: AppColors.info.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+                border: Border.all(color: AppColors.info.withOpacity(0.2)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -172,7 +174,7 @@ class _ChatListItemState extends State<ChatListItem> {
                           return Container(
                             width: 20,
                             height: 20,
-                            color: Colors.grey[300],
+                            color: AppColors.borderInput,
                             child: const Icon(Icons.image, size: 12),
                           );
                         },
@@ -187,7 +189,7 @@ class _ChatListItemState extends State<ChatListItem> {
                       widget.chatRoom.productName ?? '商品',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.blue[700],
+                        color: AppColors.info,
                         fontWeight: FontWeight.w500,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -201,7 +203,7 @@ class _ChatListItemState extends State<ChatListItem> {
                       PriceFormatter.format(widget.chatRoom.productPrice!),
                       style: TextStyle(
                         fontSize: 11,
-                        color: Colors.red[600],
+                        color: AppColors.error,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -214,7 +216,7 @@ class _ChatListItemState extends State<ChatListItem> {
       ),
       subtitle: Text(
         lastMessageText,
-        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+        style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
@@ -224,15 +226,15 @@ class _ChatListItemState extends State<ChatListItem> {
         children: [
           Text(
             timestampText,
-            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+            style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
           ),
           const SizedBox(height: 5.0), // Space for badge
           if (widget.chatRoom.unreadCount > 0)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2), // Adjusted padding
               decoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.circular(10), // Make it slightly pill-shaped
+                color: AppColors.error,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
               ),
               constraints: const BoxConstraints(
                 minWidth: 18,
@@ -274,7 +276,7 @@ class _ChatListItemState extends State<ChatListItem> {
                   ),
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(true),
-                    style: TextButton.styleFrom(foregroundColor: Colors.red),
+                    style: TextButton.styleFrom(foregroundColor: AppColors.error),
                     child: const Text('删除'),
                   ),
                 ],
@@ -288,7 +290,7 @@ class _ChatListItemState extends State<ChatListItem> {
         background: Container(
           alignment: Alignment.centerRight,
           padding: const EdgeInsets.only(right: 20),
-          color: Colors.red,
+          color: AppColors.error,
           child: const Icon(
             Icons.delete,
             color: Colors.white,

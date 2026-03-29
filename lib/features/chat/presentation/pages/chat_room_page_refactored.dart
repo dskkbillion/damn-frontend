@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
@@ -307,13 +309,13 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
           FocusScope.of(context).unfocus();
         },
         child: Scaffold(
-          backgroundColor: const Color(0xFFEDEDED),
+          backgroundColor: AppColors.backgroundSecondary,
           // FAB will be added later when we have access to scroll controller
           appBar: AppBar(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
+          backgroundColor: AppColors.backgroundCard,
+          foregroundColor: AppColors.textPrimary,
           elevation: 0.5,
-          shadowColor: Colors.grey[300],
+          shadowColor: AppColors.borderInput,
           centerTitle: true,
           leading: BackButton(
             onPressed: () {
@@ -539,10 +541,10 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                       bottom: 16.0,
                       child: FloatingActionButton(
                         mini: true,
-                        backgroundColor: Colors.white,
+                        backgroundColor: AppColors.backgroundCard,
                         elevation: 4.0,
                         onPressed: _scrollToBottom,
-                        child: const Icon(Icons.arrow_downward, color: Colors.grey),
+                        child: Icon(Icons.arrow_downward, color: AppColors.textTertiary),
                       ),
                     ),
                 ],
@@ -572,24 +574,24 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
-                            color: Colors.amber.shade50,
+                            color: AppColors.warning.withOpacity(0.05),
                             border: Border(
-                              top: BorderSide(color: Colors.grey.shade300),
+                              top: BorderSide(color: AppColors.borderInput),
                             ),
                           ),
                           child: Row(
                             children: [
                               Icon(
                                 Icons.info_outline,
-                                color: Colors.amber.shade700,
+                                color: AppColors.warning,
                                 size: 20,
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: AppDimensions.spacingSm),
                               Expanded(
                                 child: Text(
                                   '达到免费咨询轮次，可发送付费提示',
                                   style: TextStyle(
-                                    color: Colors.amber.shade800,
+                                    color: AppColors.warning,
                                     fontSize: 14,
                                   ),
                                 ),
@@ -618,7 +620,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
                                           content: Text(e.toString().replaceAll('Exception: ', '')),
-                                          backgroundColor: Colors.red,
+                                          backgroundColor: AppColors.error,
                                           duration: const Duration(seconds: 3),
                                         ),
                                       );
@@ -629,10 +631,10 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                                 label: const Text('发送提示'),
                                 style: TextButton.styleFrom(
                                   foregroundColor: Colors.white,
-                                  backgroundColor: Colors.amber.shade600,
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  backgroundColor: AppColors.warning,
+                                  padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingXs + 2),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
                                   ),
                                 ),
                               ),
