@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import '../../domain/entities/related_service_entity.dart';
 
 /// {@template service_card}
@@ -14,13 +16,13 @@ class ServiceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12.0),
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.0),
+        color: AppColors.backgroundCard,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.borderSecondary,
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -28,14 +30,14 @@ class ServiceCard extends StatelessWidget {
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16.0),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.all(AppDimensions.spacingMd),
           child: Row(
             children: [
               // --- 左侧图片 ---
               ClipRRect(
-                borderRadius: BorderRadius.circular(8.0),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                 child: Image.network(
                   service.imageUrl,
                   width: 60,
@@ -47,12 +49,12 @@ class ServiceCard extends StatelessWidget {
                     return Container(
                       width: 60,
                       height: 60,
-                      color: Colors.grey[200],
+                      color: AppColors.borderPrimary,
                       child: Center(
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded / 
+                              ? loadingProgress.cumulativeBytesLoaded /
                                 loadingProgress.expectedTotalBytes!
                               : null,
                         ),
@@ -63,30 +65,29 @@ class ServiceCard extends StatelessWidget {
                   errorBuilder: (context, error, stackTrace) => Container(
                     width: 60,
                     height: 60,
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                    color: AppColors.borderPrimary,
+                    child: const Icon(Icons.image_not_supported, color: AppColors.textTertiary),
                   ),
                 ),
               ),
-              
+
               // --- 中间文本 ---
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         service.title,
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppDimensions.spacingXs),
                       Text(
                         '￥${service.price.toStringAsFixed(2)}',
                         style: TextStyle(
@@ -99,7 +100,7 @@ class ServiceCard extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               // --- 右侧按钮 ---
               Container(
                 height: 36,
@@ -114,11 +115,11 @@ class ServiceCard extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(18),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd),
                   ),
-                  child: const Text(
+                  child: Text(
                     '让ta看看',
-                    style: TextStyle(fontSize: 14),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
                   ),
                 ),
               ),
@@ -128,5 +129,4 @@ class ServiceCard extends StatelessWidget {
       ),
     );
   }
-} 
- 
+}

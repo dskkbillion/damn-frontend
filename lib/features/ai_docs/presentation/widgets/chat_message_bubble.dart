@@ -3,6 +3,8 @@ import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:audioplayers/audioplayers.dart'; // Import audioplayers
 import 'package:flutter_markdown/flutter_markdown.dart'; // 导入Markdown渲染包
 import 'package:url_launcher/url_launcher.dart'; // 导入URL处理包
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import '../../../../features/chat/presentation/utils/markdown_style_helper.dart'; // 复用已有的样式助手
 import '../../domain/entities/ai_chat_message_entity.dart';
 import '../../domain/entities/related_service_entity.dart'; // Import RelatedServiceEntity
@@ -12,7 +14,7 @@ import 'blinking_cursor.dart'; // Import the blinking cursor widget
 /// A StatefulWidget that displays a single chat message bubble.
 ///
 /// Handles alignment based on the sender, background color,
-/// displays the message content (text, image placeholder, or audio player), 
+/// displays the message content (text, image placeholder, or audio player),
 /// and shows a blinking cursor if the message is currently streaming.
 /// It manages audio playback state for audio messages.
 /// {@endtemplate}
@@ -71,9 +73,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
     // 2. 有音频URL
     // 3. 不是转录中状态（避免在转录阶段初始化）
     // 4. AudioPlayer还未初始化
-    if (_isAudioMessage && 
-        _audioUrl != null && 
-        !widget.message.isTranscribing && 
+    if (_isAudioMessage &&
+        _audioUrl != null &&
+        !widget.message.isTranscribing &&
         _audioPlayer == null) {
       AppLogger.d('[AudioPlayer] Initializing for URL: $_audioUrl');
       // 延迟初始化，给UI一些时间渲染
@@ -89,11 +91,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
     if (_audioPlayer != null) {
       _audioPlayer!.dispose(); // 清理旧的播放器
     }
-    
+
     try {
       _audioPlayer = AudioPlayer();
       // Set release mode to keep resources low. Typically you might use loop=false instead.
-      _audioPlayer!.setReleaseMode(ReleaseMode.stop); 
+      _audioPlayer!.setReleaseMode(ReleaseMode.stop);
 
       // Listen to state changes
       _audioPlayer!.onPlayerStateChanged.listen((state) {
@@ -153,7 +155,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
 
   Future<void> _play() async {
     if (_audioUrl == null) return;
-    
+
     try {
       // If player is not initialized or disposed, re-initialize
       if (_audioPlayer == null || _playerState == PlayerState.stopped || _playerState == PlayerState.completed) {
@@ -209,11 +211,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
     // 🎨 修改颜色方案 - AI消息使用固定的浅灰色
     Color bubbleColor = isUser
         ? Theme.of(context).colorScheme.primaryContainer
-        : Colors.grey[100]!; // AI消息使用固定的浅灰色
+        : AppColors.backgroundSecondary; // AI消息使用背景次色
 
     // 流式输出时也使用相同的浅灰色，保持一致性
     if (!isUser && widget.isStreaming && widget.message.messageType == MessageType.text) {
-       bubbleColor = Colors.grey[100]!; // 与非流式状态保持一致
+       bubbleColor = AppColors.backgroundSecondary; // 与非流式状态保持一致
     }
 
     return Align(
@@ -223,11 +225,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
         children: [
           // 消息气泡
           Container(
-            margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+            margin: const EdgeInsets.symmetric(vertical: AppDimensions.spacingXs, horizontal: AppDimensions.spacingSm),
             padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 14.0),
             decoration: BoxDecoration(
               color: bubbleColor,
-              borderRadius: BorderRadius.circular(16.0),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
             ),
             constraints: BoxConstraints(
                maxWidth: MediaQuery.of(context).size.width * 0.75
@@ -248,21 +250,6 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
 
                   // --- Display Timestamp (Optional) ---
                   // 🕐 移除时间戳显示 - 现在使用时间分隔符来显示时间
-                  // Don't show timestamp for streaming text message
-                  // if (widget.message.timestamp != null && !(widget.isStreaming && widget.message.messageType == MessageType.text))
-                  //  Padding(
-                  //    padding: const EdgeInsets.only(top: 4.0),
-                  //    child: Text(
-                  //       "${widget.message.timestamp!.hour.toString().padLeft(2, '0')}:${widget.message.timestamp!.minute.toString().padLeft(2, '0')}",
-                  //       style: TextStyle(
-                  //           fontSize: 10.0, 
-                  //           // 🎨 修改时间戳颜色 - AI消息使用固定的灰色
-                  //           color: isUser 
-                  //              ? Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.7) 
-                  //              : Colors.grey[600], // AI消息使用固定的灰色时间戳
-                  //       ),
-                  //    ),
-                  //  )
                ],
             ),
           ),
@@ -274,10 +261,10 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
   // --- Text content builder (uses widget.message and widget.isStreaming) ---
   Widget _buildTextContent(BuildContext context, bool isUser) {
      // 🎨 修改文本颜色 - AI消息使用固定的深色文本，匹配固定的浅灰色背景
-     final textColor = isUser 
-          ? Theme.of(context).colorScheme.onPrimaryContainer 
-          : Colors.black87; // AI消息使用固定的深色文本，匹配浅灰色背景
-         
+     final textColor = isUser
+          ? Theme.of(context).colorScheme.onPrimaryContainer
+          : AppColors.textPrimary; // AI消息使用textPrimary，匹配浅灰色背景
+
      // 处理流式响应或空消息的特殊情况
      if (widget.isStreaming && widget.message.content.isEmpty) {
        return Row(
@@ -295,7 +282,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
          ],
        );
      }
-     
+
      // 使用Markdown渲染组件替代普通Text
      return Row(
         mainAxisSize: MainAxisSize.min,
@@ -333,7 +320,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
          mainAxisSize: MainAxisSize.min,
          children: [
            ClipRRect(
-             borderRadius: BorderRadius.circular(8.0),
+             borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
              child: Image.network(
                imageUrl,
                errorBuilder: (context, error, stackTrace) {
@@ -341,13 +328,13 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
                  return Container(
                    width: 200,
                    height: 150,
-                   color: Colors.grey[200],
+                   color: AppColors.borderPrimary,
                    child: Column(
                      mainAxisAlignment: MainAxisAlignment.center,
                      children: [
-                       Icon(Icons.error_outline, color: Colors.grey[500]),
-                       const SizedBox(height: 8),
-                       Text('图片加载失败', style: TextStyle(color: Colors.grey[600])),
+                       Icon(Icons.error_outline, color: AppColors.textTertiary),
+                       const SizedBox(height: AppDimensions.spacingSm),
+                       Text('图片加载失败', style: TextStyle(color: AppColors.textSecondary)),
                      ],
                    ),
                  );
@@ -358,7 +345,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
                  return Container(
                    width: 200,
                    height: 150,
-                   color: Colors.grey[100],
+                   color: AppColors.backgroundSecondary,
                    child: Center(
                      child: CircularProgressIndicator(
                        value: loadingProgress.expectedTotalBytes != null
@@ -375,10 +362,10 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
                // height: 150,
              ),
            ),
-           
+
            if (widget.message.content.isNotEmpty)
              Padding(
-               padding: const EdgeInsets.only(top: 8.0),
+               padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
                child: SelectableText(
                  widget.message.content,
                  style: TextStyle(
@@ -397,13 +384,13 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
   // --- Audio player builder (uses state variables and widget.message) ---
   Widget _buildAudioContent(BuildContext context, bool isUser) {
      // 🎨 修改音频播放器图标颜色 - AI消息使用固定的深色图标
-     final iconColor = isUser 
-                      ? Theme.of(context).colorScheme.onPrimaryContainer 
-                      : Colors.black87; // AI消息使用固定的深色图标
-    
+     final iconColor = isUser
+                      ? Theme.of(context).colorScheme.onPrimaryContainer
+                      : AppColors.textPrimary; // AI消息使用textPrimary
+
      final url = _audioUrl;
      AppLogger.d('[AudioPlayer] Building audio content - URL: $url, Player: ${_audioPlayer != null}, Message Type: ${widget.message.messageType}');
-     
+
      // 如果没有URL，只显示转录状态，不显示错误信息（避免初始阶段的错误闪现）
      if (url == null) {
        return Column(
@@ -423,7 +410,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
                      valueColor: AlwaysStoppedAnimation<Color>(iconColor),
                    ),
                  ),
-                 const SizedBox(width: 8),
+                 const SizedBox(width: AppDimensions.spacingSm),
                  Text(
                    '转录中...',
                    style: TextStyle(
@@ -444,7 +431,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
          ],
        );
      }
-     
+
      // 如果有URL但AudioPlayer初始化失败，显示简化的错误信息和重试选项
      if (_audioPlayer == null) {
        return Column(
@@ -469,7 +456,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
                  padding: EdgeInsets.zero,
                  constraints: const BoxConstraints(),
                ),
-               const SizedBox(width: 8),
+               const SizedBox(width: AppDimensions.spacingSm),
                // 显示音频不可用状态
                Expanded(
                  child: Container(
@@ -480,7 +467,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
                    ),
                  ),
                ),
-               const SizedBox(width: 8),
+               const SizedBox(width: AppDimensions.spacingSm),
                Text(
                  '音频不可用',
                  style: TextStyle(fontSize: 12.0, color: iconColor.withOpacity(0.7)),
@@ -490,7 +477,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
            // 显示转录文本（这是最重要的内容）
            if (widget.message.content.isNotEmpty && widget.message.content != "转录中...")
              Padding(
-               padding: const EdgeInsets.only(top: 8.0),
+               padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
                child: SelectableText(
                  widget.message.content,
                  style: TextStyle(
@@ -533,7 +520,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(), // Remove default padding
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppDimensions.spacingSm),
             // Optional: Progress Indicator (Slider or LinearProgressIndicator)
              Expanded( // Allow slider to take available space
                child: SliderTheme( // Customize slider appearance
@@ -546,21 +533,17 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
                    thumbColor: iconColor,
                   ),
                  child: Slider(
-                   value: totalDuration.inMilliseconds > 0 
+                   value: totalDuration.inMilliseconds > 0
                           ? (currentPosition.inMilliseconds.clamp(0, totalDuration.inMilliseconds) / totalDuration.inMilliseconds)
                           : 0.0,
                    onChanged: (value) async {
                      final newPosition = totalDuration * value;
                      await _audioPlayer!.seek(newPosition);
-                     // Optionally resume playback after seeking
-                     // if (!_isPlaying && _playerState != PlayerState.completed) {
-                     //   _play();
-                     // }
                    },
                  ),
                ),
              ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppDimensions.spacingSm),
             // Duration Text
             Text(
               '${formatDuration(currentPosition)} / ${formatDuration(totalDuration)}',
@@ -568,11 +551,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
             ),
           ],
         ),
-        
+
         // 转录文本或转录中状态
         if (widget.message.isTranscribing)
           Padding(
-            padding: const EdgeInsets.only(top: 8.0),
+            padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -584,7 +567,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
                     valueColor: AlwaysStoppedAnimation<Color>(iconColor),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppDimensions.spacingSm),
                 Text(
                   '转录中...',
                   style: TextStyle(
@@ -597,7 +580,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
           )
         else if (widget.message.content.isNotEmpty && widget.message.content != "转录中...")
           Padding(
-            padding: const EdgeInsets.only(top: 8.0),
+            padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
             child: SelectableText(
               widget.message.content,
               style: TextStyle(
@@ -621,4 +604,4 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
 
 // Ensure RelatedServiceEntity is accessible
 // If AiChatMessageEntity doesn't export it, import it directly
-// import '../../domain/entities/related_service_entity.dart'; // May be needed if not exported by message entity 
+// import '../../domain/entities/related_service_entity.dart'; // May be needed if not exported by message entity

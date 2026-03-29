@@ -9,6 +9,8 @@ import 'package:path/path.dart' as p;
 import 'package:get_it/get_it.dart'; // Import GetIt
 import 'package:collection/collection.dart'; // Import collection package
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 添加FlutterSecureStorage导入
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
 // Import Bloc and State/Event files
@@ -45,7 +47,7 @@ import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_messa
 import 'package:dskk_flutter_refactor/features/chat/presentation/pages/chat_room_page.dart';
 
 // Get the GetIt instance
-final getIt = GetIt.instance; 
+final getIt = GetIt.instance;
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -56,7 +58,7 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   final TextEditingController _textController = TextEditingController();
-  
+
   // 🔥 添加状态来控制推荐次数提示框的显示
   bool _isRateLimitWarningDismissed = false;
 
@@ -65,17 +67,17 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     // Dispatch the event to load conversations when the page initializes
     // Ensure BlocProvider is available above this widget in the tree
-    WidgetsBinding.instance.addPostFrameCallback((_) async { 
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (mounted) { // Check if the state is still mounted
         final bloc = context.read<AiChatBloc>();
         bloc.add(LoadConversations());
-        
+
         // 频率限制接口使用 member.id，不是 common_user_id
         try {
           final storage = const FlutterSecureStorage();
           final memberUserIdString = await storage.read(key: 'user_id');
           final userId = int.tryParse(memberUserIdString ?? '');
-          
+
           if (userId != null) {
             bloc.add(FetchRateLimitStatus(userId: userId));
             AppLogger.d("[ChatPage] Dispatched FetchRateLimitStatus with userId: $userId");
@@ -85,7 +87,7 @@ class _ChatPageState extends State<ChatPage> {
         } catch (e) {
           AppLogger.d("[ChatPage] Error getting user ID: $e");
         }
-        
+
         AppLogger.d("[ChatPage] Dispatched LoadConversations event.");
       }
     });
@@ -101,12 +103,12 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context)!;
-    
+
     return Scaffold(
       // Add a drawer for the conversation sidebar
       drawer: const Drawer(
          // Setting width might be necessary depending on content
-         // width: MediaQuery.of(context).size.width * 0.75, 
+         // width: MediaQuery.of(context).size.width * 0.75,
          child: ConversationSidebar(),
       ),
       appBar: AppBar(
@@ -140,15 +142,13 @@ class _ChatPageState extends State<ChatPage> {
 
                return Padding(
                  // Add some padding to align with other AppBar elements
-                 padding: const EdgeInsets.only(right: 8.0),
+                 padding: const EdgeInsets.only(right: AppDimensions.spacingSm),
                  child: TextButton(
                    style: TextButton.styleFrom(
                      // Use primary color from the theme for the text, gray when disabled
                      foregroundColor: (isGenerating || !hasMessages)
-                         ? Colors.grey
+                         ? AppColors.textTertiary
                          : Theme.of(context).colorScheme.primary,
-                     // Adjust padding inside the button if needed
-                     // padding: EdgeInsets.symmetric(horizontal: 12.0),
                    ),
                    onPressed: (isGenerating || !hasMessages) ? null : () {
                       // Dispatch event to fetch recommendations first
@@ -192,7 +192,7 @@ class _ChatPageState extends State<ChatPage> {
                if (rateLimit == null || _isRateLimitWarningDismissed) {
                  return const SizedBox.shrink();
                }
-               
+
                return RateLimitWarningBanner(
                  remaining: rateLimit.remaining,
                  resetInSeconds: rateLimit.resetInSeconds,
@@ -223,13 +223,13 @@ class _ChatPageState extends State<ChatPage> {
   void _sendMessage(String message) {
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context)!;
-    
+
     // 检查消息是否为空
     if (message.trim().isNotEmpty) {
       // 获取当前AI聊天Bloc状态
       final aiChatBloc = context.read<AiChatBloc>();
       final currentState = aiChatBloc.state;
-      
+
       // 检查是否已选择对话，如果没有选择，先创建新对话
       if (currentState.selectedConversationId == null) {
         // 先创建新对话，再发送消息
@@ -239,7 +239,7 @@ class _ChatPageState extends State<ChatPage> {
         // 已有对话，直接发送消息
         aiChatBloc.add(SendMessage(message: message.trim()));
       }
-      
+
       // 发送消息后触发滚动到底部
       aiChatBloc.add(const ScrollToBottom());
       _textController.clear();
@@ -262,19 +262,19 @@ class _ChatPageState extends State<ChatPage> {
      final aiChatBloc = BlocProvider.of<AiChatBloc>(pageContext);
 
     showModalBottomSheet(
-      context: pageContext, 
+      context: pageContext,
       // Make it scrollable if the list can be long
-      isScrollControlled: true, 
+      isScrollControlled: true,
       // Use a fraction of the screen height
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(pageContext).size.height * 0.6, 
+        maxHeight: MediaQuery.of(pageContext).size.height * 0.6,
       ),
       builder: (BuildContext bottomSheetContext) {
         // Provide the existing Bloc instance to the bottom sheet content
         return BlocProvider.value(
            value: aiChatBloc,
            // Create a dedicated widget for the bottom sheet content
-           child: const RecommendationBottomSheetContent(), 
+           child: const RecommendationBottomSheetContent(),
         );
       },
     );
@@ -290,12 +290,12 @@ class RecommendationBottomSheetContent extends StatelessWidget {
   Widget build(BuildContext context) {
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context)!;
-    
+
     // 移除不需要的BlocListener，不显示SnackBar提示
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFFFFF8F0), // 米黄色底色
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundCard,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppDimensions.radiusLg)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -303,7 +303,12 @@ class RecommendationBottomSheetContent extends StatelessWidget {
           children: [
             // 标题栏
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              padding: const EdgeInsets.fromLTRB(
+                AppDimensions.spacingLg,
+                AppDimensions.spacingLg,
+                AppDimensions.spacingLg,
+                AppDimensions.spacingSm,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -323,47 +328,47 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                 ],
               ),
            ),
-            Divider(height: 1, color: Colors.grey[200]),
+            Divider(height: 1, color: AppColors.borderPrimary),
 
             // 内容区域
-          Expanded( 
+          Expanded(
              child: BlocBuilder<AiChatBloc, AiChatState>(
-               buildWhen: (prev, curr) => 
-                   prev.recommendations != curr.recommendations || 
-                   prev.recommendationsStatus != curr.recommendationsStatus, 
+               buildWhen: (prev, curr) =>
+                   prev.recommendations != curr.recommendations ||
+                   prev.recommendationsStatus != curr.recommendationsStatus,
                builder: (context, state) {
                   // 加载中状态
                  if (state.recommendationsStatus == RecommendationsStatus.loading) {
                     return const Center(child: CircularProgressIndicator());
                  }
-                  
+
                   // 错误状态
                  if (state.recommendationsStatus == RecommendationsStatus.error) {
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                          const SizedBox(height: 16),
+                          const Icon(Icons.error_outline, color: AppColors.error, size: 48),
+                          const SizedBox(height: AppDimensions.spacingLg),
                           Text(
                             appLocalizations.ai_docs_recommendations_error(state.recommendationsErrorMessage ?? ''), // 使用国际化文本
-                            style: const TextStyle(color: Colors.red),
+                            style: const TextStyle(color: AppColors.error),
                             textAlign: TextAlign.center,
                           ),
                         ],
                       ),
                     );
                  }
-                  
+
                   // 空状态
                  if (state.recommendations.isEmpty) {
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.inbox, color: Colors.grey, size: 48),
-                          const SizedBox(height: 16),
-                          Text(appLocalizations.ai_docs_no_recommendations, style: const TextStyle(color: Colors.grey)), // 使用国际化文本
+                          const Icon(Icons.inbox, color: AppColors.textTertiary, size: 48),
+                          const SizedBox(height: AppDimensions.spacingLg),
+                          Text(appLocalizations.ai_docs_no_recommendations, style: const TextStyle(color: AppColors.textSecondary)), // 使用国际化文本
                         ],
                       ),
                     );
@@ -371,7 +376,7 @@ class RecommendationBottomSheetContent extends StatelessWidget {
 
                   // 服务列表 - 保持不变
                   return GridView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(AppDimensions.spacingLg),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2, // 两列布局
                       childAspectRatio: 0.6, // 进一步降低宽高比，让卡片更高
@@ -416,17 +421,17 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                            final bloc = context.read<AiChatBloc>();
                            final chatRoomId = bloc.state.createdChatRoomId;
                            AppLogger.d('尝试进入聊天室，chatRoomId: $chatRoomId');
-                           
+
                            if (chatRoomId != null) {
                              AppLogger.d('开始导航到聊天室: $chatRoomId');
                              Navigator.pop(context); // 关闭底部弹窗
-                             
+
                              // 尝试创建ChatMessagesBloc
                              try {
                                final chatMessagesBloc = getIt<ChatMessagesBloc>(param1: chatRoomId);
                                AppLogger.d('成功创建ChatMessagesBloc: $chatMessagesBloc');
-                               
-                               // TODO(Step1.4): 待路由注册后迁移到 GoRouter (ChatRoomPage 使用 BlocProvider.value 传入已有 bloc 实例，GoRouter 路由 /chat/:id 自行创建 bloc，需要先支持外部 bloc 注入才能迁移)
+
+                               // TODO(Step1.4): 待路由注册后迁移到 GoRouter
                                // 导航到聊天室页面
                                Navigator.push(
                                  context,
@@ -490,15 +495,15 @@ class ServiceGridItem extends StatelessWidget {
   Widget build(BuildContext context) {
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context)!;
-    
+
     // 使用BlocBuilder来监听状态变化，确保按钮状态能被正确更新
     return BlocBuilder<AiChatBloc, AiChatState>(
       buildWhen: (previous, current) =>
         // 只有在服务分配状态变化或总体状态变化时才重建
         previous.serviceAllocationStatus[service.id] != current.serviceAllocationStatus[service.id] ||
-        (previous.status != current.status && 
-         (current.status == AiChatStatus.allocatingResource || 
-          current.status == AiChatStatus.allocationSuccess || 
+        (previous.status != current.status &&
+         (current.status == AiChatStatus.allocatingResource ||
+          current.status == AiChatStatus.allocationSuccess ||
           current.status == AiChatStatus.allocationFailure)),
       builder: (context, state) {
         // 获取当前服务的分配状态
@@ -506,11 +511,11 @@ class ServiceGridItem extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.backgroundCard,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.borderSecondary,
             blurRadius: 3,
             offset: const Offset(0, 1),
           ),
@@ -519,10 +524,10 @@ class ServiceGridItem extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: allocationStatus == AllocationStatus.loading || allocationStatus == AllocationStatus.success 
+          onTap: allocationStatus == AllocationStatus.loading || allocationStatus == AllocationStatus.success
               ? null // 加载中或已分发状态禁用点击
               : onTap,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
           child: Padding(
             padding: const EdgeInsets.all(10.0),
             child: Column(
@@ -530,24 +535,24 @@ class ServiceGridItem extends StatelessWidget {
               children: [
                 // 图片区域占据更多空间
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppDimensions.spacingSm),
                   child: AspectRatio(
                     aspectRatio: 1.0, // 保持正方形比例
                     child: Image.network(
                       service.imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => Container(
-                        color: Colors.grey[200],
+                        color: AppColors.borderPrimary,
                         child: const Center(
-                          child: Icon(Icons.image_not_supported, color: Colors.grey, size: 40),
+                          child: Icon(Icons.image_not_supported, color: AppColors.textTertiary, size: 40),
                         ),
                       ),
                     ),
                   ),
                 ),
-                
-                const SizedBox(height: 8),
-                
+
+                const SizedBox(height: AppDimensions.spacingSm),
+
                 // 标题
                 Text(
                   service.title,
@@ -558,9 +563,9 @@ class ServiceGridItem extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                
+
                 const SizedBox(height: 6),
-                
+
                 // 价格
                 Text(
                   '￥${service.price.toStringAsFixed(2)}',
@@ -570,9 +575,9 @@ class ServiceGridItem extends StatelessWidget {
                     fontSize: 14, // 增大字体
                   ),
                 ),
-                
-                const SizedBox(height: 8),
-                
+
+                const SizedBox(height: AppDimensions.spacingSm),
+
                     // 🆕 使用新的按钮组件替换AnimatedAllocationButton
                     ServiceAllocationButtons(
                       service: service,

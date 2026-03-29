@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import '../bloc/ai_chat/ai_chat_bloc.dart';
 
 /// AppBar右上角的频率限制指示器
@@ -14,7 +16,7 @@ class RateLimitIndicator extends StatelessWidget {
           previous.rateLimitStatus != current.rateLimitStatus,
       builder: (context, state) {
         final rateLimit = state.conversationRateLimit;
-        
+
         if (rateLimit == null) {
           return const SizedBox.shrink();
         }
@@ -22,21 +24,21 @@ class RateLimitIndicator extends StatelessWidget {
         final remaining = rateLimit.remaining;
 
         return Padding(
-          padding: const EdgeInsets.only(right: 8.0),
+          padding: const EdgeInsets.only(right: AppDimensions.spacingSm),
           child: Material(
             color: Colors.transparent,
             child: InkWell(
               onTap: () => _showRateLimitDialog(context, state),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd, vertical: 6),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: _getGradientColors(remaining),
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
                   boxShadow: [
                     BoxShadow(
                       color: _getShadowColor(remaining).withValues(alpha: 0.3),
@@ -84,21 +86,21 @@ class RateLimitIndicator extends StatelessWidget {
       return [Colors.amber.shade400, Colors.amber.shade600];
     }
     if (remaining <= 5) {
-      return [Colors.blue.shade400, Colors.blue.shade600];
+      return [AppColors.info, AppColors.info];
     }
-    return [Colors.green.shade400, Colors.green.shade600];
+    return [AppColors.success, AppColors.success];
   }
 
   Color _getShadowColor(int remaining) {
     if (remaining <= 2) return Colors.amber.shade700;
-    if (remaining <= 5) return Colors.blue.shade700;
-    return Colors.green.shade700;
+    if (remaining <= 5) return AppColors.info;
+    return AppColors.success;
   }
 
   Color _getIconColor(int remaining) {
     if (remaining <= 2) return Colors.amber.shade700;
-    if (remaining <= 5) return Colors.blue.shade700;
-    return Colors.green.shade700;
+    if (remaining <= 5) return AppColors.info;
+    return AppColors.success;
   }
 
   IconData _getIcon(int remaining) {
@@ -118,7 +120,7 @@ class RateLimitIndicator extends StatelessWidget {
 /// 频率限制详情对话框
 class RateLimitDetailDialog extends StatelessWidget {
   final AiChatState state;
-  
+
   const RateLimitDetailDialog({
     super.key,
     required this.state,
@@ -129,13 +131,13 @@ class RateLimitDetailDialog extends StatelessWidget {
     final rateLimit = state.conversationRateLimit;
     final remaining = rateLimit?.remaining ?? 0;
     final resetInSeconds = rateLimit?.resetInSeconds ?? 0;
-    
+
     return Dialog(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
       ),
       child: Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppDimensions.spacingXxl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -155,11 +157,11 @@ class RateLimitDetailDialog extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppDimensions.spacingXl),
             _buildStatusCard(context, remaining, resetInSeconds),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingLg),
             _buildRulesCard(context, rateLimit?.rulesStatus ?? []),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppDimensions.spacingXl),
             _buildUpgradeSection(context),
           ],
         ),
@@ -169,42 +171,42 @@ class RateLimitDetailDialog extends StatelessWidget {
 
   Widget _buildStatusCard(BuildContext context, int remaining, int resetInSeconds) {
     final isLow = remaining <= 5;
-    
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(AppDimensions.spacingXl),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isLow
             ? [Colors.amber.shade50, Colors.amber.shade100]
-            : [Colors.green.shade50, Colors.green.shade100],
+            : [AppColors.backgroundSecondary, AppColors.borderPrimary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
       ),
       child: Column(
         children: [
           Icon(
             isLow ? Icons.access_time : Icons.check_circle_outline,
             size: 48,
-            color: isLow ? Colors.amber.shade700 : Colors.green.shade700,
+            color: isLow ? Colors.amber.shade700 : AppColors.success,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppDimensions.spacingMd),
           Text(
             '剩余 $remaining 次',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: isLow ? Colors.amber.shade800 : Colors.green.shade800,
+              color: isLow ? Colors.amber.shade800 : AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppDimensions.spacingXs),
           Text(
             '${_formatResetTime(resetInSeconds)}后重置',
             style: TextStyle(
               fontSize: 14,
-              color: isLow ? Colors.amber.shade700 : Colors.green.shade700,
+              color: isLow ? Colors.amber.shade700 : AppColors.textSecondary,
             ),
           ),
         ],
@@ -215,40 +217,40 @@ class RateLimitDetailDialog extends StatelessWidget {
   Widget _buildRulesCard(BuildContext context, List<dynamic> rulesStatus) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        color: AppColors.backgroundSecondary,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+        border: Border.all(color: AppColors.borderPrimary),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.rule, size: 20, color: Colors.grey.shade700),
-              const SizedBox(width: 8),
+              Icon(Icons.rule, size: 20, color: AppColors.textSecondary),
+              const SizedBox(width: AppDimensions.spacingSm),
               Text(
                 '使用规则',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade800,
+                  color: AppColors.textPrimary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppDimensions.spacingMd),
           ...rulesStatus.map((rule) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   _formatRuleName(rule.name),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
-                    color: Colors.grey.shade600,
+                    color: AppColors.textSecondary,
                   ),
                 ),
                 Row(
@@ -258,14 +260,14 @@ class RateLimitDetailDialog extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: rule.remaining <= 2 ? Colors.amber.shade700 : Colors.grey.shade800,
+                        color: rule.remaining <= 2 ? Colors.amber.shade700 : AppColors.textPrimary,
                       ),
                     ),
                     Text(
                       ' (${rule.windowMinutes}分钟)',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
-                        color: Colors.grey.shade500,
+                        color: AppColors.textTertiary,
                       ),
                     ),
                   ],
@@ -293,17 +295,17 @@ class RateLimitDetailDialog extends StatelessWidget {
           );
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue.shade600,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          backgroundColor: AppColors.info,
+          padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingLg),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
           ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.rocket_launch, size: 20),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppDimensions.spacingSm),
             const Text(
               '升级获取更多次数',
               style: TextStyle(
@@ -330,11 +332,11 @@ class RateLimitDetailDialog extends StatelessWidget {
 
   String _formatResetTime(int seconds) {
     if (seconds <= 0) return '已重置';
-    
+
     final hours = seconds ~/ 3600;
     final minutes = (seconds % 3600) ~/ 60;
     final secs = seconds % 60;
-    
+
     if (hours > 0) {
       return '${hours}小时${minutes}分钟';
     } else if (minutes > 0) {

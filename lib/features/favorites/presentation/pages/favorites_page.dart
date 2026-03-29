@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 import '../../domain/entities/common_user.dart';
 import '../../domain/entities/favorite.dart';
@@ -148,7 +149,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
           'assets/icons/nav/dskk_logo.svg',
           width: 24,
           height: 24,
-          colorFilter: const ColorFilter.mode(Colors.grey, BlendMode.srcIn),
+          colorFilter: const ColorFilter.mode(AppColors.textTertiary, BlendMode.srcIn),
         ),
         activeIcon: SvgPicture.asset(
           'assets/icons/nav/dskk_logo.svg',
@@ -187,7 +188,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
       selectedItemColor: const Color(0xFFD0903D),
-      unselectedItemColor: Colors.grey,
+      unselectedItemColor: AppColors.textTertiary,
       showUnselectedLabels: true,
       items: items,
       currentIndex: 3, // 设置为个人中心tab，因为收藏功能属于个人中心
