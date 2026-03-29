@@ -4,6 +4,8 @@ import 'package:flutter/material.dart' hide CarouselController;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 // 导入国际化
 import '../../../../generated/app_localizations.dart';
@@ -185,7 +187,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+            icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
             onPressed: () => context.pop(),
           ),
           actions: [
@@ -367,18 +369,18 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.green.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(4),
+                          color: AppColors.success.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.check_circle, color: Colors.green, size: 14),
+                            const Icon(Icons.check_circle, color: AppColors.success, size: 14),
                             const SizedBox(width: 2),
                             Text(
                               AppLocalizations.of(context)!.product_detail_verified_label,
                               style: const TextStyle(
-                                color: Colors.green,
+                                color: AppColors.success,
                                 fontSize: 12,
                               ),
                             ),
@@ -410,8 +412,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(20),
+                color: AppColors.borderPrimary,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -439,14 +441,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             margin: const EdgeInsets.only(bottom: 8),
             decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(4),
+              color: AppColors.borderPrimary,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
             ),
             child: Text(
               AppLocalizations.of(context)!.product_detail_published_status,
               style: const TextStyle(
                 fontSize: 12,
-                color: Colors.black87,
+                color: AppColors.textPrimary,
               ),
             ),
           ),
@@ -473,9 +475,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                 children: [
                 Text(
                     product.description,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
-                      color: Colors.grey[600],
+                      color: AppColors.textSecondary,
                     ),
                   maxLines: _isDescriptionExpanded ? null : 2,
                   overflow: _isDescriptionExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
@@ -485,19 +487,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                   children: [
                     const Spacer(),
                 Text(
-                      _isDescriptionExpanded 
-                        ? AppLocalizations.of(context)!.product_detail_collapse 
+                      _isDescriptionExpanded
+                        ? AppLocalizations.of(context)!.product_detail_collapse
                         : AppLocalizations.of(context)!.product_detail_more,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.blue[600],
+                    color: Theme.of(context).colorScheme.primary,
                     ),
                     ),
                     Icon(
-                      _isDescriptionExpanded 
-                        ? Icons.keyboard_arrow_up 
+                      _isDescriptionExpanded
+                        ? Icons.keyboard_arrow_up
                         : Icons.keyboard_arrow_down,
-                      color: Colors.blue[600],
+                      color: Theme.of(context).colorScheme.primary,
                       size: 16,
                     ),
                   ],
@@ -538,7 +540,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
         Container(
           decoration: const BoxDecoration(
             border: Border(
-              bottom: BorderSide(color: Colors.grey, width: 0.5),
+              bottom: BorderSide(color: AppColors.borderPrimary, width: 0.5),
             ),
           ),
           child: TabBar(
@@ -546,9 +548,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
             tabs: product.variants!.map((variant) => Tab(
               text: _getTierPriceDisplay(context, variant), // 显示价格
             )).toList(),
-            labelColor: Colors.amber[800],
-            unselectedLabelColor: Colors.grey,
-            indicatorColor: Colors.amber[800],
+            labelColor: Theme.of(context).colorScheme.primary,
+            unselectedLabelColor: AppColors.textTertiary,
+            indicatorColor: Theme.of(context).colorScheme.primary,
             indicatorWeight: 3,
           ),
         ),
@@ -641,9 +643,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           );
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.black,
+          backgroundColor: Theme.of(context).colorScheme.primary,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
           ),
         ),
         child: Text(
@@ -681,7 +683,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                 child: Text(
                   '暂无常见问题',
                   style: TextStyle(
-                    color: Colors.grey[600],
+                    color: AppColors.textSecondary,
                     fontSize: 14,
                   ),
                 ),

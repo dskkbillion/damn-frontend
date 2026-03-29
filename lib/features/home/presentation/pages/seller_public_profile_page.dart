@@ -15,6 +15,8 @@ import '../../../../app/navigation/app_router_config.dart';
 import '../../../../core/utils/haptic_utils.dart';
 // 导入价格格式化工具
 import '../../../../core/utils/price_formatter.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 import 'package:dskk_flutter_refactor/features/home/domain/entities/seller_product.dart';
 import 'package:dskk_flutter_refactor/features/home/presentation/bloc/seller_profile_bloc.dart';
@@ -49,7 +51,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
   // 底部导航栏点击处理
   void _onNavTap(int index) {
     HapticUtils.lightTabFeedback();
-    
+
     switch (index) {
       case 0: // AI助手
         context.go('/ai_chat');
@@ -73,20 +75,20 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
   Widget _buildBottomNavigationBar() {
     final showDevTab = ref.watch(showDevTabProvider);
     final appLocalizations = AppLocalizations.of(context)!;
-    
+
     final List<BottomNavigationBarItem> items = [
       BottomNavigationBarItem(
         icon: SvgPicture.asset(
           'assets/icons/nav/dskk_logo.svg',
           width: 24,
           height: 24,
-          colorFilter: const ColorFilter.mode(Colors.grey, BlendMode.srcIn),
+          colorFilter: ColorFilter.mode(AppColors.textTertiary, BlendMode.srcIn),
         ),
         activeIcon: SvgPicture.asset(
           'assets/icons/nav/dskk_logo.svg',
           width: 24,
           height: 24,
-          colorFilter: ColorFilter.mode(const Color(0xFFD0903D), BlendMode.srcIn),
+          colorFilter: ColorFilter.mode(Theme.of(context).colorScheme.primary, BlendMode.srcIn),
         ),
         label: appLocalizations.nav_ai_assistant,
       ),
@@ -106,7 +108,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
         label: appLocalizations.nav_profile,
       ),
     ];
-    
+
     if (showDevTab) {
       items.add(BottomNavigationBarItem(
         icon: const Icon(Icons.developer_mode_outlined),
@@ -117,8 +119,8 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
 
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
-      selectedItemColor: const Color(0xFFD0903D),
-      unselectedItemColor: Colors.grey,
+      selectedItemColor: Theme.of(context).colorScheme.primary,
+      unselectedItemColor: AppColors.textTertiary,
       showUnselectedLabels: true,
       items: items,
       currentIndex: 1, // 默认选中主页，因为卖家资料是从商品详情进入的
@@ -145,14 +147,14 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(state.message),
-                      backgroundColor: Colors.red,
+                      backgroundColor: AppColors.error,
                     ),
                   );
                 } else if (state is SellerProfileUnfollowError) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(state.message),
-                      backgroundColor: Colors.red,
+                      backgroundColor: AppColors.error,
                     ),
                   );
                 }
@@ -169,7 +171,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(AppLocalizations.of(context)!.product_detail_loading_failed(state.message)),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppDimensions.spacingLg),
                     ElevatedButton(
                       onPressed: () {
                         context.read<SellerProfileBloc>()
@@ -195,18 +197,18 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
 
   Widget _buildSellerProfile(BuildContext context, SellerProfileLoaded state) {
     final seller = state.seller;
-    
+
     return Column(
       children: [
         // 简洁的卖家头部信息
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(AppDimensions.spacingLg),
           decoration: BoxDecoration(
-            color: Colors.amber[700],
+            color: Theme.of(context).colorScheme.primary,
             borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(16),
-              bottomRight: Radius.circular(16),
+              bottomLeft: Radius.circular(AppDimensions.radiusLg),
+              bottomRight: Radius.circular(AppDimensions.radiusLg),
             ),
           ),
           child: SafeArea(
@@ -230,9 +232,8 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                     Expanded(
                       child: Text(
                         seller?.nickName ?? AppLocalizations.of(context)!.seller_profile_default_title,
-                        style: const TextStyle(
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: Colors.white,
-                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
@@ -245,11 +246,11 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
             ),
           ),
         ),
-        
+
         // 页面内容
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(AppDimensions.spacingLg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -259,15 +260,15 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                     // 卖家头像
                     CircleAvatar(
                       radius: 40,
-                      backgroundImage: seller?.avatar != null 
-                          ? NetworkImage(seller!.avatar!) 
+                      backgroundImage: seller?.avatar != null
+                          ? NetworkImage(seller!.avatar!)
                           : null,
-                      child: seller?.avatar == null 
+                      child: seller?.avatar == null
                           ? const Icon(Icons.person, size: 40, color: Colors.white)
                           : null,
                     ),
-                    const SizedBox(width: 16),
-                    
+                    const SizedBox(width: AppDimensions.spacingLg),
+
                     // 卖家信息
                     Expanded(
                       child: Column(
@@ -280,21 +281,19 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: AppDimensions.spacingXs),
                           // 显示真实的粉丝数量
                           Text(
                             AppLocalizations.of(context)!.seller_profile_followers(seller?.fansCount ?? 0),
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: AppColors.textSecondary,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: AppDimensions.spacingSm),
                           Text(
                             seller?.remarks ?? AppLocalizations.of(context)!.seller_profile_no_description,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[800],
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: AppColors.textPrimary,
                             ),
                           ),
                         ],
@@ -302,9 +301,9 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                     ),
                   ],
                 ),
-                
-                const SizedBox(height: 16),
-                
+
+                const SizedBox(height: AppDimensions.spacingLg),
+
                 // 关注按钮
                 SizedBox(
                   width: double.infinity,
@@ -313,19 +312,19 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                         ? () => context.read<SellerProfileBloc>().add(UnfollowSellerEvent(sellerId: widget.sellerId))
                         : () => context.read<SellerProfileBloc>().add(FollowSellerEvent(sellerId: widget.sellerId)),
                     style: FilledButton.styleFrom(
-                      backgroundColor: seller?.memberAttention == true 
-                          ? Colors.grey[300] 
-                          : Colors.amber[700],
-                      foregroundColor: seller?.memberAttention == true 
-                          ? Colors.black 
+                      backgroundColor: seller?.memberAttention == true
+                          ? AppColors.borderInput
+                          : Theme.of(context).colorScheme.primary,
+                      foregroundColor: seller?.memberAttention == true
+                          ? AppColors.textPrimary
                           : Colors.white,
                     ),
                     child: Text(seller?.memberAttention == true ? AppLocalizations.of(context)!.seller_profile_followed : AppLocalizations.of(context)!.seller_profile_follow),
                   ),
                 ),
-                
-                const SizedBox(height: 16),
-                
+
+                const SizedBox(height: AppDimensions.spacingLg),
+
                 // 标签页
                 TabBar(
                   controller: _tabController,
@@ -333,13 +332,13 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                     Tab(text: AppLocalizations.of(context)!.seller_profile_about_merchant),
                     Tab(text: AppLocalizations.of(context)!.seller_profile_my_services),
                   ],
-                  labelColor: Colors.amber[800],
-                  unselectedLabelColor: Colors.grey,
-                  indicatorColor: Colors.amber[800],
+                  labelColor: Theme.of(context).colorScheme.primary,
+                  unselectedLabelColor: AppColors.textTertiary,
+                  indicatorColor: Theme.of(context).colorScheme.primary,
                 ),
-                
-                const SizedBox(height: 8),
-                
+
+                const SizedBox(height: AppDimensions.spacingSm),
+
                 SizedBox(
                   height: 500, // 固定高度，可调整
                   child: TabBarView(
@@ -347,7 +346,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                     children: [
                       // 关于商家
                       _buildAboutSeller(seller),
-                      
+
                       // 我的服务 (商品列表) - 使用网格布局
                       _buildProductsGrid(state.products),
                     ],
@@ -365,7 +364,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
     if (seller == null) {
       return Center(child: Text(AppLocalizations.of(context)!.seller_profile_no_merchant_info));
     }
-    
+
     return ListView(
       children: [
         _buildInfoItem(AppLocalizations.of(context)!.seller_profile_member_level, AppLocalizations.of(context)!.seller_profile_level_two, Icons.grade),
@@ -378,33 +377,31 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
 
   Widget _buildInfoItem(String label, String value, IconData icon) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingMd),
       child: Row(
         children: [
           Container(
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(20),
+              color: AppColors.borderPrimary,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
             ),
-            child: Icon(icon, color: Colors.amber[800]),
+            child: Icon(icon, color: Theme.of(context).colorScheme.primary),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: AppDimensions.spacingLg),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
                 ),
               ),
               Text(
                 value,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -420,18 +417,18 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
     if (products.isEmpty) {
       return Center(child: Text(AppLocalizations.of(context)!.seller_profile_no_products));
     }
-    
+
     return MasonryGridView.count(
       crossAxisCount: 2,
-      mainAxisSpacing: 16,
-      crossAxisSpacing: 10,
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      mainAxisSpacing: AppDimensions.spacingLg,
+      crossAxisSpacing: AppDimensions.spacingMd,
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
       itemCount: products.length,
       itemBuilder: (context, index) {
         final product = products[index];
         // 根据索引变化宽高比，使瀑布流更自然
         final aspectRatio = 0.8 + (index % 3) * 0.2;
-        
+
         return GestureDetector(
           onTap: () {
             // 使用标准Go Router导航
@@ -439,11 +436,11 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
           },
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8.0),
+              color: AppColors.backgroundCard,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: AppColors.borderSecondary,
                   spreadRadius: 1,
                   blurRadius: 5,
                   offset: const Offset(0, 2),
@@ -456,18 +453,18 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                 // 商品图片
                 ClipRRect(
                   borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(8.0),
-                    topRight: Radius.circular(8.0),
+                    topLeft: Radius.circular(AppDimensions.radiusSm),
+                    topRight: Radius.circular(AppDimensions.radiusSm),
                   ),
                   child: AspectRatio(
                     aspectRatio: aspectRatio,
                     child: _buildProductImage(product),
                   ),
                 ),
-                
+
                 // 商品信息
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(AppDimensions.spacingSm),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -479,48 +476,44 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                             color: Colors.amber,
                             size: 16,
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: AppDimensions.spacingXs),
                           Text(
                             '5.0', // 固定评分
-                            style: const TextStyle(
-                              fontSize: 12,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: Colors.amber,
                             ),
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: AppDimensions.spacingXs),
                           Text(
                             '(0)', // 固定评价数
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.textSecondary,
                             ),
                           ),
                         ],
                       ),
-                      
-                      const SizedBox(height: 4),
-                      
+
+                      const SizedBox(height: AppDimensions.spacingXs),
+
                       // 商品名称
                       Text(
                         product.name,
-                        style: const TextStyle(
-                          fontSize: 14,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w500,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      
-                      const SizedBox(height: 8),
-                      
+
+                      const SizedBox(height: AppDimensions.spacingSm),
+
                       // 价格
                       Text(
                         PriceFormatter.format(product.sellingPrice),
-                        style: TextStyle(
-                          fontSize: 16,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                     ],
@@ -533,7 +526,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
       },
     );
   }
-  
+
   // 商品图片加载组件
   Widget _buildProductImage(SellerProduct product) {
     // 检查是否有图片URL
@@ -542,29 +535,28 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
         imageUrl: product.images.first,
         fit: BoxFit.cover,
         placeholder: (context, url) => Container(
-          color: Colors.grey[200],
+          color: AppColors.borderPrimary,
           child: const Center(
             child: CircularProgressIndicator(),
           ),
         ),
         errorWidget: (context, url, error) => Container(
-          color: Colors.grey[200],
+          color: AppColors.borderPrimary,
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   Icons.error_outline,
-                  color: Colors.grey[400],
+                  color: AppColors.textTertiary,
                   size: 40,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppDimensions.spacingSm),
                 Text(
                   AppLocalizations.of(context)!.seller_profile_image_load_failed,
-                  style: TextStyle(
-                    color: Colors.grey[600],
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
                     fontWeight: FontWeight.bold,
-                    fontSize: 12,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -577,23 +569,22 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
     } else {
       // 如果没有图片URL，显示占位图
       return Container(
-        color: Colors.grey[200],
+        color: AppColors.borderPrimary,
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.shopping_bag,
-                color: Colors.grey[400],
+                color: AppColors.textTertiary,
                 size: 40,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppDimensions.spacingSm),
               Text(
                 product.name.isNotEmpty ? product.name.substring(0, product.name.length > 10 ? 10 : product.name.length) : AppLocalizations.of(context)!.seller_profile_no_image,
-                style: TextStyle(
-                  color: Colors.grey[600],
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
                   fontWeight: FontWeight.bold,
-                  fontSize: 12,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -604,4 +595,4 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
       );
     }
   }
-} 
+}
