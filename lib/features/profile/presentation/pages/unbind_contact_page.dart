@@ -295,7 +295,7 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 }
+
