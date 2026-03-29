@@ -56,7 +56,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                 MenuItem(
                   icon: Icons.star_border,
                   title: '收藏',
-                  onTap: () => context.go('/favorites'),
+                  onTap: () => context.push('/favorites'),
                 ),
                 MenuItem(
                   icon: Icons.favorite_border,

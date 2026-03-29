@@ -142,7 +142,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                   if (profile?.userId != null) {
                     final route = '/seller-profile/${profile!.userId}';
                     AppLogger.d('[SellerProfilePage] Navigating to: $route');
-                    context.go(route);
+                    context.push(route);
                   } else {
                     AppLogger.d('[SellerProfilePage] Cannot navigate: userId is null');
                   }

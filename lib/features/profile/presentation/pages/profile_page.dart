@@ -172,7 +172,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       text: appLocalizations.profile_favorites,
                       onTap: () {
                         // 导航到收藏列表
-                        context.go('/favorites');
+                        context.push('/favorites');
                       },
                     ),
                   ],
@@ -187,7 +187,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       text: appLocalizations.profile_wallet,
                       onTap: () {
                         // 使用go_router导航到钱包页面
-                        context.go(ProfileRoutes.walletPath);
+                        context.push(ProfileRoutes.walletPath);
                       },
                     ),
                   ],
@@ -202,7 +202,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       text: appLocalizations.profile_account_security,
                       onTap: () {
                         // 使用go_router导航到账号安全页面
-                        context.go(ProfileRoutes.accountSecurityPath);
+                        context.push(ProfileRoutes.accountSecurityPath);
                       },
                     ),
                     MenuItem(
@@ -218,7 +218,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       icon: Icons.language,
                       text: appLocalizations.language_settings,
                       onTap: () {
-                        context.go(ProfileRoutes.languageSettingsPath);
+                        context.push(ProfileRoutes.languageSettingsPath);
                       },
                     ),
                   ],
@@ -233,7 +233,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       text: appLocalizations.profile_assistant_mission,
                       onTap: () {
                         // 导航到小帮手的使命页面
-                        context.go(ProfileRoutes.assistantMissionPath);
+                        context.push(ProfileRoutes.assistantMissionPath);
                       },
                     ),
                   ],

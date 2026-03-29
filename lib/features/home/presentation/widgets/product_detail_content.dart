@@ -791,7 +791,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
                 onTap: () {
                   final productId = int.tryParse(widget.product.id.toString()) ?? 0;
                   if (productId > 0) {
-                    context.go('/home/product/$productId/reviews');
+                    context.push('/home/product/$productId/reviews');
                   }
                 },
                 child: Row(

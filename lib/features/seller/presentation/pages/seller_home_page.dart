@@ -176,7 +176,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                         AppLogger.d('[SellerHomePage] Store logo tapped');
                         AppLogger.d('[SellerHomePage] storeId: ${profile.storeId}');
                         // 使用 storeId 作为 sellerId 跳转
-                        context.go('/seller-profile/${profile.storeId}');
+                        context.push('/seller-profile/${profile.storeId}');
                       },
                       child: CircleAvatar(
                         radius: 32,
@@ -367,7 +367,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                 TextButton(
                   onPressed: () {
                     // 导航到数据tab页面
-                    context.go('/seller/dashboard');
+                    context.push('/seller/dashboard');
                   },
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,

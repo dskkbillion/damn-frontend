@@ -198,20 +198,20 @@ class PaymentNavigationService {
       _showInfoSnackBar(context, '正在重新发起支付...');
       
       // 示例：跳转到订单详情页面，用户可以在那里重新支付
-      context.go('/orderDetail/$orderId');
+      context.push('/orderDetail/$orderId');
     } else {
       _showErrorSnackBar(context, '无法重试支付，订单信息丢失');
     }
   }
-  
+
   /// 查询支付状态
   static void _queryPaymentStatus(BuildContext context, String? orderId) {
     if (orderId != null) {
       // 触发支付状态查询
       _showInfoSnackBar(context, '正在查询支付状态...');
-      
+
       // 跳转到订单详情页面，用户可以查看最新状态
-      context.go('/orderDetail/$orderId');
+      context.push('/orderDetail/$orderId');
     } else {
       _showErrorSnackBar(context, '无法查询状态，订单信息丢失');
     }

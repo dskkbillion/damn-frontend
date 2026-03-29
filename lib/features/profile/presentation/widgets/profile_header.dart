@@ -110,7 +110,7 @@ class ProfileHeader extends ConsumerWidget {
 
     // 使用InkWell使头像可点击，点击后跳转到账号与安全页面
     return InkWell(
-      onTap: () => context.go(ProfileRoutes.accountSecurityPath), // 点击时导航到账号与安全页面
+      onTap: () => context.push(ProfileRoutes.accountSecurityPath), // 点击时导航到账号与安全页面
       child: Stack(
         children: [
           CircleAvatar(

@@ -144,7 +144,7 @@ class OrderStatusSection extends StatelessWidget {
 
     try {
       AppLogger.d('Navigating to: $pathWithQuery');
-      context.go(pathWithQuery);
+      context.push(pathWithQuery);
     } catch (e) {
       AppLogger.d('Error navigating to $pathWithQuery: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -161,7 +161,7 @@ class OrderStatusSection extends StatelessWidget {
 
     try {
       AppLogger.d('Navigating to all orders: $basePath');
-      context.go(basePath);
+      context.push(basePath);
     } catch (e) {
       AppLogger.d('Error navigating to $basePath: $e');
       ScaffoldMessenger.of(context).showSnackBar(
