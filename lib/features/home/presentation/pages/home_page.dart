@@ -13,6 +13,8 @@ import '../bloc/home_state.dart';
 import '../widgets/banner_carousel.dart';
 import '../widgets/product_card.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_card.dart';
 
 /// 首页
 class HomePage extends StatelessWidget {
@@ -94,8 +96,9 @@ class _HomeViewState extends State<HomeView> {
       body: BlocBuilder<HomeBloc, HomeState>(
         builder: (context, state) {
           if (state is HomeInitial || state is HomeLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
+            return SkeletonPage(
+              itemCount: 6,
+              itemBuilder: (_, __) => const SkeletonCard(),
             );
           } else if (state is HomeLoaded || state is HomeRefreshing) {
             final banners = _getBanners(state);

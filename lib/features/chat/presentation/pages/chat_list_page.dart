@@ -18,6 +18,8 @@ import '../services/chat_preload_service.dart'; // 导入预加载服务
 import '../../domain/entities/chat_room.dart';
 import '../../domain/entities/participant.dart';
 import '../../domain/entities/chat_message.dart'; // 添加导入ChatMessage
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_chat_item.dart';
 
 final sl = GetIt.instance; // Get GetIt instance
 
@@ -250,7 +252,10 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         future: _referIdFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return SkeletonPage(
+              itemCount: 8,
+              itemBuilder: (_, __) => const SkeletonChatItem(),
+            );
           }
           
           if (snapshot.hasError) {
@@ -291,7 +296,10 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             child: BlocBuilder<ChatListBloc, ChatListState>(
               builder: (context, state) {
                 if (state.status == ChatListStatus.loading && state.chatRooms.isEmpty) {
-                  return Center(child: CircularProgressIndicator()); 
+                  return SkeletonPage(
+                    itemCount: 8,
+                    itemBuilder: (_, __) => const SkeletonChatItem(),
+                  );
                 } else if (state.status == ChatListStatus.failure) {
                   return _buildSystemItemsOnly(context, currentUserId, appLocalizations.chat_error_loading(state.errorMessage ?? appLocalizations.chat_unknown_message));
                 } else if (state.status == ChatListStatus.success || state.chatRooms.isNotEmpty) {
@@ -323,7 +331,10 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                   return _buildChatListView(context, filteredRooms, currentAppMode, currentUserId);
                 } else {
                   // 真正的加载状态
-                  return Center(child: CircularProgressIndicator());
+                  return SkeletonPage(
+                    itemCount: 8,
+                    itemBuilder: (_, __) => const SkeletonChatItem(),
+                  );
                 }
               },
             ),

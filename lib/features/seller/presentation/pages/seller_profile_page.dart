@@ -11,6 +11,7 @@ import '../../../profile/presentation/bloc/profile_bloc.dart';
 import '../../../profile/domain/entities/user_profile.dart';
 import '../../../../app/app_mode.dart';
 import '../../../../core/services/mode_transition_service.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
 
 class SellerProfilePage extends ConsumerStatefulWidget {
   final VoidCallback? onSwitchToBuyer;
@@ -68,10 +69,10 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
         child: BlocBuilder<ProfileBloc, ProfileState>(
           builder: (context, state) {
             // 处理初始状态和认证检查状态
-            if (state is ProfileInitial || 
+            if (state is ProfileInitial ||
                 (state is ProfileAuthStatusLoaded && !state.isAuthenticated)) {
               return const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
+                body: SkeletonPage(itemCount: 4),
               );
             }
             

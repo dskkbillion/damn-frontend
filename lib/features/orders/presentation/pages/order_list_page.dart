@@ -11,6 +11,7 @@ import 'package:dskk_flutter_refactor/features/after_sales/domain/entities/after
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_list_bloc.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_item_card.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
 // Import the new AfterSalesDetailPage
 
 /// 订单列表页面
@@ -362,7 +363,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                      ),
                    );
                 } else if (state is OrderListLoading) {
-                   return const Center(child: CircularProgressIndicator());
+                   return const SkeletonPage(itemCount: 5);
                 } else if (state is OrderListError) { // Correct error state name
                    // Show a simple error message, maybe with a retry button
                    return Center(
