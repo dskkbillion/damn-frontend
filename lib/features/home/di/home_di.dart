@@ -47,6 +47,7 @@ Future<void> initHomeDi() async {
           getHomePageData: sl(),
           getHomeFeed: sl(),
           navigationService: sl(),
+          localDataSource: sl(),
         ));
     AppLogger.d('[home_di] 注册 HomeBloc');
   } else {

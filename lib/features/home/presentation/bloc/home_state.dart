@@ -50,14 +50,17 @@ class HomeRefreshing extends HomeState {
 class HomeLoaded extends HomeState {
   /// 轮播图列表
   final List<home_banner.Banner> banners;
-  
+
   /// 分类列表
   final List<HomeCategory> categories;
-  
+
   /// 信息流列表
   final List<HomeFeedItem> feedItems;
   final bool hasReachedMax;
   final bool isLoadingMore;
+
+  /// 是否正在后台刷新（已有缓存数据，远程请求进行中）
+  final bool isRefreshing;
 
   const HomeLoaded({
     required this.banners,
@@ -65,10 +68,11 @@ class HomeLoaded extends HomeState {
     required this.feedItems,
     this.hasReachedMax = false,
     this.isLoadingMore = false,
+    this.isRefreshing = false,
   });
 
   @override
-  List<Object> get props => [banners, categories, feedItems, hasReachedMax, isLoadingMore];
+  List<Object> get props => [banners, categories, feedItems, hasReachedMax, isLoadingMore, isRefreshing];
 
   /// 创建一个新的 HomeLoaded 实例，并替换指定的属性
   HomeLoaded copyWith({
@@ -77,6 +81,7 @@ class HomeLoaded extends HomeState {
     List<HomeFeedItem>? feedItems,
     bool? hasReachedMax,
     bool? isLoadingMore,
+    bool? isRefreshing,
   }) {
     return HomeLoaded(
       banners: banners ?? this.banners,
@@ -84,6 +89,7 @@ class HomeLoaded extends HomeState {
       feedItems: feedItems ?? this.feedItems,
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      isRefreshing: isRefreshing ?? this.isRefreshing,
     );
   }
 }

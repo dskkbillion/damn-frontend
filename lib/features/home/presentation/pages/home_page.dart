@@ -230,7 +230,7 @@ class _HomeViewState extends State<HomeView> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 24.0),
                         child: Center(
-                          child: state is HomeRefreshing
+                          child: (state is HomeRefreshing || (state is HomeLoaded && state.isRefreshing))
                               ? Column(
                                   children: [
                                     const CircularProgressIndicator(),
