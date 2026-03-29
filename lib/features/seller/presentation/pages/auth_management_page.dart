@@ -9,6 +9,8 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/auth_man
 import 'package:dskk_flutter_refactor/features/seller/presentation/routes/seller_routes.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/empty_state.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/loading_state.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 认证管理页面
 class AuthManagementPage extends StatelessWidget {
@@ -145,11 +147,11 @@ class AuthManagementPage extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.backgroundCard,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.borderSecondary,
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -157,7 +159,7 @@ class AuthManagementPage extends StatelessWidget {
       ),
       child: InkWell(
         onTap: () => _navigateToAuthDetail(context, auth),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
@@ -170,10 +172,10 @@ class AuthManagementPage extends StatelessWidget {
               ),
               _buildStatusTag(context, auth.status),
               const SizedBox(width: 8),
-              Icon(
+              const Icon(
                 Icons.chevron_right,
                 size: 20,
-                color: Colors.grey[400],
+                color: AppColors.textTertiary,
               ),
             ],
           ),
@@ -224,23 +226,23 @@ class AuthManagementPage extends StatelessWidget {
 
     switch (status) {
       case AuthenticationStatus.approved:
-        backgroundColor = Colors.green[50]!;
-        textColor = Colors.green[800]!;
+        backgroundColor = AppColors.success.withValues(alpha: 0.1);
+        textColor = AppColors.success;
         text = l10n?.seller_auth_management_certified ?? 'Certified';
         break;
       case AuthenticationStatus.pending:
-        backgroundColor = Colors.orange[50]!;
-        textColor = Colors.orange[800]!;
+        backgroundColor = AppColors.warning.withValues(alpha: 0.1);
+        textColor = AppColors.warning;
         text = l10n?.seller_auth_management_pending ?? 'Pending';
         break;
       case AuthenticationStatus.rejected:
-        backgroundColor = Colors.red[50]!;
-        textColor = Colors.red[800]!;
+        backgroundColor = AppColors.error.withValues(alpha: 0.1);
+        textColor = AppColors.error;
         text = l10n?.seller_auth_management_rejected ?? 'Rejected';
         break;
       default:
-        backgroundColor = Colors.grey[50]!;
-        textColor = Colors.grey[800]!;
+        backgroundColor = AppColors.backgroundSecondary;
+        textColor = AppColors.textSecondary;
         text = l10n?.seller_auth_management_not_submitted ?? 'Not Submitted';
     }
 
@@ -248,7 +250,7 @@ class AuthManagementPage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
       ),
       child: Text(
         text,
@@ -281,15 +283,15 @@ class AuthManagementPage extends StatelessWidget {
   Color _getAuthTypeColor(AuthenticationType type) {
     switch (type) {
       case AuthenticationType.idCard:
-        return Colors.blue;
+        return AppColors.info;
       case AuthenticationType.education:
-        return Colors.green;
+        return AppColors.success;
       case AuthenticationType.profession:
         return Colors.purple;
       case AuthenticationType.company:
-        return Colors.blue;
+        return AppColors.info;
       default:
-        return Colors.grey;
+        return AppColors.textTertiary;
     }
   }
 
@@ -343,7 +345,7 @@ class AuthManagementPage extends StatelessWidget {
             Icon(
               isTimeoutError ? Icons.timer_off : Icons.error_outline,
               size: 64,
-              color: Colors.grey[400],
+              color: AppColors.textTertiary,
             ),
             const SizedBox(height: 16),
             Text(
@@ -351,36 +353,36 @@ class AuthManagementPage extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
+                color: AppColors.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               subtitle,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
-                color: Colors.grey[600],
+                color: AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppDimensions.spacingLg),
               decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey[200]!),
+                color: AppColors.backgroundSecondary,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                border: Border.all(color: AppColors.borderPrimary),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     l10n?.seller_auth_management_troubleshooting ?? 'Troubleshooting Steps',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: Colors.grey[700],
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -388,9 +390,9 @@ class AuthManagementPage extends StatelessWidget {
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Text(
                       suggestion,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 13,
-                        color: Colors.grey[600],
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   )).toList(),

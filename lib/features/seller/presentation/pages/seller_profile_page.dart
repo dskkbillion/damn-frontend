@@ -12,6 +12,8 @@ import '../../../profile/domain/entities/user_profile.dart';
 import '../../../../app/app_mode.dart';
 import '../../../../core/services/mode_transition_service.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 class SellerProfilePage extends ConsumerStatefulWidget {
   final VoidCallback? onSwitchToBuyer;
@@ -129,7 +131,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
     }
     return Container(
       padding: const EdgeInsets.all(20),
-      color: const Color(0xFFB66D0E), // 原型中使用的卖家模式主色调
+      color: Theme.of(context).colorScheme.primary,
       child: Column(
         children: [
           // 用户信息
@@ -161,7 +163,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                           profile.avatarUrl!,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) => Container(
-                            color: Colors.grey,
+                            color: AppColors.textTertiary,
                             child: const Icon(
                               Icons.person,
                               size: 50,
@@ -170,7 +172,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                           ),
                         )
                       : Container(
-                          color: Colors.grey,
+                          color: AppColors.textTertiary,
                           child: const Icon(
                             Icons.person,
                             size: 50,
@@ -202,7 +204,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                       ),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
                       ),
                       child: Text(
                         AppLocalizations.of(context)!.seller_profile_seller_mode_online,
@@ -222,8 +224,8 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
+              color: AppColors.backgroundCard,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -231,7 +233,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                 Text(
                   _sellerModeOn ? AppLocalizations.of(context)!.seller_profile_seller_mode : AppLocalizations.of(context)!.seller_profile_buyer_mode,
                   style: const TextStyle(
-                    color: Color(0xFF333333),
+                    color: AppColors.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
@@ -251,11 +253,11 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                   child: Switch(
                     value: _sellerModeOn,
                     onChanged: null, // 禁用Switch的自动状态变化
-                    activeColor: const Color(0xFFB66D0E),
-                    activeTrackColor: const Color(0xFFB66D0E).withOpacity(0.5),
+                    activeColor: Theme.of(context).colorScheme.primary,
+                    activeTrackColor: Theme.of(context).colorScheme.primary.withOpacity(0.5),
                     // 保持Switch可交互的视觉样式
-                    inactiveThumbColor: Colors.grey[400],
-                    inactiveTrackColor: Colors.grey[300],
+                    inactiveThumbColor: AppColors.textTertiary,
+                    inactiveTrackColor: AppColors.borderInput,
                   ),
                 ),
               ],
@@ -268,14 +270,14 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
 
   Widget _buildOrderSection() {
     return Container(
-      margin: const EdgeInsets.all(15),
-      padding: const EdgeInsets.all(15),
+      margin: const EdgeInsets.all(AppDimensions.spacingLg),
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.backgroundCard,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.borderSecondary,
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),
@@ -289,7 +291,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF333333),
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 16),
@@ -317,13 +319,13 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.backgroundCard,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.grey.shade200),
+                border: Border.all(color: AppColors.borderPrimary),
               ),
               child: Icon(
                 icon,
-                color: const Color(0xFF333333),
+                color: AppColors.textPrimary,
               ),
             ),
             if (count > 0)
@@ -331,9 +333,9 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                 right: -5,
                 top: -5,
                 child: Container(
-                  padding: const EdgeInsets.all(4),
+                  padding: const EdgeInsets.all(AppDimensions.spacingXs),
                   decoration: const BoxDecoration(
-                    color: Colors.red,
+                    color: AppColors.error,
                     shape: BoxShape.circle,
                   ),
                   constraints: const BoxConstraints(
@@ -358,7 +360,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
           label,
           style: const TextStyle(
             fontSize: 12,
-            color: Color(0xFF666666),
+            color: AppColors.textSecondary,
           ),
         ),
       ],
@@ -368,16 +370,16 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
   Widget _buildSectionTitle(String title) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg, vertical: AppDimensions.spacingMd),
+      decoration: const BoxDecoration(
+        color: AppColors.backgroundSecondary,
       ),
       child: Text(
         title,
         style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,
-          color: Color(0xFF333333),
+          color: AppColors.textPrimary,
         ),
       ),
     );
@@ -385,22 +387,22 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
 
   Widget _buildMenuSection(String title, IconData icon, String badge, {VoidCallback? onTap}) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 15),
-      decoration: BoxDecoration(
+      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
+      decoration: const BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: Colors.grey.shade200, width: 1),
+          bottom: BorderSide(color: AppColors.borderPrimary, width: 1),
         ),
       ),
       child: ListTile(
         leading: Icon(
           icon,
-          color: const Color(0xFF666666),
+          color: AppColors.textSecondary,
         ),
         title: Text(
           title,
           style: const TextStyle(
             fontSize: 15,
-            color: Color(0xFF333333),
+            color: AppColors.textPrimary,
           ),
         ),
         trailing: Row(
@@ -409,16 +411,16 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
             if (badge.isNotEmpty)
               Text(
                 badge,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 13,
-                  color: Colors.grey.shade600,
+                  color: AppColors.textSecondary,
                 ),
               ),
             const SizedBox(width: 5),
-            Icon(
+            const Icon(
               Icons.arrow_forward_ios,
               size: 14,
-              color: Colors.grey.shade400,
+              color: AppColors.textTertiary,
             ),
           ],
         ),

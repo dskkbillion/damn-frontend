@@ -51,7 +51,7 @@ class ProductCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12.0),
+        padding: EdgeInsets.all(AppDimensions.spacingMd),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -61,7 +61,7 @@ class ProductCard extends StatelessWidget {
               children: [
                 // 商品图片
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(8.0),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                   child: product.images.isNotEmpty 
                       ? Image.network(
                           product.images.split(',').first,
@@ -72,7 +72,7 @@ class ProductCard extends StatelessWidget {
                         )
                       : _buildErrorImage(),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: AppDimensions.spacingMd),
                 // 商品信息
                 Expanded(
                   child: Column(
@@ -83,10 +83,9 @@ class ProductCard extends StatelessWidget {
                           Expanded(
                             child: Text(
                               product.name,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -94,23 +93,21 @@ class ProductCard extends StatelessWidget {
                           // statusTag, // 暂时注释掉状态标签
                         ],
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: AppDimensions.spacingXs),
                       Text(
                         PriceFormatter.format(product.price),
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: AppDimensions.spacingXs),
                       if (product.sales != null)
                         Text(
                           '销量: ${product.sales}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
                         ),
                     ],
                   ),
@@ -118,8 +115,8 @@ class ProductCard extends StatelessWidget {
               ],
             ),
             
-            const SizedBox(height: 12),
-            
+            SizedBox(height: AppDimensions.spacingMd),
+
             // 操作按钮
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -167,7 +164,7 @@ class ProductCard extends StatelessWidget {
           child: const Text('查看'),
         ),
       );
-      buttons.add(const SizedBox(width: 8));
+      buttons.add(SizedBox(width: AppDimensions.spacingSm));
     }
     
     // 编辑按钮 (所有商品都可以编辑)
@@ -184,7 +181,7 @@ class ProductCard extends StatelessWidget {
     
     // 状态切换按钮 (已发布的商品可以上架/下架)
     if (onToggleStatus != null && product.isSwitchable) {
-      buttons.add(const SizedBox(width: 8));
+      buttons.add(SizedBox(width: AppDimensions.spacingSm));
       final bool isEnabled = product.status == ProductStatus.normal;
       
       buttons.add(
@@ -201,7 +198,7 @@ class ProductCard extends StatelessWidget {
     
     // 发布按钮 (草稿商品可以发布)
     if (onPublish != null && product.isPublishable) {
-      buttons.add(const SizedBox(width: 8));
+      buttons.add(SizedBox(width: AppDimensions.spacingSm));
       buttons.add(
         FilledButton(
           onPressed: () => onPublish!(product),
@@ -216,7 +213,7 @@ class ProductCard extends StatelessWidget {
     
     // 删除按钮 (所有商品都可以删除)
     if (onDelete != null) {
-      buttons.add(const SizedBox(width: 8));
+      buttons.add(SizedBox(width: AppDimensions.spacingSm));
       buttons.add(
         OutlinedButton(
           onPressed: () => onDelete!(product),

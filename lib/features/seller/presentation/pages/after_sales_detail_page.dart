@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 class AfterSalesDetailPage extends StatefulWidget {
   static const routeName = '/seller/after-sales/:id';
@@ -384,7 +385,7 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
                     refund.credentials[index],
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => Container(
-                      color: Colors.grey[300],
+                      color: AppColors.borderInput,
                       child: const Icon(Icons.broken_image),
                     ),
                   ),
@@ -625,14 +626,14 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
       case OrderRefundState.refused:
         return colorScheme.error;
       case OrderRefundState.finished:
-        return Colors.green;
+        return AppColors.success;
       case OrderRefundState.canceled:
         return colorScheme.onSurfaceVariant;
       case OrderRefundState.auditPass:
       case OrderRefundState.buyerShip:
       case OrderRefundState.sellerReceived:
       case OrderRefundState.unknown:
-        return const Color(0xFFCC6F12);
+        return AppColors.warning;
     }
   }
 
@@ -737,7 +738,7 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(approved ? '已同意退款' : '已拒绝售后'),
-          backgroundColor: Colors.green,
+          backgroundColor: AppColors.success,
         ),
       );
       await _reloadRefund();

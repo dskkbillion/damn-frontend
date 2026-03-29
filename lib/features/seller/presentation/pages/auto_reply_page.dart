@@ -5,6 +5,7 @@ import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/auto_reply_settings.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/auto_reply/auto_reply_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 /// 自动回复设置页面
 class AutoReplyPage extends StatelessWidget {
@@ -152,7 +153,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
             ),
             Switch(
               value: settings.isEnabled,
-              activeColor: Colors.green,
+              activeColor: AppColors.success,
               onChanged: isUpdating 
                   ? null 
                   : (value) {
@@ -208,7 +209,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
               AppLocalizations.of(context)!?.auto_reply_content_description ?? 'When customers send messages, the system will automatically reply with this content',
               style: const TextStyle(
                 fontSize: 12,
-                color: Colors.grey,
+                color: AppColors.textTertiary,
               ),
             ),
           ],
@@ -241,9 +242,9 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
         }
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.green,
+        backgroundColor: AppColors.success,
         padding: const EdgeInsets.symmetric(vertical: 12),
-        disabledBackgroundColor: Colors.green.withOpacity(0.5),
+        disabledBackgroundColor: AppColors.success.withValues(alpha: 0.5),
       ),
       child: Text(
         AppLocalizations.of(context)!?.auto_reply_save_settings ?? 'Save Settings',

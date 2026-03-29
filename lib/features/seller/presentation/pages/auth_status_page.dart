@@ -3,6 +3,8 @@ import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_authentication_info.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/routes/seller_routes.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 认证状态详情页面
 class AuthStatusPage extends StatelessWidget {
@@ -61,11 +63,11 @@ class AuthStatusPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.backgroundCard,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.borderSecondary,
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -130,14 +132,14 @@ class AuthStatusPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey[300]!),
+              color: AppColors.backgroundSecondary,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+              border: Border.all(color: AppColors.borderInput),
             ),
             child: const Center(
               child: Text(
                 '暂无认证材料',
-                style: TextStyle(color: Colors.grey),
+                style: TextStyle(color: AppColors.textTertiary),
               ),
             ),
           )
@@ -156,18 +158,18 @@ class AuthStatusPage extends StatelessWidget {
                     margin: const EdgeInsets.only(right: 12),
                     width: 100,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey[300]!),
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                      border: Border.all(color: AppColors.borderInput),
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: Image.network(
                       imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Container(
-                        color: Colors.grey[200],
+                        color: AppColors.borderPrimary,
                         child: const Icon(
                           Icons.broken_image,
-                          color: Colors.grey,
+                          color: AppColors.textTertiary,
                           size: 40,
                         ),
                       ),
@@ -198,11 +200,11 @@ class AuthStatusPage extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
+            color: AppColors.backgroundCard,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: AppColors.borderSecondary,
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -219,9 +221,9 @@ class AuthStatusPage extends StatelessWidget {
                       width: 100,
                       child: Text(
                         '${entry.key}：',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14,
-                          color: Colors.grey[700],
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ),
@@ -258,11 +260,11 @@ class AuthStatusPage extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
+            color: AppColors.backgroundCard,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: AppColors.borderSecondary,
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -297,9 +299,9 @@ class AuthStatusPage extends StatelessWidget {
                               children: [
                                 Text(
                                   item['time'] ?? '',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 12,
-                                    color: Colors.grey[600],
+                                    color: AppColors.textSecondary,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -349,20 +351,20 @@ class AuthStatusPage extends StatelessWidget {
         ] else if (authInfo.status == AuthenticationStatus.approved) ...[
           // 已认证通过，显示状态提示
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppDimensions.spacingLg),
             decoration: BoxDecoration(
-              color: Colors.green[50],
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.green[200]!),
+              color: AppColors.success.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+              border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
             ),
             child: const Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.green),
+                Icon(Icons.check_circle, color: AppColors.success),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     '认证已通过，无需重复提交',
-                    style: TextStyle(color: Colors.green, fontWeight: FontWeight.w500),
+                    style: TextStyle(color: AppColors.success, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
@@ -371,20 +373,20 @@ class AuthStatusPage extends StatelessWidget {
         ] else if (authInfo.status == AuthenticationStatus.pending) ...[
           // 审核中，显示等待提示
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppDimensions.spacingLg),
             decoration: BoxDecoration(
-              color: Colors.orange[50],
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.orange[200]!),
+              color: AppColors.warning.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+              border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
             ),
             child: const Row(
               children: [
-                Icon(Icons.hourglass_top, color: Colors.orange),
+                Icon(Icons.hourglass_top, color: AppColors.warning),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     '认证审核中，请耐心等待',
-                    style: TextStyle(color: Colors.orange, fontWeight: FontWeight.w500),
+                    style: TextStyle(color: AppColors.warning, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
@@ -404,26 +406,26 @@ class AuthStatusPage extends StatelessWidget {
 
     switch (status) {
       case AuthenticationStatus.approved:
-        backgroundColor = Colors.green[50]!;
-        textColor = Colors.green[800]!;
+        backgroundColor = AppColors.success.withValues(alpha: 0.1);
+        textColor = AppColors.success;
         text = '已认证';
         icon = Icons.check_circle;
         break;
       case AuthenticationStatus.pending:
-        backgroundColor = Colors.orange[50]!;
-        textColor = Colors.orange[800]!;
+        backgroundColor = AppColors.warning.withValues(alpha: 0.1);
+        textColor = AppColors.warning;
         text = '审核中';
         icon = Icons.hourglass_top;
         break;
       case AuthenticationStatus.rejected:
-        backgroundColor = Colors.red[50]!;
-        textColor = Colors.red[800]!;
+        backgroundColor = AppColors.error.withValues(alpha: 0.1);
+        textColor = AppColors.error;
         text = '未通过';
         icon = Icons.cancel;
         break;
       default:
-        backgroundColor = Colors.grey[50]!;
-        textColor = Colors.grey[800]!;
+        backgroundColor = AppColors.backgroundSecondary;
+        textColor = AppColors.textSecondary;
         text = '未提交';
         icon = Icons.circle_outlined;
     }
@@ -432,7 +434,7 @@ class AuthStatusPage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -470,7 +472,7 @@ class AuthStatusPage extends StatelessWidget {
                 errorBuilder: (_, __, ___) => const Center(
                   child: Icon(
                     Icons.broken_image,
-                    color: Colors.grey,
+                    color: AppColors.textTertiary,
                     size: 80,
                   ),
                 ),
