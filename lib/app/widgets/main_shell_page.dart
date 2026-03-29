@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart'; // 导入SVG插件
 import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/core/utils/haptic_utils.dart'; // 导入震动工具类
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 /// 主壳页面，支持可配置的开发tab
 class MainShellPage extends ConsumerWidget {
@@ -42,7 +43,7 @@ class MainShellPage extends ConsumerWidget {
           'assets/icons/nav/dskk_logo.svg',
           width: 24,
           height: 24,
-          colorFilter: ColorFilter.mode(const Color(0xFFD0903D), BlendMode.srcIn),
+          colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
         ),
         label: appLocalizations.nav_ai_assistant,
       ),
@@ -76,8 +77,8 @@ class MainShellPage extends ConsumerWidget {
       body: navigationShell,
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFFD0903D),
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: AppColors.primary,
+        unselectedItemColor: AppColors.textTertiary,
         showUnselectedLabels: true,
         items: items,
         currentIndex: navigationShell.currentIndex,

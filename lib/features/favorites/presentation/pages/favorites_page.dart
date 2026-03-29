@@ -155,7 +155,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
           'assets/icons/nav/dskk_logo.svg',
           width: 24,
           height: 24,
-          colorFilter: ColorFilter.mode(const Color(0xFFD0903D), BlendMode.srcIn),
+          colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
         ),
         label: appLocalizations.nav_ai_assistant,
       ),
@@ -187,7 +187,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
 
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
-      selectedItemColor: const Color(0xFFD0903D),
+      selectedItemColor: AppColors.primary,
       unselectedItemColor: AppColors.textTertiary,
       showUnselectedLabels: true,
       items: items,

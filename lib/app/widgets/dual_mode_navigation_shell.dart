@@ -11,6 +11,7 @@ import '../../generated/app_localizations.dart';
 import '../../core/utils/haptic_utils.dart';
 import '../../core/services/profile_preloader_service.dart';
 import '../../features/profile/presentation/bloc/profile_bloc.dart';
+import '../../core/config/theme/app_colors.dart';
 
 /// 双模式导航 Shell，支持买家和卖家模式切换而不重新加载页面
 class DualModeNavigationShell extends ConsumerStatefulWidget {
@@ -106,8 +107,8 @@ class _DualModeNavigationShellState extends ConsumerState<DualModeNavigationShel
         
         return BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
-          selectedItemColor: const Color(0xFFD0903D),
-          unselectedItemColor: Colors.grey,
+          selectedItemColor: AppColors.primary,
+          unselectedItemColor: AppColors.textTertiary,
           showUnselectedLabels: true,
           items: [
             BottomNavigationBarItem(
