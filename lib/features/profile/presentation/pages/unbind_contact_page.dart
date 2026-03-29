@@ -30,7 +30,6 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
   bool get _isEmail => widget.contactType == 'email';
 
   static const Color primaryColor = Color(0xFFB66D0E);
-  static const Color buttonBackgroundColor = Color(0xFFC58C4A);
 
   @override
   void dispose() {
@@ -166,8 +165,8 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Use a hidden controller for the VerificationCodeButton
     final dummyController = TextEditingController(text: widget.currentContact);
+    final contactLabel = _isEmail ? '邮箱' : '手机号';
 
     return Theme(
       data: Theme.of(context).copyWith(
@@ -180,55 +179,94 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
         ),
       ),
       child: Scaffold(
+        backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
-          title: Text(_isEmail ? '解绑邮箱' : '解绑手机号'),
+          title: Text('解绑$contactLabel'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios),
             onPressed: () => context.pop(),
           ),
         ),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 16),
-              // Display current contact (masked)
+              // Warning card
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade300),
+                  color: const Color(0xFFFFF8F0),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFF0DCC0)),
                 ),
-                child: Text(
-                  _maskContact(widget.currentContact),
-                  style: const TextStyle(fontSize: 16, color: Color(0xFF333333)),
+                child: Row(
+                  children: [
+                    const Icon(Icons.warning_amber_rounded, color: Color(0xFFB66D0E), size: 24),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        '解绑后，您将无法使用该$contactLabel登录',
+                        style: const TextStyle(fontSize: 14, color: Color(0xFF8B6914)),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 12),
-              // Warning text
-              Text(
-                '解绑后，您将无法使用该${_isEmail ? '邮箱' : '手机号'}登录',
-                style: TextStyle(fontSize: 14, color: Colors.orange.shade700),
-              ),
-              const SizedBox(height: 16),
-              // Verification code input + send button
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: VerificationCodeInputField(controller: _codeController),
-                  ),
-                  const SizedBox(width: 12),
-                  VerificationCodeButton(
-                    phoneController: dummyController,
-                    onSendCode: _onSendCode,
-                    codeSentState: _codeState,
-                    isSending: _isSendingCode,
-                  ),
-                ],
+              const SizedBox(height: 24),
+              // Main card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha:0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '当前$contactLabel',
+                      style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _maskContact(widget.currentContact),
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFF333333)),
+                    ),
+                    const SizedBox(height: 20),
+                    const Divider(height: 1),
+                    const SizedBox(height: 20),
+                    Text(
+                      '验证身份',
+                      style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: VerificationCodeInputField(controller: _codeController),
+                        ),
+                        const SizedBox(width: 12),
+                        VerificationCodeButton(
+                          phoneController: dummyController,
+                          onSendCode: _onSendCode,
+                          codeSentState: _codeState,
+                          isSending: _isSendingCode,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 32),
               // Confirm unbind button
@@ -237,11 +275,12 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
                 child: ElevatedButton(
                   onPressed: _isSubmitting ? null : _onUnbind,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: buttonBackgroundColor,
+                    backgroundColor: const Color(0xFFD9534F),
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: buttonBackgroundColor.withValues(alpha: 0.7),
+                    disabledBackgroundColor: const Color(0xFFD9534F).withValues(alpha:0.5),
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    elevation: 0,
                   ),
                   child: _isSubmitting
                       ? const SizedBox(
@@ -253,6 +292,13 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
                           ),
                         )
                       : const Text('确认解绑', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Center(
+                child: Text(
+                  '解绑操作不可撤销',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
                 ),
               ),
             ],

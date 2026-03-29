@@ -110,6 +110,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final response = await dio.post(endpoint, data: data);
       AppLogger.d('收到服务器响应: 状态码 ${response.statusCode}');
       AppLogger.d('响应数据: ${response.data}');
+      AppLogger.d('code类型: ${response.data['code'].runtimeType}, code值: ${response.data['code']}');
 
       // 检查HTTP状态码和业务状态码
       if (response.statusCode == 200 &&

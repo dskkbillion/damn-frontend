@@ -5,8 +5,6 @@ import '../pages/profile_page.dart'; // 引入 ProfilePage
 import '../pages/account_security_page.dart'; // 引入账号与安全页面
 import '../pages/wallet_page.dart'; // 引入钱包页面
 import '../bloc/wallet_bloc.dart'; // 引入钱包相关的Bloc
-import '../bloc/wallet_event.dart'; // 引入钱包事件
-import '../bloc/wallet_state.dart'; // 引入钱包状态
 import '../../domain/usecases/get_wallet_summary.dart'; // 引入获取钱包摘要用例
 import '../../domain/usecases/get_wallet_transactions.dart'; // 引入获取钱包交易记录用例
 import '../../data/repositories/wallet_repository_impl.dart'; // 引入钱包仓库实现

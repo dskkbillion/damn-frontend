@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'dart:io';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/profile_bloc.dart';
 import '../../domain/entities/user_profile.dart';
@@ -129,7 +129,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
               if (state is ProfileUpdated) {
                 AppLogger.d('[AccountSecurityPage] Profile updated successfully');
                 // 不再显示重复的提示，因为头像更新已经有自己的提示
-                if (!(state is ProfileUpdated && context.read<ProfileBloc>().state is ProfileAvatarUploaded)) {
+                if (!(context.read<ProfileBloc>().state is ProfileAvatarUploaded)) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('个人信息更新成功！'),
@@ -396,7 +396,10 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             ),
             onTap: phoneNumber.isEmpty
                 ? () => _navigateToBindContact(BindContactType.phone)
-                : () => _showBoundContactActions('phone', phoneNumber),
+                : () {
+                    final boundCount = (phoneNumber.isNotEmpty ? 1 : 0) + (emailAddress.isNotEmpty ? 1 : 0);
+                    _showBoundContactActions('phone', phoneNumber, boundCount: boundCount);
+                  },
           ),
           Divider(height: 1, color: Colors.grey.shade200),
           _buildMenuItem(
@@ -425,7 +428,10 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             ),
             onTap: emailAddress.isEmpty
                 ? () => _navigateToBindContact(BindContactType.email)
-                : () => _showBoundContactActions('email', emailAddress),
+                : () {
+                    final boundCount = (phoneNumber.isNotEmpty ? 1 : 0) + (emailAddress.isNotEmpty ? 1 : 0);
+                    _showBoundContactActions('email', emailAddress, boundCount: boundCount);
+                  },
           ),
           Divider(height: 1, color: Colors.grey.shade200),
           _buildMenuItem(
@@ -508,7 +514,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
     }
   }
 
-  void _showBoundContactActions(String contactType, String currentContact) {
+  void _showBoundContactActions(String contactType, String currentContact, {required int boundCount}) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -527,15 +533,17 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                   _navigateToChangeContact(contactType, currentContact);
                 },
               ),
-              const Divider(height: 1),
-              ListTile(
-                leading: const Icon(Icons.link_off, color: Colors.red),
-                title: const Text('解绑', style: TextStyle(color: Colors.red)),
-                onTap: () {
-                  Navigator.pop(sheetContext);
-                  _navigateToUnbindContact(contactType, currentContact);
-                },
-              ),
+              if (boundCount > 1) ...[
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.link_off, color: Colors.red),
+                  title: const Text('解绑', style: TextStyle(color: Colors.red)),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _navigateToUnbindContact(contactType, currentContact);
+                  },
+                ),
+              ],
               const Divider(height: 1),
               ListTile(
                 title: const Text('取消', textAlign: TextAlign.center),
