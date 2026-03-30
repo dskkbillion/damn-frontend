@@ -13,6 +13,7 @@ import '../bloc/profile_bloc.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/order_status_section.dart';
 import '../widgets/profile_menu_section.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
 import '../routes/profile_routes.dart'; // 导入路由常量
 
 class ProfilePage extends StatefulWidget {
@@ -75,7 +76,7 @@ class _ProfilePageState extends State<ProfilePage> {
               if (state is ProfileAuthStatusLoaded && !state.isAuthenticated) {
                 return _buildLoginPrompt(context);
               }
-              return const Center(child: CircularProgressIndicator()); 
+              return const SkeletonPage(itemCount: 3);
             }
 
             if (state is ProfileLoading) {
