@@ -2,35 +2,75 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart'; // 导入SVG插件
+import 'package:get_it/get_it.dart';
+import 'package:dskk_flutter_refactor/core/services/profile_preloader_service.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/core/utils/haptic_utils.dart'; // 导入震动工具类
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
-/// 主壳页面，支持可配置的开发tab
-class MainShellPage extends ConsumerWidget {
+class MainShellPage extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
-  
+
   const MainShellPage({required this.navigationShell, super.key});
-  
+
+  @override
+  ConsumerState<MainShellPage> createState() => _MainShellPageState();
+}
+
+class _MainShellPageState extends ConsumerState<MainShellPage> {
+  final Map<int, DateTime> _lastPrefetchTime = {};
+  static const _prefetchDebounce = Duration(seconds: 30);
+
   void _onTap(BuildContext context, int index) {
-    // 添加轻微震动反馈
     HapticUtils.lightTabFeedback();
-    
-    navigationShell.goBranch(
+
+    _prefetchAdjacentTab(index);
+
+    widget.navigationShell.goBranch(
       index,
-      initialLocation: index == navigationShell.currentIndex,
+      initialLocation: index == widget.navigationShell.currentIndex,
     );
   }
-  
+
+  void _prefetchAdjacentTab(int currentTab) {
+    final int? targetTab;
+    switch (currentTab) {
+      case 0:
+        targetTab = 1;
+      case 1:
+        targetTab = 2;
+      case 2:
+        targetTab = 1;
+      case 3:
+        targetTab = 2;
+      default:
+        targetTab = null;
+    }
+
+    if (targetTab == null) return;
+
+    final lastTime = _lastPrefetchTime[targetTab];
+    if (lastTime != null && DateTime.now().difference(lastTime) < _prefetchDebounce) {
+      return;
+    }
+
+    _lastPrefetchTime[targetTab] = DateTime.now();
+
+    final preloaderService = GetIt.instance<ProfilePreloaderService>();
+    preloaderService.preloadCoreData().then((_) {
+      AppLogger.d('[TabPrefetch] Prefetched data for tab $targetTab');
+    }).catchError((e) {
+      AppLogger.d('[TabPrefetch] Failed to prefetch tab $targetTab: $e');
+    });
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // 读取是否显示开发tab的配置
+  Widget build(BuildContext context) {
     final showDevTab = ref.watch(showDevTabProvider);
-    // 获取国际化资源 - 确保非空
     final appLocalizations = AppLocalizations.of(context)!;
 
-    // 根据配置构建导航栏项目
     final List<BottomNavigationBarItem> items = [
       BottomNavigationBarItem(
         icon: SvgPicture.asset(
@@ -63,8 +103,7 @@ class MainShellPage extends ConsumerWidget {
         label: appLocalizations.nav_profile,
       ),
     ];
-    
-    // 仅在配置为显示开发tab时添加
+
     if (showDevTab) {
       items.add(BottomNavigationBarItem(
         icon: const Icon(Icons.developer_mode_outlined),
@@ -74,16 +113,16 @@ class MainShellPage extends ConsumerWidget {
     }
 
     return Scaffold(
-      body: navigationShell,
+      body: widget.navigationShell,
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textTertiary,
         showUnselectedLabels: true,
         items: items,
-        currentIndex: navigationShell.currentIndex,
+        currentIndex: widget.navigationShell.currentIndex,
         onTap: (index) => _onTap(context, index),
       ),
     );
   }
-} 
+}

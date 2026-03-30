@@ -27,7 +27,41 @@ class DualModeNavigationShell extends ConsumerStatefulWidget {
 }
 
 class _DualModeNavigationShellState extends ConsumerState<DualModeNavigationShell> {
-  
+  final Map<int, DateTime> _lastSellerPrefetchTime = {};
+  static const _prefetchDebounce = Duration(seconds: 30);
+
+  void _prefetchAdjacentSellerTab(int currentTab) {
+    final int? targetTab;
+    switch (currentTab) {
+      case 0:
+        targetTab = 1;
+      case 1:
+        targetTab = 2;
+      case 2:
+        targetTab = 1;
+      case 3:
+        targetTab = 2;
+      default:
+        targetTab = null;
+    }
+
+    if (targetTab == null) return;
+
+    final lastTime = _lastSellerPrefetchTime[targetTab];
+    if (lastTime != null && DateTime.now().difference(lastTime) < _prefetchDebounce) {
+      return;
+    }
+
+    _lastSellerPrefetchTime[targetTab] = DateTime.now();
+
+    final preloaderService = GetIt.instance<ProfilePreloaderService>();
+    preloaderService.preloadCoreData().then((_) {
+      AppLogger.d('[SellerTabPrefetch] Prefetched data for seller tab $targetTab');
+    }).catchError((e) {
+      AppLogger.d('[SellerTabPrefetch] Failed to prefetch seller tab $targetTab: $e');
+    });
+  }
+
   // 获取买家分支数量
   int get _buyerBranchCount {
     final showDevTab = ref.watch(showDevTabProvider);
@@ -136,6 +170,7 @@ class _DualModeNavigationShellState extends ConsumerState<DualModeNavigationShel
           onTap: (index) {
             // 添加轻微震动反馈
             HapticUtils.lightTabFeedback();
+            _prefetchAdjacentSellerTab(index);
             wrapper.goBranch(index, initialLocation: index == wrapper.currentIndex);
           },
         );
