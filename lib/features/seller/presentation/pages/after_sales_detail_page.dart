@@ -475,44 +475,47 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
               top: BorderSide(
                   color: colorScheme.outline.withValues(alpha: 0.16))),
         ),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
-              flex: 3,
+            SizedBox(
+              width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed:
                     _isAuditing ? null : () => _openSellerChat(context, refund),
                 icon: const Icon(Icons.forum_outlined, size: 18),
-                label: const Text('去聊天室沟通', maxLines: 1, overflow: TextOverflow.ellipsis),
+                label: const Text('去聊天室沟通'),
               ),
             ),
             if (refund.state == OrderRefundState.waitAudit) ...[
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 2,
-                child: OutlinedButton(
-                  onPressed:
-                      _isAuditing ? null : () => _showRejectDialog(context),
-                  style: OutlinedButton.styleFrom(
-                      foregroundColor: colorScheme.error),
-                  child: const Text('拒绝售后'),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 2,
-                child: FilledButton(
-                  onPressed:
-                      _isAuditing ? null : () => _showConfirmDialog(context),
-                  child: _isAuditing
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Text('同意退款'),
-                ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed:
+                          _isAuditing ? null : () => _showRejectDialog(context),
+                      style: OutlinedButton.styleFrom(
+                          foregroundColor: colorScheme.error),
+                      child: const Text('拒绝售后'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed:
+                          _isAuditing ? null : () => _showConfirmDialog(context),
+                      child: _isAuditing
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Text('同意退款'),
+                    ),
+                  ),
+                ],
               ),
             ],
           ],

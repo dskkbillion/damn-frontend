@@ -108,6 +108,20 @@ class AppTheme {
       ),
     ),
 
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.getOnPrimaryColor(),
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+        ),
+        minimumSize: const Size(0, 44),
+        textStyle: AppTextStyles.button,
+      ),
+    ),
+
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: AppColors.primary,
@@ -324,6 +338,20 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         ),
         minimumSize: const Size(0, 44),
+      ),
+    ),
+
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: AppColorsDark.accentPrimary,
+        foregroundColor: AppColorsDark.backgroundDeep,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+        ),
+        minimumSize: const Size(0, 44),
+        textStyle: AppTextStyles.button.copyWith(color: AppColorsDark.backgroundDeep),
       ),
     ),
 
