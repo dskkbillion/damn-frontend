@@ -478,16 +478,18 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
         child: Row(
           children: [
             Expanded(
+              flex: 3,
               child: OutlinedButton.icon(
                 onPressed:
                     _isAuditing ? null : () => _openSellerChat(context, refund),
                 icon: const Icon(Icons.forum_outlined, size: 18),
-                label: const Text('去聊天室沟通'),
+                label: const Text('去聊天室沟通', maxLines: 1, overflow: TextOverflow.ellipsis),
               ),
             ),
             if (refund.state == OrderRefundState.waitAudit) ...[
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
+                flex: 2,
                 child: OutlinedButton(
                   onPressed:
                       _isAuditing ? null : () => _showRejectDialog(context),
@@ -496,8 +498,9 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
                   child: const Text('拒绝售后'),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
+                flex: 2,
                 child: FilledButton(
                   onPressed:
                       _isAuditing ? null : () => _showConfirmDialog(context),

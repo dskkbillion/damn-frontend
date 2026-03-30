@@ -219,8 +219,7 @@ class SellerOrderItemCard extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.only(left: 0, bottom: 4.0), // Adjust padding as needed
                   child: Text(
-                    // TODO: 格式化时间
-                    order.createdAt.toString(),
+                    '${order.createdAt.year}-${order.createdAt.month.toString().padLeft(2, '0')}-${order.createdAt.day.toString().padLeft(2, '0')} ${order.createdAt.hour.toString().padLeft(2, '0')}:${order.createdAt.minute.toString().padLeft(2, '0')}',
                     style: textTheme.bodySmall?.copyWith(color: colorScheme.secondary),
                   ),
                 ),
