@@ -9,6 +9,7 @@ import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/core/utils/haptic_utils.dart'; // 导入震动工具类
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
 
 class MainShellPage extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
@@ -34,7 +35,7 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
     );
   }
 
-  void _prefetchAdjacentTab(int currentTab) {
+  Future<void> _prefetchAdjacentTab(int currentTab) async {
     final int? targetTab;
     switch (currentTab) {
       case 0:
@@ -58,12 +59,19 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
 
     _lastPrefetchTime[targetTab] = DateTime.now();
 
-    final preloaderService = GetIt.instance<ProfilePreloaderService>();
-    preloaderService.preloadCoreData().then((_) {
-      AppLogger.d('[TabPrefetch] Prefetched data for tab $targetTab');
-    }).catchError((e) {
-      AppLogger.d('[TabPrefetch] Failed to prefetch tab $targetTab: $e');
-    });
+    try {
+      final token = await GetIt.instance<ISecureStorageRepository>().getToken();
+      if (token == null) return;
+
+      final preloaderService = GetIt.instance<ProfilePreloaderService>();
+      preloaderService.preloadCoreData().then((_) {
+        AppLogger.d('[TabPrefetch] Prefetched data for tab $targetTab');
+      }).catchError((e) {
+        AppLogger.d('[TabPrefetch] Failed to prefetch tab $targetTab: $e');
+      });
+    } catch (e) {
+      AppLogger.d('[TabPrefetch] Error in prefetch: $e');
+    }
   }
 
   @override

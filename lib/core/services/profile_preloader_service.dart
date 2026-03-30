@@ -381,15 +381,16 @@ class ProfilePreloaderService {
   Future<void> _preloadChatRooms() async {
     try {
       final result = await _chatRepository.getChatRooms();
-      result.fold(
-        (failure) => AppLogger.d('[ProfilePreloader] 预加载聊天室列表失败: ${failure.message}'),
-        (chatRooms) async {
-          // ChatRepository 不会自动写入本地缓存，需要手动写入
-          // ChatListBloc 的 stale-while-revalidate 从 localDataSource 读取
-          await _chatLocalDataSource.cacheChatRoomList(chatRooms);
-          AppLogger.d('[ProfilePreloader] 聊天室列表预加载完成 (${chatRooms.length} rooms)');
-        },
-      );
+      if (result.isRight()) {
+        final chatRooms = result.getOrElse(() => []);
+        await _chatLocalDataSource.cacheChatRoomList(chatRooms);
+        AppLogger.d('[ProfilePreloader] 聊天室列表预加载完成 (${chatRooms.length} rooms)');
+      } else {
+        result.fold(
+          (failure) => AppLogger.d('[ProfilePreloader] 预加载聊天室列表失败: ${failure.message}'),
+          (_) {},
+        );
+      }
     } catch (e) {
       AppLogger.d('[ProfilePreloader] 预加载聊天室列表异常: $e');
     }
@@ -415,13 +416,31 @@ class ProfilePreloaderService {
   /// 预加载核心页面数据（首页、聊天、订单）
   /// 用于 App 启动时和后台刷新时调用
   Future<void> preloadCoreData() async {
-    AppLogger.d('[ProfilePreloader] 开始预加载核心数据...');
-    await Future.wait([
-      _preloadHomeData(),
-      _preloadChatRooms(),
-      _preloadOrders(),
-    ]);
-    AppLogger.d('[ProfilePreloader] 核心数据预加载完成');
+    const taskKey = 'core_data';
+
+    // 如果已有预加载在进行中，等待其完成
+    if (_loadingTasks.containsKey(taskKey)) {
+      return _loadingTasks[taskKey]!.future;
+    }
+
+    final completer = Completer<void>();
+    _loadingTasks[taskKey] = completer;
+
+    try {
+      AppLogger.d('[ProfilePreloader] 开始预加载核心数据...');
+      await Future.wait([
+        _preloadHomeData(),
+        _preloadChatRooms(),
+        _preloadOrders(),
+      ]);
+      AppLogger.d('[ProfilePreloader] 核心数据预加载完成');
+      completer.complete();
+    } catch (e) {
+      AppLogger.d('[ProfilePreloader] 核心数据预加载失败: $e');
+      completer.completeError(e);
+    } finally {
+      _loadingTasks.remove(taskKey);
+    }
   }
 
   /// 获取预加载的数据
