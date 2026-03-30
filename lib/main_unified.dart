@@ -12,6 +12,7 @@ import 'package:dskk_flutter_refactor/app/app.dart';
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 import 'package:dskk_flutter_refactor/core/config/locale_provider.dart';
 import 'package:dskk_flutter_refactor/core/services/profile_preloader_service.dart';
+import 'package:dskk_flutter_refactor/core/services/background_refresh_service.dart';
 import 'package:dskk_flutter_refactor/app/app_mode.dart';
 import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
 import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart';
@@ -194,6 +195,15 @@ void _triggerPreloadingAfterDelay() {
       ]);
 
       AppLogger.d('[Preloader] Preloading process completed successfully');
+
+      // 初始化后台刷新服务
+      try {
+        final bgRefreshService = getIt<BackgroundRefreshService>();
+        bgRefreshService.init();
+        AppLogger.d('[Preloader] BackgroundRefreshService initialized');
+      } catch (e) {
+        AppLogger.d('[Preloader] Failed to initialize BackgroundRefreshService: $e');
+      }
     } catch (e) {
       AppLogger.d('[Preloader] Failed to preload data: $e');
     }

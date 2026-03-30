@@ -64,6 +64,8 @@ import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_chat_loca
 
 // Import payment related modules
 import '../../features/payment/di/payment_di.dart';
+import 'package:dskk_flutter_refactor/core/services/background_refresh_service.dart';
+import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
 
 final getIt = GetIt.instance;
 
@@ -83,6 +85,19 @@ Future<void> registerProfilePreloaderService() async {
   } else {
     AppLogger.d(
         '[DI] ProfilePreloaderService already registered, skipping registration');
+  }
+}
+
+Future<void> registerBackgroundRefreshService() async {
+  if (!getIt.isRegistered<BackgroundRefreshService>()) {
+    getIt.registerLazySingleton<BackgroundRefreshService>(
+        () => BackgroundRefreshService(
+              preloaderService: getIt<ProfilePreloaderService>(),
+              secureStorage: getIt<ISecureStorageRepository>(),
+            ));
+    AppLogger.d('[DI] Registered BackgroundRefreshService');
+  } else {
+    AppLogger.d('[DI] BackgroundRefreshService already registered, skipping registration');
   }
 }
 
@@ -212,6 +227,15 @@ Future<void> configureDependencies({required String backendBaseUrl}) async {
   } catch (e) {
     AppLogger.d('[DI] Failed to register ProfilePreloader service: $e');
     // 不抛出异常，允许应用继续启动，但记录错误信息
+  }
+
+  // 注册BackgroundRefresh服务
+  try {
+    AppLogger.d('[DI] Registering BackgroundRefresh service...');
+    await registerBackgroundRefreshService();
+    AppLogger.d('[DI] BackgroundRefresh service registration complete.');
+  } catch (e) {
+    AppLogger.d('[DI] Failed to register BackgroundRefresh service: $e');
   }
 }
 
