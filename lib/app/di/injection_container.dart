@@ -61,6 +61,7 @@ import 'package:dskk_flutter_refactor/features/orders/domain/repositories/i_orde
 import 'package:dskk_flutter_refactor/features/seller/domain/repositories/i_seller_repository.dart';
 import 'package:dskk_flutter_refactor/features/home/domain/repositories/home_repository.dart';
 import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_chat_local_data_source.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/repositories/i_chat_repository.dart';
 
 // Import payment related modules
 import '../../features/payment/di/payment_di.dart';
@@ -80,6 +81,7 @@ Future<void> registerProfilePreloaderService() async {
               sellerRepository: getIt<ISellerRepository>(),
               homeRepository: getIt<IHomeRepository>(),
               chatLocalDataSource: getIt<IChatLocalDataSource>(),
+              chatRepository: getIt<IChatRepository>(),
             ));
     AppLogger.d('[DI] Registered ProfilePreloaderService');
   } else {

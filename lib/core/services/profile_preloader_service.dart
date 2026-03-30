@@ -12,6 +12,7 @@ import '../../features/seller/domain/repositories/i_seller_repository.dart';
 import '../../features/seller/domain/entities/seller_dashboard_data.dart';
 import '../../features/home/domain/repositories/home_repository.dart';
 import '../../features/chat/data/datasources/i_chat_local_data_source.dart';
+import '../../features/chat/domain/repositories/i_chat_repository.dart';
 
 /// 个人资料页面预加载服务
 /// 
@@ -27,6 +28,7 @@ class ProfilePreloaderService {
   final ISellerRepository _sellerRepository;
   final IHomeRepository _homeRepository;
   final IChatLocalDataSource _chatLocalDataSource;
+  final IChatRepository _chatRepository;
 
   // 预加载任务管理
   final Map<String, Completer<void>> _loadingTasks = {};
@@ -39,12 +41,14 @@ class ProfilePreloaderService {
     required ISellerRepository sellerRepository,
     required IHomeRepository homeRepository,
     required IChatLocalDataSource chatLocalDataSource,
+    required IChatRepository chatRepository,
   }) : _cacheManager = cacheManager,
        _userProfileRepository = userProfileRepository,
        _orderRepository = orderRepository,
        _sellerRepository = sellerRepository,
        _homeRepository = homeRepository,
-       _chatLocalDataSource = chatLocalDataSource;
+       _chatLocalDataSource = chatLocalDataSource,
+       _chatRepository = chatRepository;
 
   /// 预加载买家"我的"页面数据
   Future<void> preloadBuyerProfile() async {
@@ -373,15 +377,19 @@ class ProfilePreloaderService {
     }
   }
 
-  /// 预加载聊天室列表（写入本地缓存）
+  /// 预加载聊天室列表（通过 Repository 获取并写入本地缓存）
   Future<void> _preloadChatRooms() async {
     try {
-      final cachedRooms = await _chatLocalDataSource.getCachedChatRoomList();
-      if (cachedRooms != null && cachedRooms.isNotEmpty) {
-        AppLogger.d('[ProfilePreloader] 聊天室列表缓存已存在 (${cachedRooms.length} rooms)');
-      } else {
-        AppLogger.d('[ProfilePreloader] 聊天室列表缓存为空，将在首次访问时填充');
-      }
+      final result = await _chatRepository.getChatRooms();
+      result.fold(
+        (failure) => AppLogger.d('[ProfilePreloader] 预加载聊天室列表失败: ${failure.message}'),
+        (chatRooms) async {
+          // ChatRepository 不会自动写入本地缓存，需要手动写入
+          // ChatListBloc 的 stale-while-revalidate 从 localDataSource 读取
+          await _chatLocalDataSource.cacheChatRoomList(chatRooms);
+          AppLogger.d('[ProfilePreloader] 聊天室列表预加载完成 (${chatRooms.length} rooms)');
+        },
+      );
     } catch (e) {
       AppLogger.d('[ProfilePreloader] 预加载聊天室列表异常: $e');
     }
@@ -455,6 +463,7 @@ final profilePreloaderProvider = Provider<ProfilePreloaderService>((ref) {
       sellerRepository: GetIt.instance<ISellerRepository>(),
       homeRepository: GetIt.instance<IHomeRepository>(),
       chatLocalDataSource: GetIt.instance<IChatLocalDataSource>(),
+      chatRepository: GetIt.instance<IChatRepository>(),
     );
   }
 });
