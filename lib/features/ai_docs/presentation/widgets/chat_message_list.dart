@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
 import '../bloc/ai_chat/ai_chat_bloc.dart';
@@ -29,7 +31,7 @@ class _ChatMessageListState extends State<ChatMessageList> {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
-    
+
     // 初始化后自动滚动到底部
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToBottom(animated: false);
@@ -45,14 +47,14 @@ class _ChatMessageListState extends State<ChatMessageList> {
 
   void _onScroll() {
     if (_isScrollingProgrammatically) return; // 忽略程序化滚动
-    
+
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
     final threshold = 100.0; // 距离底部100像素时认为在底部附近
-    
+
     // 检查是否接近底部
     final isNearBottom = (maxScroll - currentScroll) <= threshold;
-    
+
     if (isNearBottom != _isNearBottom) {
       setState(() {
         _isNearBottom = isNearBottom;
@@ -63,8 +65,8 @@ class _ChatMessageListState extends State<ChatMessageList> {
     // 检查是否滚动到顶部，触发加载更多历史消息
     if (currentScroll <= 50 && !_scrollController.position.outOfRange) {
       final state = context.read<AiChatBloc>().state;
-      if (state.hasMoreHistory && 
-          !state.isLoadingMoreHistory && 
+      if (state.hasMoreHistory &&
+          !state.isLoadingMoreHistory &&
           state.messages.isNotEmpty) {
         AppLogger.d("[ChatMessageList] Triggering LoadMoreHistory");
         context.read<AiChatBloc>().add(const LoadMoreHistory());
@@ -74,9 +76,9 @@ class _ChatMessageListState extends State<ChatMessageList> {
 
   void _scrollToBottom({bool animated = true}) {
     if (!_scrollController.hasClients) return;
-    
+
     _isScrollingProgrammatically = true;
-    
+
     if (animated) {
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent,
@@ -95,9 +97,9 @@ class _ChatMessageListState extends State<ChatMessageList> {
   Widget build(BuildContext context) {
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context)!;
-    
+
     return BlocListener<AiChatBloc, AiChatState>(
-      listenWhen: (previous, current) => 
+      listenWhen: (previous, current) =>
           previous.shouldScrollToBottom != current.shouldScrollToBottom ||
           (previous.messages.length < current.messages.length && current.messages.isNotEmpty),
       listener: (context, state) {
@@ -119,18 +121,18 @@ class _ChatMessageListState extends State<ChatMessageList> {
                if (state.status == AiChatStatus.historyLoadFailure && state.messages.isEmpty) {
                    return Center(
                      child: Padding(
-                       padding: const EdgeInsets.all(16.0),
+                       padding: const EdgeInsets.all(AppDimensions.spacingLg),
                        child: Column(
                          mainAxisAlignment: MainAxisAlignment.center,
                          children: [
-                           const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                           const SizedBox(height: 16),
+                           const Icon(Icons.error_outline, color: AppColors.error, size: 48),
+                           const SizedBox(height: AppDimensions.spacingLg),
                            Text(
                              appLocalizations.ai_docs_recommendations_error(state.errorMessage ?? '未知错误'),
-                             style: const TextStyle(color: Colors.red),
+                             style: const TextStyle(color: AppColors.error),
                              textAlign: TextAlign.center,
                            ),
-                           const SizedBox(height: 16),
+                           const SizedBox(height: AppDimensions.spacingLg),
                            ElevatedButton(
                              onPressed: () {
                                if (state.selectedConversationId != null) {
@@ -147,29 +149,29 @@ class _ChatMessageListState extends State<ChatMessageList> {
                    );
                }
                 // Show empty message only if not loading and not currently streaming
-                if (state.messages.isEmpty && 
-                    state.status != AiChatStatus.streamingResponse && 
+                if (state.messages.isEmpty &&
+                    state.status != AiChatStatus.streamingResponse &&
                     state.status != AiChatStatus.loadingHistory) {
                    return Center(
                        child: Padding(
-                         padding: const EdgeInsets.all(16.0),
+                         padding: const EdgeInsets.all(AppDimensions.spacingLg),
                          child: Column(
                            mainAxisSize: MainAxisSize.min,
                            children: [
-                             Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey[400]),
-                             const SizedBox(height: 16),
+                             Icon(Icons.chat_bubble_outline, size: 64, color: AppColors.textTertiary),
+                             const SizedBox(height: AppDimensions.spacingLg),
                              Text(
                                appLocalizations.ai_docs_welcome_title,
                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                  fontWeight: FontWeight.bold,
-                                 color: Colors.grey[600],
+                                 color: AppColors.textSecondary,
                                ),
                              ),
-                             const SizedBox(height: 8),
+                             const SizedBox(height: AppDimensions.spacingSm),
                              Text(
                                appLocalizations.ai_docs_welcome_message,
                                textAlign: TextAlign.center,
-                               style: TextStyle(color: Colors.grey[600]),
+                               style: const TextStyle(color: AppColors.textSecondary),
                              ),
                            ],
                          ),
@@ -182,14 +184,17 @@ class _ChatMessageListState extends State<ChatMessageList> {
               return SelectionArea(
                 child: ListView.builder(
                   controller: _scrollController,
-                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppDimensions.spacingSm,
+                    horizontal: AppDimensions.spacingMd,
+                  ),
                   itemCount: _getItemCount(state),
                   itemBuilder: (context, index) => _buildItem(context, state, index),
                 ),
               );
             },
           ),
-          
+
           // 回到底部按钮
           if (_showScrollToBottomButton)
             Positioned(
@@ -213,17 +218,17 @@ class _ChatMessageListState extends State<ChatMessageList> {
 
   int _getItemCount(AiChatState state) {
     int count = state.messages.length;
-    
+
     // 在顶部添加加载更多指示器
     if (state.isLoadingMoreHistory) {
       count += 1;
     }
-    
+
     // 在底部添加流式响应指示器
     if (state.status == AiChatStatus.streamingResponse) {
       count += 1;
     }
-    
+
     return count;
   }
 
@@ -231,7 +236,7 @@ class _ChatMessageListState extends State<ChatMessageList> {
     // 顶部加载更多指示器
     if (state.isLoadingMoreHistory && index == 0) {
       return Container(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(AppDimensions.spacingLg),
         child: const Center(
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -241,30 +246,30 @@ class _ChatMessageListState extends State<ChatMessageList> {
                 height: 16,
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
-              SizedBox(width: 8),
-              Text('加载更多消息...', style: TextStyle(color: Colors.grey)),
+              SizedBox(width: AppDimensions.spacingSm),
+              Text('加载更多消息...', style: TextStyle(color: AppColors.textSecondary)),
             ],
           ),
         ),
       );
     }
-    
+
     // 调整消息索引（如果有加载指示器）
     final messageIndex = state.isLoadingMoreHistory ? index - 1 : index;
-    
+
     // 底部流式响应指示器
-    if (state.status == AiChatStatus.streamingResponse && 
+    if (state.status == AiChatStatus.streamingResponse &&
         messageIndex == state.messages.length) {
       // 🕐 为流式响应添加时间分隔符检查
       final currentTimestamp = DateTime.now();
       final lastMessage = state.messages.isNotEmpty ? state.messages.last : null;
       final lastTimestamp = lastMessage?.timestamp;
-      
+
       final needsTimeSeparator = SmartTimeFormatter.shouldShowTimeSeparator(
-        lastTimestamp, 
+        lastTimestamp,
         currentTimestamp
       );
-      
+
       if (needsTimeSeparator) {
         return Column(
           children: [
@@ -294,14 +299,14 @@ class _ChatMessageListState extends State<ChatMessageList> {
     // 普通消息
     if (messageIndex >= 0 && messageIndex < state.messages.length) {
       final message = state.messages[messageIndex];
-      
+
       // 🕐 检查是否需要时间分隔符
       final previousMessage = messageIndex > 0 ? state.messages[messageIndex - 1] : null;
       final needsTimeSeparator = SmartTimeFormatter.shouldShowTimeSeparator(
-        previousMessage?.timestamp, 
+        previousMessage?.timestamp,
         message.timestamp ?? DateTime.now()
       );
-      
+
       if (needsTimeSeparator && message.timestamp != null) {
         return Column(
           children: [
@@ -319,53 +324,58 @@ class _ChatMessageListState extends State<ChatMessageList> {
         );
       }
     }
-    
+
     // 应该不会到达这里，但为了安全返回空容器
     return const SizedBox.shrink();
   }
 
-  // --- Move _buildMessageItem INSIDE the class --- 
+  // --- Move _buildMessageItem INSIDE the class ---
   Widget _buildMessageItem(BuildContext context, AiChatMessageEntity message, {bool isStreaming = false}) {
     bool isUser = message.sender == MessageSender.user;
-    
+
     // Determine background color based on sender and streaming state
     Color bubbleColor;
     if (isUser) {
-        bubbleColor = Colors.blue[100]!;
+        bubbleColor = AppColors.info.withOpacity(0.15);
     } else if (isStreaming) {
-        bubbleColor = Colors.grey[200]!; // Slightly different grey for streaming
+        bubbleColor = AppColors.backgroundSecondary;
     } else {
-        bubbleColor = Colors.grey[300]!;
+        bubbleColor = AppColors.borderInput;
     }
 
     return Align(
       // Align user messages to the right, AI/System messages to the left
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 14.0),
+        margin: const EdgeInsets.symmetric(
+          vertical: AppDimensions.spacingXs,
+          horizontal: AppDimensions.spacingSm,
+        ),
+        padding: const EdgeInsets.symmetric(
+          vertical: AppDimensions.spacingMd,
+          horizontal: 14.0,
+        ),
         decoration: BoxDecoration(
           color: bubbleColor,
-          borderRadius: BorderRadius.circular(16.0),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
         ),
         constraints: BoxConstraints(
            maxWidth: MediaQuery.of(context).size.width * 0.75 // Max width for bubbles
         ),
         child: Column(
            crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-           mainAxisSize: MainAxisSize.min, // Prevent column taking full width
+           mainAxisSize: MainAxisSize.min,
            children: [
               // --- Display Image Attachment (if any) ---
               if (message.fileUrls?.isNotEmpty ?? false)
                  Padding(
-                   padding: const EdgeInsets.only(bottom: 8.0),
-                   child: ClipRRect( // Clip image corners
-                     borderRadius: BorderRadius.circular(8.0),
-                     child: Image.network( 
+                   padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+                   child: ClipRRect(
+                     borderRadius: BorderRadius.circular(AppDimensions.spacingSm),
+                     child: Image.network(
                         message.fileUrls!.first,
-                        height: 150, 
+                        height: 150,
                         fit: BoxFit.cover,
-                        // Add loading and error builders for robustness
                         loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) return child;
                             return Container(
@@ -381,38 +391,35 @@ class _ChatMessageListState extends State<ChatMessageList> {
                         },
                         errorBuilder: (context, error, stackTrace) => Container(
                             height: 150,
-                            color: Colors.grey[200],
+                            color: AppColors.borderPrimary,
                             alignment: Alignment.center,
-                            child: const Icon(Icons.broken_image, color: Colors.red, size: 50),
-                        ), 
-                     ), 
-                   ), 
+                            child: const Icon(Icons.broken_image, color: AppColors.error, size: 50),
+                        ),
+                     ),
+                   ),
                  ),
               // --- Display Message Content (with potential cursor for streaming) ---
                Row(
                  mainAxisSize: MainAxisSize.min,
-                 crossAxisAlignment: CrossAxisAlignment.end, // Align cursor properly
+                 crossAxisAlignment: CrossAxisAlignment.end,
                  children: [
-                   Flexible( // Allow text to wrap
+                   Flexible(
                      child: Text(
-                        // Show ellipsis if streaming text is empty initially
                         (isStreaming && message.content.isEmpty) ? "..." : message.content,
-                        style: const TextStyle(fontSize: 15.0, color: Colors.black87),
+                        style: const TextStyle(fontSize: 15.0, color: AppColors.textPrimary),
                       ),
                    ),
-                    // Add blinking cursor only if streaming
                    if (isStreaming)
-                      const _BlinkingCursor(), // Use the new stateful widget
+                      const _BlinkingCursor(),
                  ],
                ),
               // --- Display Timestamp (Optional) ---
-              if (message.timestamp != null && !isStreaming) // Don't show timestamp for streaming msg
+              if (message.timestamp != null && !isStreaming)
                Padding(
-                 padding: const EdgeInsets.only(top: 4.0),
+                 padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
                  child: Text(
-                  // Basic HH:mm format. Requires intl package for better localization.
-                  message.timestamp!.toIso8601String().substring(11, 16), 
-                  style: TextStyle(fontSize: 10.0, color: Colors.grey[600]),
+                  message.timestamp!.toIso8601String().substring(11, 16),
+                  style: const TextStyle(fontSize: 10.0, color: AppColors.textSecondary),
                  ),
                )
            ],
@@ -455,9 +462,9 @@ class _BlinkingCursorState extends State<_BlinkingCursor>
     return FadeTransition(
       opacity: _controller,
       child: const Text(
-         '|', 
-         style: TextStyle(fontSize: 15.0, color: Colors.black87, fontWeight: FontWeight.bold)
+         '|',
+         style: TextStyle(fontSize: 15.0, color: AppColors.textPrimary, fontWeight: FontWeight.bold)
       ),
     );
   }
-} 
+}

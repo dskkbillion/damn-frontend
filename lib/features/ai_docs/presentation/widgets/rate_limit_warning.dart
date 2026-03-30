@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 频率限制警告横幅
 class RateLimitWarningBanner extends StatelessWidget {
   final int remaining;
   final int resetInSeconds;
   final VoidCallback? onDismiss;
-  
+
   const RateLimitWarningBanner({
     super.key,
     required this.remaining,
@@ -16,18 +18,18 @@ class RateLimitWarningBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (remaining > 5) return const SizedBox.shrink();
-    
+
     return Container(
-      margin: const EdgeInsets.all(12),
+      margin: const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: remaining <= 2 
+          colors: remaining <= 2
             ? [Colors.amber.shade50, Colors.amber.shade100]
-            : [Colors.blue.shade50, Colors.blue.shade100],
+            : [AppColors.backgroundSecondary, AppColors.borderPrimary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -39,25 +41,25 @@ class RateLimitWarningBanner extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
           onTap: () => _showDetailedInfo(context),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppDimensions.spacingLg),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(AppDimensions.spacingSm),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppColors.backgroundCard,
+                    borderRadius: BorderRadius.circular(AppDimensions.spacingSm),
                   ),
                   child: Icon(
                     remaining <= 2 ? Icons.access_time : Icons.info_outline,
-                    color: remaining <= 2 ? Colors.amber.shade700 : Colors.blue.shade700,
+                    color: remaining <= 2 ? Colors.amber.shade700 : AppColors.info,
                     size: 24,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppDimensions.spacingMd),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,7 +67,7 @@ class RateLimitWarningBanner extends StatelessWidget {
                       Text(
                         remaining <= 2 ? '使用次数即将耗尽' : '今日剩余次数',
                         style: TextStyle(
-                          color: remaining <= 2 ? Colors.amber.shade800 : Colors.blue.shade800,
+                          color: remaining <= 2 ? Colors.amber.shade800 : AppColors.textPrimary,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -74,7 +76,7 @@ class RateLimitWarningBanner extends StatelessWidget {
                       Text(
                         '还可使用 $remaining 次，${_formatResetTime(resetInSeconds)}后重置',
                         style: TextStyle(
-                          color: remaining <= 2 ? Colors.amber.shade700 : Colors.blue.shade700,
+                          color: remaining <= 2 ? Colors.amber.shade700 : AppColors.textSecondary,
                           fontSize: 12,
                         ),
                       ),
@@ -83,21 +85,21 @@ class RateLimitWarningBanner extends StatelessWidget {
                 ),
                 Icon(
                   Icons.chevron_right,
-                  color: remaining <= 2 ? Colors.amber.shade600 : Colors.blue.shade600,
+                  color: remaining <= 2 ? Colors.amber.shade600 : AppColors.info,
                   size: 20,
                 ),
                 if (onDismiss != null)
                   Padding(
-                    padding: const EdgeInsets.only(left: 8),
+                    padding: const EdgeInsets.only(left: AppDimensions.spacingSm),
                     child: InkWell(
                       onTap: onDismiss,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
                       child: Container(
-                        padding: const EdgeInsets.all(4),
+                        padding: const EdgeInsets.all(AppDimensions.spacingXs),
                         child: Icon(
                           Icons.close,
                           size: 16,
-                          color: Colors.grey.shade600,
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ),
@@ -148,11 +150,11 @@ class _DetailedRateLimitSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        color: AppColors.backgroundCard,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimensions.radiusXl)),
       ),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppDimensions.spacingXxl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,25 +164,25 @@ class _DetailedRateLimitSheet extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: AppColors.borderInput,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppDimensions.spacingXxl),
             Text(
               '使用次数详情',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppDimensions.spacingXl),
             _buildProgressCard(context),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingLg),
             _buildRuleCard(context),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppDimensions.spacingXl),
             _buildUpgradeButton(context),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingLg),
           ],
         ),
       ),
@@ -190,16 +192,16 @@ class _DetailedRateLimitSheet extends StatelessWidget {
   Widget _buildProgressCard(BuildContext context) {
     const totalLimit = 30; // 假设总限制为30次
     final usedPercentage = ((totalLimit - remaining) / totalLimit).clamp(0.0, 1.0);
-    
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.blue.shade50, Colors.blue.shade100],
+          colors: [AppColors.backgroundSecondary, AppColors.borderPrimary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,39 +211,39 @@ class _DetailedRateLimitSheet extends StatelessWidget {
             children: [
               Text(
                 '今日使用情况',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
-                  color: Colors.blue.shade800,
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               Text(
                 '${totalLimit - remaining}/$totalLimit',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
-                  color: Colors.blue.shade700,
+                  color: AppColors.textSecondary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppDimensions.spacingMd),
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppDimensions.spacingSm),
             child: LinearProgressIndicator(
               value: usedPercentage,
-              backgroundColor: Colors.blue.shade100,
+              backgroundColor: AppColors.borderPrimary,
               valueColor: AlwaysStoppedAnimation<Color>(
-                remaining <= 2 ? Colors.amber.shade600 : Colors.blue.shade600,
+                remaining <= 2 ? Colors.amber.shade600 : AppColors.info,
               ),
               minHeight: 8,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppDimensions.spacingSm),
           Text(
             '${_formatResetTime(resetInSeconds)}后重置',
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 12,
-              color: Colors.blue.shade600,
+              color: AppColors.textSecondary,
             ),
           ),
         ],
@@ -251,27 +253,27 @@ class _DetailedRateLimitSheet extends StatelessWidget {
 
   Widget _buildRuleCard(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.backgroundSecondary,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             '使用规则',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey.shade800,
+              color: AppColors.textPrimary,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppDimensions.spacingMd),
           _buildRuleItem('突发限制', '5分钟内最多3次'),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppDimensions.spacingSm),
           _buildRuleItem('小时限制', '60分钟内最多30次'),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppDimensions.spacingSm),
           _buildRuleItem('重置时间', '每小时0分钟重置'),
         ],
       ),
@@ -284,16 +286,16 @@ class _DetailedRateLimitSheet extends StatelessWidget {
       children: [
         Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 13,
-            color: Colors.grey.shade600,
+            color: AppColors.textSecondary,
           ),
         ),
         Text(
           value,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 13,
-            color: Colors.grey.shade800,
+            color: AppColors.textPrimary,
           ),
         ),
       ],
@@ -315,17 +317,17 @@ class _DetailedRateLimitSheet extends StatelessWidget {
           );
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue.shade600,
+          backgroundColor: AppColors.info,
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
           ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.star, size: 20),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppDimensions.spacingSm),
             const Text(
               '升级获取更多次数',
               style: TextStyle(

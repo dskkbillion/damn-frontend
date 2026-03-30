@@ -5,6 +5,7 @@ import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/auto_reply_settings.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/auto_reply/auto_reply_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 /// 自动回复设置页面
 class AutoReplyPage extends StatelessWidget {
@@ -46,7 +47,6 @@ class AutoReplyBody extends StatefulWidget {
 class _AutoReplyBodyState extends State<AutoReplyBody> {
   final TextEditingController _contentController = TextEditingController();
   bool _isContentDirty = false;
-  String? _lastLoadedContent; // 记录最后一次加载的内容
 
   @override
   void initState() {
@@ -71,18 +71,14 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
           setState(() {
             _isContentDirty = true;
           });
+        } else if (state is AutoReplySaveSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(AppLocalizations.of(context)!?.auto_reply_settings_saved ?? 'Settings Saved')),
+          );
         } else if (state is AutoReplyLoaded) {
-          // 保存成功的提示
-          if (_lastLoadedContent != null && _lastLoadedContent != state.settings.content) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(AppLocalizations.of(context)!?.auto_reply_settings_saved ?? 'Settings Saved')),
-            );
-          }
-          
           // 更新文本控制器和状态
-          _lastLoadedContent = state.settings.content;
           _contentController.text = state.settings.content ?? '';
-          
+
           // 重置dirty状态
           setState(() {
             _isContentDirty = false;
@@ -95,13 +91,17 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
         }
 
         if (state is AutoReplyLoaded || state is AutoReplyUpdating) {
-          final settings = state is AutoReplyLoaded 
+          final settings = state is AutoReplyLoaded
               ? state.settings
               : (state as AutoReplyUpdating).settings;
-          
+
           final isUpdating = state is AutoReplyUpdating;
-          
+
           return _buildContent(context, settings, isUpdating);
+        }
+
+        if (state is AutoReplyError && state.previousSettings != null) {
+          return _buildContent(context, state.previousSettings!, false);
         }
 
         return Center(child: Text(AppLocalizations.of(context)!?.auto_reply_load_failed ?? 'Load failed, please try again'));
@@ -153,7 +153,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
             ),
             Switch(
               value: settings.isEnabled,
-              activeColor: Colors.green,
+              activeColor: AppColors.success,
               onChanged: isUpdating 
                   ? null 
                   : (value) {
@@ -209,7 +209,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
               AppLocalizations.of(context)!?.auto_reply_content_description ?? 'When customers send messages, the system will automatically reply with this content',
               style: const TextStyle(
                 fontSize: 12,
-                color: Colors.grey,
+                color: AppColors.textTertiary,
               ),
             ),
           ],
@@ -242,9 +242,9 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
         }
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.green,
+        backgroundColor: AppColors.success,
         padding: const EdgeInsets.symmetric(vertical: 12),
-        disabledBackgroundColor: Colors.green.withOpacity(0.5),
+        disabledBackgroundColor: AppColors.success.withValues(alpha: 0.5),
       ),
       child: Text(
         AppLocalizations.of(context)!?.auto_reply_save_settings ?? 'Save Settings',

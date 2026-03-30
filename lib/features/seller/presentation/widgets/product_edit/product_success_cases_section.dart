@@ -5,6 +5,8 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/product_edit_models.dart';
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 成功案例 section，完全由 BLoC state 驱动，无本地状态。
 ///
@@ -36,28 +38,29 @@ class ProductSuccessCasesSection extends StatelessWidget {
 
   InputDecoration get _lightBorderDecoration => InputDecoration(
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          borderSide: BorderSide(color: AppColors.borderInput, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          borderSide: BorderSide(color: AppColors.borderInput, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFBF7D2A), width: 1.5),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        contentPadding: EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingMd),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.backgroundCard,
       );
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
-      margin: const EdgeInsets.only(top: 12),
-      padding: const EdgeInsets.all(16.0),
+      color: AppColors.backgroundCard,
+      margin: EdgeInsets.only(top: AppDimensions.spacingMd),
+      padding: EdgeInsets.all(AppDimensions.spacingLg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -66,29 +69,29 @@ class ProductSuccessCasesSection extends StatelessWidget {
             children: [
               Text(
                 AppLocalizations.of(context)!?.product_edit_success_cases ?? 'Success Cases',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               if (state.successCases.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: AppDimensions.spacingSm,
+                      vertical: AppDimensions.spacingXs),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFBF7D2A).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
                   ),
                   child: Text(
                     '${state.successCases.length}个案例',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFFBF7D2A),
-                    ),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.primary,
+                        ),
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: AppDimensions.spacingLg),
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -155,31 +158,34 @@ class ProductSuccessCasesSection extends StatelessWidget {
                       height: 100,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey[300]!),
-                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.borderInput),
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                       ),
                       child: selectedImagePath != null
                           ? ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                               child: Image.file(
                                 File(selectedImagePath!),
                                 fit: BoxFit.cover,
                               ),
                             )
-                          : const Column(
+                          : Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.add_photo_alternate, size: 32, color: Colors.grey),
-                                SizedBox(height: 4),
+                                Icon(Icons.add_photo_alternate,
+                                    size: 32, color: AppColors.textTertiary),
+                                SizedBox(height: AppDimensions.spacingXs),
                                 Text(
                                   '点击选择图片',
-                                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        color: AppColors.textTertiary,
+                                      ),
                                 ),
                               ],
                             ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: AppDimensions.spacingMd),
                   TextField(
                     controller: titleController,
                     decoration: _lightBorderDecoration.copyWith(
@@ -187,7 +193,7 @@ class ProductSuccessCasesSection extends StatelessWidget {
                       hintText: '简短描述这个案例',
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: AppDimensions.spacingMd),
                   TextField(
                     controller: descriptionController,
                     maxLines: 3,
@@ -217,7 +223,7 @@ class ProductSuccessCasesSection extends StatelessWidget {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFBF7D2A),
+                backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
               ),
               child: const Text('添加'),
@@ -269,11 +275,11 @@ class ProductSuccessCasesSection extends StatelessWidget {
                       height: 100,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey[300]!),
-                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.borderInput),
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                         child: _EditDialogImage(
                           localPath: selectedImagePath,
                           imageUrl: currentImageUrl,
@@ -282,7 +288,7 @@ class ProductSuccessCasesSection extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: AppDimensions.spacingMd),
                   TextField(
                     controller: titleController,
                     decoration: _lightBorderDecoration.copyWith(
@@ -290,7 +296,7 @@ class ProductSuccessCasesSection extends StatelessWidget {
                       hintText: '简短描述这个案例',
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: AppDimensions.spacingMd),
                   TextField(
                     controller: descriptionController,
                     maxLines: 3,
@@ -327,7 +333,7 @@ class ProductSuccessCasesSection extends StatelessWidget {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFBF7D2A),
+                backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
               ),
               child: const Text('保存'),
@@ -353,16 +359,17 @@ class _AddSuccessCaseButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[300]!, style: BorderStyle.solid),
-          borderRadius: BorderRadius.circular(8),
-          color: Colors.grey[50],
+          border: Border.all(color: AppColors.borderPrimary, style: BorderStyle.solid),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          color: AppColors.backgroundSecondary,
         ),
-        child: const Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add, size: 32, color: Colors.grey),
-            SizedBox(height: 8),
-            Text('添加案例', style: TextStyle(color: Colors.grey)),
+            Icon(Icons.add, size: 32, color: AppColors.textTertiary),
+            SizedBox(height: AppDimensions.spacingSm),
+            Text('添加案例',
+                style: TextStyle(color: AppColors.textTertiary)),
           ],
         ),
       ),
@@ -387,8 +394,8 @@ class _SuccessCaseItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[300]!),
-        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.borderInput),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -398,7 +405,8 @@ class _SuccessCaseItem extends StatelessWidget {
             child: Stack(
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                  borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(AppDimensions.radiusSm)),
                   child: _SuccessCaseImage(
                     successCase: successCase,
                     onRetryUpload: onRetryUpload,
@@ -414,7 +422,7 @@ class _SuccessCaseItem extends StatelessWidget {
                         icon: Icons.edit,
                         onTap: onEdit,
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: AppDimensions.spacingXs),
                       _OverlayIconButton(
                         icon: Icons.close,
                         onTap: onRemove,
@@ -428,21 +436,25 @@ class _SuccessCaseItem extends StatelessWidget {
           Expanded(
             flex: 2,
             child: Padding(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(AppDimensions.spacingSm),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     successCase.title,
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: AppDimensions.spacingXs),
                   Expanded(
                     child: Text(
                       successCase.description,
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textTertiary,
+                          ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -467,7 +479,7 @@ class _OverlayIconButton extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(4),
+        padding: EdgeInsets.all(AppDimensions.spacingXs),
         decoration: BoxDecoration(
           color: Colors.black.withOpacity(0.6),
           shape: BoxShape.circle,
@@ -505,10 +517,12 @@ class _SuccessCaseImage extends StatelessWidget {
                   backgroundColor: Colors.white30,
                   valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: AppDimensions.spacingSm),
                 Text(
                   '${successCase.uploadProgress.toInt()}%',
-                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.white,
+                      ),
                 ),
               ],
             ),
@@ -526,20 +540,28 @@ class _SuccessCaseImage extends StatelessWidget {
               width: double.infinity,
               height: double.infinity,
               fit: BoxFit.cover,
-              color: Colors.grey,
+              color: Colors.grey, // TODO(reskin): review this color (blend mode effect)
               colorBlendMode: BlendMode.saturation,
             ),
           Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.error_outline, color: Colors.red, size: 40),
-                const SizedBox(height: 4),
-                const Text('上传失败', style: TextStyle(color: Colors.red, fontSize: 12)),
+                Icon(Icons.error_outline, color: AppColors.error, size: 40),
+                SizedBox(height: AppDimensions.spacingXs),
+                Text(
+                  '上传失败',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.error,
+                      ),
+                ),
                 if (successCase.canRetry)
                   TextButton(
                     onPressed: onRetryUpload,
-                    child: const Text('重试', style: TextStyle(fontSize: 12)),
+                    child: Text(
+                      '重试',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ),
               ],
             ),
@@ -582,16 +604,16 @@ class _SuccessCaseImage extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: Colors.grey[200],
-      child: const Icon(Icons.image, size: 40, color: Colors.grey),
+      color: AppColors.borderPrimary,
+      child: Icon(Icons.image, size: 40, color: AppColors.textTertiary),
     );
   }
 
   Widget _brokenImage() => Container(
         width: double.infinity,
         height: double.infinity,
-        color: Colors.grey[200],
-        child: const Icon(Icons.broken_image, size: 40, color: Colors.grey),
+        color: AppColors.borderPrimary,
+        child: Icon(Icons.broken_image, size: 40, color: AppColors.textTertiary),
       );
 }
 
@@ -633,23 +655,33 @@ class _EditDialogImage extends StatelessWidget {
       return Image.file(File(localPath!), fit: BoxFit.cover, errorBuilder: _errorFallback);
     }
 
-    return const Column(
+    return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.add_photo_alternate, size: 32, color: Colors.grey),
-        SizedBox(height: 4),
-        Text('点击选择图片', style: TextStyle(color: Colors.grey, fontSize: 12)),
+        Icon(Icons.add_photo_alternate, size: 32, color: AppColors.textTertiary),
+        SizedBox(height: AppDimensions.spacingXs),
+        Text(
+          '点击选择图片',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textTertiary,
+              ),
+        ),
       ],
     );
   }
 
   Widget _errorFallback(BuildContext context, Object error, StackTrace? stackTrace) {
-    return const Column(
+    return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.broken_image, size: 32, color: Colors.grey),
-        SizedBox(height: 4),
-        Text('图片加载失败', style: TextStyle(color: Colors.grey, fontSize: 12)),
+        Icon(Icons.broken_image, size: 32, color: AppColors.textTertiary),
+        SizedBox(height: AppDimensions.spacingXs),
+        Text(
+          '图片加载失败',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textTertiary,
+              ),
+        ),
       ],
     );
   }

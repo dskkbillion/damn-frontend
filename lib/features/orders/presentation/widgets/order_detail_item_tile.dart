@@ -1,5 +1,7 @@
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_item.dart';
 import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -18,18 +20,18 @@ class OrderDetailItemTile extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(8.0),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
         onTap: canNavigate
             ? () => context.push('/home/product/${item.productId}')
             : null,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Item Image
               ClipRRect(
-                borderRadius: BorderRadius.circular(8.0),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                 child: Image.network(
                   item.imageUrl,
                   width: 70,
@@ -39,18 +41,18 @@ class OrderDetailItemTile extends StatelessWidget {
                     if (loadingProgress == null) return child;
                     return Container(
                       width: 70, height: 70,
-                      color: Colors.grey[200],
+                      color: AppColors.backgroundSecondary,
                       child: const Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
                     );
                   },
                   errorBuilder: (context, error, stackTrace) => Container(
                     width: 70, height: 70,
-                    color: Colors.grey[200],
-                    child: Icon(Icons.broken_image, color: Colors.grey[400]),
+                    color: AppColors.backgroundSecondary,
+                    child: Icon(Icons.broken_image, color: AppColors.textTertiary),
                   ),
                 ),
               ),
-              const SizedBox(width: 12.0),
+              const SizedBox(width: AppDimensions.spacingMd),
               // Item Details
               Expanded(
                 child: Column(
@@ -68,7 +70,7 @@ class OrderDetailItemTile extends StatelessWidget {
                           ),
                         ),
                         if (canNavigate) ...[
-                          const SizedBox(width: 8),
+                          const SizedBox(width: AppDimensions.spacingSm),
                           Icon(
                             Icons.chevron_right,
                             size: 18,
@@ -77,7 +79,7 @@ class OrderDetailItemTile extends StatelessWidget {
                         ],
                       ],
                     ),
-                    const SizedBox(height: 4.0),
+                    const SizedBox(height: AppDimensions.spacingXs),
                     if (item.skuName != null && item.skuName!.isNotEmpty)
                       Text(
                         item.skuName!,
@@ -85,7 +87,7 @@ class OrderDetailItemTile extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                    const SizedBox(height: 8.0),
+                    const SizedBox(height: AppDimensions.spacingSm),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -101,7 +103,7 @@ class OrderDetailItemTile extends StatelessWidget {
                     ),
                     // 显示交付天数和可修改次数
                     if (item.deliveryDay != null || item.editNum != null) ...[
-                      const SizedBox(height: 8.0),
+                      const SizedBox(height: AppDimensions.spacingSm),
                       Row(
                         children: [
                           if (item.deliveryDay != null) ...[
@@ -110,7 +112,7 @@ class OrderDetailItemTile extends StatelessWidget {
                               size: 14,
                               color: colorScheme.secondary
                             ),
-                            const SizedBox(width: 4),
+                            const SizedBox(width: AppDimensions.spacingXs),
                             Text(
                               '交付天数: ${item.deliveryDay}天',
                               style: textTheme.bodySmall?.copyWith(
@@ -119,14 +121,14 @@ class OrderDetailItemTile extends StatelessWidget {
                             ),
                           ],
                           if (item.deliveryDay != null && item.editNum != null)
-                            const SizedBox(width: 16),
+                            const SizedBox(width: AppDimensions.spacingLg),
                           if (item.editNum != null) ...[
                             Icon(
                               Icons.edit,
                               size: 14,
                               color: colorScheme.secondary
                             ),
-                            const SizedBox(width: 4),
+                            const SizedBox(width: AppDimensions.spacingXs),
                             Text(
                               '可修改次数: ${item.editNum}次',
                               style: textTheme.bodySmall?.copyWith(

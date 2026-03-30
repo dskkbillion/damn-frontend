@@ -13,6 +13,8 @@ import '../widgets/empty_state.dart';
 import '../widgets/loading_state.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 商品管理页面
 class ProductManagementPage extends StatefulWidget {
@@ -26,7 +28,6 @@ class _ProductManagementPageState extends State<ProductManagementPage>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late TabController _tabController;
   final ScrollController _onSaleScrollController = ScrollController();
-  final ScrollController _draftScrollController = ScrollController();
   final ScrollController _offShelfScrollController = ScrollController();
 
   // Track if we're currently changing tabs to prevent scroll events
@@ -110,13 +111,10 @@ class _ProductManagementPageState extends State<ProductManagementPage>
           hasMore = state.hasMoreOnSaleProducts;
           break;
         case 1:
-          hasMore = state.hasMoreDraftProducts;
-          break;
-        case 2:
           hasMore = state.hasMoreOffShelfProducts;
           break;
       }
-      
+
       AppLogger.d('[ProductManagementPage] _onScrollEnd: tabIndex=$tabIndex, hasMore=$hasMore, isLoading=${state.isLoading}');
       
       if (hasMore && !state.isLoading) {
@@ -126,9 +124,6 @@ class _ProductManagementPageState extends State<ProductManagementPage>
             status = ProductStatus.normal;
             break;
           case 1:
-            status = ProductStatus.draft;
-            break;
-          case 2:
             status = ProductStatus.disabled;
             break;
           default:
@@ -150,7 +145,6 @@ class _ProductManagementPageState extends State<ProductManagementPage>
     WidgetsBinding.instance.removeObserver(this);
     _tabController.dispose();
     _onSaleScrollController.dispose();
-    _draftScrollController.dispose();
     _offShelfScrollController.dispose();
     super.dispose();
   }
@@ -174,7 +168,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
           ],
           indicatorColor: Theme.of(context).primaryColor,
           labelColor: Theme.of(context).primaryColor,
-          unselectedLabelColor: Colors.grey,
+          unselectedLabelColor: AppColors.textTertiary,
             padding: const EdgeInsets.symmetric(vertical: 8),
           ),
           // BlocListener内容包装在Expanded中确保填充剩余空间
@@ -288,7 +282,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.errorMessage!),
-                  backgroundColor: Colors.red,
+                  backgroundColor: AppColors.error,
                 ),
               );
             }
@@ -417,9 +411,6 @@ class _ProductManagementPageState extends State<ProductManagementPage>
                         hasMore = state.hasMoreOnSaleProducts;
                         break;
                       case 1:
-                        hasMore = state.hasMoreDraftProducts;
-                        break;
-                      case 2:
                         hasMore = state.hasMoreOffShelfProducts;
                         break;
                     }
@@ -466,19 +457,19 @@ class _ProductManagementPageState extends State<ProductManagementPage>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.orange[50],
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: Colors.orange[200]!),
+              color: AppColors.warning.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+              border: Border.all(color: AppColors.warning.withOpacity(0.4)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.hourglass_empty, size: 16, color: Colors.orange[700]),
-                const SizedBox(width: 4),
+                Icon(Icons.hourglass_empty, size: 16, color: AppColors.warning),
+                const SizedBox(width: AppDimensions.spacingXs),
                 Text(
                   AppLocalizations.of(context)!?.product_management_status_waiting_review ?? 'Waiting for Review',
-                  style: TextStyle(
-                    color: Colors.orange[700],
+                  style: const TextStyle(
+                    color: AppColors.warning,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -562,7 +553,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
     }
     
     // 所有状态的商品都可以编辑（除了审核中的）
-    if (product.status != ProductStatus.reviewing) {
+    if (product.status != ProductStatus.reviewing && product.status != ProductStatus.disabled) {
       actions.add(
         _buildActionButton(
           context,
@@ -607,7 +598,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
           }
         },
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.all(AppDimensions.spacingMd),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -615,11 +606,11 @@ class _ProductManagementPageState extends State<ProductManagementPage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(4.0),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                     child: _buildProductImage(product),
                   ),
-                  
-                  const SizedBox(width: 12.0),
+
+                  const SizedBox(width: AppDimensions.spacingMd),
                   
                   Expanded(
                     child: Column(
@@ -638,39 +629,39 @@ class _ProductManagementPageState extends State<ProductManagementPage>
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: AppDimensions.spacingSm),
                             _buildStatusTag(product.status),
                           ],
                         ),
-                        
-                        const SizedBox(height: 4.0),
-                        
+
+                        const SizedBox(height: AppDimensions.spacingXs),
+
                         Text(
                           '${RegionConfig.currencySymbol}${_getBasicTierPrice(product).toStringAsFixed(2)}',
                           style: TextStyle(
                             fontSize: 15.0,
                             fontWeight: FontWeight.w500,
-                            color: Theme.of(context).primaryColor,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
-                        
-                        const SizedBox(height: 4.0),
-                        
+
+                        const SizedBox(height: AppDimensions.spacingXs),
+
                         Row(
                           children: [
                             Text(
                               '${AppLocalizations.of(context)!?.product_management_stock_label ?? 'Stock'}: --',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 13.0,
-                                color: Colors.grey[600],
+                                color: AppColors.textSecondary,
                               ),
                             ),
-                            const SizedBox(width: 12.0),
+                            const SizedBox(width: AppDimensions.spacingMd),
                             Text(
                               '${AppLocalizations.of(context)!?.product_management_sales_label ?? 'Sales'}: ${product.sales ?? 0}',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 13.0,
-                                color: Colors.grey[600],
+                                color: AppColors.textSecondary,
                               ),
                             ),
                           ],
@@ -682,12 +673,12 @@ class _ProductManagementPageState extends State<ProductManagementPage>
               ),
 
               if (actions.isNotEmpty) ...[
-                Divider(height: 24.0, color: Colors.grey[200]),
+                const Divider(height: 24.0, color: AppColors.borderPrimary),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     for (int i = 0; i < actions.length; i++) ...[
-                      if (i > 0) const SizedBox(width: 8.0),
+                      if (i > 0) const SizedBox(width: AppDimensions.spacingSm),
                       actions[i],
                     ],
                   ],
@@ -715,18 +706,18 @@ class _ProductManagementPageState extends State<ProductManagementPage>
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
         minimumSize: const Size(0, 32),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(4.0),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
         ),
       ),
     );
   }
-  
+
   Widget _buildLoadMoreIndicator(bool hasMore, bool isLoading) {
     if (!hasMore) {
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16.0),
+        padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingLg),
         child: Center(
-          child: Text(AppLocalizations.of(context)!?.product_management_no_more_products ?? 'No more products', style: const TextStyle(color: Colors.grey)),
+          child: Text(AppLocalizations.of(context)!?.product_management_no_more_products ?? 'No more products', style: const TextStyle(color: AppColors.textTertiary)),
         ),
       );
     }
@@ -813,7 +804,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
               ));
             },
             style: TextButton.styleFrom(
-              foregroundColor: Colors.orange[700],
+              foregroundColor: AppColors.warning,
             ),
             child: Text(AppLocalizations.of(context)!?.product_management_confirm ?? 'Confirm Off Shelf'),
           ),
@@ -844,7 +835,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
             },
             child: Text(AppLocalizations.of(context)!?.product_management_delete ?? 'Delete'),
             style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
+              foregroundColor: AppColors.error,
             ),
           ),
         ],
@@ -923,18 +914,18 @@ class _ProductManagementPageState extends State<ProductManagementPage>
           return Container(
             width: 80,
             height: 80,
-            color: Colors.grey[300],
-            child: const Icon(Icons.image_not_supported, color: Colors.grey),
+            color: AppColors.borderInput,
+            child: const Icon(Icons.image_not_supported, color: AppColors.textTertiary),
           );
         },
       );
     }
-    
+
     return Container(
       width: 80,
       height: 80,
-      color: Colors.grey[300],
-      child: const Icon(Icons.image, color: Colors.grey),
+      color: AppColors.borderInput,
+      child: const Icon(Icons.image, color: AppColors.textTertiary),
     );
   }
 
@@ -946,41 +937,41 @@ class _ProductManagementPageState extends State<ProductManagementPage>
     
     switch (status) {
       case ProductStatus.reviewing:
-        bgColor = Colors.orange[50]!;
-        textColor = Colors.orange[700]!;
+        bgColor = AppColors.warning.withOpacity(0.1);
+        textColor = AppColors.warning;
         text = AppLocalizations.of(context)!?.product_management_status_reviewing ?? 'Under Review';
         break;
       case ProductStatus.rejected:
-        bgColor = Colors.red[50]!;
-        textColor = Colors.red[700]!;
+        bgColor = AppColors.error.withOpacity(0.1);
+        textColor = AppColors.error;
         text = AppLocalizations.of(context)!?.product_management_status_rejected ?? 'Review Failed';
         break;
       case ProductStatus.normal:
-        bgColor = Colors.green[50]!;
-        textColor = Colors.green[700]!;
+        bgColor = AppColors.success.withOpacity(0.1);
+        textColor = AppColors.success;
         text = AppLocalizations.of(context)!?.product_management_status_on_shelf ?? 'On Shelf';
         break;
       case ProductStatus.disabled:
-        bgColor = Colors.grey[100]!;
-        textColor = Colors.grey[700]!;
+        bgColor = AppColors.backgroundSecondary;
+        textColor = AppColors.textSecondary;
         text = AppLocalizations.of(context)!?.product_management_status_off_shelf ?? 'Off Shelf';
         break;
       case ProductStatus.draft:
-        bgColor = Colors.blue[50]!;
-        textColor = Colors.blue[700]!;
+        bgColor = AppColors.info.withOpacity(0.1);
+        textColor = AppColors.info;
         text = AppLocalizations.of(context)!?.product_management_status_draft ?? 'Draft';
         break;
       default:
-        bgColor = Colors.grey[100]!;
-        textColor = Colors.grey[700]!;
+        bgColor = AppColors.backgroundSecondary;
+        textColor = AppColors.textSecondary;
         text = AppLocalizations.of(context)!?.product_management_status_unknown ?? 'Unknown';
     }
-    
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingSm, vertical: AppDimensions.spacingXs),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
         border: Border.all(color: textColor.withOpacity(0.3)),
       ),
       child: Text(

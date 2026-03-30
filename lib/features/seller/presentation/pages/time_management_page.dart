@@ -6,6 +6,7 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/time_settings.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/time_management/time_management_bloc.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 /// 卖家时间管理页面
 class TimeManagementPage extends StatelessWidget {
@@ -63,18 +64,19 @@ class TimeManagementBody extends StatelessWidget {
   Widget build(BuildContext context) {
     // BlocConsumer now uses the context provided by the BlocProvider in TimeManagementPage.build
     return BlocConsumer<TimeManagementBloc, TimeManagementState>(
+      listenWhen: (previous, current) =>
+          (current is TimeManagementError) ||
+          (previous is TimeManagementUpdating && current is TimeManagementLoaded),
       listener: (context, state) {
         if (state is TimeManagementError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),
           );
+        } else if (state is TimeManagementLoaded) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(AppLocalizations.of(context)!?.time_management_settings_saved ?? '设置已保存')),
+          );
         }
-        // Optional: Add listener for success state if needed
-        // if (state is TimeManagementLoaded && state.justUpdated) {
-        //   ScaffoldMessenger.of(context).showSnackBar(
-        //     const SnackBar(content: Text('设置已保存')),
-        //   );
-        // }
       },
       builder: (context, state) {
         if (state is TimeManagementInitial || state is TimeManagementLoading) { // Handle Initial state
@@ -100,7 +102,7 @@ class TimeManagementBody extends StatelessWidget {
                children: [
                  Text(AppLocalizations.of(context)!?.time_management_load_failed ?? 'Load Failed'),
                  const SizedBox(height: 8),
-                 Text(state.message, style: const TextStyle(color: Colors.red)),
+                 Text(state.message, style: const TextStyle(color: AppColors.error)),
                  const SizedBox(height: 16),
                  ElevatedButton(
                    onPressed: () => context.read<TimeManagementBloc>().add(LoadTimeSettings()),
@@ -133,10 +135,6 @@ class TimeManagementBody extends StatelessWidget {
           // 状态说明
           _buildStatusDescription(context, settings.isOnline),
           
-          const SizedBox(height: 32),
-
-          // 保存按钮 - Needs context for Bloc access
-          _buildSaveButton(context, isUpdating),
         ],
       ),
     );
@@ -167,7 +165,7 @@ class TimeManagementBody extends StatelessWidget {
                     ? (AppLocalizations.of(context)!?.time_management_online ?? 'Online')
                     : (AppLocalizations.of(context)!?.time_management_offline ?? 'Offline'),
                   style: TextStyle(
-                    color: settings.isOnline ? Colors.green : Colors.grey,
+                    color: settings.isOnline ? AppColors.success : AppColors.textTertiary,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -175,7 +173,7 @@ class TimeManagementBody extends StatelessWidget {
                 const SizedBox(width: 12),
                 Switch(
                   value: settings.isOnline,
-                  activeColor: Colors.green,
+                  activeColor: AppColors.success,
                   onChanged: isUpdating 
                       ? null 
                       : (value) {
@@ -218,7 +216,7 @@ class TimeManagementBody extends StatelessWidget {
                   : (AppLocalizations.of(context)!?.time_management_offline_description ?? 'You are currently offline. Buyers can still send you messages but the system will inform them that you are temporarily unavailable. You will still receive notifications for new messages but may not be able to respond immediately. Staying offline for extended periods may affect your order efficiency.'),
               style: const TextStyle(
                 fontSize: 14,
-                color: Colors.grey,
+                color: AppColors.textTertiary,
                 height: 1.5,
               ),
             ),
@@ -228,33 +226,4 @@ class TimeManagementBody extends StatelessWidget {
     );
   }
   
-  /// 构建保存按钮
-  Widget _buildSaveButton(BuildContext context, bool isUpdating) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        // Disable button if isUpdating
-        onPressed: isUpdating ? null : () {
-          // Dispatch Save event using the context with Bloc access
-          // 显示保存成功提示
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!?.time_management_settings_saved ?? 'Settings Saved')),
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          backgroundColor: Colors.deepPurple, // Or your theme's primary color
-          foregroundColor: Colors.white,
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        child: isUpdating
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-              )
-            : Text(AppLocalizations.of(context)!?.time_management_save_settings ?? 'Save Settings'),
-      ),
-    );
-  }
 } 

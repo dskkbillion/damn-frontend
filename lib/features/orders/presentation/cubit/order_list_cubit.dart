@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../domain/entities/order.dart';
 import '../../domain/entities/order_status.dart';
 import '../../domain/usecases/get_order_list_use_case.dart';
 import 'order_list_state.dart';
@@ -8,6 +9,12 @@ import 'order_list_state.dart';
 class OrderListCubit extends Cubit<OrderListState> {
   final GetOrderListUseCase getOrderListUseCase;
   static const int _pageSize = 10; // 每页加载的数量
+
+  /// Buyer-role in-memory cache: key = cache key string, value = order list.
+  static final Map<String, List<Order>> _buyerCache = {};
+
+  static String _cacheKey(String role, OrderStatus? status) =>
+      '${role}_orders_${status?.name ?? 'all'}';
 
   OrderListCubit({required this.getOrderListUseCase})
       : super(const OrderListState());
@@ -19,45 +26,94 @@ class OrderListCubit extends Cubit<OrderListState> {
 
     // 如果是刷新，或者切换了过滤器，则重置状态并从第一页加载
     if (refresh || (filter != null && filter != state.currentFilter)) {
-      // 状态设置为 loading，并清空列表，重置页码和 hasMore
-      emit(state.copyWith(
-        status: OrderListStatus.loading,
-        currentFilter: effectiveFilter,
-        orders: [],
-        currentPage: 1,
-        hasMore: true,
-        clearFailure: true, // 清除之前的错误
-      ));
+      // Check cache for the target filter before emitting loading
+      final cacheKey = _cacheKey('buyer', effectiveFilter);
+      final cached = _buyerCache[cacheKey];
+      if (cached != null && cached.isNotEmpty) {
+        emit(state.copyWith(
+          status: OrderListStatus.success,
+          currentFilter: effectiveFilter,
+          orders: List.of(cached),
+          currentPage: 1,
+          hasMore: cached.length >= _pageSize,
+          clearFailure: true,
+          isRefreshing: true,
+        ));
+      } else {
+        emit(state.copyWith(
+          status: OrderListStatus.loading,
+          currentFilter: effectiveFilter,
+          orders: [],
+          currentPage: 1,
+          hasMore: true,
+          clearFailure: true,
+          isRefreshing: false,
+        ));
+      }
     } else if (state.status == OrderListStatus.loading ||
         state.status == OrderListStatus.loadingMore) {
       // 如果正在加载中，则不重复加载
       return;
+    } else {
+      // 初始加载或出错后重试 — check cache first
+      final cacheKey = _cacheKey('buyer', effectiveFilter);
+      final cached = _buyerCache[cacheKey];
+      if (cached != null && cached.isNotEmpty) {
+        emit(state.copyWith(
+          status: OrderListStatus.success,
+          orders: List.of(cached),
+          currentPage: 1,
+          hasMore: cached.length >= _pageSize,
+          clearFailure: true,
+          isRefreshing: true,
+        ));
+      } else {
+        emit(state.copyWith(status: OrderListStatus.loading, clearFailure: true, isRefreshing: false));
+      }
     }
-
-    // 如果不是刷新或切换过滤器，则也设置为 loading 状态准备加载第一页
-    // （这种情况可能发生在初始加载或出错后重试）
-    emit(state.copyWith(status: OrderListStatus.loading, clearFailure: true));
 
     final params = GetOrderListParams(
       status: state.currentFilter == OrderStatus.unknown ? null : state.currentFilter,
       page: 1, // 总是从第一页开始加载
       limit: _pageSize,
+      userRole: 'buyer',
     );
 
     final failureOrOrders = await getOrderListUseCase(params);
 
     failureOrOrders.fold(
-      (failure) => emit(state.copyWith(
-        status: OrderListStatus.failure,
-        failure: failure,
-        hasMore: false, // 出错时认为没有更多
-      )),
-      (orders) => emit(state.copyWith(
-        status: OrderListStatus.success,
-        orders: orders,
-        currentPage: 1,
-        hasMore: orders.length >= _pageSize, // 判断是否可能还有更多
-      )),
+      (failure) {
+        // Remote failed: keep cached data if present, otherwise emit failure.
+        final cacheKey = _cacheKey('buyer', state.currentFilter);
+        final cached = _buyerCache[cacheKey];
+        if (cached != null && cached.isNotEmpty) {
+          emit(state.copyWith(
+            status: OrderListStatus.success,
+            orders: List.of(cached),
+            currentPage: 1,
+            hasMore: cached.length >= _pageSize,
+            isRefreshing: false,
+          ));
+        } else {
+          emit(state.copyWith(
+            status: OrderListStatus.failure,
+            failure: failure,
+            hasMore: false,
+            isRefreshing: false,
+          ));
+        }
+      },
+      (orders) {
+        final cacheKey = _cacheKey('buyer', state.currentFilter);
+        _buyerCache[cacheKey] = orders;
+        emit(state.copyWith(
+          status: OrderListStatus.success,
+          orders: orders,
+          currentPage: 1,
+          hasMore: orders.length >= _pageSize,
+          isRefreshing: false,
+        ));
+      },
     );
   }
 
@@ -77,6 +133,7 @@ class OrderListCubit extends Cubit<OrderListState> {
       status: state.currentFilter == OrderStatus.unknown ? null : state.currentFilter,
       page: nextPage,
       limit: _pageSize,
+      userRole: 'buyer',
     );
 
     final failureOrOrders = await getOrderListUseCase(params);

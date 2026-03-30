@@ -7,6 +7,7 @@ class UserProfileDto {
   final String? avatarUrl;
   final bool? onlineFlag;
   final String? mobile;
+  final String? email;
 
   const UserProfileDto({
     required this.userId,
@@ -14,6 +15,7 @@ class UserProfileDto {
     this.avatarUrl,
     this.onlineFlag,
     this.mobile,
+    this.email,
   });
 
   /// 从 JSON 映射创建 UserProfileDto 实例
@@ -35,6 +37,7 @@ class UserProfileDto {
       avatarUrl: json['avatarUrl'] ?? json['avatar'] ?? json['avatarUrl'],
       onlineFlag: json['onlineFlag'] ?? json['online_flag'],
       mobile: json['mobile'],
+      email: json['email'],
     );
   }
 
@@ -46,6 +49,7 @@ class UserProfileDto {
       avatarUrl: avatarUrl,
       onlineFlag: onlineFlag,
       mobile: mobile,
+      email: email,
     );
   }
 
@@ -57,6 +61,7 @@ class UserProfileDto {
       if (avatarUrl != null) 'avatarUrl': avatarUrl,
       if (onlineFlag != null) 'onlineFlag': onlineFlag,
       if (mobile != null) 'mobile': mobile,
+      if (email != null) 'email': email,
     };
   }
 }

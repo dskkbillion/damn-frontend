@@ -1,6 +1,8 @@
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/utils/order_status_mapper.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:flutter/material.dart';
 
 /// Widget displaying the order status timeline and description card.
@@ -45,7 +47,7 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
           _buildOptimizedTimeline(context, steps, currentStepIndex),
         // 状态说明卡片
         if (showTimeline)
-          const SizedBox(height: 16),
+          const SizedBox(height: AppDimensions.spacingLg),
         _buildStatusInfoCard(context, widget.order.state),
         ],
       ),
@@ -58,9 +60,9 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
     final colorScheme = theme.colorScheme;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg, vertical: AppDimensions.spacingXl),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         color: colorScheme.surface, // 移除透明度
       ),
       child: Row(
@@ -82,7 +84,7 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
       bool isActive = i == currentStepIndex;
       bool isInactive = i > currentStepIndex;
 
-      Color currentStepColor = isInactive ? Colors.grey.shade400 : colorScheme.primary;
+      Color currentStepColor = isInactive ? AppColors.textTertiary : colorScheme.primary;
 
       // 添加步骤组件（不再添加连接线）
       stepWidgets.add(_buildStepWidget(
@@ -112,7 +114,7 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildStepCircle(isCompleted, isActive, color), // 直接使用，移除动画
-        const SizedBox(height: 8),
+        const SizedBox(height: AppDimensions.spacingSm),
         Container(
           constraints: const BoxConstraints(maxWidth: 50),
           child: Text(
@@ -181,22 +183,22 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
     Color statusColor = _getStatusColor(status, colorScheme);
     
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0),
-      padding: const EdgeInsets.all(16.0),
+      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         border: Border.all(
-          color: statusColor.withOpacity(0.3),
+          color: statusColor.withValues(alpha: 0.3),
           width: 1.0,
         ),
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(AppDimensions.spacingSm),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.1),
+              color: statusColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -205,7 +207,7 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
               color: statusColor,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppDimensions.spacingMd),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -218,7 +220,7 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
                   ),
                 ),
                 if (statusSubtitle != null) ...[
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppDimensions.spacingXs),
                   Text(
                     statusSubtitle,
                     style: textTheme.bodySmall?.copyWith(

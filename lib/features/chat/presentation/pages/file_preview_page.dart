@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
@@ -200,8 +202,8 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(4),
+                      color: AppColors.backgroundSecondary,
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                     ),
                     child: SelectableText(
                       fullPath,
@@ -324,7 +326,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 60),
+            const Icon(Icons.error_outline, color: AppColors.error, size: 60),
             const SizedBox(height: 20),
             Text(
               _errorMessage!,
@@ -471,7 +473,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
         }
         
         return Container(
-          color: Colors.grey[900],
+          color: AppColors.textPrimary,
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: SelectableText(

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 import '../../domain/entities/favorite_service.dart';
 
@@ -27,19 +29,19 @@ class FavoriteServiceItem extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(AppDimensions.spacingMd),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 服务图片
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                 child: service.imageUrl != null
                     ? Image.network(
                         service.imageUrl!,
@@ -50,10 +52,10 @@ class FavoriteServiceItem extends StatelessWidget {
                           return Container(
                             width: 80,
                             height: 80,
-                            color: Colors.grey[300],
+                            color: AppColors.borderInput,
                             child: const Icon(
                               Icons.image_not_supported,
-                              color: Colors.grey,
+                              color: AppColors.textTertiary,
                             ),
                           );
                         },
@@ -61,10 +63,10 @@ class FavoriteServiceItem extends StatelessWidget {
                     : Container(
                         width: 80,
                         height: 80,
-                        color: Colors.grey[300],
+                        color: AppColors.borderInput,
                         child: const Icon(
                           Icons.image,
-                          color: Colors.grey,
+                          color: AppColors.textTertiary,
                         ),
                       ),
               ),
@@ -91,7 +93,7 @@ class FavoriteServiceItem extends StatelessWidget {
                         service.description!,
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.grey[600],
+                          color: AppColors.textSecondary,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -113,7 +115,7 @@ class FavoriteServiceItem extends StatelessWidget {
               // 取消收藏按钮
               if (onRemove != null)
                 IconButton(
-                  icon: const Icon(Icons.favorite, color: Colors.red),
+                  icon: const Icon(Icons.favorite, color: AppColors.error),
                   onPressed: onRemove,
                   tooltip: '取消收藏',
                 ),

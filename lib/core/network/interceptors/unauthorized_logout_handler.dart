@@ -6,6 +6,8 @@ import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_r
 /// Centralized 401 handling so every network entrypoint drives the same logout flow.
 class UnauthorizedLogoutHandler {
   static bool _isHandlingUnauthorized = false;
+  /// 主动登出时设为 true，抑制后续 401 触发的错误提示
+  static bool isVoluntaryLogout = false;
 
   static Future<void> handle(DioException err) async {
     if (!shouldHandleError(err)) {
@@ -57,9 +59,9 @@ class UnauthorizedLogoutHandler {
   }
 
   static Future<void> _logout(String path) async {
-    if (_isHandlingUnauthorized) {
+    if (_isHandlingUnauthorized || isVoluntaryLogout) {
       AppLogger.d(
-          '[UnauthorizedLogoutHandler] 401 handling already in progress, skip duplicate logout.');
+          '[UnauthorizedLogoutHandler] 401 suppressed (handling=$_isHandlingUnauthorized, voluntary=$isVoluntaryLogout).');
       return;
     }
 

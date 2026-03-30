@@ -24,6 +24,8 @@ import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/service_tier_models.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import '../widgets/product_edit/product_success_cases_section.dart';
 import '../widgets/product_edit/product_image_upload_section.dart';
 import '../widgets/product_edit/product_buyer_info_section.dart';
@@ -196,20 +198,20 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
   /// 统一的输入框边框样式
   InputDecoration get _lightBorderDecoration => InputDecoration(
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+      borderSide: const BorderSide(color: AppColors.borderInput, width: 1),
     ),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+      borderSide: const BorderSide(color: AppColors.borderInput, width: 1),
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: Color(0xFFBF7D2A), width: 1.5),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+      borderSide: const BorderSide(color: AppColors.borderInputFocus, width: 1.5),
     ),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+    contentPadding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingMd),
     filled: true,
-    fillColor: Colors.white,
+    fillColor: AppColors.backgroundCard,
   );
 
   /// 添加表单验证错误状态变量
@@ -592,7 +594,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFBF7D2A),
+              backgroundColor: Theme.of(context).colorScheme.primary,
               foregroundColor: Colors.white,
             ),
             // 轻咨询模式：直接发布
@@ -718,11 +720,11 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
   Color _getTierThemeColor() {
     switch (_selectedTier) {
       case ServiceTier.basic:
-        return Colors.blue.shade600;
+        return AppColors.info;
       case ServiceTier.standard:
         return Colors.purple.shade600;
       case ServiceTier.premium:
-        return Colors.amber.shade700;
+        return AppColors.warning;
     }
   }
 
@@ -794,7 +796,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('最多只能上传9张图片，已选择前9张'),
-              backgroundColor: Colors.orange,
+              backgroundColor: AppColors.warning,
             ),
           );
           _bloc.add(SelectProductImages(imagePaths: combinedPaths.sublist(0, 9)));
@@ -843,7 +845,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!?.product_edit_at_least_one_image ?? 'Please upload at least one product image'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
       isValid = false;
@@ -866,7 +868,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('表单数据不完整，请检查标红字段'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
       return;
@@ -972,14 +974,14 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
             margin: const EdgeInsets.only(bottom: 4),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey[300]!),
-              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: AppColors.borderInput),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
             ),
             child: Row(
               children: [
                 Expanded(child: Text(option)),
                 IconButton(
-                  icon: const Icon(Icons.remove_circle, color: Colors.red, size: 20),
+                  icon: const Icon(Icons.remove_circle, color: AppColors.error, size: 20),
                   onPressed: () {
                     setState(() {
                       options.removeAt(index);
@@ -1014,7 +1016,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
             ),
             const SizedBox(width: 8),
             IconButton(
-              icon: const Icon(Icons.add_circle, color: Color(0xFFBF7D2A)),
+              icon: Icon(Icons.add_circle, color: Theme.of(context).colorScheme.primary),
               onPressed: () {
                 final value = optionController.text.trim();
                 if (value.isNotEmpty && !options.contains(value)) {
@@ -1071,7 +1073,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
               icon: const Icon(Icons.edit),
               label: Text(AppLocalizations.of(context)!?.product_management_action_edit ?? 'Edit'),
               style: TextButton.styleFrom(
-                backgroundColor: const Color(0xFFBF7D2A),
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
               ),
@@ -1146,7 +1148,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
             TextButton(
               onPressed: _submitForm,
               style: TextButton.styleFrom(
-                backgroundColor: const Color(0xFFBF7D2A),
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
               ),
@@ -1158,12 +1160,36 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
         body: BlocProvider<ProductEditBloc>(
           create: (context) => _bloc,
           child: BlocConsumer<ProductEditBloc, ProductEditState>(
+            buildWhen: (previous, current) {
+              // 只在真正影响UI渲染的字段变化时才rebuild
+              if (previous.isLoading != current.isLoading) return true;
+              if (previous.product != current.product) return true;
+              if (previous.selectedImagePaths != current.selectedImagePaths) return true;
+              if (previous.selectedDetailImagePaths != current.selectedDetailImagePaths) return true;
+              if (previous.uploadedImageUrls != current.uploadedImageUrls) return true;
+              if (previous.uploadedDetailImageUrls != current.uploadedDetailImageUrls) return true;
+              if (previous.uploadStatus != current.uploadStatus) return true;
+              if (previous.uploadedCount != current.uploadedCount) return true;
+              if (previous.totalUploadCount != current.totalUploadCount) return true;
+              if (previous.formData.name != current.formData.name) return true;
+              if (previous.formData.description != current.formData.description) return true;
+              if (previous.formData.categoryId != current.formData.categoryId) return true;
+              if (previous.formData.price != current.formData.price) return true;
+              if (previous.categories != current.categories) return true;
+              if (previous.successCases != current.successCases) return true;
+              if (previous.hasError != current.hasError) return true;
+              if (previous.errorMessage != current.errorMessage) return true;
+              // hasUnsavedChanges / isSavingDraft / isDraftSaveSuccess / isSubmitting / isSubmitSuccess
+              // / initialFormData / lastAutoSaveTime / formData.qaList / formData.buyerInfoItems
+              // 变化不需要rebuild表单主体
+              return false;
+            },
             listener: (context, state) {
               if (state.hasError) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(state.errorMessage ?? '操作失败'),
-                    backgroundColor: Colors.red,
+                    backgroundColor: AppColors.error,
                   ),
                 );
               // 原草稿保存成功处理（暂时注释，后续可能会用）
@@ -1195,7 +1221,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                     content: Text(state.isCreateMode 
                       ? '服务发布成功！请在"在售"列表中查看' 
                       : '服务更新成功'),
-                    backgroundColor: Colors.green,
+                    backgroundColor: AppColors.success,
                     duration: const Duration(seconds: 2), // 缩短显示时间
                   ),
                 );
@@ -1291,8 +1317,8 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
   /// 构建基本信息表单
   Widget _buildBasicInfoForm(ProductEditState state) {
     return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.all(16.0),
+      color: AppColors.backgroundCard,
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1307,15 +1333,15 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
               readOnly: widget.isPreviewMode,
               decoration: _lightBorderDecoration.copyWith(
                 hintText: '服务名称',
-                hintStyle: const TextStyle(color: Colors.grey),
+                hintStyle: const TextStyle(color: AppColors.textTertiary),
                     errorText: _formErrors['name'],
                     errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Colors.red, width: 1),
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                      borderSide: const BorderSide(color: AppColors.error, width: 1),
                     ),
                     focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Colors.red, width: 1.5),
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                      borderSide: const BorderSide(color: AppColors.error, width: 1.5),
                     ),
               ),
               onChanged: (value) {
@@ -1338,15 +1364,15 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
               readOnly: widget.isPreviewMode,
               decoration: _lightBorderDecoration.copyWith(
                 hintText: '描述一下您的服务的具体信息，如...',
-                hintStyle: const TextStyle(color: Colors.grey),
+                hintStyle: const TextStyle(color: AppColors.textTertiary),
                 errorText: _formErrors['description'],
                 errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Colors.red, width: 1),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                  borderSide: const BorderSide(color: AppColors.error, width: 1),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Colors.red, width: 1.5),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                  borderSide: const BorderSide(color: AppColors.error, width: 1.5),
                 ),
               ),
               maxLines: 3,
@@ -1367,8 +1393,8 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
   /// 构建服务档位设置区域
   Widget _buildServiceTiersSection() {
     return Container(
-      color: Colors.white,
-      margin: const EdgeInsets.only(top: 12),
+      color: AppColors.backgroundCard,
+      margin: const EdgeInsets.only(top: AppDimensions.spacingMd),
       child: Column(
         children: [
           // 标题
@@ -1414,8 +1440,8 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey[300]!),
-              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.borderInput),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
             ),
             child: _buildTierAttributesList(),
           ),
@@ -1457,11 +1483,11 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     Color getTierColor() {
       switch (tier) {
         case ServiceTier.basic:
-          return Colors.blue.shade600;
+          return AppColors.info;
         case ServiceTier.standard:
           return Colors.purple.shade600;
         case ServiceTier.premium:
-          return Colors.amber.shade700;
+          return AppColors.warning;
       }
     }
 
@@ -1486,7 +1512,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
           color: Colors.transparent,
           child: InkWell(
             onTap: () => _selectServiceTier(tier),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
             splashColor: tierColor.withOpacity(0.2),
             highlightColor: tierColor.withOpacity(0.1),
             child: AnimatedContainer(
@@ -1497,11 +1523,11 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
               ),
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: isSelected ? tierColor : Colors.grey[300]!,
+                  color: isSelected ? tierColor : AppColors.borderInput,
                   width: isSelected ? 2 : 1,
                 ),
-                borderRadius: BorderRadius.circular(12),
-                color: isSelected ? tierColor.withOpacity(0.1) : Colors.white,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+                color: isSelected ? tierColor.withOpacity(0.1) : AppColors.backgroundCard,
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
@@ -1520,7 +1546,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                     duration: const Duration(milliseconds: 200),
                     child: Icon(
                       getTierIcon(),
-                      color: isSelected ? tierColor : Colors.grey[500],
+                      color: isSelected ? tierColor : AppColors.textSecondary,
                       size: 20,
                     ),
                   ),
@@ -1530,7 +1556,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                     style: TextStyle(
                       fontSize: isSelected ? 15 : 14,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected ? tierColor : Colors.grey[700],
+                      color: isSelected ? tierColor : AppColors.textPrimary,
                     ),
                     child: Text(tier.displayName),
                   ),
@@ -1541,7 +1567,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                       style: TextStyle(
                         fontSize: isSelected ? 13 : 12,
                         fontWeight: FontWeight.w500,
-                        color: isSelected ? tierColor : Colors.grey[600],
+                        color: isSelected ? tierColor : AppColors.textSecondary,
                       ),
                       child: Text(
                         '${RegionConfig.currencySymbol}${tierConfig.price.toStringAsFixed(tierConfig.price % 1 == 0 ? 0 : 2)}',
@@ -1582,55 +1608,55 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
       style: const TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.normal,
-        color: Colors.black87,
+        color: AppColors.textPrimary,
       ),
       decoration: InputDecoration(
         labelText: '${_selectedTier.displayName}价格',
-        labelStyle: TextStyle(
+        labelStyle: const TextStyle(
           fontSize: 14,
-          color: Colors.grey[600],
+          color: AppColors.textSecondary,
         ),
         floatingLabelStyle: const TextStyle(
           fontSize: 12,
-          color: Colors.blue,
+          color: AppColors.borderInputFocus,
         ),
         prefixText: RegionConfig.currencySymbol,
         prefixStyle: const TextStyle(
           fontSize: 16,
-          color: Colors.black87,
+          color: AppColors.textPrimary,
         ),
         helperText: '最大值：${ValidationConstants.maxPrice}',
-        helperStyle: TextStyle(
+        helperStyle: const TextStyle(
           fontSize: 12,
-          color: Colors.grey[500],
+          color: AppColors.textTertiary,
         ),
         errorText: _formErrors['price_${_selectedTier.name}'],
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          borderSide: const BorderSide(color: AppColors.borderInput),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          borderSide: const BorderSide(color: AppColors.borderInput),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
           borderSide: const BorderSide(
-            color: Colors.blue,
+            color: AppColors.borderInputFocus,
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.red),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          borderSide: const BorderSide(color: AppColors.error),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.red, width: 2),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          borderSide: const BorderSide(color: AppColors.error, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingLg),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.backgroundCard,
       ),
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
@@ -1645,19 +1671,17 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
         }),
       ],
       onChanged: (value) {
-        setState(() {
-          final price = double.tryParse(value) ?? 0;
-          tierConfig.updatePrice(price);
-          
-          // 验证价格
-          if (price > ValidationConstants.maxPrice) {
-            _formErrors['price_${_selectedTier.name}'] = '价格不能超过${ValidationConstants.maxPrice}';
-          } else if (price > 0 && price < 0.01) {
-            _formErrors['price_${_selectedTier.name}'] = '价格最小值为0.01';
-          } else {
-            _formErrors.remove('price_${_selectedTier.name}');
-          }
-        });
+        final price = double.tryParse(value) ?? 0;
+        tierConfig.updatePrice(price);
+
+        // 验证价格 —— 直接更新错误 map，不触发 setState 避免全树 rebuild
+        if (price > ValidationConstants.maxPrice) {
+          _formErrors['price_${_selectedTier.name}'] = '价格不能超过${ValidationConstants.maxPrice}';
+        } else if (price > 0 && price < 0.01) {
+          _formErrors['price_${_selectedTier.name}'] = '价格最小值为0.01';
+        } else {
+          _formErrors.remove('price_${_selectedTier.name}');
+        }
         _onFormFieldChanged();
       },
           ),
@@ -1672,16 +1696,6 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
 
     // 构建所有属性的列表（包括系统属性和自定义属性）
     final List<Widget> attributeItems = [];
-
-    // 轻咨询模式下，隐藏交付期和次数字段，使用默认值
-    // deliveryDay 默认为 1（即时）
-    // editNum 默认为 1（一次性服务）
-    if (tierConfig.deliveryDay != 1) {
-      tierConfig.updateDeliveryDay(1);
-    }
-    if (tierConfig.editNum != 1) {
-      tierConfig.updateEditNum(1);
-    }
 
     // 添加自定义属性
     final customAttributes = _serviceTiers.getAttributesForTier(_selectedTier);
@@ -1708,26 +1722,8 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
         );
       }
 
-      // 为每个属性添加进入动画
       attributeItems.add(
-        TweenAnimationBuilder<double>(
-          key: ValueKey('attr_${attr.id}_$_selectedTier'),
-          tween: Tween(begin: 0.0, end: 1.0),
-          duration: Duration(milliseconds: 300 + (i * 50)),
-          curve: Curves.easeOutBack,
-          builder: (context, value, child) {
-            return Transform.translate(
-              offset: Offset(0, 10 * (1 - value)),
-              child: Opacity(
-                opacity: value,
-                child: Transform.scale(
-                  scale: 0.95 + (0.05 * value),
-                  child: attributeWidget,
-                ),
-              ),
-            );
-          },
-        ),
+        attributeWidget,
       );
     }
 
@@ -1784,7 +1780,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
         Container(
           decoration: BoxDecoration(
             border: Border(
-              top: BorderSide(color: Colors.grey[300]!),
+              top: BorderSide(color: AppColors.borderInput),
             ),
           ),
           child: Row(
@@ -1797,12 +1793,12 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add, size: 20, color: Colors.grey),
+                        Icon(Icons.add, size: 20, color: AppColors.textTertiary),
                         SizedBox(width: 4),
                         Text(
                           '输入',
                           style: TextStyle(
-                            color: Colors.grey,
+                            color: AppColors.textTertiary,
                             fontSize: 14,
                           ),
                         ),
@@ -1814,7 +1810,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
               Container(
                 width: 1,
                 height: 40,
-                color: Colors.grey[300],
+                color: AppColors.borderInput,
               ),
               Expanded(
                 child: InkWell(
@@ -1824,12 +1820,12 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.radio_button_checked, size: 20, color: Colors.grey),
+                        Icon(Icons.radio_button_checked, size: 20, color: AppColors.textTertiary),
                         SizedBox(width: 4),
                         Text(
                           '单选',
                           style: TextStyle(
-                            color: Colors.grey,
+                            color: AppColors.textTertiary,
                             fontSize: 14,
                           ),
                         ),
@@ -1893,72 +1889,59 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
       ];
     }
     
-    return AnimatedBuilder(
-      animation: _flashAnimation,
-      builder: (context, child) {
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.white.withOpacity(_flashAnimation.value * 0.6),
-                blurRadius: 15 * _flashAnimation.value,
-                spreadRadius: 3 * _flashAnimation.value,
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              // 主要的输入框
-              Expanded(
-                child: TextField(
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          // 主要的输入框
+          Expanded(
+            child: TextField(
               controller: controller,
               keyboardType: keyboardType,
               readOnly: widget.isPreviewMode,
               inputFormatters: inputFormatters,
               style: const TextStyle(
                 fontSize: 16,
-                color: Colors.black87,
+                color: AppColors.textPrimary,
               ),
               decoration: InputDecoration(
                 labelText: labelText,
-                labelStyle: TextStyle(
+                labelStyle: const TextStyle(
                   fontSize: 14,
-                  color: Colors.grey[600],
+                  color: AppColors.textSecondary,
                 ),
                 floatingLabelStyle: const TextStyle(
                   fontSize: 12,
-                  color: Colors.blue,
+                  color: AppColors.borderInputFocus,
                 ),
                 suffixText: suffix,
-                suffixStyle: TextStyle(
+                suffixStyle: const TextStyle(
                   fontSize: 14,
-                  color: Colors.grey[600],
+                  color: AppColors.textSecondary,
                 ),
                 helperText: helperText,
                 helperStyle: const TextStyle(
                   fontSize: 12,
-                  color: Colors.grey,
+                  color: AppColors.textTertiary,
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                  borderSide: const BorderSide(color: AppColors.borderInput),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                  borderSide: const BorderSide(color: AppColors.borderInput),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                   borderSide: const BorderSide(
-                    color: Colors.blue,
+                    color: AppColors.borderInputFocus,
                     width: 2,
                   ),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                contentPadding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingLg),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: AppColors.backgroundCard,
               ),
               onChanged: (newValue) {
                 // 对于系统属性，直接更新值，inputFormatters已经处理了验证
@@ -1981,7 +1964,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
               },
             ),
           ),
-          
+
           // 删除按钮（仅对自定义属性显示）
           if (!isSystem && attributeId != null) ...[
             const SizedBox(width: 8),
@@ -1989,7 +1972,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
               onPressed: () => _removeProductAttribute(attributeId),
               icon: const Icon(
                 Icons.delete_outline,
-                color: Colors.red,
+                color: AppColors.error,
                 size: 20,
               ),
               padding: const EdgeInsets.all(8),
@@ -2001,8 +1984,6 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
           ],
         ],
       ),
-        );
-      },
     );
   }
 
@@ -2010,40 +1991,26 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
   Widget _buildBooleanAttribute(ProductAttribute attribute) {
     final isTrue = attribute.value == 'true';
 
-    return AnimatedBuilder(
-      animation: _flashAnimation,
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.white.withOpacity(_flashAnimation.value * 0.6),
-                blurRadius: 15 * _flashAnimation.value,
-                spreadRadius: 3 * _flashAnimation.value,
-              ),
-            ],
-          ),
-          child: Container(
+    return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
           Expanded(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingSm),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey[300]!),
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.white,
+                border: Border.all(color: AppColors.borderInput),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                color: AppColors.backgroundCard,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     attribute.name,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[600],
+                      color: AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -2058,10 +2025,10 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                             _onFormFieldChanged();
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
                             decoration: BoxDecoration(
-                              color: isTrue ? Colors.blue.withOpacity(0.1) : Colors.transparent,
-                              borderRadius: BorderRadius.circular(4),
+                              color: isTrue ? AppColors.borderInputFocus.withValues(alpha: 0.1) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -2069,13 +2036,13 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                                 Icon(
                                   isTrue ? Icons.radio_button_checked : Icons.radio_button_unchecked,
                                   size: 20,
-                                  color: isTrue ? Colors.blue : Colors.grey,
+                                  color: isTrue ? AppColors.borderInputFocus : AppColors.textTertiary,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   '是',
                                   style: TextStyle(
-                                    color: isTrue ? Colors.blue : Colors.grey[700],
+                                    color: isTrue ? AppColors.borderInputFocus : AppColors.textPrimary,
                                     fontWeight: isTrue ? FontWeight.bold : FontWeight.normal,
                                   ),
                                 ),
@@ -2094,10 +2061,10 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                             _onFormFieldChanged();
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
                             decoration: BoxDecoration(
-                              color: !isTrue ? Colors.blue.withOpacity(0.1) : Colors.transparent,
-                              borderRadius: BorderRadius.circular(4),
+                              color: !isTrue ? AppColors.borderInputFocus.withValues(alpha: 0.1) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -2105,13 +2072,13 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                                 Icon(
                                   !isTrue ? Icons.radio_button_checked : Icons.radio_button_unchecked,
                                   size: 20,
-                                  color: !isTrue ? Colors.blue : Colors.grey,
+                                  color: !isTrue ? AppColors.borderInputFocus : AppColors.textTertiary,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   '否',
                                   style: TextStyle(
-                                    color: !isTrue ? Colors.blue : Colors.grey[700],
+                                    color: !isTrue ? AppColors.borderInputFocus : AppColors.textPrimary,
                                     fontWeight: !isTrue ? FontWeight.bold : FontWeight.normal,
                                   ),
                                 ),
@@ -2132,7 +2099,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
             onPressed: () => _removeProductAttribute(attribute.id),
             icon: const Icon(
               Icons.delete_outline,
-              color: Colors.red,
+              color: AppColors.error,
               size: 20,
             ),
             padding: const EdgeInsets.all(8),
@@ -2143,9 +2110,6 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
           ),
         ],
       ),
-    ),
-        );
-      },
     );
   }
 
@@ -2170,17 +2134,8 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     if (!controllerMap.containsKey(key)) {
       controllerMap[key] = TextEditingController(text: initialValue);
     } else {
-      // 更新现有控制器的值（如果不同）
-      final controller = controllerMap[key]!;
-      if (controller.text != initialValue) {
-        // 保存当前光标位置
-        final selection = controller.selection;
-        controller.text = initialValue;
-        // 恢复光标位置（如果合理）
-        if (selection.isValid && selection.end <= initialValue.length) {
-          controller.selection = selection;
-        }
-      }
+      // Controller 已存在，不覆盖 text —— controller 是输入的 source of truth
+      // initialValue 可能因 debounce 而过时，强制覆盖会导致红色报错闪烁
     }
     
     return controllerMap[key]!;
@@ -2240,9 +2195,9 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
               const SizedBox(height: 16),
               Text(
                 '默认选项：是/否',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 12,
-                  color: Colors.grey[600],
+                  color: AppColors.textSecondary,
                 ),
               ),
             ],
@@ -2291,6 +2246,16 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
         placeholder: placeholder,
       );
       _serviceTiers.addAttributeTemplate(template);
+      // 确保新属性的默认值 —— 使用 update 方法同步 controller
+      for (final tier in ServiceTier.values) {
+        final config = _serviceTiers.getTierConfig(tier);
+        if (config.deliveryDay != 1) {
+          config.updateDeliveryDay(1);
+        }
+        if (config.editNum != 1) {
+          config.updateEditNum(1);
+        }
+      }
       // 为当前选中档位设置值
       _serviceTiers.getTierConfig(_selectedTier).updateAttributeValue(template.id, value);
     });
@@ -2312,18 +2277,9 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     if (!_attributeControllers.containsKey(attributeId)) {
       _attributeControllers[attributeId] = TextEditingController(text: initialValue);
     }
-    // 如果初始值发生变化，更新控制器的文本（但不移动光标）
-    final controller = _attributeControllers[attributeId]!;
-    if (controller.text != initialValue) {
-      // 保存当前的光标位置
-      final selection = controller.selection;
-      controller.text = initialValue;
-      // 恢复光标位置，确保不超出新文本的长度
-      if (selection.isValid && selection.end <= initialValue.length) {
-        controller.selection = selection;
-      }
-    }
-    return controller;
+    // Controller 已存在时不覆盖 text —— controller 是输入的 source of truth
+    // initialValue 可能因 debounce 而过时，强制覆盖会导致红色报错闪烁
+    return _attributeControllers[attributeId]!;
   }
 
   /// 更新属性值
@@ -2582,7 +2538,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFBF7D2A),
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Colors.white,
               ),
               child: const Text('保存'),

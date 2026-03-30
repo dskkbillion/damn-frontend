@@ -36,14 +36,29 @@ class AutoReplyLoaded extends AutoReplyState {
   List<Object?> get props => [settings];
 }
 
+/// 保存成功状态
+class AutoReplySaveSuccess extends AutoReplyState {
+  /// 保存成功的设置
+  final AutoReplySettings settings;
+
+  /// 构造函数
+  AutoReplySaveSuccess(this.settings);
+
+  @override
+  List<Object?> get props => [settings];
+}
+
 /// 错误状态
 class AutoReplyError extends AutoReplyState {
   /// 错误信息
   final String message;
 
+  /// 出错前的设置（可为空）
+  final AutoReplySettings? previousSettings;
+
   /// 构造函数
-  AutoReplyError(this.message);
+  AutoReplyError(this.message, {this.previousSettings});
 
   @override
-  List<Object> get props => [message];
+  List<Object?> get props => [message, previousSettings];
 } 

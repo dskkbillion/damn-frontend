@@ -108,6 +108,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  integration_test:
+    sdk: flutter
   bloc_test: ^9.1.7
   mockito: ^5.4.5
   flutter_lints: ^3.0.0

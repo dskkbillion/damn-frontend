@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 /// Chat theme configuration matching the app's design
 class ChatThemeConfig {
@@ -111,7 +112,7 @@ class ChatThemeConfig {
     ),
     
     // Error styling
-    errorColor: Colors.red,
+    errorColor: AppColors.error,
     errorIcon: Icon(Icons.error_outline),
     
     // Send button styling

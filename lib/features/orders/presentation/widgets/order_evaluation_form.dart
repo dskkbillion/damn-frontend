@@ -1,5 +1,7 @@
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart'; // Import Bloc and Events
@@ -25,7 +27,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
   List<ImageProcessResult> _selectedImages = []; // Use ImageProcessResult
   bool _isProcessingImages = false;
 
-  // --- Build Rating Stars --- 
+  // --- Build Rating Stars ---
   Widget _buildRatingStars(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center, // Center the stars
@@ -34,7 +36,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
         return IconButton(
           icon: Icon(
             starNumber <= _score ? Icons.star : Icons.star_border,
-            color: starNumber <= _score ? Colors.amber : Colors.grey,
+            color: starNumber <= _score ? Colors.amber : AppColors.textTertiary,
             size: 32, // Adjust size as needed
           ),
           onPressed: () {
@@ -80,13 +82,13 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.backgroundCard,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: AppColors.borderSecondary,
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -99,11 +101,11 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
           children: [
             // 标题部分
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppDimensions.spacingLg),
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
-                    color: Theme.of(context).dividerColor.withOpacity(0.1),
+                    color: AppColors.borderPrimary,
                     width: 1,
                   ),
                 ),
@@ -113,9 +115,9 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
                   Icon(
                     Icons.rate_review_outlined,
                     size: 20,
-                    color: Theme.of(context).primaryColor,
+                    color: colorScheme.primary,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppDimensions.spacingSm),
                   Text(
                     '评价商品',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -127,34 +129,37 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
             ),
             // 表单内容
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(AppDimensions.spacingLg),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppDimensions.spacingSm),
                   // --- Replace Slider with Stars ---
                   Center(child: _buildRatingStars(context)),
-                  const SizedBox(height: 24), // Add more space after stars
+                  const SizedBox(height: AppDimensions.spacingXxl), // Add more space after stars
                   TextFormField(
                     controller: _contentController,
                     decoration: InputDecoration(
                       hintText: '分享您的使用体验吧～',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusSm)),
                       filled: true,
-                      fillColor: Colors.grey[100],
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      fillColor: AppColors.backgroundSecondary,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.spacingMd,
+                        vertical: AppDimensions.spacingSm,
+                      ),
                     ),
                     maxLines: 5,
                     maxLength: 200, // Optional limit
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppDimensions.spacingLg),
 
                   // --- Picture Upload Section ---
                   Text('添加图片 (最多9张)', style: textTheme.bodyMedium),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppDimensions.spacingSm),
                   Wrap(
-                    spacing: 8.0,
-                    runSpacing: 8.0,
+                    spacing: AppDimensions.spacingSm,
+                    runSpacing: AppDimensions.spacingSm,
                     children: [
                       // Display selected image thumbnails
                       ..._selectedImages.map((result) => _buildImageThumbnail(result)).toList(),
@@ -166,7 +171,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
                         _buildProcessingIndicator(),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppDimensions.spacingLg),
                   // --- Anonymous Checkbox ---
                   Row(
                     children: [
@@ -181,7 +186,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
                       Text('匿名评价', style: textTheme.bodyMedium),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppDimensions.spacingXxl),
                   // --- Submit Button (already wrapped in BlocSelector) ---
                   BlocSelector<OrderDetailBloc, OrderDetailState, bool>(
                     selector: (state) {
@@ -195,7 +200,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
                           style: ElevatedButton.styleFrom(
                             minimumSize: const Size(double.infinity, 48),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                             ),
                           ),
                           child: isSubmitting
@@ -214,7 +219,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
     );
   }
 
-  // --- Helper to build image thumbnail --- 
+  // --- Helper to build image thumbnail ---
   Widget _buildImageThumbnail(ImageProcessResult result) {
     return Stack(
       children: [
@@ -222,8 +227,8 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
           width: 80,
           height: 80,
           decoration: BoxDecoration(
-            color: Colors.grey[300],
-            borderRadius: BorderRadius.circular(8),
+            color: AppColors.borderPrimary,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
             image: DecorationImage(
               // Use the final processed file
               image: FileImage(result.finalFile),
@@ -237,10 +242,13 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
             bottom: 2,
             left: 2,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.spacingXs,
+                vertical: 2,
+              ),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(4),
+                color: Colors.black.withValues(alpha: 0.7),
+                borderRadius: BorderRadius.circular(AppDimensions.spacingXs),
               ),
               child: Text(
                 '${result.compressionRatio!.toStringAsFixed(0)}%',
@@ -260,8 +268,8 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
             child: Container(
               padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.8),
-                borderRadius: BorderRadius.circular(4),
+                color: AppColors.error.withValues(alpha: 0.8),
+                borderRadius: BorderRadius.circular(AppDimensions.spacingXs),
               ),
               child: const Icon(
                 Icons.error,
@@ -274,7 +282,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
           top: -8,
           right: -8,
           child: IconButton(
-            icon: const Icon(Icons.remove_circle, color: Colors.red, size: 20),
+            icon: Icon(Icons.remove_circle, color: AppColors.error, size: 20),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
             onPressed: () {
@@ -288,7 +296,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
     );
   }
 
-  // --- Helper to build "Add Picture" button --- 
+  // --- Helper to build "Add Picture" button ---
   Widget _buildAddPictureButton(BuildContext context) {
     return InkWell(
       onTap: _pickImage, // Call the image picking method
@@ -296,16 +304,16 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
         width: 80,
         height: 80,
         decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey[400]!)
+          color: AppColors.backgroundSecondary,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          border: Border.all(color: AppColors.borderPrimary),
         ),
-        child: Icon(Icons.add_a_photo, color: Colors.grey[600], size: 30),
+        child: Icon(Icons.add_a_photo, color: AppColors.textSecondary, size: 30),
       ),
     );
   }
 
-  // --- Image Picking Logic using ImageUploadHelper --- 
+  // --- Image Picking Logic using ImageUploadHelper ---
   Future<void> _pickImage() async {
     // Check limit before picking
     if (_selectedImages.length >= 9) {
@@ -321,7 +329,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
 
     try {
       int remainingSlots = 9 - _selectedImages.length;
-      
+
       // Use ImageUploadHelper for multiple image selection with review type compression
       final List<ImageProcessResult> results = await ImageUploadHelper.pickFromGallery(
         type: ImageUploadType.review,
@@ -333,30 +341,30 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
         setState(() {
           _selectedImages.addAll(results);
         });
-        
+
         // Show compression summary
         final successCount = results.where((r) => r.isSuccess).length;
         final errorCount = results.where((r) => r.error != null).length;
-        
+
         if (successCount > 0) {
           final avgCompression = results
               .where((r) => r.compressionRatio != null)
               .map((r) => r.compressionRatio!)
               .fold(0.0, (a, b) => a + b) / successCount;
-          
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('成功处理 $successCount 张图片，平均压缩 ${avgCompression.toStringAsFixed(1)}%'),
-              backgroundColor: Colors.green,
+              backgroundColor: AppColors.success,
             ),
           );
         }
-        
+
         if (errorCount > 0) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('$errorCount 张图片处理失败'),
-              backgroundColor: Colors.orange,
+              backgroundColor: AppColors.warning,
             ),
           );
         }
@@ -372,32 +380,32 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
       });
     }
   }
-  
+
   // --- Helper to build processing indicator ---
   Widget _buildProcessingIndicator() {
     return Container(
       width: 80,
       height: 80,
       decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[400]!),
+        color: AppColors.backgroundSecondary,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+        border: Border.all(color: AppColors.borderPrimary),
       ),
-      child: const Column(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(
+          const SizedBox(
             width: 20,
             height: 20,
             child: CircularProgressIndicator(strokeWidth: 2),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: AppDimensions.spacingXs),
           Text(
             '处理中...',
-            style: TextStyle(fontSize: 10, color: Colors.grey),
+            style: TextStyle(fontSize: 10, color: AppColors.textTertiary),
           ),
         ],
       ),
     );
   }
-} 
+}

@@ -21,26 +21,31 @@ class OrderListLoaded extends OrderListState {
   final List<Order> orders;
   final bool hasReachedMax; // Flag to indicate if more orders can be loaded
   final Map<OrderStatus?, int>? statusCounts; // 各状态订单数量
+  /// True when cached data is shown while a background refresh is in progress.
+  final bool isRefreshing;
 
   const OrderListLoaded({
-    required this.orders, 
+    required this.orders,
     this.hasReachedMax = false,
     this.statusCounts,
+    this.isRefreshing = false,
   });
 
   @override
-  List<Object?> get props => [orders, hasReachedMax, statusCounts];
+  List<Object?> get props => [orders, hasReachedMax, statusCounts, isRefreshing];
 
   // Optional: Add copyWith method for easier state updates during pagination etc.
    OrderListLoaded copyWith({
     List<Order>? orders,
     bool? hasReachedMax,
     Map<OrderStatus?, int>? statusCounts,
+    bool? isRefreshing,
   }) {
     return OrderListLoaded(
       orders: orders ?? this.orders,
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
       statusCounts: statusCounts ?? this.statusCounts,
+      isRefreshing: isRefreshing ?? this.isRefreshing,
     );
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -28,7 +30,7 @@ class OrderDetailActionButtons extends StatelessWidget {
     final dialogs = OrderActionDialogs(order: order);
     final buttons = <Widget>[];
     Widget? primaryButton;
-    
+
     // 判断是否为轻咨询订单
     final isLightConsultation = OrderStatusMapper.isLightConsultationOrder(order);
 
@@ -48,7 +50,7 @@ class OrderDetailActionButtons extends StatelessWidget {
             onConfirm: () {
               context.read<OrderDetailBloc>().add(
                 OrderActionRequested(
-                  action: OrderAction.cancel, 
+                  action: OrderAction.cancel,
                   orderId: order.id.toString()
                 )
               );
@@ -98,7 +100,7 @@ class OrderDetailActionButtons extends StatelessWidget {
             onConfirm: () {
               context.read<OrderDetailBloc>().add(
                 OrderActionRequested(
-                  action: OrderAction.cancel, 
+                  action: OrderAction.cancel,
                   orderId: order.id.toString()
                 )
               );
@@ -106,7 +108,7 @@ class OrderDetailActionButtons extends StatelessWidget {
           );
         }));
         break;
-      
+
       // 待发货/待交付，允许提醒和平台介入
       case OrderStatus.awaitingDelivery:
       case OrderStatus.awaitingStart:
@@ -134,7 +136,7 @@ class OrderDetailActionButtons extends StatelessWidget {
           builder: (context, state) {
             final isLoading = state is OrderDetailActionLoading;
             return _buildButton(
-              context, 
+              context,
               isLoading ? '处理中...' : '确认收货',
               isLoading ? null : () {
                 dialogs.showConfirmationDialog(
@@ -144,7 +146,7 @@ class OrderDetailActionButtons extends StatelessWidget {
                   onConfirm: () {
                     context.read<OrderDetailBloc>().add(
                       OrderActionRequested(
-                        action: OrderAction.confirmReceipt, 
+                        action: OrderAction.confirmReceipt,
                         orderId: order.id.toString()
                       )
                     );
@@ -185,7 +187,7 @@ class OrderDetailActionButtons extends StatelessWidget {
             onConfirm: () {
               context.read<OrderDetailBloc>().add(
                 OrderActionRequested(
-                  action: OrderAction.delete, 
+                  action: OrderAction.delete,
                   orderId: order.id.toString()
                 )
               );
@@ -209,7 +211,7 @@ class OrderDetailActionButtons extends StatelessWidget {
             onConfirm: () {
               context.read<OrderDetailBloc>().add(
                 OrderActionRequested(
-                  action: OrderAction.delete, 
+                  action: OrderAction.delete,
                   orderId: order.id.toString()
                 )
               );
@@ -238,15 +240,15 @@ class OrderDetailActionButtons extends StatelessWidget {
   }
 
   Widget _buildButton(
-    BuildContext context, 
-    String text, 
-    VoidCallback? onPressed, 
+    BuildContext context,
+    String text,
+    VoidCallback? onPressed,
     {bool isPrimary = false, bool isLoading = false}
   ) {
     return OrderActionButtonBuilder.buildButton(
-      context, 
-      text, 
-      onPressed, 
+      context,
+      text,
+      onPressed,
       isPrimary: isPrimary,
       isLoading: isLoading,
     );
@@ -341,13 +343,13 @@ class OrderDetailActionButtons extends StatelessWidget {
       );
     }
   }
-  
+
   /// 轻咨询模式：构建简化的操作按钮
   Widget _buildSimplifiedButtons(BuildContext context) {
     final dialogs = OrderActionDialogs(order: order);
     final buttons = <Widget>[];
     Widget? primaryButton;
-    
+
     switch (order.state) {
       case OrderStatus.awaitingPayment:
         // 待付款：支付、取消
@@ -359,7 +361,7 @@ class OrderDetailActionButtons extends StatelessWidget {
             onConfirm: () {
               context.read<OrderDetailBloc>().add(
                 OrderActionRequested(
-                  action: OrderAction.cancel, 
+                  action: OrderAction.cancel,
                   orderId: order.id.toString()
                 )
               );
@@ -381,7 +383,7 @@ class OrderDetailActionButtons extends StatelessWidget {
           },
         );
         break;
-        
+
       // 待确认收货状态：单独处理，显示确认收货按钮
       case OrderStatus.awaitingConfirmation:
         // 待确认收货：显示确认收货主按钮
@@ -434,7 +436,7 @@ class OrderDetailActionButtons extends StatelessWidget {
           isLoading: isCreatingChat,
         );
         break;
-        
+
       case OrderStatus.awaitingEvaluation:
         // 待评价：评价
         buttons.add(_buildButton(context, '申请售后', () {
@@ -444,7 +446,7 @@ class OrderDetailActionButtons extends StatelessWidget {
           _navigateToEvaluation(context);
         }, isPrimary: true);
         break;
-        
+
       case OrderStatus.orderCompleted:
         buttons.add(_buildButton(context, '申请售后', () {
           _navigateToAfterSales(context);
@@ -460,7 +462,7 @@ class OrderDetailActionButtons extends StatelessWidget {
           isLoading: isCreatingChat,
         );
         break;
-        
+
       case OrderStatus.applyingForMediation:
       case OrderStatus.afterSale:
       case OrderStatus.AfterSaleRejection:
@@ -471,7 +473,7 @@ class OrderDetailActionButtons extends StatelessWidget {
           );
         }, isPrimary: true);
         break;
-        
+
       case OrderStatus.canceled:
         // 已取消：删除订单
         primaryButton = _buildButton(context, '删除订单', () {
@@ -490,33 +492,33 @@ class OrderDetailActionButtons extends StatelessWidget {
           );
         }, isPrimary: true);
         break;
-        
+
       default:
         break;
     }
-    
+
     // 构建底部操作栏
     if (buttons.isEmpty && primaryButton == null) {
       return const SizedBox.shrink();
     }
-    
+
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.borderSecondary,
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           ...buttons.map((button) => Padding(
-            padding: const EdgeInsets.only(right: 8.0),
+            padding: const EdgeInsets.only(right: AppDimensions.spacingSm),
             child: button,
           )),
           if (primaryButton != null) Expanded(child: primaryButton),

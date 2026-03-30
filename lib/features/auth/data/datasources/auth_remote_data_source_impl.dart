@@ -32,10 +32,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<AuthenticatedUserModel> loginWithVerificationCode(
       VerificationCodeCredentials credentials) async {
     const String endpoint = '/api/auth/login';
+    final bool isEmail = credentials.phone.contains('@');
     final Map<String, dynamic> data = {
       'mobile': credentials.phone,
       'code': credentials.code,
-      'scene': 'sms_code_login',
+      'scene': isEmail ? 'email_code_login' : 'sms_code_login',
     };
 
     AppLogger.d('===== 登录 =====');
@@ -79,7 +80,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw ServerException(message: '登录响应解析失败');
     } catch (e) {
       AppLogger.d('未知错误: ${e.toString()}');
-      throw ServerException(message: '登录过程中发生未知错误: ${e.toString()}');
+      throw ServerException(message: '登录失败，请稍后重试');
     }
   }
 
@@ -93,9 +94,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }) async {
     // 使用登录验证码接口，因为我们的登录注册是合一的
     const String endpoint = '/api/common/send-code/login';
+    final bool isEmail = phone.contains('@');
     final Map<String, dynamic> data = {
       'mobile': phone,
-      // 移除所有额外参数，只保留手机号
+      'scene': isEmail ? 'email_code_login' : 'sms_code_login',
     };
 
     AppLogger.d('===== 发送验证码 =====');
@@ -108,6 +110,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final response = await dio.post(endpoint, data: data);
       AppLogger.d('收到服务器响应: 状态码 ${response.statusCode}');
       AppLogger.d('响应数据: ${response.data}');
+      AppLogger.d('code类型: ${response.data['code'].runtimeType}, code值: ${response.data['code']}');
 
       // 检查HTTP状态码和业务状态码
       if (response.statusCode == 200 &&
@@ -129,10 +132,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         AppLogger.d('错误响应状态码: ${e.response?.statusCode}');
         AppLogger.d('错误响应数据: ${e.response?.data}');
       }
-      throw ServerException(message: 'Send code failed due to network or server error: ${e.message}');
+      throw ServerException(message: '验证码发送失败，网络或服务器错误');
     } catch (e) {
       AppLogger.d('未知错误: ${e.toString()}');
-      throw ServerException(message: 'An unknown error occurred while sending the code: ${e.toString()}');
+      throw ServerException(message: '验证码发送失败，请稍后重试');
     }
   }
 

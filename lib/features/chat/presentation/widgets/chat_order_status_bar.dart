@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
@@ -302,7 +304,7 @@ class _ChatOrderStatusBarState extends State<ChatOrderStatusBar> {
                           '最新订单 ${latestOrder.orderSn} · ${PriceFormatter.format(latestOrder.priceSummary.payPrice)}',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[700],
+                            color: AppColors.textSecondary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -313,10 +315,10 @@ class _ChatOrderStatusBarState extends State<ChatOrderStatusBar> {
                   if (multipleOrders)
                     Icon(
                       _isExpanded ? Icons.expand_less : Icons.expand_more,
-                      color: Colors.grey[700],
+                      color: AppColors.textSecondary,
                     )
                   else
-                    const Icon(Icons.chevron_right, color: Colors.grey),
+                    Icon(Icons.chevron_right, color: AppColors.textTertiary),
                 ],
               ),
             ),
@@ -347,11 +349,11 @@ class _ChatOrderStatusBarState extends State<ChatOrderStatusBar> {
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.backgroundCard,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: AppColors.borderSecondary,
             blurRadius: 12,
             offset: const Offset(0, 3),
           ),
@@ -405,7 +407,7 @@ class _OrderListTile extends StatelessWidget {
                     '${PriceFormatter.format(order.priceSummary.payPrice)} · ${order.createdAt.month.toString().padLeft(2, '0')}-${order.createdAt.day.toString().padLeft(2, '0')} ${order.createdAt.hour.toString().padLeft(2, '0')}:${order.createdAt.minute.toString().padLeft(2, '0')}',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[600],
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -421,7 +423,7 @@ class _OrderListTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 6),
-            const Icon(Icons.chevron_right, size: 18, color: Colors.grey),
+            Icon(Icons.chevron_right, size: 18, color: AppColors.textTertiary),
           ],
         ),
       ),

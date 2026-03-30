@@ -8,6 +8,8 @@ import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order
 // Import the new seller buttons widget
 import 'seller_order_item_card_action_buttons.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 用于在**卖家**订单列表中显示单个订单摘要信息的卡片 Widget。
 class SellerOrderItemCard extends StatelessWidget {
@@ -46,14 +48,14 @@ class SellerOrderItemCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       elevation: 0, // 无阴影，更简洁
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         side: BorderSide(
-          color: colorScheme.outline.withOpacity(0.3), // 淡边框
+          color: colorScheme.outline.withValues(alpha: 0.3),
         ),
       ),
       child: InkWell(
         onTap: onTap ?? navigateToDetail, // Default to navigate if onTap is null
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -107,9 +109,9 @@ class SellerOrderItemCard extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: Colors.blue[50],
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.blue[200]!),
+                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+                              border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -117,14 +119,14 @@ class SellerOrderItemCard extends StatelessWidget {
                                 Icon(
                                   Icons.folder_outlined,
                                   size: 12,
-                                  color: Colors.blue[600],
+                                  color: Theme.of(context).colorScheme.primary,
                                 ),
                                 const SizedBox(width: 2),
                                 Text(
                                   '含材料',
                                   style: textTheme.bodySmall?.copyWith(
                                     fontSize: 10,
-                                    color: Colors.blue[600],
+                                    color: Theme.of(context).colorScheme.primary,
                                   ),
                                 ),
                               ],
@@ -160,22 +162,22 @@ class SellerOrderItemCard extends StatelessWidget {
                            if (loadingProgress == null) return child;
                            return Container(
                              width: 80, height: 80,
-                             color: Colors.grey[200],
+                             color: AppColors.backgroundSecondary,
                              child: Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
                            );
                         },
                         errorBuilder: (context, error, stackTrace) => Container(
                           width: 80, height: 80,
-                          color: Colors.grey[200],
-                          child: Icon(Icons.broken_image, color: Colors.grey[400]),
+                          color: AppColors.backgroundSecondary,
+                          child: Icon(Icons.broken_image, color: AppColors.textTertiary),
                         ),
                       ),
                     )
                   else // 如果没有图片URL，显示占位符
                      Container(
                           width: 80, height: 80,
-                          color: Colors.grey[200],
-                          child: Icon(Icons.image, color: Colors.grey[400]),
+                          color: AppColors.backgroundSecondary,
+                          child: Icon(Icons.image, color: AppColors.textTertiary),
                         ),
                   const SizedBox(width: 12.0),
                   // 商品详情
@@ -209,7 +211,7 @@ class SellerOrderItemCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12.0),
-              Divider(height: 1, color: Colors.grey[200]), // 分隔线
+              Divider(height: 1, color: AppColors.borderPrimary), // 分隔线
               const SizedBox(height: 8.0), // Reduced spacing slightly
               // 时间戳单独一行，靠左
               Align(
@@ -217,8 +219,7 @@ class SellerOrderItemCard extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.only(left: 0, bottom: 4.0), // Adjust padding as needed
                   child: Text(
-                    // TODO: 格式化时间
-                    order.createdAt.toString(),
+                    '${order.createdAt.year}-${order.createdAt.month.toString().padLeft(2, '0')}-${order.createdAt.day.toString().padLeft(2, '0')} ${order.createdAt.hour.toString().padLeft(2, '0')}:${order.createdAt.minute.toString().padLeft(2, '0')}',
                     style: textTheme.bodySmall?.copyWith(color: colorScheme.secondary),
                   ),
                 ),

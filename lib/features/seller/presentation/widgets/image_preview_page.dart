@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 图片预览页面
 class ImagePreviewPage extends StatefulWidget {
@@ -102,13 +104,13 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
             left: 0,
             right: 0,
             child: Container(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(AppDimensions.spacingXl),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
                   colors: [
-                    Colors.black.withOpacity(0.8),
+                    Colors.black.withOpacity(0.8), // TODO(reskin): review this color
                     Colors.transparent,
                   ],
                 ),
@@ -120,17 +122,19 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
                     // 主图标识/设置按钮
                     if (_currentIndex == widget.mainImageIndex)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: AppDimensions.spacingLg,
+                            vertical: AppDimensions.spacingSm),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor,
-                          borderRadius: BorderRadius.circular(20),
+                          color: Theme.of(context).colorScheme.primary,
+                          borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.star, color: Colors.white, size: 16),
-                            SizedBox(width: 4),
-                            Text('主图', style: TextStyle(color: Colors.white)),
+                            const Icon(Icons.star, color: Colors.white, size: 16),
+                            SizedBox(width: AppDimensions.spacingXs),
+                            const Text('主图', style: TextStyle(color: Colors.white)),
                           ],
                         ),
                       )
@@ -143,17 +147,19 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
                           backgroundColor: Colors.white.withOpacity(0.2),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
                           ),
                         ),
                       ),
                     
                     // 页面指示器
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: AppDimensions.spacingMd,
+                          vertical: AppDimensions.spacingXs),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.black.withOpacity(0.5), // TODO(reskin): review this color
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -207,7 +213,7 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.error, color: Colors.white, size: 64),
-                SizedBox(height: 16),
+                SizedBox(height: AppDimensions.spacingLg),
                 Text('图片加载失败', style: TextStyle(color: Colors.white)),
               ],
             ),
@@ -225,7 +231,7 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.error, color: Colors.white, size: 64),
-                SizedBox(height: 16),
+                SizedBox(height: AppDimensions.spacingLg),
                 Text('图片加载失败', style: TextStyle(color: Colors.white)),
               ],
             ),
@@ -258,7 +264,7 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
               Navigator.of(context).pop(); // 关闭对话框
               _deleteCurrentImage();
             },
-            child: const Text('删除', style: TextStyle(color: Colors.red)),
+            child: Text('删除', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),

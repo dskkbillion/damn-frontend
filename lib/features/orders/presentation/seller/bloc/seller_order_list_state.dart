@@ -33,31 +33,36 @@ class SellerOrderListSuccess extends SellerOrderListState {
   final List<Order> orders;
   final OrderStatus? currentStatusFilter;
   final bool hasReachedMax;
+  /// True when cached data is shown while a background refresh is in progress.
+  final bool isRefreshing;
 
   const SellerOrderListSuccess({
     required this.orders,
     this.currentStatusFilter,
     this.hasReachedMax = false,
+    this.isRefreshing = false,
   });
 
   SellerOrderListSuccess copyWith({
     List<Order>? orders,
     OrderStatus? currentStatusFilter,
     bool? hasReachedMax,
+    bool? isRefreshing,
   }) {
     return SellerOrderListSuccess(
       orders: orders ?? this.orders,
       currentStatusFilter: currentStatusFilter ?? this.currentStatusFilter,
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
+      isRefreshing: isRefreshing ?? this.isRefreshing,
     );
   }
 
   @override
-  List<Object?> get props => [orders, currentStatusFilter, hasReachedMax];
+  List<Object?> get props => [orders, currentStatusFilter, hasReachedMax, isRefreshing];
 
   @override
   String toString() =>
-      'SellerOrderListSuccess { orders: ${orders.length}, status: $currentStatusFilter, hasReachedMax: $hasReachedMax }';
+      'SellerOrderListSuccess { orders: ${orders.length}, status: $currentStatusFilter, hasReachedMax: $hasReachedMax, isRefreshing: $isRefreshing }';
 }
 
 /// State representing an error that occurred while loading the seller's order list.

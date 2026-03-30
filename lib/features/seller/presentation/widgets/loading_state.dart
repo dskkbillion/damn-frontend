@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 加载中状态组件
 ///
@@ -25,13 +27,12 @@ class LoadingState extends StatelessWidget {
         children: [
           const CircularProgressIndicator(),
           if (text != null) ...[
-            const SizedBox(height: 16),
+            SizedBox(height: AppDimensions.spacingLg),
             Text(
               text!,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.black54,
-              ),
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -41,7 +42,7 @@ class LoadingState extends StatelessWidget {
     
     if (useOverlay) {
       return Container(
-        color: Colors.black.withOpacity(0.1),
+        color: AppColors.borderSecondary.withOpacity(0.1),
         child: loadingContent,
       );
     }
@@ -69,15 +70,15 @@ class LoadingState extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const SizedBox(
-          width: 16,
-          height: 16,
-          child: CircularProgressIndicator(
+        SizedBox(
+          width: AppDimensions.spacingLg,
+          height: AppDimensions.spacingLg,
+          child: const CircularProgressIndicator(
             strokeWidth: 2,
           ),
         ),
         if (text != null) ...[
-          const SizedBox(width: 8),
+          SizedBox(width: AppDimensions.spacingSm),
           Text(text),
         ],
       ],

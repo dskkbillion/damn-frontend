@@ -1,7 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/error/exceptions.dart';
 import '../../../../../core/error/failures.dart';
 import '../../../../../core/usecases/usecase.dart';
+import '../../../../../core/utils/app_logger.dart';
+import '../../data/datasources/home_local_data_source.dart';
+import '../../domain/entities/banner.dart';
 import '../../domain/entities/home_feed_item.dart';
 import '../../domain/usecases/get_home_feed_usecase.dart';
 import '../../domain/usecases/get_home_page_data_usecase.dart';
@@ -14,6 +18,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final GetHomePageDataUseCase getHomePageData;
   final GetHomeFeedUseCase getHomeFeed;
   final HomeNavigationService navigationService;
+  final HomeLocalDataSource localDataSource;
 
   /// 默认每页数量
   static const int defaultLimit = 10;
@@ -23,6 +28,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     required this.getHomePageData,
     required this.getHomeFeed,
     required this.navigationService,
+    required this.localDataSource,
   }) : super(const HomeInitial()) {
     on<LoadHomeData>(_onLoadHomeData);
     on<RefreshHomeData>(_onRefreshHomeData);
@@ -33,17 +39,51 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<RecommendButtonClicked>(_onRecommendButtonClicked);
   }
 
-  /// 处理加载首页数据事件
+  /// 处理加载首页数据事件（Stale-While-Revalidate 双次调用模式）
   Future<void> _onLoadHomeData(
     LoadHomeData event,
     Emitter<HomeState> emit,
   ) async {
-    emit(const HomeLoading());
-    
+    // Step 1: 先尝试读取本地缓存，有数据则立即展示并标记后台刷新中
+    try {
+      final cachedData = await localDataSource.getLastHomePageData();
+      final cachedBanners = cachedData.banners.map((b) => Banner(
+        id: b.id,
+        imageUrl: b.imageUrl,
+        title: b.title ?? '',
+        linkUrl: b.linkUrl ?? '',
+      )).toList();
+      final cachedFeedItems = cachedData.feedItems.map((item) => HomeFeedItem(
+        id: item.id.toString(),
+        name: item.name,
+        images: item.images,
+        sellingPrice: item.sellingPrice,
+        description: '',
+      )).toList();
+      emit(HomeLoaded(
+        banners: cachedBanners,
+        categories: [],
+        feedItems: cachedFeedItems,
+        hasReachedMax: cachedFeedItems.length < defaultLimit,
+        isRefreshing: true,
+      ));
+    } on CacheException {
+      // 无缓存，显示加载指示器
+      emit(const HomeLoading());
+    }
+
+    // Step 2: 请求远程数据
     final result = await getHomePageData(NoParams());
-    
+
     result.fold(
-      (failure) => emit(HomeError(message: _mapFailureToMessage(failure))),
+      (failure) {
+        // 远程失败：若已有缓存数据则保持展示，仅记录日志；否则 emit error
+        if (state is HomeLoaded) {
+          AppLogger.d('HomeBloc: remote fetch failed but cache is displayed, keeping cache. ${_mapFailureToMessage(failure)}');
+        } else {
+          emit(HomeError(message: _mapFailureToMessage(failure)));
+        }
+      },
       (homePageData) {
         _currentPage = 1;
         emit(HomeLoaded(
@@ -51,6 +91,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           categories: homePageData.categories,
           feedItems: homePageData.feedItems,
           hasReachedMax: homePageData.feedItems.length < defaultLimit,
+          isRefreshing: false,
         ));
       },
     );
@@ -112,11 +153,16 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       (feedItems) {
         final existingIds = currentState.feedItems.map((item) => item.id).toSet();
         final appendedItems = feedItems.where((item) => !existingIds.contains(item.id)).toList();
+        final hasReachedMax = feedItems.length < defaultLimit;
         _currentPage = nextPage;
+        AppLogger.d(
+          'HomeBloc loadMore: page=$nextPage, apiReturned=${feedItems.length}, '
+          'afterDedup=${appendedItems.length}, hasReachedMax=$hasReachedMax',
+        );
         emit(
           currentState.copyWith(
             feedItems: List<HomeFeedItem>.of(currentState.feedItems)..addAll(appendedItems),
-            hasReachedMax: feedItems.length < defaultLimit || appendedItems.isEmpty,
+            hasReachedMax: hasReachedMax,
             isLoadingMore: false,
           ),
         );

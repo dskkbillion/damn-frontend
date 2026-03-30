@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/product_edit_models.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 买家需要提供信息的 section。
 ///
@@ -33,28 +35,29 @@ class _ProductBuyerInfoSectionState extends State<ProductBuyerInfoSection> {
 
   InputDecoration get _lightBorderDecoration => InputDecoration(
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          borderSide: BorderSide(color: AppColors.borderInput, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          borderSide: BorderSide(color: AppColors.borderInput, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFBF7D2A), width: 1.5),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        contentPadding: EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingMd),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.backgroundCard,
       );
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
-      margin: const EdgeInsets.only(top: 12),
-      padding: const EdgeInsets.all(16.0),
+      color: AppColors.backgroundCard,
+      margin: EdgeInsets.only(top: AppDimensions.spacingMd),
+      padding: EdgeInsets.all(AppDimensions.spacingLg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -62,32 +65,39 @@ class _ProductBuyerInfoSectionState extends State<ProductBuyerInfoSection> {
           InkWell(
             onTap: () => setState(() => _isExpanded = !_isExpanded),
             child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              padding: EdgeInsets.symmetric(
+                  vertical: AppDimensions.spacingSm, horizontal: AppDimensions.spacingXs),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     '需要买家提供',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   Row(
                     children: [
                       if (widget.items.isNotEmpty)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: AppDimensions.spacingSm,
+                              vertical: AppDimensions.spacingXs),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFBF7D2A).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
+                            color: AppColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
                           ),
                           child: Text(
                             '${widget.items.length}项信息',
-                            style: const TextStyle(fontSize: 12, color: Color(0xFFBF7D2A)),
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: AppColors.primary,
+                                ),
                           ),
                         ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: AppDimensions.spacingSm),
                       Icon(
                         _isExpanded ? Icons.expand_less : Icons.expand_more,
-                        color: Colors.grey[600],
+                        color: AppColors.textSecondary,
                       ),
                     ],
                   ),
@@ -99,32 +109,36 @@ class _ProductBuyerInfoSectionState extends State<ProductBuyerInfoSection> {
           // 折叠状态下显示说明
           if (!_isExpanded)
             Container(
-              padding: const EdgeInsets.all(12),
-              margin: const EdgeInsets.only(top: 8),
+              padding: EdgeInsets.all(AppDimensions.spacingMd),
+              margin: EdgeInsets.only(top: AppDimensions.spacingSm),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey[300]!),
-                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.borderInput),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
               ),
-              child: const Text(
+              child: Text(
                 '选择你需要买家提供的信息类型（该信息将展示在订单详情页）',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textTertiary,
+                    ),
               ),
             ),
 
           // 展开内容
           if (_isExpanded) ...[
-            const SizedBox(height: 16),
+            SizedBox(height: AppDimensions.spacingLg),
             _BuyerInfoTypeGrid(
               isPreviewMode: widget.isPreviewMode,
               onTypeTapped: (type) => _showAddDialog(context, type),
             ),
             if (widget.items.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              const Text(
+              SizedBox(height: AppDimensions.spacingLg),
+              Text(
                 '已选择的信息项：',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: AppDimensions.spacingSm),
               ...widget.items.asMap().entries.map(
                     (entry) => _BuyerInfoItemTile(
                       index: entry.key,
@@ -168,7 +182,7 @@ class _ProductBuyerInfoSectionState extends State<ProductBuyerInfoSection> {
                       hintText: '例如：公司Logo设计需求',
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: AppDimensions.spacingMd),
                   TextField(
                     controller: descriptionController,
                     maxLines: 3,
@@ -177,7 +191,7 @@ class _ProductBuyerInfoSectionState extends State<ProductBuyerInfoSection> {
                       hintText: '请详细说明需要买家提供的信息内容',
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: AppDimensions.spacingMd),
                   CheckboxListTile(
                     title: const Text('必填项'),
                     value: isRequired,
@@ -209,7 +223,7 @@ class _ProductBuyerInfoSectionState extends State<ProductBuyerInfoSection> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFBF7D2A),
+                backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
               ),
               child: const Text('添加'),
@@ -247,7 +261,7 @@ class _ProductBuyerInfoSectionState extends State<ProductBuyerInfoSection> {
                       hintText: '例如：公司Logo设计需求',
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: AppDimensions.spacingMd),
                   TextField(
                     controller: descriptionController,
                     maxLines: 3,
@@ -256,7 +270,7 @@ class _ProductBuyerInfoSectionState extends State<ProductBuyerInfoSection> {
                       hintText: '请详细说明需要买家提供的信息内容',
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: AppDimensions.spacingMd),
                   CheckboxListTile(
                     title: const Text('必填项'),
                     value: isRequired,
@@ -289,7 +303,7 @@ class _ProductBuyerInfoSectionState extends State<ProductBuyerInfoSection> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFBF7D2A),
+                backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
               ),
               child: const Text('保存'),
@@ -328,18 +342,19 @@ class _BuyerInfoTypeGrid extends StatelessWidget {
         return InkWell(
           onTap: isPreviewMode ? null : () => onTypeTapped(type),
           child: Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(AppDimensions.spacingMd),
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFFBF7D2A)),
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.white,
+              border: Border.all(color: AppColors.primary),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+              color: AppColors.backgroundCard,
             ),
             child: Row(
               children: [
-                Icon(_iconFor(type), color: const Color(0xFFBF7D2A)),
-                const SizedBox(width: 8),
+                Icon(_iconFor(type), color: AppColors.primary),
+                SizedBox(width: AppDimensions.spacingSm),
                 Expanded(
-                  child: Text(type.displayName, style: const TextStyle(fontSize: 14)),
+                  child: Text(type.displayName,
+                      style: Theme.of(context).textTheme.bodyMedium),
                 ),
               ],
             ),
@@ -389,34 +404,43 @@ class _BuyerInfoItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
+      margin: EdgeInsets.only(bottom: AppDimensions.spacingSm),
+      padding: EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[300]!),
-        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.borderInput),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
       ),
       child: Row(
         children: [
-          Icon(_iconFor(item.type), size: 20, color: const Color(0xFFBF7D2A)),
-          const SizedBox(width: 12),
+          Icon(_iconFor(item.type), size: 20, color: AppColors.primary),
+          SizedBox(width: AppDimensions.spacingMd),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Text(item.label, style: const TextStyle(fontWeight: FontWeight.w500)),
+                    Text(item.label,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(fontWeight: FontWeight.w500)),
                     if (item.isRequired)
                       Container(
-                        margin: const EdgeInsets.only(left: 8),
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        margin: EdgeInsets.only(left: AppDimensions.spacingSm),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: AppDimensions.spacingXs + 2,
+                            vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.red[50],
-                          borderRadius: BorderRadius.circular(4),
+                          color: AppColors.error.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                         ),
-                        child: const Text(
+                        child: Text(
                           '必填',
-                          style: TextStyle(fontSize: 10, color: Colors.red),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontSize: 10,
+                                color: AppColors.error,
+                              ),
                         ),
                       ),
                   ],
@@ -424,7 +448,9 @@ class _BuyerInfoItemTile extends StatelessWidget {
                 if (item.description.isNotEmpty)
                   Text(
                     item.description,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textTertiary,
+                        ),
                   ),
               ],
             ),
@@ -434,12 +460,12 @@ class _BuyerInfoItemTile extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.edit_outlined, color: Color(0xFFBF7D2A)),
+                  icon: Icon(Icons.edit_outlined, color: AppColors.primary),
                   onPressed: onEdit,
                   tooltip: '编辑',
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete_outline, color: Colors.red),
+                  icon: Icon(Icons.delete_outline, color: AppColors.error),
                   onPressed: onRemove,
                   tooltip: '删除',
                 ),

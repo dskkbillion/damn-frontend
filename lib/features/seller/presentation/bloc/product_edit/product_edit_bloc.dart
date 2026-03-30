@@ -790,7 +790,16 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
       emit(state.copyWithError('图片上传失败，请重新选择图片'));
       return;
     }
-    
+
+    // 检查案例图是否还在上传
+    final hasUploadingCases = state.successCases.any(
+      (c) => c.uploadStatus == SuccessCaseUploadStatus.uploading,
+    );
+    if (hasUploadingCases) {
+      emit(state.copyWithError('案例展示图片正在上传中，请等待完成后再提交'));
+      return;
+    }
+
     emit(state.copyWithSubmitting());
     
     // 转换qaList和buyerInfoItems为productMaterials

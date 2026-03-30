@@ -1,5 +1,7 @@
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For date formatting
 
@@ -11,7 +13,6 @@ class OrderCompletionSummary extends StatelessWidget {
 
   String _formatDateTime(DateTime? dt) {
     if (dt == null) return 'N/A';
-    // Using intl for better formatting, adjust pattern as needed
     return DateFormat('yyyy-MM-dd HH:mm:ss').format(dt.toLocal());
   }
 
@@ -23,7 +24,7 @@ class OrderCompletionSummary extends StatelessWidget {
 
     // Icon based on state
     final IconData statusIconData = isCompleted ? Icons.check_circle_outline : Icons.cancel_outlined;
-    final Color statusIconColor = isCompleted ? Colors.green : Colors.red;
+    final Color statusIconColor = isCompleted ? AppColors.success : AppColors.error;
 
     final title = isCompleted ? '订单已完成' : '订单已取消';
     final time = isCompleted ? order.completeTime : order.cancelTime;
@@ -40,13 +41,13 @@ class OrderCompletionSummary extends StatelessWidget {
         const <String>[];
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.backgroundCard,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: AppColors.borderSecondary,
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -56,11 +57,11 @@ class OrderCompletionSummary extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppDimensions.spacingLg),
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: Theme.of(context).dividerColor.withOpacity(0.1),
+                  color: AppColors.borderPrimary,
                   width: 1,
                 ),
               ),
@@ -72,7 +73,7 @@ class OrderCompletionSummary extends StatelessWidget {
                   color: statusIconColor,
                   size: 20,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppDimensions.spacingSm),
                 Text(
                   title,
                   style: textTheme.titleMedium?.copyWith(
@@ -83,7 +84,7 @@ class OrderCompletionSummary extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppDimensions.spacingLg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -92,10 +93,10 @@ class OrderCompletionSummary extends StatelessWidget {
                     Text(
                       timeLabel,
                       style: textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
+                        color: AppColors.textSecondary,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppDimensions.spacingSm),
                     Text(
                       _formatDateTime(time),
                       style: textTheme.bodyMedium?.copyWith(
@@ -112,7 +113,7 @@ class OrderCompletionSummary extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: AppDimensions.spacingMd),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -147,23 +148,23 @@ class OrderCompletionSummary extends StatelessWidget {
                     ),
                   ],
                   if ((evaluation.remark ?? '').trim().isNotEmpty) ...[
-                    const SizedBox(height: 10),
+                    const SizedBox(height: AppDimensions.spacingMd),
                     Text(
                       evaluation.remark!.trim(),
                       style: textTheme.bodyMedium?.copyWith(height: 1.5),
                     ),
                   ],
                   if (imageUrls.isNotEmpty) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppDimensions.spacingMd),
                     SizedBox(
                       height: 72,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: imageUrls.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        separatorBuilder: (_, __) => const SizedBox(width: AppDimensions.spacingSm),
                         itemBuilder: (context, index) {
                           return ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                             child: Image.network(
                               imageUrls[index],
                               width: 72,

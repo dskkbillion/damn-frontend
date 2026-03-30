@@ -11,6 +11,7 @@ import 'package:flutter/foundation.dart'; // Add this for @immutable in part fil
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart'; // For NoParams
 import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
+import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_chat_local_data_source.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_room.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_chat_room_list.dart';
@@ -25,6 +26,7 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
   final GetChatRoomList getChatRoomList;
   final CreateChatRoom createChatRoom;
   final DeleteChatRoom deleteChatRoom;
+  final IChatLocalDataSource localDataSource;
   final EventBus _eventBus = EventBus();
   StreamSubscription<ChatListUpdateEvent>? _chatListUpdateSubscription;
 
@@ -32,6 +34,7 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
     required this.getChatRoomList,
     required this.createChatRoom,
     required this.deleteChatRoom,
+    required this.localDataSource,
   })
       : super(const ChatListState()) {
     on<LoadChatRoomList>(_onLoadChatRoomList);
@@ -55,24 +58,46 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
     Emitter<ChatListState> emit,
   ) async {
     AppLogger.d("[ChatListBloc] Handling LoadChatRoomList event...");
-    emit(state.copyWith(status: ChatListStatus.loading));
-    
+
+    // Step 1: Show cached data immediately if available (stale-while-revalidate)
+    final cachedRooms = await localDataSource.getCachedChatRoomList();
+    if (cachedRooms != null && cachedRooms.isNotEmpty) {
+      AppLogger.d('[ChatListBloc] Showing ${cachedRooms.length} cached chat rooms while refreshing.');
+      emit(state.copyWith(
+        status: ChatListStatus.success,
+        chatRooms: cachedRooms,
+        isRefreshing: true,
+      ));
+    } else {
+      emit(state.copyWith(status: ChatListStatus.loading));
+    }
+
+    // Step 2: Fetch from remote
     final failureOrChatRooms = await getChatRoomList(NoParams());
 
-    failureOrChatRooms.fold(
-      (failure) {
-        AppLogger.d('[ChatListBloc] Failed to load chat rooms: $failure');
+    if (failureOrChatRooms.isLeft()) {
+      final failure = (failureOrChatRooms as Left).value as Failure;
+      AppLogger.d('[ChatListBloc] Failed to load chat rooms: $failure');
+      if (cachedRooms != null && cachedRooms.isNotEmpty) {
+        // Keep showing cached data, just stop the refreshing indicator
+        emit(state.copyWith(isRefreshing: false));
+      } else {
         emit(state.copyWith(
-            status: ChatListStatus.failure,
-            errorMessage: failure.toString())); // Provide a user-friendly message later
-      },
-      (chatRooms) {
-        AppLogger.d('[ChatListBloc] Successfully loaded ${chatRooms.length} chat rooms.');
-        emit(state.copyWith(
-            status: ChatListStatus.success,
-            chatRooms: chatRooms));
-      },
-    );
+          status: ChatListStatus.failure,
+          errorMessage: failure.toString(),
+          isRefreshing: false,
+        ));
+      }
+    } else {
+      final chatRooms = (failureOrChatRooms as Right).value as List<ChatRoom>;
+      AppLogger.d('[ChatListBloc] Successfully loaded ${chatRooms.length} chat rooms.');
+      await localDataSource.cacheChatRoomList(chatRooms);
+      emit(state.copyWith(
+        status: ChatListStatus.success,
+        chatRooms: chatRooms,
+        isRefreshing: false,
+      ));
+    }
   }
 
   // Handler for the RefreshChatList event

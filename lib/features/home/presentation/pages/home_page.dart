@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 import '../../domain/entities/banner.dart' as home_banner;
 import '../../domain/entities/home_feed_item.dart';
@@ -11,6 +15,8 @@ import '../bloc/home_state.dart';
 import '../widgets/banner_carousel.dart';
 import '../widgets/product_card.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_card.dart';
 
 /// 首页
 class HomePage extends StatelessWidget {
@@ -92,16 +98,24 @@ class _HomeViewState extends State<HomeView> {
       body: BlocBuilder<HomeBloc, HomeState>(
         builder: (context, state) {
           if (state is HomeInitial || state is HomeLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
+            return SkeletonPage(
+              itemCount: 6,
+              itemBuilder: (_, __) => const SkeletonCard(),
             );
           } else if (state is HomeLoaded || state is HomeRefreshing) {
             final banners = _getBanners(state);
             final feedItems = _getFeedItems(state);
 
             return RefreshIndicator(
-              onRefresh: () async {
+              onRefresh: () {
+                final completer = Completer<void>();
+                final subscription = context.read<HomeBloc>().stream.listen((state) {
+                  if (state is! HomeRefreshing && !completer.isCompleted) {
+                    completer.complete();
+                  }
+                });
                 context.read<HomeBloc>().add(const RefreshHomeData());
+                return completer.future.whenComplete(() => subscription.cancel());
               },
               child: CustomScrollView(
                 key: const PageStorageKey<String>('buyer_home_scroll'),
@@ -145,22 +159,20 @@ class _HomeViewState extends State<HomeView> {
                               Icon(
                                 Icons.explore_outlined,
                                 size: 64,
-                                color: Colors.grey[400],
+                                color: AppColors.textTertiary,
                               ),
                               const SizedBox(height: 16),
                               Text(
                                 '暂无推荐内容',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
+                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 '下拉刷新获取推荐内容',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey[500],
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: AppColors.textTertiary,
                                 ),
                               ),
                             ],
@@ -221,16 +233,15 @@ class _HomeViewState extends State<HomeView> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 24.0),
                         child: Center(
-                          child: state is HomeRefreshing
+                          child: (state is HomeRefreshing || (state is HomeLoaded && state.isRefreshing))
                               ? Column(
                                   children: [
                                     const CircularProgressIndicator(),
                                     const SizedBox(height: 12),
                                     Text(
                                       '正在刷新推荐...',
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 14,
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        color: AppColors.textSecondary,
                                       ),
                                     ),
                                   ],
@@ -243,7 +254,7 @@ class _HomeViewState extends State<HomeView> {
                                       Text(
                                         '正在加载更多...',
                                         style: TextStyle(
-                                          color: Colors.grey[600],
+                                          color: AppColors.textSecondary,
                                           fontSize: 14,
                                         ),
                                       ),
@@ -281,7 +292,7 @@ class _HomeViewState extends State<HomeView> {
                                     Text(
                                       '回到顶部并刷新',
                                       style: TextStyle(
-                                        color: Colors.grey[600],
+                                        color: AppColors.textSecondary,
                                         fontSize: 14,
                                       ),
                                     ),
@@ -300,7 +311,7 @@ class _HomeViewState extends State<HomeView> {
                 children: [
                   Text(
                     appLocalizations.home_loading_failed(state.message),
-                    style: const TextStyle(color: Colors.red),
+                    style: TextStyle(color: AppColors.error),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
@@ -344,19 +355,19 @@ class _HomeViewState extends State<HomeView> {
       child: Container(
       height: 40,
       decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(20),
+        color: AppColors.borderPrimary,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       ),
       child: Row(
           children: [
             const Padding(
             padding: EdgeInsets.symmetric(horizontal: 12),
-            child: Icon(Icons.search, color: Colors.grey),
+            child: Icon(Icons.search, color: AppColors.textTertiary),
           ),
           Expanded(
               child: Text(
                 appLocalizations.home_search_hint,
-                style: const TextStyle(color: Colors.grey),
+                style: const TextStyle(color: AppColors.textTertiary),
               ),
             ),
           ],

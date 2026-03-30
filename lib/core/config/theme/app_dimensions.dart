@@ -29,26 +29,26 @@ class AppDimensions {
   /// 超巨大间距 - 48px
   static const double spacingXxxxl = 48.0;
 
-  // ==================== 圆角系统 ====================
+  // ==================== 圆角系统（DeepStream 设计语言） ====================
   /// 无圆角
   static const double radiusNone = 0.0;
-  
-  /// 小圆角 - 4px
-  static const double radiusSm = 4.0;
-  
-  /// 中等圆角 - 8px
-  static const double radiusMd = 8.0;
-  
-  /// 大圆角 - 12px
-  static const double radiusLg = 12.0;
-  
-  /// 超大圆角 - 16px
-  static const double radiusXl = 16.0;
-  
-  /// 胶囊圆角 - 20px (用于按钮等)
-  static const double radiusPill = 20.0;
-  
-  /// 圆形 - 999px (实际使用中会被限制为元素的一半)
+
+  /// 小圆角 - 6px
+  static const double radiusSm = 6.0;
+
+  /// 中等圆角 - 10px
+  static const double radiusMd = 10.0;
+
+  /// 大圆角 - 14px
+  static const double radiusLg = 14.0;
+
+  /// 超大圆角 - 20px
+  static const double radiusXl = 20.0;
+
+  /// 胶囊圆角 - 999px（全圆角按钮/标签）
+  static const double radiusPill = 999.0;
+
+  /// 圆形 - 999px
   static const double radiusCircle = 999.0;
 
   // ==================== 边框宽度 ====================
@@ -167,16 +167,16 @@ class AppDimensions {
   /// 小型触摸目标尺寸
   static const double minTouchTargetSm = 32.0;
 
-  // ==================== 动画持续时间 ====================
+  // ==================== 动画持续时间（DeepStream 动效语言） ====================
   /// 快速动画 - 150ms
   static const Duration animationFast = Duration(milliseconds: 150);
-  
-  /// 标准动画 - 250ms
-  static const Duration animationStandard = Duration(milliseconds: 250);
-  
+
+  /// 标准动画 - 300ms（对齐横向滑入转场）
+  static const Duration animationStandard = Duration(milliseconds: 300);
+
   /// 慢速动画 - 400ms
   static const Duration animationSlow = Duration(milliseconds: 400);
-  
+
   /// 超慢动画 - 600ms
   static const Duration animationExtraSlow = Duration(milliseconds: 600);
 

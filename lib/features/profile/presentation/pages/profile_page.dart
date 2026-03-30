@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
@@ -11,6 +13,7 @@ import '../bloc/profile_bloc.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/order_status_section.dart';
 import '../widgets/profile_menu_section.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
 import '../routes/profile_routes.dart'; // 导入路由常量
 
 class ProfilePage extends StatefulWidget {
@@ -56,7 +59,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(appLocalizations.profile_avatar_upload_failed),
-                backgroundColor: Colors.red,
+                backgroundColor: AppColors.error,
                 duration: const Duration(seconds: 3),
               ),
             );
@@ -73,7 +76,7 @@ class _ProfilePageState extends State<ProfilePage> {
               if (state is ProfileAuthStatusLoaded && !state.isAuthenticated) {
                 return _buildLoginPrompt(context);
               }
-              return const Center(child: CircularProgressIndicator()); 
+              return const SkeletonPage(itemCount: 3);
             }
 
             if (state is ProfileLoading) {
@@ -108,9 +111,9 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             Text(
               appLocalizations.profile_login_prompt,
-              style: const TextStyle(fontSize: 18),
+              style: Theme.of(context).textTheme.titleMedium,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppDimensions.spacingXxl),
             ElevatedButton(
               onPressed: () {
                 // 导航到登录页面
@@ -172,7 +175,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       text: appLocalizations.profile_favorites,
                       onTap: () {
                         // 导航到收藏列表
-                        context.go('/favorites');
+                        context.push('/favorites');
                       },
                     ),
                   ],
@@ -187,7 +190,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       text: appLocalizations.profile_wallet,
                       onTap: () {
                         // 使用go_router导航到钱包页面
-                        context.go(ProfileRoutes.walletPath);
+                        context.push(ProfileRoutes.walletPath);
                       },
                     ),
                   ],
@@ -202,7 +205,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       text: appLocalizations.profile_account_security,
                       onTap: () {
                         // 使用go_router导航到账号安全页面
-                        context.go(ProfileRoutes.accountSecurityPath);
+                        context.push(ProfileRoutes.accountSecurityPath);
                       },
                     ),
                     MenuItem(
@@ -218,7 +221,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       icon: Icons.language,
                       text: appLocalizations.language_settings,
                       onTap: () {
-                        context.go(ProfileRoutes.languageSettingsPath);
+                        context.push(ProfileRoutes.languageSettingsPath);
                       },
                     ),
                   ],
@@ -233,7 +236,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       text: appLocalizations.profile_assistant_mission,
                       onTap: () {
                         // 导航到小帮手的使命页面
-                        context.go(ProfileRoutes.assistantMissionPath);
+                        context.push(ProfileRoutes.assistantMissionPath);
                       },
                     ),
                   ],

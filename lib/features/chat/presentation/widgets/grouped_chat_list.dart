@@ -3,6 +3,8 @@ import 'dart:convert'; // For JSON parsing
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 
@@ -54,11 +56,11 @@ class _GroupedChatListState extends State<GroupedChatList> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey[400]),
+                Icon(Icons.chat_bubble_outline, size: 64, color: AppColors.textTertiary),
                 const SizedBox(height: 16),
                 Text(
                   '暂无聊天记录',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
                 ),
               ],
             ),
@@ -247,7 +249,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
     );
     
     return Container(
-      color: Colors.white,
+      color: AppColors.backgroundCard,
       child: Column(
         children: [
           // 主要内容区域
@@ -264,7 +266,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: _isExpanded 
-                          ? Border.all(color: Colors.blue, width: 2)
+                          ? Border.all(color: AppColors.info, width: 2)
                           : null,
                       ),
                       child: CircleAvatar(
@@ -272,7 +274,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                         backgroundImage: (widget.group.seller.avatar != null && widget.group.seller.avatar!.isNotEmpty)
                             ? CachedNetworkImageProvider(widget.group.seller.avatar!)
                             : null,
-                        backgroundColor: Colors.grey[400],
+                        backgroundColor: AppColors.textTertiary,
                         child: (widget.group.seller.avatar == null || widget.group.seller.avatar!.isEmpty)
                             ? Text(
                                 widget.group.seller.nickName?.isNotEmpty == true
@@ -320,7 +322,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                                               return Container(
                                                 width: 24,
                                                 height: 24,
-                                                color: Colors.grey[300],
+                                                color: AppColors.borderInput,
                                                 child: const Icon(Icons.shopping_bag, size: 12),
                                               );
                                             },
@@ -328,7 +330,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                                         : Container(
                                             width: 24,
                                             height: 24,
-                                            color: Colors.grey[300],
+                                            color: AppColors.borderInput,
                                             child: const Icon(Icons.shopping_bag, size: 12),
                                           ),
                                   ),
@@ -340,14 +342,14 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: Colors.grey[200],
-                                    borderRadius: BorderRadius.circular(10),
+                                    color: AppColors.borderPrimary,
+                                    borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
                                   ),
                                   child: Text(
                                     '+${widget.group.chatRooms.length - 3}',
                                     style: TextStyle(
                                       fontSize: 10,
-                                      color: Colors.grey[600],
+                                      color: AppColors.textSecondary,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -361,7 +363,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                                     widget.group.chatRooms.first.productName ?? '商品对话',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey[600],
+                                      color: AppColors.textSecondary,
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -377,7 +379,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                               : '${widget.group.chatRooms.length}个商品对话',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey[600],
+                              color: AppColors.textSecondary,
                             ),
                           ),
                         ],
@@ -393,7 +395,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                       if (widget.group.chatRooms.isNotEmpty && widget.group.chatRooms.first.lastActivityTime != null)
                         Text(
                           _formatTime(widget.group.chatRooms.first.lastActivityTime!),
-                          style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                          style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
                         ),
                       
                       const SizedBox(height: 4),
@@ -403,8 +405,8 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(10),
+                            color: AppColors.error,
+                            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
                           ),
                           constraints: const BoxConstraints(
                             minWidth: 18,
@@ -422,7 +424,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                       if (widget.group.chatRooms.length > 1)
                         Icon(
                           _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                          color: Colors.grey[400],
+                          color: AppColors.textTertiary,
                           size: 20,
                         ),
                     ],
@@ -436,14 +438,14 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
           SizeTransition(
             sizeFactor: _expandAnimation,
             child: Container(
-              color: Colors.grey[50],
+              color: AppColors.backgroundSecondary,
               child: Column(
                 children: widget.group.chatRooms.map((chatRoom) {
                   return Container(
                     margin: const EdgeInsets.only(left: 16.0),
                     decoration: BoxDecoration(
                       border: Border(
-                        left: BorderSide(color: Colors.grey[300]!, width: 2),
+                        left: BorderSide(color: AppColors.borderInput, width: 2),
                       ),
                     ),
                     child: ProductChatItem(
@@ -551,10 +553,10 @@ class ProductChatItem extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: Colors.grey[200],
+                      color: AppColors.borderPrimary,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.shopping_bag, color: Colors.grey),
+                    child: const Icon(Icons.shopping_bag, color: AppColors.textTertiary),
                   );
                 },
               ),
@@ -563,10 +565,10 @@ class ProductChatItem extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: Colors.grey[200],
+                color: AppColors.borderPrimary,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.shopping_bag, color: Colors.grey),
+              child: const Icon(Icons.shopping_bag, color: AppColors.textTertiary),
             ),
       title: Text(
         chatRoom.productName ?? '未知商品',
@@ -581,14 +583,14 @@ class ProductChatItem extends StatelessWidget {
             Text(
               PriceFormatter.format(chatRoom.productPrice!),
               style: TextStyle(
-                color: Colors.red[600],
+                color: AppColors.error,
                 fontWeight: FontWeight.bold,
               ),
             ),
           if (chatRoom.lastMessage != null)
             Text(
               _getMessagePreview(chatRoom.lastMessage),
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -601,14 +603,14 @@ class ProductChatItem extends StatelessWidget {
           if (chatRoom.lastActivityTime != null)
             Text(
               _formatTime(chatRoom.lastActivityTime!),
-              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+              style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
             ),
           const SizedBox(height: 4),
           if (chatRoom.unreadCount > 0)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.red,
+                color: AppColors.error,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
@@ -640,7 +642,7 @@ class ProductChatItem extends StatelessWidget {
                   ),
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(true),
-                    style: TextButton.styleFrom(foregroundColor: Colors.red),
+                    style: TextButton.styleFrom(foregroundColor: AppColors.error),
                     child: const Text('删除'),
                   ),
                 ],
@@ -654,7 +656,7 @@ class ProductChatItem extends StatelessWidget {
         background: Container(
           alignment: Alignment.centerRight,
           padding: const EdgeInsets.only(right: 20),
-          color: Colors.red,
+          color: AppColors.error,
           child: const Icon(
             Icons.delete,
             color: Colors.white,
@@ -777,7 +779,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
     );
     
     return Container(
-      color: Colors.white,
+      color: AppColors.backgroundCard,
       child: Column(
         children: [
           // 主要内容区域
@@ -794,7 +796,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
                         border: _isExpanded 
-                          ? Border.all(color: Colors.blue, width: 2)
+                          ? Border.all(color: AppColors.info, width: 2)
                           : null,
                       ),
                       child: ClipRRect(
@@ -809,16 +811,16 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                                   return Container(
                                     width: 50,
                                     height: 50,
-                                    color: Colors.grey[200],
-                                    child: const Icon(Icons.shopping_bag, color: Colors.grey),
+                                    color: AppColors.borderPrimary,
+                                    child: const Icon(Icons.shopping_bag, color: AppColors.textTertiary),
                                   );
                                 },
                               )
                             : Container(
                                 width: 50,
                                 height: 50,
-                                color: Colors.grey[200],
-                                child: const Icon(Icons.shopping_bag, color: Colors.grey),
+                                color: AppColors.borderPrimary,
+                                child: const Icon(Icons.shopping_bag, color: AppColors.textTertiary),
                               ),
                       ),
                     ),
@@ -846,7 +848,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                           Text(
                             PriceFormatter.format(widget.group.productPrice!),
                             style: TextStyle(
-                              color: Colors.red[600],
+                              color: AppColors.error,
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
                             ),
@@ -868,7 +870,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                                     backgroundImage: (buyer.avatar != null && buyer.avatar!.isNotEmpty)
                                         ? CachedNetworkImageProvider(buyer.avatar!)
                                         : null,
-                                    backgroundColor: Colors.grey[400],
+                                    backgroundColor: AppColors.textTertiary,
                                     child: (buyer.avatar == null || buyer.avatar!.isEmpty)
                                         ? Text(
                                             buyer.nickName?.isNotEmpty == true
@@ -886,14 +888,14 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: Colors.grey[200],
-                                    borderRadius: BorderRadius.circular(10),
+                                    color: AppColors.borderPrimary,
+                                    borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
                                   ),
                                   child: Text(
                                     '+${widget.group.chatRooms.length - 3}',
                                     style: TextStyle(
                                       fontSize: 10,
-                                      color: Colors.grey[600],
+                                      color: AppColors.textSecondary,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -907,7 +909,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                                     widget.group.chatRooms.first.participant2.nickName ?? '未知用户',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey[600],
+                                      color: AppColors.textSecondary,
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -923,7 +925,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                               : '${widget.group.chatRooms.length}个用户咨询',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey[600],
+                              color: AppColors.textSecondary,
                             ),
                           ),
                         ],
@@ -939,7 +941,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                       if (widget.group.chatRooms.isNotEmpty && widget.group.chatRooms.first.lastActivityTime != null)
                         Text(
                           _formatTime(widget.group.chatRooms.first.lastActivityTime!),
-                          style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                          style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
                         ),
                       
                       const SizedBox(height: 4),
@@ -949,8 +951,8 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(10),
+                            color: AppColors.error,
+                            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
                           ),
                           constraints: const BoxConstraints(
                             minWidth: 18,
@@ -968,7 +970,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                       if (widget.group.chatRooms.length > 1)
                         Icon(
                           _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                          color: Colors.grey[400],
+                          color: AppColors.textTertiary,
                           size: 20,
                         ),
                     ],
@@ -982,14 +984,14 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
           SizeTransition(
             sizeFactor: _expandAnimation,
             child: Container(
-              color: Colors.grey[50],
+              color: AppColors.backgroundSecondary,
               child: Column(
                 children: widget.group.chatRooms.map((chatRoom) {
                   return Container(
                     margin: const EdgeInsets.only(left: 16.0),
                     decoration: BoxDecoration(
                       border: Border(
-                        left: BorderSide(color: Colors.grey[300]!, width: 2),
+                        left: BorderSide(color: AppColors.borderInput, width: 2),
                       ),
                     ),
                     child: BuyerChatItem(
@@ -1090,7 +1092,7 @@ class BuyerChatItem extends StatelessWidget {
         backgroundImage: (buyer.avatar != null && buyer.avatar!.isNotEmpty)
             ? CachedNetworkImageProvider(buyer.avatar!)
             : null,
-        backgroundColor: Colors.grey[400],
+        backgroundColor: AppColors.textTertiary,
         child: (buyer.avatar == null || buyer.avatar!.isEmpty)
             ? Text(
                 buyer.nickName?.isNotEmpty == true
@@ -1109,13 +1111,13 @@ class BuyerChatItem extends StatelessWidget {
       subtitle: chatRoom.lastMessage != null
           ? Text(
               chatRoom.lastMessage!.context,
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             )
           : Text(
               '暂无消息',
-              style: TextStyle(color: Colors.grey[400], fontSize: 12),
+              style: TextStyle(color: AppColors.textTertiary, fontSize: 12),
             ),
       trailing: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -1124,14 +1126,14 @@ class BuyerChatItem extends StatelessWidget {
           if (chatRoom.lastActivityTime != null)
             Text(
               _formatTime(chatRoom.lastActivityTime!),
-              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+              style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
             ),
           const SizedBox(height: 4),
           if (chatRoom.unreadCount > 0)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.red,
+                color: AppColors.error,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
@@ -1163,7 +1165,7 @@ class BuyerChatItem extends StatelessWidget {
                   ),
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(true),
-                    style: TextButton.styleFrom(foregroundColor: Colors.red),
+                    style: TextButton.styleFrom(foregroundColor: AppColors.error),
                     child: const Text('删除'),
                   ),
                 ],
@@ -1177,7 +1179,7 @@ class BuyerChatItem extends StatelessWidget {
         background: Container(
           alignment: Alignment.centerRight,
           padding: const EdgeInsets.only(right: 20),
-          color: Colors.red,
+          color: AppColors.error,
           child: const Icon(
             Icons.delete,
             color: Colors.white,

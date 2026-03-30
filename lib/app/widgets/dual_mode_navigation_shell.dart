@@ -10,7 +10,9 @@ import '../navigation/app_router_config.dart';
 import '../../generated/app_localizations.dart';
 import '../../core/utils/haptic_utils.dart';
 import '../../core/services/profile_preloader_service.dart';
+import '../../core/storage/secure_storage_repository.dart';
 import '../../features/profile/presentation/bloc/profile_bloc.dart';
+import '../../core/config/theme/app_colors.dart';
 
 /// 双模式导航 Shell，支持买家和卖家模式切换而不重新加载页面
 class DualModeNavigationShell extends ConsumerStatefulWidget {
@@ -26,7 +28,48 @@ class DualModeNavigationShell extends ConsumerStatefulWidget {
 }
 
 class _DualModeNavigationShellState extends ConsumerState<DualModeNavigationShell> {
-  
+  final Map<int, DateTime> _lastSellerPrefetchTime = {};
+  static const _prefetchDebounce = Duration(seconds: 30);
+
+  Future<void> _prefetchAdjacentSellerTab(int currentTab) async {
+    final int? targetTab;
+    switch (currentTab) {
+      case 0:
+        targetTab = 1;
+      case 1:
+        targetTab = 2;
+      case 2:
+        targetTab = 1;
+      case 3:
+        targetTab = 2;
+      default:
+        targetTab = null;
+    }
+
+    if (targetTab == null) return;
+
+    final lastTime = _lastSellerPrefetchTime[targetTab];
+    if (lastTime != null && DateTime.now().difference(lastTime) < _prefetchDebounce) {
+      return;
+    }
+
+    _lastSellerPrefetchTime[targetTab] = DateTime.now();
+
+    try {
+      final token = await GetIt.instance<ISecureStorageRepository>().getToken();
+      if (token == null) return;
+
+      final preloaderService = GetIt.instance<ProfilePreloaderService>();
+      preloaderService.preloadCoreData().then((_) {
+        AppLogger.d('[SellerTabPrefetch] Prefetched data for seller tab $targetTab');
+      }).catchError((e) {
+        AppLogger.d('[SellerTabPrefetch] Failed to prefetch seller tab $targetTab: $e');
+      });
+    } catch (e) {
+      AppLogger.d('[SellerTabPrefetch] Error in prefetch: $e');
+    }
+  }
+
   // 获取买家分支数量
   int get _buyerBranchCount {
     final showDevTab = ref.watch(showDevTabProvider);
@@ -106,8 +149,8 @@ class _DualModeNavigationShellState extends ConsumerState<DualModeNavigationShel
         
         return BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
-          selectedItemColor: const Color(0xFFD0903D),
-          unselectedItemColor: Colors.grey,
+          selectedItemColor: AppColors.primary,
+          unselectedItemColor: AppColors.textTertiary,
           showUnselectedLabels: true,
           items: [
             BottomNavigationBarItem(
@@ -135,6 +178,7 @@ class _DualModeNavigationShellState extends ConsumerState<DualModeNavigationShel
           onTap: (index) {
             // 添加轻微震动反馈
             HapticUtils.lightTabFeedback();
+            _prefetchAdjacentSellerTab(index);
             wrapper.goBranch(index, initialLocation: index == wrapper.currentIndex);
           },
         );

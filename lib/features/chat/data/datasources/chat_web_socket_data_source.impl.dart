@@ -31,6 +31,7 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
   final int _maxReconnectAttempts = 5;
   final Duration _reconnectDelay = const Duration(seconds: 5);
   bool _isConnected = false; // 连接状态标志
+  int? _activeChatId; // 当前用户正在查看的聊天室 ID，收到该房间消息时不增加未读数
 
   final StreamController<ChatMessageDto> _messageStreamController = StreamController.broadcast();
   final StreamController<ConnectionStatus> _connectionStatusController = StreamController.broadcast();
@@ -173,7 +174,12 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
               case 'LOGIN_FAIL':
                 AppLogger.d("[WebSocket] Login rejected by server: ${decodedMessage['msg']}");
                 _isConnected = false;
+                _reconnectAttempts = _maxReconnectAttempts; // 阻止重连
                 _connectionStatusController.add(ConnectionStatus.error);
+                // 主动关闭连接
+                _channelSubscription?.cancel();
+                _channel?.sink.close();
+                _channel = null;
                 break;
               case 'NOTIFICATION':
                 AppLogger.d("[WebSocket] Received notification action: ${decodedMessage['msg']}");
@@ -298,7 +304,7 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
           lastMessageTime: messageDto.createTime != null
               ? DateTime.tryParse(messageDto.createTime!)
               : DateTime.now(),
-          unreadCountDelta: incrementUnread ? 1 : 0,
+          unreadCountDelta: (incrementUnread && messageDto.chatId != _activeChatId) ? 1 : 0,
         );
 
         EventBus().fireChatListUpdateEvent(chatListUpdateEvent);
@@ -372,8 +378,14 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
      // _connectionStatusController.close();
   }
 
+  @override
+  void setActiveChatId(int? chatId) {
+    _activeChatId = chatId;
+    AppLogger.d("[WebSocket] activeChatId set to: $chatId");
+  }
+
   // Remove or comment out this method as message sending is handled via HTTP
-  /* 
+  /*
   @override
   void sendMessage(String message) {
      if (_channel != null) {

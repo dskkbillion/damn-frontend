@@ -5,8 +5,6 @@ import '../pages/profile_page.dart'; // 引入 ProfilePage
 import '../pages/account_security_page.dart'; // 引入账号与安全页面
 import '../pages/wallet_page.dart'; // 引入钱包页面
 import '../bloc/wallet_bloc.dart'; // 引入钱包相关的Bloc
-import '../bloc/wallet_event.dart'; // 引入钱包事件
-import '../bloc/wallet_state.dart'; // 引入钱包状态
 import '../../domain/usecases/get_wallet_summary.dart'; // 引入获取钱包摘要用例
 import '../../domain/usecases/get_wallet_transactions.dart'; // 引入获取钱包交易记录用例
 import '../../data/repositories/wallet_repository_impl.dart'; // 引入钱包仓库实现
@@ -19,6 +17,8 @@ import '../../../../core/network/network_info.dart'; // 引入网络信息服务
 import '../../../../core/network/mock_network_info.dart' as mock_network; // 引入模拟网络信息服务并添加前缀
 import '../pages/language_settings_page.dart'; // 引入语言设置页面
 import '../pages/assistant_mission_page.dart'; // 引入小帮手的使命页面
+import '../pages/change_contact_page.dart'; // 引入换绑页面
+import '../pages/unbind_contact_page.dart'; // 引入解绑页面
 // import '../pages/simple_profile_page.dart'; // 不再需要 SimpleProfilePage
 // import '../pages/edit_profile_page.dart'; // 如果有其他页面
 
@@ -41,6 +41,8 @@ class ProfileRoutes {
   static const String languageSettingsPath = '/profile/language-settings';
   static const String assistantMissionPath = '/profile/assistant-mission'; // 添加小帮手的使命路径常量
   static const String ordersPath = '/profile/orders'; // 添加订单路径常量
+  static const String changeContactPath = '/profile/change-contact'; // 换绑路径
+  static const String unbindContactPath = '/profile/unbind-contact'; // 解绑路径
 
   // 模块内部路由定义
   static final List<RouteBase> _routes = [
@@ -175,8 +177,34 @@ class ProfileRoutes {
         ),
       ],
     ),
+    // 换绑页面路由
+    GoRoute(
+      path: changeContactPath,
+      name: 'changeContact',
+      builder: (context, state) {
+        final contactType = state.uri.queryParameters['contactType'] ?? 'phone';
+        final currentContact = state.uri.queryParameters['currentContact'] ?? '';
+        return ChangeContactPage(
+          contactType: contactType,
+          currentContact: currentContact,
+        );
+      },
+    ),
+    // 解绑页面路由
+    GoRoute(
+      path: unbindContactPath,
+      name: 'unbindContact',
+      builder: (context, state) {
+        final contactType = state.uri.queryParameters['contactType'] ?? 'phone';
+        final currentContact = state.uri.queryParameters['currentContact'] ?? '';
+        return UnbindContactPage(
+          contactType: contactType,
+          currentContact: currentContact,
+        );
+      },
+    ),
     // GoRoute(
-    //   path: '/profile/edit', 
+    //   path: '/profile/edit',
     //   name: 'editProfile',
     //   builder: (context, state) => const EditProfilePage(),
     // ),

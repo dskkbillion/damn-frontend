@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import '../bloc/ai_chat/ai_chat_bloc.dart';
 import '../../domain/entities/related_service_entity.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
@@ -19,7 +21,7 @@ class ServiceAllocationButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appLocalizations = AppLocalizations.of(context)!;
-    
+
     return BlocBuilder<AiChatBloc, AiChatState>(
       buildWhen: (previous, current) =>
         previous.serviceAllocationStatus[service.id] != current.serviceAllocationStatus[service.id] ||
@@ -68,10 +70,10 @@ class ServiceAllocationButtons extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isDisabled ? null : onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFA86400),
+          backgroundColor: Theme.of(context).colorScheme.primary,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
           ),
           padding: EdgeInsets.zero,
         ),
@@ -106,10 +108,10 @@ class ServiceAllocationButtons extends StatelessWidget {
             child: ElevatedButton(
               onPressed: hasActiveChat ? onEnterChat : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4CAF50), // 绿色
+                backgroundColor: AppColors.success,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
                 ),
                 padding: EdgeInsets.zero,
               ),
@@ -122,9 +124,9 @@ class ServiceAllocationButtons extends StatelessWidget {
             ),
           ),
         ),
-        
-        const SizedBox(width: 8), // 间距
-        
+
+        const SizedBox(width: AppDimensions.spacingSm), // 间距
+
         // 右侧 - 再分发按钮（🔄 图标）
         SizedBox(
           width: 32,
@@ -132,10 +134,10 @@ class ServiceAllocationButtons extends StatelessWidget {
           child: ElevatedButton(
             onPressed: onTap,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFA86400), // 橙色
+              backgroundColor: Theme.of(context).colorScheme.primary,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
               ),
               padding: EdgeInsets.zero,
             ),
@@ -148,4 +150,4 @@ class ServiceAllocationButtons extends StatelessWidget {
       ],
     );
   }
-} 
+}

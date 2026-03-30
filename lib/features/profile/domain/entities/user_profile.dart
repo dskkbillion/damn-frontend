@@ -17,6 +17,9 @@ class UserProfile extends Equatable {
   /// 用户手机号
   final String? mobile;
 
+  /// 用户邮箱
+  final String? email;
+
   /// 创建 UserProfile 实例
   const UserProfile({
     required this.userId,
@@ -24,6 +27,7 @@ class UserProfile extends Equatable {
     this.avatarUrl,
     this.onlineFlag,
     this.mobile,
+    this.email,
   });
 
   /// 创建一个带有更新字段的新实例
@@ -33,6 +37,7 @@ class UserProfile extends Equatable {
     String? avatarUrl,
     bool? onlineFlag,
     String? mobile,
+    String? email,
   }) {
     return UserProfile(
       userId: userId ?? this.userId,
@@ -40,9 +45,10 @@ class UserProfile extends Equatable {
       avatarUrl: avatarUrl ?? this.avatarUrl,
       onlineFlag: onlineFlag ?? this.onlineFlag,
       mobile: mobile ?? this.mobile,
+      email: email ?? this.email,
     );
   }
 
   @override
-  List<Object?> get props => [userId, nickName, avatarUrl, onlineFlag, mobile];
+  List<Object?> get props => [userId, nickName, avatarUrl, onlineFlag, mobile, email];
 }

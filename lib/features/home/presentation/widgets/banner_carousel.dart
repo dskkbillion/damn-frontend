@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 import '../../domain/entities/banner.dart' as home_banner;
 
@@ -9,16 +11,16 @@ import '../../domain/entities/banner.dart' as home_banner;
 class BannerCarousel extends StatefulWidget {
   /// 轮播图列表
   final List<home_banner.Banner> banners;
-  
+
   /// 轮播图点击回调
   final Function(home_banner.Banner banner)? onBannerClicked;
-  
+
   /// 轮播图高度
   final double height;
-  
+
   /// 自动播放
   final bool autoPlay;
-  
+
   /// 自动播放间隔
   final Duration autoPlayInterval;
 
@@ -63,11 +65,11 @@ class _BannerCarouselState extends State<BannerCarousel> {
         timer.cancel();
         return;
       }
-      
+
       if (widget.banners.isEmpty) return;
-      
-      if (!_disposed && 
-          _pageController.hasClients && 
+
+      if (!_disposed &&
+          _pageController.hasClients &&
           mounted &&
           _pageController.page != null) {
         try {
@@ -103,7 +105,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
     if (widget.banners.isNotEmpty) {
       AppLogger.d('BannerCarousel.build: first banner imageUrl=${widget.banners.first.imageUrl}');
     }
-    
+
     if (widget.banners.isEmpty) {
       AppLogger.d('BannerCarousel.build: banners is empty');
       return SizedBox(height: widget.height);
@@ -132,10 +134,10 @@ class _BannerCarouselState extends State<BannerCarousel> {
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 5.0),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8.0),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: AppColors.borderSecondary,
                         spreadRadius: 1,
                         blurRadius: 3,
                         offset: const Offset(0, 2),
@@ -143,7 +145,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
                     ],
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                     child: Builder(
                       builder: (context) {
                         // 使用真实的图片URL
@@ -152,27 +154,27 @@ class _BannerCarouselState extends State<BannerCarousel> {
                             imageUrl: banner.imageUrl,
                             fit: BoxFit.cover,
                             placeholder: (context, url) => Container(
-                              color: Colors.grey[200],
+                              color: AppColors.borderPrimary,
                               child: const Center(
                                 child: CircularProgressIndicator(),
                               ),
                             ),
                             errorWidget: (context, url, error) => Container(
-                              color: Colors.grey[200],
+                              color: AppColors.borderPrimary,
                               child: Center(
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(
                                       Icons.error_outline,
-                                      color: Colors.grey[400],
+                                      color: AppColors.textTertiary,
                                       size: 50,
                                     ),
-                                    const SizedBox(height: 10),
+                                    const SizedBox(height: AppDimensions.spacingMd),
                                     Text(
                                       '图片加载失败',
                                       style: TextStyle(
-                                        color: Colors.grey[600],
+                                        color: AppColors.textSecondary,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -184,21 +186,21 @@ class _BannerCarouselState extends State<BannerCarousel> {
                         } else {
                           // 如果没有图片URL，显示占位图
                           return Container(
-                            color: Colors.grey[200],
+                            color: AppColors.borderPrimary,
                             child: Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(
                                     Icons.image,
-                                    color: Colors.grey[400],
+                                    color: AppColors.textTertiary,
                                     size: 50,
                                   ),
-                                  const SizedBox(height: 10),
+                                  const SizedBox(height: AppDimensions.spacingMd),
                                   Text(
                                     '轮播图 ${index + 1}',
                                     style: TextStyle(
-                                      color: Colors.grey[600],
+                                      color: AppColors.textSecondary,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -215,21 +217,21 @@ class _BannerCarouselState extends State<BannerCarousel> {
             },
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: AppDimensions.spacingMd),
         // 简单的页面指示器
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(
             widget.banners.length,
             (index) => Container(
-              width: 8,
-              height: 8,
-              margin: const EdgeInsets.symmetric(horizontal: 4),
+              width: AppDimensions.spacingSm,
+              height: AppDimensions.spacingSm,
+              margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: _currentIndex == index
-                    ? Theme.of(context).primaryColor
-                    : Colors.grey[300],
+                    ? Theme.of(context).colorScheme.primary
+                    : AppColors.borderInput,
               ),
             ),
           ),

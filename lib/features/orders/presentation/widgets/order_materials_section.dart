@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import '../../domain/entities/order.dart';
 import '../../domain/entities/order_status.dart';
 import '../../domain/entities/order_materials.dart';
@@ -20,26 +22,26 @@ class OrderMaterialsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return BlocBuilder<OrderDetailBloc, OrderDetailState>(
       builder: (context, state) {
         // 获取材料和交付数据
         List<OrderMaterials>? materials;
         List<OrderDelivery>? deliveries;
-        
+
         if (state is OrderDetailLoaded) {
           materials = state.materials;
           deliveries = state.deliveries;
         }
-        
+
         return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
+          margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
           decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(12),
+            color: AppColors.backgroundCard,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: AppColors.borderSecondary,
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -50,11 +52,11 @@ class OrderMaterialsSection extends StatelessWidget {
             children: [
               // 标题部分
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppDimensions.spacingLg),
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
-                      color: Theme.of(context).dividerColor.withOpacity(0.1),
+                      color: AppColors.borderPrimary,
                       width: 1,
                     ),
                   ),
@@ -64,9 +66,9 @@ class OrderMaterialsSection extends StatelessWidget {
                     Icon(
                       Icons.folder_outlined,
                       size: 20,
-                      color: Theme.of(context).primaryColor,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppDimensions.spacingSm),
                     Text(
                       l10n?.materialsInfo ?? 'Materials Info',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -78,7 +80,7 @@ class OrderMaterialsSection extends StatelessWidget {
               ),
               // 内容部分
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppDimensions.spacingLg),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -89,21 +91,21 @@ class OrderMaterialsSection extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppDimensions.spacingSm),
                     _buildBuyerMaterialsContent(context, materials),
-                    
+
                     // 如果是待收货、待评价或已完成状态，显示卖家交付内容
                     if (order.state == OrderStatus.awaitingConfirmation ||
                         order.state == OrderStatus.awaitingEvaluation ||
                         order.state == OrderStatus.orderCompleted) ...[
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppDimensions.spacingLg),
                       Text(
                         l10n?.sellerDeliveryContent ?? 'Seller Delivery Content',
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppDimensions.spacingSm),
                       _buildSellerDeliveriesContent(context, deliveries),
                     ],
                   ],
@@ -119,32 +121,32 @@ class OrderMaterialsSection extends StatelessWidget {
   /// 构建买家材料内容
   Widget _buildBuyerMaterialsContent(BuildContext context, List<OrderMaterials>? materials) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     if (materials == null || materials.isEmpty) {
       return Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(AppDimensions.spacingMd),
         decoration: BoxDecoration(
-          color: Colors.grey[50],
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey[200] ?? Colors.grey),
+          color: AppColors.backgroundSecondary,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          border: Border.all(color: AppColors.borderPrimary),
         ),
         child: Text(
           l10n?.noBuyerMaterials ?? 'No buyer materials submitted',
-          style: const TextStyle(color: Colors.grey),
+          style: TextStyle(color: AppColors.textTertiary),
         ),
       );
     }
-    
+
     return Column(
       children: materials.map((material) => Container(
         width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+        padding: const EdgeInsets.all(AppDimensions.spacingMd),
         decoration: BoxDecoration(
-          color: Colors.blue[50],
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.blue[200] ?? Colors.blue),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,21 +154,21 @@ class OrderMaterialsSection extends StatelessWidget {
             // 显示特征问答
             if (material.features.isNotEmpty) ...[
               ...material.features.map((feature) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
+                padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
                 child: Text(
                   '${feature.question}: ${feature.answer}',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               )),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppDimensions.spacingSm),
             ],
             // 显示附件文件（可预览和下载）
             if (material.files.isNotEmpty) ...[
               Text(
                 l10n?.attachments ?? 'Attachments',
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppDimensions.spacingSm),
               ...material.files.map((fileUrl) => DeliveryFileViewer(
                 fileUrl: fileUrl,
                 fileName: _extractFileName(fileUrl),
@@ -181,32 +183,32 @@ class OrderMaterialsSection extends StatelessWidget {
   /// 构建卖家交付内容
   Widget _buildSellerDeliveriesContent(BuildContext context, List<OrderDelivery>? deliveries) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     if (deliveries == null || deliveries.isEmpty) {
       return Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(AppDimensions.spacingMd),
         decoration: BoxDecoration(
-          color: Colors.grey[50],
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey[200] ?? Colors.grey),
+          color: AppColors.backgroundSecondary,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          border: Border.all(color: AppColors.borderPrimary),
         ),
         child: Text(
           l10n?.noSellerDelivery ?? 'No seller delivery content',
-          style: const TextStyle(color: Colors.grey),
+          style: TextStyle(color: AppColors.textTertiary),
         ),
       );
     }
-    
+
     return Column(
       children: deliveries.map((delivery) => Container(
         width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+        padding: const EdgeInsets.all(AppDimensions.spacingMd),
         decoration: BoxDecoration(
-          color: Colors.green[50],
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.green[200] ?? Colors.green),
+          color: AppColors.success.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -218,7 +220,7 @@ class OrderMaterialsSection extends StatelessWidget {
                   '${l10n?.deliveryDescription ?? 'Delivery Description'}: ',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey[700],
+                    color: AppColors.textSecondary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -231,16 +233,16 @@ class OrderMaterialsSection extends StatelessWidget {
               ],
             ),
             if (delivery.files.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: AppDimensions.spacingMd),
               Text(
                 l10n?.deliveryFiles ?? 'Delivery Files',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey[700],
+                  color: AppColors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppDimensions.spacingSm),
               ...delivery.files.map((fileUrl) => DeliveryFileViewer(
                 fileUrl: fileUrl,
                 fileName: _extractFileName(fileUrl),
@@ -252,7 +254,7 @@ class OrderMaterialsSection extends StatelessWidget {
     );
   }
 
-  
+
   /// 从URL中提取文件名
   String _extractFileName(String fileUrl) {
     if (fileUrl.contains('/')) {

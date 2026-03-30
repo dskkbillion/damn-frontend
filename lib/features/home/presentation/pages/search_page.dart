@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({Key? key}) : super(key: key);
@@ -114,7 +116,7 @@ class _SearchPageState extends State<SearchPage> {
   // 处理搜索
   void _handleSearch(String keyword) {
     if (keyword.trim().isEmpty) return;
-    
+
     setState(() {
       // 移除已有的相同关键词
       _searchHistory.removeWhere((item) => item == keyword);
@@ -125,10 +127,10 @@ class _SearchPageState extends State<SearchPage> {
         _searchHistory = _searchHistory.sublist(0, 10);
       }
     });
-    
+
     // 保存历史记录
     _saveSearchHistory();
-    
+
     // 导航到搜索结果页面
     context.push('/home/search-results?keyword=${Uri.encodeComponent(keyword)}');
   }
@@ -145,13 +147,13 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context)!;
-    
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.backgroundCard,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
         title: TextField(
@@ -173,50 +175,60 @@ class _SearchPageState extends State<SearchPage> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppDimensions.spacingLg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 热门搜索
             Row(
               children: [
-                Text(appLocalizations.search_hot_keywords, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(
+                  appLocalizations.search_hot_keywords,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 if (_isLoading)
                   Container(
-                    margin: const EdgeInsets.only(left: 8),
+                    margin: const EdgeInsets.only(left: AppDimensions.spacingSm),
                     width: 16,
                     height: 16,
                     child: const CircularProgressIndicator(strokeWidth: 2),
                   ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppDimensions.spacingSm),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: AppDimensions.spacingSm,
+              runSpacing: AppDimensions.spacingSm,
               children: _hotSearches.map((term) => ActionChip(
                 label: Text(term),
                 onPressed: () => _handleSearch(term),
               )).toList(),
             ),
-            
-            const SizedBox(height: 24),
-            
+
+            const SizedBox(height: AppDimensions.spacingXxl),
+
             // 搜索历史
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(appLocalizations.search_history, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(
+                  appLocalizations.search_history,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 IconButton(
                   icon: const Icon(Icons.delete_outline),
                   onPressed: _clearSearchHistory,
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppDimensions.spacingSm),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: AppDimensions.spacingSm,
+              runSpacing: AppDimensions.spacingSm,
               children: _searchHistory.map((term) => InputChip(
                 label: Text(term),
                 onPressed: () => _handleSearch(term),
@@ -234,4 +246,4 @@ class _SearchPageState extends State<SearchPage> {
       ),
     );
   }
-} 
+}

@@ -6,6 +6,7 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/order_d
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/file_selection_widget.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 /// 订单交付页面
 class OrderDeliveryPage extends StatelessWidget {
@@ -141,7 +142,7 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
                     AppLocalizations.of(context)!?.order_delivery_instruction_content ?? 'Please submit your delivery content for this order. You can provide detailed instructions and attach relevant files to ensure the buyer clearly understands the services or products you provide.',
                     style: const TextStyle(
                       fontSize: 14,
-                      color: Colors.black87,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ],
@@ -210,7 +211,7 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
             },
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.white,
-              backgroundColor: Colors.green,
+              backgroundColor: AppColors.success,
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
             child: Text(

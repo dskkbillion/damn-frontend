@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dskk_flutter_refactor/app/app_mode.dart';
 import 'package:dskk_flutter_refactor/core/services/mode_transition_service.dart';
 import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 // 导入国际化
 import '../../../../generated/app_localizations.dart';
@@ -176,7 +178,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                         AppLogger.d('[SellerHomePage] Store logo tapped');
                         AppLogger.d('[SellerHomePage] storeId: ${profile.storeId}');
                         // 使用 storeId 作为 sellerId 跳转
-                        context.go('/seller-profile/${profile.storeId}');
+                        context.push('/seller-profile/${profile.storeId}');
                       },
                       child: CircleAvatar(
                         radius: 32,
@@ -216,10 +218,10 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                               ),
                               if (profile.onlineFlag != null)
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
+                                  padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingSm, vertical: 2.0),
                                   decoration: BoxDecoration(
-                                    color: profile.onlineFlag! ? Colors.green : Colors.grey,
-                                    borderRadius: BorderRadius.circular(10.0),
+                                    color: profile.onlineFlag! ? AppColors.success : AppColors.textTertiary,
+                                    borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
@@ -289,14 +291,14 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                                           vertical: 2.0,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(4.0),
+                                          color: AppColors.backgroundCard,
+                                          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                                         ),
                                         child: Text(
                                           cert,
                                           style: TextStyle(
                                             fontSize: 10,
-                                            color: Theme.of(context).primaryColor,
+                                            color: Theme.of(context).colorScheme.primary,
                                           ),
                                         ),
                                       ))
@@ -332,9 +334,9 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                       foregroundColor: Theme.of(context).primaryColorDark, 
                       backgroundColor: Colors.white.withOpacity(0.9), 
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingMd),
                     ),
                   ),
                 ),
@@ -367,7 +369,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                 TextButton(
                   onPressed: () {
                     // 导航到数据tab页面
-                    context.go('/seller/dashboard');
+                    context.push('/seller/dashboard');
                   },
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
@@ -451,7 +453,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                   icon: Icons.access_time,
                   label: AppLocalizations.of(context)!.seller_home_orders_pending,
                   count: dashboardData.orders.pending.toString(),
-                  onTap: () => context.push('/seller/orders?status=awaitingStart'),
+                  onTap: () => context.push('/seller/orders'),
                 ),
                 _buildOrderStatusItem(
                   context,
@@ -582,9 +584,9 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                                         width: double.infinity,
                                         height: (maxAmount > 0 ? (150 * ((item.amount ?? 0.0) / maxAmount)) : 0).toDouble(),
                                         decoration: BoxDecoration(
-                                          color: Theme.of(context).primaryColor.withOpacity(0.7),
+                                          color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
                                           borderRadius: const BorderRadius.vertical(
-                                            top: Radius.circular(4.0),
+                                            top: Radius.circular(AppDimensions.radiusSm),
                                           ),
                                         ),
                                       ),
@@ -616,12 +618,12 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
       children: [
         Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 12,
-            color: Colors.grey[600],
+            color: AppColors.textSecondary,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: AppDimensions.spacingXs),
         Text(
           value,
           style: const TextStyle(
@@ -643,24 +645,24 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8.0),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(AppDimensions.spacingSm),
         child: Column(
           children: [
             Icon(
               icon,
-              color: Theme.of(context).primaryColor,
+              color: Theme.of(context).colorScheme.primary,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppDimensions.spacingXs),
             Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
-                color: Colors.grey[600],
+                color: AppColors.textSecondary,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppDimensions.spacingXs),
             Text(
               count,
               style: const TextStyle(
@@ -685,17 +687,17 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8.0),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 icon,
-                color: Theme.of(context).primaryColor,
+                color: Theme.of(context).colorScheme.primary,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppDimensions.spacingSm),
               Text(
                 label,
                 style: const TextStyle(fontSize: 12),

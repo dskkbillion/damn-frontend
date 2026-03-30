@@ -7,6 +7,7 @@ import '../../generated/app_localizations.dart';
 import '../../core/utils/haptic_utils.dart';
 import '../../features/seller/presentation/widgets/seller_bottom_navigation_bar.dart';
 import '../navigation/app_router_config.dart';
+import '../../core/config/theme/app_colors.dart';
 
 /// 统一的 Shell 页面，支持买家和卖家模式切换而不重新加载页面
 class UnifiedShellPage extends ConsumerStatefulWidget {
@@ -111,7 +112,7 @@ class _UnifiedShellPageState extends ConsumerState<UnifiedShellPage>
           'assets/icons/nav/dskk_logo.svg',
           width: 24,
           height: 24,
-          colorFilter: ColorFilter.mode(const Color(0xFFD0903D), BlendMode.srcIn),
+          colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
         ),
         label: appLocalizations.nav_ai_assistant,
       ),
@@ -142,8 +143,8 @@ class _UnifiedShellPageState extends ConsumerState<UnifiedShellPage>
     
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
-      selectedItemColor: const Color(0xFFD0903D),
-      unselectedItemColor: Colors.grey,
+      selectedItemColor: AppColors.primary,
+      unselectedItemColor: AppColors.textTertiary,
       showUnselectedLabels: true,
       items: items,
       currentIndex: _buyerIndex,
@@ -180,8 +181,8 @@ class _UnifiedShellPageState extends ConsumerState<UnifiedShellPage>
       ],
       currentIndex: _sellerIndex,
       onTap: _onTap,
-      selectedItemColor: const Color(0xFFD0903D),
-      unselectedItemColor: Colors.grey,
+      selectedItemColor: AppColors.primary,
+      unselectedItemColor: AppColors.textTertiary,
       showUnselectedLabels: true,
     );
   }

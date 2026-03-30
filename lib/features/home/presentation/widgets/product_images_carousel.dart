@@ -1,21 +1,23 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 商品图片轮播组件（不使用第三方库）
 class ProductImagesCarousel extends StatefulWidget {
   /// 图片URL列表
   final List<String> images;
-  
+
   /// 图片点击回调
   final Function(int index)? onImageClicked;
-  
+
   /// 轮播图高度
   final double height;
-  
+
   /// 自动播放
   final bool autoPlay;
-  
+
   /// 自动播放间隔
   final Duration autoPlayInterval;
 
@@ -55,7 +57,7 @@ class _ProductImagesCarouselState extends State<ProductImagesCarousel> {
   void _startAutoPlay() {
     _timer = Timer.periodic(widget.autoPlayInterval, (timer) {
       if (widget.images.isEmpty) return;
-      
+
       if (_pageController.hasClients) {
         if (_currentIndex < widget.images.length - 1) {
           _pageController.nextPage(
@@ -89,14 +91,14 @@ class _ProductImagesCarouselState extends State<ProductImagesCarousel> {
             children: [
               Icon(
                 Icons.image_not_supported,
-                color: Colors.grey[400],
+                color: AppColors.textTertiary,
                 size: 50,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: AppDimensions.spacingMd),
               Text(
                 '暂无图片',
                 style: TextStyle(
-                  color: Colors.grey[600],
+                  color: AppColors.textSecondary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -132,7 +134,9 @@ class _ProductImagesCarouselState extends State<ProductImagesCarousel> {
                   width: double.infinity,
                   placeholder: (context, url) => Center(
                     child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.amber[700]!),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).colorScheme.primary,
+                      ),
                       strokeWidth: 2,
                     ),
                   ),
@@ -144,11 +148,11 @@ class _ProductImagesCarouselState extends State<ProductImagesCarousel> {
             },
           ),
         ),
-        
+
         // 添加指示器（仅当有多张图片时显示）
         if (widget.images.length > 1)
           Positioned(
-            bottom: 16,
+            bottom: AppDimensions.spacingLg,
             left: 0,
             right: 0,
             child: Row(
@@ -156,17 +160,17 @@ class _ProductImagesCarouselState extends State<ProductImagesCarousel> {
               children: List.generate(
                 widget.images.length,
                 (index) => Container(
-                  width: 8,
-                  height: 8,
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  width: AppDimensions.spacingSm,
+                  height: AppDimensions.spacingSm,
+                  margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _currentIndex == index
-                        ? Colors.amber[700]
+                        ? Theme.of(context).colorScheme.primary
                         : Colors.white.withOpacity(0.7),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: AppColors.borderSecondary,
                         blurRadius: 2,
                         spreadRadius: 0.5,
                       ),
@@ -176,23 +180,25 @@ class _ProductImagesCarouselState extends State<ProductImagesCarousel> {
               ),
             ),
           ),
-          
+
         // 添加计数指示器
         if (widget.images.length > 1)
           Positioned(
-            bottom: 16,
-            right: 16,
+            bottom: AppDimensions.spacingLg,
+            right: AppDimensions.spacingLg,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.spacingSm,
+                vertical: AppDimensions.spacingXs,
+              ),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
-                borderRadius: BorderRadius.circular(12),
+                color: AppColors.borderSecondary,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
               ),
               child: Text(
                 '${_currentIndex + 1}/${widget.images.length}',
-                style: const TextStyle(
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Colors.white,
-                  fontSize: 12,
                 ),
               ),
             ),
@@ -200,4 +206,4 @@ class _ProductImagesCarouselState extends State<ProductImagesCarousel> {
       ],
     );
   }
-} 
+}

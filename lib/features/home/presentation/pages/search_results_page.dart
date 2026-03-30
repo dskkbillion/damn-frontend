@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 import '../cubit/search_cubit.dart';
 import '../widgets/home_feed_list.dart';
@@ -35,31 +37,30 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: AppColors.backgroundCard,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            icon: const Icon(Icons.arrow_back),
             onPressed: () => context.pop(),
           ),
           title: GestureDetector(
             onTap: () => context.push('/home/search'),
             child: Container(
               height: 40,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
               decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(20),
+                color: AppColors.borderPrimary,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.search, color: Colors.grey),
-                  const SizedBox(width: 8),
+                  Icon(Icons.search, color: AppColors.textTertiary),
+                  const SizedBox(width: AppDimensions.spacingSm),
                   Expanded(
                     child: Text(
                       widget.keyword,
-                      style: const TextStyle(
-                        color: Colors.black87,
-                        fontSize: 16,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: AppColors.textPrimary,
                       ),
                     ),
                   ),
@@ -78,7 +79,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(appLocalizations.search_failed(state.message)),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppDimensions.spacingLg),
                     ElevatedButton(
                       onPressed: () {
                         context.read<SearchCubit>().searchProducts(widget.keyword);
@@ -91,10 +92,15 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
             } else if (state is SearchLoaded) {
               if (state.products.isEmpty) {
                 return Center(
-                  child: Text(appLocalizations.search_no_results, style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                  child: Text(
+                    appLocalizations.search_no_results,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
                 );
               }
-              
+
               // 复用主页的瀑布流组件
               return HomeFeedList(
                 feedItems: state.products,
@@ -117,4 +123,4 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
       ),
     );
   }
-} 
+}

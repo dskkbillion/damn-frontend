@@ -6,6 +6,7 @@ import '../../app/app_mode.dart';
 import '../../generated/app_localizations.dart';
 import '../../core/utils/haptic_utils.dart';
 import '../navigation/app_router_config.dart';
+import '../../core/config/theme/app_colors.dart';
 
 /// 自适应底部导航栏 Shell，根据当前模式显示不同的导航项
 /// 但保持同一个 navigationShell，避免页面重载
@@ -40,8 +41,8 @@ class AdaptiveBottomNavShell extends ConsumerWidget {
       body: navigationShell,
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFFD0903D),
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: AppColors.primary,
+        unselectedItemColor: AppColors.textTertiary,
         showUnselectedLabels: true,
         items: items,
         currentIndex: _getCurrentIndex(currentMode, navigationShell.currentIndex),
@@ -63,7 +64,7 @@ class AdaptiveBottomNavShell extends ConsumerWidget {
           'assets/icons/nav/dskk_logo.svg',
           width: 24,
           height: 24,
-          colorFilter: ColorFilter.mode(const Color(0xFFD0903D), BlendMode.srcIn),
+          colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
         ),
         label: appLocalizations.nav_ai_assistant,
       ),

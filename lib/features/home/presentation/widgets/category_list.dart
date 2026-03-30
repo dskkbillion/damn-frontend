@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 import '../../domain/entities/home_category.dart';
 
@@ -6,19 +8,19 @@ import '../../domain/entities/home_category.dart';
 class CategoryList extends StatelessWidget {
   /// 分类列表
   final List<HomeCategory> categories;
-  
+
   /// 分类点击回调
   final Function(HomeCategory category)? onCategoryClicked;
-  
+
   /// 每行显示的分类数量
   final int itemsPerRow;
-  
+
   /// 分类项目高度
   final double itemHeight;
-  
+
   /// 分类项目之间的间距
   final double spacing;
-  
+
   /// 行之间的间距
   final double runSpacing;
 
@@ -39,7 +41,7 @@ class CategoryList extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
       child: Wrap(
         spacing: spacing,
         runSpacing: runSpacing,
@@ -72,7 +74,7 @@ class CategoryList extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: ClipOval(
@@ -81,10 +83,10 @@ class CategoryList extends StatelessWidget {
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
-                      color: Colors.grey[300],
-                      child: const Icon(
+                      color: AppColors.borderInput,
+                      child: Icon(
                         Icons.category,
-                        color: Colors.grey,
+                        color: AppColors.textTertiary,
                         size: 24,
                       ),
                     );
@@ -108,11 +110,10 @@ class CategoryList extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppDimensions.spacingSm),
             Text(
               category.name,
-              style: const TextStyle(
-                fontSize: 12,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w500,
               ),
               maxLines: 1,

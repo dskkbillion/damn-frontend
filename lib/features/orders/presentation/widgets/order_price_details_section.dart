@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import '../../../../core/utils/price_formatter.dart';
 import '../../domain/entities/order.dart';
 
@@ -14,13 +16,13 @@ class OrderPriceDetailsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.backgroundCard,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: AppColors.borderSecondary,
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -31,11 +33,11 @@ class OrderPriceDetailsSection extends StatelessWidget {
         children: [
           // 标题部分
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppDimensions.spacingLg),
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: Theme.of(context).dividerColor.withOpacity(0.1),
+                  color: AppColors.borderPrimary,
                   width: 1,
                 ),
               ),
@@ -45,9 +47,9 @@ class OrderPriceDetailsSection extends StatelessWidget {
                 Icon(
                   Icons.calculate_outlined,
                   size: 20,
-                  color: Theme.of(context).primaryColor,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppDimensions.spacingSm),
                 Text(
                   '价格明细',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -59,7 +61,7 @@ class OrderPriceDetailsSection extends StatelessWidget {
           ),
           // 内容部分
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppDimensions.spacingLg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -81,7 +83,7 @@ class OrderPriceDetailsSection extends StatelessWidget {
                     Text(
                       PriceFormatter.format(order.priceSummary.payPrice),
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: Theme.of(context).primaryColor,
+                        color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -99,7 +101,7 @@ class OrderPriceDetailsSection extends StatelessWidget {
   Widget _buildPriceRow(BuildContext context, String label, String value) {
     final textTheme = Theme.of(context).textTheme;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingXs),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

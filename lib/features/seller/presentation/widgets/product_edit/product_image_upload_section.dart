@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_state.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/enums/product_status.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import '../image_preview_page.dart';
 
 /// 商品封面图上传 section，完全由 BLoC state 驱动，无本地状态。
@@ -28,9 +30,9 @@ class ProductImageUploadSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
-      margin: const EdgeInsets.only(top: 12),
-      padding: const EdgeInsets.all(16.0),
+      color: AppColors.backgroundCard,
+      margin: EdgeInsets.only(top: AppDimensions.spacingMd),
+      padding: EdgeInsets.all(AppDimensions.spacingLg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -39,16 +41,15 @@ class ProductImageUploadSection extends StatelessWidget {
             children: [
               Text(
                 '服务封面图',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
-                ),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
               ),
               _UploadStatusIndicator(state: state),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: AppDimensions.spacingMd),
           _ImageGrid(
             state: state,
             onPickImages: onPickImages,
@@ -60,14 +61,18 @@ class ProductImageUploadSection extends StatelessWidget {
               padding: const EdgeInsets.only(top: 8),
               child: Text(
                 '上传错误: ${state.errorMessage}',
-                style: const TextStyle(color: Colors.red, fontSize: 12),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.error,
+                    ),
               ),
             ),
           Padding(
-            padding: const EdgeInsets.only(top: 12),
+            padding: EdgeInsets.only(top: AppDimensions.spacingMd),
             child: Text(
               '支持jpg、png、jpeg格式，单张不超过5MB，最多可上传9张图片',
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
             ),
           ),
         ],
@@ -88,26 +93,30 @@ class _UploadStatusIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     if (state.uploadStatus == UploadStatus.uploading) {
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingXs),
         decoration: BoxDecoration(
-          color: Colors.blue[50],
-          borderRadius: BorderRadius.circular(16),
+          color: AppColors.info.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
-              width: 16,
-              height: 16,
+              width: AppDimensions.spacingLg,
+              height: AppDimensions.spacingLg,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).colorScheme.primary),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: AppDimensions.spacingSm),
             Text(
               'Uploading ${state.uploadedCount}/${state.totalUploadCount}',
-              style: TextStyle(fontSize: 12, color: Colors.blue[700]),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.info,
+                  ),
             ),
           ],
         ),
@@ -116,17 +125,23 @@ class _UploadStatusIndicator extends StatelessWidget {
 
     if (state.uploadStatus == UploadStatus.success && state.uploadedImageUrls.isNotEmpty) {
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingXs),
         decoration: BoxDecoration(
-          color: Colors.green[50],
-          borderRadius: BorderRadius.circular(16),
+          color: AppColors.success.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.check_circle, size: 16, color: Colors.green[700]),
-            const SizedBox(width: 8),
-            Text('上传成功', style: TextStyle(fontSize: 12, color: Colors.green[700])),
+            Icon(Icons.check_circle, size: 16, color: AppColors.success),
+            SizedBox(width: AppDimensions.spacingSm),
+            Text(
+              '上传成功',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.success,
+                  ),
+            ),
           ],
         ),
       );
@@ -134,17 +149,23 @@ class _UploadStatusIndicator extends StatelessWidget {
 
     if (state.uploadStatus == UploadStatus.failure) {
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingXs),
         decoration: BoxDecoration(
-          color: Colors.red[50],
-          borderRadius: BorderRadius.circular(16),
+          color: AppColors.error.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
         ),
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error, size: 16, color: Colors.red),
-            SizedBox(width: 8),
-            Text('上传失败', style: TextStyle(fontSize: 12, color: Colors.red)),
+            Icon(Icons.error, size: 16, color: AppColors.error),
+            SizedBox(width: AppDimensions.spacingSm),
+            Text(
+              '上传失败',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.error,
+                  ),
+            ),
           ],
         ),
       );
@@ -262,21 +283,21 @@ class _ImageItem extends StatelessWidget {
         children: [
           Container(
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey[300]!),
-              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.borderInput),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(7),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusSm - 1),
               child: _imageChild(),
             ),
           ),
           Positioned(
-            top: 4,
-            right: 4,
+            top: AppDimensions.spacingXs,
+            right: AppDimensions.spacingXs,
             child: GestureDetector(
               onTap: onRemove,
               child: Container(
-                padding: const EdgeInsets.all(4),
+                padding: EdgeInsets.all(AppDimensions.spacingXs),
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.6),
                   shape: BoxShape.circle,
@@ -287,17 +308,22 @@ class _ImageItem extends StatelessWidget {
           ),
           if (index == 0)
             Positioned(
-              bottom: 4,
-              left: 4,
+              bottom: AppDimensions.spacingXs,
+              left: AppDimensions.spacingXs,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: EdgeInsets.symmetric(
+                    horizontal: AppDimensions.spacingXs + 2,
+                    vertical: 2),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor,
-                  borderRadius: BorderRadius.circular(4),
+                  color: Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                 ),
-                child: const Text(
+                child: Text(
                   '主图',
-                  style: TextStyle(color: Colors.white, fontSize: 10),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.white,
+                        fontSize: 10,
+                      ),
                 ),
               ),
             ),
@@ -334,11 +360,11 @@ class _ImageItem extends StatelessWidget {
           );
         },
         errorBuilder: (_, __, ___) =>
-            const Center(child: Icon(Icons.image_not_supported, color: Colors.grey)),
+            Center(child: Icon(Icons.image_not_supported, color: AppColors.textTertiary)),
       );
     }
-    return const Center(
-      child: Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
+    return Center(
+      child: Icon(Icons.image_not_supported, size: 40, color: AppColors.textTertiary),
     );
   }
 }
@@ -363,11 +389,11 @@ class _AddImageButton extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(
-            color: canAdd ? Colors.grey[300]! : Colors.grey[200]!,
+            color: canAdd ? AppColors.borderInput : AppColors.borderPrimary,
             width: 1,
           ),
-          borderRadius: BorderRadius.circular(8),
-          color: canAdd ? Colors.white : Colors.grey[100],
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          color: canAdd ? AppColors.backgroundCard : AppColors.backgroundSecondary,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -381,25 +407,27 @@ class _AddImageButton extends StatelessWidget {
                     height: 24,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Theme.of(context).primaryColor,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
-                  Icon(Icons.cloud_upload, color: Theme.of(context).primaryColor, size: 12),
+                  Icon(Icons.cloud_upload,
+                      color: Theme.of(context).colorScheme.primary, size: 12),
                 ],
               )
             else
               Icon(
                 Icons.add_photo_alternate_outlined,
-                color: canAdd ? Theme.of(context).primaryColor : Colors.grey,
+                color: canAdd
+                    ? Theme.of(context).colorScheme.primary
+                    : AppColors.textTertiary,
                 size: 28,
               ),
-            const SizedBox(height: 4),
+            SizedBox(height: AppDimensions.spacingXs),
             Text(
               isUploading ? 'Uploading...' : 'Add Image',
-              style: TextStyle(
-                fontSize: 12,
-                color: canAdd ? Colors.grey[700] : Colors.grey,
-              ),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: canAdd ? AppColors.textPrimary : AppColors.textTertiary,
+                  ),
             ),
           ],
         ),

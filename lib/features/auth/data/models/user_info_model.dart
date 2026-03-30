@@ -9,7 +9,8 @@ class UserInfoModel with _$UserInfoModel implements UserInfo {
   @Implements<UserInfo>() // Let freezed handle Equatable via the UserInfo entity
   const factory UserInfoModel({
     required int id,
-    required String mobile,
+    String? mobile,
+    String? email,
     String? nickName,
     String? avatar,
     int? commonUserId,
@@ -22,7 +23,7 @@ class UserInfoModel with _$UserInfoModel implements UserInfo {
 
   // Explicitly add the overrides again
   @override
-  List<Object?> get props => [id, mobile, nickName, avatar, commonUserId];
+  List<Object?> get props => [id, mobile, email, nickName, avatar, commonUserId];
 
   @override
   bool? get stringify => true;
