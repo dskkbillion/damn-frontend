@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// Displays dynamic content based on the order's status in the SellerOrderDetailPage.
 class SellerDynamicContentArea extends StatelessWidget {
@@ -70,7 +72,7 @@ class SellerDynamicContentArea extends StatelessWidget {
        elevation: 0,
        shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.circular(12.0),
-         side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3))
+         side: BorderSide(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3))
        ),
        child: Padding(
          padding: const EdgeInsets.all(16.0),
@@ -108,13 +110,13 @@ class SellerDynamicContentArea extends StatelessWidget {
        elevation: 0,
        shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.circular(12.0),
-         side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3))
+         side: BorderSide(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3))
        ),
        child: Padding(
          padding: const EdgeInsets.all(16.0),
          child: Row(
             children: [
-              Icon(Icons.verified_outlined, size: 20, color: Colors.green[700]), // Use a verified icon
+              Icon(Icons.verified_outlined, size: 20, color: AppColors.success), // Use a verified icon
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -141,9 +143,9 @@ class SellerDynamicContentArea extends StatelessWidget {
        elevation: 0,
        shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.circular(12.0),
-         side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3))
+         side: BorderSide(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3))
        ),
-       color: colorScheme.errorContainer.withOpacity(0.3), // Use error color hint
+       color: colorScheme.errorContainer.withValues(alpha: 0.3), // Use error color hint
        child: Padding(
          padding: const EdgeInsets.all(16.0),
          child: Row(
@@ -175,9 +177,9 @@ class SellerDynamicContentArea extends StatelessWidget {
        elevation: 0,
        shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.circular(12.0),
-         side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3))
+         side: BorderSide(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3))
        ),
-       color: colorScheme.surfaceVariant.withOpacity(0.3), // Neutral background
+       color: colorScheme.surfaceVariant.withValues(alpha: 0.3), // Neutral background
        child: Padding(
          padding: const EdgeInsets.all(16.0),
          child: Row(
@@ -215,11 +217,11 @@ class SellerDynamicContentArea extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.0),
-        side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3)),
+        side: BorderSide(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3)),
       ),
       color: mediation
-          ? colorScheme.primaryContainer.withOpacity(0.28)
-          : colorScheme.surfaceVariant.withOpacity(0.35),
+          ? colorScheme.primaryContainer.withValues(alpha: 0.28)
+          : colorScheme.surfaceVariant.withValues(alpha: 0.35),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(

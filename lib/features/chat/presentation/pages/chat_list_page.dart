@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // 添加Riverpod导入
 import 'package:get_it/get_it.dart'; // Import GetIt
@@ -18,6 +20,8 @@ import '../services/chat_preload_service.dart'; // 导入预加载服务
 import '../../domain/entities/chat_room.dart';
 import '../../domain/entities/participant.dart';
 import '../../domain/entities/chat_message.dart'; // 添加导入ChatMessage
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_chat_item.dart';
 
 final sl = GetIt.instance; // Get GetIt instance
 
@@ -153,7 +157,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     );
     
     return Material(
-      color: Colors.white,
+      color: AppColors.backgroundCard,
       child: ChatListItem(
         key: const ValueKey('notification_entry'),
         chatRoom: fakeNotificationChatRoom,
@@ -196,13 +200,13 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     final currentAppMode = ref.watch(appModeProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEDEDED),
+      backgroundColor: AppColors.backgroundSecondary,
       appBar: AppBar(
         title: Text(appLocalizations.chat_list_title),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black, 
-        elevation: 0.5, 
-        shadowColor: Colors.grey[300],
+        backgroundColor: AppColors.backgroundCard,
+        foregroundColor: AppColors.textPrimary,
+        elevation: 0.5,
+        shadowColor: AppColors.borderInput,
         actions: [
           // 添加混合模式切换按钮 - 使用更明显的过滤图标和文字标签
           TextButton.icon(
@@ -250,7 +254,10 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         future: _referIdFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return SkeletonPage(
+              itemCount: 8,
+              itemBuilder: (_, __) => const SkeletonChatItem(),
+            );
           }
           
           if (snapshot.hasError) {
@@ -291,7 +298,10 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             child: BlocBuilder<ChatListBloc, ChatListState>(
               builder: (context, state) {
                 if (state.status == ChatListStatus.loading && state.chatRooms.isEmpty) {
-                  return Center(child: CircularProgressIndicator()); 
+                  return SkeletonPage(
+                    itemCount: 8,
+                    itemBuilder: (_, __) => const SkeletonChatItem(),
+                  );
                 } else if (state.status == ChatListStatus.failure) {
                   return _buildSystemItemsOnly(context, currentUserId, appLocalizations.chat_error_loading(state.errorMessage ?? appLocalizations.chat_unknown_message));
                 } else if (state.status == ChatListStatus.success || state.chatRooms.isNotEmpty) {
@@ -323,7 +333,10 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                   return _buildChatListView(context, filteredRooms, currentAppMode, currentUserId);
                 } else {
                   // 真正的加载状态
-                  return Center(child: CircularProgressIndicator());
+                  return SkeletonPage(
+                    itemCount: 8,
+                    itemBuilder: (_, __) => const SkeletonChatItem(),
+                  );
                 }
               },
             ),
@@ -501,11 +514,11 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   Widget _buildSystemItems(BuildContext context, int currentUserId) {
     return SliverToBoxAdapter(
       child: Container(
-        color: Colors.white,
+        color: AppColors.backgroundCard,
         child: Column(
           children: [
             _buildNotificationItem(context, currentUserId),
-            const Divider(height: 1, color: Color(0xFFEDEDED)),
+            Divider(height: 1, color: AppColors.backgroundSecondary),
           ],
         ),
       ),

@@ -91,7 +91,7 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
           return;
         }
 
-        context.go('/chat/refactored/${room.id}');
+        context.push('/chat/refactored/${room.id}');
       },
     );
   }

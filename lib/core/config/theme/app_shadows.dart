@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
 import 'app_dimensions.dart';
 
 /// 应用阴影系统
@@ -8,15 +7,15 @@ class AppShadows {
   // 私有构造函数，防止实例化
   AppShadows._();
 
-  // ==================== 基础阴影颜色 ====================
-  /// 阴影基础颜色
-  static const Color _shadowColor = Color(0x1A000000); // 黑色 10% 透明度
-  
-  /// 深色阴影颜色
-  static const Color _shadowColorDark = Color(0x33000000); // 黑色 20% 透明度
-  
-  /// 浅色阴影颜色
-  static const Color _shadowColorLight = Color(0x0D000000); // 黑色 5% 透明度
+  // ==================== 基础阴影颜色（亮色模式 - slate 系） ====================
+  /// 阴影基础颜色 - rgba(30,41,59, 0.08)
+  static const Color _shadowColor = Color(0x141E293B);
+
+  /// 深色阴影颜色 - rgba(30,41,59, 0.10)
+  static const Color _shadowColorDark = Color(0x1A1E293B);
+
+  /// 浅色阴影颜色 - rgba(30,41,59, 0.04)
+  static const Color _shadowColorLight = Color(0x0A1E293B);
 
   // ==================== 卡片阴影 ====================
   /// 无阴影
@@ -83,40 +82,50 @@ class AppShadows {
     ),
   ];
 
-  /// 环形阴影 - 用于焦点状态
+  /// 环形阴影 - 用于焦点状态（品牌蓝 sky-700）
   static const List<BoxShadow> focus = [
     BoxShadow(
-      color: Color(0x33B66D0E), // 主色 20% 透明度
+      color: Color(0x330369A1), // 品牌蓝 20% 透明度
       offset: Offset(0, 0),
       blurRadius: 0,
       spreadRadius: 3,
     ),
   ];
 
-  /// 错误状态阴影
+  /// 品牌蓝光晕 - 用于重点元素高亮
+  static const List<BoxShadow> glow = [
+    BoxShadow(
+      color: Color(0x400369A1), // 品牌蓝 25% 透明度
+      offset: Offset(0, 0),
+      blurRadius: 12,
+      spreadRadius: 2,
+    ),
+  ];
+
+  /// 错误状态阴影（rose-600）
   static const List<BoxShadow> error = [
     BoxShadow(
-      color: Color(0x1AE53E3E), // 错误色 10% 透明度
+      color: Color(0x1AE11D48), // rose-600 10% 透明度
       offset: Offset(0, AppDimensions.shadowOffsetMd),
       blurRadius: AppDimensions.shadowBlurRadiusMd,
       spreadRadius: 0,
     ),
   ];
 
-  /// 成功状态阴影
+  /// 成功状态阴影（emerald-600）
   static const List<BoxShadow> success = [
     BoxShadow(
-      color: Color(0x1A38A169), // 成功色 10% 透明度
+      color: Color(0x1A059669), // emerald-600 10% 透明度
       offset: Offset(0, AppDimensions.shadowOffsetMd),
       blurRadius: AppDimensions.shadowBlurRadiusMd,
       spreadRadius: 0,
     ),
   ];
 
-  /// 警告状态阴影
+  /// 警告状态阴影（amber-500）
   static const List<BoxShadow> warning = [
     BoxShadow(
-      color: Color(0x1ADD6B20), // 警告色 10% 透明度
+      color: Color(0x1AF59E0B), // amber-500 10% 透明度
       offset: Offset(0, AppDimensions.shadowOffsetMd),
       blurRadius: AppDimensions.shadowBlurRadiusMd,
       spreadRadius: 0,
@@ -202,7 +211,7 @@ class AppShadows {
   }) {
     return [
       BoxShadow(
-        color: color.withOpacity(opacity),
+        color: color.withValues(alpha: opacity),
         offset: Offset(0, offsetY),
         blurRadius: blurRadius,
         spreadRadius: 0,
@@ -220,7 +229,7 @@ class AppShadows {
       int index = entry.key;
       Color color = entry.value;
       return BoxShadow(
-        color: color.withOpacity(0.1 / (index + 1)),
+        color: color.withValues(alpha: 0.1 / (index + 1)),
         offset: Offset(0, offsetY + index.toDouble()),
         blurRadius: blurRadius + index.toDouble(),
         spreadRadius: 0,
@@ -261,7 +270,67 @@ class AppShadows {
     if (isHovered) return lg;
     return md;
   }
-} 
+}
+
+/// DeepStream 暗色模式阴影系统
+///
+/// 暗色模式使用发光边框 + 品牌蓝光晕代替传统投影。
+class AppShadowsDark {
+  AppShadowsDark._();
+
+  /// 无阴影
+  static const List<BoxShadow> none = [];
+
+  /// 轻微发光边框
+  static const List<BoxShadow> sm = [
+    BoxShadow(
+      color: Color(0x1421262D), // borderPrimary 8%
+      offset: Offset(0, 0),
+      blurRadius: 1,
+      spreadRadius: 1,
+    ),
+  ];
+
+  /// 标准发光边框
+  static const List<BoxShadow> md = [
+    BoxShadow(
+      color: Color(0x2121262D), // borderPrimary 13%
+      offset: Offset(0, 1),
+      blurRadius: 3,
+      spreadRadius: 0,
+    ),
+  ];
+
+  /// 大发光边框
+  static const List<BoxShadow> lg = [
+    BoxShadow(
+      color: Color(0x3321262D), // borderPrimary 20%
+      offset: Offset(0, 2),
+      blurRadius: 8,
+      spreadRadius: 0,
+    ),
+  ];
+
+  /// 品牌蓝光晕 - 用于焦点/高亮状态
+  static const List<BoxShadow> glow = [
+    BoxShadow(
+      color: Color(0x4058A6FF), // accentPrimary 25%
+      offset: Offset(0, 0),
+      blurRadius: 16,
+      spreadRadius: 2,
+    ),
+  ];
+
+  /// 焦点状态
+  static const List<BoxShadow> focus = [
+    BoxShadow(
+      color: Color(0x4058A6FF), // accentPrimary 25%
+      offset: Offset(0, 0),
+      blurRadius: 0,
+      spreadRadius: 3,
+    ),
+  ];
+}
  
  
  

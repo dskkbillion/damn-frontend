@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/services.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get_it/get_it.dart';
@@ -146,7 +148,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(approved ? '已同意退款' : '已拒绝售后'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
         BlocProvider.of<SellerOrderDetailBloc>(context).add(
@@ -202,7 +204,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
           return;
         }
 
-        context.go('/chat/refactored/${room.id}');
+        context.push('/chat/refactored/${room.id}');
       },
     );
   }
@@ -368,7 +370,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
           color: Theme.of(context).canvasColor, // Or scaffoldBackgroundColor
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: AppColors.borderSecondary,
               blurRadius: 4,
               offset: const Offset(0, -2),
             ),
@@ -426,7 +428,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
                     bloc.add(SellerRejectRequested(params: params)); 
                 } else {
                      ScaffoldMessenger.of(context).showSnackBar(
-                       const SnackBar(content: Text('请输入拒绝理由'), backgroundColor: Colors.orange),
+                       const SnackBar(content: Text('请输入拒绝理由'), backgroundColor: AppColors.warning),
                     );
                 }
              } // User cancelled dialog
@@ -495,7 +497,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
                } else {
                  // Content was empty, even if dialog was confirmed
                   ScaffoldMessenger.of(context).showSnackBar(
-                   const SnackBar(content: Text('请输入交付说明'), backgroundColor: Colors.orange),
+                   SnackBar(content: const Text('请输入交付说明'), backgroundColor: AppColors.warning),
                  );
                }
              } // If deliveryInfo is null, user canceled dialog - do nothing
@@ -763,7 +765,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.attach_file, size: 20, color: Theme.of(context).primaryColor),
+                            Icon(Icons.attach_file, size: 20, color: Theme.of(context).colorScheme.primary),
                             const SizedBox(width: 8),
                             const Text('附件', style: TextStyle(fontWeight: FontWeight.bold)),
                           ],
@@ -779,23 +781,23 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(vertical: 24),
                                     decoration: BoxDecoration(
-                                      color: Colors.grey[50],
-                                      borderRadius: BorderRadius.circular(4),
+                                      color: AppColors.backgroundSecondary,
+                                      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                                       border: Border.all(
-                                        color: Colors.grey[300]!,
+                                        color: AppColors.borderPrimary,
                                         style: BorderStyle.solid,
                                       ),
                                     ),
                                     child: Column(
                                       children: [
-                                        Icon(Icons.cloud_upload_outlined, 
-                                          size: 40, 
-                                          color: Colors.grey[400]
+                                        Icon(Icons.cloud_upload_outlined,
+                                          size: 40,
+                                          color: AppColors.textTertiary,
                                         ),
-                                        const SizedBox(height: 8),
+                                        const SizedBox(height: AppDimensions.spacingSm),
                                         Text(
                                           '点击下方按钮选择文件',
-                                          style: TextStyle(color: Colors.grey[600]),
+                                          style: TextStyle(color: AppColors.textSecondary),
                                         ),
                                       ],
                                     ),

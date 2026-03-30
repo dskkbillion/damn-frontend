@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_cubit.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_state.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/phone_input_field.dart';
@@ -50,9 +52,9 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
   @override
   Widget build(BuildContext context) {
     // Define Theme Colors
-    const Color primaryColor = Color(0xFFB66D0E);
-    const Color buttonBackgroundColor = Color(0xFFC58C4A);
-    final Color linkColor = Colors.grey[600]!;
+    final Color primaryColor = AppColors.primary;
+    final Color buttonBackgroundColor = AppColors.primaryVariant;
+    final Color linkColor = AppColors.textSecondary;
 
     // TODO: 使用 BlocProvider 提供 SmsLoginCubit 实例
     // final cubit = BlocProvider.of<SmsLoginCubit>(context);
@@ -164,7 +166,7 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           shape: RoundedRectangleBorder( // Optional: Add rounded corners
-                            borderRadius: BorderRadius.circular(8.0),
+                            borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                           ),
                           // Style for disabled state (loading)
                           disabledBackgroundColor: buttonBackgroundColor.withOpacity(0.7),

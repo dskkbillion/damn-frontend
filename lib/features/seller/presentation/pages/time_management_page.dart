@@ -6,6 +6,7 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/time_settings.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/time_management/time_management_bloc.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 /// 卖家时间管理页面
 class TimeManagementPage extends StatelessWidget {
@@ -101,7 +102,7 @@ class TimeManagementBody extends StatelessWidget {
                children: [
                  Text(AppLocalizations.of(context)!?.time_management_load_failed ?? 'Load Failed'),
                  const SizedBox(height: 8),
-                 Text(state.message, style: const TextStyle(color: Colors.red)),
+                 Text(state.message, style: const TextStyle(color: AppColors.error)),
                  const SizedBox(height: 16),
                  ElevatedButton(
                    onPressed: () => context.read<TimeManagementBloc>().add(LoadTimeSettings()),
@@ -164,7 +165,7 @@ class TimeManagementBody extends StatelessWidget {
                     ? (AppLocalizations.of(context)!?.time_management_online ?? 'Online')
                     : (AppLocalizations.of(context)!?.time_management_offline ?? 'Offline'),
                   style: TextStyle(
-                    color: settings.isOnline ? Colors.green : Colors.grey,
+                    color: settings.isOnline ? AppColors.success : AppColors.textTertiary,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -172,7 +173,7 @@ class TimeManagementBody extends StatelessWidget {
                 const SizedBox(width: 12),
                 Switch(
                   value: settings.isOnline,
-                  activeColor: Colors.green,
+                  activeColor: AppColors.success,
                   onChanged: isUpdating 
                       ? null 
                       : (value) {
@@ -215,7 +216,7 @@ class TimeManagementBody extends StatelessWidget {
                   : (AppLocalizations.of(context)!?.time_management_offline_description ?? 'You are currently offline. Buyers can still send you messages but the system will inform them that you are temporarily unavailable. You will still receive notifications for new messages but may not be able to respond immediately. Staying offline for extended periods may affect your order efficiency.'),
               style: const TextStyle(
                 fontSize: 14,
-                color: Colors.grey,
+                color: AppColors.textTertiary,
                 height: 1.5,
               ),
             ),

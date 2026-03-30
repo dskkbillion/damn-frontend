@@ -12,9 +12,9 @@ class SmartRouterUtils {
 
   static final Map<String, DateTime> _navigationCooldown = {};
 
-  /// 生成基础稳定的路由Key
-  /// 
-  /// 核心思路：使用路径+时间戳保证唯一性，避免重复key错误
+  /// 生成确定性路由Key
+  ///
+  /// 核心思路：使用路径+排序后的参数序列化，同路径同参数始终产生相同key
   /// [routePath] 路由路径
   /// [params] 路由参数
   /// [source] 来源信息，用于调试
@@ -23,20 +23,25 @@ class SmartRouterUtils {
     Map<String, String>? params,
     String? source,
   }) {
-    // 使用路径+参数+时间戳作为key，确保唯一性
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final pathWithParams = '${routePath}_${params?.toString() ?? ''}_$timestamp';
-    final finalKey = pathWithParams
+    // 使用路径+排序后的参数作为key，确保确定性
+    final sortedParams = _sortedMapStringStatic(params ?? {});
+    final finalKey = '$routePath:$sortedParams'
         .replaceAll('/', '_')
-        .replaceAll(':', '')
+        .replaceAll(':', '_')
         .replaceAll('{', '')
         .replaceAll('}', '')
         .replaceAll(' ', '')
         .replaceAll(',', '_');
-    
-    debugPrint('SmartRouter: 生成唯一key: $finalKey (路径: $routePath)');
-    
+
+    debugPrint('SmartRouter: 生成确定性key: $finalKey (路径: $routePath)');
+
     return finalKey;
+  }
+
+  /// 将 Map 按 key 排序后序列化为 "k1=v1&k2=v2" 字符串
+  static String _sortedMapStringStatic(Map<String, String> map) {
+    final entries = map.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
+    return entries.map((e) => '${e.key}=${e.value}').join('&');
   }
 
   /// 智能导航 - 简化版本，只防止真正的重复
@@ -146,9 +151,16 @@ class SmartRouterUtils {
 
 /// 页面构建器扩展 - 基础稳定版本
 extension SmartPageBuilder on GoRouterState {
-  /// 创建页面，使用唯一key策略防止重复key错误
+  /// 将 Map 按 key 排序后序列化为 "k1=v1&k2=v2" 字符串，确保同内容不同顺序产生相同结果
+  String _sortedMapString(Map<String, String> map) {
+    final entries = map.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
+    return entries.map((e) => '${e.key}=${e.value}').join('&');
+  }
+
+  /// 创建页面，使用确定性 key 策略
   ///
-  /// 始终使用微秒级时间戳确保key的唯一性，防止Navigator重复key断言错误
+  /// 使用路由路径 + 排序后的路径参数 + 排序后的查询参数作为 key，
+  /// 确保同一路由同一参数始终产生相同 key，避免状态丢失。
   MaterialPage<T> buildSmartPage<T extends Object?>(
     Widget child, {
     String? name,
@@ -158,26 +170,14 @@ extension SmartPageBuilder on GoRouterState {
     bool fullscreenDialog = false,
     bool forceNewInstance = false, // 保留参数以兼容现有代码，但不再影响key生成
   }) {
-    // 始终使用时间戳确保key的唯一性
-    // 这样可以防止在复杂的导航场景中出现重复key的错误
-    final timestamp = DateTime.now().microsecondsSinceEpoch;
-    final finalKey = '${matchedLocation}_${pathParameters.toString()}_${uri.queryParameters.toString()}_$timestamp';
+    final pageKey = ValueKey(
+      '$matchedLocation:${_sortedMapString(pathParameters)}:${_sortedMapString(uri.queryParameters)}',
+    );
 
-    final cleanKey = finalKey
-        .replaceAll('/', '_')
-        .replaceAll(':', '')
-        .replaceAll('{', '')
-        .replaceAll('}', '')
-        .replaceAll(' ', '')
-        .replaceAll(',', '_')
-        .replaceAll('?', '_')
-        .replaceAll('=', '_')
-        .replaceAll('&', '_');
-
-    debugPrint('SmartPage: 创建页面 $matchedLocation (key: $cleanKey, timestamp: $timestamp)');
+    debugPrint('SmartPage: 创建页面 $matchedLocation (key: ${pageKey.value})');
 
     return MaterialPage<T>(
-      key: ValueKey(cleanKey),
+      key: pageKey,
       child: child,
       name: name,
       arguments: arguments,

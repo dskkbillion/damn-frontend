@@ -1,6 +1,8 @@
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// Widget displaying information while waiting for seller action (accept or deliver).
 class WaitingActionArea extends StatelessWidget {
@@ -30,14 +32,14 @@ class WaitingActionArea extends StatelessWidget {
     return Card(
       // 使用统一的Card主题，移除自定义样式
       child: Padding(
-        padding: const EdgeInsets.all(16.0), // 使用标准间距
+        padding: const EdgeInsets.all(AppDimensions.spacingLg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Icon(Icons.info_outline, color: colorScheme.primary, size: 20), // Use an info icon
-                const SizedBox(width: 8),
+                const SizedBox(width: AppDimensions.spacingSm),
                 Expanded(
                   child: Text(
                     waitingMessage,
@@ -48,14 +50,14 @@ class WaitingActionArea extends StatelessWidget {
             ),
             // Conditionally display buyer remark
             if (hasBuyerRemark) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: AppDimensions.spacingLg),
               const Divider(),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppDimensions.spacingLg),
               Text(
                 '买家备注:',
-                style: textTheme.labelMedium?.copyWith(color: Colors.grey[600]),
+                style: textTheme.labelMedium?.copyWith(color: AppColors.textSecondary),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: AppDimensions.spacingXs),
               Text(
                 order.buyerRemark!,
                 style: textTheme.bodyMedium,

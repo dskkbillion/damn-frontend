@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 评论统计摘要卡片
 class ReviewSummaryCard extends StatelessWidget {
@@ -17,13 +19,13 @@ class ReviewSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.backgroundCard,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.borderSecondary,
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -48,18 +50,17 @@ class ReviewSummaryCard extends StatelessWidget {
                       ),
                     ),
                     _buildRatingStars(averageScore),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppDimensions.spacingSm),
                     Text(
                       AppLocalizations.of(context)!.product_reviews_total_count(totalReviews),
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 24),
+              const SizedBox(width: AppDimensions.spacingXxl),
               // 右侧：评分分布
               Expanded(
                 flex: 3,
@@ -67,19 +68,18 @@ class ReviewSummaryCard extends StatelessWidget {
                   children: List.generate(5, (index) {
                     final star = 5 - index;
                     final count = scoreDistribution[star] ?? 0;
-                    final percentage = totalReviews > 0 
-                        ? (count / totalReviews * 100).round() 
+                    final percentage = totalReviews > 0
+                        ? (count / totalReviews * 100).round()
                         : 0;
-                    
+
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2),
                       child: Row(
                         children: [
                           Text(
                             '$star',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.textSecondary,
                             ),
                           ),
                           const Icon(
@@ -87,15 +87,15 @@ class ReviewSummaryCard extends StatelessWidget {
                             size: 14,
                             color: Colors.amber,
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: AppDimensions.spacingSm),
                           Expanded(
                             child: Stack(
                               children: [
                                 Container(
                                   height: 8,
                                   decoration: BoxDecoration(
-                                    color: Colors.grey[200],
-                                    borderRadius: BorderRadius.circular(4),
+                                    color: AppColors.borderPrimary,
+                                    borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                                   ),
                                 ),
                                 FractionallySizedBox(
@@ -104,21 +104,20 @@ class ReviewSummaryCard extends StatelessWidget {
                                     height: 8,
                                     decoration: BoxDecoration(
                                       color: Colors.amber,
-                                      borderRadius: BorderRadius.circular(4),
+                                      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                                     ),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: AppDimensions.spacingSm),
                           SizedBox(
                             width: 35,
                             child: Text(
                               '$percentage%',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AppColors.textSecondary,
                               ),
                               textAlign: TextAlign.right,
                             ),

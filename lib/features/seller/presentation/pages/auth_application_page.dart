@@ -5,6 +5,8 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_aut
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/auth_application/auth_application_bloc.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 认证申请页面
 class AuthApplicationPage extends StatefulWidget {
@@ -143,7 +145,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
                               padding: const EdgeInsets.only(top: 8.0),
                               child: Text(
                                 _fieldErrors['files']!,
-                                style: const TextStyle(color: Colors.red, fontSize: 12),
+                                style: const TextStyle(color: AppColors.error, fontSize: 12),
                               ),
                             ),
                           
@@ -187,8 +189,8 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.info.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,7 +209,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
             _getAuthenticationTypeDescription(_authenticationType),
             style: const TextStyle(
               fontSize: 14,
-              color: Colors.black87,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -215,7 +217,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
             AppLocalizations.of(context)!?.seller_auth_application_review_time ?? 'Review time: 1-3 business days',
             style: const TextStyle(
               fontSize: 14,
-              color: Colors.black54,
+              color: AppColors.textSecondary,
             ),
           ),
         ],
@@ -463,14 +465,14 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
             _buildUploadButton(),
             const SizedBox(width: 16),
             if (_selectedFiles.isNotEmpty) ...[
-              Text(_l10n?.seller_auth_application_selected_files?.call(_selectedFiles.length) ?? '${_selectedFiles.length} files selected', style: const TextStyle(color: Colors.green)),
+              Text(_l10n?.seller_auth_application_selected_files?.call(_selectedFiles.length) ?? '${_selectedFiles.length} files selected', style: const TextStyle(color: AppColors.success)),
             ],
           ],
         ),
         const SizedBox(height: 8),
         Text(
           _getUploadHint(_authenticationType),
-          style: const TextStyle(fontSize: 12, color: Colors.grey),
+          style: const TextStyle(fontSize: 12, color: AppColors.textTertiary),
         ),
         
         // 添加已选择图片的显示
@@ -478,10 +480,10 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
           const SizedBox(height: 16),
           Text(
             _l10n?.seller_auth_application_selected_images ?? 'Selected Images',
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Colors.grey[700],
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -496,8 +498,8 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
                   margin: const EdgeInsets.only(right: 12),
                   width: 100,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey[300]!),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                    border: Border.all(color: AppColors.borderInput),
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: Stack(
@@ -509,13 +511,13 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
                         width: double.infinity,
                         height: double.infinity,
                         errorBuilder: (_, __, ___) => Container(
-                          color: Colors.grey[200],
+                          color: AppColors.borderPrimary,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               const Icon(
                                 Icons.broken_image,
-                                color: Colors.grey,
+                                color: AppColors.textTertiary,
                                 size: 32,
                               ),
                               const SizedBox(height: 4),
@@ -523,7 +525,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
                                 _l10n?.seller_auth_application_load_failed ?? 'Load Failed',
                                 style: const TextStyle(
                                   fontSize: 10,
-                                  color: Colors.grey,
+                                  color: AppColors.textTertiary,
                                 ),
                               ),
                             ],
@@ -539,7 +541,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
                           child: Container(
                             padding: const EdgeInsets.all(2),
                             decoration: const BoxDecoration(
-                              color: Colors.red,
+                              color: AppColors.error,
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
@@ -569,16 +571,16 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
         width: 100,
         height: 100,
         decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey[400]!),
+          color: AppColors.borderPrimary,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          border: Border.all(color: AppColors.borderInput),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.add_photo_alternate, size: 36, color: Colors.grey),
+            const Icon(Icons.add_photo_alternate, size: 36, color: AppColors.textTertiary),
             const SizedBox(height: 8),
-            Text(_l10n?.seller_auth_application_upload_file ?? 'Upload File', style: const TextStyle(color: Colors.grey)),
+            Text(_l10n?.seller_auth_application_upload_file ?? 'Upload File', style: const TextStyle(color: AppColors.textTertiary)),
           ],
         ),
       ),
@@ -598,7 +600,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
         Expanded(
           child: RichText(
             text: TextSpan(
-              style: const TextStyle(color: Colors.black87),
+              style: const TextStyle(color: AppColors.textPrimary),
               children: [
                 TextSpan(text: _l10n?.seller_auth_application_agreement_read ?? 'I have read and agree to '),
                 WidgetSpan(
@@ -651,7 +653,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red,
+        backgroundColor: AppColors.error,
       ),
     );
   }

@@ -4,6 +4,8 @@ import 'package:flutter/services.dart'; // For Clipboard
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart'; // For launchUrl
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 import '../../../../core/config/region_config.dart';
 import '../../../../core/utils/price_formatter.dart';
@@ -45,7 +47,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
   late List<payment_models.PaymentMethod> _availablePaymentMethods;
   bool _isProcessing = false; // 防重复提交标志
   bool _isLoadingDialogShowing = false; // 跟踪加载对话框状态
-  
+
   @override
   void dispose() {
     AppLogger.d('[OrderConfirmPage] dispose() called');
@@ -67,14 +69,14 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
     AppLogger.d('[OrderConfirmPage] price: ${widget.price}');
     AppLogger.d('[OrderConfirmPage] chatRoomId: ${widget.chatRoomId}');
     AppLogger.d('[OrderConfirmPage] productName: ${widget.productName}');
-    
+
     // 根据区域配置获取可用的支付方式
     _availablePaymentMethods = RegionConfig.supportedPaymentMethods;
     // 设置默认选中的支付方式
-    _selectedPaymentMethod = _availablePaymentMethods.isNotEmpty 
-        ? _availablePaymentMethods.first 
+    _selectedPaymentMethod = _availablePaymentMethods.isNotEmpty
+        ? _availablePaymentMethods.first
         : payment_models.PaymentMethod.alipay;
-    
+
     context.read<PaymentBloc>().add(ResetPaymentEvent());
   }
 
@@ -98,12 +100,12 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
             _isProcessing = false;
           });
           _dismissLoadingDialog();
-          
+
           // 跳转到支付结果页面
           final params = <String, String>{
             'success': state is PaymentCompletedState ? 'true' : 'false',
           };
-          
+
           if (state is PaymentCompletedState) {
             params['orderId'] = state.orderId;
           } else if (state is PaymentFailedState) {
@@ -112,7 +114,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
               params['orderId'] = state.orderId!;
             }
           }
-          
+
           context.pushNamed('paymentResult', queryParameters: params);
         } else if (state is PaymentInitial) {
           // 重置状态时也重置处理标志
@@ -126,9 +128,9 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
             _isProcessing = false;
           });
           _dismissLoadingDialog(); // 关闭加载对话框
-          
+
           AppLogger.d('[OrderConfirmPage] 收到ExternalPaymentProcessingState, URL: ${state.paymentUrl}');
-          
+
           // 显示支付链接对话框
           showDialog(
             context: context,
@@ -141,20 +143,23 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text('支付链接已准备就绪'),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppDimensions.spacingSm),
                     // 只有国服版本才显示汇率提示
                     if (RegionConfig.currentRegion == RegionType.domestic)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppDimensions.spacingMd,
+                          vertical: AppDimensions.spacingSm,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.orange.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                           border: Border.all(color: Colors.orange.withOpacity(0.3)),
                         ),
                         child: Row(
                           children: const [
                             Icon(Icons.info_outline, size: 16, color: Colors.orange),
-                            SizedBox(width: 8),
+                            SizedBox(width: AppDimensions.spacingSm),
                             Expanded(
                               child: Text(
                                 '注意：信用卡支付将以美元结算，具体汇率以银行为准',
@@ -165,19 +170,19 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                         ),
                       ),
                     if (RegionConfig.currentRegion == RegionType.domestic)
-                      const SizedBox(height: 12),
-                    const Text('如果浏览器没有自动打开，请选择以下操作：', style: TextStyle(fontSize: 14, color: Colors.grey)),
-                    const SizedBox(height: 16),
+                      const SizedBox(height: AppDimensions.spacingMd),
+                    Text('如果浏览器没有自动打开，请选择以下操作：', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                    const SizedBox(height: AppDimensions.spacingLg),
                     // 显示支付URL（截断显示）
                     Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(AppDimensions.spacingSm),
                       decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(4),
+                        color: AppColors.backgroundSecondary,
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                       ),
                       child: Text(
-                        state.paymentUrl.length > 50 
-                          ? '${state.paymentUrl.substring(0, 50)}...' 
+                        state.paymentUrl.length > 50
+                          ? '${state.paymentUrl.substring(0, 50)}...'
                           : state.paymentUrl,
                         style: const TextStyle(fontSize: 12),
                       ),
@@ -231,7 +236,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
           title: const Text('确认订单'),
         ),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(AppDimensions.spacingLg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -239,7 +244,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
               Card(
                 elevation: 2,
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(AppDimensions.spacingLg),
                   child: Row(
                     children: [
                       // 商品图片
@@ -252,7 +257,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                               image: NetworkImage(widget.imageUrl!),
                               fit: BoxFit.cover,
                             ),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                           ),
                         )
                       else
@@ -260,12 +265,12 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                           width: 80,
                           height: 80,
                           decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(8),
+                            color: AppColors.borderInput,
+                            borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                           ),
-                          child: const Icon(Icons.image, size: 40, color: Colors.grey),
+                          child: const Icon(Icons.image, size: 40, color: AppColors.textTertiary),
                         ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: AppDimensions.spacingLg),
                       // 商品名称和价格
                       Expanded(
                         child: Column(
@@ -280,7 +285,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: AppDimensions.spacingSm),
                             Text(
                               PriceFormatter.format(widget.price),
                               style: TextStyle(
@@ -293,7 +298,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                               '数量: ${widget.quantity}',
                               style: const TextStyle(
                                 fontSize: 14,
-                                color: Colors.grey,
+                                color: AppColors.textSecondary,
                               ),
                             ),
                           ],
@@ -303,9 +308,9 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                   ),
                 ),
               ),
-              
-              const SizedBox(height: 24),
-              
+
+              const SizedBox(height: AppDimensions.spacingXxl),
+
               // 订单总结
               const Text(
                 '订单摘要',
@@ -314,14 +319,14 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 8),
-              
+              const SizedBox(height: AppDimensions.spacingSm),
+
               // 订单摘要列表
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppDimensions.spacingLg),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppColors.backgroundSecondary,
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                 ),
                 child: Column(
                   children: [
@@ -332,7 +337,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                         Text(PriceFormatter.format(widget.price)),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppDimensions.spacingSm),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -363,9 +368,9 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // 支付方式
               Text(
                 RegionConfig.currentRegion == RegionType.domestic ? '支付方式' : 'Payment Method',
@@ -374,18 +379,18 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 16),
-              
+              const SizedBox(height: AppDimensions.spacingLg),
+
               // 动态生成支付方式选项
               ..._availablePaymentMethods.map((method) => Column(
                 children: [
                   _buildPaymentMethodOption(method),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppDimensions.spacingMd),
                 ],
               )),
-              
+
               const SizedBox(height: 32),
-              
+
               // 确认支付按钮
               SizedBox(
                 width: double.infinity,
@@ -393,8 +398,8 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                 child: ElevatedButton(
                   onPressed: _isProcessing ? null : _confirmOrder, // 处理中时禁用按钮
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _isProcessing 
-                        ? Colors.grey 
+                    backgroundColor: _isProcessing
+                        ? AppColors.textTertiary
                         : _getButtonColor(),
                     foregroundColor: Colors.white,
                   ),
@@ -410,7 +415,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             ),
-                            SizedBox(width: 12),
+                            SizedBox(width: AppDimensions.spacingMd),
                             Text(
                               '处理中...',
                               style: TextStyle(
@@ -442,31 +447,30 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
     Color iconColor;
     String? logoAsset;
     String subtitle;
-    
+
     switch (method) {
       case payment_models.PaymentMethod.alipay:
         iconData = Icons.payment;
-        iconColor = Colors.blue;
+        iconColor = Colors.blue; // 支付宝品牌色
         logoAsset = 'assets/images/alipay_logo.png';
         subtitle = RegionConfig.currentRegion == RegionType.domestic ? '安全快捷支付' : 'Fast and secure payment';
         break;
       case payment_models.PaymentMethod.wechat:
         iconData = Icons.wechat;
-        iconColor = Colors.green;
+        iconColor = Colors.green; // 微信品牌色
         logoAsset = null;
         subtitle = RegionConfig.currentRegion == RegionType.domestic ? '微信安全支付' : 'WeChat Pay';
         break;
       case payment_models.PaymentMethod.stripe:
         iconData = Icons.credit_card;
-        iconColor = Colors.purple;
+        iconColor = Colors.purple; // Stripe品牌色
         logoAsset = null;
-        subtitle = RegionConfig.currentRegion == RegionType.domestic 
-            ? '支持Visa、MasterCard等（美元结算）' 
+        subtitle = RegionConfig.currentRegion == RegionType.domestic
+            ? '支持Visa、MasterCard等（美元结算）'
             : 'Visa, MasterCard, etc.';
         break;
     }
-    
-    final isSelected = _selectedPaymentMethod == method;
+
     return _buildPaymentOption(
       method,
       method.displayName,
@@ -476,7 +480,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
       subtitle: subtitle,
     );
   }
-  
+
   /// 构建支付方式选项UI
   Widget _buildPaymentOption(
     payment_models.PaymentMethod method,
@@ -489,7 +493,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
     final isSelected = _selectedPaymentMethod == method;
     final effectiveIconColor = iconColor;
     final effectiveTextColor = isSelected ? Theme.of(context).primaryColor : null;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -497,32 +501,32 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppDimensions.spacingLg),
         decoration: BoxDecoration(
           border: Border.all(
-            color: isSelected 
-                ? Theme.of(context).primaryColor 
-                : Colors.grey[300]!,
+            color: isSelected
+                ? Theme.of(context).primaryColor
+                : AppColors.borderInput,
             width: isSelected ? 2 : 1,
           ),
-          borderRadius: BorderRadius.circular(8),
-          color: isSelected 
-              ? Theme.of(context).primaryColor.withOpacity(0.05) 
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          color: isSelected
+              ? Theme.of(context).primaryColor.withOpacity(0.05)
               : null,
           ),
           child: Row(
             children: [
               // 选择指示器
               Icon(
-                isSelected 
-                    ? Icons.radio_button_checked 
+                isSelected
+                    ? Icons.radio_button_checked
                     : Icons.radio_button_unchecked,
-                color: isSelected 
-                    ? Theme.of(context).primaryColor 
-                    : Colors.grey,
+                color: isSelected
+                    ? Theme.of(context).primaryColor
+                    : AppColors.textTertiary,
               ),
-              const SizedBox(width: 16),
-              
+              const SizedBox(width: AppDimensions.spacingLg),
+
               // 支付方式图标/Logo
               if (logoAsset != null)
                 Image.asset(
@@ -535,7 +539,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                       height: 30,
                       decoration: BoxDecoration(
                         color: effectiveIconColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                       ),
                       child: Icon(
                         fallbackIcon,
@@ -551,7 +555,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                   height: 30,
                   decoration: BoxDecoration(
                     color: effectiveIconColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                   ),
                   child: Icon(
                     fallbackIcon,
@@ -559,9 +563,9 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                     size: 20,
                   ),
                 ),
-              
-              const SizedBox(width: 16),
-              
+
+              const SizedBox(width: AppDimensions.spacingLg),
+
               // 支付方式名称
               Expanded(
                 child: Column(
@@ -578,9 +582,9 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                     if (subtitle != null)
                       Text(
                         subtitle,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.grey[600],
+                          color: AppColors.textSecondary,
                         ),
                       ),
                   ],
@@ -599,7 +603,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
       showLoadingDialog(context, message: message);
     }
   }
-  
+
   /// 关闭加载对话框
   void _dismissLoadingDialog() {
     if (_isLoadingDialogShowing && mounted) {
@@ -636,15 +640,15 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
       ),
     );
   }
-  
+
   Color _getButtonColor() {
     switch (_selectedPaymentMethod) {
       case payment_models.PaymentMethod.alipay:
-        return Colors.blue;
+        return Colors.blue; // 支付宝品牌色
       case payment_models.PaymentMethod.wechat:
-        return Colors.green;
+        return Colors.green; // 微信品牌色
       case payment_models.PaymentMethod.stripe:
-        return Colors.purple;
+        return Colors.purple; // Stripe品牌色
     }
   }
-} 
+}

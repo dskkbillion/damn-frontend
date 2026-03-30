@@ -11,6 +11,8 @@ import 'package:permission_handler/permission_handler.dart'; // Import permissio
 import 'package:path_provider/path_provider.dart'; // Import path_provider
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 import '../bloc/chat_messages/chat_messages_bloc.dart';
 
@@ -353,7 +355,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('成功处理 $successCount 张图片，平均压缩 ${avgCompression.toStringAsFixed(1)}%'),
-              backgroundColor: Colors.green,
+              backgroundColor: AppColors.success,
             ),
           );
         }
@@ -362,7 +364,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('$errorCount 张图片处理失败'),
-              backgroundColor: Colors.orange,
+              backgroundColor: AppColors.warning,
             ),
           );
         }
@@ -429,7 +431,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
                         color: uploadState.status == FileUploadStatus.uploading
                             ? Colors.black.withOpacity(0.5)
                             : uploadState.status == FileUploadStatus.failure
-                                ? Colors.red.withOpacity(0.6)
+                                ? AppColors.error.withOpacity(0.6)
                                 : Colors.transparent,
                       ),
                       child: Center(
@@ -484,7 +486,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
       return Container(
         width: 64,
         height: 64,
-        color: Colors.grey[300],
+        color: AppColors.borderInput,
         child: const Icon(Icons.insert_drive_file, size: 32),
       );
     }
@@ -504,7 +506,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
       case FileUploadStatus.success:
         return const Icon(
           Icons.check_circle,
-          color: Colors.green,
+          color: AppColors.success,
           size: 24,
         );
       case FileUploadStatus.failure:
@@ -585,9 +587,9 @@ ${appLocalizations.chat_markdown_example_table_col1} | ${appLocalizations.chat_m
           isScrollControlled: false, // 不控制滚动，保持默认行为
           builder: (BuildContext bc) {
             return Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            decoration: BoxDecoration(
+              color: AppColors.backgroundCard,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(AppDimensions.radiusXl)),
             ),
             child: SafeArea(
               child: Column(
@@ -599,7 +601,7 @@ ${appLocalizations.chat_markdown_example_table_col1} | ${appLocalizations.chat_m
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color: AppColors.borderInput,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -659,7 +661,7 @@ ${appLocalizations.chat_markdown_example_table_col1} | ${appLocalizations.chat_m
         if (_isVoiceMode) FocusScope.of(context).unfocus();
       },
       tooltip: _isVoiceMode ? appLocalizations.chat_switch_to_text : appLocalizations.chat_switch_to_voice,
-      color: Colors.grey[700],
+      color: AppColors.textSecondary,
     );
   }
 
@@ -675,18 +677,18 @@ ${appLocalizations.chat_markdown_example_table_col1} | ${appLocalizations.chat_m
       decoration: InputDecoration(
         hintText: appLocalizations.chat_enter_message,
         filled: true,
-        fillColor: Colors.grey[100],
+        fillColor: AppColors.backgroundSecondary,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(25.0),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
           borderSide: BorderSide.none, // No visible border
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(25.0),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(25.0),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
           borderSide: BorderSide.none, // Or a subtle highlight
         ),
       ),
@@ -698,7 +700,7 @@ ${appLocalizations.chat_markdown_example_table_col1} | ${appLocalizations.chat_m
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context)!;
     
-    Color buttonColor = _isRecording ? Colors.red : Theme.of(context).primaryColor;
+    Color buttonColor = _isRecording ? AppColors.error : Theme.of(context).primaryColor;
     String buttonText = _isRecording ? appLocalizations.chat_release_to_send(_recordingDuration) : appLocalizations.chat_press_to_talk;
 
     return GestureDetector(
@@ -746,7 +748,7 @@ ${appLocalizations.chat_markdown_example_table_col1} | ${appLocalizations.chat_m
       icon: const Icon(Icons.add_circle_outline),
       onPressed: () => _showAttachmentMenu(context),
       tooltip: appLocalizations.chat_attach,
-      color: Colors.grey[700],
+      color: AppColors.textSecondary,
     );
   }
 
@@ -770,8 +772,8 @@ ${appLocalizations.chat_markdown_example_table_col1} | ${appLocalizations.chat_m
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
       decoration: BoxDecoration(
-        color: Colors.grey[50], // Lighter background for the bar
-        border: Border(top: BorderSide(color: Colors.grey[200]!, width: 0.5)), // Top border
+        color: AppColors.backgroundSecondary,
+        border: Border(top: BorderSide(color: AppColors.borderPrimary, width: 0.5)),
         // boxShadow removed for flatter design, adjust if needed
       ),
       child: SafeArea(

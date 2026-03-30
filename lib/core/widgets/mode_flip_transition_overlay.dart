@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/app_mode.dart';
 import '../services/mode_transition_service.dart';
+import '../config/theme/app_colors.dart';
 
 /// 全屏翻转动画覆盖层
 class ModeFlipTransitionOverlay extends ConsumerStatefulWidget {
@@ -153,7 +154,7 @@ class _ModeFlipTransitionOverlayState extends ConsumerState<ModeFlipTransitionOv
     return Directionality(
       textDirection: TextDirection.ltr,
       child: Container(
-        color: const Color(0xFFFDF9F5), // 使用项目橙色系主题背景色（硬编码确保显示正确）
+        color: AppColors.backgroundPrimary, // 使用项目橙色系主题背景色（硬编码确保显示正确）
         child: Center(
           child: Stack(
             alignment: Alignment.center,
@@ -171,7 +172,7 @@ class _ModeFlipTransitionOverlayState extends ConsumerState<ModeFlipTransitionOv
                     ? Icons.shopping_bag_outlined
                     : Icons.storefront_outlined,
                   size: 80,
-                  color: const Color(0xFFB66D0E), // 使用项目主题橙色
+                  color: AppColors.primary, // 使用项目主题橙色
                 ),
               ),
 
@@ -186,7 +187,7 @@ class _ModeFlipTransitionOverlayState extends ConsumerState<ModeFlipTransitionOv
                     ? Icons.shopping_bag_outlined
                     : Icons.storefront_outlined,
                   size: 80,
-                  color: const Color(0xFFB66D0E), // 使用项目主题橙色
+                  color: AppColors.primary, // 使用项目主题橙色
                 ),
               ),
             ],

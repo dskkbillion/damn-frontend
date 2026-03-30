@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 支付结果页面
 class PaymentResultPage extends StatelessWidget {
@@ -36,7 +38,7 @@ class PaymentResultPage extends StatelessWidget {
         ),
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppDimensions.spacingLg),
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 minHeight: MediaQuery.of(context).size.height -
@@ -51,10 +53,10 @@ class PaymentResultPage extends StatelessWidget {
                   // 图标
                   Icon(
                     success ? Icons.check_circle : Icons.error,
-                    size: 80, // 减小图标尺寸，避免溢出
-                    color: success ? Colors.green : Colors.red,
+                    size: 80,
+                    color: success ? AppColors.success : AppColors.error,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppDimensions.spacingXxl),
 
                   // 结果标题
                   Text(
@@ -64,7 +66,7 @@ class PaymentResultPage extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppDimensions.spacingLg),
 
                   // 结果详情
                   Padding(
@@ -78,24 +80,24 @@ class PaymentResultPage extends StatelessWidget {
                                   : '支付已完成'
                               : errorMessage ?? '支付过程中出现错误',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 16,
-                            color: Colors.grey[700],
+                            color: AppColors.textSecondary,
                           ),
                         ),
                         if (success) ...[
-                          const SizedBox(height: 16),
+                          const SizedBox(height: AppDimensions.spacingLg),
                           Container(
-                            padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.all(AppDimensions.spacingMd),
                             decoration: BoxDecoration(
                               color: Colors.orange[50],
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                               border: Border.all(color: Colors.orange[200]!),
                             ),
                             child: Row(
                               children: [
                                 Icon(Icons.info_outline, color: Colors.orange[700], size: 20),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: AppDimensions.spacingSm),
                                 Expanded(
                                   child: Text(
                                     '提示：订单状态可能需要几分钟更新，请稍后查看',
@@ -129,23 +131,23 @@ class PaymentResultPage extends StatelessWidget {
                           },
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
+                              horizontal: AppDimensions.spacingXxl,
+                              vertical: AppDimensions.spacingMd,
                             ),
                           ),
                           child: const Text('查看订单详情'),
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: AppDimensions.spacingLg),
                       ],
                       ElevatedButton(
                         onPressed: () => _exitPaymentFlow(context),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
+                            horizontal: AppDimensions.spacingXxl,
+                            vertical: AppDimensions.spacingMd,
                           ),
-                          backgroundColor: success ? Colors.grey[200] : null,
-                          foregroundColor: success ? Colors.black87 : null,
+                          backgroundColor: success ? AppColors.borderPrimary : null,
+                          foregroundColor: success ? AppColors.textPrimary : null,
                         ),
                         child: const Text('返回订单列表'),
                       ),

@@ -207,10 +207,12 @@ abstract class ChatInjectableModule {
     GetChatRoomList getChatRoomList,
     CreateChatRoom createChatRoom,
     DeleteChatRoom deleteChatRoom,
+    shared_prefs.IChatLocalDataSource localDataSource,
   ) => ChatListBloc(
         getChatRoomList: getChatRoomList,
         createChatRoom: createChatRoom,
         deleteChatRoom: deleteChatRoom,
+        localDataSource: localDataSource,
       );
   
   // 注册ChatMessagesBloc
@@ -380,6 +382,7 @@ class ChatDI {
             getChatRoomList: getIt<GetChatRoomList>(),
             createChatRoom: getIt<CreateChatRoom>(),
             deleteChatRoom: getIt<DeleteChatRoom>(),
+            localDataSource: getIt<shared_prefs.IChatLocalDataSource>(),
           ));
       AppLogger.d('[ChatDI] Registered ChatListBloc as singleton');
     } else {

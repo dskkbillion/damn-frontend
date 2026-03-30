@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 import '../../../../core/config/region_config.dart';
 import '../../../../core/payment/models/payment_models.dart' as payment_models;
@@ -43,7 +45,6 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
         : payment_models.PaymentMethod.alipay;
 
     // 确保 BLoC 状态是 OrderDetailLoaded，以便支付功能正常工作
-    // 这可以解决从支付取消后再次进入时状态不正确的问题
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final bloc = context.read<OrderDetailBloc>();
       if (bloc.state is! OrderDetailLoaded) {
@@ -118,7 +119,7 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
-                backgroundColor: Colors.red,
+                backgroundColor: AppColors.error,
               ),
             );
           }
@@ -129,7 +130,7 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
           title: const Text('选择支付方式'),
         ),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(AppDimensions.spacingLg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -137,7 +138,7 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
               Card(
                 elevation: 2,
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(AppDimensions.spacingLg),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -145,10 +146,10 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
                         '订单编号: ${widget.order.orderSn}',
                         style: const TextStyle(
                           fontSize: 14,
-                          color: Colors.grey,
+                          color: AppColors.textSecondary,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppDimensions.spacingSm),
                       if (widget.order.items.isNotEmpty)
                         Text(
                           widget.order.items.first.productName,
@@ -159,7 +160,7 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppDimensions.spacingLg),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -195,13 +196,13 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppDimensions.spacingLg),
 
               // 动态生成支付方式选项
               ..._availablePaymentMethods.map((method) => Column(
                 children: [
                   _buildPaymentMethodOption(method),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppDimensions.spacingMd),
                 ],
               )),
 
@@ -215,7 +216,7 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
                   onPressed: _isProcessing ? null : _confirmPayment,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _isProcessing
-                        ? Colors.grey
+                        ? AppColors.textTertiary
                         : _getButtonColor(),
                     foregroundColor: Colors.white,
                   ),
@@ -231,7 +232,7 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
                                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             ),
-                            SizedBox(width: 12),
+                            SizedBox(width: AppDimensions.spacingMd),
                             Text(
                               '处理中...',
                               style: TextStyle(
@@ -267,19 +268,19 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
     switch (method) {
       case payment_models.PaymentMethod.alipay:
         iconData = Icons.payment;
-        iconColor = Colors.blue;
+        iconColor = Colors.blue; // 支付宝品牌色
         logoAsset = 'assets/images/alipay_logo.png';
         subtitle = RegionConfig.currentRegion == RegionType.domestic ? '安全快捷支付' : 'Fast and secure payment';
         break;
       case payment_models.PaymentMethod.wechat:
         iconData = Icons.wechat;
-        iconColor = Colors.green;
+        iconColor = Colors.green; // 微信品牌色
         logoAsset = null;
         subtitle = RegionConfig.currentRegion == RegionType.domestic ? '微信安全支付' : 'WeChat Pay';
         break;
       case payment_models.PaymentMethod.stripe:
         iconData = Icons.credit_card;
-        iconColor = Colors.purple;
+        iconColor = Colors.purple; // Stripe品牌色
         logoAsset = null;
         subtitle = RegionConfig.currentRegion == RegionType.domestic
             ? '支持Visa、MasterCard等（美元结算）'
@@ -287,7 +288,6 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
         break;
     }
 
-    final isSelected = _selectedPaymentMethod == method;
     return _buildPaymentOption(
       method,
       method.displayName,
@@ -318,15 +318,15 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppDimensions.spacingLg),
         decoration: BoxDecoration(
           border: Border.all(
             color: isSelected
                 ? Theme.of(context).primaryColor
-                : Colors.grey[300]!,
+                : AppColors.borderInput,
             width: isSelected ? 2 : 1,
           ),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
           color: isSelected
               ? Theme.of(context).primaryColor.withOpacity(0.05)
               : null,
@@ -340,9 +340,9 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
                   : Icons.radio_button_unchecked,
               color: isSelected
                   ? Theme.of(context).primaryColor
-                  : Colors.grey,
+                  : AppColors.textTertiary,
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: AppDimensions.spacingLg),
 
             // 支付方式图标/Logo
             if (logoAsset != null)
@@ -356,7 +356,7 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
                     height: 30,
                     decoration: BoxDecoration(
                       color: effectiveIconColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                     ),
                     child: Icon(
                       fallbackIcon,
@@ -372,7 +372,7 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
                 height: 30,
                 decoration: BoxDecoration(
                   color: effectiveIconColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                 ),
                 child: Icon(
                   fallbackIcon,
@@ -381,7 +381,7 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
                 ),
               ),
 
-            const SizedBox(width: 16),
+            const SizedBox(width: AppDimensions.spacingLg),
 
             // 支付方式名称
             Expanded(
@@ -399,9 +399,9 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
                   if (subtitle != null)
                     Text(
                       subtitle,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
-                        color: Colors.grey[600],
+                        color: AppColors.textSecondary,
                       ),
                     ),
                 ],
@@ -472,7 +472,7 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('打开支付页面失败: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -501,11 +501,11 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
   Color _getButtonColor() {
     switch (_selectedPaymentMethod) {
       case payment_models.PaymentMethod.alipay:
-        return Colors.blue;
+        return Colors.blue; // 支付宝品牌色
       case payment_models.PaymentMethod.wechat:
-        return Colors.green;
+        return Colors.green; // 微信品牌色
       case payment_models.PaymentMethod.stripe:
-        return Colors.purple;
+        return Colors.purple; // Stripe品牌色
     }
   }
 }

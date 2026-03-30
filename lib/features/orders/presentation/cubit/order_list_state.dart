@@ -33,6 +33,9 @@ class OrderListState extends Equatable {
   /// 加载失败时的错误信息
   final Failure? failure;
 
+  /// True when cached data is shown while a background refresh is in progress.
+  final bool isRefreshing;
+
   const OrderListState({
     this.status = OrderListStatus.initial,
     this.orders = const [],
@@ -40,6 +43,7 @@ class OrderListState extends Equatable {
     this.hasMore = true,
     this.currentPage = 1,
     this.failure,
+    this.isRefreshing = false,
   });
 
   /// 创建状态的副本，方便更新部分属性
@@ -51,6 +55,7 @@ class OrderListState extends Equatable {
     int? currentPage,
     Failure? failure,
     bool clearFailure = false, // 用于显式清除错误
+    bool? isRefreshing,
   }) {
     return OrderListState(
       status: status ?? this.status,
@@ -61,6 +66,7 @@ class OrderListState extends Equatable {
       // 如果 clearFailure 为 true，则强制 failure 为 null
       // 否则，如果传入了新的 failure，则使用新的，否则保持旧的
       failure: clearFailure ? null : (failure ?? this.failure),
+      isRefreshing: isRefreshing ?? this.isRefreshing,
     );
   }
 
@@ -72,5 +78,6 @@ class OrderListState extends Equatable {
         hasMore,
         currentPage,
         failure,
+        isRefreshing,
       ];
 } 

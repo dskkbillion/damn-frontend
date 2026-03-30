@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 class MenuItem {
   final IconData icon;
@@ -30,11 +32,11 @@ class ProfileMenuSection extends StatelessWidget {
       margin: const EdgeInsets.only(top: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.backgroundCard,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.borderSecondary,
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),
@@ -66,7 +68,7 @@ class ProfileMenuSection extends StatelessWidget {
           children: [
             Icon(
               item.icon,
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
               size: 24,
             ),
             const SizedBox(width: 12),
@@ -81,7 +83,7 @@ class ProfileMenuSection extends StatelessWidget {
             item.trailing ??
                 Icon(
                   Icons.chevron_right,
-                  color: Colors.grey[400],
+                  color: AppColors.textTertiary,
                 ),
           ],
         ),

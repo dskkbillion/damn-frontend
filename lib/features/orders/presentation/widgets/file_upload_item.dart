@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dskk_flutter_refactor/core/services/file_upload_service.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 文件上传状态
 enum FileUploadStatus {
@@ -89,7 +91,7 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
   void initState() {
     super.initState();
     _item = widget.item;
-    
+
     // 检查文件大小
     if (_item.fileSize > widget.maxFileSize) {
       setState(() {
@@ -115,7 +117,7 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
         final delay = Duration(seconds: _retryCount * 2);
         await Future.delayed(delay);
       }
-      
+
       final result = await _fileUploadService.uploadFileWithProgress(
         _item.localPath,
         (progress) {
@@ -126,7 +128,7 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
           }
         },
       );
-      
+
       result.fold(
         (failure) {
           if (mounted) {
@@ -173,7 +175,7 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
     if (_item.isImage) {
       // 图片预览
       return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
         child: Image.file(
           File(_item.localPath),
           width: 80,
@@ -183,7 +185,7 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
             return Container(
               width: 80,
               height: 80,
-              color: Colors.grey[300],
+              color: AppColors.backgroundSecondary,
               child: const Icon(Icons.broken_image, size: 30),
             );
           },
@@ -195,14 +197,14 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
         width: 80,
         height: 80,
         decoration: BoxDecoration(
-          color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey[300]!),
+          color: AppColors.backgroundSecondary,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          border: Border.all(color: AppColors.borderPrimary),
         ),
         child: Icon(
           _getFileIcon(_item.fileName),
           size: 30,
-          color: Colors.grey[600],
+          color: AppColors.textSecondary,
         ),
       );
     }
@@ -225,23 +227,23 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.backgroundCard,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
         border: Border.all(
-          color: _item.status == FileUploadStatus.failed 
-            ? Colors.red[300]! 
-            : Colors.grey[300]!,
+          color: _item.status == FileUploadStatus.failed
+            ? AppColors.error
+            : AppColors.borderPrimary,
         ),
       ),
       child: Row(
         children: [
           // 预览
           _buildPreview(),
-          const SizedBox(width: 12),
-          
+          const SizedBox(width: AppDimensions.spacingMd),
+
           // 文件信息和状态
           Expanded(
             child: Column(
@@ -257,8 +259,8 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
-                
+                const SizedBox(height: AppDimensions.spacingXs),
+
                 // 文件大小和状态
                 Row(
                   children: [
@@ -266,51 +268,51 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
                       _formatFileSize(_item.fileSize),
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey[600],
+                        color: AppColors.textSecondary,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppDimensions.spacingSm),
                     if (_item.status == FileUploadStatus.success)
-                      const Icon(Icons.check_circle, color: Colors.green, size: 16),
+                      Icon(Icons.check_circle, color: AppColors.success, size: 16),
                     if (_item.status == FileUploadStatus.failed)
-                      Icon(Icons.error, color: Colors.red[400], size: 16),
+                      Icon(Icons.error, color: AppColors.error, size: 16),
                   ],
                 ),
-                
+
                 // 进度条或错误信息
                 if (_item.status == FileUploadStatus.uploading) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppDimensions.spacingSm),
                   LinearProgressIndicator(
                     value: _item.progress,
-                    backgroundColor: Colors.grey[200],
+                    backgroundColor: AppColors.borderPrimary,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      Theme.of(context).primaryColor,
+                      Theme.of(context).colorScheme.primary,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppDimensions.spacingXs),
                   Text(
                     '上传中 ${(_item.progress * 100).toInt()}%',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Theme.of(context).primaryColor,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                 ],
-                
+
                 if (_item.errorMessage != null) ...[
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppDimensions.spacingXs),
                   Text(
                     _item.errorMessage!,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.red[400],
+                      color: AppColors.error,
                     ),
                   ),
                 ],
               ],
             ),
           ),
-          
+
           // 操作按钮
           if (_item.status == FileUploadStatus.failed && _retryCount < _maxRetryCount)
             IconButton(
@@ -323,14 +325,14 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
                   _startUpload();
                 }
               },
-              color: Theme.of(context).primaryColor,
+              color: Theme.of(context).colorScheme.primary,
               tooltip: '重试上传',
             )
           else if (_item.status != FileUploadStatus.uploading)
             IconButton(
               icon: const Icon(Icons.close, size: 20),
               onPressed: widget.onRemove,
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
             ),
         ],
       ),

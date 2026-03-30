@@ -11,6 +11,8 @@ import 'package:dskk_flutter_refactor/features/after_sales/domain/entities/after
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_list_bloc.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_item_card.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 // Import the new AfterSalesDetailPage
 
 /// 订单列表页面
@@ -247,7 +249,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                       color: Theme.of(context).scaffoldBackgroundColor,
                       border: Border(
                         bottom: BorderSide(
-                          color: Theme.of(context).dividerColor.withOpacity(0.1),
+                          color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
                         ),
                       ),
                     ),
@@ -362,7 +364,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                      ),
                    );
                 } else if (state is OrderListLoading) {
-                   return const Center(child: CircularProgressIndicator());
+                   return const SkeletonPage(itemCount: 5);
                 } else if (state is OrderListError) { // Correct error state name
                    // Show a simple error message, maybe with a retry button
                    return Center(
@@ -373,7 +375,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                          shape: RoundedRectangleBorder(
                            borderRadius: BorderRadius.circular(12.0),
                            side: BorderSide(
-                             color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                             color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
                            ),
                          ),
                          child: Padding(
@@ -606,9 +608,9 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                           ? Image.network(
                               application.productImage!,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Icon(Icons.image_not_supported, color: Colors.grey[400]),
+                              errorBuilder: (_, __, ___) => Icon(Icons.image_not_supported, color: AppColors.textTertiary),
                             )
-                          : Icon(Icons.image, color: Colors.grey[400]),
+                          : Icon(Icons.image, color: AppColors.textTertiary),
                     ),
                   ),
                   const SizedBox(width: 12),

@@ -14,6 +14,8 @@ import 'package:go_router/go_router.dart';
 import 'product_edit_page.dart'; // 导入ExtendedProductFormData
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/loading_state.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 商品预览页面 - 使用与商品详情页一致的UI
 class ProductPreviewPage extends StatefulWidget {
@@ -230,10 +232,10 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('商品预览'),
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.backgroundCard,
         elevation: 1,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
@@ -245,7 +247,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
             icon: const Icon(Icons.edit),
             label: const Text('返回编辑'),
             style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFFBF7D2A),
+              foregroundColor: AppColors.borderInputFocus,
             ),
           ),
           const SizedBox(width: 16),
@@ -265,11 +267,11 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                        const Icon(Icons.error_outline, size: 48, color: AppColors.error),
                         const SizedBox(height: 16),
                         Text(
                           state.errorMessage ?? '加载商品信息失败',
-                          style: const TextStyle(color: Colors.red),
+                          style: const TextStyle(color: AppColors.error),
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton(
@@ -433,19 +435,19 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.amber.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.amber),
+        color: AppColors.warning.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+        border: Border.all(color: AppColors.warning),
       ),
       child: Row(
         children: [
-          const Icon(Icons.info_outline, color: Colors.amber),
+          const Icon(Icons.info_outline, color: AppColors.warning),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
+            child: const Text(
               '这是商品预览模式，买家将看到类似的界面',
               style: TextStyle(
-                color: Colors.amber[800],
+                color: AppColors.warning,
                 fontSize: 14,
               ),
             ),

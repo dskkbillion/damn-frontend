@@ -10,11 +10,13 @@ import '../../../../generated/app_localizations.dart';
 import '../../domain/entities/product_review.dart';
 import '../cubit/product_reviews_cubit.dart';
 import '../cubit/product_reviews_state.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 商品评论详情页面
 class ProductReviewsPage extends StatelessWidget {
   final int productId;
-  
+
   const ProductReviewsPage({
     Key? key,
     required this.productId,
@@ -28,7 +30,7 @@ class ProductReviewsPage extends StatelessWidget {
         appBar: AppBar(
           title: const Text('评论'),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+            icon: const Icon(Icons.arrow_back_ios),
             onPressed: () => context.pop(),
           ),
         ),
@@ -42,7 +44,7 @@ class ProductReviewsPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text('加载失败: ${state.message}'),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppDimensions.spacingLg),
                     ElevatedButton(
                       onPressed: () {
                         context.read<ProductReviewsCubit>().getProductReviews(productId);
@@ -66,9 +68,9 @@ class ProductReviewsPage extends StatelessWidget {
     if (state.reviews.isEmpty) {
       return const Center(child: Text('暂无评论'));
     }
-    
+
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
       itemCount: state.reviews.length,
       separatorBuilder: (context, index) => const Divider(height: 32),
       itemBuilder: (context, index) {
@@ -97,7 +99,7 @@ class ProductReviewsPage extends StatelessWidget {
                       : '?')
                   : null,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppDimensions.spacingMd),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,21 +107,19 @@ class ProductReviewsPage extends StatelessWidget {
                   // 用户名
                   Text(
                     review.buyer.nickName,
-                    style: const TextStyle(
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
                     ),
                   ),
                   // 评分 + 套餐名
                   Row(
                     children: [
                       _buildRatingStars(review.score),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppDimensions.spacingSm),
                       Text(
                         review.skuName,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -130,39 +130,37 @@ class ProductReviewsPage extends StatelessWidget {
             // 评论时间
             Text(
               _formatDateTime(context, review.createTime),
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppDimensions.spacingMd),
         // 显示评论内容
         Text(
           review.content ?? '用户未填写评价内容',
-          style: TextStyle(
-            fontSize: 14,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             height: 1.5,
-            color: review.content == null ? Colors.grey : null,
+            color: review.content == null ? AppColors.textTertiary : null,
           ),
         ),
-        
+
         // 评论图片
         if (review.images != null && review.images!.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.only(top: 8.0),
+            padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
             child: _buildReviewImages(review.images!),
           ),
-        
+
         // 卖家回复
         if (review.sellerReply != null && review.sellerReply!.isNotEmpty)
           Container(
-            margin: const EdgeInsets.only(top: 12),
-            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.only(top: AppDimensions.spacingMd),
+            padding: const EdgeInsets.all(AppDimensions.spacingMd),
             decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(8),
+              color: AppColors.backgroundSecondary,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -172,35 +170,32 @@ class ProductReviewsPage extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor,
-                        borderRadius: BorderRadius.circular(4),
+                        color: Theme.of(context).colorScheme.primary,
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                       ),
                       child: Text(
                         '卖家回复',
-                        style: const TextStyle(
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.white,
-                          fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                     if (review.sellerReplyTime != null) ...[
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppDimensions.spacingSm),
                       Text(
                         _formatDateTime(context, review.sellerReplyTime!),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppDimensions.spacingSm),
                 Text(
                   review.sellerReply!,
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     height: 1.5,
                   ),
                 ),
@@ -232,13 +227,13 @@ class ProductReviewsPage extends StatelessWidget {
         itemCount: images.length,
         itemBuilder: (context, index) {
           return Padding(
-            padding: const EdgeInsets.only(right: 8.0),
+            padding: const EdgeInsets.only(right: AppDimensions.spacingSm),
             child: GestureDetector(
               onTap: () {
                 // 点击查看大图
               },
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                 child: CachedNetworkImage(
                   imageUrl: images[index],
                   width: 80,
@@ -247,7 +242,7 @@ class ProductReviewsPage extends StatelessWidget {
                   placeholder: (context, url) => Container(
                     width: 80,
                     height: 80,
-                    color: Colors.grey[200],
+                    color: AppColors.borderPrimary,
                     child: const Center(
                       child: CircularProgressIndicator(),
                     ),
@@ -255,7 +250,7 @@ class ProductReviewsPage extends StatelessWidget {
                   errorWidget: (context, url, error) => Container(
                     width: 80,
                     height: 80,
-                    color: Colors.grey[200],
+                    color: AppColors.borderPrimary,
                     child: const Icon(Icons.error),
                   ),
                 ),
@@ -272,7 +267,7 @@ class ProductReviewsPage extends StatelessWidget {
       final dateTime = DateTime.parse(dateTimeStr);
       final now = DateTime.now();
       final difference = now.difference(dateTime);
-      
+
       if (difference.inDays > 365) {
         return '${(difference.inDays / 365).floor()}年前';
       } else if (difference.inDays > 30) {
@@ -290,4 +285,4 @@ class ProductReviewsPage extends StatelessWidget {
       return dateTimeStr;
     }
   }
-} 
+}

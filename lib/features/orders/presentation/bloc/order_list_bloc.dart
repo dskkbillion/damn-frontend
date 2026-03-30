@@ -31,6 +31,15 @@ class OrderListBloc extends Bloc<OrderListEvent, OrderListState> {
   OrderStatus? currentStatus; // Track current filter status
   String? currentSearchQuery; // Track current search query
 
+  /// Buyer-role in-memory cache: key = cache key string, value = order list.
+  static final Map<String, List<Order>> _buyerCache = {};
+
+  /// Seller-role in-memory cache: key = cache key string, value = order list.
+  static final Map<String, List<Order>> _sellerCache = {};
+
+  static String _cacheKey(String role, OrderStatus? status) =>
+      '${role}_orders_${status?.name ?? 'all'}';
+
   OrderListBloc({required GetOrderListUseCase getOrderListUseCase})
       : _getOrderListUseCase = getOrderListUseCase,
         super(OrderListInitial()) { // Initial state
@@ -51,7 +60,19 @@ class OrderListBloc extends Bloc<OrderListEvent, OrderListState> {
 
     currentPage = 1; // Reset page for new filter/refresh
     currentStatus = event.status;
-    emit(OrderListLoading()); // Indicate loading
+
+    // Stale-while-revalidate: emit cached data immediately if available.
+    final cacheKey = _cacheKey('buyer', currentStatus);
+    final cached = _buyerCache[cacheKey];
+    if (cached != null && cached.isNotEmpty) {
+      emit(OrderListLoaded(
+        orders: cached,
+        hasReachedMax: cached.length < _pageSize,
+        isRefreshing: true,
+      ));
+    } else {
+      emit(OrderListLoading());
+    }
 
     final params = GetOrderListParams(
       page: currentPage,
@@ -63,12 +84,27 @@ class OrderListBloc extends Bloc<OrderListEvent, OrderListState> {
     final Either<Failure, List<Order>> result = await _getOrderListUseCase(params);
 
     result.fold(
-      (failure) => emit(OrderListError(message: 'Failed to load orders: ${failure.toString()}')),
-      (orders) => emit(OrderListLoaded(
-          orders: orders,
-          // If the number of items loaded is less than page size, we've reached the max
-          hasReachedMax: orders.length < _pageSize,
-      )),
+      (failure) {
+        // Remote failed: keep cached data if available, otherwise emit error.
+        if (cached != null && cached.isNotEmpty) {
+          emit(OrderListLoaded(
+            orders: cached,
+            hasReachedMax: cached.length < _pageSize,
+            isRefreshing: false,
+          ));
+        } else {
+          emit(OrderListError(message: 'Failed to load orders: ${failure.toString()}'));
+        }
+      },
+      (orders) {
+        _buyerCache[cacheKey] = orders;
+        emit(OrderListLoaded(
+            orders: orders,
+            // If the number of items loaded is less than page size, we've reached the max
+            hasReachedMax: orders.length < _pageSize,
+            isRefreshing: false,
+        ));
+      },
     );
   }
 

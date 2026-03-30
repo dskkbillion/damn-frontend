@@ -8,6 +8,8 @@ import 'package:go_router/go_router.dart';
 import '../bloc/after_sales_bloc.dart'; // Import Bloc/Event
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 售后申请表单页面
 class AfterSalesApplyPage extends StatefulWidget {
@@ -95,7 +97,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('成功处理 $successCount 张图片，平均压缩 ${avgCompression.toStringAsFixed(1)}%'),
-              backgroundColor: Colors.green,
+              backgroundColor: AppColors.success,
             ),
           );
         }

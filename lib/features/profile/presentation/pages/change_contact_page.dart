@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_button.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_input_field.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/phone_input_field.dart';
@@ -47,8 +49,6 @@ class _ChangeContactPageState extends State<ChangeContactPage> {
 
   bool get _isEmail => widget.contactType == 'email';
 
-  static const Color primaryColor = Color(0xFFB66D0E);
-  static const Color buttonBackgroundColor = Color(0xFFC58C4A);
 
   @override
   void initState() {
@@ -135,7 +135,7 @@ class _ChangeContactPageState extends State<ChangeContactPage> {
             _step1IsSending = false;
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('验证码已发送'), backgroundColor: Colors.green),
+            const SnackBar(content: Text('验证码已发送'), backgroundColor: AppColors.success),
           );
           // Reset to idle after 60s
           Future.delayed(const Duration(seconds: 60), () {
@@ -149,7 +149,7 @@ class _ChangeContactPageState extends State<ChangeContactPage> {
         if (mounted) {
           setState(() => _step1IsSending = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
+            SnackBar(content: Text(errorMsg), backgroundColor: AppColors.error),
           );
         }
       }
@@ -160,7 +160,7 @@ class _ChangeContactPageState extends State<ChangeContactPage> {
             ? e.response?.data['msg']
             : '发送验证码失败，请检查网络连接';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: Colors.red),
+          SnackBar(content: Text(msg), backgroundColor: AppColors.error),
         );
       }
     }
@@ -201,7 +201,7 @@ class _ChangeContactPageState extends State<ChangeContactPage> {
         if (mounted) {
           setState(() => _isSubmitting = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
+            SnackBar(content: Text(errorMsg), backgroundColor: AppColors.error),
           );
         }
       }
@@ -212,7 +212,7 @@ class _ChangeContactPageState extends State<ChangeContactPage> {
             ? e.response?.data['msg']
             : '验证失败，请检查网络连接';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: Colors.red),
+          SnackBar(content: Text(msg), backgroundColor: AppColors.error),
         );
       }
     }
@@ -243,7 +243,7 @@ class _ChangeContactPageState extends State<ChangeContactPage> {
             _step2IsSending = false;
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('验证码已发送'), backgroundColor: Colors.green),
+            const SnackBar(content: Text('验证码已发送'), backgroundColor: AppColors.success),
           );
           Future.delayed(const Duration(seconds: 60), () {
             if (mounted && _step2CodeState == CodeButtonState.counting) {
@@ -256,7 +256,7 @@ class _ChangeContactPageState extends State<ChangeContactPage> {
         if (mounted) {
           setState(() => _step2IsSending = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
+            SnackBar(content: Text(errorMsg), backgroundColor: AppColors.error),
           );
         }
       }
@@ -267,7 +267,7 @@ class _ChangeContactPageState extends State<ChangeContactPage> {
             ? e.response?.data['msg']
             : '发送验证码失败，请检查网络连接';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: Colors.red),
+          SnackBar(content: Text(msg), backgroundColor: AppColors.error),
         );
       }
     }
@@ -303,7 +303,7 @@ class _ChangeContactPageState extends State<ChangeContactPage> {
           // Refresh profile
           GetIt.instance<ProfileBloc>().add(const GetUserProfileEvent(skipCache: true));
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('换绑成功'), backgroundColor: Colors.green),
+            const SnackBar(content: Text('换绑成功'), backgroundColor: AppColors.success),
           );
           context.pop(true);
         }
@@ -312,7 +312,7 @@ class _ChangeContactPageState extends State<ChangeContactPage> {
         if (mounted) {
           setState(() => _isSubmitting = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
+            SnackBar(content: Text(errorMsg), backgroundColor: AppColors.error),
           );
         }
       }
@@ -323,7 +323,7 @@ class _ChangeContactPageState extends State<ChangeContactPage> {
             ? e.response?.data['msg']
             : '换绑失败，请检查网络连接';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: Colors.red),
+          SnackBar(content: Text(msg), backgroundColor: AppColors.error),
         );
       }
     }
@@ -331,17 +331,7 @@ class _ChangeContactPageState extends State<ChangeContactPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
-      data: Theme.of(context).copyWith(
-        colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: primaryColor,
-              secondary: primaryColor,
-            ),
-        textButtonTheme: TextButtonThemeData(
-          style: TextButton.styleFrom(foregroundColor: primaryColor),
-        ),
-      ),
-      child: Scaffold(
+    return Scaffold(
         appBar: AppBar(
           title: Text(_isEmail ? '换绑邮箱' : '换绑手机号'),
           leading: IconButton(
@@ -353,7 +343,6 @@ class _ChangeContactPageState extends State<ChangeContactPage> {
           padding: const EdgeInsets.all(24.0),
           child: _currentStep == 1 ? _buildStep1() : _buildStep2(),
         ),
-      ),
     );
   }
 
@@ -376,13 +365,13 @@ class _ChangeContactPageState extends State<ChangeContactPage> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade300),
+            color: AppColors.backgroundSecondary,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+            border: Border.all(color: AppColors.borderInput),
           ),
           child: Text(
             _maskContact(widget.currentContact),
-            style: const TextStyle(fontSize: 16, color: Color(0xFF333333)),
+            style: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
           ),
         ),
         const SizedBox(height: 16),
@@ -409,11 +398,11 @@ class _ChangeContactPageState extends State<ChangeContactPage> {
           child: ElevatedButton(
             onPressed: _isSubmitting ? null : _onVerifyOldContact,
             style: ElevatedButton.styleFrom(
-              backgroundColor: buttonBackgroundColor,
+              backgroundColor: Theme.of(context).colorScheme.primary,
               foregroundColor: Colors.white,
-              disabledBackgroundColor: buttonBackgroundColor.withValues(alpha: 0.7),
+              disabledBackgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
               padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusMd)),
             ),
             child: _isSubmitting
                 ? const SizedBox(
@@ -488,11 +477,11 @@ class _ChangeContactPageState extends State<ChangeContactPage> {
             child: ElevatedButton(
               onPressed: _isSubmitting ? null : _onChangeContact,
               style: ElevatedButton.styleFrom(
-                backgroundColor: buttonBackgroundColor,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: buttonBackgroundColor.withValues(alpha: 0.7),
+                disabledBackgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusMd)),
               ),
               child: _isSubmitting
                   ? const SizedBox(

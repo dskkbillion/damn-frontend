@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 空状态组件
 ///
@@ -29,7 +31,7 @@ class EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: EdgeInsets.all(AppDimensions.spacingXxl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -37,31 +39,29 @@ class EmptyState extends StatelessWidget {
             Icon(
               icon,
               size: 64,
-              color: Colors.grey[400],
+              color: AppColors.textTertiary,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: AppDimensions.spacingLg),
             Text(
               text,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
-              ),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textPrimary,
+                  ),
               textAlign: TextAlign.center,
             ),
             if (subText != null) ...[
-              const SizedBox(height: 8),
+              SizedBox(height: AppDimensions.spacingSm),
               Text(
                 subText!,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                 textAlign: TextAlign.center,
               ),
             ],
             if (action != null) ...[
-              const SizedBox(height: 24),
+              SizedBox(height: AppDimensions.spacingXxl),
               action!,
             ],
           ],

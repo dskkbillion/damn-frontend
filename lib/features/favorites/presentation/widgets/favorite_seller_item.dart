@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 import '../../domain/entities/favorite_seller.dart';
 
@@ -27,19 +29,19 @@ class FavoriteSellerItem extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(AppDimensions.spacingMd),
           child: Row(
             children: [
               // 卖家头像
               CircleAvatar(
                 radius: 30,
-                backgroundColor: Colors.grey[300],
+                backgroundColor: AppColors.borderInput,
                 backgroundImage: seller.avatar != null
                     ? NetworkImage(seller.avatar!)
                     : null,
@@ -47,7 +49,7 @@ class FavoriteSellerItem extends StatelessWidget {
                     ? Icon(
                         Icons.person,
                         size: 30,
-                        color: Colors.grey[600],
+                        color: AppColors.textSecondary,
                       )
                     : null,
               ),
@@ -74,7 +76,7 @@ class FavoriteSellerItem extends StatelessWidget {
                         seller.trueName!,
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.grey[600],
+                          color: AppColors.textSecondary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -86,31 +88,31 @@ class FavoriteSellerItem extends StatelessWidget {
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
+                            horizontal: AppDimensions.spacingSm,
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.blue[100],
-                            borderRadius: BorderRadius.circular(4),
+                            color: AppColors.info.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                           ),
                           child: Text(
                             _getSellerTypeText(seller.type),
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
-                              color: Colors.blue[800],
+                              color: AppColors.info,
                             ),
                           ),
                         ),
                         if (seller.status != null) ...[
-                          const SizedBox(width: 8),
+                          const SizedBox(width: AppDimensions.spacingSm),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
+                              horizontal: AppDimensions.spacingSm,
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
                               color: _getStatusColor(seller.status!)[0],
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                             ),
                             child: Text(
                               _getStatusText(seller.status!),
@@ -133,7 +135,7 @@ class FavoriteSellerItem extends StatelessWidget {
                   icon: const Icon(Icons.person_remove),
                   label: const Text('取消关注'),
                   style: TextButton.styleFrom(
-                    foregroundColor: Colors.grey[700],
+                    foregroundColor: AppColors.textSecondary,
                   ),
                 ),
             ],
@@ -177,15 +179,15 @@ class FavoriteSellerItem extends StatelessWidget {
   List<Color> _getStatusColor(String status) {
     switch (status) {
       case 'ACTIVE':
-        return [Colors.green[100]!, Colors.green[800]!];
+        return [AppColors.success.withOpacity(0.15), AppColors.success];
       case 'INACTIVE':
         return [Colors.orange[100]!, Colors.orange[800]!];
       case 'SUSPENDED':
-        return [Colors.red[100]!, Colors.red[800]!];
+        return [AppColors.error.withOpacity(0.15), AppColors.error];
       case 'BANNED':
-        return [Colors.grey[300]!, Colors.grey[800]!];
+        return [AppColors.borderInput, AppColors.textPrimary];
       default:
-        return [Colors.grey[300]!, Colors.grey[800]!];
+        return [AppColors.borderInput, AppColors.textPrimary];
     }
   }
 }

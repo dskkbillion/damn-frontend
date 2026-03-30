@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:path_provider/path_provider.dart';
@@ -12,22 +14,16 @@ import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 
 import '../bloc/ai_chat/ai_chat_bloc.dart';
 import 'pulsating_mic_button.dart';
-// Remove direct imports of part files
-// import '../bloc/ai_chat/ai_chat_state.dart';
-// import '../bloc/ai_chat/ai_chat_event.dart';
 
 // Convert to StatefulWidget to manage local recording state for UI feedback
 class ChatInputField extends StatefulWidget {
   final TextEditingController textController;
   final Function(String) onSendMessage;
-  // TODO: Add a callback for when voice recording finishes
-  // final Function(String filePath) onSendVoice; 
 
   const ChatInputField({
     super.key,
     required this.textController,
     required this.onSendMessage,
-    // required this.onSendVoice,
   });
 
   @override
@@ -38,7 +34,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
   bool _isRecording = false; // Local state to track recording status
   final AudioRecorder _audioRecorder = AudioRecorder(); // Instance of the recorder
   String? _recordingPath; // To store the path of the recording
-  
+
   // 录音时间相关
   final Stopwatch _recordingStopwatch = Stopwatch();
   Duration _recordingDuration = Duration.zero;
@@ -54,11 +50,11 @@ class _ChatInputFieldState extends State<ChatInputField> {
   @override
   Widget build(BuildContext context) {
     final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
-    
+
     // Use BlocBuilder to access the full state, including pendingImageFiles & imageUploadStates
     return BlocBuilder<AiChatBloc, AiChatState>(
-      buildWhen: (previous, current) => 
-          previous.status != current.status || 
+      buildWhen: (previous, current) =>
+          previous.status != current.status ||
           previous.pendingImageFiles != current.pendingImageFiles ||
           previous.imageUploadStates != current.imageUploadStates, // Also rebuild on upload state changes
       builder: (context, state) {
@@ -71,9 +67,9 @@ class _ChatInputFieldState extends State<ChatInputField> {
                            isCancelling;
         final List<File> pendingImages = state.pendingImageFiles ?? [];
         // Get the upload states map
-        final Map<String, ImageUploadState> uploadStates = state.imageUploadStates ?? {}; 
-        
-        // --- Check if any image is currently uploading --- 
+        final Map<String, ImageUploadState> uploadStates = state.imageUploadStates ?? {};
+
+        // --- Check if any image is currently uploading ---
         bool isAnyImageUploading = false;
         if (pendingImages.isNotEmpty) {
           isAnyImageUploading = pendingImages.any((file) {
@@ -81,7 +77,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
             return status == ImageUploadStatus.uploading;
           });
         }
-        // --- End check --- 
+        // --- End check ---
 
         return ValueListenableBuilder<TextEditingValue>(
           valueListenable: widget.textController,
@@ -92,36 +88,39 @@ class _ChatInputFieldState extends State<ChatInputField> {
              final bool baseCanSendMessage = !isBusy && !(_isRecording ?? false) && (hasText || hasImages);
 
              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingSm,
+                  vertical: AppDimensions.spacingSm,
+                ),
                 decoration: BoxDecoration(
                  color: Theme.of(context).cardColor,
                  boxShadow: [
-                    BoxShadow(
-                      offset: const Offset(0, -1),
+                    const BoxShadow(
+                      offset: Offset(0, -1),
                       blurRadius: 4,
-                      color: Colors.black.withOpacity(0.05),
+                      color: AppColors.borderSecondary,
                     )
                  ]
                ),
               child: Column( // Use Column to stack preview above input row
                 mainAxisSize: MainAxisSize.min, // Take minimum vertical space
                 children: [
-                  // --- Image Preview Row --- 
+                  // --- Image Preview Row ---
                   if (pendingImages.isNotEmpty)
                     // Pass uploadStates to the preview row builder
                     _buildImagePreviewRow(context, pendingImages, uploadStates),
-                  
+
                   // --- Voice Recording Indicator ---
                   if (_isRecording)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
+                      padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
                       child: VoiceRecordingIndicator(
                         isRecording: _isRecording,
                         recordingDuration: _recordingDuration,
                       ),
                     ),
-                  
-                  // --- Input Row --- 
+
+                  // --- Input Row ---
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -129,7 +128,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                       IconButton(
                         icon: const Icon(Icons.add_photo_alternate_outlined),
                         // Use internal method _pickAndDispatchImage
-                        onPressed: isBusy || _isRecording ? null : _pickAndDispatchImage, 
+                        onPressed: isBusy || _isRecording ? null : _pickAndDispatchImage,
                         tooltip: appLocalizations.ai_docs_add_image, // 使用国际化文本
                       ),
                       // Attach Voice Button (Stateful)
@@ -143,38 +142,41 @@ class _ChatInputFieldState extends State<ChatInputField> {
                       Expanded(
                         child: TextField(
                           controller: widget.textController,
-                          enabled: !isBusy && !_isRecording, 
+                          enabled: !isBusy && !_isRecording,
                           decoration: InputDecoration(
                             hintText: _isRecording ? appLocalizations.ai_docs_recording : appLocalizations.ai_docs_enter_message, // 使用国际化文本
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(24.0),
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
                               borderSide: BorderSide.none,
                             ),
                             filled: true,
-                            fillColor: Colors.grey[100],
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                            fillColor: AppColors.backgroundSecondary,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: AppDimensions.spacingLg,
+                              vertical: AppDimensions.spacingMd,
+                            ),
                           ),
                           // Send button logic moved solely to IconButton
-                          onSubmitted: baseCanSendMessage 
-                                         ? (_) => widget.onSendMessage(widget.textController.text) 
-                                         : null, 
-                          textInputAction: TextInputAction.send, 
+                          onSubmitted: baseCanSendMessage
+                                         ? (_) => widget.onSendMessage(widget.textController.text)
+                                         : null,
+                          textInputAction: TextInputAction.send,
                         ),
                       ),
                       // Send / Stop Generation Button
                        if (isStreaming || isCancelling)
                           IconButton(
-                            icon: isCancelling 
+                            icon: isCancelling
                                 ? const SizedBox(
                                     width: 20,
                                     height: 20,
                                     child: CircularProgressIndicator(strokeWidth: 2)
                                   )
-                                : const Icon(Icons.stop_circle, color: Colors.red),
-                            tooltip: isCancelling 
+                                : const Icon(Icons.stop_circle, color: AppColors.error),
+                            tooltip: isCancelling
                                 ? appLocalizations.ai_docs_cancelling_generation
                                 : appLocalizations.ai_docs_stop_generation, // 使用国际化文本
-                            onPressed: isCancelling 
+                            onPressed: isCancelling
                                 ? null // 取消中时禁用按钮
                                 : () {
                                     // 使用新的CancelChatGeneration事件，这会调用后端API
@@ -185,9 +187,9 @@ class _ChatInputFieldState extends State<ChatInputField> {
                           IconButton(
                             icon: const Icon(Icons.send),
                             // Enable based on base conditions, logic inside onPressed
-                            onPressed: baseCanSendMessage 
+                            onPressed: baseCanSendMessage
                                          ? () {
-                                             // --- Check for uploading images before sending --- 
+                                             // --- Check for uploading images before sending ---
                                              if (isAnyImageUploading) {
                                                 // Show feedback and DO NOT send
                                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -216,13 +218,13 @@ class _ChatInputFieldState extends State<ChatInputField> {
 
   // --- Helper Widget for Image Preview Row (Updated) ---
   Widget _buildImagePreviewRow(
-    BuildContext context, 
-    List<File> images, 
+    BuildContext context,
+    List<File> images,
     Map<String, ImageUploadState> uploadStates // Receive upload states
   ) {
     return Container(
       height: 80, // Adjust height as needed
-      padding: const EdgeInsets.only(bottom: 8.0), 
+      padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: images.length,
@@ -230,17 +232,17 @@ class _ChatInputFieldState extends State<ChatInputField> {
           final file = images[index];
           final filePath = file.path;
           // Get the upload state for this specific file
-          final uploadState = uploadStates[filePath]; 
+          final uploadState = uploadStates[filePath];
 
           return Padding(
-            padding: const EdgeInsets.only(right: 8.0),
+            padding: const EdgeInsets.only(right: AppDimensions.spacingSm),
             child: Stack(
-              clipBehavior: Clip.none, 
+              clipBehavior: Clip.none,
               alignment: Alignment.center, // Center potential overlay icons
               children: [
                 // Image Preview
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(8.0),
+                  borderRadius: BorderRadius.circular(AppDimensions.spacingSm),
                   child: Image.file(
                     file,
                     width: 70, // Adjust size
@@ -250,30 +252,30 @@ class _ChatInputFieldState extends State<ChatInputField> {
                     errorBuilder: (context, error, stackTrace) => Container(
                       width: 70,
                       height: 70,
-                      color: Colors.grey[300],
-                      child: const Icon(Icons.broken_image, color: Colors.grey, size: 30),
+                      color: AppColors.borderInput,
+                      child: const Icon(Icons.broken_image, color: AppColors.textTertiary, size: 30),
                     ),
                   ),
                 ),
 
-                // --- Upload Status Overlay --- 
+                // --- Upload Status Overlay ---
                 if (uploadState != null)
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
-                         borderRadius: BorderRadius.circular(8.0),
+                         borderRadius: BorderRadius.circular(AppDimensions.spacingSm),
                          // Semi-transparent overlay based on status
-                         color: uploadState.status == ImageUploadStatus.uploading 
-                                ? Colors.black.withOpacity(0.5) 
+                         color: uploadState.status == ImageUploadStatus.uploading
+                                ? Colors.black.withOpacity(0.5)
                                 : uploadState.status == ImageUploadStatus.failure
-                                  ? Colors.red.withOpacity(0.6)
+                                  ? AppColors.error.withOpacity(0.6)
                                   : Colors.transparent, // No overlay for success
                       ),
                       child: Center(
                         child: switch (uploadState.status) {
                            ImageUploadStatus.uploading => const SizedBox(
-                               width: 24, 
-                               height: 24, 
+                               width: 24,
+                               height: 24,
                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                             ),
                            ImageUploadStatus.failure => const Icon(
@@ -323,20 +325,20 @@ class _ChatInputFieldState extends State<ChatInputField> {
         type: ImageUploadType.aiDocument,
         allowMultiple: false,
       );
-      
+
       if (results.isNotEmpty && mounted) {
         final result = results.first;
-        
+
         if (result.isSuccess) {
           // Dispatch PickImage event with the processed file
           context.read<AiChatBloc>().add(PickImage(imageFile: result.finalFile));
-          
+
           // Show compression info for AI documents (important for quality awareness)
           if (result.compressionRatio != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('图片已优化处理，压缩 ${result.compressionRatio!.toStringAsFixed(1)}%'),
-                backgroundColor: Colors.green,
+                backgroundColor: AppColors.success,
                 duration: const Duration(seconds: 2),
               ),
             );
@@ -361,14 +363,11 @@ class _ChatInputFieldState extends State<ChatInputField> {
   // Handle voice button logic with actual recording
   void _handleVoiceButtonPress() async {
     final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
-    
+
     if (!_isRecording) {
       // --- Start Recording ---
       // 1. Check for microphone permission
       if (!await _audioRecorder.hasPermission()) {
-         // Request permission (consider using permission_handler for better flow)
-         // For simplicity, show a snackbar if permission denied.
-         // You might want a more robust permission handling flow.
          final status = await Permission.microphone.request();
          if (!status.isGranted) {
             if (mounted) {
@@ -383,7 +382,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
        // 2. Start recording to a temporary path
       final Directory tempDir = await getTemporaryDirectory();
       final String filePath = '${tempDir.path}/audio_${DateTime.now().millisecondsSinceEpoch}.wav'; // 使用WAV格式
-      
+
       // 修改录音配置，使用WAV格式，16kbps码率
        const recordConfig = RecordConfig(
          encoder: AudioEncoder.wav, // 使用WAV格式
@@ -399,10 +398,10 @@ class _ChatInputFieldState extends State<ChatInputField> {
              _recordingPath = filePath; // Store the path
              widget.textController.clear(); // Clear text field
            });
-           
+
            // 开始计时
            _recordingStopwatch.start();
-           _recordingTimer = Timer.periodic(Duration(milliseconds: 100), (timer) {
+           _recordingTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
              if (mounted) {
                setState(() {
                  _recordingDuration = _recordingStopwatch.elapsed;
@@ -427,7 +426,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
          setState(() {
            _isRecording = false;
          });
-         
+
          // 停止计时
          _recordingTimer?.cancel();
          _recordingStopwatch.stop();
@@ -437,7 +436,6 @@ class _ChatInputFieldState extends State<ChatInputField> {
          if (path != null) {
             final recordedFile = File(path);
             if (await recordedFile.exists()) {
-                // TODO: Add encoding/compression step here if needed to meet 16kbps
                 AppLogger.d("Recorded file size: ${await recordedFile.length()} bytes");
 
                // Dispatch the event with the **actual recorded file**
@@ -445,7 +443,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                    // 获取当前AI聊天Bloc状态
                    final aiChatBloc = context.read<AiChatBloc>();
                    final currentState = aiChatBloc.state;
-                   
+
                    // 检查是否已选择对话，如果没有选择，先创建新对话
                    if (currentState.selectedConversationId == null) {
                      // 先创建新对话，再发送语音消息
@@ -455,7 +453,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                      // 已有对话，直接发送语音消息
                      aiChatBloc.add(SendVoiceMessage(audioFile: recordedFile));
                    }
-                } 
+                }
              } else {
                AppLogger.d("Error: Recorded file not found at path: $path");
                 if (mounted) {
@@ -482,7 +480,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
           // Ensure recording state is reset even if stopping fails
          if (mounted && _isRecording) {
            setState(() => _isRecording = false);
-           
+
            // 停止计时
            _recordingTimer?.cancel();
            _recordingStopwatch.stop();
@@ -495,8 +493,6 @@ class _ChatInputFieldState extends State<ChatInputField> {
 
   // 添加长按操作显示Markdown示例菜单
   void _showMarkdownExampleMenu() {
-    final appLocalizations = AppLocalizations.of(context)!;
-    
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -634,7 +630,7 @@ void main() {
       },
     );
   }
-  
+
   // 发送Markdown示例
   void _sendMarkdownExample(String markdownText) {
     // 清理不必要的前导和尾随空白，但保留内部格式
@@ -644,4 +640,4 @@ void main() {
     // 发送消息
     widget.onSendMessage(cleanedText);
   }
-} 
+}

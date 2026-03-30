@@ -14,6 +14,10 @@ class ChatLocalDataSourceImpl implements IChatLocalDataSource {
   static const String _lastMessageIdPrefix = 'last_message_id_';
   static const String _paymentPromptPrefix = 'payment_prompt_sent_';
   static const String _paymentPromptCountPrefix = 'payment_prompt_count_';
+  static const String _chatRoomListKey = 'chat_room_list';
+
+  // In-memory cache for fast access (avoids JSON round-trip on repeated reads)
+  static List<ChatRoom>? _cachedRoomList;
   
   ChatLocalDataSourceImpl({
     required SharedPreferences prefs,
@@ -86,6 +90,35 @@ class ChatLocalDataSourceImpl implements IChatLocalDataSource {
     }
   }
   
+  @override
+  Future<void> cacheChatRoomList(List<ChatRoom> rooms) async {
+    try {
+      _cachedRoomList = rooms;
+      final roomsJson = rooms.map((r) => r.toJson()).toList();
+      await _prefs.setString(_chatRoomListKey, jsonEncode(roomsJson));
+    } catch (e) {
+      AppLogger.d('[ChatLocalDataSource] Error caching chat room list: $e');
+    }
+  }
+
+  @override
+  Future<List<ChatRoom>?> getCachedChatRoomList() async {
+    // Return in-memory cache if available
+    if (_cachedRoomList != null) return _cachedRoomList;
+    try {
+      final cachedData = _prefs.getString(_chatRoomListKey);
+      if (cachedData == null) return null;
+      final List<dynamic> roomsJson = jsonDecode(cachedData);
+      _cachedRoomList = roomsJson
+          .map((json) => ChatRoom.fromJson(json as Map<String, dynamic>))
+          .toList();
+      return _cachedRoomList;
+    } catch (e) {
+      AppLogger.d('[ChatLocalDataSource] Error getting cached chat room list: $e');
+      return null;
+    }
+  }
+
   @override
   Future<void> clearAllCache() async {
     final keys = _prefs.getKeys();

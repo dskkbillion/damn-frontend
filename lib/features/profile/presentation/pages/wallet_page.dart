@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 import '../../../../core/widgets/loading_indicator.dart';
 import '../../data/models/transaction_dto.dart';
@@ -259,14 +261,14 @@ class _WalletPageState extends State<WalletPage> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.receipt_long, size: 48, color: Colors.grey),
+                                const Icon(Icons.receipt_long, size: 48, color: AppColors.textTertiary),
                                 const SizedBox(height: 16),
-                                const Text('暂无交易记录', style: TextStyle(color: Colors.grey)),
+                                const Text('暂无交易记录', style: TextStyle(color: AppColors.textTertiary)),
                                 if (loadMoreError != null) const SizedBox(height: 8),
                                 if (loadMoreError != null)
                                   Text(
                                     '加载失败: $loadMoreError',
-                                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                                    style: const TextStyle(color: AppColors.textTertiary, fontSize: 12),
                                     textAlign: TextAlign.center,
                                     maxLines: 3,
                                     overflow: TextOverflow.ellipsis,
@@ -351,7 +353,7 @@ class _WalletPageState extends State<WalletPage> {
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.green,
+                    color: AppColors.success,
                   ),
                 ),
               ],
@@ -412,7 +414,7 @@ class _WalletPageState extends State<WalletPage> {
               label,
               style: TextStyle(
                 fontSize: 12,
-                color: isEnabled ? null : Colors.grey,
+                color: isEnabled ? null : AppColors.textTertiary,
               ),
             ),
           ],
@@ -424,7 +426,7 @@ class _WalletPageState extends State<WalletPage> {
   // 构建交易记录项
   Widget _buildTransactionItem(TransactionDto transaction) {
     final bool isIncome = transaction.type == 'income';
-    final Color amountColor = isIncome ? Colors.green : Colors.red;
+    final Color amountColor = isIncome ? AppColors.success : AppColors.error;
     final String amountText = isIncome
         ? '+${transaction.amount.toStringAsFixed(2)}'
         : '-${transaction.amount.abs().toStringAsFixed(2)}';
@@ -435,26 +437,26 @@ class _WalletPageState extends State<WalletPage> {
     switch (transaction.status) {
       case 'completed':
         statusIcon = Icons.check_circle;
-        statusColor = Colors.green;
+        statusColor = AppColors.success;
         break;
       case 'pending':
         statusIcon = Icons.access_time;
-        statusColor = Colors.orange;
+        statusColor = AppColors.warning;
         break;
       case 'failed':
         statusIcon = Icons.error;
-        statusColor = Colors.red;
+        statusColor = AppColors.error;
         break;
       default:
         statusIcon = Icons.help;
-        statusColor = Colors.grey;
+        statusColor = AppColors.textTertiary;
     }
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: isIncome ? Colors.green[50] : Colors.red[50],
+          backgroundColor: isIncome ? AppColors.success.withValues(alpha: 0.1) : AppColors.error.withValues(alpha: 0.1),
           child: Icon(
             isIncome ? Icons.arrow_downward : Icons.arrow_upward,
             color: amountColor,
@@ -563,7 +565,7 @@ class _WalletPageState extends State<WalletPage> {
             child: Text(
               label,
               style: const TextStyle(
-                color: Colors.grey,
+                color: AppColors.textTertiary,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -605,7 +607,7 @@ class _WalletPageState extends State<WalletPage> {
               '提现到账时间：1-3个工作日',
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey,
+                color: AppColors.textTertiary,
               ),
             ),
           ],
@@ -636,7 +638,7 @@ class _WalletPageState extends State<WalletPage> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('提现申请已提交：${RegionConfig.currencySymbol}${amount.toStringAsFixed(2)}'),
-                  backgroundColor: Colors.green,
+                  backgroundColor: AppColors.success,
                 ),
               );
             },

@@ -46,6 +46,12 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
   // Store the current keyword for loading more
   String? _currentKeyword;
 
+  /// Seller-role in-memory cache: key = cache key string, value = order list.
+  static final Map<String, List<Order>> _sellerCache = {};
+
+  static String _cacheKey(OrderStatus? status) =>
+      'seller_orders_${status?.name ?? 'all'}';
+
   SellerOrderListBloc(
     this._getOrderListUseCase,
     this._confirmOrderAcceptanceUseCase,
@@ -76,7 +82,20 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     _currentStatusFilter = event.statusFilter;
     _currentKeyword = event.keyword;
     _hasReachedMax = false;
-    emit(SellerOrderListLoading());
+
+    // Stale-while-revalidate: emit cached data immediately if available.
+    final cacheKey = _cacheKey(_currentStatusFilter);
+    final cached = _sellerCache[cacheKey];
+    if (cached != null && cached.isNotEmpty) {
+      emit(SellerOrderListSuccess(
+        orders: cached,
+        currentStatusFilter: _currentStatusFilter,
+        hasReachedMax: cached.length < 10,
+        isRefreshing: true,
+      ));
+    } else {
+      emit(SellerOrderListLoading());
+    }
 
     final result = await _getOrderListUseCase(GetOrderListParams(
       page: _currentPage,
@@ -89,19 +108,30 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     result.fold(
       (failure) {
         if (requestId != _latestRequestId) return;
-         // Assume failure is ServerFailure or similar with a message
-         final errorMessage = (failure is ServerFailure) 
-           ? (failure.message ?? 'Unknown server error') // Handle null message in ServerFailure
-           : 'An unknown error occurred';
-         emit(SellerOrderListFailure(message: errorMessage));
+        // Remote failed: keep cached data if available, otherwise emit failure.
+        if (cached != null && cached.isNotEmpty) {
+          emit(SellerOrderListSuccess(
+            orders: cached,
+            currentStatusFilter: _currentStatusFilter,
+            hasReachedMax: cached.length < 10,
+            isRefreshing: false,
+          ));
+        } else {
+          final errorMessage = (failure is ServerFailure)
+              ? (failure.message ?? 'Unknown server error')
+              : 'An unknown error occurred';
+          emit(SellerOrderListFailure(message: errorMessage));
+        }
       },
       (orders) {
         if (requestId != _latestRequestId) return;
+        _sellerCache[cacheKey] = orders;
         final hasReachedMax = orders.length < 10; // Assuming limit is 10
         emit(SellerOrderListSuccess(
           orders: orders,
           currentStatusFilter: _currentStatusFilter,
           hasReachedMax: hasReachedMax,
+          isRefreshing: false,
         ));
       },
     );
@@ -155,7 +185,20 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     _currentStatusFilter = event.newStatusFilter;
     _currentPage = 1;
     _hasReachedMax = false;
-    emit(const SellerOrderListLoading());
+
+    // Stale-while-revalidate: emit cached data for target filter immediately.
+    final cacheKey = _cacheKey(_currentStatusFilter);
+    final cached = _sellerCache[cacheKey];
+    if (cached != null && cached.isNotEmpty) {
+      emit(SellerOrderListSuccess(
+        orders: cached,
+        currentStatusFilter: _currentStatusFilter,
+        hasReachedMax: cached.length < 10,
+        isRefreshing: true,
+      ));
+    } else {
+      emit(const SellerOrderListLoading());
+    }
 
     final result = await _getOrderListUseCase(GetOrderListParams(
       page: _currentPage,
@@ -168,18 +211,29 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
     result.fold(
       (failure) {
         if (requestId != _latestRequestId) return;
-        final errorMessage = (failure is ServerFailure)
-            ? (failure.message ?? 'Unknown server error')
-            : 'An unknown error occurred';
-        emit(SellerOrderListFailure(message: errorMessage));
+        if (cached != null && cached.isNotEmpty) {
+          emit(SellerOrderListSuccess(
+            orders: cached,
+            currentStatusFilter: _currentStatusFilter,
+            hasReachedMax: cached.length < 10,
+            isRefreshing: false,
+          ));
+        } else {
+          final errorMessage = (failure is ServerFailure)
+              ? (failure.message ?? 'Unknown server error')
+              : 'An unknown error occurred';
+          emit(SellerOrderListFailure(message: errorMessage));
+        }
       },
       (orders) {
         if (requestId != _latestRequestId) return;
+        _sellerCache[cacheKey] = orders;
         final hasReachedMax = orders.length < 10;
         emit(SellerOrderListSuccess(
           orders: orders,
           currentStatusFilter: _currentStatusFilter,
           hasReachedMax: hasReachedMax,
+          isRefreshing: false,
         ));
       },
     );

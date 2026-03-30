@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_cubit.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_state.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/phone_input_field.dart';
@@ -62,9 +64,9 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
   @override
   Widget build(BuildContext context) {
     // Define Theme Colors
-    const Color primaryColor = Color(0xFFB66D0E);
-    const Color buttonBackgroundColor = Color(0xFFC58C4A);
-    final Color linkColor = Colors.grey[600]!;
+    final Color primaryColor = AppColors.primary;
+    final Color buttonBackgroundColor = AppColors.primaryVariant;
+    final Color linkColor = AppColors.textSecondary;
 
     return Scaffold(
       body: Theme(
@@ -144,7 +146,7 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                       Container(
                         decoration: BoxDecoration(
                           border: Border.all(color: primaryColor.withOpacity(0.3)),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                         ),
                         child: Row(
                           children: [
@@ -264,7 +266,7 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                             ),
                             disabledBackgroundColor: buttonBackgroundColor.withOpacity(0.7),
                           ),
@@ -355,7 +357,7 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
     required String label,
   }) {
     final isSelected = _loginMode == mode;
-    const primaryColor = Color(0xFFB66D0E);
+    final primaryColor = AppColors.primary;
     
     return Material(
       color: isSelected ? primaryColor.withOpacity(0.1) : Colors.transparent,
@@ -375,7 +377,7 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
               Icon(
                 icon,
                 size: 20,
-                color: isSelected ? primaryColor : Colors.grey,
+                color: isSelected ? primaryColor : AppColors.textTertiary,
               ),
               const SizedBox(width: 4),
               Text(
@@ -383,7 +385,7 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? primaryColor : Colors.grey,
+                  color: isSelected ? primaryColor : AppColors.textTertiary,
                 ),
               ),
             ],

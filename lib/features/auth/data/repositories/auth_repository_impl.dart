@@ -17,6 +17,8 @@ import 'package:dskk_flutter_refactor/features/auth/domain/entities/user_info.da
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_info_repository.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
 import '../datasources/auth_remote_data_source.dart';
+import 'package:get_it/get_it.dart';
+import 'package:dskk_flutter_refactor/core/services/background_refresh_service.dart';
 
 // Placeholder definitions removed as they should be imported
 // class UserInfo { ... }
@@ -205,6 +207,9 @@ class AuthRepositoryImpl implements IAuthRepository {
      _currentUser = null;
      _statusController.add(const Unauthenticated());
      await _clearLocalAuthData();
+     if (GetIt.instance.isRegistered<BackgroundRefreshService>()) {
+       GetIt.instance<BackgroundRefreshService>().dispose();
+     }
   }
 
   @override

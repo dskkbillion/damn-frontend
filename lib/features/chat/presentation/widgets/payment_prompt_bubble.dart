@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// Payment prompt bubble widget for light consultation mode
 /// Shows system-style payment reminder after 5 rounds of free consultation
@@ -32,8 +34,8 @@ class PaymentPromptBubble extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(12),
+              color: AppColors.backgroundSecondary,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -41,14 +43,14 @@ class PaymentPromptBubble extends StatelessWidget {
                 Icon(
                   Icons.info_outline,
                   size: 16,
-                  color: Colors.grey[600],
+                  color: AppColors.textSecondary,
                 ),
                 const SizedBox(width: 4),
                 Text(
                   '系统提示',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey[600],
+                    color: AppColors.textSecondary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -61,10 +63,10 @@ class PaymentPromptBubble extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(16),
+              color: AppColors.backgroundSecondary,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
               border: Border.all(
-                color: Colors.grey[200]!,
+                color: AppColors.borderPrimary,
                 width: 1,
               ),
             ),
@@ -75,7 +77,7 @@ class PaymentPromptBubble extends StatelessWidget {
                   content,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey[800],
+                    color: AppColors.textPrimary,
                     height: 1.5,
                   ),
                   textAlign: TextAlign.center,
@@ -90,8 +92,8 @@ class PaymentPromptBubble extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.green[50],
-                      borderRadius: BorderRadius.circular(8),
+                      color: AppColors.success.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -99,14 +101,14 @@ class PaymentPromptBubble extends StatelessWidget {
                         Icon(
                           Icons.check_circle_outline,
                           size: 16,
-                          color: Colors.green[700],
+                          color: AppColors.success,
                         ),
                         const SizedBox(width: 6),
                         Text(
                           '已发送付费提示',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.green[700],
+                            color: AppColors.success,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -165,16 +167,16 @@ class PaymentPromptBubble extends StatelessWidget {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: isRecommended 
-                  ? Colors.orange 
-                  : Colors.orange[300],
+                backgroundColor: isRecommended
+                  ? AppColors.warning
+                  : AppColors.warning.withValues(alpha: 0.6),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: 12,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
                 ),
                 elevation: isRecommended ? 3 : 1,
               ),
@@ -209,8 +211,8 @@ class PaymentPromptBubble extends StatelessWidget {
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(10),
+                    color: AppColors.error,
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
                   ),
                   child: const Text(
                     '推荐',

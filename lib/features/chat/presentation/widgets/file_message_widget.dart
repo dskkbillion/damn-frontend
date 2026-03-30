@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
 import '../pages/file_preview_page.dart';
@@ -103,23 +105,23 @@ class FileMessageWidget extends StatelessWidget {
   Color _getFileIconColor(String extension) {
     switch (extension.toLowerCase()) {
       case 'pdf':
-        return Colors.red;
+        return AppColors.error;
       case 'doc':
       case 'docx':
-        return Colors.blue;
+        return AppColors.info;
       case 'xls':
       case 'xlsx':
-        return Colors.green;
+        return AppColors.success;
       case 'ppt':
       case 'pptx':
-        return Colors.orange;
+        return AppColors.warning;
       case 'txt':
-        return Colors.grey;
+        return AppColors.textTertiary;
       case 'zip':
       case 'rar':
-        return Colors.purple;
+        return AppColors.nodeHuman;
       default:
-        return Colors.blueGrey;
+        return AppColors.textSecondary;
     }
   }
 
@@ -157,10 +159,10 @@ class FileMessageWidget extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: 250),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isMe ? Theme.of(context).primaryColor.withValues(alpha: 0.1) : Colors.grey[100],
-          borderRadius: BorderRadius.circular(12),
+          color: isMe ? Theme.of(context).primaryColor.withValues(alpha: 0.1) : AppColors.backgroundSecondary,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
           border: Border.all(
-            color: isMe ? Theme.of(context).primaryColor.withValues(alpha: 0.3) : Colors.grey[300]!,
+            color: isMe ? Theme.of(context).primaryColor.withValues(alpha: 0.3) : AppColors.borderInput,
           ),
         ),
         child: Row(

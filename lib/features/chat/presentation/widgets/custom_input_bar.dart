@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +39,7 @@ class _UploadProgressDialog extends StatelessWidget {
         children: [
           Text(
             fileName,
-            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -50,7 +52,7 @@ class _UploadProgressDialog extends StatelessWidget {
             progress != null 
               ? '${(progress! * 100).toStringAsFixed(1)}%'
               : '准备上传...',
-            style: TextStyle(fontSize: 12, color: Colors.grey),
+            style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
           ),
         ],
       ),
@@ -495,9 +497,9 @@ class _CustomInputBarState extends State<CustomInputBar> {
         isScrollControlled: false, // 不控制滚动，保持默认行为
         builder: (context) {
           return Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: AppColors.backgroundCard,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimensions.radiusXl)),
         ),
         padding: const EdgeInsets.symmetric(vertical: 20),
         child: SafeArea(
@@ -557,10 +559,10 @@ class _CustomInputBarState extends State<CustomInputBar> {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.backgroundCard,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: AppColors.borderSecondary,
               blurRadius: 4,
               offset: const Offset(0, -2),
             ),
@@ -570,7 +572,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
           children: [
             // Cancel button
             IconButton(
-              icon: const Icon(Icons.close, color: Colors.red),
+              icon: Icon(Icons.close, color: AppColors.error),
               onPressed: _cancelRecording,
             ),
             
@@ -583,7 +585,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
                     width: 12,
                     height: 12,
                     decoration: BoxDecoration(
-                      color: Colors.red,
+                      color: AppColors.error,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -601,7 +603,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
             
             // Send button
             IconButton(
-              icon: const Icon(Icons.send, color: Colors.blue),
+              icon: Icon(Icons.send, color: AppColors.info),
               onPressed: _stopRecordingAndSend,
             ),
           ],
@@ -613,10 +615,10 @@ class _CustomInputBarState extends State<CustomInputBar> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.backgroundCard,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: AppColors.borderSecondary,
             blurRadius: 4,
             offset: const Offset(0, -2),
           ),
@@ -629,7 +631,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
           IconButton(
             icon: Icon(
               _isVoiceMode ? Icons.keyboard : Icons.mic,
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
             ),
             onPressed: () {
               setState(() {
@@ -652,14 +654,14 @@ class _CustomInputBarState extends State<CustomInputBar> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(20),
+                        color: AppColors.backgroundSecondary,
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Text(
                           '按住说话',
                           style: TextStyle(
-                            color: Colors.grey,
+                            color: AppColors.textTertiary,
                             fontSize: 14,
                           ),
                         ),
@@ -676,13 +678,13 @@ class _CustomInputBarState extends State<CustomInputBar> {
                       onSubmitted: (_) => _sendMessage(),
                       decoration: InputDecoration(
                         hintText: '输入消息...',
-                        hintStyle: TextStyle(color: Colors.grey[400]),
+                        hintStyle: TextStyle(color: AppColors.textTertiary),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
                           borderSide: BorderSide.none,
                         ),
                         filled: true,
-                        fillColor: Colors.grey[100],
+                        fillColor: AppColors.backgroundSecondary,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 10,
@@ -697,7 +699,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
             IconButton(
               icon: Icon(
                 Icons.add_circle_outline,
-                color: Colors.grey[600],
+                color: AppColors.textSecondary,
               ),
               onPressed: _showAttachmentOptions,
             ),
@@ -707,7 +709,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
             IconButton(
               icon: Icon(
                 Icons.send,
-                color: _canSend ? Theme.of(context).primaryColor : Colors.grey[400],
+                color: _canSend ? Theme.of(context).colorScheme.primary : AppColors.textTertiary,
               ),
               onPressed: _canSend ? _sendMessage : null,
             ),

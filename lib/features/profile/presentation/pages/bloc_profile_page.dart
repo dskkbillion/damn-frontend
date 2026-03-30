@@ -11,6 +11,8 @@ import '../../../seller/presentation/pages/seller_profile_page.dart';
   import '../../../../core/navigation/navigation_helper.dart';
   import '../../../../core/animations/page_transitions.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 class BlocProfilePage extends StatefulWidget {
   const BlocProfilePage({super.key});

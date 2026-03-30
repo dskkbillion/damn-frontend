@@ -85,11 +85,10 @@ class StatusTag extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: TextStyle(
-          fontSize: large ? 14.0 : 12.0,
-          color: txtColor,
-          fontWeight: FontWeight.w500,
-        ),
+        style: (large
+                ? Theme.of(context).textTheme.bodyMedium
+                : Theme.of(context).textTheme.bodySmall)
+            ?.copyWith(color: txtColor, fontWeight: FontWeight.w500),
       ),
     );
   }

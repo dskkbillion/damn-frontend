@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:intl/intl.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 /// Enhanced Chat widget that adds missing features
 class EnhancedChat extends StatefulWidget {
@@ -207,7 +208,7 @@ class _EnhancedChatState extends State<EnhancedChat> {
         break;
       case 'failed':
         iconData = Icons.error_outline;
-        iconColor = Colors.red;
+        iconColor = AppColors.error;
         break;
       case 'read':
         iconData = Icons.done_all;

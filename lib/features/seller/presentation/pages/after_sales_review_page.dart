@@ -11,6 +11,7 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/enums/refu
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/after_sales_review/after_sales_review_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/empty_state.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/status_tag.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 /// 售后审核列表页面
 class AfterSalesReviewPage extends StatefulWidget {
@@ -304,7 +305,7 @@ class _RefundCard extends StatelessWidget {
                             errorBuilder: (_, __, ___) => Container(
                               width: 80,
                               height: 80,
-                              color: Colors.grey[300],
+                              color: AppColors.borderInput,
                               child: const Icon(Icons.broken_image),
                             ),
                           ),
@@ -385,7 +386,7 @@ class _RefundCard extends StatelessWidget {
           child: Text(
             '$label:',
             style: textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
             ),
           ),
         ),
@@ -417,20 +418,20 @@ class _RefundCard extends StatelessWidget {
   Color _getStateColor(OrderRefundState state) {
     switch (state) {
       case OrderRefundState.waitAudit:
-        return Colors.amber;
+        return AppColors.warning;
       case OrderRefundState.auditPass:
-        return Colors.green;
+        return AppColors.success;
       case OrderRefundState.refused:
-        return Colors.red;
+        return AppColors.error;
       case OrderRefundState.buyerShip:
       case OrderRefundState.sellerReceived:
-        return Colors.blue;
+        return AppColors.info;
       case OrderRefundState.finished:
-        return Colors.teal;
+        return AppColors.success;
       case OrderRefundState.canceled:
-        return Colors.grey;
+        return AppColors.textTertiary;
       default:
-        return Colors.grey;
+        return AppColors.textTertiary;
     }
   }
   
@@ -564,7 +565,7 @@ class _RefundCard extends StatelessWidget {
                   errorBuilder: (_, __, ___) => Container(
                     width: double.infinity,
                     height: 300,
-                    color: Colors.grey[300],
+                    color: AppColors.borderInput,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

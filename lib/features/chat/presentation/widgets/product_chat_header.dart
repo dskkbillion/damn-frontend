@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 import '../../domain/entities/chat_room.dart';
 
@@ -29,11 +31,11 @@ class ProductChatHeader extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.backgroundCard,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.borderSecondary,
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -61,10 +63,10 @@ class ProductChatHeader extends StatelessWidget {
                             return Container(
                               width: 60,
                               height: 60,
-                              color: Colors.grey[200],
+                              color: AppColors.borderPrimary,
                               child: const Icon(
                                 Icons.shopping_bag,
-                                color: Colors.grey,
+                                color: AppColors.textTertiary,
                                 size: 30,
                               ),
                             );
@@ -74,12 +76,12 @@ class ProductChatHeader extends StatelessWidget {
                           width: 60,
                           height: 60,
                           decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(8),
+                            color: AppColors.borderPrimary,
+                            borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                           ),
                           child: const Icon(
                             Icons.shopping_bag,
-                            color: Colors.grey,
+                            color: AppColors.textTertiary,
                             size: 30,
                           ),
                         ),
@@ -98,7 +100,7 @@ class ProductChatHeader extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: Colors.black87,
+                          color: AppColors.textPrimary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -113,7 +115,7 @@ class ProductChatHeader extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Colors.red[600],
+                            color: AppColors.error,
                           ),
                         ),
                       
@@ -124,20 +126,20 @@ class ProductChatHeader extends StatelessWidget {
                         '点击查看商品详情',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey[600],
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
                   ),
                 ),
-                
+
                 // 操作按钮
                 if (actionText != null && onActionTap != null)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.orange,
-                      borderRadius: BorderRadius.circular(20),
+                      color: AppColors.warning,
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
                     ),
                     child: InkWell(
                       onTap: onActionTap,

@@ -14,9 +14,15 @@ abstract class IChatLocalDataSource {
   
   /// Cache chat room details
   Future<void> cacheChatRoom(ChatRoom chatRoom);
-  
+
   /// Get cached chat room
   Future<ChatRoom?> getCachedChatRoom(int chatId);
+
+  /// Cache the full chat room list
+  Future<void> cacheChatRoomList(List<ChatRoom> rooms);
+
+  /// Get cached chat room list
+  Future<List<ChatRoom>?> getCachedChatRoomList();
   
   /// Clear all cache
   Future<void> clearAllCache();

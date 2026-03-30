@@ -8,6 +8,8 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_s
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_statistics/seller_statistics_state.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/empty_state.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/loading_state.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 // 导入国际化
 import '../../../../generated/app_localizations.dart';
@@ -64,8 +66,8 @@ class SellerStatisticsPage extends ConsumerWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                    const SizedBox(height: 16),
+                    const Icon(Icons.error_outline, size: 48, color: AppColors.error),
+                    const SizedBox(height: AppDimensions.spacingLg),
                     Text(AppLocalizations.of(context)!.seller_statistics_loading_failed(state.failure.message)),
                     const SizedBox(height: 16),
                     ElevatedButton(
@@ -101,10 +103,10 @@ class SellerStatisticsPage extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildPercentCircle(AppLocalizations.of(context)!.seller_statistics_heat_value, stats.heatPercent, const Color(0xFFFFB74D)),
-            _buildPercentCircle(AppLocalizations.of(context)!.seller_statistics_reply_rate, stats.recoverPercent, const Color(0xFFFFB74D)),
-            _buildPercentCircle(AppLocalizations.of(context)!.seller_statistics_completion_rate, stats.completePercent, Colors.grey.shade500),
-            _buildPercentCircle(AppLocalizations.of(context)!.seller_statistics_positive_rate, stats.goodPercent, Colors.grey.shade500),
+            _buildPercentCircle(AppLocalizations.of(context)!.seller_statistics_heat_value, stats.heatPercent, AppColors.warning),
+            _buildPercentCircle(AppLocalizations.of(context)!.seller_statistics_reply_rate, stats.recoverPercent, AppColors.warning),
+            _buildPercentCircle(AppLocalizations.of(context)!.seller_statistics_completion_rate, stats.completePercent, AppColors.textSecondary),
+            _buildPercentCircle(AppLocalizations.of(context)!.seller_statistics_positive_rate, stats.goodPercent, AppColors.textSecondary),
           ],
         ),
       ],
@@ -127,7 +129,7 @@ class SellerStatisticsPage extends ConsumerWidget {
                   child: CircularProgressIndicator(
                     value: percent / 100,
                     strokeWidth: 6,
-                    backgroundColor: Colors.grey.shade200,
+                    backgroundColor: AppColors.borderPrimary,
                     valueColor: AlwaysStoppedAnimation<Color>(color),
                   ),
                 ),
@@ -147,8 +149,8 @@ class SellerStatisticsPage extends ConsumerWidget {
         const SizedBox(height: 8),
         Text(
           label,
-          style: TextStyle(
-            color: Colors.grey.shade700,
+          style: const TextStyle(
+            color: AppColors.textSecondary,
             fontSize: 13,
           ),
         ),
@@ -171,11 +173,11 @@ class SellerStatisticsPage extends ConsumerWidget {
         const SizedBox(height: 16),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            color: AppColors.backgroundCard,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
+                color: AppColors.borderSecondary,
                 spreadRadius: 1,
                 blurRadius: 6,
                 offset: const Offset(0, 2),
@@ -183,7 +185,7 @@ class SellerStatisticsPage extends ConsumerWidget {
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
+            padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingLg, horizontal: AppDimensions.spacingXl),
             child: Column(
               children: [
                 _buildUpgradeItem(
@@ -221,8 +223,8 @@ class SellerStatisticsPage extends ConsumerWidget {
         ),
         Text(
           progress,
-          style: TextStyle(
-            color: Colors.brown.shade500,
+          style: const TextStyle(
+            color: AppColors.warning,
             fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
@@ -243,14 +245,14 @@ class SellerStatisticsPage extends ConsumerWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppDimensions.spacingLg),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            color: AppColors.backgroundCard,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
+                color: AppColors.borderSecondary,
                 spreadRadius: 1,
                 blurRadius: 6,
                 offset: const Offset(0, 2),
@@ -258,7 +260,7 @@ class SellerStatisticsPage extends ConsumerWidget {
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.all(AppDimensions.spacingXl),
             child: Column(
               children: [
                 Row(
@@ -299,14 +301,14 @@ class SellerStatisticsPage extends ConsumerWidget {
           style: TextStyle(
             fontSize: 26,
             fontWeight: FontWeight.bold,
-            color: Colors.brown.shade500,
+            color: AppColors.warning,
           ),
         ),
         const SizedBox(height: 8),
         Text(
           label,
-          style: TextStyle(
-            color: Colors.grey.shade700,
+          style: const TextStyle(
+            color: AppColors.textSecondary,
             fontSize: 14,
           ),
         ),
@@ -334,14 +336,14 @@ class SellerStatisticsPage extends ConsumerWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppDimensions.spacingLg),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            color: AppColors.backgroundCard,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
+                color: AppColors.borderSecondary,
                 spreadRadius: 1,
                 blurRadius: 6,
                 offset: const Offset(0, 2),
@@ -349,7 +351,7 @@ class SellerStatisticsPage extends ConsumerWidget {
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.all(AppDimensions.spacingXl),
             child: Column(
               children: [
                 _buildPendingItem(

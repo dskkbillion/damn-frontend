@@ -19,6 +19,7 @@ import '../widgets/order_info_section.dart';
 // import '../widgets/order_materials_section.dart'; // 轻咨询模式：隐藏材料上传
 import '../widgets/order_price_details_section.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/utils/order_status_mapper.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 /// 订单详情页面
 class OrderDetailPage extends StatefulWidget {
@@ -50,7 +51,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('无效的订单 ID'), backgroundColor: Colors.red),
+            SnackBar(content: const Text('无效的订单 ID'), backgroundColor: AppColors.error),
           );
           Navigator.of(context).pop();
         }
@@ -203,7 +204,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         ..showSnackBar(
           SnackBar(
             content: Text(state.message),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -227,7 +228,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         ..showSnackBar(
           SnackBar(
             content: Text(state.message),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -288,19 +289,19 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Theme.of(context).scaffoldBackgroundColor.withOpacity(0.95),
+                        Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.95),
                         Theme.of(context).scaffoldBackgroundColor,
                       ],
                     ),
                     border: Border(
                       top: BorderSide(
-                        color: Theme.of(context).dividerColor.withOpacity(0.2),
+                        color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
                         width: 1,
                       ),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: AppColors.borderSecondary,
                         blurRadius: 10,
                         offset: const Offset(0, -5),
                       ),
@@ -324,7 +325,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         // Loading overlay for action processing
         if (state is OrderDetailActionLoading)
           Container(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             child: const Center(
               child: CircularProgressIndicator(),
             ),

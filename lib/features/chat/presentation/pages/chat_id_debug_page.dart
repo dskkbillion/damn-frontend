@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/repositories/i_chat_repository.dart';
@@ -149,7 +151,7 @@ class _ChatIdDebugPageState extends State<ChatIdDebugPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('聊天系统ID调试'),
-        backgroundColor: Colors.orange,
+        backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -239,8 +241,8 @@ class _ChatIdDebugPageState extends State<ChatIdDebugPage> {
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(4),
+                              color: AppColors.backgroundSecondary,
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                             ),
                             child: SelectableText(
                               _debugInfo,

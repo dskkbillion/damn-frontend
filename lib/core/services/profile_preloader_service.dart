@@ -10,6 +10,9 @@ import '../../features/orders/domain/repositories/i_order_repository.dart';
 import '../../features/orders/domain/entities/order_status.dart';
 import '../../features/seller/domain/repositories/i_seller_repository.dart';
 import '../../features/seller/domain/entities/seller_dashboard_data.dart';
+import '../../features/home/domain/repositories/home_repository.dart';
+import '../../features/chat/data/datasources/i_chat_local_data_source.dart';
+import '../../features/chat/domain/repositories/i_chat_repository.dart';
 
 /// 个人资料页面预加载服务
 /// 
@@ -23,20 +26,29 @@ class ProfilePreloaderService {
   final IUserProfileRepository _userProfileRepository;
   final IOrderRepository _orderRepository;
   final ISellerRepository _sellerRepository;
-  
+  final IHomeRepository _homeRepository;
+  final IChatLocalDataSource _chatLocalDataSource;
+  final IChatRepository _chatRepository;
+
   // 预加载任务管理
   final Map<String, Completer<void>> _loadingTasks = {};
   final Set<String> _completedTasks = {};
-  
+
   ProfilePreloaderService({
     required ICacheManager cacheManager,
     required IUserProfileRepository userProfileRepository,
     required IOrderRepository orderRepository,
     required ISellerRepository sellerRepository,
+    required IHomeRepository homeRepository,
+    required IChatLocalDataSource chatLocalDataSource,
+    required IChatRepository chatRepository,
   }) : _cacheManager = cacheManager,
        _userProfileRepository = userProfileRepository,
        _orderRepository = orderRepository,
-       _sellerRepository = sellerRepository;
+       _sellerRepository = sellerRepository,
+       _homeRepository = homeRepository,
+       _chatLocalDataSource = chatLocalDataSource,
+       _chatRepository = chatRepository;
 
   /// 预加载买家"我的"页面数据
   Future<void> preloadBuyerProfile() async {
@@ -352,6 +364,85 @@ class ProfilePreloaderService {
     }
   }
 
+  /// 预加载首页数据（通过 Repository 写入本地缓存）
+  Future<void> _preloadHomeData() async {
+    try {
+      final result = await _homeRepository.getHomePageData();
+      result.fold(
+        (failure) => AppLogger.d('[ProfilePreloader] 预加载首页数据失败: ${failure.message}'),
+        (homePageData) => AppLogger.d('[ProfilePreloader] 首页数据预加载完成'),
+      );
+    } catch (e) {
+      AppLogger.d('[ProfilePreloader] 预加载首页数据异常: $e');
+    }
+  }
+
+  /// 预加载聊天室列表（通过 Repository 获取并写入本地缓存）
+  Future<void> _preloadChatRooms() async {
+    try {
+      final result = await _chatRepository.getChatRooms();
+      if (result.isRight()) {
+        final chatRooms = result.getOrElse(() => []);
+        await _chatLocalDataSource.cacheChatRoomList(chatRooms);
+        AppLogger.d('[ProfilePreloader] 聊天室列表预加载完成 (${chatRooms.length} rooms)');
+      } else {
+        result.fold(
+          (failure) => AppLogger.d('[ProfilePreloader] 预加载聊天室列表失败: ${failure.message}'),
+          (_) {},
+        );
+      }
+    } catch (e) {
+      AppLogger.d('[ProfilePreloader] 预加载聊天室列表异常: $e');
+    }
+  }
+
+  /// 预加载订单列表（通过 Repository 写入本地缓存）
+  Future<void> _preloadOrders() async {
+    try {
+      final result = await _orderRepository.getOrderList(
+        page: 1,
+        limit: 20,
+        userRole: 'buyer',
+      );
+      result.fold(
+        (failure) => AppLogger.d('[ProfilePreloader] 预加载订单列表失败: ${failure.message}'),
+        (orders) => AppLogger.d('[ProfilePreloader] 订单列表预加载完成 (${orders.length} orders)'),
+      );
+    } catch (e) {
+      AppLogger.d('[ProfilePreloader] 预加载订单列表异常: $e');
+    }
+  }
+
+  /// 预加载核心页面数据（首页、聊天、订单）
+  /// 用于 App 启动时和后台刷新时调用
+  Future<void> preloadCoreData() async {
+    const taskKey = 'core_data';
+
+    // 如果已有预加载在进行中，等待其完成
+    if (_loadingTasks.containsKey(taskKey)) {
+      return _loadingTasks[taskKey]!.future;
+    }
+
+    final completer = Completer<void>();
+    _loadingTasks[taskKey] = completer;
+
+    try {
+      AppLogger.d('[ProfilePreloader] 开始预加载核心数据...');
+      await Future.wait([
+        _preloadHomeData(),
+        _preloadChatRooms(),
+        _preloadOrders(),
+      ]);
+      AppLogger.d('[ProfilePreloader] 核心数据预加载完成');
+      completer.complete();
+    } catch (e) {
+      AppLogger.d('[ProfilePreloader] 核心数据预加载失败: $e');
+      completer.completeError(e);
+    } finally {
+      _loadingTasks.remove(taskKey);
+    }
+  }
+
   /// 获取预加载的数据
   Future<T?> getCachedData<T>(String key, AppMode mode) async {
     final group = mode == AppMode.buyer ? _buyerCacheGroup : _sellerCacheGroup;
@@ -389,6 +480,9 @@ final profilePreloaderProvider = Provider<ProfilePreloaderService>((ref) {
       userProfileRepository: GetIt.instance<IUserProfileRepository>(),
       orderRepository: GetIt.instance<IOrderRepository>(),
       sellerRepository: GetIt.instance<ISellerRepository>(),
+      homeRepository: GetIt.instance<IHomeRepository>(),
+      chatLocalDataSource: GetIt.instance<IChatLocalDataSource>(),
+      chatRepository: GetIt.instance<IChatRepository>(),
     );
   }
 });
