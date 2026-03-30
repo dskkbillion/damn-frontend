@@ -13,6 +13,7 @@ import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 import 'package:dskk_flutter_refactor/core/config/locale_provider.dart';
 import 'package:dskk_flutter_refactor/core/services/profile_preloader_service.dart';
 import 'package:dskk_flutter_refactor/app/app_mode.dart';
+import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
 import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart';
 
 // Import all module DI configurations
@@ -167,15 +168,31 @@ Future<void> main() async {
 /// 延迟触发预加载，避免阻塞应用启动
 void _triggerPreloadingAfterDelay() {
   Future.delayed(const Duration(seconds: 3), () async {
+    // 检查登录态，未登录则跳过所有预加载
+    try {
+      final token = await getIt<ISecureStorageRepository>().getToken();
+      if (token == null) {
+        AppLogger.d('[Preloader] User not logged in, skipping preloading');
+        return;
+      }
+    } catch (e) {
+      AppLogger.d('[Preloader] Failed to check login state: $e');
+      return;
+    }
+
     try {
       final preloaderService = getIt<ProfilePreloaderService>();
       AppLogger.d('[Preloader] Starting preloading process...');
-      
-      await preloaderService.preloadBothModes(
-        priorityMode: AppMode.buyer,
-        delayBetweenModes: const Duration(seconds: 3),
-      );
-      
+
+      // 并行执行核心数据预加载和 Profile 预加载
+      await Future.wait([
+        preloaderService.preloadCoreData(),
+        preloaderService.preloadBothModes(
+          priorityMode: AppMode.buyer,
+          delayBetweenModes: const Duration(seconds: 3),
+        ),
+      ]);
+
       AppLogger.d('[Preloader] Preloading process completed successfully');
     } catch (e) {
       AppLogger.d('[Preloader] Failed to preload data: $e');
