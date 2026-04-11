@@ -27,8 +27,8 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
     final isLightConsultation = OrderStatusMapper.isLightConsultationOrder(widget.order);
 
     // 轻咨询模式：简化的时间线步骤
-    final List<String> steps = isLightConsultation 
-        ? ['下单', '付款', '交付', '评价', '完成']  // 5个简化步骤
+    final List<String> steps = isLightConsultation
+        ? ['下单', '付款', '咨询', '评价', '完成']  // 5个简化步骤
         : ['已拍下', '已提交', '已接单', '已交付', '已收货', '待评价'];  // 原有6个步骤
         
     int currentStepIndex = isLightConsultation 
@@ -377,15 +377,17 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
       case OrderStatus.awaitingPayment: 
         return '等待付款';
       
-      // 这些状态都映射到"待交付"
+      // 咨询中（未确认前的所有状态）
       case OrderStatus.awaitingSubmission:
       case OrderStatus.buyAwaitingSubmission:
       case OrderStatus.awaitingStart:
       case OrderStatus.awaitingDelivery:
-      case OrderStatus.awaitingConfirmation:
         return '咨询进行中';
-        
-      case OrderStatus.awaitingEvaluation: 
+
+      case OrderStatus.awaitingConfirmation:
+        return '咨询已完成，请确认';
+
+      case OrderStatus.awaitingEvaluation:
         return '等待评价';
         
       case OrderStatus.orderCompleted: 
@@ -416,15 +418,17 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
       case OrderStatus.awaitingPayment: 
         return '请尽快完成支付以开始咨询';
         
-      // 这些状态都映射到"待交付"
+      // 咨询中（未确认前的所有状态）
       case OrderStatus.awaitingSubmission:
       case OrderStatus.buyAwaitingSubmission:
       case OrderStatus.awaitingStart:
       case OrderStatus.awaitingDelivery:
-      case OrderStatus.awaitingConfirmation:
         return '顾问正在为您提供服务';
-        
-      case OrderStatus.awaitingEvaluation: 
+
+      case OrderStatus.awaitingConfirmation:
+        return '请在确认咨询完成后点击"确认收货"';
+
+      case OrderStatus.awaitingEvaluation:
         return '您的评价对顾问很重要';
         
       case OrderStatus.orderCompleted: 

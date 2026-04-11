@@ -37,7 +37,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
   final List<OrderStatus?> _tabStatuses = [
     null, // Index 0: 全部 (All)
     OrderStatus.awaitingPayment, // Index 1: 待付款
-    OrderStatus.awaitingConfirmation, // Index 2: 待交付 (映射到awaitingConfirmation)
+    OrderStatus.awaitingConfirmation, // Index 2: 咨询中 (映射到awaitingConfirmation)
     OrderStatus.awaitingEvaluation, // Index 3: 评价
     OrderStatus.orderCompleted, // Index 4: 完成
     OrderStatus.afterSale, // Index 5: 售后中
@@ -429,7 +429,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
     }
     
     // 轻咨询模式的Tab标签名称
-    final tabLabels = ['全部', '待付款', '待交付', '评价', '完成', '售后中', '平台介入中'];
+    final tabLabels = ['全部', '待付款', '咨询中', '评价', '完成', '售后中', '平台介入中'];
     
     return List.generate(_tabStatuses.length, (index) {
       final status = _tabStatuses[index];

@@ -622,7 +622,7 @@ class OrderItemCard extends StatelessWidget {
       case OrderStatus.awaitingDelivery:
         final firstItem = order.items.isNotEmpty ? order.items.first : null;
         if (firstItem?.deliveryDay != null) {
-          return '交付时间：${firstItem!.deliveryDay}天内';
+          return '咨询周期：${firstItem!.deliveryDay}天内';
         }
         break;
       case OrderStatus.awaitingConfirmation:
