@@ -109,13 +109,16 @@ class OrderDetailActionButtons extends StatelessWidget {
         }));
         break;
 
-      // 待发货/待交付，允许提醒和平台介入
+      // 待发货/待交付，允许提醒和申请退款
       case OrderStatus.awaitingDelivery:
       case OrderStatus.awaitingStart:
         buttons.add(_buildButton(context, '提醒发货', () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('已提醒卖家发货'))
           );
+        }));
+        buttons.add(_buildButton(context, '申请退款', () {
+          _navigateToAfterSales(context);
         }));
         buttons.add(_buildButton(context, '平台介入', () {
           _navigateToPlatformIntervention(context);
@@ -129,7 +132,7 @@ class OrderDetailActionButtons extends StatelessWidget {
         buttons.add(_buildButton(context, '平台介入', () {
           _navigateToPlatformIntervention(context);
         }));
-        buttons.add(_buildButton(context, '申请售后', () {
+        buttons.add(_buildButton(context, '申请退款', () {
           _navigateToAfterSales(context);
         }));
         primaryButton = BlocBuilder<OrderDetailBloc, OrderDetailState>(
@@ -164,7 +167,7 @@ class OrderDetailActionButtons extends StatelessWidget {
         buttons.add(_buildButton(context, '查看物流', () {
           AppLogger.d('查看物流 for order ${order.id}');
         }));
-        buttons.add(_buildButton(context, '申请售后', () {
+        buttons.add(_buildButton(context, '申请退款', () {
           _navigateToAfterSales(context);
         }));
         primaryButton = _buildButton(context, '去评价', () {
@@ -173,10 +176,7 @@ class OrderDetailActionButtons extends StatelessWidget {
         break;
 
       case OrderStatus.orderCompleted: // 已完成
-        buttons.add(_buildButton(context, '申请重做', () {
-          dialogs.showOrderDemandDialog(context, 'reform');
-        }));
-        buttons.add(_buildButton(context, '申请售后', () {
+        buttons.add(_buildButton(context, '申请退款', () {
           _navigateToAfterSales(context);
         }));
         buttons.add(_buildButton(context, '删除订单', () {
@@ -262,7 +262,7 @@ class OrderDetailActionButtons extends StatelessWidget {
         Future.delayed(const Duration(milliseconds: 50), () {
           if (context.mounted) {
             try {
-              context.push('/selectAfterSalesType/$firstItemId', extra: firstItem);
+              context.push('/afterSalesApply?itemId=$firstItemId&type=REFUND', extra: firstItem);
               AppLogger.d('Navigate to select after sales type for item ID: $firstItemId');
             } catch (e) {
               AppLogger.d('Error navigating to after sales: $e');
@@ -276,7 +276,7 @@ class OrderDetailActionButtons extends StatelessWidget {
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('错误：无法为没有商品的订单申请售后')),
+          const SnackBar(content: Text('错误：无法为没有商品的订单申请退款')),
         );
         AppLogger.d('Error: Cannot apply after sales for order ${order.id} with no items.');
       }
@@ -439,7 +439,7 @@ class OrderDetailActionButtons extends StatelessWidget {
 
       case OrderStatus.awaitingEvaluation:
         // 待评价：评价
-        buttons.add(_buildButton(context, '申请售后', () {
+        buttons.add(_buildButton(context, '申请退款', () {
           _navigateToAfterSales(context);
         }));
         primaryButton = _buildButton(context, '评价', () {
@@ -448,7 +448,7 @@ class OrderDetailActionButtons extends StatelessWidget {
         break;
 
       case OrderStatus.orderCompleted:
-        buttons.add(_buildButton(context, '申请售后', () {
+        buttons.add(_buildButton(context, '申请退款', () {
           _navigateToAfterSales(context);
         }));
         // 已完成：再次咨询（进入与卖家的聊天室）

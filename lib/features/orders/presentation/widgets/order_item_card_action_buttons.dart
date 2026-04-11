@@ -50,20 +50,23 @@ class OrderItemCardActionButtons extends StatelessWidget {
         // 待交付状态组（多个状态映射到一个）
         case OrderStatus.awaitingSubmission:
         case OrderStatus.buyAwaitingSubmission:
+          if (onViewDetails != null) buttons.add(_buildButton(context, '查看', onViewDetails!));
+          break;
         case OrderStatus.awaitingStart:
         case OrderStatus.awaitingDelivery:
         case OrderStatus.awaitingConfirmation:
+          if (onApplyAfterSale != null) buttons.add(_buildButton(context, '申请退款', onApplyAfterSale!));
           if (onViewDetails != null) buttons.add(_buildButton(context, '查看', onViewDetails!));
           // 轻咨询模式下不需要"提醒发货"等电商按钮
           break;
           
         case OrderStatus.awaitingEvaluation:
-          if (onApplyAfterSale != null) buttons.add(_buildButton(context, '申请售后', onApplyAfterSale!));
+          if (onApplyAfterSale != null) buttons.add(_buildButton(context, '申请退款', onApplyAfterSale!));
           if (onEvaluate != null) buttons.add(_buildButton(context, '评价', onEvaluate!, isPrimary: true));
           break;
           
         case OrderStatus.orderCompleted:
-          if (onApplyAfterSale != null) buttons.add(_buildButton(context, '申请售后', onApplyAfterSale!));
+          if (onApplyAfterSale != null) buttons.add(_buildButton(context, '申请退款', onApplyAfterSale!));
           if (onViewDetails != null) buttons.add(_buildButton(context, '查看', onViewDetails!));
           break;
           
@@ -91,23 +94,32 @@ class OrderItemCardActionButtons extends StatelessWidget {
           if (onCancel != null) buttons.add(_buildButton(context, '取消订单', onCancel!));
           if (onPay != null) buttons.add(_buildButton(context, '去支付', onPay!, isPrimary: true));
           break;
-        case OrderStatus.awaitingDelivery:
         case OrderStatus.awaitingSubmission:
         case OrderStatus.buyAwaitingSubmission:
+          if (onRemindDelivery != null) buttons.add(_buildButton(context, '提醒发货', onRemindDelivery!));
+          if (onCancel != null) buttons.add(_buildButton(context, '取消订单', onCancel!));
+          break;
+        case OrderStatus.awaitingDelivery:
         case OrderStatus.awaitingStart:
           if (onRemindDelivery != null) buttons.add(_buildButton(context, '提醒发货', onRemindDelivery!));
+          if (onApplyAfterSale != null) buttons.add(_buildButton(context, '申请退款', onApplyAfterSale!));
           if (onCancel != null) buttons.add(_buildButton(context, '取消订单', onCancel!));
           break;
         case OrderStatus.awaitingConfirmation:
           if (onViewLogistics != null) buttons.add(_buildButton(context, '查看物流', onViewLogistics!));
+          if (onApplyAfterSale != null) buttons.add(_buildButton(context, '申请退款', onApplyAfterSale!));
           if (onConfirmReceipt != null) buttons.add(_buildButton(context, '确认收货', onConfirmReceipt!, isPrimary: true));
           break;
         case OrderStatus.awaitingEvaluation:
           if (onViewLogistics != null) buttons.add(_buildButton(context, '查看物流', onViewLogistics!));
-          if (onApplyAfterSale != null) buttons.add(_buildButton(context, '申请售后', onApplyAfterSale!));
+          if (onApplyAfterSale != null) buttons.add(_buildButton(context, '申请退款', onApplyAfterSale!));
           if (onEvaluate != null) buttons.add(_buildButton(context, '去评价', onEvaluate!, isPrimary: true));
           break;
         case OrderStatus.orderCompleted:
+          if (onApplyAfterSale != null) buttons.add(_buildButton(context, '申请退款', onApplyAfterSale!));
+          if (onViewDetails != null) buttons.add(_buildButton(context, '查看详情', onViewDetails!));
+          if (onDelete != null) buttons.add(_buildButton(context, '删除订单', onDelete!));
+          break;
         case OrderStatus.canceled:
         case OrderStatus.afterSale:
         case OrderStatus.AfterSaleRejection:
