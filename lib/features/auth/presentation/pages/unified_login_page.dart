@@ -27,7 +27,10 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late CountryCode _selectedCountry;
   LoginMode _loginMode = LoginMode.email;
-  
+  // #276: 记录上次成功发送验证码的 mode，用于让倒计时只对该 mode 生效
+  // 切到另一个 mode 时 lastSentCodeMode != _loginMode，按钮回到 idle 状态
+  LoginMode? _lastSentCodeMode;
+
 
   @override
   void didChangeDependencies() {
@@ -216,8 +219,11 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                             ),
                             const SizedBox(width: 8),
                             VerificationCodeButton(
-                              phoneController: _loginMode == LoginMode.phone 
-                                  ? _phoneController 
+                              // #276: 用 ValueKey 强制按 mode 重建 widget，
+                              // 配合下面 codeSentState 只在 _lastSentMode == 当前 mode 时传 counting
+                              key: ValueKey(_loginMode),
+                              phoneController: _loginMode == LoginMode.phone
+                                  ? _phoneController
                                   : _emailController,
                               onSendCode: (account) async {
                                 if (_loginMode == LoginMode.email) {
@@ -229,6 +235,10 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                                     return;
                                   }
                                   debugPrint('Sending code to email: $account');
+                                  // #276: 记录当前发送 mode
+                                  setState(() {
+                                    _lastSentCodeMode = LoginMode.email;
+                                  });
                                   context.read<SmsLoginCubit>().sendCode(account);
                                 } else {
                                   // 手机模式验证 - 使用统一的验证工具类
@@ -245,11 +255,19 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                                   }
                                   final fullPhone = '${_selectedCountry.dialCode}$account';
                                   debugPrint('Sending code to phone: $fullPhone');
+                                  // #276: 记录当前发送 mode
+                                  setState(() {
+                                    _lastSentCodeMode = LoginMode.phone;
+                                  });
                                   context.read<SmsLoginCubit>().sendCode(fullPhone);
                                 }
                               },
-                              codeSentState: state is SmsLoginCodeSentSuccess 
-                                  ? CodeButtonState.counting 
+                              // #276: 仅当 cubit 处于 CodeSentSuccess 且
+                              // 发送 mode == 当前 mode 时显示倒计时，
+                              // 切到另一个 mode 按钮回到 idle 状态
+                              codeSentState: (state is SmsLoginCodeSentSuccess &&
+                                      _lastSentCodeMode == _loginMode)
+                                  ? CodeButtonState.counting
                                   : CodeButtonState.idle,
                               isSending: state is SmsLoginCodeSending,
                             ),
