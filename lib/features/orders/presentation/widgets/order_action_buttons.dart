@@ -197,9 +197,6 @@ class OrderDetailActionButtons extends StatelessWidget {
         break;
 
       case OrderStatus.canceled: // 已取消
-      case OrderStatus.afterSale: // 售后处理中
-      case OrderStatus.AfterSaleRejection: // 售后被拒
-      case OrderStatus.applyingForMediation: // 平台介入中
         buttons.add(_buildButton(context, '查看订单', () {
           AppLogger.d('查看订单: ${order.id}');
         }));
@@ -217,6 +214,15 @@ class OrderDetailActionButtons extends StatelessWidget {
               );
             },
           );
+        }));
+        break;
+
+      case OrderStatus.afterSale: // 售后处理中
+      case OrderStatus.AfterSaleRejection: // 售后被拒
+      case OrderStatus.applyingForMediation: // 平台介入中
+        // 只保留"查看订单"，移除"删除订单"避免数据损坏
+        buttons.add(_buildButton(context, '查看订单', () {
+          AppLogger.d('查看订单: ${order.id}');
         }));
         break;
 

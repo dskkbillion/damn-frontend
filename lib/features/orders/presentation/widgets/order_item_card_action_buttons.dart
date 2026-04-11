@@ -121,11 +121,14 @@ class OrderItemCardActionButtons extends StatelessWidget {
           if (onDelete != null) buttons.add(_buildButton(context, '删除订单', onDelete!));
           break;
         case OrderStatus.canceled:
+           if (onViewDetails != null) buttons.add(_buildButton(context, '查看详情', onViewDetails!));
+           if (onDelete != null) buttons.add(_buildButton(context, '删除订单', onDelete!));
+          break;
         case OrderStatus.afterSale:
         case OrderStatus.AfterSaleRejection:
         case OrderStatus.applyingForMediation:
+           // 只保留"查看详情"，移除"删除订单"避免数据损坏
            if (onViewDetails != null) buttons.add(_buildButton(context, '查看详情', onViewDetails!));
-           if (onDelete != null) buttons.add(_buildButton(context, '删除订单', onDelete!));
           break;
         default:
           // For unknown or states with no specific actions on list card, maybe show details button
