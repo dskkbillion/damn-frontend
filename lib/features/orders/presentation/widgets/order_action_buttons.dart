@@ -463,10 +463,23 @@ class OrderDetailActionButtons extends StatelessWidget {
         );
         break;
 
-      case OrderStatus.applyingForMediation:
       case OrderStatus.afterSale:
       case OrderStatus.AfterSaleRejection:
-        // 平台介入：联系客服
+        // 售后中：回到和顾问的聊天室继续沟通
+        // 产品口径：轻咨询所有业务在聊天室进行，包括售后
+        primaryButton = _buildButton(
+          context,
+          isCreatingChat ? '连接中...' : '联系顾问',
+          (isCreatingChat || onContactSeller == null)
+              ? null
+              : () => onContactSeller!(order),
+          isPrimary: true,
+          isLoading: isCreatingChat,
+        );
+        break;
+
+      case OrderStatus.applyingForMediation:
+        // 平台介入：联系客服（后端 API 已 disable，保持本地 toast）
         primaryButton = _buildButton(context, '联系客服', () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('正在连接客服...')),
