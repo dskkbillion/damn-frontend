@@ -419,7 +419,10 @@ class OrderDetailActionButtons extends StatelessWidget {
             );
           },
         );
-        // 次要按钮：联系顾问
+        // 次要按钮：申请退款 + 联系顾问（#278 补齐轻咨询分支）
+        buttons.add(_buildButton(context, '申请退款', () {
+          _navigateToAfterSales(context);
+        }));
         buttons.add(_buildButton(context, '联系顾问',
           (isCreatingChat || onContactSeller == null)
               ? null
@@ -431,6 +434,10 @@ class OrderDetailActionButtons extends StatelessWidget {
       case OrderStatus.buyAwaitingSubmission:
       case OrderStatus.awaitingStart:
       case OrderStatus.awaitingDelivery:
+        // 次要按钮：申请退款（#278 补齐轻咨询分支）
+        buttons.add(_buildButton(context, '申请退款', () {
+          _navigateToAfterSales(context);
+        }));
         // 咨询进行中：联系顾问
         primaryButton = _buildButton(
           context,
