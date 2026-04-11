@@ -1157,19 +1157,19 @@ abstract class AppLocalizations {
   /// No description provided for @profile_pending_payment.
   ///
   /// In zh, this message translates to:
-  /// **'待付'**
+  /// **'待付款'**
   String get profile_pending_payment;
 
   /// No description provided for @profile_in_progress.
   ///
   /// In zh, this message translates to:
-  /// **'待提交'**
+  /// **'咨询中'**
   String get profile_in_progress;
 
   /// No description provided for @profile_completed.
   ///
   /// In zh, this message translates to:
-  /// **'待收货'**
+  /// **'已完成'**
   String get profile_completed;
 
   /// No description provided for @profile_refund.

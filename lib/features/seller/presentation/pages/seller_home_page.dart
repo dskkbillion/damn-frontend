@@ -453,7 +453,8 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                   icon: Icons.access_time,
                   label: AppLocalizations.of(context)!.seller_home_orders_pending,
                   count: dashboardData.orders.pending.toString(),
-                  onTap: () => context.push('/seller/orders'),
+                  // 卖家"待处理"= 待交付（映射到 awaitingConfirmation tab）
+                  onTap: () => context.push('/seller/orders?status=awaitingConfirmation'),
                 ),
                 _buildOrderStatusItem(
                   context,

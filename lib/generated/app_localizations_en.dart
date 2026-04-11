@@ -589,16 +589,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profile_orders => 'My Orders';
 
   @override
-  String get profile_pending_payment => 'Pending';
+  String get profile_pending_payment => 'Unpaid';
 
   @override
-  String get profile_in_progress => 'To Submit';
+  String get profile_in_progress => 'In Chat';
 
   @override
-  String get profile_completed => 'To Receive';
+  String get profile_completed => 'Completed';
 
   @override
-  String get profile_refund => 'Support';
+  String get profile_refund => 'After-sale';
 
   @override
   String profile_navigation_error(String error) {

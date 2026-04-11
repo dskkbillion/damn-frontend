@@ -89,7 +89,7 @@ class OrderStatusSection extends StatelessWidget {
                 context,
                 Icons.undo,
                 appLocalizations.profile_refund,
-                onTap: () => _navigateToOrders(context, 'applyingForMediation'),
+                onTap: () => _navigateToOrders(context, 'afterSale'),
               ),
             ],
           ),
