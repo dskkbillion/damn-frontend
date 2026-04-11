@@ -191,21 +191,11 @@ class _GlobalMessageNotificationState extends State<GlobalMessageNotification> {
     _overlayEntry = null;
 
     try {
-      // 使用 GoRouter 导航到重构版聊天详情页
-      final router = GoRouter.of(context);
-      router.pushNamed(
-        'chatRoomRefactored',  // 使用重构版路由
-        pathParameters: {'chatId': event.chatId},
-      );
+      // 使用 go 替代 push/pushNamed，避免 SmartPage key 冲突断言崩溃
+      context.go('/chat/refactored/${event.chatId}');
       AppLogger.d('[GlobalMessageNotification] Navigating to chat room (refactored): ${event.chatId}');
     } catch (e) {
       AppLogger.d('[GlobalMessageNotification] Error navigating to chat: $e');
-      // 备用方案：直接使用路径
-      try {
-        context.push('/chat/refactored/${event.chatId}');
-      } catch (e2) {
-        AppLogger.d('[GlobalMessageNotification] Fallback navigation also failed: $e2');
-      }
     }
   }
   

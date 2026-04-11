@@ -22,7 +22,7 @@ class OrderDetailItemTile extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
         onTap: canNavigate
-            ? () => context.push('/home/product/${item.productId}')
+            ? () => context.go('/home/product/${item.productId}')
             : null,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
