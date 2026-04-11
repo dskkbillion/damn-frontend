@@ -109,13 +109,16 @@ class OrderDetailActionButtons extends StatelessWidget {
         }));
         break;
 
-      // 待发货/待交付，允许提醒和平台介入
+      // 待发货/待交付，允许提醒和申请退款
       case OrderStatus.awaitingDelivery:
       case OrderStatus.awaitingStart:
         buttons.add(_buildButton(context, '提醒发货', () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('已提醒卖家发货'))
           );
+        }));
+        buttons.add(_buildButton(context, '申请退款', () {
+          _navigateToAfterSales(context);
         }));
         buttons.add(_buildButton(context, '平台介入', () {
           _navigateToPlatformIntervention(context);
@@ -129,7 +132,7 @@ class OrderDetailActionButtons extends StatelessWidget {
         buttons.add(_buildButton(context, '平台介入', () {
           _navigateToPlatformIntervention(context);
         }));
-        buttons.add(_buildButton(context, '申请售后', () {
+        buttons.add(_buildButton(context, '申请退款', () {
           _navigateToAfterSales(context);
         }));
         primaryButton = BlocBuilder<OrderDetailBloc, OrderDetailState>(
@@ -164,7 +167,7 @@ class OrderDetailActionButtons extends StatelessWidget {
         buttons.add(_buildButton(context, '查看物流', () {
           AppLogger.d('查看物流 for order ${order.id}');
         }));
-        buttons.add(_buildButton(context, '申请售后', () {
+        buttons.add(_buildButton(context, '申请退款', () {
           _navigateToAfterSales(context);
         }));
         primaryButton = _buildButton(context, '去评价', () {
@@ -173,10 +176,7 @@ class OrderDetailActionButtons extends StatelessWidget {
         break;
 
       case OrderStatus.orderCompleted: // 已完成
-        buttons.add(_buildButton(context, '申请重做', () {
-          dialogs.showOrderDemandDialog(context, 'reform');
-        }));
-        buttons.add(_buildButton(context, '申请售后', () {
+        buttons.add(_buildButton(context, '申请退款', () {
           _navigateToAfterSales(context);
         }));
         buttons.add(_buildButton(context, '删除订单', () {
@@ -197,9 +197,6 @@ class OrderDetailActionButtons extends StatelessWidget {
         break;
 
       case OrderStatus.canceled: // 已取消
-      case OrderStatus.afterSale: // 售后处理中
-      case OrderStatus.AfterSaleRejection: // 售后被拒
-      case OrderStatus.applyingForMediation: // 平台介入中
         buttons.add(_buildButton(context, '查看订单', () {
           AppLogger.d('查看订单: ${order.id}');
         }));
@@ -217,6 +214,15 @@ class OrderDetailActionButtons extends StatelessWidget {
               );
             },
           );
+        }));
+        break;
+
+      case OrderStatus.afterSale: // 售后处理中
+      case OrderStatus.AfterSaleRejection: // 售后被拒
+      case OrderStatus.applyingForMediation: // 平台介入中
+        // 只保留"查看订单"，移除"删除订单"避免数据损坏
+        buttons.add(_buildButton(context, '查看订单', () {
+          AppLogger.d('查看订单: ${order.id}');
         }));
         break;
 
@@ -262,7 +268,7 @@ class OrderDetailActionButtons extends StatelessWidget {
         Future.delayed(const Duration(milliseconds: 50), () {
           if (context.mounted) {
             try {
-              context.push('/selectAfterSalesType/$firstItemId', extra: firstItem);
+              context.push('/afterSalesApply?itemId=$firstItemId&type=REFUND', extra: firstItem);
               AppLogger.d('Navigate to select after sales type for item ID: $firstItemId');
             } catch (e) {
               AppLogger.d('Error navigating to after sales: $e');
@@ -276,7 +282,7 @@ class OrderDetailActionButtons extends StatelessWidget {
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('错误：无法为没有商品的订单申请售后')),
+          const SnackBar(content: Text('错误：无法为没有商品的订单申请退款')),
         );
         AppLogger.d('Error: Cannot apply after sales for order ${order.id} with no items.');
       }
@@ -413,7 +419,10 @@ class OrderDetailActionButtons extends StatelessWidget {
             );
           },
         );
-        // 次要按钮：联系顾问
+        // 次要按钮：申请退款 + 联系顾问（#278 补齐轻咨询分支）
+        buttons.add(_buildButton(context, '申请退款', () {
+          _navigateToAfterSales(context);
+        }));
         buttons.add(_buildButton(context, '联系顾问',
           (isCreatingChat || onContactSeller == null)
               ? null
@@ -425,6 +434,10 @@ class OrderDetailActionButtons extends StatelessWidget {
       case OrderStatus.buyAwaitingSubmission:
       case OrderStatus.awaitingStart:
       case OrderStatus.awaitingDelivery:
+        // 次要按钮：申请退款（#278 补齐轻咨询分支）
+        buttons.add(_buildButton(context, '申请退款', () {
+          _navigateToAfterSales(context);
+        }));
         // 咨询进行中：联系顾问
         primaryButton = _buildButton(
           context,
@@ -439,7 +452,7 @@ class OrderDetailActionButtons extends StatelessWidget {
 
       case OrderStatus.awaitingEvaluation:
         // 待评价：评价
-        buttons.add(_buildButton(context, '申请售后', () {
+        buttons.add(_buildButton(context, '申请退款', () {
           _navigateToAfterSales(context);
         }));
         primaryButton = _buildButton(context, '评价', () {
@@ -448,7 +461,7 @@ class OrderDetailActionButtons extends StatelessWidget {
         break;
 
       case OrderStatus.orderCompleted:
-        buttons.add(_buildButton(context, '申请售后', () {
+        buttons.add(_buildButton(context, '申请退款', () {
           _navigateToAfterSales(context);
         }));
         // 已完成：再次咨询（进入与卖家的聊天室）
@@ -463,10 +476,23 @@ class OrderDetailActionButtons extends StatelessWidget {
         );
         break;
 
-      case OrderStatus.applyingForMediation:
       case OrderStatus.afterSale:
       case OrderStatus.AfterSaleRejection:
-        // 平台介入：联系客服
+        // 售后中：回到和顾问的聊天室继续沟通
+        // 产品口径：轻咨询所有业务在聊天室进行，包括售后
+        primaryButton = _buildButton(
+          context,
+          isCreatingChat ? '连接中...' : '联系顾问',
+          (isCreatingChat || onContactSeller == null)
+              ? null
+              : () => onContactSeller!(order),
+          isPrimary: true,
+          isLoading: isCreatingChat,
+        );
+        break;
+
+      case OrderStatus.applyingForMediation:
+        // 平台介入：联系客服（后端 API 已 disable，保持本地 toast）
         primaryButton = _buildButton(context, '联系客服', () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('正在连接客服...')),

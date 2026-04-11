@@ -28,13 +28,15 @@ class OrderStatusMapper {
       case OrderStatus.awaitingPayment:
         return '待付款';
 
-      // 这些状态都映射到"待交付"
+      // 轻咨询：咨询中（买家视角） / 待交付（卖家视角保持不变）
       case OrderStatus.awaitingSubmission:
       case OrderStatus.buyAwaitingSubmission:
       case OrderStatus.awaitingStart:
       case OrderStatus.awaitingDelivery:
+        return isSellerView ? '待交付' : '咨询中';
+
       case OrderStatus.awaitingConfirmation:
-        return isSellerView ? '待交付' : '待交付';
+        return isSellerView ? '待交付' : '待确认';
 
       case OrderStatus.awaitingEvaluation:
         return '评价';

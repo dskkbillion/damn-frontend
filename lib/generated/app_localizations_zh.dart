@@ -564,13 +564,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get profile_orders => '我的订单';
 
   @override
-  String get profile_pending_payment => '待付';
+  String get profile_pending_payment => '待付款';
 
   @override
-  String get profile_in_progress => '待提交';
+  String get profile_in_progress => '咨询中';
 
   @override
-  String get profile_completed => '待收货';
+  String get profile_completed => '已完成';
 
   @override
   String get profile_refund => '售后';

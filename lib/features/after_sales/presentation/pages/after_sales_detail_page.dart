@@ -422,8 +422,17 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
           const SizedBox(height: 16),
           _buildDetailRow(
               '申请单号', application.refundSn ?? '-', textTheme, colorScheme),
-          _buildDetailRow('申请时间', _formatDateTime(application.createTime),
-              textTheme, colorScheme),
+          _buildDetailRow(
+              '申请时间',
+              _formatDateTime(
+                application.createTime ??
+                    (application.timeline != null &&
+                            application.timeline!.isNotEmpty
+                        ? application.timeline!.first.createTime
+                        : null),
+              ),
+              textTheme,
+              colorScheme),
           _buildDetailRow(
               '退款金额',
               '¥${application.refundPrice?.toStringAsFixed(2) ?? '0.00'}',
@@ -434,9 +443,58 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
           if (application.refundExplain?.isNotEmpty == true)
             _buildDetailRow(
                 '详细说明', application.refundExplain!, textTheme, colorScheme),
-          if (application.chatRoomId != null)
-            _buildDetailRow(
-                '关联聊天室', '#${application.chatRoomId}', textTheme, colorScheme),
+          if (application.refundImage != null &&
+              application.refundImage!.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              '凭证图片',
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: application.refundImage!.map((url) {
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    url,
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 80,
+                      height: 80,
+                      color: Colors.grey[200],
+                      child: Icon(
+                        Icons.broken_image,
+                        color: Colors.grey[400],
+                        size: 32,
+                      ),
+                    ),
+                    loadingBuilder: (context, child, progress) {
+                      if (progress == null) return child;
+                      return Container(
+                        width: 80,
+                        height: 80,
+                        color: Colors.grey[100],
+                        child: const Center(
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 8),
+          ],
           if (application.auditRemark?.isNotEmpty == true) ...[
             const Divider(height: 24),
             _buildDetailRow(

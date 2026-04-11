@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 // Import OrderItem
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_item.dart';
-import 'dart:io'; // Import dart:io for File
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
 import 'package:go_router/go_router.dart';
 import '../bloc/after_sales_bloc.dart'; // Import Bloc/Event
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 售后申请表单页面
 class AfterSalesApplyPage extends StatefulWidget {
@@ -34,7 +32,6 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
   final _formKey = GlobalKey<FormState>(); // Form key
   String? _selectedReason; // State for selected reason
   final _descriptionController = TextEditingController(); // Controller for description
-  final _amountController = TextEditingController(); // Controller for amount
   // Use ImageProcessResult for better image handling
   List<ImageProcessResult> _selectedImages = [];
   final int _maxImages = 9; // Define max images based on prototype hint
@@ -52,7 +49,6 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
   @override
   void dispose() {
     _descriptionController.dispose();
-    _amountController.dispose(); // Dispose amount controller
     super.dispose();
   }
 
@@ -142,9 +138,6 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
       title = '申请退款';
     }
 
-    // Determine max refundable amount (example: item price)
-    final maxRefundAmount = widget.orderItem.price;
-
     return BlocListener<AfterSalesBloc, AfterSalesState>(
       listener: (context, state) {
         if (state is AfterSalesActionSuccess) {
@@ -221,37 +214,6 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
               ),
               const SizedBox(height: 16.0),
 
-              // --- Amount Text Field (Conditional) ---
-              if (widget.afterSalesType == 'REFUND')
-                 Padding(
-                   padding: const EdgeInsets.only(bottom: 16.0),
-                   child: TextFormField(
-                      controller: _amountController, // Use controller
-                      decoration: InputDecoration(
-                        labelText: '退款金额',
-                        hintText: '最多可退 ${RegionConfig.currencySymbol}${maxRefundAmount.toStringAsFixed(2)}', // Show max amount
-                        prefixText: '${RegionConfig.currencySymbol} ',
-                        border: const OutlineInputBorder(),
-                      ),
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      validator: (value) { // Add validation
-                        if (value == null || value.isEmpty) {
-                          return '请输入退款金额';
-                        }
-                        final amount = double.tryParse(value);
-                        if (amount == null) {
-                          return '请输入有效的金额数字';
-                        }
-                        if (amount <= 0) {
-                          return '退款金额必须大于0';
-                        }
-                        if (amount > maxRefundAmount) {
-                          return '退款金额不能超过 ¥${maxRefundAmount.toStringAsFixed(2)}';
-                        }
-                        return null;
-                      },
-                   ),
-                 ),
 
               // --- Image Upload Section ---
               Text('上传凭证 (最多 $_maxImages 张)', style: Theme.of(context).textTheme.titleSmall),
@@ -271,11 +233,6 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
                               if (_formKey.currentState!.validate()) {
                                 AppLogger.d('Form is valid. Submitting...');
 
-                                double? refundAmount;
-                                if (widget.afterSalesType == 'REFUND') {
-                                  refundAmount = double.tryParse(_amountController.text);
-                                }
-
                                 final submitEvent = ApplyForAfterSalesSubmitted(
                                   orderItemId: widget.orderItemId,
                                   refundType: widget.afterSalesType,
@@ -284,9 +241,9 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
                                   imagePaths: _selectedImages
                                       .map((result) => result.finalFile.path)
                                       .toList(),
-                                  refundAmount: refundAmount,
+                                  refundAmount: null,
                                 );
-                                AppLogger.d('Adding event: $submitEvent with amount $refundAmount');
+                                AppLogger.d('Adding event: $submitEvent');
                                 context.read<AfterSalesBloc>().add(submitEvent);
                               }
                             },
