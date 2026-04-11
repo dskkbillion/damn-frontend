@@ -34,8 +34,12 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
     int currentStepIndex = isLightConsultation 
         ? _getSimplifiedStepIndex(widget.order.state)
         : _getCurrentStepIndex(widget.order.state);
-    bool showTimeline = widget.order.state != OrderStatus.canceled && 
-                       widget.order.state != OrderStatus.applyingForMediation;
+    bool showTimeline = widget.order.state != OrderStatus.canceled &&
+                       widget.order.state != OrderStatus.applyingForMediation &&
+                       widget.order.state != OrderStatus.afterSale &&
+                       widget.order.state != OrderStatus.AfterSaleRejection &&
+                       widget.order.state != OrderStatus.sellerSupplementaryMaterials &&
+                       widget.order.state != OrderStatus.applyForRefuse;
 
     return Container(
       width: double.infinity,
@@ -304,19 +308,24 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
       case OrderStatus.awaitingPayment:
         return 0; // 下单
       
-      // 这些状态都映射到"交付"步骤
+      // 这些状态都映射到"咨询"步骤
       case OrderStatus.awaitingSubmission:
       case OrderStatus.buyAwaitingSubmission:
       case OrderStatus.awaitingStart:
       case OrderStatus.awaitingDelivery:
+        return 2; // 咨询中
+
       case OrderStatus.awaitingConfirmation:
-        return 2; // 交付中
-        
+        // v3 / S2: 聊天室咨询结束，等待买家确认，推进到"评价"步骤
+        // 产品口径：轻咨询 = 付款 → 聊天室沟通 → 买家确认
+        return 3;
+
       case OrderStatus.awaitingEvaluation:
         return 3; // 评价
 
       case OrderStatus.orderCompleted:
-        return totalSteps; // 完成（返回totalSteps使所有步骤都显示为已完成）
+        // 已评价才全部打勾；未评价停在"评价"步骤
+        return widget.order.evaluate == true ? totalSteps : 3;
         
       // 平台介入、售后、取消等特殊状态
       case OrderStatus.applyingForMediation:
