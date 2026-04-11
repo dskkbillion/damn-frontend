@@ -216,24 +216,26 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              if (profile.onlineFlag != null)
-                                Container(
+                              // #266: 不再用 null 守卫遮盖徽章 —— null 默认按"离线"显示
+                              Builder(builder: (context) {
+                                final isOnline = profile.onlineFlag ?? false;
+                                return Container(
                                   padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingSm, vertical: 2.0),
                                   decoration: BoxDecoration(
-                                    color: profile.onlineFlag! ? AppColors.success : AppColors.textTertiary,
+                                    color: isOnline ? AppColors.success : AppColors.textTertiary,
                                     borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(
-                                        profile.onlineFlag! ? Icons.circle : Icons.circle_outlined,
+                                        isOnline ? Icons.circle : Icons.circle_outlined,
                                         color: Colors.white,
                                         size: 12,
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        profile.onlineFlag! ? AppLocalizations.of(context)!.seller_home_online : AppLocalizations.of(context)!.seller_home_offline,
+                                        isOnline ? AppLocalizations.of(context)!.seller_home_online : AppLocalizations.of(context)!.seller_home_offline,
                                         style: const TextStyle(
                                           fontSize: 12,
                                           color: Colors.white,
@@ -241,7 +243,8 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                                       ),
                                     ],
                                   ),
-                                ),
+                                );
+                              }),
                             ],
                           ),
                           
