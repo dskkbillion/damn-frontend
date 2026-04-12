@@ -119,6 +119,7 @@ import 'package:dskk_flutter_refactor/features/orders/presentation/pages/test_or
 import '../../features/home/presentation/pages/product_detail_page.dart';
 import '../../features/home/presentation/pages/product_reviews_page.dart';
 import '../../features/home/presentation/cubit/product_detail_cubit.dart';
+import 'package:dskk_flutter_refactor/core/animations/deepstream_page_transition.dart';
 
 // Import seller statistics related classes
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_upgrade_statistics_usecase.dart';
@@ -606,16 +607,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                      pageBuilder: (context, state) {
                        final productId = state.pathParameters['productId'] ?? '';
                        final extra = state.extra as Map<String, dynamic>?;
-                       return state.buildSmartPage(
-                         BlocProvider(
+                       return DeepStreamHeroPageTransition(
+                         key: ValueKey('${state.matchedLocation}:productId=$productId:'),
+                         child: BlocProvider(
                            create: (context) => getIt<ProductDetailCubit>(),
                            child: ProductDetailPage(
                              productId: productId,
                              chatRoomId: extra?['chatRoomId'],
                            ),
                          ),
-                        name: 'productDetail',
-                        source: 'buyer_shell_home',
                        );
                      },
                      routes: [

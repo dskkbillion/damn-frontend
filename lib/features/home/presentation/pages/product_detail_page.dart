@@ -227,7 +227,22 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
         body: BlocBuilder<ProductDetailCubit, ProductDetailState>(
           builder: (context, state) {
             if (state is ProductDetailLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return Column(
+                children: [
+                  // Hero 占位：保证转场动画期间目标 Hero 存在
+                  Hero(
+                    tag: 'product-image-${widget.productId}',
+                    child: SizedBox(
+                      height: 300.0,
+                      width: double.infinity,
+                      child: Container(color: AppColors.borderPrimary),
+                    ),
+                  ),
+                  const Expanded(
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                ],
+              );
             } else if (state is ProductDetailError) {
               return Center(
                 child: Column(
@@ -313,6 +328,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
     return ProductImagesCarousel(
       images: product.images,
       height: 300.0, // 调整高度
+      heroTag: 'product-image-${widget.productId}',
       onImageClicked: (index) {
         // 图片点击逻辑
       },

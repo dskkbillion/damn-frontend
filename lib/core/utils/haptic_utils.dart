@@ -23,6 +23,16 @@ class HapticUtils {
     // 使用轻微点击反馈，适合按钮和tab切换
     HapticFeedback.selectionClick();
   }
+
+  /// 按钮点击时的轻微震动
+  static void buttonTapFeedback() {
+    HapticFeedback.lightImpact();
+  }
+
+  /// 危险操作（删除、注销等）时的强震动
+  static void dangerActionFeedback() {
+    HapticFeedback.heavyImpact();
+  }
   
   /// AI文档分发成功时的中度双震
   static Future<void> allocationSuccessFeedback() async {

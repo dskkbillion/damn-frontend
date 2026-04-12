@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:dskk_flutter_refactor/core/utils/haptic_utils.dart';
 
 /// 微交互动画组件库
 /// 提供按钮点击反馈、悬停效果等小交互动画
@@ -10,16 +12,18 @@ class MicroInteractions {
   /// [scaleValue] - 缩放值，默认0.95
   /// [duration] - 动画持续时间，默认100ms
   static Widget wrapWithTapAnimation(
-    Widget child, 
+    Widget child,
     VoidCallback onTap, {
     double scaleValue = 0.95,
     Duration duration = const Duration(milliseconds: 100),
+    bool enableHaptic = true,
   }) {
     return _TapAnimationWidget(
       child: child,
       onTap: onTap,
       scaleValue: scaleValue,
       duration: duration,
+      enableHaptic: enableHaptic,
     );
   }
   
@@ -51,12 +55,14 @@ class MicroInteractions {
     VoidCallback onLongPress, {
     double scaleValue = 0.90,
     Duration duration = const Duration(milliseconds: 150),
+    bool enableHaptic = true,
   }) {
     return _LongPressAnimationWidget(
       child: child,
       onLongPress: onLongPress,
       scaleValue: scaleValue,
       duration: duration,
+      enableHaptic: enableHaptic,
     );
   }
   
@@ -71,12 +77,14 @@ class MicroInteractions {
     VoidCallback onTap, {
     double bounceIntensity = 1.1,
     Duration duration = const Duration(milliseconds: 200),
+    bool enableHaptic = true,
   }) {
     return _BounceAnimationWidget(
       child: child,
       onTap: onTap,
       bounceIntensity: bounceIntensity,
       duration: duration,
+      enableHaptic: enableHaptic,
     );
   }
 }
@@ -87,12 +95,14 @@ class _TapAnimationWidget extends StatefulWidget {
   final VoidCallback onTap;
   final double scaleValue;
   final Duration duration;
-  
+  final bool enableHaptic;
+
   const _TapAnimationWidget({
     required this.child,
     required this.onTap,
     required this.scaleValue,
     required this.duration,
+    this.enableHaptic = true,
   });
   
   @override
@@ -130,7 +140,10 @@ class _TapAnimationWidgetState extends State<_TapAnimationWidget>
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTapDown: (_) => _controller.forward(),
+      onTapDown: (_) {
+        _controller.forward();
+        if (widget.enableHaptic) HapticUtils.buttonTapFeedback();
+      },
       onTapUp: (_) {
         _controller.reverse();
         widget.onTap();
@@ -192,12 +205,14 @@ class _LongPressAnimationWidget extends StatefulWidget {
   final VoidCallback onLongPress;
   final double scaleValue;
   final Duration duration;
-  
+  final bool enableHaptic;
+
   const _LongPressAnimationWidget({
     required this.child,
     required this.onLongPress,
     required this.scaleValue,
     required this.duration,
+    this.enableHaptic = true,
   });
   
   @override
@@ -235,7 +250,10 @@ class _LongPressAnimationWidgetState extends State<_LongPressAnimationWidget>
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onLongPressStart: (_) => _controller.forward(),
+      onLongPressStart: (_) {
+        _controller.forward();
+        if (widget.enableHaptic) HapticFeedback.mediumImpact();
+      },
       onLongPressEnd: (_) => _controller.reverse(),
       onLongPress: widget.onLongPress,
       child: AnimatedBuilder(
@@ -255,12 +273,14 @@ class _BounceAnimationWidget extends StatefulWidget {
   final VoidCallback onTap;
   final double bounceIntensity;
   final Duration duration;
-  
+  final bool enableHaptic;
+
   const _BounceAnimationWidget({
     required this.child,
     required this.onTap,
     required this.bounceIntensity,
     required this.duration,
+    this.enableHaptic = true,
   });
   
   @override
@@ -296,6 +316,7 @@ class _BounceAnimationWidgetState extends State<_BounceAnimationWidget>
   }
   
   void _onTap() {
+    if (widget.enableHaptic) HapticUtils.buttonTapFeedback();
     _controller.forward().then((_) {
       _controller.reverse();
       widget.onTap();

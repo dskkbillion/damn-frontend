@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
@@ -150,38 +150,9 @@ class _BannerCarouselState extends State<BannerCarousel> {
                       builder: (context) {
                         // 使用真实的图片URL
                         if (banner.imageUrl.isNotEmpty) {
-                          return CachedNetworkImage(
+                          return AppNetworkImage(
                             imageUrl: banner.imageUrl,
                             fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              color: AppColors.borderPrimary,
-                              child: const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                            ),
-                            errorWidget: (context, url, error) => Container(
-                              color: AppColors.borderPrimary,
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.error_outline,
-                                      color: AppColors.textTertiary,
-                                      size: 50,
-                                    ),
-                                    const SizedBox(height: AppDimensions.spacingMd),
-                                    Text(
-                                      '图片加载失败',
-                                      style: TextStyle(
-                                        color: AppColors.textSecondary,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
                           );
                         } else {
                           // 如果没有图片URL，显示占位图

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
@@ -21,6 +21,9 @@ class ProductImagesCarousel extends StatefulWidget {
   /// 自动播放间隔
   final Duration autoPlayInterval;
 
+  /// Hero tag，传入时首张图片（index==0）会包裹 Hero 动画
+  final String? heroTag;
+
   const ProductImagesCarousel({
     Key? key,
     required this.images,
@@ -28,6 +31,7 @@ class ProductImagesCarousel extends StatefulWidget {
     this.height = 300.0,
     this.autoPlay = true,
     this.autoPlayInterval = const Duration(seconds: 4),
+    this.heroTag,
   }) : super(key: key);
 
   @override
@@ -128,21 +132,11 @@ class _ProductImagesCarouselState extends State<ProductImagesCarousel> {
                     widget.onImageClicked!(index);
                   }
                 },
-                child: CachedNetworkImage(
+                child: AppNetworkImage(
                   imageUrl: imageUrl,
                   fit: BoxFit.cover,
                   width: double.infinity,
-                  placeholder: (context, url) => Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        Theme.of(context).colorScheme.primary,
-                      ),
-                      strokeWidth: 2,
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => const Center(
-                    child: Icon(Icons.error),
-                  ),
+                  heroTag: index == 0 ? widget.heroTag : null,
                 ),
               );
             },

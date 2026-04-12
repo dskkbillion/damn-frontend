@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
+import 'package:dskk_flutter_refactor/core/utils/haptic_utils.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -43,6 +44,7 @@ class OrderDetailActionButtons extends StatelessWidget {
     switch (order.state) {
       case OrderStatus.awaitingPayment: // 待付款
         buttons.add(_buildButton(context, '取消订单', () {
+          HapticUtils.dangerActionFeedback();
           dialogs.showConfirmationDialog(
             context: context,
             title: '取消订单',
@@ -93,6 +95,7 @@ class OrderDetailActionButtons extends StatelessWidget {
           }));
         }
         buttons.add(_buildButton(context, '取消订单', () {
+          HapticUtils.dangerActionFeedback();
           dialogs.showConfirmationDialog(
             context: context,
             title: '取消订单',
@@ -142,6 +145,7 @@ class OrderDetailActionButtons extends StatelessWidget {
               context,
               isLoading ? '处理中...' : '确认收货',
               isLoading ? null : () {
+                HapticUtils.buttonTapFeedback();
                 dialogs.showConfirmationDialog(
                   context: context,
                   title: '确认收货',
@@ -180,6 +184,7 @@ class OrderDetailActionButtons extends StatelessWidget {
           _navigateToAfterSales(context);
         }));
         buttons.add(_buildButton(context, '删除订单', () {
+          HapticUtils.dangerActionFeedback();
           dialogs.showConfirmationDialog(
             context: context,
             title: '删除订单',
@@ -201,6 +206,7 @@ class OrderDetailActionButtons extends StatelessWidget {
           AppLogger.d('查看订单: ${order.id}');
         }));
         buttons.add(_buildButton(context, '删除订单', () {
+          HapticUtils.dangerActionFeedback();
           dialogs.showConfirmationDialog(
             context: context,
             title: '删除订单',
@@ -360,6 +366,7 @@ class OrderDetailActionButtons extends StatelessWidget {
       case OrderStatus.awaitingPayment:
         // 待付款：支付、取消
         buttons.add(_buildButton(context, '取消', () {
+          HapticUtils.dangerActionFeedback();
           dialogs.showConfirmationDialog(
             context: context,
             title: '取消订单',
@@ -400,6 +407,7 @@ class OrderDetailActionButtons extends StatelessWidget {
               context,
               isLoading ? '处理中...' : '确认收货',
               isLoading ? null : () {
+                HapticUtils.buttonTapFeedback();
                 dialogs.showConfirmationDialog(
                   context: context,
                   title: '确认收货',
@@ -503,6 +511,7 @@ class OrderDetailActionButtons extends StatelessWidget {
       case OrderStatus.canceled:
         // 已取消：删除订单
         primaryButton = _buildButton(context, '删除订单', () {
+          HapticUtils.dangerActionFeedback();
           dialogs.showConfirmationDialog(
             context: context,
             title: '删除订单',

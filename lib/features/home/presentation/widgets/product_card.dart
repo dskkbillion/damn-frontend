@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
@@ -174,40 +174,10 @@ class ProductCard extends StatelessWidget {
 
     // 检查是否有图片URL
     if (item.images.isNotEmpty) {
-      return CachedNetworkImage(
+      return AppNetworkImage(
         imageUrl: item.images.first,
         fit: BoxFit.cover,
-        placeholder: (context, url) => Container(
-          color: AppColors.borderPrimary,
-          child: const Center(
-            child: CircularProgressIndicator(),
-          ),
-        ),
-        errorWidget: (context, url, error) => Container(
-          color: AppColors.borderPrimary,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  color: AppColors.textTertiary,
-                  size: 40,
-                ),
-                const SizedBox(height: AppDimensions.spacingSm),
-                Text(
-                  appLocalizations.product_image_loading_failed,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ),
+        heroTag: 'product-image-${item.id}',
       );
     } else {
       // 如果没有图片URL，显示占位图

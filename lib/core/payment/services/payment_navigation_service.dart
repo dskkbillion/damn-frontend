@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../models/payment_models.dart';
 import '../../../features/orders/domain/entities/order_status.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_toast.dart';
 
 /// 支付导航服务
 /// 根据不同的支付结果类型，采用相应的导航策略
@@ -219,52 +220,16 @@ class PaymentNavigationService {
   
   /// 显示成功提示
   static void _showSuccessSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.white),
-            const SizedBox(width: 8),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: Colors.green,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    AppToast.success(context, message);
   }
-  
+
   /// 显示错误提示
   static void _showErrorSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.error, color: Colors.white),
-            const SizedBox(width: 8),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 4),
-      ),
-    );
+    AppToast.error(context, message);
   }
-  
+
   /// 显示信息提示
   static void _showInfoSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.info, color: Colors.white),
-            const SizedBox(width: 8),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: Colors.blue,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    AppToast.info(context, message);
   }
 } 
