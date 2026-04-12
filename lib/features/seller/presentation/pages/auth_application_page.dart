@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_authentication_info.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/auth_application/auth_application_bloc.dart';
@@ -164,11 +165,13 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
                               style: ElevatedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(vertical: 12),
                               ),
-                              child: isSubmitting 
-                                ? const CircularProgressIndicator() 
+                              child: isSubmitting
+                                ? const CircularProgressIndicator()
                                 : Text(AppLocalizations.of(innerContext)?.seller_auth_application_submit ?? 'Submit', style: const TextStyle(fontSize: 16)),
                             ),
                           ),
+                          // 键盘遮挡保护：确保提交按钮可滚动到键盘上方
+                          const SizedBox(height: 80),
                         ],
                       ),
                     ),
@@ -663,17 +666,14 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(_l10n?.seller_auth_application_submit_success ?? 'Submitted Successfully'),
         content: Text(_l10n?.seller_auth_application_submit_success_desc ?? 'Your application has been submitted and will be reviewed within 1-3 business days.'),
         actions: [
           FilledButton(
             onPressed: () {
-              Navigator.of(context).pop(); // 关闭对话框
-              Navigator.of(context).pop(); // 返回上一页
-              
-              // 修复：返回认证管理页面时刷新状态
-              // 可以通过结果回调来通知刷新
+              Navigator.of(dialogContext).pop(); // 关闭对话框
+              context.pop(true); // 返回上一页并携带刷新标记
             },
             child: Text(_l10n?.seller_auth_application_ok ?? 'OK'),
           ),

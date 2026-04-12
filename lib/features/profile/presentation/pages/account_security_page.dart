@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/app/navigation/app_router.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/profile_bloc.dart';
@@ -45,9 +46,15 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             listenWhen: (previous, current) => current is ProfileLoggedOut,
             listener: (context, state) {
               if (state is ProfileLoggedOut) {
-                // 登出成功后导航到登录页面，并清除导航栈
                 AppLogger.d('【退出登录】用户已成功登出，正在重定向到登录页面...');
-                context.go('/auth/login');
+                // 使用 rootNavigatorKey 导航，完全脱离当前 BlocProvider context 树
+                // 避免 InheritedWidget '_dependents.isEmpty' 断言失败
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  final navContext = rootNavigatorKey.currentContext;
+                  if (navContext != null) {
+                    GoRouter.of(navContext).go('/auth/login');
+                  }
+                });
               }
             },
           ),

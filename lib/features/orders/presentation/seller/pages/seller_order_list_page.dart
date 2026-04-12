@@ -28,7 +28,8 @@ class _SellerOrderListPageState extends State<SellerOrderListPage>
   // 轻咨询模式 - 卖家视角简化Tab
   final List<Tab> _tabs = const [
     Tab(text: '全部'), // 所有订单
-    Tab(text: '待交付'), // 待交付（映射到awaitingConfirmation）
+    Tab(text: '待接单'), // 待接单（awaitingStart）
+    Tab(text: '待确认'), // 买家待确认收货（awaitingConfirmation）
     Tab(text: '待评价'), // 待评价
     Tab(text: '完成'), // 已完成
     Tab(text: '售后中'), // 售后中
@@ -38,7 +39,8 @@ class _SellerOrderListPageState extends State<SellerOrderListPage>
 
   final List<OrderStatus> _tabStatuses = [
     OrderStatus.unknown, // 全部
-    OrderStatus.awaitingConfirmation, // 待交付（使用awaitingConfirmation）
+    OrderStatus.awaitingStart, // 待接单
+    OrderStatus.awaitingConfirmation, // 待确认（买家确认收货）
     OrderStatus.awaitingEvaluation, // 待评价
     OrderStatus.orderCompleted, // 完成
     OrderStatus.afterSale, // 售后中
@@ -361,7 +363,7 @@ class _SellerOrderListPageState extends State<SellerOrderListPage>
                             ),
                             onTap: () {
                               // 切换到待接单Tab
-                              _tabController.animateTo(1); // 待接单是第2个tab
+                              _tabController.animateTo(_findIndexForStatus(OrderStatus.awaitingStart));
                             },
                           ),
                         ),

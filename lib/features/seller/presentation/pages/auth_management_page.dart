@@ -13,9 +13,14 @@ import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 认证管理页面
-class AuthManagementPage extends StatelessWidget {
+class AuthManagementPage extends StatefulWidget {
   const AuthManagementPage({super.key});
 
+  @override
+  State<AuthManagementPage> createState() => _AuthManagementPageState();
+}
+
+class _AuthManagementPageState extends State<AuthManagementPage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<AuthManagementBloc>(
@@ -447,7 +452,11 @@ class AuthManagementPage extends StatelessWidget {
         'sellerAuthenticationApply',
         pathParameters: {'type': auth.type.value.toLowerCase()},
         extra: auth,
-      );
+      ).then((result) {
+        if (result == true && context.mounted) {
+          context.read<AuthManagementBloc>().add(RefreshAuthenticationList());
+        }
+      });
     }
   }
 } 
