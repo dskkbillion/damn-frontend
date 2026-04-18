@@ -24,6 +24,7 @@ class OrderConfirmPage extends StatefulWidget {
   final double price;
   final int? chatRoomId;
   final String productName;
+  final String? displayProductName;
   final String? imageUrl;
 
   const OrderConfirmPage({
@@ -35,6 +36,7 @@ class OrderConfirmPage extends StatefulWidget {
     required this.price,
     this.chatRoomId,
     required this.productName,
+    this.displayProductName,
     this.imageUrl,
   }) : super(key: key);
 
@@ -277,7 +279,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              widget.productName,
+                              widget.displayProductName ?? widget.productName,
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,

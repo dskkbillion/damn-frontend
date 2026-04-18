@@ -866,6 +866,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                     price: extra['price'] ?? 0.0,
                     chatRoomId: extra['chatRoomId'],
                     productName: extra['productName'] ?? '',
+                    displayProductName: extra['displayProductName'] as String?,
                     imageUrl: extra['imageUrl'],
                   ),
                 );
