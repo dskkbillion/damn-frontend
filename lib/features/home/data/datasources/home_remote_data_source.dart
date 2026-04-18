@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui' show PlatformDispatcher;
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 import 'package:http/http.dart' as http;
@@ -81,6 +82,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       'clienttype': '1',
       'client': 'android',
       'version': '100',
+      'Accept-Language': PlatformDispatcher.instance.locale.languageCode,
     };
   }
 

@@ -1,3 +1,4 @@
+import 'dart:ui' show PlatformDispatcher;
 import 'package:dio/dio.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/error/exceptions.dart';
@@ -22,6 +23,9 @@ class SellerProductsDataSourceImpl implements SellerProductsDataSource {
       final response = await dio.post(
         '/api/shop/product/list',
         data: {'tenantId': sellerId},
+        options: Options(headers: {
+          'Accept-Language': PlatformDispatcher.instance.locale.languageCode,
+        }),
       );
 
       if (response.statusCode == 200 && response.data['code'] == 200) {
