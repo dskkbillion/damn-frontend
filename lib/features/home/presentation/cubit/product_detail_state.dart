@@ -13,11 +13,12 @@ class ProductDetailLoading extends ProductDetailState {}
 
 class ProductDetailLoaded extends ProductDetailState {
   final ProductDetail product;
+  final ProductTranslation? translation;
 
-  const ProductDetailLoaded(this.product);
+  const ProductDetailLoaded(this.product, {this.translation});
 
   @override
-  List<Object> get props => [product];
+  List<Object> get props => [product, if (translation != null) translation!];
 }
 
 class ProductDetailError extends ProductDetailState {

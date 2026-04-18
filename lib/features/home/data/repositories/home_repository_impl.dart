@@ -5,6 +5,7 @@ import 'package:dskk_flutter_refactor/core/network/network_info.dart';
 import 'package:dskk_flutter_refactor/features/home/domain/entities/home_feed_item.dart';
 import 'package:dskk_flutter_refactor/features/home/domain/entities/home_page_data.dart';
 import 'package:dskk_flutter_refactor/features/home/domain/entities/product_detail.dart';
+import 'package:dskk_flutter_refactor/features/home/domain/entities/product_translation.dart';
 import 'package:dskk_flutter_refactor/features/home/domain/entities/banner.dart';
 import 'package:dskk_flutter_refactor/features/home/domain/repositories/home_repository.dart';
 import 'package:injectable/injectable.dart';
@@ -114,12 +115,12 @@ class HomeRepositoryImpl implements IHomeRepository {
   }
 
   @override
-  Future<Either<Failure, ProductDetail>> getProductDetail(String productId) async {
+  Future<Either<Failure, (ProductDetail, ProductTranslation?)>> getProductDetail(String productId) async {
     if (await networkInfo.isConnected) {
       try {
         final remoteData = await remoteDataSource.getProductDetail(productId);
         // 可以添加缓存逻辑，这里暂时不实现
-        return Right(remoteData.toEntity());
+        return Right((remoteData.toEntity(), remoteData.translation));
       } on ServerException catch (e) {
         return Left(ServerFailure(message: e.message ?? "服务器错误"));
       }

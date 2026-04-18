@@ -12,6 +12,7 @@ import '../../../../generated/app_localizations.dart';
 
 import '../../domain/entities/product_detail.dart';
 import '../../domain/entities/product_review.dart';
+import '../../domain/entities/product_translation.dart';
 import '../cubit/product_detail_cubit.dart';
 import '../cubit/product_reviews_cubit.dart';
 import '../cubit/product_reviews_state.dart';
@@ -261,14 +262,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
               );
             } else if (state is ProductDetailLoaded) {
               final product = state.product;
+              final translation = state.translation;
               final variantsCount = product.variants?.length ?? 1;
-              
+
               // Initialize TabController if needed
               if (_tabController == null || _tabController!.length != variantsCount) {
                 _initializeTabController(variantsCount);
               }
-              
-              return _buildProductDetail(context, product);
+
+              return _buildProductDetail(context, product, translation);
             }
             return Center(child: Text(AppLocalizations.of(context)!.product_detail_please_wait));
           },
@@ -277,7 +279,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
     );
   }
 
-  Widget _buildProductDetail(BuildContext context, ProductDetail product) {
+  Widget _buildProductDetail(BuildContext context, ProductDetail product, [ProductTranslation? translation]) {
     return Column(
       children: [
         Expanded(
@@ -287,12 +289,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
               children: [
                 // 商品图片轮播
                 _buildImageCarousel(product),
-                
+
                 // 卖家信息（移到顶部）
                 _buildSellerInfo(product),
-                
+
                 // 商品基本信息
-                _buildProductBasicInfo(product),
+                _buildProductBasicInfo(product, translation),
                 
                 // 套餐选择（改为Tab样式）
                 if (product.variants != null && product.variants!.isNotEmpty)
@@ -303,7 +305,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                   _buildDeliveryInfo(product.variants![_selectedVariantIndex]),
                   
                 // 购买按钮
-                _buildBuyButton(product),
+                _buildBuyButton(product, translation),
                 
                 // 需要买家提供 - 使用productMaterials中ATTACHMENT和TEXT类型
                 _buildBuyerRequirementsSection(product),
@@ -446,7 +448,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
     );
   }
 
-  Widget _buildProductBasicInfo(ProductDetail product) {
+  Widget _buildProductBasicInfo(ProductDetail product, [ProductTranslation? translation]) {
+    final displayName = translation?.nameOrOriginal(product.name) ?? product.name;
+    final displayDescription = translation?.descriptionOrOriginal(product.description) ?? product.description;
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -468,17 +473,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
               ),
             ),
           ),
-          
+
           Text(
-            product.name,
+            displayName,
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
-          
+
           const SizedBox(height: 8),
-          
+
           // 描述区域 - 修复点击事件
           GestureDetector(
             onTap: () {
@@ -490,7 +495,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
               crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                 Text(
-                    product.description,
+                    displayDescription,
                     style: const TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
@@ -622,15 +627,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
     );
   }
 
-  Widget _buildBuyButton(ProductDetail product) {
+  Widget _buildBuyButton(ProductDetail product, [ProductTranslation? translation]) {
     final variant = product.variants != null && product.variants!.isNotEmpty
         ? product.variants![_selectedVariantIndex]
         : null;
-    
+
     if (variant == null) {
       return const SizedBox.shrink();
     }
-    
+
+    final displayName = translation?.nameOrOriginal(product.name) ?? product.name;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
       width: double.infinity,
@@ -642,7 +649,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           AppLogger.d('[ProductDetailPage] Variant ID: ${variant.id}');
           AppLogger.d('[ProductDetailPage] Price: ${variant.sellingPrice}');
           AppLogger.d('[ProductDetailPage] Chat Room ID: ${widget.chatRoomId}');
-          
+
           // 导航到订单确认页面
           context.push(
             '/product-payment/${product.id}/confirm',
@@ -652,6 +659,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
               'quantity': 1, // 默认购买数量为1
               'sellerId': product.sellerId,
               'productName': product.name,
+              'displayProductName': displayName,
               'price': variant.sellingPrice,
               'imageUrl': product.images.isNotEmpty ? product.images.first : null,
               'chatRoomId': widget.chatRoomId,

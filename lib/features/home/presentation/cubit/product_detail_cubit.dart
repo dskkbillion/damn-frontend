@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../domain/entities/product_detail.dart';
+import '../../domain/entities/product_translation.dart';
 import '../../domain/repositories/home_repository.dart';
 
 part 'product_detail_state.dart';
@@ -16,10 +17,10 @@ class ProductDetailCubit extends Cubit<ProductDetailState> {
   Future<void> getProductDetail(String productId) async {
     emit(ProductDetailLoading());
     final result = await repository.getProductDetail(productId);
-    
+
     emit(result.fold(
       (failure) => ProductDetailError(failure.message),
-      (productDetail) => ProductDetailLoaded(productDetail),
+      (record) => ProductDetailLoaded(record.$1, translation: record.$2),
     ));
   }
 } 

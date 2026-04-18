@@ -516,9 +516,9 @@ class MessageListCubit extends Cubit<MessageListState> {
               final productResult = await _homeRepository.getProductDetail(room.productId!);
               productResult.fold(
                 (failure) => AppLogger.d('[MessageListCubit] Failed to get product detail: $failure'),
-                (product) {
-                  _productDetail = product;
-                  AppLogger.d('[MessageListCubit] Got product detail with ${product.variants?.length ?? 0} variants');
+                (record) {
+                  _productDetail = record.$1;
+                  AppLogger.d('[MessageListCubit] Got product detail with ${record.$1.variants?.length ?? 0} variants');
 
                   // 重新发出状态更新，让UI刷新按钮状态
                   if (_isSeller && _isLightConsultation) {

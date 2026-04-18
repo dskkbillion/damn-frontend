@@ -9,6 +9,7 @@ import '../models/banner_model.dart';
 import '../models/home_feed_item_model.dart';
 import '../models/home_page_data_model.dart';
 import '../models/product_detail_model.dart';
+import '../../domain/entities/product_translation.dart';
 
 abstract class HomeRemoteDataSource {
   /// 调用 API 获取首页数据
@@ -175,10 +176,33 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         if (jsonData['code'] == 200 && jsonData['data'] != null) {
           final data = jsonData['data'];
           AppLogger.d('商品详情数据: $data');
-          
-          final productDetail = ProductDetailModel.fromJson(data);
+
+          // 解析顶层翻译数据（_translations 和 _translationMeta 与 code/data 同级）
+          ProductTranslation? translation;
+          final translationsMap = jsonData['_translations'];
+          final translationMeta = jsonData['_translationMeta'];
+          if (translationsMap is Map<String, dynamic>) {
+            translation = ProductTranslation(
+              translatedName: translationsMap['name'] as String?,
+              translatedDescription: translationsMap['description'] as String?,
+              sourceLang: translationMeta is Map<String, dynamic>
+                  ? translationMeta['sourceLang'] as String?
+                  : null,
+              targetLang: translationMeta is Map<String, dynamic>
+                  ? translationMeta['targetLang'] as String?
+                  : null,
+              provider: translationMeta is Map<String, dynamic>
+                  ? translationMeta['provider'] as String?
+                  : null,
+            );
+            AppLogger.d('商品详情翻译数据: $translation');
+          }
+
+          final productDetail = ProductDetailModel.fromJson(data).copyWith(
+            translation: translation,
+          );
           AppLogger.d('解析后的商品详情: $productDetail');
-          
+
           return productDetail;
         } else {
           throw ServerException(message: jsonData['msg'] ?? 'Unknown error');

@@ -5,6 +5,7 @@ import '../entities/banner.dart';
 import '../entities/home_feed_item.dart';
 import '../entities/home_page_data.dart';
 import '../entities/product_detail.dart';
+import '../entities/product_translation.dart';
 
 /// 定义为 `Home` 模块获取聚合数据的数据访问接口
 abstract class IHomeRepository {
@@ -23,8 +24,8 @@ abstract class IHomeRepository {
   /// 或者返回 [Failure] 表示获取数据失败
   Future<Either<Failure, List<HomeFeedItem>>> getHomeFeed(int page, int limit);
 
-  /// 获取商品详情
-  Future<Either<Failure, ProductDetail>> getProductDetail(String productId);
+  /// 获取商品详情，返回 (ProductDetail, ProductTranslation?) 记录
+  Future<Either<Failure, (ProductDetail, ProductTranslation?)>> getProductDetail(String productId);
   
   /// 搜索产品
   /// 

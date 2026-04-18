@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/product_detail.dart';
+import '../../domain/entities/product_translation.dart';
 
 /// 商品详情模型
 class ProductDetailModel extends Equatable {
@@ -32,6 +33,7 @@ class ProductDetailModel extends Equatable {
   final DateTime updateTime;
   final int evaluateNum;
   final String score;
+  final ProductTranslation? translation;
 
   const ProductDetailModel({
     required this.id,
@@ -61,6 +63,7 @@ class ProductDetailModel extends Equatable {
     required this.updateTime,
     required this.evaluateNum,
     required this.score,
+    this.translation,
   });
 
   @override
@@ -92,6 +95,7 @@ class ProductDetailModel extends Equatable {
         updateTime,
         evaluateNum,
         score,
+        translation,
       ];
 
   /// 处理服务器返回的复杂图片URL格式
@@ -267,6 +271,42 @@ class ProductDetailModel extends Equatable {
       updateTime: updateTime,
       evaluateNum: json['evaluateNum'] ?? 0,
       score: json['score'] ?? '0',
+    );
+  }
+
+  /// 创建副本并覆盖指定字段
+  ProductDetailModel copyWith({
+    ProductTranslation? translation,
+  }) {
+    return ProductDetailModel(
+      id: id,
+      name: name,
+      description: description,
+      sellingPrice: sellingPrice,
+      mainImage: mainImage,
+      images: images,
+      detailImages: detailImages,
+      detailContent: detailContent,
+      winImages: winImages,
+      categoryId: categoryId,
+      categoryName: categoryName,
+      sellerId: sellerId,
+      sellerName: sellerName,
+      sellerAvatar: sellerAvatar,
+      sellerRemarks: sellerRemarks,
+      recoverFlag: recoverFlag,
+      recoverContent: recoverContent,
+      variants: variants,
+      materials: materials,
+      sales: sales,
+      views: views,
+      status: status,
+      selectionMode: selectionMode,
+      createTime: createTime,
+      updateTime: updateTime,
+      evaluateNum: evaluateNum,
+      score: score,
+      translation: translation ?? this.translation,
     );
   }
 
