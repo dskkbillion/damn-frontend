@@ -1109,5 +1109,17 @@
     "openFileFailed": "Failed to open file",
     "storagePermissionRequired": "Storage permission required to download files",
     "pdfLoadFailed": "Failed to load PDF",
-    "retry": "Retry"
+    "retry": "Retry",
+
+    "product_detail_translated_from": "Translated from {language}",
+    "@product_detail_translated_from": {
+      "placeholders": {
+        "language": {
+          "type": "String",
+          "example": "Chinese"
+        }
+      }
+    },
+    "product_detail_translation_auto": "Auto-translated",
+    "product_detail_show_original": "Show original"
 }

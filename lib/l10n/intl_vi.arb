@@ -1,0 +1,15 @@
+{
+    "@@locale": "vi",
+
+    "product_detail_translated_from": "Dich tu {language}",
+    "@product_detail_translated_from": {
+      "placeholders": {
+        "language": {
+          "type": "String",
+          "example": "Tieng Trung"
+        }
+      }
+    },
+    "product_detail_translation_auto": "Tu dong dich",
+    "product_detail_show_original": "Hien thi ban goc"
+}

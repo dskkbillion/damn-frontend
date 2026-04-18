@@ -2166,4 +2166,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retry => 'Retry';
+
+  @override
+  String product_detail_translated_from(String language) {
+    return 'Translated from $language';
+  }
+
+  @override
+  String get product_detail_translation_auto => 'Auto-translated';
+
+  @override
+  String get product_detail_show_original => 'Show original';
 }

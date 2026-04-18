@@ -1,0 +1,15 @@
+{
+    "@@locale": "ja",
+
+    "product_detail_translated_from": "{language}から翻訳",
+    "@product_detail_translated_from": {
+      "placeholders": {
+        "language": {
+          "type": "String",
+          "example": "中国語"
+        }
+      }
+    },
+    "product_detail_translation_auto": "自動翻訳",
+    "product_detail_show_original": "原文を表示"
+}

@@ -1109,5 +1109,17 @@
     "openFileFailed": "打开文件失败",
     "storagePermissionRequired": "需要存储权限才能下载文件",
     "pdfLoadFailed": "PDF加载失败",
-    "retry": "重试"
+    "retry": "重试",
+
+    "product_detail_translated_from": "翻译自{language}",
+    "@product_detail_translated_from": {
+      "placeholders": {
+        "language": {
+          "type": "String",
+          "example": "中文"
+        }
+      }
+    },
+    "product_detail_translation_auto": "自动翻译",
+    "product_detail_show_original": "显示原文"
 }

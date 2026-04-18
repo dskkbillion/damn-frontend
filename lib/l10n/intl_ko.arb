@@ -1,0 +1,15 @@
+{
+    "@@locale": "ko",
+
+    "product_detail_translated_from": "{language}에서 번역됨",
+    "@product_detail_translated_from": {
+      "placeholders": {
+        "language": {
+          "type": "String",
+          "example": "중국어"
+        }
+      }
+    },
+    "product_detail_translation_auto": "자동 번역",
+    "product_detail_show_original": "원문 보기"
+}

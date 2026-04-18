@@ -4,9 +4,9 @@ import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
 
-/// The translations for Chinese (`zh`).
-class AppLocalizationsZh extends AppLocalizations {
-  AppLocalizationsZh([String locale = 'zh']) : super(locale);
+/// The translations for Vietnamese (`vi`).
+class AppLocalizationsVi extends AppLocalizations {
+  AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
   String get language_settings => '语言设置';
@@ -2075,12 +2075,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String product_detail_translated_from(String language) {
-    return '翻译自$language';
+    return 'Dich tu $language';
   }
 
   @override
-  String get product_detail_translation_auto => '自动翻译';
+  String get product_detail_translation_auto => 'Tu dong dich';
 
   @override
-  String get product_detail_show_original => '显示原文';
+  String get product_detail_show_original => 'Hien thi ban goc';
 }
