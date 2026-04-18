@@ -431,6 +431,9 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
               sellingPrice: sellingPrice,
               score: double.tryParse(score ?? '5.0') ?? 5.0,
               evaluateNum: evaluateNum,
+              translatedName: item['translatedName'] as String?,
+              translatedDescription: item['translatedDescription'] as String?,
+              translationSourceLang: item['translationSourceLang'] as String?,
             ));
           }
           

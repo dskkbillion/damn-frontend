@@ -46,6 +46,9 @@ class HomeRepositoryImpl implements IHomeRepository {
             images: item.images,
             sellingPrice: item.sellingPrice,
             description: '',
+            translatedName: item.translatedName,
+            translatedDescription: item.translatedDescription,
+            translationSourceLang: item.translationSourceLang,
           )).toList(),
         );
         return Right(homePageData);
@@ -58,7 +61,7 @@ class HomeRepositoryImpl implements IHomeRepository {
         // 临时解决方案：直接转换为同类型数据
         final homePageData = HomePageData(
           banners: localData.banners.map((b) => Banner(
-            id: b.id, 
+            id: b.id,
             imageUrl: b.imageUrl,
             title: b.title ?? '',
             linkUrl: b.linkUrl ?? '',
@@ -70,6 +73,9 @@ class HomeRepositoryImpl implements IHomeRepository {
             images: item.images,
             sellingPrice: item.sellingPrice,
             description: '',
+            translatedName: item.translatedName,
+            translatedDescription: item.translatedDescription,
+            translationSourceLang: item.translationSourceLang,
           )).toList(),
         );
         return Right(homePageData);
@@ -91,6 +97,9 @@ class HomeRepositoryImpl implements IHomeRepository {
           images: item.images,
           sellingPrice: item.sellingPrice,
           description: '',
+          translatedName: item.translatedName,
+          translatedDescription: item.translatedDescription,
+          translationSourceLang: item.translationSourceLang,
         )).toList();
         return Right(feedItems);
       } on ServerException catch (e) {
@@ -106,6 +115,9 @@ class HomeRepositoryImpl implements IHomeRepository {
           images: item.images,
           sellingPrice: item.sellingPrice,
           description: '',
+          translatedName: item.translatedName,
+          translatedDescription: item.translatedDescription,
+          translationSourceLang: item.translationSourceLang,
         )).toList();
         return Right(feedItems);
       } on CacheException {

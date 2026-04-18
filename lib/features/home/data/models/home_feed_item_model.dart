@@ -12,6 +12,9 @@ class HomeFeedItemModel extends HomeFeedItem {
     required double sellingPrice,
     required double score,
     required int evaluateNum,
+    String? translatedName,
+    String? translatedDescription,
+    String? translationSourceLang,
   }) : super(
           id: id,
           type: type,
@@ -20,6 +23,9 @@ class HomeFeedItemModel extends HomeFeedItem {
           sellingPrice: sellingPrice,
           score: score,
           evaluateNum: evaluateNum,
+          translatedName: translatedName,
+          translatedDescription: translatedDescription,
+          translationSourceLang: translationSourceLang,
         );
 
   /// 从 JSON 创建 HomeFeedItemModel 实例
@@ -109,6 +115,9 @@ class HomeFeedItemModel extends HomeFeedItem {
       sellingPrice: price,
       score: score,
       evaluateNum: evaluateNum,
+      translatedName: json['translatedName'] as String?,
+      translatedDescription: json['translatedDescription'] as String?,
+      translationSourceLang: json['translationSourceLang'] as String?,
     );
   }
   
@@ -181,6 +190,9 @@ class HomeFeedItemModel extends HomeFeedItem {
     double? sellingPrice,
     double? score,
     int? evaluateNum,
+    String? translatedName,
+    String? translatedDescription,
+    String? translationSourceLang,
   }) {
     return HomeFeedItemModel(
       id: id ?? this.id,
@@ -190,6 +202,9 @@ class HomeFeedItemModel extends HomeFeedItem {
       sellingPrice: sellingPrice ?? this.sellingPrice,
       score: score ?? this.score,
       evaluateNum: evaluateNum ?? this.evaluateNum,
+      translatedName: translatedName ?? this.translatedName,
+      translatedDescription: translatedDescription ?? this.translatedDescription,
+      translationSourceLang: translationSourceLang ?? this.translationSourceLang,
     );
   }
 }

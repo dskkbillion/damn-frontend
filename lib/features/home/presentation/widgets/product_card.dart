@@ -113,9 +113,9 @@ class ProductCard extends StatelessWidget {
 
                   const SizedBox(height: AppDimensions.spacingXs),
 
-                  // 商品名称
+                  // 商品名称（优先使用翻译名称）
                   Text(
-                    item.name,
+                    item.displayName,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w500,
                     ),

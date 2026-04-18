@@ -36,6 +36,15 @@ class HomeFeedItem extends Equatable {
   /// 评价数量
   final int evaluateNum;
 
+  /// 翻译后的商品名称（列表接口内联返回，无翻译时为 null）
+  final String? translatedName;
+
+  /// 翻译后的商品描述
+  final String? translatedDescription;
+
+  /// 翻译源语言代码
+  final String? translationSourceLang;
+
   HomeFeedItem({
     required this.id,
     this.type = 'product',
@@ -48,11 +57,22 @@ class HomeFeedItem extends Equatable {
     double? price,
     this.score = 5.0,
     this.evaluateNum = 0,
-  }) : 
+    this.translatedName,
+    this.translatedDescription,
+    this.translationSourceLang,
+  }) :
     this.title = title ?? name,
     this.imageUrl = imageUrl ?? (images.isNotEmpty ? images[0] : ''),
     this.price = price ?? sellingPrice;
 
+  /// 获取展示用名称：优先使用翻译名称
+  String get displayName =>
+      (translatedName != null && translatedName!.isNotEmpty) ? translatedName! : name;
+
+  /// 获取展示用描述：优先使用翻译描述
+  String get displayDescription =>
+      (translatedDescription != null && translatedDescription!.isNotEmpty) ? translatedDescription! : description;
+
   @override
-  List<Object?> get props => [id, type, name, title, description, images, imageUrl, sellingPrice, price, score, evaluateNum];
+  List<Object?> get props => [id, type, name, title, description, images, imageUrl, sellingPrice, price, score, evaluateNum, translatedName, translatedDescription, translationSourceLang];
 }
