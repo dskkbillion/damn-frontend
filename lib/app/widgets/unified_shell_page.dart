@@ -25,7 +25,7 @@ class UnifiedShellPage extends ConsumerStatefulWidget {
 class _UnifiedShellPageState extends ConsumerState<UnifiedShellPage> 
     with TickerProviderStateMixin {
   // 保存每个模式的导航索引
-  int _buyerIndex = 1; // 默认首页
+  int _buyerIndex = 0; // 默认 AI 助手
   int _sellerIndex = 0; // 默认数据页
   
   // 获取当前模式下的导航索引

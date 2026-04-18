@@ -467,19 +467,19 @@ abstract class AppLocalizations {
   /// No description provided for @nav_ai_assistant.
   ///
   /// In zh, this message translates to:
-  /// **'多少看看'**
+  /// **'看看'**
   String get nav_ai_assistant;
 
   /// No description provided for @nav_home.
   ///
   /// In zh, this message translates to:
-  /// **'主页'**
+  /// **'逛逛'**
   String get nav_home;
 
   /// No description provided for @nav_messages.
   ///
   /// In zh, this message translates to:
-  /// **'消息'**
+  /// **'聊聊'**
   String get nav_messages;
 
   /// No description provided for @nav_profile.

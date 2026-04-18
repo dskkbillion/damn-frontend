@@ -91,7 +91,8 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                         child: Column(
                           children: [
                             _buildOrderSection(),
-                            _buildMenuSection(AppLocalizations.of(context)!.seller_profile_auth_management, Icons.verified_user, ''),
+                            // TODO(#306): 认证功能暂未完善，隐藏入口
+                            // _buildMenuSection(AppLocalizations.of(context)!.seller_profile_auth_management, Icons.verified_user, ''),
                             _buildMenuSection(AppLocalizations.of(context)!.seller_profile_my_wallet, Icons.account_balance_wallet_outlined, ''),
                             _buildMenuSection(AppLocalizations.of(context)!.seller_profile_time_management, Icons.access_time_outlined, ''),
                             const SizedBox(height: 10),

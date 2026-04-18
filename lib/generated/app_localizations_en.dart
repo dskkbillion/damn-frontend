@@ -214,13 +214,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ai_docs_title_empty => 'Title cannot be empty';
 
   @override
-  String get nav_ai_assistant => 'DSKK';
+  String get nav_ai_assistant => 'Look';
 
   @override
-  String get nav_home => 'Home';
+  String get nav_home => 'Browse';
 
   @override
-  String get nav_messages => 'Messages';
+  String get nav_messages => 'Chat';
 
   @override
   String get nav_profile => 'Profile';

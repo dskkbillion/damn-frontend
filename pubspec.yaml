@@ -122,12 +122,10 @@ dev_dependencies:
   json_serializable: ^6.8.0
   drift_dev: ^2.26.0
 
-  # Testing - Merged
-  test: ^1.24.9
-
-  # Overrides - Merged
-  analyzer: ^7.6.0
   intl_utils: ^2.8.8
+
+dependency_overrides:
+  analyzer: ^8.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -204,13 +204,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ai_docs_title_empty => '标题不能为空';
 
   @override
-  String get nav_ai_assistant => '多少看看';
+  String get nav_ai_assistant => '看看';
 
   @override
-  String get nav_home => '主页';
+  String get nav_home => '逛逛';
 
   @override
-  String get nav_messages => '消息';
+  String get nav_messages => '聊聊';
 
   @override
   String get nav_profile => '我的';

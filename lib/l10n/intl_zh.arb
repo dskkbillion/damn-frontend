@@ -117,9 +117,9 @@
     "ai_docs_title_too_long": "标题长度不能超过50个字符",
     "ai_docs_title_empty": "标题不能为空",
     
-    "nav_ai_assistant": "多少看看",
-    "nav_home": "主页",
-    "nav_messages": "消息",
+    "nav_ai_assistant": "看看",
+    "nav_home": "逛逛",
+    "nav_messages": "聊聊",
     "nav_profile": "我的",
     "nav_dev": "开发",
     

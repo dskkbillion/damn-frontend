@@ -510,12 +510,13 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                   label: AppLocalizations.of(context)!.seller_home_wallet,
                   onTap: () => context.goNamed('seller_wallet'),
                 ),
-                _buildFunctionItem(
-                  context,
-                  icon: Icons.verified_user,
-                  label: AppLocalizations.of(context)!.seller_home_auth_management,
-                  onTap: () => context.push(SellerRoutes.authentication),
-                ),
+                // TODO(#306): 认证功能暂未完善，隐藏入口
+                // _buildFunctionItem(
+                //   context,
+                //   icon: Icons.verified_user,
+                //   label: AppLocalizations.of(context)!.seller_home_auth_management,
+                //   onTap: () => context.push(SellerRoutes.authentication),
+                // ),
                 _buildFunctionItem(
                   context,
                   icon: Icons.access_time,
