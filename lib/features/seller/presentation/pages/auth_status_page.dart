@@ -84,7 +84,7 @@ class AuthStatusPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              _buildStatusTag(authInfo.status),
+              _buildStatusTag(context, authInfo.status),
             ],
           ),
           const SizedBox(height: 12),
@@ -396,7 +396,7 @@ class AuthStatusPage extends StatelessWidget {
   }
   
   /// 构建状态标签
-  Widget _buildStatusTag(AuthenticationStatus status) {
+  Widget _buildStatusTag(BuildContext context, AuthenticationStatus status) {
     final l10n = AppLocalizations.of(context);
     Color backgroundColor;
     Color textColor;
